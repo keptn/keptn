@@ -1,8 +1,8 @@
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { combineLatest, forkJoin, Observable, of, Subject } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
+import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { Project } from '../../_models/project';
@@ -10,9 +10,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { UniformRegistration } from '../../_models/uniform-registration';
-import { KeptnService } from '../../../../shared/models/keptn-service';
 import { KtbWebhookSettingsComponent } from '../ktb-webhook-settings/ktb-webhook-settings.component';
-import { WebhookConfig } from '../../_models/webhook-config';
+import { WebhookConfig } from '../../../../shared/models/webhook-config';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -34,6 +33,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   });
   private webhookSettings?: KtbWebhookSettingsComponent;
   public uniformRegistration?: UniformRegistration;
+  public isWebhookService = false;
   public suffixes: { value: string, displayValue: string }[] = [
     {
       value: '>',
@@ -52,7 +52,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       displayValue: 'finished',
     }];
 
-  @ViewChild('webhookSettings', { static: false }) set webhookSettingsElement(webhookSettings: KtbWebhookSettingsComponent) {
+  @ViewChild('webhookSettings', {static: false}) set webhookSettingsElement(webhookSettings: KtbWebhookSettingsComponent) {
     if (webhookSettings) { // initially setter gets called with undefined
       this.webhookSettings = webhookSettings;
     }
@@ -92,9 +92,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       );
 
     integrationId$.pipe(
-      switchMap(integrationId => this.dataService.getIsUniformRegistrationControlPlane(integrationId)),
-    ).subscribe(isControlPlane => {
-      if (!isControlPlane) {
+      switchMap(integrationId => this.dataService.getUniformRegistrationInfo(integrationId)),
+    ).subscribe(info => {
+      if (!info.isControlPlane) {
         this.suffixes = [
           {
             value: 'triggered',
@@ -102,15 +102,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
           },
         ];
       }
+      this.isWebhookService = info.isWebhookService;
     });
-
-    const registrations$ = this.dataService.getUniformRegistrations();
-    combineLatest([registrations$, integrationId$])
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(([uniformRegistrations, integrationId]) => {
-        const uniformRegistration = uniformRegistrations.find(uR => uR.id === integrationId);
-        this.setUniformRegistration(uniformRegistration);
-      });
 
     const projectName$ = this.route.paramMap
       .pipe(
@@ -137,12 +130,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       project: project$,
       integrationId: integrationId$,
     });
-  }
-
-  private setUniformRegistration(uniformRegistration: UniformRegistration | undefined): void {
-    if(this.uniformRegistration !== uniformRegistration) {
-      this.uniformRegistration = uniformRegistration;
-    }
   }
 
   private updateDataSource(project: Project): void {
@@ -180,7 +167,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       updates.push(this.dataService.createUniformSubscription(integrationId, subscription));
     }
 
-    if (this.isWebhookService()) {
+    if (this.isWebhookService) {
       const webhookSettingsForm = this.webhookSettings?.webhookConfigForm;
       if (webhookSettingsForm && webhookSettingsForm.valid) {
         const webhookConfig: WebhookConfig = new WebhookConfig();
@@ -202,17 +189,13 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
 
     forkJoin(
-      ...updates
+      updates,
     ).subscribe(() => {
       this.updating = false;
       this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
     }, err => {
       this.updating = false;
     });
-  }
-
-  public isWebhookService(): boolean {
-    return this?.uniformRegistration?.name === KeptnService.WEBHOOK_SERVICE;
   }
 
   ngOnDestroy(): void {

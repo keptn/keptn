@@ -20,7 +20,8 @@ import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { UniformRegistration } from '../_models/uniform-registration';
-import { WebhookConfig } from '../_models/webhook-config';
+import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
+import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 
 @Injectable({
   providedIn: 'root',
@@ -163,9 +164,9 @@ export class ApiService {
     return this.http.post<UniformRegistration[]>(url, uniformDates);
   }
 
-  public getIsUniformRegistrationControlPlane(integrationId: string): Observable<boolean> {
-    const url = `${this._baseUrl}/uniform/registration/${integrationId}/isControlPlane`;
-    return this.http.get<boolean>(url);
+  public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/info`;
+    return this.http.get<UniformRegistrationInfo>(url);
   }
 
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
@@ -406,7 +407,7 @@ export class ApiService {
 
     return this.http
       .post<unknown>(url, {
-        config
+        config,
       });
   }
 

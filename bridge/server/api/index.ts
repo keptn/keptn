@@ -136,10 +136,10 @@ function apiRouter(params:
     }
   });
 
-  router.get('/uniform/registration/:integrationId/isControlPlane', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/uniform/registration/:integrationId/info', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const isControlPlane = await dataService.getIsUniformRegistrationControlPlane(req.params.integrationId);
-      return res.json(isControlPlane);
+      const info = await dataService.getIsUniformRegistrationInfo(req.params.integrationId);
+      return res.json(info);
     } catch (error) {
       return next(error);
     }

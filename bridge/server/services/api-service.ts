@@ -122,7 +122,7 @@ export class ApiService {
     return this.axios.get<Resource>(url);
   }
 
-  public deleteWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+  public deleteWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
     let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
@@ -146,8 +146,8 @@ export class ApiService {
     url += `/resource/webhook.yaml`;
 
     return this.axios.put<Resource>(url, {
-      resourceURI: 'webhook.yaml',
-      resourceContent: new Buffer(content).toString('base64'),
+      resourceURI: 'webhook/webhook.yaml',
+      resourceContent: Buffer.from(content).toString('base64'),
     });
   }
 

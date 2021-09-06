@@ -21,7 +21,8 @@ import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
-import { WebhookConfig } from '../_models/webhook-config';
+import { WebhookConfig } from '../../../shared/models/webhook-config';
+import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 
 @Injectable({
   providedIn: 'root',
@@ -136,8 +137,8 @@ export class DataService {
     );
   }
 
-  public getIsUniformRegistrationControlPlane(integrationId: string): Observable<boolean> {
-    return this.apiService.getIsUniformRegistrationControlPlane(integrationId);
+  public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
+    return this.apiService.getUniformRegistrationInfo(integrationId);
   }
 
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {

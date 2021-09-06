@@ -9,6 +9,7 @@ import { DataServiceMock } from '../../_services/data.service.mock';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { UniformRegistrationLocations } from '../../../../shared/interfaces/uniform-registration-locations';
+import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -189,7 +190,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const uniformRegistration = UniformRegistrationsMock[integrationIndex];
     const subscription = subscriptionIndex !== undefined ? uniformRegistration.subscriptions[subscriptionIndex] : new UniformSubscription('sockshop');
     dataService.getUniformSubscription = jest.fn().mockReturnValue(of(subscription));
-    dataService.getIsUniformRegistrationControlPlane = jest.fn().mockReturnValue(of(uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE));
+    dataService.getUniformRegistrationInfo = jest.fn().mockReturnValue(of({
+      isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
+      isWebhookService: false,
+    } as UniformRegistrationInfo));
     paramMap.next(convertToParamMap({
       projectName: 'sockshop',
       integrationId: uniformRegistration.id,

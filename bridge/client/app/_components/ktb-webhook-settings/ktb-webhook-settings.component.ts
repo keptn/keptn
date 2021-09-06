@@ -4,11 +4,13 @@ import { DataService } from '../../_services/data.service';
 import { FormUtils } from '../../_utils/form.utils';
 import { Project } from '../../_models/project';
 import { UniformSubscription } from '../../_models/uniform-subscription';
+import { UniformSubscriptionFilter } from '../../../../shared/interfaces/uniform-subscription';
+import { AppUtils } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-webhook-settings',
   templateUrl: './ktb-webhook-settings.component.html',
-  styleUrls: ['./ktb-webhook-settings.component.scss']
+  styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
 export class KtbWebhookSettingsComponent implements OnInit {
 
@@ -31,6 +33,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   get project(): Project | undefined {
     return this._project;
   }
+
   set project(value: Project | undefined) {
     if (this._project !== value) {
       this._project = value;
@@ -41,6 +44,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   get subscription(): UniformSubscription | undefined {
     return this._subscription;
   }
+
   set subscription(value: UniformSubscription | undefined) {
     if (this._subscription !== value) {
       this._subscription = value;
@@ -48,12 +52,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
     }
   }
 
-  get prevFilter(): { projects: string[] | null; stages: string[] | null; services: string[] | null } | undefined {
+  get prevFilter(): UniformSubscriptionFilter | undefined {
     return this._prevFilter;
   }
-  set prevFilter(value: { projects: string[] | null; stages: string[] | null; services: string[] | null } | undefined) {
+
+  set prevFilter(value: UniformSubscriptionFilter | undefined) {
     if (this._prevFilter !== value) {
-      this._prevFilter = JSON.parse(JSON.stringify(value));
+      this._prevFilter = AppUtils.copyObject(value);
     }
   }
 
@@ -88,7 +93,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
         }
 
         this.loading = false;
-      }, err => {
+      }, () => {
         this.loading = false;
       });
   }
@@ -96,7 +101,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public addHeader(name?: string, value?: string): void {
     this.header?.push(this.formBuilder.group({
       name: [name, [Validators.required]],
-      value: [value, [Validators.required]]
+      value: [value, [Validators.required]],
     }));
   }
 
