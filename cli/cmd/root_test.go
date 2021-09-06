@@ -71,7 +71,7 @@ func executeActionCommandC(cmd string) (string, error) {
 		},
 	}
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-		runVersionCheck(vChecker, os.Args)
+		runVersionCheck(vChecker, os.Args[1:])
 	}
 
 	rootCmd.SetOut(buf)
