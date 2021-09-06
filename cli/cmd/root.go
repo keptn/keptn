@@ -152,8 +152,11 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string) {
 	}
 }
 
-func isInstallSubCommand(flags []string) bool {
-	for _, arg := range flags {
+// isInstallSubCommand checks if the subcommand is `install`
+// args here does not contain the main command
+// e.g., For `keptn -q install`, args would be just ['-q', 'install']
+func isInstallSubCommand(args []string) bool {
+	for _, arg := range args {
 		switch {
 		// skip flags
 		// e.g., keptn -q install

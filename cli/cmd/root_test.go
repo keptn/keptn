@@ -178,9 +178,11 @@ func Test_runVersionCheck(t *testing.T) {
 		metadataStatus   int
 		metadataResponse keptnapimodels.Metadata
 		cliVersion       string
-		flags            []string
-		wantOutput       string
-		doNotWantOutput  string
+		// args excludes the main `keptn` command
+		// e.g., keptn -q install, args would be ['-q', 'install']
+		args            []string
+		wantOutput      string
+		doNotWantOutput string
 	}{
 		{
 			name:           "get version",
@@ -201,14 +203,14 @@ func Test_runVersionCheck(t *testing.T) {
 			name:            "skip version check for 'keptn install'",
 			cliVersion:      "0.8.0",
 			metadataStatus:  http.StatusServiceUnavailable,
-			flags:           []string{"install"},
+			args:            []string{"install"},
 			doNotWantOutput: "* Warning: could not check Keptn server version: Error connecting to server:",
 		},
 		{
 			name:            "skip version check for 'keptn --any-flag install'",
 			cliVersion:      "0.8.0",
 			metadataStatus:  http.StatusServiceUnavailable,
-			flags:           []string{"--any-flag", "install"},
+			args:            []string{"--any-flag", "install"},
 			doNotWantOutput: "* Warning: could not check Keptn server version: Error connecting to server:",
 		},
 		{
@@ -218,7 +220,7 @@ func Test_runVersionCheck(t *testing.T) {
 			metadataResponse: keptnapimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
-			flags:      []string{"command-other-than-install"},
+			args:       []string{"command-other-than-install"},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
 		},
 		{
@@ -228,7 +230,7 @@ func Test_runVersionCheck(t *testing.T) {
 			metadataResponse: keptnapimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
-			flags:      []string{"--any-flag", "command-other-than-install"},
+			args:       []string{"--any-flag", "command-other-than-install"},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
 		},
 		{
@@ -260,7 +262,7 @@ func Test_runVersionCheck(t *testing.T) {
 					VersionURL: ts.URL,
 				},
 			}
-			runVersionCheck(vChecker, tt.flags)
+			runVersionCheck(vChecker, tt.args)
 
 			// reset version
 			Version = ""
