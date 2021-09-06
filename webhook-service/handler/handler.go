@@ -39,8 +39,10 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkErr
 	}
 	responses := []string{}
+	webhookFound := false
 	for _, webhook := range whConfig.Spec.Webhooks {
 		if webhook.Type == *event.Type {
+			webhookFound = true
 			secretEnvVars, sdkErr := th.gatherSecretEnvVars(webhook)
 			if sdkErr != nil {
 				return nil, sdkErr
@@ -51,6 +53,9 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 				return nil, sdkErr
 			}
 		}
+	}
+	if !webhookFound {
+		return nil, sdkError(fmt.Sprintf("no webhook for event type %s has been configured", *event.Type), nil)
 	}
 
 	// check if the incoming event was a task.triggered event

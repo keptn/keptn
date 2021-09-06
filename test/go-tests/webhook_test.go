@@ -22,6 +22,9 @@ spec:
         - name: "othersequence"
           tasks:
             - name: "othertask"
+        - name: "sequencewithunknowntask"
+          tasks:
+            - name: "unknowntask"
         - name: "unallowedsequence"
           tasks:
             - name: "unallowedtask"
@@ -91,29 +94,19 @@ func Test_Webhook(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	// create a subscription for the webhook-service
-	err = CreateSubscription(t, "webhook-service", models.EventSubscription{
-		Event: keptnv2.GetTriggeredEventType("mytask"),
-		Filter: models.EventSubscriptionFilter{
-			Projects: []string{projectName},
-		},
-	})
-	require.Nil(t, err)
+	// create subscriptions for the webhook-service
+	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask"}
 
-	err = CreateSubscription(t, "webhook-service", models.EventSubscription{
-		Event: keptnv2.GetTriggeredEventType("othertask"),
-		Filter: models.EventSubscriptionFilter{
-			Projects: []string{projectName},
-		},
-	})
-	require.Nil(t, err)
+	for _, taskType := range taskTypes {
+		err = CreateSubscription(t, "webhook-service", models.EventSubscription{
+			Event: keptnv2.GetTriggeredEventType(taskType),
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{projectName},
+			},
+		})
+		require.Nil(t, err)
+	}
 
-	err = CreateSubscription(t, "webhook-service", models.EventSubscription{
-		Event: keptnv2.GetTriggeredEventType("unallowedtask"),
-		Filter: models.EventSubscriptionFilter{
-			Projects: []string{projectName},
-		},
-	})
 	require.Nil(t, err)
 
 	// wait some time to make sure the webhook service has pulled the updated subscription
@@ -129,76 +122,58 @@ func Test_Webhook(t *testing.T) {
 
 	require.Nil(t, err)
 
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
-	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+	triggerSequenceAndVerifyTaskFinishedEvent := func(sequencename, taskFinishedType string, verify func(t *testing.T, decodedEvent map[string]interface{})) {
+		t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+		keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
-	var taskFinishedEvent *models.KeptnContextExtendedCE
-	require.Eventually(t, func() bool {
-		taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("mytask"))
-		if err != nil || taskFinishedEvent == nil {
-			return false
-		}
-		return true
-	}, 30*time.Second, 3*time.Second)
+		var taskFinishedEvent *models.KeptnContextExtendedCE
+		require.Eventually(t, func() bool {
+			taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(taskFinishedType))
+			if err != nil || taskFinishedEvent == nil {
+				return false
+			}
+			return true
+		}, 30*time.Second, 3*time.Second)
 
-	require.NotNil(t, taskFinishedEvent)
+		require.NotNil(t, taskFinishedEvent)
 
-	decodedEvent := map[string]interface{}{}
+		decodedEvent := map[string]interface{}{}
 
-	err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
+		err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
 
-	require.Nil(t, err)
+		require.Nil(t, err)
 
-	// check if the requests have been executed and yielded some results
-	require.NotNil(t, decodedEvent["mytask"])
+		verify(t, decodedEvent)
+	}
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "mytask", func(t *testing.T, decodedEvent map[string]interface{}) {
+		require.NotNil(t, decodedEvent["mytask"])
+	})
 
 	// Now, trigger another sequence that tries to execute a webhook with a reference to an unknown variable - this should fail
 	sequencename = "othersequence"
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
-	keptnContextID, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
-	require.Eventually(t, func() bool {
-		taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("othertask"))
-		if err != nil || taskFinishedEvent == nil {
-			return false
-		}
-		return true
-	}, 30*time.Second, 3*time.Second)
-
-	require.NotNil(t, taskFinishedEvent)
-
-	decodedEvent = map[string]interface{}{}
-
-	err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
-
-	require.Nil(t, err)
-
-	// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
-	require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-	require.Nil(t, decodedEvent["othertask"])
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "othertask", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["othertask"])
+	})
 
 	// Now, trigger another sequence that tries to execute a webhook with a call to the kubernetes API - this one should fail as well
 	sequencename = "unallowedsequence"
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
-	keptnContextID, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
-	require.Eventually(t, func() bool {
-		taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("unallowedtask"))
-		if err != nil || taskFinishedEvent == nil {
-			return false
-		}
-		return true
-	}, 30*time.Second, 3*time.Second)
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "unallowedtask", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["unallowedtask"])
+	})
 
-	require.NotNil(t, taskFinishedEvent)
+	// Now, trigger another sequence that contains a task for which we don't have a webhook configured - this one should fail as well
+	sequencename = "sequencewithunknowntask"
 
-	decodedEvent = map[string]interface{}{}
-
-	err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
-
-	require.Nil(t, err)
-
-	// check the result - this time it should be set to fail because an disallowed URL was called
-	require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-	require.Nil(t, decodedEvent["unallowedtask"])
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "unknowntask", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["unknowntask"])
+	})
 }
