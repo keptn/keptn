@@ -22,6 +22,9 @@ spec:
         - name: "othersequence"
           tasks:
             - name: "othertask"
+        - name: "unallowedsequence"
+          tasks:
+            - name: "unallowedtask"
         - name: "mysequence"
           tasks:
             - name: "mytask"`
@@ -40,6 +43,14 @@ spec:
             key: "my-key"
       requests:
         - "curl http://shipyard-controller:8080/v1/project{{.unknownKey}}"
+    - type: "sh.keptn.event.unallowedtask.triggered"
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - "curl http://kubernetes.default.svc.cluster.local:443/v1"
     - type: "sh.keptn.event.mytask.triggered"
       envFrom: 
         - name: "secretKey"
@@ -79,6 +90,34 @@ func Test_Webhook(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
+
+	// create a subscription for the webhook-service
+	err = CreateSubscription(t, "webhook-service", models.EventSubscription{
+		Event: keptnv2.GetTriggeredEventType("mytask"),
+		Filter: models.EventSubscriptionFilter{
+			Projects: []string{projectName},
+		},
+	})
+	require.Nil(t, err)
+
+	err = CreateSubscription(t, "webhook-service", models.EventSubscription{
+		Event: keptnv2.GetTriggeredEventType("othertask"),
+		Filter: models.EventSubscriptionFilter{
+			Projects: []string{projectName},
+		},
+	})
+	require.Nil(t, err)
+
+	err = CreateSubscription(t, "webhook-service", models.EventSubscription{
+		Event: keptnv2.GetTriggeredEventType("unallowedtask"),
+		Filter: models.EventSubscriptionFilter{
+			Projects: []string{projectName},
+		},
+	})
+	require.Nil(t, err)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
 
 	// now, let's add an webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYaml)
@@ -138,4 +177,28 @@ func Test_Webhook(t *testing.T) {
 	require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
 	require.Nil(t, decodedEvent["othertask"])
 
+	// Now, trigger another sequence that tries to execute a webhook with a call to the kubernetes API - this one should fail as well
+	sequencename = "unallowedsequence"
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	require.Eventually(t, func() bool {
+		taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("unallowedtask"))
+		if err != nil || taskFinishedEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 3*time.Second)
+
+	require.NotNil(t, taskFinishedEvent)
+
+	decodedEvent = map[string]interface{}{}
+
+	err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
+
+	require.Nil(t, err)
+
+	// check the result - this time it should be set to fail because an disallowed URL was called
+	require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+	require.Nil(t, decodedEvent["unallowedtask"])
 }

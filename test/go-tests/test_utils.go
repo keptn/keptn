@@ -96,6 +96,45 @@ func TriggerSequence(projectName, serviceName, stageName, sequenceName string, e
 	return *context.KeptnContext, nil
 }
 
+func GetIntegrationWithName(name string) (models.Integration, error) {
+	resp, _ := ApiGETRequest("/controlPlane/v1/uniform/registration")
+	integrations := []models.Integration{}
+	if err := resp.ToJSON(&integrations); err != nil {
+		return models.Integration{}, err
+	}
+	for _, r := range integrations {
+		if r.Name == name {
+			return r, nil
+		}
+	}
+	return models.Integration{}, fmt.Errorf("No Keptn Integration with name %s found", name)
+}
+
+func CreateSubscription(t *testing.T, serviceName string, subscription models.EventSubscription) error {
+	var fetchedIntegration models.Integration
+	var err error
+	require.Eventually(t, func() bool {
+		fetchedIntegration, err = GetIntegrationWithName(serviceName)
+		return err == nil
+	}, time.Second*20, time.Second*3)
+
+	// Integration exists - fine
+	require.Nil(t, err)
+	require.NotNil(t, fetchedIntegration)
+
+	for _, s := range fetchedIntegration.Subscriptions {
+		// check if the subscription for the event already exists - if yes, fine
+		if s.Event == subscription.Event {
+			return nil
+		}
+	}
+
+	_, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription)
+	require.Nil(t, err)
+
+	return nil
+}
+
 func ApiDELETERequest(path string) (*req.Resp, error) {
 	apiToken, keptnAPIURL, err := GetApiCredentials()
 	if err != nil {

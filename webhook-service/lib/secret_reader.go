@@ -2,6 +2,7 @@ package lib
 
 import (
 	"context"
+	"errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -23,6 +24,10 @@ func (sr *K8sSecretReater) ReadSecret(name, key string) (string, error) {
 	secret, err := sr.k8sClient.CoreV1().Secrets(GetNamespaceFromEnvVar()).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return "", err
+	}
+	// only allow reading from secrets that are managed by Keptn's secret-service
+	if secret.Labels["app.kubernetes.io/managed-by"] != "keptn-secret-service" {
+		return "", errors.New("only secrets managed by Keptn's secret-service can be referenced")
 	}
 	return string(secret.Data[key]), nil
 }

@@ -8,6 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"log"
+	"os"
 )
 
 const eventTypeWildcard = "*"
@@ -19,7 +20,21 @@ func main() {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
 	secretReader := lib.NewK8sSecretReader(kubeAPI)
-	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, &lib.CmdCurlExecutor{}, secretReader)
+
+	kubeAPIHostIP := os.Getenv("KUBERNETES_SERVICE_HOST")
+	kubeAPIPort := os.Getenv("KUBERNETES_SERVICE_PORT")
+
+	curlExecutor := lib.NewCmdCurlExecutor(
+		lib.WithUnAllowedURLs(
+			[]string{
+				kubeAPIHostIP + ":" + kubeAPIPort,
+				"kubernetes" + ":" + kubeAPIPort,
+				"kubernetes.default" + ":" + kubeAPIPort,
+				"kubernetes.default.svc.cluster.local" + ":" + kubeAPIPort,
+			},
+		),
+	)
+	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, secretReader)
 
 	go api.RunHealthEndpoint("10998")
 	log.Fatal(sdk.NewKeptn(
@@ -27,9 +42,6 @@ func main() {
 		sdk.WithHandler(
 			eventTypeWildcard,
 			taskHandler,
-			func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
-				return taskHandler.WebhookAvailableForEvent(keptnHandle, event)
-			},
 		),
 	).Start())
 }
