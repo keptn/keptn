@@ -1,0 +1,71 @@
+name: "Tutorial Tests"
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+defaults:
+  run:
+    shell: bash
+env:
+  GO_VERSION: 1.16
+jobs:
+  tutorial-tests:
+    runs-on: ubuntu-20.04
+    name: "Preparations"
+    steps:
+      - name: "Set up Go 1.x"
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: "Check out tutorial-testing-automation"
+        uses: actions/checkout@v2.3.4
+        with:
+          repository: "keptn-sandbox/tutorial-testing-automation"
+          path: "tutorial-testing-automation"
+
+      - name: "Check out tutorials"
+        uses: actions/checkout@v2.3.4
+        with:
+          repository: "keptn/tutorials"
+          path: "tutorials"
+
+      - name: "Extract tutorial commands"
+        env:
+          CMD_FILE: "tutorial-cmds.sh"
+        run: |
+          cd tutorial-testing-automation
+          go install github.com/keptn-sandbox/tutorial-testing-automation
+          cd ..
+          tutorial-testing-automation -f tutorials/site/tutorials/keptn-quality-gates-prometheus-08.md -o "$CMD_FILE"
+
+      - name: "Upload test script as artifact"
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: tutorial-cmds
+          path: tutorial-cmds.sh
+
+      - name: "Install and start GCP VM instance"
+        env:
+          CLOUD_PROVIDER: "GCP"
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+          BRANCH: "master"
+          VM_INSTANCE_NAME: "gh-nightly-tutorial-runner-"
+        run: |
+          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
+          export VM_INSTANCE_NAME=${VM_INSTANCE_NAME}-${BRANCH_SLUG:0:15}
+          echo "$VM_INSTANCE_NAME"
+          echo "Installing gcloud CLI"
+          export OS_TYPE="linux"
+          ./test/utils/download_and_install_gcloud.sh
+          echo ${{ secrets.GCLOUD_SERVICE_KEY }} | base64 --decode > ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+          ./test/utils/gcp-create-vm.sh
+
+          echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
+
+      - name: "Execute test script"
+        run: |
+          ./tutorial-cmds.sh
