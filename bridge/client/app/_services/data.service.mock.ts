@@ -123,6 +123,10 @@ export class DataServiceMock extends DataService {
     return of({});
   }
 
+  public deleteService(projectName: string, serviceName: string): Observable<object> {
+    return of({});
+  }
+
   private copyObject<T>(data: T): T {
     return JSON.parse(JSON.stringify(data));
   }

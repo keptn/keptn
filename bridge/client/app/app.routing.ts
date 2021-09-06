@@ -18,6 +18,7 @@ import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
+import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -52,6 +53,7 @@ const routes: Routes = [
           {
             path: 'services', component: KtbServiceSettingsComponent, children: [
               {path: 'create', component: KtbCreateServiceComponent},
+              {path: 'edit/:serviceName', component: KtbEditServiceComponent},
               {path: '', pathMatch: 'full', component: KtbServiceSettingsOverviewComponent},
             ],
           },
