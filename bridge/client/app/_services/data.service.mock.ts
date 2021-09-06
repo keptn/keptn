@@ -18,7 +18,7 @@ import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataServiceMock extends DataService {
   constructor(apiService: ApiService) {
@@ -85,7 +85,7 @@ export class DataServiceMock extends DataService {
     this._evaluationResults.next({
       type: 'evaluationHistory',
       triggerEvent: event,
-      traces: [Evaluations]
+      traces: [Evaluations],
     });
   }
 
@@ -116,6 +116,14 @@ export class DataServiceMock extends DataService {
   }
 
   public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+    return of({});
+  }
+
+  public createService(projectName: string, serviceName: string): Observable<object> {
+    return of({});
+  }
+
+  public deleteService(projectName: string, serviceName: string): Observable<object> {
     return of({});
   }
 

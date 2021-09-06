@@ -122,6 +122,14 @@ export class DataService {
     return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
   }
 
+  public createService(projectName: string, serviceName: string): Observable<object> {
+    return this.apiService.createService(projectName, serviceName);
+  }
+
+  public deleteService(projectName: string, serviceName: string): Observable<object> {
+    return this.apiService.deleteService(projectName, serviceName);
+  }
+
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
     return this.apiService.getUniformRegistrations(this._uniformDates).pipe(
       map(uniformRegistrations => uniformRegistrations.map(registration => UniformRegistration.fromJSON(registration))),

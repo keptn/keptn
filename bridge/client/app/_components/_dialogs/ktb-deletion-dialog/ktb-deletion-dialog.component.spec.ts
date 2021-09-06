@@ -126,7 +126,7 @@ describe('KtbDeletionDialogComponent', () => {
   it('should trigger an deletion event when deletion button is clicked', () => {
     // given
     const button = fixture.nativeElement.querySelector('.danger-button');
-    const spy = jest.spyOn(component, 'deleteProject');
+    const spy = jest.spyOn(component, 'deleteConfirm');
 
     // when
     button.dispatchEvent(new Event('click'));
@@ -142,7 +142,7 @@ describe('KtbDeletionDialogComponent', () => {
     const spy = jest.spyOn(eventService.deletionTriggeredEvent, 'next');
 
     // when
-    component.deleteProject();
+    component.deleteConfirm();
 
     // then
     expect(spy).toHaveBeenCalled();

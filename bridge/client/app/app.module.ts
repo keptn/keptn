@@ -116,6 +116,11 @@ import { KtbSequenceControlsComponent } from './_components/ktb-sequence-control
 import { environment } from '../environments/environment';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
 import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
+import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
+import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
+import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
+import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
+import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -194,6 +199,11 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbDeleteConfirmationComponent,
     KtbModifyUniformSubscriptionComponent,
     KtbWebhookSettingsComponent,
+    KtbServiceSettingsComponent,
+    KtbCreateServiceComponent,
+    KtbServiceSettingsOverviewComponent,
+    KtbServiceSettingsListComponent,
+    KtbEditServiceComponent,
   ],
   imports: [
     BrowserModule,
