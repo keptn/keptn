@@ -12,7 +12,7 @@
         </dt-hint>
         <dt-error>
           <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
-          <ng-container *ngIf="projectNameControl.hasError('projectName')">Project name already exists</ng-container>
+          <ng-container *ngIf="projectNameControl.hasError('duplicate')">Project name already exists</ng-container>
           <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter.
             Allowed characters: lower case letters, numbers and
             hyphens.
