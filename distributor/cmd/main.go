@@ -26,19 +26,16 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	logger "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
-	logger "github.com/sirupsen/logrus"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 func main() {
@@ -47,12 +44,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	tp := InitTracer(config.Global)
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			logger.Errorf("Error shutting down tracer provider: %v", err)
-		}
-	}()
+	deploymentName := ""
+	if config.Global.K8sDeploymentName != "" {
+		deploymentName = config.Global.K8sDeploymentName + "-"
+	}
+	serviceName := deploymentName + "distributor"
+
+	// TODO: Get the collector endpoint via env variable
+	shutdown := keptnObs.InitOTelTraceProvider(serviceName, "otel-collector.observability:4317")
+	defer shutdown()
 
 	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(config.Global))
@@ -198,31 +198,4 @@ func setupEventSender() events.EventSender {
 	return &keptnv2.HTTPEventSender{
 		Client: ceClient,
 	}
-}
-
-func InitTracer(env config.EnvConfig) *tracesdk.TracerProvider {
-
-	collectorEndpoint := "http://simplest-collector-headless.observability:14268/api/traces"
-
-	deploymentName := ""
-	if env.K8sDeploymentName != "" {
-		deploymentName = env.K8sDeploymentName + "-"
-	}
-
-	serviceName := deploymentName + "distributor"
-
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(collectorEndpoint)))
-	if err != nil {
-		log.Fatalf("failed to initialize stdouttrace export pipeline: %v", err)
-	}
-	tp := tracesdk.NewTracerProvider(
-		tracesdk.WithBatcher(exp),
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(serviceName),
-		)),
-	)
-	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	return tp
 }

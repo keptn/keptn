@@ -9,18 +9,11 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/kelseyhightower/envconfig"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/common/observability"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const (
@@ -39,12 +32,9 @@ func main() {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
 
-	tp := InitTracer(serviceName, "http://simplest-collector-headless.observability:14268/api/traces")
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Fatalf("Error shutting down tracer provider: %v", err)
-		}
-	}()
+	// TODO: Get the collector endpoint via env variable
+	shutdown := keptnObs.InitOTelTraceProvider(serviceName, "otel-collector.observability:4317")
+	defer shutdown()
 
 	go keptnapi.RunHealthEndpoint("10998")
 	os.Exit(_main(os.Args[1:], env))
@@ -70,7 +60,7 @@ func _main(args []string, env envConfig) int {
 		log.Fatalf("failed to create client, %v", err)
 	}
 	// the observability service will start a span for each call to `gotEvent`, adding the event data into the span
-	c, err := cloudevents.NewClient(p, client.WithObservabilityService(observability.NewOTelObservabilityService()))
+	c, err := cloudevents.NewClient(p, client.WithObservabilityService(keptnObs.NewOTelObservabilityService()))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
@@ -96,21 +86,4 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	return nil
-}
-
-func InitTracer(serviceName, jaegerEndpoint string) *tracesdk.TracerProvider {
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(jaegerEndpoint)))
-	if err != nil {
-		log.Fatalf("failed to initialize stdouttrace export pipeline: %v", err)
-	}
-	tp := tracesdk.NewTracerProvider(
-		tracesdk.WithBatcher(exp),
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(serviceName),
-		)),
-	)
-	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	return tp
 }

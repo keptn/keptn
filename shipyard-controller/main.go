@@ -9,6 +9,7 @@ import (
 
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -23,14 +24,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // @title Control Plane API
@@ -65,18 +58,12 @@ const (
 	serviceName = "shipyard-controller"
 )
 
-var tracer trace.Tracer
-
 func main() {
 	log.SetLevel(log.InfoLevel)
 
-	tracer = otel.Tracer(serviceName + "-main")
-	tp := InitTracer(serviceName, "http://simplest-collector-headless.observability:14268/api/traces")
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Errorf("Error shutting down tracer provider: %v", err)
-		}
-	}()
+	// TODO: Get the collector endpoint via env variable
+	shutdown := keptnObs.InitOTelTraceProvider(serviceName, "otel-collector.observability:4317")
+	defer shutdown()
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
 		// disable GIN request logging in release mode
@@ -318,21 +305,4 @@ func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
 		}
 	}
 	return duration
-}
-
-func InitTracer(serviceName, jaegerEndpoint string) *tracesdk.TracerProvider {
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(jaegerEndpoint)))
-	if err != nil {
-		log.Fatalf("failed to initialize stdouttrace export pipeline: %v", err)
-	}
-	tp := tracesdk.NewTracerProvider(
-		tracesdk.WithBatcher(exp),
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(serviceName),
-		)),
-	)
-	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	return tp
 }
