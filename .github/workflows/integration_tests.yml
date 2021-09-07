@@ -928,7 +928,7 @@ jobs:
           echo "</details>" >> release-notes.txt
 
       - name: Abort if (published) release already exists
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v4.1
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -952,7 +952,7 @@ jobs:
             }
 
       - name: Delete draft release if it already exists
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v4.1
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
