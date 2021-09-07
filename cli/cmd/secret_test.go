@@ -372,9 +372,11 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
 					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
-						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.GetSecretResponseItem{
 							{
-								Name: stringp("my-secret"),
+								SecretMetadata: apimodels.SecretMetadata{
+									Name: stringp("my-secret"),
+								},
 							},
 						}}, nil
 					},
@@ -392,7 +394,7 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
 					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
-						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{}}, nil
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.GetSecretResponseItem{}}, nil
 					},
 				},
 			},
@@ -408,9 +410,11 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
 					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
-						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.GetSecretResponseItem{
 							{
-								Name: stringp("my-secret"),
+								SecretMetadata: apimodels.SecretMetadata{
+									Name: stringp("my-secret"),
+								},
 							},
 						}}, nil
 					},
@@ -422,7 +426,8 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 			want: `{
           "secrets": [
             {
-              "name": "my-secret"
+              "name": "my-secret",
+              "keys": null
             }
           ]
         }`,
@@ -434,9 +439,11 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
 					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
-						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.GetSecretResponseItem{
 							{
-								Name: stringp("my-secret"),
+								SecretMetadata: apimodels.SecretMetadata{
+									Name: stringp("my-secret"),
+								},
 							},
 						}}, nil
 					},
@@ -446,7 +453,8 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 				outputFormat: "yaml",
 			},
 			want: `secrets:
-    - name: my-secret`,
+    - name: my-secret
+      keys: []`,
 			wantErr: false,
 		},
 		{
