@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+<!--
+For Security vulnerabilities, please refer to our security page https://github.com/keptn/keptn/blob/master/SECURITY.md
+-->
+
 Your issue may already be reported! Please search on the [issue tracker](https://github.com/keptn/keptn/issues) before creating a new one.
 
 
