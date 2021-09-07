@@ -2,12 +2,12 @@ name: "Tutorial Tests"
 on:
 #  schedule:
 #    - cron: '0 4 * * 1'
-  push:
-    branches:
-      - 'master'
-  pull_request:
-    branches:
-      - 'master'
+#  push:
+#    branches:
+#      - 'master'
+#  pull_request:
+#    branches:
+#      - 'master'
   workflow_dispatch:
 defaults:
   run:
