@@ -4,17 +4,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/keptn/keptn/distributor/pkg/config"
-	"github.com/nats-io/nats.go"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/nats-io/nats.go"
+	"github.com/stretchr/testify/assert"
 )
 
 const taskStartedEvent = `{
@@ -53,11 +52,7 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 		expectedReceivedMessageCount++
 	})
 
-	f := &Forwarder{
-		EventChannel:      make(chan cloudevents.Event),
-		httpClient:        &http.Client{},
-		pubSubConnections: map[string]*cenats.Sender{},
-	}
+	f := NewForwarder(&http.Client{})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
@@ -84,11 +79,7 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 	envconfig.Process("", &config.Global)
 	config.Global.KeptnAPIEndpoint = ts.URL
 
-	f := &Forwarder{
-		EventChannel:      make(chan cloudevents.Event),
-		httpClient:        &http.Client{},
-		pubSubConnections: map[string]*cenats.Sender{},
-	}
+	f := NewForwarder(&http.Client{})
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go f.Start(executionContext)
@@ -116,11 +107,7 @@ func Test_APIProxy(t *testing.T) {
 	config.Global.KeptnAPIEndpoint = ""
 	config.InClusterAPIProxyMappings["/testpath"] = strings.TrimPrefix(ts.URL, "http://")
 
-	f := &Forwarder{
-		EventChannel:      make(chan cloudevents.Event),
-		httpClient:        &http.Client{},
-		pubSubConnections: map[string]*cenats.Sender{},
-	}
+	f := NewForwarder(&http.Client{})
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go f.Start(executionContext)
