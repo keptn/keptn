@@ -71,9 +71,9 @@ export class DataService {
   public async getSequence(projectName: string, stageName?: string, keptnContext?: string, includeEvaluationTrace = false): Promise<Sequence | undefined> {
     const response = await this.apiService.getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext);
     let sequence = response.data.states[0];
-    if (sequence && stageName) { // we just need the result of a stage
+    if (sequence) {
       sequence = Sequence.fromJSON(sequence);
-      if (includeEvaluationTrace) {
+      if (includeEvaluationTrace && stageName) { // we just need the result of a stage
         const stage = sequence.stages.find(s => s.name === stageName);
         if (stage) { // get latest evaluation
           const evaluationTraces = await this.getEvaluationResults(projectName, sequence.service, stageName, 1, sequence.shkeptncontext);
@@ -83,7 +83,7 @@ export class DataService {
         }
       }
     }
-    return sequence ?? Sequence.fromJSON(sequence);
+    return sequence;
   }
 
   public async getDeploymentInformation(service: Service, projectName: string, stageName: string): Promise<DeploymentInformation | undefined> {
