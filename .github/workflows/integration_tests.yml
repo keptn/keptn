@@ -866,7 +866,7 @@ jobs:
       - name: Find PR number for current build
         id: find_pr_for_build
         if: always()
-        uses: jwalton/gh-find-current-pr@v1.1.0
+        uses: jwalton/gh-find-current-pr@v1.2.0
 
       - name: Create PR comment if tests failed
         # Only run if not on master branch and we have a PR number
