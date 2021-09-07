@@ -12,6 +12,7 @@ import { ProjectResult } from '../interfaces/project-result';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
+  private readonly escapeSlash = '%252F';
 
   constructor(private readonly baseUrl: string, private readonly apiToken: string) {
     this.axios = Axios.create({
@@ -117,7 +118,7 @@ export class ApiService {
     if (serviceName) {
       url += `/service/${serviceName}`;
     }
-    url += `/resource/webhook.yaml`;
+    url += `/resource/webhook${this.escapeSlash}webhook.yaml`;
 
     return this.axios.get<Resource>(url);
   }
@@ -130,7 +131,7 @@ export class ApiService {
     if (serviceName) {
       url += `/service/${serviceName}`;
     }
-    url += `/resource/webhook.yaml`;
+    url += `/resource/webhook${this.escapeSlash}webhook.yaml`;
 
     return this.axios.delete<Resource>(url);
   }
@@ -143,11 +144,15 @@ export class ApiService {
     if (serviceName) {
       url += `/service/${serviceName}`;
     }
-    url += `/resource/webhook.yaml`;
+    url += `/resource`; // /resource/resourceURI does not overwrite, fallback to this endpoint
 
     return this.axios.put<Resource>(url, {
-      resourceURI: 'webhook/webhook.yaml',
-      resourceContent: Buffer.from(content).toString('base64'),
+      resources: [
+        {
+          resourceURI: 'webhook/webhook.yaml',
+          resourceContent: Buffer.from(content).toString('base64'),
+        },
+      ],
     });
   }
 

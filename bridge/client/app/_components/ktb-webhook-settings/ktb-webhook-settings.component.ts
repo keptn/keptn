@@ -16,7 +16,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   public _project?: Project;
   public _subscription?: UniformSubscription;
-  private _prevFilter?: { projects: string[] | null; stages: string[] | null; services: string[] | null };
+  private _prevFilter?: UniformSubscriptionFilter;
   public webhookConfigForm = this.formBuilder.group({
     method: ['', [Validators.required]],
     url: ['', [Validators.required, Validators.pattern(FormUtils.URL_PATTERN)]],
@@ -28,6 +28,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public webhookMethods = ['POST', 'PUT'];
 
   public loading = false;
+
+  @Input() subscriptionExists = false;
 
   @Input()
   get project(): Project | undefined {
@@ -78,24 +80,26 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loading = true;
-    const stage: string | undefined = this.subscription?.filter?.stages?.length ? this.subscription?.filter?.stages[0] : undefined;
-    const services: string | undefined = this.subscription?.filter?.services?.length ? this.subscription?.filter?.services[0] : undefined;
-    this.dataService.getWebhookConfig(this.projectName, stage, services)
-      .subscribe(webhookConfig => {
-        this.webhookConfigForm?.get('method')?.setValue(webhookConfig.method);
-        this.webhookConfigForm?.get('url')?.setValue(webhookConfig.url);
-        this.webhookConfigForm?.get('payload')?.setValue(webhookConfig.payload);
-        this.webhookConfigForm?.get('proxy')?.setValue(webhookConfig.proxy);
+    if (this.subscriptionExists) {
+      this.loading = true;
+      const stage: string | undefined = this.subscription?.filter?.stages?.length ? this.subscription?.filter?.stages[0] : undefined;
+      const services: string | undefined = this.subscription?.filter?.services?.length ? this.subscription?.filter?.services[0] : undefined;
+      this.dataService.getWebhookConfig(this.projectName, stage, services)
+        .subscribe(webhookConfig => {
+          this.webhookConfigForm?.get('method')?.setValue(webhookConfig.method);
+          this.webhookConfigForm?.get('url')?.setValue(webhookConfig.url);
+          this.webhookConfigForm?.get('payload')?.setValue(webhookConfig.payload);
+          this.webhookConfigForm?.get('proxy')?.setValue(webhookConfig.proxy);
 
-        for (const header of webhookConfig.header || []) {
-          this.addHeader(header.name, header.value);
-        }
+          for (const header of webhookConfig.header || []) {
+            this.addHeader(header.name, header.value);
+          }
 
-        this.loading = false;
-      }, () => {
-        this.loading = false;
-      });
+          this.loading = false;
+        }, () => {
+          this.loading = false;
+        });
+    }
   }
 
   public addHeader(name?: string, value?: string): void {

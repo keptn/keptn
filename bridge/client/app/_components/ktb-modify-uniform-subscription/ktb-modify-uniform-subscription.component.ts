@@ -58,6 +58,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
   }
 
+  public get isWebhookFormValid(): boolean {
+    return this.webhookSettings?.webhookConfigForm.valid ?? true;
+  }
+
   constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router) {
     const subscription$ = this.route.paramMap.pipe(
       map(paramMap => {
@@ -168,8 +172,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
 
     if (this.isWebhookService) {
+
       const webhookSettingsForm = this.webhookSettings?.webhookConfigForm;
-      if (webhookSettingsForm && webhookSettingsForm.valid) {
+      if (webhookSettingsForm?.valid) {
         const webhookConfig: WebhookConfig = new WebhookConfig();
         webhookConfig.type = subscription.event;
         webhookConfig.filter = subscription.filter;
