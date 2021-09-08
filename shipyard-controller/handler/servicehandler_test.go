@@ -61,7 +61,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					CreateServiceFunc: func(projectName string, params *operations.CreateServiceParams) error {
-						return errServiceAlreadyExists
+						return ErrServiceAlreadyExists
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -79,7 +79,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			expectJSONResponse: &operations.CreateServiceResponse{},
 			expectJSONError: &models.Error{
 				Code:    http.StatusConflict,
-				Message: stringp(errServiceAlreadyExists.Error()),
+				Message: stringp(ErrServiceAlreadyExists.Error()),
 			},
 		},
 		{
@@ -342,7 +342,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
-						return nil, errServiceNotFound
+						return nil, ErrServiceNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -352,7 +352,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(errServiceNotFound.Error()),
+				Message: stringp(ErrServiceNotFound.Error()),
 			},
 		},
 		{
@@ -360,7 +360,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
-						return nil, errStageNotFound
+						return nil, ErrStageNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -370,7 +370,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(errStageNotFound.Error()),
+				Message: stringp(ErrStageNotFound.Error()),
 			},
 		},
 		{
@@ -378,7 +378,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
-						return nil, errProjectNotFound
+						return nil, ErrProjectNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -388,7 +388,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(errProjectNotFound.Error()),
+				Message: stringp(ErrProjectNotFound.Error()),
 			},
 		},
 		{
@@ -503,7 +503,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
-						return nil, errStageNotFound
+						return nil, ErrStageNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -513,7 +513,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(errStageNotFound.Error()),
+				Message: stringp(ErrStageNotFound.Error()),
 			},
 		},
 		{
@@ -521,7 +521,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
-						return nil, errProjectNotFound
+						return nil, ErrProjectNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -531,7 +531,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(errProjectNotFound.Error()),
+				Message: stringp(ErrProjectNotFound.Error()),
 			},
 		},
 		{
