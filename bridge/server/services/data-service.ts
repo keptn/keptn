@@ -304,16 +304,7 @@ export class DataService {
     for (const project of currentConfig.projects) {
       for (const stage of currentConfig.stages) {
         for (const service of currentConfig.services) {
-          let previousWebhookConfig: WebhookConfigYaml;
-          try { // fetch existing one
-            previousWebhookConfig = await this.getWebhookConfigYaml(project, stage, service);
-          } catch (e: unknown) {
-            if (!axios.isAxiosError(e) || e.response?.status !== 404) {
-              throw e;
-            } else { // if it does not exist, create one
-              previousWebhookConfig = new WebhookConfigYaml();
-            }
-          }
+          const previousWebhookConfig: WebhookConfigYaml = await this.getOrCreateWebhookConfigYaml(project, stage, service);
           previousWebhookConfig.addWebhook(webhookConfig.type, curl);
           await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
         }
@@ -321,6 +312,20 @@ export class DataService {
     }
 
     return true;
+  }
+
+  private async getOrCreateWebhookConfigYaml(project: string, stage?: string, service?: string): Promise<WebhookConfigYaml> {
+    let previousWebhookConfig: WebhookConfigYaml;
+    try { // fetch existing one
+      previousWebhookConfig = await this.getWebhookConfigYaml(project, stage, service);
+    } catch (e: unknown) {
+      if (!axios.isAxiosError(e) || e.response?.status !== 404) {
+        throw e;
+      } else { // if it does not exist, create one
+        previousWebhookConfig = new WebhookConfigYaml();
+      }
+    }
+    return previousWebhookConfig;
   }
 
   private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, currentConfig: WebhookConfigFilter, type: string): Promise<void> {
