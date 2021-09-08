@@ -19,9 +19,9 @@ import { KeptnVersions } from '../_models/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { UniformRegistration } from '../_models/uniform-registration';
 import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
+import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 
 @Injectable({
   providedIn: 'root',
@@ -159,9 +159,9 @@ export class ApiService {
       .get<ProjectResult>(url, {params});
   }
 
-  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistration[]> {
+  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistrationResult[]> {
     const url = `${this._baseUrl}/uniform/registration`;
-    return this.http.post<UniformRegistration[]>(url, uniformDates);
+    return this.http.post<UniformRegistrationResult[]>(url, uniformDates);
   }
 
   public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {

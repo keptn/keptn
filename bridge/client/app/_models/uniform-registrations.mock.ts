@@ -1,9 +1,9 @@
-import { UniformRegistration as ur } from '../../../server/interfaces/uniform-registration';
+import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { UniformRegistration } from './uniform-registration';
 import { UniformRegistrationLocations } from '../../../shared/interfaces/uniform-registration-locations';
 
 
-const services: ur[] = [
+const services: UniformRegistrationResult[] = [
   {
     id: 'keptn-uniform-ansible-service-f01334c8312486183460649bab6cd4a7',
     metadata: {

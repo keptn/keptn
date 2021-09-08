@@ -9,11 +9,11 @@ import { Remediation } from '../models/remediation';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
-import { UniformRegistration } from '../interfaces/uniform-registration';
+import { UniformRegistration } from '../models/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
-import { WebhookConfig } from '../../shared/models/webhook-config';
+import { WebhookConfig, WebhookConfigFilter } from '../../shared/models/webhook-config';
 import { CURLParser } from 'parse-curl-js';
 import { ParsedCURL } from 'parse-curl-js/dist/interface';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
@@ -294,15 +294,7 @@ export class DataService {
     const previousConfig = await this.getPreviousWebhookConfig(webhookConfig.prevFilter);
     const currentConfig = await this.getPreviousWebhookConfig(webhookConfig.filter);
 
-    for (const project of previousConfig.projects) {
-      for (const stage of previousConfig.stages) {
-        for (const service of previousConfig.services) {
-          if (!currentConfig.projects.includes(project) || !currentConfig.stages.some((s?: string) => s === stage) || !currentConfig.services.some((s?: string) => s === service)) {
-            await this.removeWebhook(webhookConfig.type, project, stage ? [stage] : [undefined], service ? [service] : [undefined]);
-          }
-        }
-      }
-    }
+    await this.removePreviousWebhooks(previousConfig, currentConfig, webhookConfig.type);
 
     const curl = this.generateWebhookConfigCurl(webhookConfig);
 
@@ -324,7 +316,19 @@ export class DataService {
     return true;
   }
 
-  private async getPreviousWebhookConfig(webhookConfig?: UniformSubscriptionFilter): Promise<{ projects: string[], stages: string[] | [undefined], services: string[] | [undefined] }> {
+  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, currentConfig: WebhookConfigFilter, type: string): Promise<void> {
+    for (const project of previousConfig.projects) {
+      for (const stage of previousConfig.stages) {
+        for (const service of previousConfig.services) {
+          if (!currentConfig.projects.includes(project) || !currentConfig.stages.some((s?: string) => s === stage) || !currentConfig.services.some((s?: string) => s === service)) {
+            await this.removeWebhook(type, project, stage ? [stage] : [undefined], service ? [service] : [undefined]);
+          }
+        }
+      }
+    }
+  }
+
+  private async getPreviousWebhookConfig(webhookConfig?: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
     return {
       projects: webhookConfig?.projects?.length ? webhookConfig.projects : (await this.getProjects()).map(project => project.projectName),
       stages: webhookConfig?.stages?.length ? webhookConfig.stages : [undefined],

@@ -1,6 +1,8 @@
 import { WebhookConfig as wc } from '../interfaces/webhook-config';
 import { UniformSubscriptionFilter } from '../interfaces/uniform-subscription';
 
+export type WebhookConfigFilter = { projects: string[], stages: string[] | [undefined], services: string[] | [undefined] };
+
 export class WebhookConfig implements wc {
 
   public type: string;
