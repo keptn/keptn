@@ -15,6 +15,6 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.9.0
 	github.com/stretchr/testify v1.7.0
-	go.mongodb.org/mongo-driver v1.7.1
+	go.mongodb.org/mongo-driver v1.7.2
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 )
