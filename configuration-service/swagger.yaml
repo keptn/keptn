@@ -857,6 +857,8 @@ paths:
       tags:
         - Service Default Resource
       summary: Update the specified default resource for the service
+      parameters:
+        - $ref: '#/parameters/resource'
       responses:
         '201':
           description: Success. Service default resource has been updated. The version of the new configuration is returned.
