@@ -10,6 +10,7 @@ import { DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ServiceResourceMock } from '../../_models/serviceResource.mock';
 import { ProjectMock } from '../../_models/project.mock';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbEditServiceComponent', () => {
   let component: KtbEditServiceComponent;
@@ -19,6 +20,7 @@ describe('KtbEditServiceComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         AppModule,
+        HttpClientTestingModule,
       ],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
