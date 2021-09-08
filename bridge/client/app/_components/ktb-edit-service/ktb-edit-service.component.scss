@@ -1,3 +1,21 @@
 .full-height {
   height: 100%;
 }
+
+::ng-deep {
+  .dt-expandable-section-header-trigger {
+    font-size: 14px !important;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .dt-expandable-section-header-line {
+    display: none;
+  }
+
+  .dt-expandable-section-container {
+    margin-top: 0 !important;
+  }
+}

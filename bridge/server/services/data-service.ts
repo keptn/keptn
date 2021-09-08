@@ -13,6 +13,8 @@ import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
+import { ServiceResource } from '../../shared/interfaces/serviceResource';
+import { Resource } from '../../shared/interfaces/resource';
 
 export class DataService {
   private apiService: ApiService;
@@ -234,6 +236,35 @@ export class DataService {
       }
     }
     return tasks;
+  }
+
+  public async getResourcesForProjectAndService(projectName: string, serviceName: string): Promise<ServiceResource[]> {
+    const projectRes = await this.apiService.getProject(projectName);
+    const stages = projectRes.data.stages;
+
+    const resources: ServiceResource[] = [];
+
+    for (const stage of stages) {
+      let currentPage = 0;
+      let nextPage: string;
+      let resourceResponses: Resource[] = [];
+
+      do {
+        const resourceRes = await this.apiService.getServiceResource(projectName, stage.stageName, serviceName, currentPage);
+        nextPage = resourceRes.data.nextPageKey;
+        resourceResponses = [...resourceResponses, ...resourceRes.data.resources];
+
+        for (const res of resourceResponses) {
+          const serviceRes: ServiceResource = {...res, stageName: stage.stageName};
+          resources.push(serviceRes);
+        }
+
+        currentPage++;
+      } while ((currentPage - 1) !== parseInt(nextPage, undefined));
+    }
+
+    console.log(resources);
+    return resources;
   }
 
   private async getShipyard(projectName: string): Promise<Shipyard> {

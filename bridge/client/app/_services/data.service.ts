@@ -21,6 +21,7 @@ import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
+import { ServiceResource } from '../../../shared/interfaces/serviceResource';
 
 @Injectable({
   providedIn: 'root',
@@ -579,6 +580,10 @@ export class DataService {
       .pipe(
         map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))),
       );
+  }
+
+  public getServiceResourceForAllStages(projectName: string, serviceName: string): Observable<ServiceResource[]> {
+    return this.apiService.getServiceResourceForAllStages(projectName, serviceName);
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {

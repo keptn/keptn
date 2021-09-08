@@ -6,7 +6,7 @@ import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
 import { UniformRegistration } from '../interfaces/uniform-registration';
 import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
-import { Resource } from '../../shared/interfaces/resource';
+import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 
 export class ApiService {
@@ -103,5 +103,13 @@ export class ApiService {
 
   public getShipyard(projectName: string): Promise<AxiosResponse<Resource>> {
     return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
+  }
+
+  public getServiceResource(projectName: string, stageName: string, serviceName: string, nextPageKey?: number): Promise<AxiosResponse<ResourceResponse>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource`;
+    if (nextPageKey) {
+      url += `?nextPageKey=${nextPageKey}`;
+    }
+    return this.axios.get<ResourceResponse>(url);
   }
 }
