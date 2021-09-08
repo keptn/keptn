@@ -16,6 +16,8 @@ import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-lo
 import { SequencesData } from './_mockData/sequences.mock';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
+import { ServiceResource } from '../../../shared/interfaces/serviceResource';
+import { ServiceResourceMock } from '../_models/serviceResource.mock';
 
 @Injectable({
   providedIn: 'root',
@@ -25,15 +27,15 @@ export class DataServiceMock extends DataService {
     super(apiService);
   }
 
-  public loadKeptnInfo() {
+  public loadKeptnInfo(): void {
     this._keptnInfo.next(KeptnInfo);
   }
 
-  public loadProjects() {
+  public loadProjects(): void {
     this._projects.next(Projects.map(project => Project.fromJSON(project)));
   }
 
-  public loadProject(projectName: string) {
+  public loadProject(projectName: string): void {
     this._projects.next([...Projects]);
   }
 
@@ -72,16 +74,16 @@ export class DataServiceMock extends DataService {
     return of({});
   }
 
-  public loadTraces(sequence: Sequence) {
+  public loadTraces(sequence: Sequence): void {
     sequence.traces = [...Traces || [], ...sequence.traces || []];
     this._sequences.next([...this._sequences.getValue() || []]);
   }
 
-  public loadTracesByContext(shkeptncontext: string) {
+  public loadTracesByContext(shkeptncontext: string): void {
     this._traces.next(Traces.filter(t => t.shkeptncontext === shkeptncontext));
   }
 
-  public loadEvaluationResults(event: Trace) {
+  public loadEvaluationResults(event: Trace): void {
     this._evaluationResults.next({
       type: 'evaluationHistory',
       triggerEvent: event,
@@ -129,5 +131,9 @@ export class DataServiceMock extends DataService {
 
   private copyObject<T>(data: T): T {
     return JSON.parse(JSON.stringify(data));
+  }
+
+  public getServiceResourceForAllStages(projectName: string, serviceName: string): Observable<ServiceResource[]> {
+    return of(ServiceResourceMock);
   }
 }

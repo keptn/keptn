@@ -6,7 +6,9 @@
         <div class="settings-section">
           <h3>Configuration files</h3>
           <ng-container *ngIf="!project.gitRemoteURI">
-            There is no Git upstream repository set.<br/>To show and manage the configuration files related to the {{serviceName}} service,
+            <span>
+              There is no Git upstream repository set.<br/>To show and manage the configuration files related to the {{serviceName}} service,
+            </span>
             <a [routerLink]="['/', 'project', project.projectName, 'settings', 'project']">set a Git upstream repository</a>.
           </ng-container>
 
