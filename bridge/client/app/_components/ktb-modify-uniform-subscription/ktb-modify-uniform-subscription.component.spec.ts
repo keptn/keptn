@@ -3,13 +3,15 @@ import { KtbModifyUniformSubscriptionComponent } from './ktb-modify-uniform-subs
 import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { UniformRegistrationsMock } from '../../_models/uniform-registrations.mock';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { UniformRegistrationLocations } from '../../../../shared/interfaces/uniform-registration-locations';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
+import { WebhookConfig } from '../../../../shared/models/webhook-config';
+import { HttpErrorResponse } from '@angular/common/http';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -50,14 +52,14 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
     // when first and second invalid
     // then
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')).not.toBeNull();
+    updateButtonEnabled(false);
 
     // when first valid and second invalid
     // @ts-ignore
     component.taskControl.setValue('deployment');
     fixture.detectChanges();
     // then
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')).not.toBeNull();
+    updateButtonEnabled(false);
 
     // when first invalid and second valid
     // @ts-ignore
@@ -66,7 +68,22 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     component.taskSuffixControl.setValue('triggered');
     fixture.detectChanges();
     // then
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')).not.toBeNull();
+    updateButtonEnabled(false);
+  });
+
+  it('should have disabled button if loading', () => {
+    // given
+    fixture.detectChanges();
+    // when
+    // @ts-ignore
+    component.taskControl.setValue('deployment');
+    // @ts-ignore
+    component.taskSuffixControl.setValue('triggered');
+    component.updating = true;
+    fixture.detectChanges();
+
+    // then
+    updateButtonEnabled(false);
   });
 
   it('should have enabled button', () => {
@@ -80,7 +97,58 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')).toBeNull();
+    updateButtonEnabled(true);
+  });
+
+  it('should have disabled button if service is webhook', () => {
+    // given
+    setSubscription(10);
+    fixture.detectChanges();
+
+    // then
+    updateButtonEnabled(false);
+
+    // when
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('method')?.setValue('POST');
+    fixture.detectChanges();
+
+    // then
+    updateButtonEnabled(false);
+
+    // when
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('url')?.setValue('http://keptn.sh');
+    fixture.detectChanges();
+
+    // then
+    updateButtonEnabled(false);
+
+    // when
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('payload')?.setValue('{}');
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('url')?.setValue('');
+    fixture.detectChanges();
+
+    // then
+    updateButtonEnabled(false);
+  });
+
+  it('should have enabled button if service is webhook', () => {
+    // given
+    setSubscription(10, 0);
+    fixture.detectChanges();
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('method')?.setValue('POST');
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('url')?.setValue('http://keptn.sh');
+    // @ts-ignore
+    component.webhookSettings?.webhookConfigForm?.get('payload')?.setValue('{}');
+    fixture.detectChanges();
+
+    // then
+    updateButtonEnabled(true);
   });
 
   it('should fill data', () => {
@@ -100,7 +168,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(subscription.filter.stages?.every(stage => filterPairs.some(pair => pair.textContent === `Stage${stage}`))).toEqual(true);
     expect(subscription.filter.services?.every(service => filterPairs.some(pair => pair.textContent === `Service${service}`))).toEqual(true);
     expect(filterPairs.length).toEqual((subscription.filter.stages?.length ?? 0) + (subscription.filter.services?.length ?? 0));
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')).toBeNull();
+    updateButtonEnabled(true);
   });
 
   it('should update subscription', () => {
@@ -117,6 +185,43 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // then
     expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[2].id, subscription);
     expect(subscription.filter.projects?.includes('sockshop')).toEqual(true);
+  });
+
+  it('should update subscription and webhook', () => {
+    // given
+    const subscription = setSubscription(10, 0);
+    const dataService = TestBed.inject(DataService);
+    const updateSpy = jest.spyOn(dataService, 'saveWebhookConfig');
+    const webhookConfig = new WebhookConfig();
+    fixture.detectChanges();
+    webhookConfig.type = subscription.event;
+    webhookConfig.filter = subscription.filter;
+    webhookConfig.prevFilter = subscription.filter;
+    webhookConfig.method = 'POST';
+    webhookConfig.url = 'https://keptn.sh';
+    webhookConfig.payload = '{}';
+    webhookConfig.header = [{name: 'Content-Type', value: 'application/json'}];
+
+    // when
+    component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription);
+    fixture.detectChanges();
+
+    // then
+    expect(updateSpy).toHaveBeenCalledWith(webhookConfig);
+  });
+
+  it('should revert loading if request fails', () => {
+    // given
+    const subscription = setSubscription(2, 0);
+    const dataService = TestBed.inject(DataService);
+    dataService.updateUniformSubscription = jest.fn().mockReturnValue(throwError(new HttpErrorResponse({error: ''})));
+    fixture.detectChanges();
+
+    // when
+    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription);
+
+    // then
+    expect(component.updating).toEqual(false);
   });
 
   it('should create global subscription', () => {
@@ -185,6 +290,51 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       }]);
   });
 
+  it('should show webhook form', () => {
+    // given
+    setSubscription(10, 0);
+    fixture.detectChanges();
+
+    // then
+    const webhookForm = fixture.nativeElement.querySelector('ktb-webhook-settings');
+    expect(webhookForm).toBeTruthy();
+  });
+
+  it('should not show webhook form', () => {
+    // given
+    setSubscription(1, 0);
+    fixture.detectChanges();
+
+    // then
+    const webhookForm = fixture.nativeElement.querySelector('ktb-webhook-settings');
+    expect(webhookForm).toBeFalsy();
+  });
+
+  it('should show project checkbox', () => {
+    // given
+    setSubscription(1, 0);
+    fixture.detectChanges();
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=ktb-modify-subscription-project-checkbox]');
+
+    // then
+    expect(checkbox).toBeTruthy();
+  });
+
+  it('should not show project checkbox', () => {
+    // given
+    setSubscription(10, 0);
+    fixture.detectChanges();
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=ktb-modify-subscription-project-checkbox]');
+
+    // then
+    expect(checkbox).toBeFalsy();
+  });
+
+  function updateButtonEnabled(isEnabled: boolean): void {
+    const element = expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled'));
+    (isEnabled ? element : element.not).toBeNull();
+  }
+
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
     const dataService = TestBed.inject(DataService);
     const uniformRegistration = UniformRegistrationsMock[integrationIndex];
@@ -192,7 +342,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     dataService.getUniformSubscription = jest.fn().mockReturnValue(of(subscription));
     dataService.getUniformRegistrationInfo = jest.fn().mockReturnValue(of({
       isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-      isWebhookService: false,
+      isWebhookService: uniformRegistration.isWebhookService,
     } as UniformRegistrationInfo));
     paramMap.next(convertToParamMap({
       projectName: 'sockshop',

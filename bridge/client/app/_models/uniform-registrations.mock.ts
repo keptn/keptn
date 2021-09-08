@@ -297,6 +297,36 @@ const services: UniformRegistrationResult[] = [
         },
       ],
   },
+  {
+    id: 'keptn-uniform-webhook-service-55875464c5b6d3e313e58b99d2ed7e09',
+    metadata: {
+      deplyomentname: 'webhook-service',
+      distributorversion: '0.8.3',
+      hostname: 'gke_research_us-central1-c_prod-customer-A',
+      integrationversion: 'servicenow-service:0.8.3',
+      kubernetesmetadata: {
+        deploymentname: 'webhook-service',
+        namespace: 'keptn',
+        podname: 'webhook-service-123456789',
+      },
+      location: 'Execution plane-A',
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z',
+    },
+    name: 'webhook-service',
+    subscriptions:
+      [
+        {
+          filter: {
+            projects: ['sockshop'],
+            services: [],
+            stages: [],
+          },
+          event: 'sh.keptn.event.deployment.triggered',
+          id: 'subscriptionId',
+        },
+      ],
+  },
 ];
 
 const UniformRegistrationsMock: UniformRegistration[] = services.map(registration => UniformRegistration.fromJSON(registration));

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
@@ -55,6 +55,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   @ViewChild('webhookSettings', {static: false}) set webhookSettingsElement(webhookSettings: KtbWebhookSettingsComponent) {
     if (webhookSettings) { // initially setter gets called with undefined
       this.webhookSettings = webhookSettings;
+      this._changeDetectorRef.detectChanges(); // prevent "Expression has changed after it was checked"-error at isWebhookFormValid
     }
   }
 
@@ -62,7 +63,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     return this.webhookSettings?.webhookConfigForm.valid ?? true;
   }
 
-  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router) {
+  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router, private _changeDetectorRef: ChangeDetectorRef) {
     const subscription$ = this.route.paramMap.pipe(
       map(paramMap => {
         return {

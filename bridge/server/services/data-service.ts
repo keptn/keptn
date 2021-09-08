@@ -19,6 +19,7 @@ import { ParsedCURL } from 'parse-curl-js/dist/interface';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
 import { UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
+import axios from 'axios';
 
 export class DataService {
   private apiService: ApiService;
@@ -291,10 +292,12 @@ export class DataService {
   }
 
   public async saveWebhookConfig(webhookConfig: WebhookConfig): Promise<boolean> {
-    const previousConfig = await this.getPreviousWebhookConfig(webhookConfig.prevFilter);
+    const previousConfig = webhookConfig.prevFilter ? await this.getPreviousWebhookConfig(webhookConfig.prevFilter) : undefined;
     const currentConfig = await this.getPreviousWebhookConfig(webhookConfig.filter);
 
-    await this.removePreviousWebhooks(previousConfig, currentConfig, webhookConfig.type);
+    if (previousConfig) {
+      await this.removePreviousWebhooks(previousConfig, currentConfig, webhookConfig.type);
+    }
 
     const curl = this.generateWebhookConfigCurl(webhookConfig);
 
@@ -304,8 +307,12 @@ export class DataService {
           let previousWebhookConfig: WebhookConfigYaml;
           try { // fetch existing one
             previousWebhookConfig = await this.getWebhookConfigYaml(project, stage, service);
-          } catch { // if it does not exist, create one
-            previousWebhookConfig = new WebhookConfigYaml();
+          } catch (e: unknown) {
+            if (!axios.isAxiosError(e) || e.response?.status !== 404) {
+              throw e;
+            } else { // if it does not exist, create one
+              previousWebhookConfig = new WebhookConfigYaml();
+            }
           }
           previousWebhookConfig.addWebhook(webhookConfig.type, curl);
           await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
@@ -328,11 +335,11 @@ export class DataService {
     }
   }
 
-  private async getPreviousWebhookConfig(webhookConfig?: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
+  private async getPreviousWebhookConfig(webhookConfig: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
     return {
-      projects: webhookConfig?.projects?.length ? webhookConfig.projects : (await this.getProjects()).map(project => project.projectName),
-      stages: webhookConfig?.stages?.length ? webhookConfig.stages : [undefined],
-      services: webhookConfig?.services?.length ? webhookConfig.services : [undefined],
+      projects: webhookConfig.projects?.length ? webhookConfig.projects : (await this.getProjects()).map(project => project.projectName),
+      stages: webhookConfig.stages?.length ? webhookConfig.stages : [undefined],
+      services: webhookConfig.services?.length ? webhookConfig.services : [undefined],
     };
   }
 
@@ -376,12 +383,19 @@ export class DataService {
   }
 
   private async removeWebhook(eventType: string, projectName: string, stage?: string, service?: string): Promise<void> {
-    const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
-    if (webhookConfig.removeWebhook(eventType)) {
-      if (webhookConfig.hasWebhooks()) {
-        await this.apiService.saveWebhookConfig(webhookConfig.toYAML(), projectName, stage, service);
-      } else {
-        await this.apiService.deleteWebhookConfig(projectName, stage, service);
+    try {
+      const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
+      if (webhookConfig.removeWebhook(eventType)) {
+        if (webhookConfig.hasWebhooks()) {
+          await this.apiService.saveWebhookConfig(webhookConfig.toYAML(), projectName, stage, service);
+        } else {
+          await this.apiService.deleteWebhookConfig(projectName, stage, service);
+        }
+      }
+    } catch (e: unknown) {
+      // ignore if yaml was not found. e.g. on create
+      if (!axios.isAxiosError(e) || e.response?.status !== 404) {
+        throw e;
       }
     }
   }

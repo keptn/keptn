@@ -16,6 +16,7 @@ import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-lo
 import { SequencesData } from './_mockData/sequences.mock';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
+import { WebhookConfig } from '../../../shared/models/webhook-config';
 
 @Injectable({
   providedIn: 'root',
@@ -129,5 +130,14 @@ export class DataServiceMock extends DataService {
 
   private copyObject<T>(data: T): T {
     return JSON.parse(JSON.stringify(data));
+  }
+
+  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    const config = new WebhookConfig();
+    config.method = 'POST';
+    config.url = 'https://keptn.sh';
+    config.payload = '{}';
+    config.header = [{name: 'Content-Type', value: 'application/json'}];
+    return of(config);
   }
 }

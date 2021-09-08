@@ -4,7 +4,7 @@
     <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field *ngIf="!isWebhookService">
-          <dt-checkbox formControlName="isGlobal">Use for all projects</dt-checkbox>
+          <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox">Use for all projects</dt-checkbox>
         </dt-form-field>
         <div fxLayout="row" fxLayoutGap="5px">
           <dt-form-field>
