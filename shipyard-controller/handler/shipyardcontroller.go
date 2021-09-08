@@ -450,18 +450,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	if err != nil {
 		msg := "could not retrieve shipyard: " + err.Error()
 		log.Error(msg)
-		return sc.sendTaskSequenceFinishedEvent(&models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: eventScope.Project,
-				Stage:   eventScope.Stage,
-				Service: eventScope.Service,
-				Labels:  eventScope.Labels,
-				Status:  keptnv2.StatusErrored,
-				Result:  keptnv2.ResultFailed,
-				Message: msg,
-			},
-			KeptnContext: event.Shkeptncontext,
-		}, taskSequenceName, event.ID)
+
+		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
 	}
 
 	// update the shipyard content of the project
@@ -479,19 +469,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	err = common.ValidateShipyardVersion(shipyard)
 	if err != nil {
 		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
-		log.Errorf("invalid shipyard version: %s", err.Error())
-		return sc.sendTaskSequenceFinishedEvent(&models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: eventScope.Project,
-				Stage:   eventScope.Stage,
-				Service: eventScope.Service,
-				Labels:  eventScope.Labels,
-				Status:  keptnv2.StatusErrored,
-				Result:  keptnv2.ResultFailed,
-				Message: "Found shipyard.yaml with invalid version. Please upgrade the shipyard.yaml of the project using the Keptn CLI: 'keptn upgrade project " + eventScope.Project + " --shipyard'. '",
-			},
-			KeptnContext: event.Shkeptncontext,
-		}, taskSequenceName, event.ID)
+		msg := fmt.Sprintf("invalid shipyard version: %s", err.Error())
+		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
 	}
 
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
@@ -509,6 +488,29 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		})
 	}
 	return sc.startTaskSequence(event)
+}
+
+func (sc *shipyardController) onTriggerSequenceFailed(event models.Event, eventScope *models.EventScope, msg string, taskSequenceName string) error {
+	sc.onSequenceTriggered(event)
+	finishedEvent := event
+
+	finishedEventData := keptnv2.EventData{
+		Project: eventScope.Project,
+		Stage:   eventScope.Stage,
+		Service: eventScope.Service,
+		Labels:  eventScope.Labels,
+		Status:  keptnv2.StatusErrored,
+		Result:  keptnv2.ResultFailed,
+		Message: msg,
+	}
+
+	finishedEvent.Data = finishedEventData
+
+	sc.onSequenceFinished(finishedEvent)
+	return sc.sendTaskSequenceFinishedEvent(&models.EventScope{
+		EventData:    finishedEventData,
+		KeptnContext: event.Shkeptncontext,
+	}, taskSequenceName, event.ID)
 }
 
 func (sc *shipyardController) startTaskSequence(event models.Event) error {

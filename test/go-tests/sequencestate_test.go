@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -384,28 +385,69 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 	require.Nil(t, err)
 
 	// delete the shipyard file
-	//_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName))
-	//require.Nil(t, err)
-
-	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
-	require.Nil(t, err)
-
-	states, _, err := GetState(projectName)
-
-	require.Nil(t, err)
-	require.NotEmpty(t, states)
-
-	// delete the shipyard file
 	_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName))
 	require.Nil(t, err)
 
 	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
 	require.Nil(t, err)
 
-	states, _, err = GetState(projectName)
+	var states *scmodels.SequenceStates
+	require.Eventually(t, func() bool {
+		states, _, err = GetState(projectName)
+		if err != nil {
+			return false
+		} else if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return true
+	}, 20*time.Second, 3*time.Second)
 
 	require.Nil(t, err)
-	require.NotEmpty(t, states)
+	require.Len(t, states.States, 1)
+	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
+}
+
+func Test_SequenceState_InvalidShipyard(t *testing.T) {
+	projectName := "state-invalid-shipyard"
+	serviceName := "my-service"
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	require.Nil(t, err)
+	defer os.Remove(sequenceStateShipyardFilePath)
+
+	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	require.Nil(t, err)
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+
+	// upload a shipyard with an invalid version
+	invalidShipyardString := strings.Replace(sequenceQueueShipyard, "spec.keptn.sh/0.2.2", "0.1.7", 1)
+
+	invalidShipyardFile, err := CreateTmpShipyardFile(invalidShipyardString)
+	require.Nil(t, err)
+	defer os.Remove(invalidShipyardFile)
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --resource=%s --resourceUri=shipyard.yaml", projectName, invalidShipyardFile))
+	require.Nil(t, err)
+
+	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
+	require.Nil(t, err)
+
+	var states *scmodels.SequenceStates
+	require.Eventually(t, func() bool {
+		states, _, err = GetState(projectName)
+		if err != nil {
+			return false
+		} else if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return true
+	}, 20*time.Second, 3*time.Second)
+
+	require.Nil(t, err)
+	require.Len(t, states.States, 1)
+	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
 }
 
 func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {
