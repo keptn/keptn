@@ -173,7 +173,7 @@ func TestGetProjectByName(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
-						return nil, errProjectNotFound
+						return nil, ErrProjectNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},

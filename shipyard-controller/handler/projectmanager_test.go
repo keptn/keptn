@@ -109,7 +109,7 @@ func TestGetByNameNotFound(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
 	assert.NotNil(t, err)
-	assert.Equal(t, errProjectNotFound, err)
+	assert.Equal(t, ErrProjectNotFound, err)
 	assert.Nil(t, project)
 	assert.Equal(t, "my-project", projectsDBOperations.GetProjectCalls()[0].ProjectName)
 }
