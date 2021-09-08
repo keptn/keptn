@@ -263,7 +263,6 @@ export class DataService {
       } while ((currentPage - 1) !== parseInt(nextPage, undefined));
     }
 
-    console.log(resources);
     return resources;
   }
 

@@ -19,7 +19,6 @@ import { ServiceResource } from '../../../../shared/interfaces/serviceResource';
 export class KtbEditServiceComponent implements OnDestroy {
   public serviceName?: string;
   public project$?: Observable<Project | undefined>;
-  public resources$?: Observable<ServiceResource[] | undefined>;
   private projectName?: string;
   private unsubscribe$: Subject<void> = new Subject<void>();
   public fileTree: TreeEntry[] | undefined;
@@ -51,23 +50,26 @@ export class KtbEditServiceComponent implements OnDestroy {
     this.project$?.pipe(
       takeUntil(this.unsubscribe$),
     ).subscribe(project => {
-      if (!this.fileTree && project && this.serviceName) {
-        this.dataService.getServiceResourceForAllStages(project.projectName, this.serviceName).subscribe((resources) => {
-          this.fileTree = [];
-          project.stages.forEach(stage => {
-            const resourcesForStage = this.getResourcesForStage(resources, stage.stageName);
-            this.fileTree?.push({stage: stage.stageName, files: this.getTree(resourcesForStage)});
-          });
-          console.log(this.fileTree);
-        });
+      if (!this.fileTree && project && (project.gitRemoteURI || project.gitRemoteURI !== '') && this.serviceName) {
+        this.getResourcesAndTransform(project, this.serviceName);
       }
     });
   }
 
-  private getTree(resources: ServiceResource[]): TreeFileEntry[] {
-    const tree = new Map();
+  public getResourcesAndTransform(project: Project, serviceName: string): void {
+    this.dataService.getServiceResourceForAllStages(project.projectName, serviceName).subscribe((resources) => {
+      this.fileTree = [];
+      project.stages.forEach(stage => {
+        this.fileTree?.push({stage: stage.stageName, files: this.getFileTreeForStage(resources, stage.stageName)});
+      });
+    });
+  }
 
-    resources.forEach((resource) => {
+  public getFileTreeForStage(resources: ServiceResource[], stageName: string): TreeFileEntry[] {
+    const tree = new Map();
+    const resourcesForStage = this.getResourcesForStage(resources, stageName);
+
+    resourcesForStage.forEach((resource) => {
       const uriParts = resource.resourceURI.split('/');
       const file = uriParts.pop();
       const folder = uriParts.join('/');
