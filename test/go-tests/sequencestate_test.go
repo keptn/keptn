@@ -402,7 +402,6 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 		return true
 	}, 20*time.Second, 3*time.Second)
 
-	require.Nil(t, err)
 	require.Len(t, states.States, 1)
 	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
 }
@@ -445,9 +444,40 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 		return true
 	}, 20*time.Second, 3*time.Second)
 
-	require.Nil(t, err)
 	require.Len(t, states.States, 1)
 	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
+}
+
+func Test_SequenceState_SequenceNotFound(t *testing.T) {
+	projectName := "state-shipyard-unknown-sequence"
+	serviceName := "my-service"
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	require.Nil(t, err)
+	defer os.Remove(sequenceStateShipyardFilePath)
+
+	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	require.Nil(t, err)
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+
+	// start a sequence that is not known
+	_, err = TriggerSequence(projectName, serviceName, "dev", "unknown", nil)
+	require.Nil(t, err)
+
+	var states *scmodels.SequenceStates
+	require.Eventually(t, func() bool {
+		states, _, err = GetState(projectName)
+		if err != nil {
+			return false
+		} else if states == nil || len(states.States) == 0 {
+			return false
+		} else if states.States[0].State != scmodels.SequenceFinished {
+			return false
+		}
+		return true
+	}, 20*time.Second, 3*time.Second)
 }
 
 func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {

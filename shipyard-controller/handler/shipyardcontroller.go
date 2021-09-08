@@ -531,7 +531,24 @@ func (sc *shipyardController) startTaskSequence(event models.Event) error {
 
 	taskSequence, err := sc.getTaskSequenceInStage(eventScope.Stage, taskSequenceName, shipyard)
 	if err != nil {
-		return err
+		msg := fmt.Sprintf("could not get definition of task sequence %s: %s", taskSequenceName, err.Error())
+		finishedEvent := event
+		finishedEventData := keptnv2.EventData{
+			Project: eventScope.Project,
+			Stage:   eventScope.Stage,
+			Service: eventScope.Service,
+			Labels:  eventScope.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: msg,
+		}
+		finishedEvent.Data = finishedEventData
+
+		sc.onSequenceFinished(finishedEvent)
+		return sc.sendTaskSequenceFinishedEvent(&models.EventScope{
+			EventData:    finishedEventData,
+			KeptnContext: event.Shkeptncontext,
+		}, taskSequenceName, event.ID)
 	}
 	sc.onSequenceStarted(event)
 
