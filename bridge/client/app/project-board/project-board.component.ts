@@ -33,7 +33,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$),
       switchMap((projectName) => AppUtils.createTimer(0, initialDelayMillis).pipe(
         map(() => projectName)),
-      ));
+      ),
+      takeUntil(this.unsubscribe$),
+    );
     this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
 
     timer$.subscribe(projectName => {
