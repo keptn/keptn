@@ -12,7 +12,7 @@ import (
 
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cli/pkg/version"
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
 )
 
