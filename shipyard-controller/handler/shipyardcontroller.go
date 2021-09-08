@@ -19,7 +19,7 @@ import (
 
 const maxRepoReadRetries = 5
 
-var errNoMatchingEvent = errors.New("no matching event found")
+var ErrNoMatchingEvent = errors.New("no matching event found")
 var shipyardControllerInstance *shipyardController
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
@@ -413,7 +413,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	} else if len(events) == 0 {
 		msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		log.Error(msg)
-		return errNoMatchingEvent
+		return ErrNoMatchingEvent
 	}
 
 	sc.onSequenceTaskStarted(event)
@@ -569,7 +569,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	} else if len(startedEvents) == 0 {
 		msg := "no matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		log.Error(msg)
-		return errNoMatchingEvent
+		return ErrNoMatchingEvent
 	}
 
 	// persist the .finished event
@@ -608,7 +608,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		if len(triggeredEvents) == 0 {
 			msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 			log.Error(msg)
-			return errNoMatchingEvent
+			return ErrNoMatchingEvent
 		}
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
 		log.Info("triggered event will be deleted")
@@ -721,8 +721,20 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 	return allEvents, nil
 }
 
-func (sc *shipyardController) GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error) {
-	return sc.eventRepo.GetEvents(project, filter, common.TriggeredEvent)
+func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, filter common.EventFilter) ([]models.Event, error) {
+	project, err := sc.projectRepo.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	} else if project == nil {
+		return nil, ErrProjectNotFound
+	}
+	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent)
+	if err != nil && err != db.ErrNoEventFound {
+		return nil, err
+	} else if err != nil && err == db.ErrNoEventFound {
+		return []models.Event{}, nil
+	}
+	return events, nil
 }
 
 func (sc *shipyardController) getEvents(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
