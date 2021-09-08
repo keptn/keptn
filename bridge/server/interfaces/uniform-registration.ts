@@ -1,4 +1,5 @@
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
+import { KeptnService } from '../../shared/models/keptn-service';
 
 
 export class UniformRegistration {
@@ -20,5 +21,13 @@ export class UniformRegistration {
   unreadEventsCount?: number;
   name!: string;
   subscriptions: UniformSubscription[] = [];
+
+  public static fromJSON(data: unknown): UniformRegistration {
+    return Object.assign(new this(), data);
+  }
+
+  public get isWebhookService(): boolean {
+    return this.name === KeptnService.WEBHOOK_SERVICE;
+  }
 }
 

@@ -2,7 +2,7 @@ import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { filter, map, switchMap, take, tap } from 'rxjs/operators';
+import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { Project } from '../../_models/project';
@@ -18,7 +18,7 @@ import { WebhookConfig } from '../../../../shared/models/webhook-config';
   templateUrl: './ktb-modify-uniform-subscription.component.html',
 })
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
-  private readonly unsubscribe$ = new Subject<void>();
+  private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   private taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
@@ -97,6 +97,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
     integrationId$.pipe(
       switchMap(integrationId => this.dataService.getUniformRegistrationInfo(integrationId)),
+      takeUntil(this.unsubscribe$),
     ).subscribe(info => {
       if (!info.isControlPlane) {
         this.suffixes = [
@@ -172,7 +173,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
 
     if (this.isWebhookService) {
-
       const webhookSettingsForm = this.webhookSettings?.webhookConfigForm;
       if (webhookSettingsForm?.valid) {
         const webhookConfig: WebhookConfig = new WebhookConfig();
@@ -198,12 +198,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     ).subscribe(() => {
       this.updating = false;
       this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
-    }, err => {
+    }, () => {
       this.updating = false;
     });
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

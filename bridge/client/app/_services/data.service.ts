@@ -185,8 +185,8 @@ export class DataService {
     return this.apiService.deleteSecret(name, scope);
   }
 
-  public deleteSubscription(integrationId: string, id: string): Observable<object> {
-    return this.apiService.deleteSubscription(integrationId, id);
+  public deleteSubscription(integrationId: string, id: string, isWebhookService: boolean): Observable<object> {
+    return this.apiService.deleteSubscription(integrationId, id, isWebhookService);
   }
 
   public getRootsLastUpdated(project: Project): Date {

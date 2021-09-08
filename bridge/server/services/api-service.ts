@@ -9,6 +9,7 @@ import { UniformRegistrationLogResponse } from '../interfaces/uniform-registrati
 import { Resource } from '../../shared/interfaces/resource';
 import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';
+import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -110,7 +111,7 @@ export class ApiService {
     return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
   }
 
-  public getWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
     let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
@@ -154,6 +155,14 @@ export class ApiService {
         },
       ],
     });
+  }
+
+  public deleteUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<object>> {
+    return this.axios.delete(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
+  }
+
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<UniformSubscription>> {
+    return this.axios.get<UniformSubscription>(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
   }
 
 }

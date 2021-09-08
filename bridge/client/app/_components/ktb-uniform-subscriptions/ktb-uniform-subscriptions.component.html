@@ -20,6 +20,7 @@
       <ktb-subscription-item *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName), let index = index"
                              [subscription]="subscription"
                              [integrationId]="uniformRegistration.id"
+                             [isWebhookService]="uniformRegistration.isWebhookService"
                              name="Subscription {{index + 1}}"
                              (subscriptionDeleted)="deleteSubscription($event)"
       ></ktb-subscription-item>

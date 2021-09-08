@@ -213,9 +213,13 @@ export class ApiService {
     return this.http.delete(url, {params});
   }
 
-  public deleteSubscription(integrationId: string, subscriptionId: string): Observable<object> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
-    return this.http.delete(url);
+  public deleteSubscription(integrationId: string, subscriptionId: string, isWebhookService: boolean): Observable<object> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
+    return this.http.delete(url, {
+      params: {
+        isWebhookService: String(isWebhookService),
+      },
+    });
   }
 
   public getMetadata(): Observable<Metadata> {

@@ -3,7 +3,7 @@
     <h2>{{editMode ? 'Edit' : 'Create'}} subscription</h2>
     <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
       <div fxLayout="column" fxLayoutGap="10px">
-        <dt-form-field>
+        <dt-form-field *ngIf="!isWebhookService">
           <dt-checkbox formControlName="isGlobal">Use for all projects</dt-checkbox>
         </dt-form-field>
         <div fxLayout="row" fxLayoutGap="5px">
@@ -31,9 +31,9 @@
             clearAllLabel="Clear all"
           ></dt-filter-field>
         </div>
-        <ktb-webhook-settings #webhookSettings *ngIf="isWebhookService" [subscriptionExists]="editMode" [project]="data.project" [subscription]="data.subscription"></ktb-webhook-settings>
+        <ktb-webhook-settings #webhookSettings *ngIf="isWebhookService" [subscriptionExists]="editMode" [projectName]="data.project.projectName" [subscription]="data.subscription"></ktb-webhook-settings>
         <div fxLayout="row">
-          <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!subscriptionForm.valid || !isWebhookFormValid" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
+          <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!subscriptionForm.valid || !isWebhookFormValid || updating" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
             <dt-loading-spinner *ngIf="updating" aria-label="{{editMode ? 'Updating' : 'Creating'}} subscription"></dt-loading-spinner>
             {{editMode ? 'Update' : 'Create'}} subscription
           </button>

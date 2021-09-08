@@ -119,18 +119,37 @@ function apiRouter(params:
 
   router.get('/uniform/registration/webhook-service/config', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const webhookConfig = await dataService.getWebhookConfig(req.query.projectName?.toString(), req.query.stageName?.toString(), req.query.serviceName?.toString());
-      return res.json(webhookConfig);
+      const projectName = req.query.projectName?.toString();
+      if (projectName) {
+        const webhookConfig = await dataService.getWebhookConfig(projectName, req.query.stageName?.toString(), req.query.serviceName?.toString());
+        return res.json(webhookConfig);
+      } else {
+        next(Error('project name not provided'));
+      }
     } catch (error) {
       return next(error);
     }
-  })
+  });
 
   router.post('/uniform/registration/webhook-service/config', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const webhookConfig: WebhookConfig = req.body.config;
       const result = await dataService.saveWebhookConfig(webhookConfig);
       return res.json(result);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.delete('/uniform/registration/:integrationId/subscription/:subscriptionId', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const integrationId = req.params.integrationId;
+      const subscriptionId = req.params.subscriptionId;
+      const deleteWebhook = req.query.isWebhookService === 'true';
+      if (integrationId && subscriptionId) {
+        await dataService.deleteSubscription(integrationId, subscriptionId, deleteWebhook);
+      }
+      return res.json();
     } catch (error) {
       return next(error);
     }

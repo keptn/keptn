@@ -16,8 +16,9 @@ import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-re
 import { WebhookConfig } from '../../shared/models/webhook-config';
 import { CURLParser } from 'parse-curl-js';
 import { ParsedCURL } from 'parse-curl-js/dist/interface';
-import { KeptnService } from '../../shared/models/keptn-service';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
+import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
+import { UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
 
 export class DataService {
   private apiService: ApiService;
@@ -226,11 +227,11 @@ export class DataService {
 
   public async getIsUniformRegistrationInfo(integrationId: string): Promise<UniformRegistrationInfo> {
     const response = await this.apiService.getUniformRegistrations(integrationId);
-    const uniformRegistration = response.data.shift();
+    const uniformRegistration = UniformRegistration.fromJSON(response.data.shift());
 
     return {
-      isControlPlane: uniformRegistration?.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-      isWebhookService: uniformRegistration?.name === KeptnService.WEBHOOK_SERVICE,
+      isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
+      isWebhookService: uniformRegistration.isWebhookService,
     };
   }
 
@@ -255,16 +256,19 @@ export class DataService {
     return Yaml.parse(shipyard);
   }
 
-  public async getWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
+  private async getWebhookConfigYaml(projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfigYaml> {
     const response = await this.apiService.getWebhookConfig(projectName, stageName, serviceName);
 
-    let webhookConfigYaml;
     try {
       const webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
-      webhookConfigYaml = Yaml.parse(webhookConfigFile);
+      return WebhookConfigYaml.fromJSON(Yaml.parse(webhookConfigFile));
     } catch (error) {
       throw Error('Could not parse webhook.yaml');
     }
+  }
+
+  public async getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
+    const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stageName, serviceName);
 
     let webhookCurlCommand: ParsedCURL;
     try {
@@ -287,14 +291,32 @@ export class DataService {
   }
 
   public async saveWebhookConfig(webhookConfig: WebhookConfig): Promise<boolean> {
-    const previousConfig = await this.getPreviousWebhookConfig(webhookConfig);
-    await this.deleteWebhookConfig(webhookConfig);
-    const webhookConfigYaml = this.generateWebhookConfigYaml(webhookConfig);
+    const previousConfig = await this.getPreviousWebhookConfig(webhookConfig.prevFilter);
+    const currentConfig = await this.getPreviousWebhookConfig(webhookConfig.filter);
 
     for (const project of previousConfig.projects) {
       for (const stage of previousConfig.stages) {
         for (const service of previousConfig.services) {
-          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage, service);
+          if (!currentConfig.projects.includes(project) || !currentConfig.stages.some((s?: string) => s === stage) || !currentConfig.services.some((s?: string) => s === service)) {
+            await this.removeWebhook(webhookConfig.type, project, stage ? [stage] : [undefined], service ? [service] : [undefined]);
+          }
+        }
+      }
+    }
+
+    const curl = this.generateWebhookConfigCurl(webhookConfig);
+
+    for (const project of currentConfig.projects) {
+      for (const stage of currentConfig.stages) {
+        for (const service of currentConfig.services) {
+          let previousWebhookConfig: WebhookConfigYaml;
+          try { // fetch existing one
+            previousWebhookConfig = await this.getWebhookConfigYaml(project, stage, service);
+          } catch { // if it does not exist, create one
+            previousWebhookConfig = new WebhookConfigYaml();
+          }
+          previousWebhookConfig.addWebhook(webhookConfig.type, curl);
+          await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
         }
       }
     }
@@ -302,11 +324,11 @@ export class DataService {
     return true;
   }
 
-  private async getPreviousWebhookConfig(webhookConfig: WebhookConfig): Promise<{ projects: string[], stages: string[] | [undefined], services: string[] | [undefined] }> {
+  private async getPreviousWebhookConfig(webhookConfig?: UniformSubscriptionFilter): Promise<{ projects: string[], stages: string[] | [undefined], services: string[] | [undefined] }> {
     return {
-      projects: webhookConfig.filter?.projects?.length ? webhookConfig.filter?.projects : (await this.getProjects()).map(project => project.projectName),
-      stages: webhookConfig.filter?.stages?.length ? webhookConfig.filter?.stages : [undefined],
-      services: webhookConfig.filter?.services?.length ? webhookConfig.filter?.services : [undefined],
+      projects: webhookConfig?.projects?.length ? webhookConfig.projects : (await this.getProjects()).map(project => project.projectName),
+      stages: webhookConfig?.stages?.length ? webhookConfig.stages : [undefined],
+      services: webhookConfig?.services?.length ? webhookConfig.services : [undefined],
     };
   }
 
@@ -314,7 +336,7 @@ export class DataService {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
   }
 
-  private generateWebhookConfigYaml(webhookConfig: WebhookConfig): string {
+  private generateWebhookConfigCurl(webhookConfig: WebhookConfig): string {
     let params = '';
     for (const header of webhookConfig?.header || []) {
       params += `--header '${header.name}: ${header.value}' `;
@@ -324,31 +346,32 @@ export class DataService {
       params += `--proxy ${webhookConfig.proxy} `;
     }
     if (webhookConfig.payload) {
-      params += `--data '${webhookConfig.payload.replace((/  |\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
+      params += `--data '${webhookConfig.payload.replace((/ {2}|\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
     }
-
-    return `apiVersion: webhookconfig.keptn.sh/v1alpha1
-kind: WebhookConfig
-metadata:
-  name: webhook-configuration
-spec:
-  webhooks:
-    - type: "${webhookConfig.type}"
-      requests:
-        - "curl ${params}${webhookConfig.url}"`;
+    return `curl ${params}${webhookConfig.url}`;
   }
 
-  private async deleteWebhookConfig(webhookConfig: WebhookConfig): Promise<void> {
-    const previousConfig = await this.getPreviousWebhookConfig(webhookConfig);
+  public async deleteSubscription(integrationId: string, subscriptionId: string, deleteWebhook: boolean): Promise<void> {
+    if (deleteWebhook) {
+      const response = await this.apiService.getUniformSubscription(integrationId, subscriptionId);
+      const subscription = response.data;
+      const projectName = subscription.filter.projects?.[0];
+      if (projectName) {
+        await this.removeWebhook(subscription.event, projectName, subscription.filter.stages ?? [undefined], subscription.filter.services ?? [undefined]);
+      }
+    }
+    await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
+  }
 
-    for (const project of previousConfig.projects) {
-      for (const stage of previousConfig.stages) {
-        for (const service of previousConfig.services) {
-          // ignore if config could not be deleted on a stage or service
-          try {
-            await this.apiService.deleteWebhookConfig(project, stage, service);
-          } catch (error) {
-            console.error(error.message);
+  private async removeWebhook(eventType: string, projectName: string, stages: string[] | [undefined], services: string[] | [undefined]): Promise<void> {
+    for (const stage of stages) {
+      for (const service of services) {
+        const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
+        if (webhookConfig.removeWebhook(eventType)) {
+          if (webhookConfig.hasWebhooks()) {
+            await this.apiService.saveWebhookConfig(webhookConfig.toYAML(), projectName, stage, service);
+          } else {
+            await this.apiService.deleteWebhookConfig(projectName, stage, service);
           }
         }
       }

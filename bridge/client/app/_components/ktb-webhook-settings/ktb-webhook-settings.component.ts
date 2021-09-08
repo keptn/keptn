@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DataService } from '../../_services/data.service';
 import { FormUtils } from '../../_utils/form.utils';
-import { Project } from '../../_models/project';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { UniformSubscriptionFilter } from '../../../../shared/interfaces/uniform-subscription';
 import { AppUtils } from '../../_utils/app.utils';
@@ -14,7 +13,7 @@ import { AppUtils } from '../../_utils/app.utils';
 })
 export class KtbWebhookSettingsComponent implements OnInit {
 
-  public _project?: Project;
+  public _projectName?: string;
   public _subscription?: UniformSubscription;
   private _prevFilter?: UniformSubscriptionFilter;
   public webhookConfigForm = this.formBuilder.group({
@@ -32,13 +31,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
   @Input() subscriptionExists = false;
 
   @Input()
-  get project(): Project | undefined {
-    return this._project;
+  get projectName(): string {
+    return this._projectName || '';
   }
 
-  set project(value: Project | undefined) {
-    if (this._project !== value) {
-      this._project = value;
+  set projectName(projectName: string) {
+    if (this._projectName !== projectName) {
+      this._projectName = projectName;
     }
   }
 
@@ -62,10 +61,6 @@ export class KtbWebhookSettingsComponent implements OnInit {
     if (this._prevFilter !== value) {
       this._prevFilter = AppUtils.copyObject(value);
     }
-  }
-
-  get projectName(): string {
-    return this.project?.projectName || '';
   }
 
   get header(): FormArray | null {
