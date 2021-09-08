@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -64,6 +65,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	ch := make(chan string)
 
 	var returnSlo bool
+	var sloFileContent string
 	var returnServiceNotFound bool
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +87,12 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				go func() { ch <- event.Type }()
 			} else if strings.Contains(r.RequestURI, "/configuration") {
 				if returnSlo {
-
+					encodedSLOContent := base64.StdEncoding.EncodeToString([]byte(sloFileContent))
+					resourceURI := "slo.yaml"
+					sloResource := &keptnapi.Resource{ResourceURI: &resourceURI, ResourceContent: encodedSLOContent}
+					marshal, _ := json.Marshal(sloResource)
+					w.WriteHeader(http.StatusOK)
+					w.Write(marshal)
 				} else if returnServiceNotFound {
 					errObj := &keptnapi.Error{Code: 404, Message: stringp("Service not found")}
 					marshal, _ := json.Marshal(errObj)
@@ -113,6 +120,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		name                string
 		fields              fields
 		sloAvailable        bool
+		sloFileContent      string
 		serviceNotAvailable bool
 		wantEventType       []string
 		wantErr             bool
@@ -152,7 +160,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			}{},
 		},
 		{
-			name: "Service not available - return evaluation.done event",
+			name: "Service not available - return evaluation.finished event",
 			fields: fields{
 				Logger: keptncommon.NewLogger("", "", ""),
 				Event:  getStartEvaluationEvent(),
@@ -205,6 +213,35 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				err: nil,
 			},
 		},
+		{
+			name: "Error during SLO file parsing - send finished event with error",
+			fields: fields{
+				Logger: keptncommon.NewLogger("", "", ""),
+				Event:  getStartEvaluationEvent(),
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+				},
+			},
+			sloAvailable:   true,
+			sloFileContent: "invalid",
+			wantEventType:  []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)},
+			wantErr:        false,
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "",
+				err: errors.New(""),
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "default-sli-provider",
+				err: nil,
+			},
+		},
 	}
 	////////// TEST EXECUTION ///////////
 	for _, tt := range tests {
@@ -215,6 +252,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 			})
 			returnSlo = tt.sloAvailable
+			sloFileContent = tt.sloFileContent
 			returnServiceNotFound = tt.serviceNotAvailable
 			eh := &StartEvaluationHandler{
 				Event:        tt.fields.Event,
@@ -298,8 +336,7 @@ func getStartEvaluationEvent() cloudevents.Event {
     "testStrategy": "",
     "deploymentStrategy": "direct",
 	"evaluation": {
-		"start": "2019-09-01 12:00:00",
-    	"end": "2019-09-01 12:05:00"
+		"timeframe": "5m"
     },
     "labels": {
       "testid": "12345",
