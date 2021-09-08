@@ -260,7 +260,8 @@ export class DataService {
         }
 
         currentPage++;
-      } while ((currentPage - 1) !== parseInt(nextPage, undefined));
+        // tslint:disable-next-line:radix
+      } while ((currentPage - 1) !== parseInt(nextPage));
     }
 
     return resources;
