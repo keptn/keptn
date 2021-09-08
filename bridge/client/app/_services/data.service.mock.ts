@@ -17,6 +17,7 @@ import { SequencesData } from './_mockData/sequences.mock';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
+import { AppUtils } from '../_utils/app.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -96,7 +97,7 @@ export class DataServiceMock extends DataService {
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    const copyUniform = this.copyObject(UniformRegistrationsMock);
+    const copyUniform = AppUtils.copyObject(UniformRegistrationsMock);
     return of(copyUniform.map(registration => UniformRegistration.fromJSON(registration)));
   }
 
@@ -126,10 +127,6 @@ export class DataServiceMock extends DataService {
 
   public deleteService(projectName: string, serviceName: string): Observable<object> {
     return of({});
-  }
-
-  private copyObject<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data));
   }
 
   public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {

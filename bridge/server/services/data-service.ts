@@ -20,6 +20,7 @@ import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registr
 import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
 import { UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
 import axios from 'axios';
+import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 
 export class DataService {
   private apiService: ApiService;
@@ -279,7 +280,7 @@ export class DataService {
     }
 
     const webhookConfig: WebhookConfig = new WebhookConfig();
-    webhookConfig.method = webhookCurlCommand.method;
+    webhookConfig.method = webhookCurlCommand.method as WebhookConfigMethod;
     webhookConfig.url = webhookCurlCommand.url;
     webhookConfig.payload = JSON.stringify(webhookCurlCommand.body.data);
     for (const [name, value] of Object.entries(webhookCurlCommand.headers)) {

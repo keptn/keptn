@@ -12,6 +12,7 @@ import { UniformRegistrationLocations } from '../../../../shared/interfaces/unif
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormGroup } from '@angular/forms';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -104,31 +105,29 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     setSubscription(10);
     fixture.detectChanges();
+    // @ts-ignore
+    const webhookConfigForm: FormGroup = component.webhookSettings?.webhookConfigForm;
 
     // then
     updateButtonEnabled(false);
 
     // when
-    // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('method')?.setValue('POST');
+    webhookConfigForm.get('method')?.setValue('POST');
     fixture.detectChanges();
 
     // then
     updateButtonEnabled(false);
 
     // when
-    // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('url')?.setValue('http://keptn.sh');
+    webhookConfigForm.get('url')?.setValue('https://keptn.sh');
     fixture.detectChanges();
 
     // then
     updateButtonEnabled(false);
 
     // when
-    // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('payload')?.setValue('{}');
-    // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('url')?.setValue('');
+    webhookConfigForm.get('payload')?.setValue('{}');
+    webhookConfigForm.get('url')?.setValue('');
     fixture.detectChanges();
 
     // then
@@ -140,11 +139,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     setSubscription(10, 0);
     fixture.detectChanges();
     // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('method')?.setValue('POST');
-    // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('url')?.setValue('http://keptn.sh');
-    // @ts-ignore
-    component.webhookSettings?.webhookConfigForm?.get('payload')?.setValue('{}');
+    const webhookConfigForm: FormGroup = component.webhookSettings?.webhookConfigForm;
+    webhookConfigForm.get('method')?.setValue('POST');
+    webhookConfigForm.get('url')?.setValue('http://keptn.sh');
+    webhookConfigForm.get('payload')?.setValue('{}');
     fixture.detectChanges();
 
     // then
