@@ -43,9 +43,9 @@ describe('KtbKeptnServicesListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show 10 registrations', () => {
+  it('should show 11 registrations', () => {
     const registrations = fixture.nativeElement.querySelectorAll('dt-row');
-    expect(registrations.length).toEqual(10);
+    expect(registrations.length).toEqual(11);
   });
 
   it('should show error event indicator', () => {
