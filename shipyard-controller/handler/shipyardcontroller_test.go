@@ -538,7 +538,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	sequenceTriggeredEvent := getArtifactDeliveryTriggeredEvent()
+	sequenceTriggeredEvent := getArtifactDeliveryTriggeredEvent("dev")
 	err := sc.HandleIncomingEvent(sequenceTriggeredEvent, true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
@@ -765,7 +765,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -838,7 +838,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -915,7 +915,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1038,7 +1038,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1119,7 +1119,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1203,7 +1203,7 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1229,7 +1229,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1301,7 +1301,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1311,6 +1311,40 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 	verifyEvent := mockDispatcher.AddCalls()[0].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), verifyEvent.Event.Type())
 
+}
+
+func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
+	sc := getTestShipyardController("")
+	sc.sequenceDispatcher = &fake.ISequenceDispatcherMock{
+		AddFunc: func(queueItem models.QueueItem) error {
+			return nil
+		},
+	}
+
+	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
+
+	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
+		return errors.New("updating shipyard failed")
+	}
+
+	mockCS := fake.NewConfigurationService(testShipyardResource)
+	defer mockCS.Close()
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEventDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+	mockSequenceDispatcher := sc.sequenceDispatcher.(*fake.ISequenceDispatcherMock)
+
+	// STEP 1
+	// send unknown.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("unknown"), true)
+
+	require.NotNil(t, err)
+
+	require.Empty(t, len(mockEventDispatcher.AddCalls()))
+	require.Empty(t, mockSequenceDispatcher.AddCalls())
 }
 
 // Updating event of service fails -> event handling should still happen
@@ -1334,7 +1368,7 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1359,7 +1393,7 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
-	event := getArtifactDeliveryTriggeredEvent()
+	event := getArtifactDeliveryTriggeredEvent("dev")
 
 	event.Data = keptnv2.EventData{
 		Project: "my-project",
@@ -1825,13 +1859,13 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 	}
 }
 
-func getArtifactDeliveryTriggeredEvent() models.Event {
+func getArtifactDeliveryTriggeredEvent(stage string) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentTriggeredEventData{
 			EventData: keptnv2.EventData{
 				Project: "test-project",
-				Stage:   "dev",
+				Stage:   stage,
 				Service: "carts",
 			},
 			ConfigurationChange: struct {
