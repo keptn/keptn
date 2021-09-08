@@ -41,7 +41,7 @@ spec:
                 deploymentstrategy: "blue_green_service"
             - name: "evaluation"`
 
-func Test_SequenceStateIntegrationTest(t *testing.T) {
+func Test_SequenceState(t *testing.T) {
 	projectName := "state"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
@@ -367,6 +367,45 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	stagingStage := copiedState.Stages[1]
 	require.Equal(t, keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type)
 
+}
+
+func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
+	projectName := "state-no-shipyard"
+	serviceName := "my-service"
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	require.Nil(t, err)
+	defer os.Remove(sequenceStateShipyardFilePath)
+
+	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	require.Nil(t, err)
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+
+	// delete the shipyard file
+	//_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName))
+	//require.Nil(t, err)
+
+	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
+	require.Nil(t, err)
+
+	states, _, err := GetState(projectName)
+
+	require.Nil(t, err)
+	require.NotEmpty(t, states)
+
+	// delete the shipyard file
+	_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName))
+	require.Nil(t, err)
+
+	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
+	require.Nil(t, err)
+
+	states, _, err = GetState(projectName)
+
+	require.Nil(t, err)
+	require.NotEmpty(t, states)
 }
 
 func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {
