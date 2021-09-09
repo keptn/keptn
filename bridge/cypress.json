@@ -1,9 +1,10 @@
 {
   "integrationFolder": "cypress/integration",
   "supportFile": "cypress/support/index.ts",
-  "videosFolder": "cypress/videos",
-  "screenshotsFolder": "cypress/screenshots",
+  "videosFolder": "dist/cypress/videos",
+  "screenshotsFolder": "dist/cypress/screenshots",
   "pluginsFile": "cypress/plugins/index.ts",
   "fixturesFolder": "cypress/fixtures",
-  "baseUrl": "http://localhost:3000"
+  "baseUrl": "http://localhost:3000",
+  "chromeWebSecurity": false
 }

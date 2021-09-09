@@ -7,6 +7,6 @@
     "module": "commonjs",
     "target": "ES2018",
     "types": ["cypress"],
-    "lib": ["es5", "dom"]
+    "lib": ["es2018", "dom"]
   }
 }

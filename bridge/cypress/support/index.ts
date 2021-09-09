@@ -16,6 +16,8 @@
 // When a command from ./commands is ready to use, import with `import './commands'` syntax
 // import './commands';
 
+import 'cypress-xpath';
+
 Cypress.on('window:before:load', (window) => {
   cy.spy(window.console, 'error');
   cy.spy(window.console, 'warn');

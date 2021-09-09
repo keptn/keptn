@@ -112,7 +112,8 @@
           "options": {
             "devServerTarget": "bridge:serve",
             "watch": true,
-            "headless": false
+            "headless": false,
+            "browser": "chrome"
           },
           "configurations": {
             "production": {
@@ -123,7 +124,9 @@
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "bridge:serve"
+            "devServerTarget": "start:dev",
+            "headless": true,
+            "browser": "chrome"
           },
           "configurations": {
             "production": {
@@ -135,7 +138,8 @@
           "builder": "@cypress/schematic:cypress",
           "options": {
             "watch": true,
-            "headless": false
+            "headless": false,
+            "browser": "chrome"
           }
         }
       }
