@@ -574,6 +574,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	// rollbacks
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
 	assert.Equal(t, rollbackSecretsData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, rollbackProjectData.GitRemoteURI, configStore.UpdateProjectCalls()[1].Project.GitRemoteURI)
 }
 
 func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
