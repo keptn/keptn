@@ -53,6 +53,8 @@ total_score:
   pass: "90%"
   warning: "75%"`
 
+const invalidSLOFileContent = "invalid"
+
 func Test_QualityGates(t *testing.T) {
 	projectName := "quality-gates"
 	serviceName := "my-service"
@@ -119,8 +121,38 @@ func Test_QualityGates(t *testing.T) {
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName))
 	require.Nil(t, err)
 
+	// ...and an SLO file - but an invalid one :(
+	sloFilePath, err := CreateTmpFile("slo-*.yaml", invalidSLOFileContent)
+	require.Nil(t, err)
+	defer os.Remove(sloFilePath)
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", projectName, "hardening", serviceName, sloFilePath))
+	require.Nil(t, err)
+
+	t.Log("triggering the evaluation again")
+	keptnContext, err = triggerEvaluation(projectName, "hardening", serviceName)
+	require.Nil(t, err)
+	require.NotEmpty(t, keptnContext)
+
+	// wait for the evaluation.finished event to be available and evaluate it
+	require.Eventually(t, func() bool {
+		t.Log("checking if evaluation.finished event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		evaluationFinishedEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+
+	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.Result)
+	require.NotEmpty(t, evaluationFinishedPayload.Message)
+
 	// ...and an SLO file
-	sloFilePath, err := CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
+	sloFilePath, err = CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
 	require.Nil(t, err)
 	defer os.Remove(sloFilePath)
 
