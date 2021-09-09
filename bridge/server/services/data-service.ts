@@ -284,7 +284,7 @@ export class DataService {
     webhookConfig.url = webhookCurlCommand.url;
     webhookConfig.payload = JSON.stringify(webhookCurlCommand.body.data);
     for (const [name, value] of Object.entries(webhookCurlCommand.headers)) {
-      webhookConfig.header?.push({
+      webhookConfig.header.push({
         name,
         value,
       });

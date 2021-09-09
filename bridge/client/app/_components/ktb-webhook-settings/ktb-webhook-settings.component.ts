@@ -3,8 +3,6 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '
 import { DataService } from '../../_services/data.service';
 import { FormUtils } from '../../_utils/form.utils';
 import { UniformSubscription } from '../../_models/uniform-subscription';
-import { UniformSubscriptionFilter } from '../../../../shared/interfaces/uniform-subscription';
-import { AppUtils } from '../../_utils/app.utils';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
@@ -15,10 +13,8 @@ type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
   styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
 export class KtbWebhookSettingsComponent {
-
   public _projectName?: string;
   public _subscription?: UniformSubscription;
-  private _prevFilter?: UniformSubscriptionFilter;
   public webhookConfigForm = this.formBuilder.group({
     method: ['', [Validators.required]],
     url: ['', [Validators.required, Validators.pattern(FormUtils.URL_PATTERN)]],
@@ -36,6 +32,10 @@ export class KtbWebhookSettingsComponent {
       this._subscriptionExists = status;
       this.getWebhook();
     }
+  }
+
+  get subscriptionExists(): boolean {
+    return this._subscriptionExists;
   }
 
   @Input()
@@ -58,18 +58,7 @@ export class KtbWebhookSettingsComponent {
   set subscription(value: UniformSubscription | undefined) {
     if (this._subscription !== value) {
       this._subscription = value;
-      this.prevFilter = this.subscription?.filter;
       this.getWebhook();
-    }
-  }
-
-  get prevFilter(): UniformSubscriptionFilter | undefined {
-    return this._prevFilter;
-  }
-
-  set prevFilter(value: UniformSubscriptionFilter | undefined) {
-    if (this._prevFilter !== value) {
-      this._prevFilter = AppUtils.copyObject(value);
     }
   }
 
@@ -78,18 +67,18 @@ export class KtbWebhookSettingsComponent {
   }
 
   get headerControls(): FormGroup[] {
-    return this.header.controls as FormGroup[] || [];
+    return this.header.controls as FormGroup[];
   }
 
   constructor(private dataService: DataService, private formBuilder: FormBuilder) {
   }
 
   private getWebhook(): void {
-    if (this._subscriptionExists && this._subscription && this._projectName) {
+    if (this.subscriptionExists && this.subscription && this.projectName) {
       this.loading = true;
-      const stage: string | undefined = this._subscription.filter?.stages?.[0];
-      const services: string | undefined = this._subscription.filter?.services?.[0];
-      this.dataService.getWebhookConfig(this._projectName, stage, services)
+      const stage: string | undefined = this.subscription.filter?.stages?.[0];
+      const services: string | undefined = this.subscription.filter?.services?.[0];
+      this.dataService.getWebhookConfig(this.projectName, stage, services)
         .subscribe(webhookConfig => {
           this.getFormControl('method').setValue(webhookConfig.method);
           this.getFormControl('url').setValue(webhookConfig.url);

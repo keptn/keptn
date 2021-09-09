@@ -12,7 +12,6 @@ import { UniformRegistrationLocations } from '../../../../shared/interfaces/unif
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormGroup } from '@angular/forms';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -105,29 +104,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     setSubscription(10);
     fixture.detectChanges();
-    // @ts-ignore
-    const webhookConfigForm: FormGroup = component.webhookSettings?.webhookConfigForm;
-
-    // then
-    updateButtonEnabled(false);
-
-    // when
-    webhookConfigForm.get('method')?.setValue('POST');
-    fixture.detectChanges();
-
-    // then
-    updateButtonEnabled(false);
-
-    // when
-    webhookConfigForm.get('url')?.setValue('https://keptn.sh');
-    fixture.detectChanges();
-
-    // then
-    updateButtonEnabled(false);
-
-    // when
-    webhookConfigForm.get('payload')?.setValue('{}');
-    webhookConfigForm.get('url')?.setValue('');
+    jest.spyOn(component, 'isWebhookFormValid', 'get').mockReturnValue(false);
     fixture.detectChanges();
 
     // then
@@ -138,11 +115,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     setSubscription(10, 0);
     fixture.detectChanges();
-    // @ts-ignore
-    const webhookConfigForm: FormGroup = component.webhookSettings?.webhookConfigForm;
-    webhookConfigForm.get('method')?.setValue('POST');
-    webhookConfigForm.get('url')?.setValue('http://keptn.sh');
-    webhookConfigForm.get('payload')?.setValue('{}');
+    jest.spyOn(component, 'isWebhookFormValid', 'get').mockReturnValue(true);
     fixture.detectChanges();
 
     // then

@@ -9,6 +9,6 @@ export interface WebhookConfig {
   method: WebhookConfigMethod;
   url: string;
   payload: string;
-  header?: { name: string, value: string }[];
+  header: { name: string, value: string }[];
   proxy?: string;
 }

@@ -11,7 +11,7 @@ export class WebhookConfig implements wc {
   public method: WebhookConfigMethod;
   public url: string;
   public payload: string;
-  public header?: { name: string, value: string }[];
+  public header: { name: string, value: string }[];
   public proxy?: string;
 
   constructor() {
