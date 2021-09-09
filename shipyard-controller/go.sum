@@ -80,8 +80,8 @@ github.com/docker/go-connections v0.4.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5Xh
 github.com/docker/go-units v0.4.0 h1:3uh0PgVws3nIA0Q+MwDC8yjEPf9zjRfZZWXZYDct3Tw=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815/go.mod h1:WwZ+bS3ebgob9U8Nd0kOddGdZWjyMGR8Wziv+TBNwSE=
-github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210907155952-fc60962cc8d1 h1:bAKznr1uu5dnEZqrdF/8JLPWPdS53rJDe4GNBuY9rgY=
-github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210907155952-fc60962cc8d1/go.mod h1:ezJ9qZYs3ZuPkckXnv8EUh1Z9hGN0oSkqfUi6RDlBxA=
+github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210909131036-df68eef365eb h1:OCfx4hDH4T7kcGfJJ/lVDOgBCqF0cVaPNL1INbLP8yU=
+github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210909131036-df68eef365eb/go.mod h1:ezJ9qZYs3ZuPkckXnv8EUh1Z9hGN0oSkqfUi6RDlBxA=
 github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153/go.mod h1:/Zj4wYkgs4iZTTu3o/KG3Itv/qCCa8VVMlb3i9OVuzc=
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=

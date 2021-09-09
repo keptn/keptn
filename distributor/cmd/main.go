@@ -50,8 +50,7 @@ func main() {
 	}
 	serviceName := deploymentName + "distributor"
 
-	// TODO: Get the collector endpoint via env variable
-	shutdown := keptnObs.InitOTelTraceProvider(serviceName, "otel-collector.observability:4317")
+	shutdown := keptnObs.InitOTelTraceProvider(serviceName)
 	defer shutdown()
 
 	go keptnapi.RunHealthEndpoint("10999")

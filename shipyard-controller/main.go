@@ -53,16 +53,12 @@ const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
-
-const (
-	serviceName = "shipyard-controller"
-)
+const serviceName = "shipyard-controller"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
 
-	// TODO: Get the collector endpoint via env variable
-	shutdown := keptnObs.InitOTelTraceProvider(serviceName, "otel-collector.observability:4317")
+	shutdown := keptnObs.InitOTelTraceProvider(serviceName)
 	defer shutdown()
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {

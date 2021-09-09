@@ -32,8 +32,7 @@ func main() {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
 
-	// TODO: Get the collector endpoint via env variable
-	shutdown := keptnObs.InitOTelTraceProvider(serviceName, "otel-collector.observability:4317")
+	shutdown := keptnObs.InitOTelTraceProvider(serviceName)
 	defer shutdown()
 
 	go keptnapi.RunHealthEndpoint("10998")

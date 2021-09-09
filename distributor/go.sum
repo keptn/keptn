@@ -22,8 +22,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210907155952-fc60962cc8d1 h1:bAKznr1uu5dnEZqrdF/8JLPWPdS53rJDe4GNBuY9rgY=
-github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210907155952-fc60962cc8d1/go.mod h1:ezJ9qZYs3ZuPkckXnv8EUh1Z9hGN0oSkqfUi6RDlBxA=
+github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210909131036-df68eef365eb h1:OCfx4hDH4T7kcGfJJ/lVDOgBCqF0cVaPNL1INbLP8yU=
+github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210909131036-df68eef365eb/go.mod h1:ezJ9qZYs3ZuPkckXnv8EUh1Z9hGN0oSkqfUi6RDlBxA=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
