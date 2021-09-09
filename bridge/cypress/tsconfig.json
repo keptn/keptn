@@ -5,12 +5,8 @@
     "sourceMap": false,
     "outDir": "../out-tsc/e2e",
     "module": "commonjs",
-    "target": "es2018",
-    "types": [
-      "cypress",
-      "jasmine",
-      "jasminewd2",
-      "node"
-    ]
+    "target": "ES2018",
+    "types": ["cypress"],
+    "lib": ["es5", "dom"]
   }
 }
