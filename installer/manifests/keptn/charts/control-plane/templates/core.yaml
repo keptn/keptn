@@ -366,6 +366,8 @@ spec:
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
+            - name: OTEL_COLLECTOR_ENDPOINT
+              value: {{ .Values.observability.otelCollectorEndpoint | default "" }}
           ports:
             - containerPort: 8080
           resources:
@@ -399,6 +401,8 @@ spec:
               value: '/v1/event'
             - name: DISABLE_REGISTRATION
               value: "true"
+            - name: OTEL_COLLECTOR_ENDPOINT
+              value: {{ .Values.observability.otelCollectorEndpoint | default "" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
