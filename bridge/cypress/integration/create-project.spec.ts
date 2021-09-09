@@ -3,7 +3,7 @@ describe('Create Project', () => {
     cy.visit('/create/project');
   });
 
-  it('should create a new project', async () => {
-    cy.screenshot('create-project-page.png');
+  it('should create a new project', () => {
+    cy.screenshot('create-project-page');
   });
 });
