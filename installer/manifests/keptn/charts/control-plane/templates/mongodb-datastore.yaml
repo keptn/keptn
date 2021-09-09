@@ -57,8 +57,8 @@ spec:
             memory: "32Mi"
             cpu: "50m"
           limits:
-            memory: "128Mi"
-            cpu: "200m"
+            memory: "512Mi"
+            cpu: "300m"
         env:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"
