@@ -547,7 +547,7 @@ jobs:
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
         run: cd test/go-tests && go test -run Test_SelfHealing -v
 
-      - name: Bridge E2E Tests (Protractor, Selenium)
+      - name: Bridge E2E Tests (Cypress)
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_bridge_e2e
@@ -573,9 +573,8 @@ jobs:
 
           # start e2e tests in bridge folder
           cd bridge
-          npm cache clean --force
           npm ci
-          ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL --protractor-config=./e2e/protractor-ci.conf.js
+          ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL
 
           # re-enable basic auth of bridge
           kubectl create secret generic my-secret -n keptn --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
