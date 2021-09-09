@@ -14,7 +14,7 @@ if echo "$clusters" | grep "$CLUSTER_NAME_NIGHTLY"; then
     gcloud container clusters delete "$CLUSTER_NAME_NIGHTLY" --zone "$CLOUDSDK_COMPUTE_ZONE" --project "$GCLOUD_PROJECT_NAME" --quiet
     echo "Finished deleting nightly cluster"
 else
-    echo "No nightly cluster needs to be deleted"
+    echo "No nightly cluster need to be deleted"
 fi
 
 ADDONS="HorizontalPodAutoscaling,HttpLoadBalancing"
