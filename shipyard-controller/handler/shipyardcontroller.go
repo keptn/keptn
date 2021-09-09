@@ -477,7 +477,10 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	_, err = sc.getTaskSequenceInStage(eventScope.Stage, taskSequenceName, shipyard)
 	if err != nil {
 		// return an error if no task sequence is available
-		return err
+		msg := fmt.Sprintf("could not start sequence %s: %s", taskSequenceName, err.Error())
+		log.Error(msg)
+
+		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
 	}
 
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
