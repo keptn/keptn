@@ -25,7 +25,7 @@ var _ backend.SecretBackend = &SecretBackendMock{}
 // 			DeleteSecretFunc: func(secret model.Secret) error {
 // 				panic("mock out the DeleteSecret method")
 // 			},
-// 			GetSecretsFunc: func() ([]model.SecretMetadata, error) {
+// 			GetSecretsFunc: func() ([]model.GetSecretResponseItem, error) {
 // 				panic("mock out the GetSecrets method")
 // 			},
 // 			UpdateSecretFunc: func(secret model.Secret) error {
@@ -45,7 +45,7 @@ type SecretBackendMock struct {
 	DeleteSecretFunc func(secret model.Secret) error
 
 	// GetSecretsFunc mocks the GetSecrets method.
-	GetSecretsFunc func() ([]model.SecretMetadata, error)
+	GetSecretsFunc func() ([]model.GetSecretResponseItem, error)
 
 	// UpdateSecretFunc mocks the UpdateSecret method.
 	UpdateSecretFunc func(secret model.Secret) error
@@ -140,7 +140,7 @@ func (mock *SecretBackendMock) DeleteSecretCalls() []struct {
 }
 
 // GetSecrets calls GetSecretsFunc.
-func (mock *SecretBackendMock) GetSecrets() ([]model.SecretMetadata, error) {
+func (mock *SecretBackendMock) GetSecrets() ([]model.GetSecretResponseItem, error) {
 	if mock.GetSecretsFunc == nil {
 		panic("SecretBackendMock.GetSecretsFunc: method is nil but SecretBackend.GetSecrets was just called")
 	}

@@ -125,6 +125,18 @@ export class ApiService {
     });
   }
 
+  public createService(projectName: string, serviceName: string): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/service`;
+    return this.http.post<object>(url, {
+      serviceName,
+    });
+  }
+
+  public deleteService(projectName: string, serviceName: string): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/service/${serviceName}`;
+    return this.http.delete<object>(url);
+  }
+
   public getProject(projectName: string): Observable<Project> {
     const url = `${this._baseUrl}/project/${projectName}`;
     const params = {

@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}     
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -28,14 +28,15 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}     
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      {{- list .Values.mongodbDatastore .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
-        image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
+        image: {{ dict "space" .Values.mongodbDatastore "context" . | include "keptn.image.name" }}
         livenessProbe:
           httpGet:
             path: /health
@@ -56,8 +57,8 @@ spec:
             memory: "32Mi"
             cpu: "50m"
           limits:
-            memory: "128Mi"
-            cpu: "200m"
+            memory: "512Mi"
+            cpu: "300m"
         env:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"
@@ -81,7 +82,7 @@ spec:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
       - name: distributor
-        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+        image: {{ include "keptn.distributor.imageName" . }}
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
         imagePullPolicy: IfNotPresent
@@ -116,7 +117,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}         
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
   - port: 8080

@@ -27,7 +27,7 @@ func (sm *StageManager) GetAllStages(projectName string) ([]*models.ExpandedStag
 		return nil, err
 	}
 	if project == nil {
-		return nil, errProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 
 	return project.Stages, nil
@@ -39,7 +39,7 @@ func (sm *StageManager) GetStage(projectName, stageName string) (*models.Expande
 		return nil, err
 	}
 	if project == nil {
-		return nil, errProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 
 	for _, stg := range project.Stages {
@@ -47,6 +47,6 @@ func (sm *StageManager) GetStage(projectName, stageName string) (*models.Expande
 			return stg, nil
 		}
 	}
-	return nil, errStageNotFound
+	return nil, ErrStageNotFound
 
 }

@@ -69,7 +69,7 @@ describe('KtbProjectSettingsComponent', () => {
     component.projectNameControl.setValue('sockshop');
 
     // then
-    expect(component.projectNameControl.hasError('projectName')).toBe(true);
+    expect(component.projectNameControl.hasError('duplicate')).toBe(true);
   });
 
   it('should navigate to created project', async () => {
@@ -160,6 +160,7 @@ describe('KtbProjectSettingsComponent', () => {
     // when
     const router = TestBed.inject(Router);
     const routeSpy = jest.spyOn(router, 'navigate');
+    
     dataService.loadProjects = jest.fn().mockImplementation(() => {
       // @ts-ignore
       dataService._projects.next(dataService._projects.getValue().filter(project => project.projectName !== 'sockshop'));

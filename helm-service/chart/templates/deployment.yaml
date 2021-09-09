@@ -19,10 +19,7 @@ spec:
       labels:
         {{- include "helm-service.labels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- list .Values.helmservice .Values.distributor | dict "context" . "indent" 6 "bases" | include "helm-service.image.pullSecrets" }}
       serviceAccountName: {{ include "helm-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -33,8 +30,8 @@ spec:
           {{- if .Values.image }}
           image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
           {{- else }}
-          image: "{{ .Values.helmservice.image.repository }}:{{ .Values.helmservice.image.tag | default .Chart.AppVersion }}"
-          {{ end }}
+          image: {{ dict "space" .Values.helmservice "context" . | include "helm-service.image.name" }}
+          {{- end }}
           imagePullPolicy: {{ .Values.helmservice.image.pullPolicy }}
           ports:
             - containerPort: 80
@@ -89,7 +86,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
-          image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
+          image: {{ dict "space" .Values.distributor "context" . | include "helm-service.image.name" }}
           livenessProbe:
             httpGet:
               path: /health

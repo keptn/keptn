@@ -74,4 +74,5 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Mike Villiger](https://github.com/akirasoft)
 * [Kolla](https://github.com/krkolla)
 * [Alasdair Patton](https://github.com/alipatton10)
-
+* [Brad McCoy](https://github.com/bradmccoydev)
+* [Luis Marsano](https://github.com/lmmarsano)

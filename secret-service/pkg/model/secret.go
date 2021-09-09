@@ -17,6 +17,11 @@ type SecretMetadata struct {
 	Scope string `json:"scope,omitempty"`
 }
 
+type GetSecretResponseItem struct {
+	SecretMetadata
+	Keys []string `json:"keys"`
+}
+
 type GetSecretsResponse struct {
-	Secrets []SecretMetadata
+	Secrets []GetSecretResponseItem
 }

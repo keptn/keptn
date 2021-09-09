@@ -280,7 +280,7 @@ func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx conte
 		}
 	}
 
-	logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
+	logger.Info("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
 	return nil
 }
 
@@ -314,7 +314,7 @@ func storeContextToProjectMapping(logger *keptncommon.Logger, event *models.Kept
 	if err != nil {
 		if writeErr, ok := err.(mongo.WriteException); ok {
 			if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
-				logger.Error("Mapping " + event.Shkeptncontext + "->" + collectionName + " already exists in collection")
+				logger.Info("Mapping " + event.Shkeptncontext + "->" + collectionName + " already exists in collection")
 			}
 		} else {
 			err := fmt.Errorf("Failed to store mapping "+event.Shkeptncontext+"->"+collectionName+": %v", err.Error())

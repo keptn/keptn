@@ -1,10 +1,10 @@
-import {AbstractControl, ValidatorFn} from '@angular/forms';
+import { AbstractControl, ValidatorFn } from '@angular/forms';
 
 export class FormUtils {
-  public static projectNameExistsValidator(projectNames: string[]): ValidatorFn {
-    return (control: AbstractControl): { projectName: {value: boolean }} | null => {
-      const project = projectNames.includes(control.value);
-      return project ? {projectName: {value: project}} : null;
+  public static nameExistsValidator(names: string[]): ValidatorFn {
+    return (control: AbstractControl): { duplicate: { value: boolean } } | null => {
+      const name = names.includes(control.value);
+      return name ? {duplicate: {value: name}} : null;
     };
   }
 
