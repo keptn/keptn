@@ -36,10 +36,10 @@ spec:
         resources:
           requests:
             memory: "32Mi"
-            cpu: "500m"
+            cpu: "200m"
           limits:
             memory: "256Mi"
-            cpu: "200m"
+            cpu: "500m"
         env:
         - name: DT_CUSTOM_PROP
           value: 'keptn_service=mongodb-datastore'
