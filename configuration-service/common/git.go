@@ -111,7 +111,7 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-		_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
@@ -195,6 +195,10 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	if err != nil {
 		return obfuscateErrorMessage(err, credentials)
 	}
+	err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
 	if err != nil {
 		return obfuscateErrorMessage(err, credentials)
@@ -208,12 +212,24 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
+		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 	return nil
+}
+
+func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath string, credentials *common_models.GitCredentials) error {
+	_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+	return err
 }
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
