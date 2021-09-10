@@ -12,30 +12,13 @@
             <a [routerLink]="['/', 'project', project.projectName, 'settings', 'project']">set a Git upstream repository</a>.
           </ng-container>
 
-          <ng-container *ngIf="fileTree && fileTree.length > 0">
-            <ng-container *ngFor="let entry of fileTree">
-              <div class="mt-3 mb-2">
-                <div class="bold">{{entry.stage}}</div>
-                Add, edit and delete files in your Git repository
-                <a [href]="getLinkForStage(project.gitRemoteURI, entry.stage)" target="_blank" rel="noopener">
-                  <button dt-icon-button variant="nested" aria-label="Open git repository for stage">
-                    <dt-icon name="externallink"></dt-icon>
-                  </button>
-                </a>
-              </div>
-
-              <ng-container *ngFor="let fileEntry of entry.files">
-                <dt-expandable-section class="m-0" *ngIf="fileEntry.folder !== ''">
-                  <dt-expandable-section-header class="m-0">{{fileEntry.folder}}</dt-expandable-section-header>
-                  <div class="mt-2 mb-2" *ngFor="let file of fileEntry.files">{{file}}</div>
-                </dt-expandable-section>
-                <ng-container *ngIf="fileEntry.folder === ''">
-                  <div *ngFor="let file of fileEntry.files">{{file}}</div>
-                </ng-container>
-              </ng-container>
+          <dt-loading-spinner *ngIf="treeLoading"></dt-loading-spinner>
+          <div class="settings-section" *ngIf="fileTree.length > 0">
+            <ng-container *ngFor="let stageEntry of fileTree">
+              <ktb-edit-service-file-list [stageName]="stageEntry.stageName" [remoteUri]="project.gitRemoteURI" [serviceName]="serviceName" [treeData]="stageEntry.tree"></ktb-edit-service-file-list>
             </ng-container>
-          </ng-container>
-          <dt-loading-spinner *ngIf="!fileTree"></dt-loading-spinner>
+          </div>
+          
         </div>
       </ng-container>
     </div>

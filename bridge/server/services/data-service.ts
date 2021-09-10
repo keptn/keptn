@@ -254,14 +254,15 @@ export class DataService {
         nextPage = resourceRes.data.nextPageKey;
         resourceResponses = [...resourceResponses, ...resourceRes.data.resources];
 
-        for (const res of resourceResponses) {
-          const serviceRes: ServiceResource = {...res, stageName: stage.stageName};
-          resources.push(serviceRes);
-        }
-
         currentPage++;
         // tslint:disable-next-line:radix
       } while ((currentPage - 1) !== parseInt(nextPage));
+
+      for (const res of resourceResponses) {
+        const serviceRes: ServiceResource = {...res, stageName: stage.stageName};
+        resources.push(serviceRes);
+      }
+
     }
 
     return resources;

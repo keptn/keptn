@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { Observable, Subject } from 'rxjs';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { EventService } from '../../_services/event.service';
@@ -10,6 +10,7 @@ import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
 import { Project } from '../../_models/project';
 import { ServiceResource } from '../../../../shared/interfaces/serviceResource';
+import { TreeEntry } from '../../ktb-edit-service-file-list/ktb-edit-service-file-list.component';
 
 @Component({
   selector: 'ktb-edit-service',
@@ -21,10 +22,11 @@ export class KtbEditServiceComponent implements OnDestroy {
   public project$?: Observable<Project | undefined>;
   private projectName?: string;
   private unsubscribe$: Subject<void> = new Subject<void>();
-  public fileTree: TreeEntry[] | undefined;
+  public treeLoading = false;
+  public fileTree: FileTree[] = [];
 
   constructor(private route: ActivatedRoute, private eventService: EventService, private dataService: DataService, private router: Router, private notificationsService: NotificationsService) {
-    this.route.paramMap.pipe(
+    const params$ = this.route.paramMap.pipe(
       map(params => {
         return {
           serviceName: params.get('serviceName'),
@@ -32,11 +34,24 @@ export class KtbEditServiceComponent implements OnDestroy {
         };
       }),
       filter((params): params is { serviceName: string, projectName: string } => !!params.serviceName && !!params.projectName),
-    ).subscribe(params => {
+    );
+
+    params$.subscribe(params => {
       this.serviceName = params.serviceName;
       this.projectName = params.projectName;
+    });
 
-      this.project$ = this.dataService.getProject(this.projectName);
+    this.project$ = params$.pipe(
+      switchMap(params => this.dataService.getProject(params.projectName)),
+    );
+
+    this.project$.pipe(
+      takeUntil(this.unsubscribe$),
+    ).subscribe(project => {
+      if (this.fileTree.length === 0 && project && project.gitRemoteURI && this.serviceName) {
+        this.treeLoading = true;
+        this.getResourcesAndTransform(project, this.serviceName);
+      }
     });
 
     this.eventService.deletionTriggeredEvent.pipe(
@@ -46,73 +61,25 @@ export class KtbEditServiceComponent implements OnDestroy {
       this.eventService.deletionProgressEvent.next({isInProgress: true});
       this.deleteService();
     });
-
-    this.project$?.pipe(
-      takeUntil(this.unsubscribe$),
-    ).subscribe(project => {
-      if (!this.fileTree && project && (project.gitRemoteURI || project.gitRemoteURI !== '') && this.serviceName) {
-        this.getResourcesAndTransform(project, this.serviceName);
-      }
-    });
   }
 
   public getResourcesAndTransform(project: Project, serviceName: string): void {
     this.dataService.getServiceResourceForAllStages(project.projectName, serviceName).subscribe((resources) => {
-      this.fileTree = [];
       project.stages.forEach(stage => {
-        this.fileTree?.push({stage: stage.stageName, files: this.getFileTreeForStage(resources, stage.stageName)});
+        const fileTreeObj: FileTree = {
+          stageName: stage.stageName,
+          tree: [],
+        };
+        fileTreeObj.tree = this.processFileTreeForStage(resources, stage.stageName);
+        this.fileTree.push(fileTreeObj);
       });
+      this.treeLoading = false;
     });
   }
 
-  public getFileTreeForStage(resources: ServiceResource[], stageName: string): TreeFileEntry[] {
-    const tree = new Map();
+  public processFileTreeForStage(resources: ServiceResource[], stageName: string): TreeEntry[] {
     const resourcesForStage = this.getResourcesForStage(resources, stageName);
-
-    resourcesForStage.forEach((resource) => {
-      const uriParts = resource.resourceURI.split('/');
-      const file = uriParts.pop();
-      const folder = uriParts.join('/');
-
-      const elem = tree.get(folder);
-      if (!elem) {
-        tree.set(folder, [file]);
-      } else {
-        elem.push(file);
-        tree.set(folder, elem);
-      }
-    });
-
-    const transformedTree: TreeFileEntry[] = [];
-
-    tree.forEach((val: string[], key: string) => {
-      transformedTree.push({folder: key, files: val});
-    });
-
-    return transformedTree;
-  }
-
-  public getLinkForStage(remoteUri: string | undefined, stageName: string): string {
-    if (remoteUri) {
-      if (remoteUri.includes('github.') || remoteUri.includes('gitlab.')) {
-        return remoteUri + '/tree/' + stageName + '/' + this.serviceName;
-      }
-      if (remoteUri.includes('bitbucket.')) {
-        return remoteUri + '/src/' + stageName + '/' + this.serviceName;
-      }
-      if (remoteUri.includes('azure.')) {
-        return remoteUri + '?path=' + this.serviceName + '&version=GB' + stageName;
-      }
-      if (remoteUri.includes('git-codecommit.')) {
-        const repoParts = remoteUri.split('/');
-        const region = repoParts.find(part => part.includes('git-codecommit.'))?.split('.')[1];
-        const repoName = repoParts[repoParts.length - 1];
-        return 'https://' + region + '.console.aws.amazon.com/codesuite/codecommit/repositories/' + repoName + '/browse/refs/heads/' + stageName;
-      }
-
-      return remoteUri;
-    }
-    return '';
+    return this._getTreeForStage(resourcesForStage);
   }
 
   private deleteService(): void {
@@ -140,18 +107,76 @@ export class KtbEditServiceComponent implements OnDestroy {
     return resources.filter(resource => resource.stageName === stageName);
   }
 
+  private _getTreeForStage(resources: ServiceResource[]): TreeEntry[] {
+    let tree: TreeEntry[] = [];
+    const root = {fileName: '', children: []};
+
+    for (const resource of resources) {
+      const uriParts = resource.resourceURI.substring(1, resource.resourceURI.length).split('/');
+      const subTree = this._getSubTree([...uriParts]);
+
+      if (tree.length === 0) {
+        tree = [...subTree];
+      } else {
+        this._mergeTrees(tree, subTree[0], root);
+        if (root.children.length !== 0) {
+          tree = [...tree, ...root.children];
+        }
+      }
+    }
+    return tree;
+  }
+
+  private _getSubTree(uriParts: string[]): TreeEntry[] {
+    const tree = [];
+    if (uriParts.length === 1) {
+      tree.push({fileName: uriParts[0]});
+    } else {
+      const entry: TreeEntry = {
+        fileName: uriParts[0],
+        children: undefined,
+      };
+      if (uriParts.length > 1) {
+        uriParts.shift();
+      }
+      entry.children = this._getSubTree(uriParts);
+      tree.push(entry);
+    }
+
+    return tree;
+  }
+
+  private _mergeTrees(t1: TreeEntry[], t2: TreeEntry, parent: TreeEntry): void {
+    if (t1.length === 0) {
+      parent?.children?.push(t2);
+      return;
+    }
+    let found = false;
+    let newT1: TreeEntry[] = [];
+    let current;
+    for (const e1 of t1) {
+      if (e1.fileName === t2.fileName) {
+        found = true;
+        current = e1;
+        newT1 = e1.children || [];
+        break;
+      }
+    }
+    if (found && t2.children && current) {
+      this._mergeTrees(newT1, t2.children[0], current);
+    } else {
+      parent.children?.push(t2);
+      return;
+    }
+  }
+
   public ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
 }
 
-export interface TreeEntry {
-  stage: string;
-  files: TreeFileEntry[];
-}
-
-export interface TreeFileEntry {
-  folder: string;
-  files: string[];
+export interface FileTree {
+  stageName: string;
+  tree: TreeEntry[];
 }
