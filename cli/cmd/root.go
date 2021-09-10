@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var cfgFile string
@@ -32,7 +34,7 @@ func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 		Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			runVersionCheck(vChecker)
+			runVersionCheck(vChecker, os.Args[1:])
 		},
 	}
 	return rootCmd
@@ -111,7 +113,13 @@ func (s *options) appendIfNotEmpty(newOption string) {
 	}
 }
 
-func runVersionCheck(vChecker *version.VersionChecker) {
+func runVersionCheck(vChecker *version.VersionChecker, flags []string) {
+	// Server version won't be available during `install`
+	// because the Server is not installed yet
+	if isInstallSubCommand(flags) {
+		return
+	}
+
 	var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
 
 	cliChecked, cliMsgPrinted = vChecker.CheckCLIVersion(Version, true)
@@ -142,4 +150,23 @@ func runVersionCheck(vChecker *version.VersionChecker) {
 	if cliChecked || keptnChecked {
 		updateLastVersionCheck()
 	}
+}
+
+// isInstallSubCommand checks if the subcommand is `install`
+// args here does not contain the main command
+// e.g., For `keptn -q install`, args would be just ['-q', 'install']
+func isInstallSubCommand(args []string) bool {
+	for _, arg := range args {
+		switch {
+		// skip flags
+		// e.g., keptn -q install
+		case strings.HasPrefix(arg, "-"):
+			continue
+		case arg == "install":
+			return true
+		default:
+			return false
+		}
+	}
+	return false
 }

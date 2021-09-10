@@ -3,16 +3,17 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/cli/pkg/version"
-	"github.com/mattn/go-shellwords"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cli/pkg/version"
+	shellwords "github.com/mattn/go-shellwords"
+	"github.com/spf13/cobra"
 )
 
 const unexpectedErrMsg = "unexpected error, got '%v'"
@@ -70,7 +71,7 @@ func executeActionCommandC(cmd string) (string, error) {
 		},
 	}
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-		runVersionCheck(vChecker)
+		runVersionCheck(vChecker, os.Args[1:])
 	}
 
 	rootCmd.SetOut(buf)
@@ -177,7 +178,11 @@ func Test_runVersionCheck(t *testing.T) {
 		metadataStatus   int
 		metadataResponse keptnapimodels.Metadata
 		cliVersion       string
-		wantOutput       string
+		// args excludes the main `keptn` command
+		// e.g., keptn -q install, args would be ['-q', 'install']
+		args            []string
+		wantOutput      string
+		doNotWantOutput string
 	}{
 		{
 			name:           "get version",
@@ -193,6 +198,49 @@ func Test_runVersionCheck(t *testing.T) {
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusInternalServerError,
 			wantOutput:     "* Warning: could not check Keptn server version: received invalid response from Keptn API\n",
+		},
+		{
+			name:            "skip version check for 'keptn install'",
+			cliVersion:      "0.8.0",
+			metadataStatus:  http.StatusServiceUnavailable,
+			args:            []string{"install"},
+			doNotWantOutput: "* Warning: could not check Keptn server version: Error connecting to server:",
+		},
+		{
+			name:            "skip version check for 'keptn --any-flag install'",
+			cliVersion:      "0.8.0",
+			metadataStatus:  http.StatusServiceUnavailable,
+			args:            []string{"--any-flag", "install"},
+			doNotWantOutput: "* Warning: could not check Keptn server version: Error connecting to server:",
+		},
+		{
+			name:           "show version check for 'keptn command-other-than-install'",
+			cliVersion:     "0.8.0",
+			metadataStatus: http.StatusOK,
+			metadataResponse: keptnapimodels.Metadata{
+				Keptnversion: "0.8.1-dev",
+			},
+			args:       []string{"command-other-than-install"},
+			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
+		},
+		{
+			name:           "show version check for 'keptn --any-flag command-other-than-install'",
+			cliVersion:     "0.8.0",
+			metadataStatus: http.StatusOK,
+			metadataResponse: keptnapimodels.Metadata{
+				Keptnversion: "0.8.1-dev",
+			},
+			args:       []string{"--any-flag", "command-other-than-install"},
+			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
+		},
+		{
+			name:           "don't show warning if the versions match",
+			cliVersion:     "0.8.0",
+			metadataStatus: http.StatusOK,
+			metadataResponse: keptnapimodels.Metadata{
+				Keptnversion: "0.8.0",
+			},
+			doNotWantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.0) don't match.",
 		},
 	}
 	for _, tt := range tests {
@@ -214,14 +262,18 @@ func Test_runVersionCheck(t *testing.T) {
 					VersionURL: ts.URL,
 				},
 			}
-			runVersionCheck(vChecker)
+			runVersionCheck(vChecker, tt.args)
 
 			// reset version
 			Version = ""
 
 			out := r.revertStdErr()
-			if !strings.Contains(out, tt.wantOutput) {
+			if tt.wantOutput != "" && !strings.Contains(out, tt.wantOutput) {
 				t.Errorf("unexpected output: '%s', expected '%s'", out, tt.wantOutput)
+			}
+
+			if tt.doNotWantOutput != "" && strings.Contains(out, tt.doNotWantOutput) {
+				t.Errorf("unexpected output: '%s', output should not contain '%s'", out, tt.doNotWantOutput)
 			}
 		})
 	}
