@@ -6,3 +6,7 @@ control-plane:
 
 continuous-delivery:
   enabled: false
+
+global:
+  observability:
+    otelCollectorEndpoint: ''

@@ -367,7 +367,7 @@ spec:
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
             - name: OTEL_COLLECTOR_ENDPOINT
-              value: {{ .Values.observability.otelCollectorEndpoint | default "" }}
+              value: {{ .Values.global.observability.otelCollectorEndpoint | default "" }}
           ports:
             - containerPort: 8080
           resources:
@@ -402,7 +402,7 @@ spec:
             - name: DISABLE_REGISTRATION
               value: "true"
             - name: OTEL_COLLECTOR_ENDPOINT
-              value: {{ .Values.observability.otelCollectorEndpoint | default "" }}
+              value: {{ .Values.global.observability.otelCollectorEndpoint | default "" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

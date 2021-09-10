@@ -70,7 +70,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: OTEL_COLLECTOR_ENDPOINT
-              value: {{ .Values.observability.otelCollectorEndpoint | default "" }}
+              value: {{ .Values.global.observability.otelCollectorEndpoint | default "" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -92,7 +92,7 @@ spec:
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
             - name: OTEL_COLLECTOR_ENDPOINT
-              value: {{ .Values.observability.otelCollectorEndpoint | default "" }}
+              value: {{ .Values.global.observability.otelCollectorEndpoint | default "" }}
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true

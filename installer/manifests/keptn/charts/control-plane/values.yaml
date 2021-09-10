@@ -9,9 +9,6 @@ prefixPath: ''
 
 keptnSpecVersion: latest
 
-observability:
-  otelCollectorEndpoint: ''
-
 nats:
   nameOverride: keptn-nats-cluster
   nats.cluster.replicas: 3
