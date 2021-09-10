@@ -1,6 +1,14 @@
 package event_handler
 
 import (
+	"errors"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
+	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 	"reflect"
 	"testing"
 
@@ -9,29 +17,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 )
 
 func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
-	type fields struct {
-		Logger *keptncommon.Logger
-		Event  cloudevents.Event
-	}
 	type args struct {
 		e *keptn.ConfigureMonitoringEventData
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *v1.ConfigMap
+		name string
+		args args
+		want *v1.ConfigMap
 	}{
 		{
 			name: "configure for prometheus monitoring",
-			fields: fields{
-				Logger: nil,
-				Event:  cloudevents.Event{},
-			},
 			args: args{
 				e: &keptn.ConfigureMonitoringEventData{
 					Type:    "prometheus",
@@ -51,10 +50,6 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 		},
 		{
 			name: "configure for dynatrace monitoring",
-			fields: fields{
-				Logger: nil,
-				Event:  cloudevents.Event{},
-			},
 			args: args{
 				e: &keptn.ConfigureMonitoringEventData{
 					Type:    "dynatrace",
@@ -78,13 +73,127 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			eh := &ConfigureMonitoringHandler{
-				KeptnHandler: nil,
-				Event:        tt.fields.Event,
-			}
-			if got := eh.getSLISourceConfigMap(tt.args.e); !reflect.DeepEqual(got, tt.want) {
+			if got := getSLISourceConfigMap(tt.args.e); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getSLISourceConfigMap() = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYet(t *testing.T) {
+	ce := cloudevents.NewEvent()
+
+	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
+		Project: "my-project",
+		Service: "my-service",
+		Type:    "my-sli-provider",
+	}
+	ce.SetType(keptnv2.GetTriggeredEventType(keptnv2.ConfigureMonitoringTaskName))
+	ce.SetData(cloudevents.ApplicationJSON, configureMonitoringData)
+
+	logger, _ := test.NewNullLogger()
+
+	fakeK8sClient := fake.NewSimpleClientset()
+
+	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
+	require.Nil(t, err)
+
+	err = handler.HandleEvent()
+	require.Nil(t, err)
+	require.Len(t, fakeK8sClient.Actions(), 1)
+	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
+}
+
+func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYetAndCreateFails(t *testing.T) {
+	ce := cloudevents.NewEvent()
+
+	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
+		Project: "my-project",
+		Service: "my-service",
+		Type:    "my-sli-provider",
+	}
+	ce.SetType(keptnv2.GetTriggeredEventType(keptnv2.ConfigureMonitoringTaskName))
+	ce.SetData(cloudevents.ApplicationJSON, configureMonitoringData)
+
+	logger, hook := test.NewNullLogger()
+
+	fakeK8sClient := fake.NewSimpleClientset()
+
+	fakeK8sClient.PrependReactor("create", "configmaps", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("oops")
+	})
+
+	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
+	require.Nil(t, err)
+
+	err = handler.HandleEvent()
+	require.NotNil(t, err)
+	require.Len(t, fakeK8sClient.Actions(), 1)
+	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
+
+	require.NotNil(t, hook)
+	require.NotEmpty(t, hook.Entries)
+	require.Contains(t, hook.LastEntry().Message, "could not create")
+	require.Equal(t, logrus.ErrorLevel, hook.LastEntry().Level)
+}
+
+func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExists(t *testing.T) {
+	ce := cloudevents.NewEvent()
+
+	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
+		Project: "my-project",
+		Service: "my-service",
+		Type:    "my-sli-provider",
+	}
+	ce.SetType(keptnv2.GetTriggeredEventType(keptnv2.ConfigureMonitoringTaskName))
+	ce.SetData(cloudevents.ApplicationJSON, configureMonitoringData)
+
+	logger, _ := test.NewNullLogger()
+
+	// initialize the fake k8s client with an already existing configmap for the project
+	fakeK8sClient := fake.NewSimpleClientset(getSLISourceConfigMap(configureMonitoringData))
+
+	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
+	require.Nil(t, err)
+
+	err = handler.HandleEvent()
+	require.Nil(t, err)
+	require.Len(t, fakeK8sClient.Actions(), 2)
+	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
+	require.Equal(t, "update", fakeK8sClient.Actions()[1].GetVerb())
+}
+
+func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExistsUpdateFails(t *testing.T) {
+	ce := cloudevents.NewEvent()
+
+	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
+		Project: "my-project",
+		Service: "my-service",
+		Type:    "my-sli-provider",
+	}
+	ce.SetType(keptnv2.GetTriggeredEventType(keptnv2.ConfigureMonitoringTaskName))
+	ce.SetData(cloudevents.ApplicationJSON, configureMonitoringData)
+
+	logger, hook := test.NewNullLogger()
+
+	// initialize the fake k8s client with an already existing configmap for the project
+	fakeK8sClient := fake.NewSimpleClientset(getSLISourceConfigMap(configureMonitoringData))
+
+	fakeK8sClient.PrependReactor("update", "configmaps", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("oops")
+	})
+
+	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
+	require.Nil(t, err)
+
+	err = handler.HandleEvent()
+	require.NotNil(t, err)
+	require.Len(t, fakeK8sClient.Actions(), 2)
+	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
+	require.Equal(t, "update", fakeK8sClient.Actions()[1].GetVerb())
+
+	require.NotNil(t, hook)
+	require.NotEmpty(t, hook.Entries)
+	require.Contains(t, hook.LastEntry().Message, "could not update")
+	require.Equal(t, logrus.ErrorLevel, hook.LastEntry().Level)
 }
