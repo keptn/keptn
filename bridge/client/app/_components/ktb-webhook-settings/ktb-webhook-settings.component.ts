@@ -78,7 +78,7 @@ export class KtbWebhookSettingsComponent {
       this.loading = true;
       const stage: string | undefined = this.subscription.filter?.stages?.[0];
       const services: string | undefined = this.subscription.filter?.services?.[0];
-      this.dataService.getWebhookConfig(this.projectName, stage, services)
+      this.dataService.getWebhookConfig(this.subscription.event, this.projectName, stage, services)
         .subscribe(webhookConfig => {
           this.getFormControl('method').setValue(webhookConfig.method);
           this.getFormControl('url').setValue(webhookConfig.url);

@@ -14,13 +14,10 @@ import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 import { WebhookConfig, WebhookConfigFilter } from '../../shared/models/webhook-config';
-import { CURLParser } from 'parse-curl-js';
-import { ParsedCURL } from 'parse-curl-js/dist/interface';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
 import { UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
 import axios from 'axios';
-import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 
 export class DataService {
   private apiService: ApiService;
@@ -269,25 +266,12 @@ export class DataService {
     }
   }
 
-  public async getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
+  public async getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
     const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stageName, serviceName);
 
-    let webhookCurlCommand: ParsedCURL;
-    try {
-      webhookCurlCommand = new CURLParser(webhookConfigYaml?.spec?.webhooks[0]?.requests[0]).parse();
-    } catch (error) {
+    const webhookConfig = webhookConfigYaml.parsedRequest(eventType);
+    if (!webhookConfig) {
       throw Error('Could not parse curl command');
-    }
-
-    const webhookConfig: WebhookConfig = new WebhookConfig();
-    webhookConfig.method = webhookCurlCommand.method as WebhookConfigMethod;
-    webhookConfig.url = webhookCurlCommand.url;
-    webhookConfig.payload = JSON.stringify(webhookCurlCommand.body.data);
-    for (const [name, value] of Object.entries(webhookCurlCommand.headers)) {
-      webhookConfig.header.push({
-        name,
-        value,
-      });
     }
     return webhookConfig;
   }
@@ -297,6 +281,7 @@ export class DataService {
     const currentConfig = await this.getPreviousWebhookConfig(webhookConfig.filter);
 
     if (previousConfig) {
+      // TODO: we also need previous type
       await this.removePreviousWebhooks(previousConfig, currentConfig, webhookConfig.type);
     }
 

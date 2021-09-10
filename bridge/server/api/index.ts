@@ -117,11 +117,11 @@ function apiRouter(params:
     }
   });
 
-  router.get('/uniform/registration/webhook-service/config', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/uniform/registration/webhook-service/config/:eventType', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectName = req.query.projectName?.toString();
       if (projectName) {
-        const webhookConfig = await dataService.getWebhookConfig(projectName, req.query.stageName?.toString(), req.query.serviceName?.toString());
+        const webhookConfig = await dataService.getWebhookConfig(req.params.eventType, projectName, req.query.stageName?.toString(), req.query.serviceName?.toString());
         return res.json(webhookConfig);
       } else {
         next(Error('project name not provided'));

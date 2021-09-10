@@ -587,8 +587,8 @@ export class DataService {
     return this.apiService.saveWebhookConfig(config);
   }
 
-  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
-    return this.apiService.getWebhookConfig(projectName, stageName, serviceName);
+  public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    return this.apiService.getWebhookConfig(eventType, projectName, stageName, serviceName);
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {

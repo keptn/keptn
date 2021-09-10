@@ -395,8 +395,8 @@ export class ApiService {
       });
   }
 
-  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
-    const url = `${this._baseUrl}/uniform/registration/webhook-service/config`;
+  public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${eventType}`;
     const params = {
       projectName,
       ...stageName && {stageName},
