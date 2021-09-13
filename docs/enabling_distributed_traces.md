@@ -36,7 +36,7 @@ kubectl create namespace observability
 Next, run the following `kubectl` command to create the deployment of our OpenTelemetry Collector: 
 
 ```shell
-kubectl apply -n observability -f <<EOF
+kubectl apply -n observability -f - <<EOF
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -187,7 +187,7 @@ spec:
               number: 16686
 EOF
 ```
-Make sure Jaeger is running with `kubectl get jaegers`.
+Make sure Jaeger is running with `kubectl get jaegers -n observability`.
 
 ### 4. Configure Keptn services
 
