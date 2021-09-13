@@ -81,27 +81,20 @@ export class WebhookConfigYaml {
 
   public parsedRequest(eventType: string): WebhookConfig | undefined {
     const curl = this.spec.webhooks.find(w => w.type === eventType)?.requests[0];
-    return curl ? this.parseCurl(curl) : undefined;
+    return curl ? this.parseConfig(curl) : undefined;
   }
 
-  private parseCurl(curl: string): WebhookConfig {
+  private parseConfig(curl: string): WebhookConfig {
     const config = new WebhookConfig();
-    config.url = curl.match(/.* (.*)$/)?.[1] ?? '';
-    config.payload = this.formatJSON(this.getCommandData('--data', curl).data);
-    config.proxy = this.getCommandData('--proxy', curl).data;
-    config.method = this.getCommandData('--request', curl).data as WebhookConfigMethod;
-    config.header = this.getHeaders('--header', curl);
-    return config;
-  }
-
-  private getHeaders(arg: string, command: string): { name: string, value: string }[] {
-    let index = 0;
+    const result = this.parseCurl(curl);
+    config.url = result._?.[0] ?? '';
+    config.payload = this.formatJSON(result.data?.[0] ?? '');
+    config.proxy = result.proxy?.[0] ?? '';
+    config.method = (result.request?.[0] ?? '') as WebhookConfigMethod;
     const headers: { name: string, value: string }[] = [];
-    while (index !== -1) {
-      const result = this.getCommandData(arg, command, index);
-      index = result.index;
-      if (result.data) {
-        const headerInfo = result.data.split(':');
+    if (result.header) {
+      for (const header of result.header) {
+        const headerInfo = header.split(':');
 
         headers.push({
           name: headerInfo[0]?.trim(),
@@ -109,29 +102,74 @@ export class WebhookConfigYaml {
         });
       }
     }
-    return headers;
+
+    config.header = headers;
+    return config;
   }
 
-  private getCommandData(arg: string, command: string, fromIndex = 0): { data: string, index: number } {
-    arg = `${arg} `;
-    const dataIndex = command.indexOf(arg, fromIndex);
-    let data = '';
-    let startIndex = -1;
-    if (dataIndex > -1) {
-      startIndex = dataIndex + arg.length;
-      const chars = [...command.substring(startIndex)];
-      const startsWith = chars[0];
-      if (startsWith === '\'' || startsWith === '\"') {
-        let i = 1;
-        for (; i < chars.length && (chars[i] !== startsWith || chars[i] === startsWith && chars[i - 1] === '\\'); ++i) {
+  private parseCurl(curl: string): { [key: string]: string[] } {
+    const startCommand = 'curl ';
+    const result: { [key: string]: string[] } = {};
+    if (curl.startsWith(startCommand)) {
+      let i = startCommand.length;
+      while (i < curl.length) {
+        while (curl[i] === ' ') {
+          ++i;
         }
-        data = command.substring(startIndex + 1, i + startIndex);
-      } else {
-        data = command.substring(startIndex, chars.findIndex(c => c === ' ') + startIndex);
+        let command = '_';
+        if (curl[i] === '-') {
+          const commandInfo = this.getCommand(curl, i);
+          i = commandInfo.index + 1;
+          command = commandInfo.data;
+        }
+        while (curl[i] === ' ') {
+          ++i;
+        }
+        const commandData = this.getCommandData(curl, i);
+        i = commandData.index;
+        const data = result[command];
+        if (data) {
+          data.push(commandData.data);
+        } else {
+          result[command] = [commandData.data];
+        }
+        ++i;
       }
     }
-    const formattedData = data.replace(/\\"/g, '"');
-    return {data: formattedData, index: startIndex};
+    return result;
+  }
+
+  private getCommandData(curl: string, i: number): { data: string, index: number } {
+    const startsWith = curl[i];
+    let data = '';
+    const startIndex = i;
+    if (startsWith === '\'' || startsWith === '\"') {
+      for (i = i + 1; i < curl.length && (curl[i] !== startsWith || curl[i] === startsWith && curl[i - 1] === '\\'); ++i) {
+      }
+      data = curl.substring(startIndex + 1, i);
+    } else {
+      i = curl.indexOf(' ', startIndex);
+      if (i === -1) {
+        i = curl.length;
+      }
+      data = curl.substring(startIndex, i);
+    }
+    return {
+      data,
+      index: i,
+    };
+  }
+
+  private getCommand(curl: string, i: number): { data: string, index: number } {
+    let startCommandIndex = i + 1;
+    if (curl[i + 1] === '-') {
+      ++startCommandIndex;
+    }
+    i = curl.indexOf(' ', startCommandIndex);
+    return {
+      data: curl.substring(startCommandIndex, i),
+      index: i,
+    };
   }
 
   private formatJSON(data: string): string {

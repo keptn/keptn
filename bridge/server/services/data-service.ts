@@ -348,7 +348,7 @@ export class DataService {
       params += `--proxy ${webhookConfig.proxy} `;
     }
     if (webhookConfig.payload) {
-      params += `--data '${webhookConfig.payload.replace((/ {2}|\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
+      params += `--data '${webhookConfig.payload.replace((/ {2}|\r\n|\n|\r/gm), '')}' `;
     }
     return `curl ${params}${webhookConfig.url}`;
   }
