@@ -428,7 +428,7 @@ jobs:
           # start e2e tests in bridge folder
           cd bridge
           npm ci
-          npm run cypress:run -- --browser=chrome --base-url=$KEPTN_BRIDGE_URL
+          npm run cypress:run -- --browser=chrome --config baseUrl=$KEPTN_BRIDGE_URL
 
           # re-enable basic auth of bridge
           kubectl create secret generic my-secret -n keptn --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
