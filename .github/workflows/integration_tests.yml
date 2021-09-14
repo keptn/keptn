@@ -455,7 +455,7 @@ jobs:
 
           # extract Keptn Bridge Info
           statusresponse=$(keptn status)
-          export KEPTN_BRIDGE_URL=$(echo "$returnstr" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
+          export KEPTN_BRIDGE_URL=$(echo "$statusresponse" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
           export KEPTN_BRIDGE_USER=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
           export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
 
