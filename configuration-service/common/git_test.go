@@ -316,6 +316,8 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 						return "", nil
 					} else if args[0] == "push" {
 						return "", nil
+					} else if args[0] == "pull" {
+						return "", nil
 					}
 					return "", errors.New("unexpected command")
 				}},
@@ -344,6 +346,11 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				{
 					Command:   "git",
 					Args:      []string{"checkout", "master"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"pull", "-s", "recursive", "-X", "theirs", "https://my-repo.git"},
 					Directory: "./debug/config/my-project",
 				},
 				{
