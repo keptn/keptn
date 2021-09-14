@@ -1,6 +1,6 @@
 describe('Bridge Navigation', () => {
   beforeEach(() => {
-    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {fixture: 'projects.mock.json'});
+    cy.intercept('/api/controlPlane/v1/project*', {fixture: 'projects.mock.json'});
   });
 
 
