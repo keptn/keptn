@@ -7,6 +7,7 @@ import (
 	common_mock "github.com/keptn/keptn/configuration-service/common/fake"
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"github.com/keptn/keptn/configuration-service/models"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 )
@@ -360,6 +361,66 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "push to upstream - error when pulling changes",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+					if args[0] == "for-each-ref" {
+						return "master", nil
+					} else if args[0] == "remote" {
+						return `* remote origin
+						  Fetch URL: https://my-repo.git
+						  Push  URL: https://my-repo.git
+						  HEAD branch: master
+						  Remote branch:
+							release-0.8.0 tracked
+						  Local branch configured for 'git pull':
+							release-0.8.0 merges with remote release-0.8.0
+						  Local ref configured for 'git push':
+							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
+					} else if args[0] == "checkout" {
+						return "", nil
+					} else if args[0] == "push" {
+						return "", nil
+					} else if args[0] == "pull" {
+						return "", errors.New("oops")
+					}
+					return "", errors.New("unexpected command")
+				}},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+				repoURI: "https://my-repo.git",
+			},
+			wantErr: true,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"for-each-ref", "--format=%(refname:short)", "refs/heads/*"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"remote", "show", "origin"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"checkout", "master"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"pull", "-s", "recursive", "-X", "theirs", "https://my-repo.git"},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -367,8 +428,13 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				Executor:         tt.fields.Executor,
 				CredentialReader: tt.fields.CredentialReader,
 			}
-			if err := g.setUpstreamsAndPush(tt.args.project, tt.args.credentials, tt.args.repoURI); (err != nil) != tt.wantErr {
+			err := g.setUpstreamsAndPush(tt.args.project, tt.args.credentials, tt.args.repoURI)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("setUpstreamsAndPush() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr {
+				require.NotNil(t, err)
+				require.NotContains(t, err.Error(), "token")
 			}
 			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
 
