@@ -421,9 +421,13 @@ jobs:
           # extract Keptn API Token
           export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
+          echo "Checking if keptn is available..."
+          keptn status
+
           # extract Keptn Bridge Info
           statusresponse=$(keptn status)
           export KEPTN_BRIDGE_URL=$(echo "$statusresponse" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
+          echo "Keptn Bridge URL: $KEPTN_BRIDGE_URL"
           export KEPTN_BRIDGE_USER=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
           export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
 
