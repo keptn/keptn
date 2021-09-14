@@ -469,6 +469,37 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 
 }
 
+func TestUpdate_OldProjectNotAvailable(t *testing.T) {
+
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+		return nil, nil
+	}
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return nil, nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	params := &operations.UpdateProjectParams{
+		GitRemoteURL: "git-url",
+		GitToken:     "git-token",
+		GitUser:      "git-user",
+		Name:         common.Stringp("my-project"),
+	}
+	err, rollback := instance.Update(params)
+	assert.NotNil(t, err)
+	assert.Equal(t, ErrProjectNotFound, err)
+	rollback()
+
+}
+
 func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
