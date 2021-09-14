@@ -113,38 +113,45 @@ export class WebhookConfigYaml {
     if (curl.startsWith(startCommand)) {
       let i = startCommand.length;
       while (i < curl.length) {
-        while (curl[i] === ' ') {
-          ++i;
-        }
+        i = this.skipSpace(curl, i);
         let command = '_';
         if (curl[i] === '-') {
-          const commandInfo = this.getCommand(curl, i);
+          const commandInfo = this.getNextCommand(curl, i);
           i = commandInfo.index + 1;
           command = commandInfo.data;
         }
-        while (curl[i] === ' ') {
+        i = this.skipSpace(curl, i);
+        if (i < curl.length) {
+          const commandData = this.getNextCommandData(curl, i);
+          i = commandData.index;
+          const data = result[command];
+          if (data) {
+            data.push(commandData.data);
+          } else {
+            result[command] = [commandData.data];
+          }
           ++i;
         }
-        const commandData = this.getCommandData(curl, i);
-        i = commandData.index;
-        const data = result[command];
-        if (data) {
-          data.push(commandData.data);
-        } else {
-          result[command] = [commandData.data];
-        }
-        ++i;
       }
     }
     return result;
   }
 
-  private getCommandData(curl: string, i: number): { data: string, index: number } {
+  private skipSpace(curl: string, index: number): number {
+    while (curl[index] === ' ') {
+      ++index;
+    }
+    return index;
+  }
+
+  private getNextCommandData(curl: string, i: number): { data: string, index: number } {
     const startsWith = curl[i];
     let data = '';
     const startIndex = i;
     if (startsWith === '\'' || startsWith === '\"') {
-      for (i = i + 1; i < curl.length && (curl[i] !== startsWith || curl[i] === startsWith && curl[i - 1] === '\\'); ++i) {
+      ++i;
+      while (i < curl.length && (curl[i] !== startsWith || curl[i] === startsWith && curl[i - 1] === '\\')) {
+        ++i;
       }
       data = curl.substring(startIndex + 1, i);
     } else {
@@ -160,7 +167,7 @@ export class WebhookConfigYaml {
     };
   }
 
-  private getCommand(curl: string, i: number): { data: string, index: number } {
+  private getNextCommand(curl: string, i: number): { data: string, index: number } {
     let startCommandIndex = i + 1;
     if (curl[i + 1] === '-') {
       ++startCommandIndex;
@@ -168,7 +175,7 @@ export class WebhookConfigYaml {
     i = curl.indexOf(' ', startCommandIndex);
     return {
       data: curl.substring(startCommandIndex, i),
-      index: i,
+      index: i === -1 ? curl.length : i,
     };
   }
 
