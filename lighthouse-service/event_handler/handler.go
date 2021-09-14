@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/sirupsen/logrus"
 	"net/http"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -56,7 +57,7 @@ func NewEventHandler(event cloudevents.Event, logger *keptncommon.Logger) (Evalu
 			EventStore: keptnHandler.EventHandler,
 		}, nil
 	case keptn.ConfigureMonitoringEventType:
-		return &ConfigureMonitoringHandler{Event: event, KeptnHandler: keptnHandler}, nil
+		return NewConfigureMonitoringHandler(event, logrus.New())
 	default:
 		logger.Info("received unhandled event type")
 		return nil, nil
