@@ -60,7 +60,6 @@ func (c *ControlPlane) Unregister() error {
 }
 
 func (c *ControlPlane) createRegistrationData() models.Integration {
-
 	var location string
 	if config.Global.Location == "" {
 		location = config.ConnectionTypeToLocation[c.connectionType]
@@ -94,15 +93,9 @@ func (c *ControlPlane) createRegistrationData() models.Integration {
 		config.Global.K8sNodeName = "keptn-node"
 	}
 
-	//create subscription
-	topics := []string{}
-	if config.Global.PubSubTopic == "" {
-		topics = []string{}
-	} else {
-		topics = strings.Split(config.Global.PubSubTopic, ",")
-	}
+	// create subscription
 	var subscriptions []models.EventSubscription
-	for _, t := range topics {
+	for _, t := range config.Global.GetPubSubTopics() {
 		ts := models.EventSubscription{
 			Event: t,
 			Filter: models.EventSubscriptionFilter{

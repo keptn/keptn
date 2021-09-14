@@ -142,3 +142,10 @@ func (env *EnvConfig) GetPubSubRecipientURL() string {
 	}
 	return recipientService + ":" + env.PubSubRecipientPort + path
 }
+
+func (env *EnvConfig) GetPubSubTopics() []string {
+	if env.PubSubTopic == "" {
+		return []string{}
+	}
+	return strings.Split(env.PubSubTopic, ",")
+}

@@ -22,19 +22,32 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 		envConfig config.EnvConfig
 	}
 	tests := []struct {
-		name        string
-		args        args
-		eventSender EventSender
+		name                   string
+		args                   args
+		eventSender            EventSender
+		numberOfReceivedEvents int
 	}{
 		{
-			name: "receive events via NATS and forward",
+			name: "subscribe to multiple topics - receive events via NATS and forward",
 			args: args{envConfig: config.EnvConfig{
 				PubSubRecipient:     "http://127.0.0.1",
 				PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
 				PubSubURL:           natsURL,
 				HTTPPollingInterval: "1",
 			}},
-			eventSender: &keptnv2.TestSender{},
+			eventSender:            &keptnv2.TestSender{},
+			numberOfReceivedEvents: 2,
+		},
+		{
+			name: "subscribe to zero topics - receive no events via NATS",
+			args: args{envConfig: config.EnvConfig{
+				PubSubRecipient:     "http://127.0.0.1",
+				PubSubTopic:         "",
+				PubSubURL:           natsURL,
+				HTTPPollingInterval: "1",
+			}},
+			eventSender:            &keptnv2.TestSender{},
+			numberOfReceivedEvents: 0,
 		},
 	}
 
@@ -67,7 +80,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 				}`))
 
 			assert.Eventually(t, func() bool {
-				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
+				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == tt.numberOfReceivedEvents
 			}, time.Second*time.Duration(10), time.Second)
 
 			cancel()
