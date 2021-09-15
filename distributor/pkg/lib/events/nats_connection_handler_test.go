@@ -2,6 +2,8 @@ package events
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
@@ -183,4 +185,61 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
+	config.Global.PubSubReceiverGroup = "a-group"
+
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	topics := []string{
+		"test-topic",
+	}
+	// subscribe with first subscriber
+	firstSubscriber := make(chan struct{})
+	nch1 := &NatsConnectionHandler{
+		natsURL: natsURL,
+		MessageHandler: func(m *nats.Msg) {
+			firstSubscriber <- struct{}{}
+		},
+	}
+	err := nch1.SubscribeToTopics(topics)
+	require.Nil(t, err)
+
+	// subscribe with second subscriber
+	secondSubscriber := make(chan struct{})
+	nch2 := &NatsConnectionHandler{
+		natsURL: natsURL,
+		MessageHandler: func(m *nats.Msg) {
+			secondSubscriber <- struct{}{}
+		},
+	}
+	err = nch2.SubscribeToTopics(topics)
+	require.Nil(t, err)
+
+	// publish a message
+	<-time.After(1 * time.Second)
+	_ = natsPublisher.Publish("test-topic", []byte("message1"))
+
+	var totalNumberOfDeliveries int
+
+	// handle messages for first subscriber
+	select {
+	case <-firstSubscriber:
+		totalNumberOfDeliveries++
+	case <-time.After(5 * time.Second):
+	}
+
+	// handle messages for second sub subscriber
+	select {
+	case <-secondSubscriber:
+		totalNumberOfDeliveries++
+	case <-time.After(5 * time.Second):
+	}
+	// assert that only one of the two subscriber has processed/received a message
+	assert.Equal(t, 1, totalNumberOfDeliveries)
+
 }

@@ -2,6 +2,7 @@ package events
 
 import (
 	"errors"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
@@ -66,7 +67,8 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 
 		for _, topic := range nch.topics {
 			logger.Infof("Subscribing to topic %s ...", topic)
-			sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
+			sub, err := nch.NatsConnection.QueueSubscribe(topic, config.Global.PubSubReceiverGroup, nch.MessageHandler)
+			//sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
 			}
