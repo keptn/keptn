@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	"github.com/docker/docker-credential-helpers/wincred"
+	"github.com/keptn/keptn/cli/pkg/config"
 )
 
 type CredentialManager struct {
