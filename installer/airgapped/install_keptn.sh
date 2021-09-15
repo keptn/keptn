@@ -2,7 +2,7 @@
 
 if [[ $# -ne 4 ]]; then
     echo "Please provide the target registry and helm charts as parameters, e.g., "
-    echo "$1 \"docker.io/your-username/\" \"keptn-0.8.4.tgz\" \"helm-service-0.8.4.tgz\" \"jmeter-service-0.8.4.tgz\""
+    echo "$1 \"docker.io/your-username/\" \"keptn-0.9.0.tgz\" \"helm-service-0.9.0.tgz\" \"jmeter-service-0.9.0.tgz\""
     exit 1
 fi
 
