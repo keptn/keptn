@@ -152,22 +152,40 @@ export class KtbEditServiceComponent implements OnDestroy {
       return;
     }
     let found = false;
-    let newT1: TreeEntry[] = [];
-    let current;
     for (const e1 of t1) {
       if (e1.fileName === t2.fileName) {
+        if (e1.children && t2.children) {
+          this._mergeTrees(e1.children, t2.children[0], e1);
+        }
         found = true;
-        current = e1;
-        newT1 = e1.children || [];
         break;
       }
     }
-    if (found && t2.children && current) {
-      this._mergeTrees(newT1, t2.children[0], current);
-    } else {
-      parent.children?.push(t2);
+    if (!found) {
+      const children = parent.children;
+
+      const folders = children?.filter(child => child.children) || [];
+      const files = children?.filter(child => !child.children) || [];
+
+      if (t2.children) {
+        folders.push(t2);
+      } else {
+        files.push(t2);
+      }
+
+      folders.sort((a, b) => this._compareStrings(a, b));
+      files.sort((a, b) => this._compareStrings(a, b));
+
+      parent.children = [...folders, ...files];
       return;
     }
+  }
+
+  private _compareStrings(a: TreeEntry, b: TreeEntry): number {
+    if (a.fileName === b.fileName) {
+      return 0;
+    }
+    return a.fileName < b.fileName ? -1 : 1;
   }
 
   public ngOnDestroy(): void {

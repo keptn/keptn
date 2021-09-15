@@ -1,17 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list.component';
+import { AppModule } from '../app.module';
+import { By } from '@angular/platform-browser';
 
 describe('KtbEditServiceFileListComponent', () => {
   let component: KtbEditServiceFileListComponent;
   let fixture: ComponentFixture<KtbEditServiceFileListComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({})
-      .compileComponents();
-  });
+    await TestBed.configureTestingModule({
+      imports: [
+        AppModule,
+      ],
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbEditServiceFileListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -19,6 +22,77 @@ describe('KtbEditServiceFileListComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should show the files for one stage', () => {
+    // given
+    const tree = [
+      {
+        fileName: 'helm',
+        children: [
+          {
+            fileName: 'carts',
+            children: [
+              {
+                fileName: 'templates',
+                children: [
+                  {
+                    fileName: 'deployment.yaml',
+                  },
+                  {
+                    fileName: 'service.yaml',
+                  },
+                ],
+              },
+              {
+                fileName: 'Chart.yaml',
+              },
+              {
+                fileName: 'values.yaml',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        fileName: 'metadata.yaml',
+      }];
+    component.stageName = 'dev';
+    component.serviceName = 'carts';
+    component.remoteUri = 'https://github.com/keptn/sockshop-upstream';
+    component.treeData = tree;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const stageElem = fixture.nativeElement.querySelector('div > div.bold');
+
+    for (let i = 0; i <= 4; i++) {
+      const toggles = fixture.debugElement.queryAll(By.css('.dt-tree-table-toggle:enabled'));
+      toggles[toggles.length - 1].nativeElement.click();
+      fixture.detectChanges();
+    }
+
+    const tableRowElements = fixture.nativeElement.querySelectorAll('.dt-tree-table-row');
+
+    expect(component.treeDataSource.data).toEqual(tree);
+    expect(stageElem).toBeTruthy();
+    expect(stageElem.textContent).toEqual('dev');
+
+    expect(tableRowElements).toBeTruthy();
+    expect(tableRowElements.length).toEqual(8);
+    expect(tableRowElements[0].textContent.trim()).toEqual('helm');
+    expect(tableRowElements[0].getAttribute('aria-expanded')).toEqual('true');
+    expect(tableRowElements[1].textContent.trim()).toEqual('carts');
+    expect(tableRowElements[1].getAttribute('aria-expanded')).toEqual('true');
+    expect(tableRowElements[2].textContent.trim()).toEqual('templates');
+    expect(tableRowElements[2].getAttribute('aria-expanded')).toEqual('true');
+    expect(tableRowElements[3].textContent.trim()).toEqual('deployment.yaml');
+    expect(tableRowElements[4].textContent.trim()).toEqual('service.yaml');
+    expect(tableRowElements[5].textContent.trim()).toEqual('Chart.yaml');
+    expect(tableRowElements[6].textContent.trim()).toEqual('values.yaml');
+    expect(tableRowElements[7].textContent.trim()).toEqual('metadata.yaml');
   });
 
   it('should get the link for github for a given stage', () => {

@@ -102,34 +102,44 @@ describe('KtbEditServiceComponent', () => {
 
   it('should return a transformed fileTree for a given stage', () => {
     // given
-    // const expectedTree = [{
-    //   files: [
-    //     'Chart.yaml',
-    //     'values.yaml',
-    //   ],
-    //   folder:
-    //     '/helm/carts',
-    // }, {
-    //   files: [
-    //     'deployment.yaml',
-    //     'service.yaml',
-    //   ],
-    //   folder:
-    //     '/helm/carts/templates',
-    // }, {
-    //   files: [
-    //     'metadata.yaml',
-    //   ],
-    //   folder:
-    //     '',
-    // }];
+    const expectedTree = [
+      {
+        fileName: 'helm',
+        children: [
+          {
+            fileName: 'carts',
+            children: [
+              {
+                fileName: 'templates',
+                children: [
+                  {
+                    fileName: 'deployment.yaml',
+                  },
+                  {
+                    fileName: 'service.yaml',
+                  },
+                ],
+              },
+              {
+                fileName: 'Chart.yaml',
+              },
+              {
+                fileName: 'values.yaml',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        fileName: 'metadata.yaml',
+      }];
 
     // when
     const fileTree = component.processFileTreeForStage(ServiceResourceMock, 'dev');
 
     // then
     expect(fileTree).toBeTruthy();
-    // expect(fileTree).toEqual(expectedTree);
+    expect(fileTree).toEqual(expectedTree);
   });
 
   it('should a note that the Git upstream has to be set if the remoteURI is not set', () => {
@@ -146,33 +156,5 @@ describe('KtbEditServiceComponent', () => {
     // then
     expect(elem).toBeTruthy();
     expect(elem.textContent).toContain('There is no Git upstream repository set.');
-  });
-
-  it('should show the files for all stages when the remoteURI is set', () => {
-    // given
-    const projectMock = ProjectMock;
-    projectMock.gitRemoteURI = 'https://github.com/keptn/sockshop-upstream';
-    projectMock.gitUser = 'keptn';
-    component.project$ = of(projectMock);
-
-    // when
-    component.getResourcesAndTransform(projectMock, 'carts');
-    fixture.detectChanges();
-
-    // then
-    const stages = fixture.nativeElement.querySelectorAll('.settings-section:first-of-type > div > div.bold');
-    const folders = fixture.nativeElement.querySelectorAll('.settings-section:first-of-type .dt-expandable-section-header-content');
-
-    expect(stages).toBeTruthy();
-    expect(stages.length).toEqual(3);
-    expect(stages[0].textContent).toEqual('development');
-    expect(stages[1].textContent).toEqual('staging');
-    expect(stages[2].textContent).toEqual('production');
-    expect(folders).toBeTruthy();
-    expect(folders.length).toEqual(4);
-    expect(folders[0].textContent).toEqual('/helm/carts');
-    expect(folders[1].textContent).toEqual('/helm/carts/templates');
-    expect(folders[2].textContent).toEqual('/helm/carts');
-    expect(folders[3].textContent).toEqual('/helm/carts/templates');
   });
 });
