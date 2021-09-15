@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list.component';
 import { AppModule } from '../app.module';
 import { By } from '@angular/platform-browser';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbEditServiceFileListComponent', () => {
   let component: KtbEditServiceFileListComponent;
@@ -13,7 +12,6 @@ describe('KtbEditServiceFileListComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         AppModule,
-        HttpClientTestingModule,
       ],
     }).compileComponents();
 

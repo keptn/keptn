@@ -21,7 +21,7 @@ import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
-import { ServiceResource } from '../../../shared/interfaces/serviceResource';
+import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
 @Injectable({
   providedIn: 'root',
@@ -582,8 +582,8 @@ export class DataService {
       );
   }
 
-  public getServiceResourceForAllStages(projectName: string, serviceName: string): Observable<ServiceResource[]> {
-    return this.apiService.getServiceResourceForAllStages(projectName, serviceName);
+  public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
+    return this.apiService.getFileTreeForService(projectName, serviceName);
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {

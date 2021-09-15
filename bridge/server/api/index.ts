@@ -125,9 +125,9 @@ function apiRouter(params:
     }
   });
 
-  router.get('/project/:projectName/service/:serviceName/resources', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/project/:projectName/service/:serviceName/files', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const serviceResources = await dataService.getResourcesForProjectAndService(req.params.projectName, req.params.serviceName);
+      const serviceResources = await dataService.getResourceFileTreesForService(req.params.projectName, req.params.serviceName);
       return res.json(serviceResources);
     } catch (error) {
       return next(error);

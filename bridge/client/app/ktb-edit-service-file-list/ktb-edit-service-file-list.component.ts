@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
+import { TreeEntry } from '../../../shared/interfaces/resourceFileTree';
 
 @Component({
   selector: 'ktb-edit-service-file-list',
@@ -85,11 +86,6 @@ export class KtbEditServiceFileListComponent {
 
     return flatNode;
   }
-}
-
-export interface TreeEntry {
-  fileName: string;
-  children?: TreeEntry[];
 }
 
 export class TreeFlatEntry {

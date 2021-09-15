@@ -12,13 +12,20 @@
             <a [routerLink]="['/', 'project', project.projectName, 'settings', 'project']">set a Git upstream repository</a>.
           </ng-container>
 
-          <dt-loading-spinner *ngIf="treeLoading"></dt-loading-spinner>
-          <div class="settings-section" *ngIf="fileTree.length > 0">
-            <ng-container *ngFor="let stageEntry of fileTree">
-              <ktb-edit-service-file-list [stageName]="stageEntry.stageName" [remoteUri]="project.gitRemoteURI" [serviceName]="serviceName" [treeData]="stageEntry.tree"></ktb-edit-service-file-list>
-            </ng-container>
-          </div>
-          
+          <ng-template #loadingFiles>
+            <dt-loading-spinner></dt-loading-spinner>
+          </ng-template>
+          <ng-container *ngIf="fileTree$ | async as fileTree; else loadingFiles">
+            <div *ngIf="fileTree.length > 0">
+              <ng-container *ngFor="let stageEntry of fileTree">
+                <ktb-edit-service-file-list [stageName]="stageEntry.stageName" [remoteUri]="project.gitRemoteURI" [serviceName]="serviceName" [treeData]="stageEntry.tree"></ktb-edit-service-file-list>
+              </ng-container>
+            </div>
+            <div *ngIf="fileTree.length === 0">
+              There are no files in the Git upstream repository
+            </div>
+          </ng-container>
+
         </div>
       </ng-container>
     </div>

@@ -4,13 +4,19 @@ import { AppModule } from '../../app.module';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { EventService } from '../../_services/event.service';
 import { DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ServiceResourceMock } from '../../_models/serviceResource.mock';
 import { ProjectMock } from '../../_models/project.mock';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { FileTreeMock } from '../../_models/fileTree.mock';
+import { By } from '@angular/platform-browser';
+
+const paramMapSubject = new BehaviorSubject(convertToParamMap({
+  serviceName: 'carts',
+  projectName: 'sockshop',
+}));
 
 describe('KtbEditServiceComponent', () => {
   let component: KtbEditServiceComponent;
@@ -26,10 +32,7 @@ describe('KtbEditServiceComponent', () => {
         {provide: DataService, useClass: DataServiceMock},
         {
           provide: ActivatedRoute, useValue: {
-            paramMap: of(convertToParamMap({
-              serviceName: 'carts',
-              projectName: 'sockshop',
-            })),
+            paramMap: paramMapSubject.asObservable(),
             snapshot: {},
           },
         },
@@ -73,73 +76,48 @@ describe('KtbEditServiceComponent', () => {
     expect(deleteProgressSpy).toHaveBeenCalledWith({isInProgress: false, result: DeleteResult.ERROR, error: 'service could not be deleted'});
   });
 
-  it('should get service resources for project sockshop and service carts', () => {
+  it('should get the file tree of all stages for project sockshop and service carts', (done) => {
     // given, when
-    const project = ProjectMock;
+    const expectedTree = FileTreeMock;
+
     const dataService = TestBed.inject(DataService);
-    const spy = jest.spyOn(dataService, 'getServiceResourceForAllStages');
+    const spy = jest.spyOn(dataService, 'getFileTreeForService');
 
     // when
-    component.getResourcesAndTransform(project, 'carts');
+    paramMapSubject.next(convertToParamMap({
+      serviceName: 'carts',
+      projectName: 'sockshop',
+    }));
 
     // then
     expect(spy).toHaveBeenCalledWith('sockshop', 'carts');
-    expect(component.fileTree).toBeTruthy();
-    expect(component.fileTree?.length).toBeGreaterThan(0);
-  });
-
-  it('should get resources for a given stage', () => {
-    // given, when
-    const resourcesForDev = component.getResourcesForStage(ServiceResourceMock, 'dev');
-
-    // then
-    expect(resourcesForDev).toBeTruthy();
-    expect(resourcesForDev.length).toEqual(5);
-    resourcesForDev.forEach((resource) => {
-      expect(resource.stageName).toEqual('dev');
+    component.fileTree$.subscribe((fileTree) => {
+      expect(fileTree).toBeTruthy();
+      expect(fileTree).toEqual(expectedTree);
+      done();
     });
   });
 
-  it('should return a transformed fileTree for a given stage', () => {
-    // given
-    const expectedTree = [
-      {
-        fileName: 'helm',
-        children: [
-          {
-            fileName: 'carts',
-            children: [
-              {
-                fileName: 'templates',
-                children: [
-                  {
-                    fileName: 'deployment.yaml',
-                  },
-                  {
-                    fileName: 'service.yaml',
-                  },
-                ],
-              },
-              {
-                fileName: 'Chart.yaml',
-              },
-              {
-                fileName: 'values.yaml',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        fileName: 'metadata.yaml',
-      }];
+  it('should show a message when file tree is empty', (done) => {
+    // given, when
+    const dataService = TestBed.inject(DataService);
+    jest.spyOn(dataService, 'getFileTreeForService').mockReturnValue(of([]));
 
     // when
-    const fileTree = component.processFileTreeForStage(ServiceResourceMock, 'dev');
+    paramMapSubject.next(convertToParamMap({
+      serviceName: 'carts',
+      projectName: 'sockshop',
+    }));
 
     // then
-    expect(fileTree).toBeTruthy();
-    expect(fileTree).toEqual(expectedTree);
+    component.fileTree$.subscribe((fileTree) => {
+      fixture.detectChanges();
+      const section = fixture.debugElement.query(By.css('.settings-section:first-of-type > div'));
+      expect(fileTree).toBeTruthy();
+      expect(fileTree).toEqual([]);
+      expect(section.nativeElement.textContent.trim()).toEqual('There are no files in the Git upstream repository');
+      done();
+    });
   });
 
   it('should a note that the Git upstream has to be set if the remoteURI is not set', () => {

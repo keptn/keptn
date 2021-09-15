@@ -20,8 +20,8 @@ import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { UniformRegistration } from '../_models/uniform-registration';
-import { ServiceResource } from '../../../shared/interfaces/serviceResource';
 import { shareReplay } from 'rxjs/operators';
+import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
 @Injectable({
   providedIn: 'root',
@@ -235,9 +235,9 @@ export class ApiService {
       .get<Resource>(url);
   }
 
-  public getServiceResourceForAllStages(projectName: string, serviceName: string): Observable<ServiceResource[]> {
-    const url = `${this._baseUrl}/project/${projectName}/service/${serviceName}/resources`;
-    return this.http.get<ServiceResource[]>(url).pipe(shareReplay());
+  public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
+    const url = `${this._baseUrl}/project/${projectName}/service/${serviceName}/files`;
+    return this.http.get<FileTree[]>(url).pipe(shareReplay());
   }
 
   public getTaskNames(projectName: string): Observable<string[]> {

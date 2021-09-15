@@ -105,11 +105,11 @@ export class ApiService {
     return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
   }
 
-  public getServiceResource(projectName: string, stageName: string, serviceName: string, nextPageKey?: number): Promise<AxiosResponse<ResourceResponse>> {
+  public getServiceResource(projectName: string, stageName: string, serviceName: string, nextPageKey?: string): Promise<AxiosResponse<ResourceResponse>> {
     const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource`;
     const params: { [key: string]: string } = {};
     if (nextPageKey) {
-      params.nextPageKey = String(nextPageKey);
+      params.nextPageKey = nextPageKey;
     }
 
     return this.axios.get<ResourceResponse>(url, params);

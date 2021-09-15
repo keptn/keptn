@@ -16,8 +16,8 @@ import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-lo
 import { SequencesData } from './_mockData/sequences.mock';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { ServiceResource } from '../../../shared/interfaces/serviceResource';
-import { ServiceResourceMock } from '../_models/serviceResource.mock';
+import { FileTreeMock } from '../_models/fileTree.mock';
+import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
 @Injectable({
   providedIn: 'root',
@@ -133,7 +133,7 @@ export class DataServiceMock extends DataService {
     return JSON.parse(JSON.stringify(data));
   }
 
-  public getServiceResourceForAllStages(projectName: string, serviceName: string): Observable<ServiceResource[]> {
-    return of(ServiceResourceMock);
+  public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
+    return of(FileTreeMock);
   }
 }
