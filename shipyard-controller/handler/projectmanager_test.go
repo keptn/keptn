@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -518,7 +519,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 		return fmt.Errorf("whoops")
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, nil
+		return &models.ExpandedProject{}, nil
 	}
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &operations.UpdateProjectParams{
@@ -530,6 +531,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
 	rollback()
+	require.Len(t, secretStore.UpdateSecretCalls(), 1)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 
 }
