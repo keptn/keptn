@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"strings"
 
@@ -118,7 +119,15 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 
 	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
 
-	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier)
+	cm := credentialmanager.NewCredentialManager(assumeYes)
+	currentKeptnCLIContext := cm.GetCurrentKeptnCLIConfig().CurrentContext
+	currentKubernetesContext := cm.GetCurrentKubeConfig().CurrentContext
+
+	if currentKeptnCLIContext != currentKubernetesContext {
+		return fmt.Errorf("your current Keptn CLI context '%s' does not match current Kubeconfig '%s'. Please ensure your kubectl CLI is connected to '%s' before upgrading your Keptn cluster", currentKeptnCLIContext, currentKubernetesContext, currentKubernetesContext)
+	}
+
+	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier, cm)
 	if err != nil {
 		return err
 	}

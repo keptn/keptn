@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
+	"github.com/keptn/keptn/cli/pkg/config"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
@@ -29,17 +30,20 @@ type CredentialManager struct {
 	// MockAuthCreds shows whether the get and set for the auth-creds should be mocked
 	apiTokenFile string
 	credsFile    string
+	cliConfig    config.CLIConfig
+	kubeConfig   KubeConfigFileType
 }
 
 // NewCredentialManager creates a new credential manager
-func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
+func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
 
 	dir, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}
-	initChecks(autoApplyNewContext)
-	return &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
+	cm := &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
+	initChecks(autoApplyNewContext, cm)
+	return cm
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token using pass or into a file in case
@@ -116,4 +120,20 @@ func (cm *CredentialManager) GetInstallCreds() (string, error) {
 func (cm *CredentialManager) getLinuxApiTokenFile(namespace string) string {
 	sanitizedCurrentContext := strings.ReplaceAll(keptnContext, "/", "-")
 	return cm.apiTokenFile + "__" + sanitizedCurrentContext + "__" + namespace
+}
+
+func (cm *CredentialManager) SetCurrentKubeConfig(kubeConfig KubeConfigFileType) {
+	cm.kubeConfig = kubeConfig
+}
+
+func (cm *CredentialManager) GetCurrentKubeConfig() KubeConfigFileType {
+	return cm.kubeConfig
+}
+
+func (cm *CredentialManager) SetCurrentKeptnCLIConfig(cliConfig config.CLIConfig) {
+	cm.cliConfig = cliConfig
+}
+
+func (cm *CredentialManager) GetCurrentKeptnCLIConfig() config.CLIConfig {
+	return cm.cliConfig
 }
