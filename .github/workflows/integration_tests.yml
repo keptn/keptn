@@ -455,6 +455,7 @@ jobs:
 
           # re-enable basic auth of bridge
           kubectl create secret generic bridge-credentials -n "$KEPTN_NAMESPACE" --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
+          kubectl -n ${KEPTN_NAMESPACE} delete pods --selector=app.kubernetes.io/name=bridge
 
       - name: keptn generate support-archive
         if: always()
