@@ -441,8 +441,8 @@ jobs:
           # extract Keptn Bridge Info
           statusresponse=$(keptn status)
           export KEPTN_BRIDGE_URL=$(echo "$statusresponse" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
-          export KEPTN_BRIDGE_USER=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
-          export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
+          export KEPTN_BRIDGE_USER=$(kubectl get secret -n "$KEPTN_NAMESPACE" bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
+          export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n "$KEPTN_NAMESPACE" bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
 
           # disable basic auth
           kubectl -n ${KEPTN_NAMESPACE} delete secret bridge-credentials
@@ -454,9 +454,7 @@ jobs:
           npm run cypress:run -- --browser=chrome --config baseUrl=$KEPTN_BRIDGE_URL
 
           # re-enable basic auth of bridge
-          kubectl get ns
-          kubectl get ns keptn -oyaml
-          kubectl create secret generic my-secret -n keptn --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
+          kubectl create secret generic my-secret --n "$KEPTN_NAMESPACE" --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
 
       - name: keptn generate support-archive
         if: always()
