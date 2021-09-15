@@ -1,6 +1,7 @@
 import Yaml from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 import { WebhookConfig } from '../../shared/models/webhook-config';
+import { WebhookConfigYamlResult } from './webhook-config-yaml-result';
 
 const order: { [key: string]: number } = {
   apiVersion: 0,
@@ -9,7 +10,7 @@ const order: { [key: string]: number } = {
   spec: 3,
 };
 
-export class WebhookConfigYaml {
+export class WebhookConfigYaml implements WebhookConfigYamlResult {
   apiVersion: 'webhookconfig.keptn.sh/v1alpha1';
   kind: 'WebhookConfig';
   metadata: {
@@ -39,7 +40,7 @@ export class WebhookConfigYaml {
     }
   }
 
-  public static fromJSON(data: unknown): WebhookConfigYaml {
+  public static fromJSON(data: WebhookConfigYamlResult): WebhookConfigYaml {
     return Object.assign(new this(), data);
   }
 

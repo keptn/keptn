@@ -277,12 +277,11 @@ export class DataService {
   }
 
   public async saveWebhookConfig(webhookConfig: WebhookConfig): Promise<boolean> {
-    const previousConfig = webhookConfig.prevFilter ? await this.getPreviousWebhookConfig(webhookConfig.prevFilter) : undefined;
     const currentConfig = await this.getPreviousWebhookConfig(webhookConfig.filter);
 
-    if (previousConfig) {
-      // TODO: we also need previous type
-      await this.removePreviousWebhooks(previousConfig, currentConfig, webhookConfig.type);
+    if (webhookConfig.prevConfiguration) {
+      const previousFilter = await this.getPreviousWebhookConfig(webhookConfig.prevConfiguration.filter);
+      await this.removePreviousWebhooks(previousFilter, webhookConfig.prevConfiguration.type);
     }
 
     const curl = this.generateWebhookConfigCurl(webhookConfig);
@@ -314,13 +313,11 @@ export class DataService {
     return previousWebhookConfig;
   }
 
-  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, currentConfig: WebhookConfigFilter, type: string): Promise<void> {
+  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, type: string): Promise<void> {
     for (const project of previousConfig.projects) {
       for (const stage of previousConfig.stages) {
         for (const service of previousConfig.services) {
-          if (!currentConfig.projects.includes(project) || !currentConfig.stages.some((s?: string) => s === stage) || !currentConfig.services.some((s?: string) => s === service)) {
-            await this.removeWebhook(type, project, stage, service);
-          }
+          await this.removeWebhook(type, project, stage, service);
         }
       }
     }
@@ -329,7 +326,7 @@ export class DataService {
   private async getPreviousWebhookConfig(webhookConfig: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
     return {
       projects: webhookConfig.projects?.length ? webhookConfig.projects : (await this.getProjects()).map(project => project.projectName),
-      stages: webhookConfig.stages?.length ? webhookConfig.stages : [undefined],
+      stages: webhookConfig.stages?.length ? webhookConfig.stages : [],
       services: webhookConfig.services?.length ? webhookConfig.services : [undefined],
     };
   }
@@ -348,7 +345,13 @@ export class DataService {
       params += `--proxy ${webhookConfig.proxy} `;
     }
     if (webhookConfig.payload) {
-      params += `--data '${webhookConfig.payload.replace((/ {2}|\r\n|\n|\r/gm), '')}' `;
+      let stringify = webhookConfig.payload;
+      try {
+        stringify = JSON.stringify(JSON.parse(webhookConfig.payload));
+      } catch {
+        stringify = stringify.replace((/\r\n|\n|\r/gm), '');
+      }
+      params += `--data '${stringify}' `;
     }
     return `curl ${params}${webhookConfig.url}`;
   }
@@ -358,14 +361,14 @@ export class DataService {
       const response = await this.apiService.getUniformSubscription(integrationId, subscriptionId);
       const subscription = response.data;
       const projectName = subscription.filter.projects?.[0];
-      if (projectName) {
-        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages ?? [undefined], subscription.filter.services ?? [undefined]);
+      if (projectName && subscription.filter.stages?.length) {
+        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages, subscription.filter.services ?? [undefined]);
       }
     }
     await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
   }
 
-  private async removeWebhooks(eventType: string, projectName: string, stages: string[] | [undefined], services: string[] | [undefined]): Promise<void> {
+  private async removeWebhooks(eventType: string, projectName: string, stages: string[], services: string[] | [undefined]): Promise<void> {
     for (const stage of stages) {
       for (const service of services) {
         await this.removeWebhook(eventType, projectName, stage, service);
@@ -373,7 +376,7 @@ export class DataService {
     }
   }
 
-  private async removeWebhook(eventType: string, projectName: string, stage?: string, service?: string): Promise<void> {
+  private async removeWebhook(eventType: string, projectName: string, stage: string, service?: string): Promise<void> {
     try {
       const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
       if (webhookConfig.removeWebhook(eventType)) {

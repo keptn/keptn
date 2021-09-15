@@ -141,7 +141,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // when
     methodControl.setValue('POST');
-    expect(component.webhookConfigForm.valid).toEqual(false);
+    expect(component.webhookConfigForm.valid).toEqual(true);
 
     // when
     payload.setValue('{}');

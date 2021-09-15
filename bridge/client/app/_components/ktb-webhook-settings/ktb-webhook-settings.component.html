@@ -3,16 +3,16 @@
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field fxFlex="160px">
       <dt-label class="required">Request Method</dt-label>
-      <dt-select formControlName="method" class="mr-2 item" placeholder="Choose method" aria-label="Choose method" required>
+      <dt-select formControlName="method" class="mr-2 item" placeholder="Choose method" aria-label="Choose method">
         <dt-option *ngFor="let method of webhookMethods" [value]="method" [textContent]="method"></dt-option>
       </dt-select>
-      <dt-error *ngIf="getFormControl('method')?.errors?.required">Method must not be empty</dt-error>
+      <dt-error *ngIf="getFormControl('method').errors?.required">Method must not be empty</dt-error>
     </dt-form-field>
     <dt-form-field fxFlex="calc(100% - 175px)">
       <dt-label class="required">URL</dt-label>
-      <input formControlName="url" type="url" required dtInput placeholder="URL"/>
-      <dt-error *ngIf="getFormControl('url')?.errors?.required">URL must not be empty</dt-error>
-      <dt-error *ngIf="getFormControl('url')?.errors?.pattern">URL must be a valid url</dt-error>
+      <input formControlName="url" dtInput placeholder="URL"/>
+      <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.pattern">URL must be a valid url</dt-error>
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -28,12 +28,12 @@
         <div class="mb-1" fxLayout="row" fxLayoutAlign="start end" fxLayoutGap="15px">
           <dt-form-field>
             <dt-label class="required">Name</dt-label>
-            <input formControlName="name" type="text" required dtInput placeholder="e.g. Content-Type" autocomplete="false"/>
+            <input formControlName="name" type="text" dtInput placeholder="e.g. Content-Type" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
           <dt-form-field>
             <dt-label class="required">Value</dt-label>
-            <input formControlName="value" type="text" required dtInput placeholder="e.g. application/json" autocomplete="false"/>
+            <input formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
           <button type="button" dt-icon-button variant="nested" aria-label="Remove Header" title="Remove Header" (click)="removeHeader(i)">
@@ -45,7 +45,7 @@
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field>
-      <dt-label class="required">Custom payload</dt-label>
+      <dt-label>Custom payload</dt-label>
       <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
     </dt-form-field>
@@ -54,7 +54,7 @@
     <dt-form-field>
       <dt-label>Proxy (optional)</dt-label>
       <input formControlName="proxy" type="url" dtInput placeholder="Proxy"/>
-      <dt-error *ngIf="getFormControl('proxy')?.errors?.pattern">Proxy must be a valid url</dt-error>
+      <dt-error *ngIf="getFormControl('proxy').errors?.pattern">Proxy must be a valid url</dt-error>
     </dt-form-field>
   </div>
 </form>

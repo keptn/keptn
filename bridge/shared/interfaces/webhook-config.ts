@@ -2,10 +2,15 @@ import { UniformSubscriptionFilter } from './uniform-subscription';
 
 export type WebhookConfigMethod = 'POST' | 'PUT';
 
+export interface PreviousWebhookConfig {
+  filter: UniformSubscriptionFilter;
+  type: string;
+}
+
 export interface WebhookConfig {
   type: string;
   filter: UniformSubscriptionFilter;
-  prevFilter?: UniformSubscriptionFilter;
+  prevConfiguration?: PreviousWebhookConfig;
   method: WebhookConfigMethod;
   url: string;
   payload: string;

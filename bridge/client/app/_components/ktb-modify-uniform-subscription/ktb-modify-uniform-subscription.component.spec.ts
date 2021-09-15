@@ -46,8 +46,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have disabled button', () => {
+  it('should have disabled button', async () => {
     // given
+    const data = await component.data$.toPromise();
     fixture.detectChanges();
 
     // when first and second invalid
@@ -69,6 +70,19 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
     // then
     updateButtonEnabled(false);
+
+    // when filter contains service but not a stage
+    const validSpy = jest.spyOn(component, 'isFormValid');
+    // @ts-ignore
+    component.taskControl.setValue('deployment');
+    data.subscription.filter = {
+      projects: ['sockshop'],
+      stages: [],
+      services: ['carts'],
+    };
+    fixture.detectChanges();
+    // then
+    expect(component.isFormValid(data.subscription)).toBe(false);
   });
 
   it('should have disabled button if loading', () => {
@@ -86,8 +100,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     updateButtonEnabled(false);
   });
 
-  it('should have enabled button', () => {
+  it('should have enabled button', async () => {
     // given
+    const data = await component.data$.toPromise();
     fixture.detectChanges();
     // when
     // @ts-ignore
@@ -98,6 +113,29 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
     // then
     updateButtonEnabled(true);
+
+    // when
+
+    data.subscription.filter = {
+      projects: ['sockshop'],
+      stages: ['staging'],
+      services: ['carts'],
+    };
+    fixture.detectChanges();
+
+    // then
+    expect(component.isFormValid(data.subscription)).toBe(true);
+
+    // when
+    data.subscription.filter = {
+      projects: ['sockshop'],
+      stages: ['staging'],
+      services: [],
+    };
+    fixture.detectChanges();
+
+    // then
+    expect(component.isFormValid(data.subscription)).toBe(true);
   });
 
   it('should have disabled button if service is webhook', () => {
@@ -167,7 +205,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
     webhookConfig.type = subscription.event;
     webhookConfig.filter = subscription.filter;
-    webhookConfig.prevFilter = subscription.filter;
+    webhookConfig.prevConfiguration = {
+      filter: subscription.filter,
+      type: subscription.event,
+    };
     webhookConfig.method = 'POST';
     webhookConfig.url = 'https://keptn.sh';
     webhookConfig.payload = '{}';

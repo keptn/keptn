@@ -30,10 +30,11 @@
             aria-label="Filter by stage and service"
             clearAllLabel="Clear all"
           ></dt-filter-field>
+          <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length">If you add a service you must add a stage</dt-error>
         </div>
         <ktb-webhook-settings #webhookSettings *ngIf="isWebhookService" [subscriptionExists]="editMode" [projectName]="data.project.projectName" [subscription]="data.subscription"></ktb-webhook-settings>
         <div fxLayout="row">
-          <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!subscriptionForm.valid || !isWebhookFormValid || updating" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
+          <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!isFormValid(data.subscription)" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
             <dt-loading-spinner *ngIf="updating" aria-label="{{editMode ? 'Updating' : 'Creating'}} subscription"></dt-loading-spinner>
             {{editMode ? 'Update' : 'Create'}} subscription
           </button>

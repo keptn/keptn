@@ -1,13 +1,13 @@
-import { WebhookConfig as wc, WebhookConfigMethod } from '../interfaces/webhook-config';
+import { PreviousWebhookConfig, WebhookConfig as wc, WebhookConfigMethod } from '../interfaces/webhook-config';
 import { UniformSubscriptionFilter } from '../interfaces/uniform-subscription';
 
-export type WebhookConfigFilter = { projects: string[], stages: string[] | [undefined], services: string[] | [undefined] };
+export type WebhookConfigFilter = { projects: string[], stages: string[], services: string[] | [undefined] };
 
 export class WebhookConfig implements wc {
 
   public type: string;
   public filter!: UniformSubscriptionFilter;
-  public prevFilter?: UniformSubscriptionFilter;
+  public prevConfiguration?: PreviousWebhookConfig;
   public method: WebhookConfigMethod;
   public url: string;
   public payload: string;

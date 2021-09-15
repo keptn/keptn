@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { DataService } from '../../_services/data.service';
 import { FormUtils } from '../../_utils/form.utils';
 import { UniformSubscription } from '../../_models/uniform-subscription';
@@ -15,12 +15,12 @@ type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 export class KtbWebhookSettingsComponent {
   public _projectName?: string;
   public _subscription?: UniformSubscription;
-  public webhookConfigForm = this.formBuilder.group({
-    method: ['', [Validators.required]],
-    url: ['', [Validators.required, Validators.pattern(FormUtils.URL_PATTERN)]],
-    payload: ['', [Validators.required]],
-    header: this.formBuilder.array([]),
-    proxy: ['', [Validators.pattern(FormUtils.URL_PATTERN)]],
+  public webhookConfigForm = new FormGroup({
+    method: new FormControl('', [Validators.required]),
+    url: new FormControl('', [Validators.required, Validators.pattern(FormUtils.URL_PATTERN)]),
+    payload: new FormControl('', []),
+    header: new FormArray([]),
+    proxy: new FormControl('', [Validators.pattern(FormUtils.URL_PATTERN)]),
   });
 
   public webhookMethods: WebhookConfigMethod[] = ['POST', 'PUT'];
@@ -70,7 +70,7 @@ export class KtbWebhookSettingsComponent {
     return this.header.controls as FormGroup[];
   }
 
-  constructor(private dataService: DataService, private formBuilder: FormBuilder) {
+  constructor(private dataService: DataService) {
   }
 
   private getWebhook(): void {
@@ -85,8 +85,13 @@ export class KtbWebhookSettingsComponent {
           this.getFormControl('payload').setValue(webhookConfig.payload);
           this.getFormControl('proxy').setValue(webhookConfig.proxy);
 
+
           for (const header of webhookConfig.header || []) {
             this.addHeader(header.name, header.value);
+          }
+
+          for (const controlKey of Object.keys(this.webhookConfigForm.controls)) {
+            this.webhookConfigForm.get(controlKey)?.markAsDirty();
           }
 
           this.loading = false;
@@ -97,9 +102,9 @@ export class KtbWebhookSettingsComponent {
   }
 
   public addHeader(name?: string, value?: string): void {
-    this.header.push(this.formBuilder.group({
-      name: [name, [Validators.required]],
-      value: [value, [Validators.required]],
+    this.header.push(new FormGroup({
+      name: new FormControl(name, [Validators.required]),
+      value: new FormControl(value, [Validators.required]),
     }));
   }
 

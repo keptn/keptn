@@ -13,7 +13,7 @@ import { UniformRegistration } from '../../_models/uniform-registration';
 import { KtbWebhookSettingsComponent } from '../ktb-webhook-settings/ktb-webhook-settings.component';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { AppUtils } from '../../_utils/app.utils';
-import { UniformSubscriptionFilter } from '../../../../shared/interfaces/uniform-subscription';
+import { PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-config';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -34,7 +34,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     isGlobal: this.isGlobalControl,
   });
   private webhookSettings?: KtbWebhookSettingsComponent;
-  private _previousFilter?: UniformSubscriptionFilter;
+  private _previousFilter?: PreviousWebhookConfig;
   public uniformRegistration?: UniformRegistration;
   public isWebhookService = false;
   public suffixes: { value: string, displayValue: string }[] = [
@@ -86,7 +86,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       }),
       tap(subscription => {
         if (this.editMode) {
-          this._previousFilter = AppUtils.copyObject(subscription.filter);
+          this._previousFilter = {
+            filter: AppUtils.copyObject(subscription.filter),
+            type: subscription.event,
+          };
         }
         this.taskControl.setValue(subscription.prefix);
         this.taskSuffixControl.setValue(subscription.suffix);
@@ -183,7 +186,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       const webhookConfig: WebhookConfig = new WebhookConfig();
       webhookConfig.type = subscription.event;
       webhookConfig.filter = subscription.filter;
-      webhookConfig.prevFilter = this._previousFilter;
+      webhookConfig.prevConfiguration = this._previousFilter;
       webhookConfig.method = this.webhookSettings.getFormControl('method').value;
       webhookConfig.url = this.webhookSettings.getFormControl('url').value;
       webhookConfig.payload = this.webhookSettings.getFormControl('payload').value;
@@ -205,6 +208,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }, () => {
       this.updating = false;
     });
+  }
+
+  public isFormValid(subscription: UniformSubscription): boolean {
+    return this.subscriptionForm.valid && (!!subscription.filter.stages?.length || !subscription.filter.services?.length) && this.isWebhookFormValid && !this.updating;
   }
 
   public ngOnDestroy(): void {
