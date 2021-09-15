@@ -21,6 +21,7 @@ func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
 	os.Setenv("MONGO_DB_NAME", "keptn")
 	os.Setenv("MONGODB_USER", "keptn")
 	os.Setenv("MONGODB_PASSWORD", "password")
+	os.Setenv("MONGODB_REPLICA_NAME", "rs0")
 
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
@@ -32,7 +33,7 @@ func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "docker.io/centos/mongodb-36-centos7",
 		Tag:        "1",
-		Env:        []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password"},
+		Env:        []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password", "MONGODB_REPLICA_NAME=rs0"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			"27017/tcp": {{HostPort: "27017"}}, // this makes the container reachable via localhost:27017 instead of always using a random port
 		},

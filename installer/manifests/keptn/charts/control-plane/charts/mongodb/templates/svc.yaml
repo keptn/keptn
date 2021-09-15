@@ -8,8 +8,9 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "mongodb.name" . }}
-    helm.sh/chart: {{ include "mongodb.chart" . }}  
+    helm.sh/chart: {{ include "mongodb.chart" . }}
 spec:
+  publishNotReadyAddresses: true # apparently needed for replicas to connect to each other during initialization
   ports:
   - name: "27017"
     port: 27017

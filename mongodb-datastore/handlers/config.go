@@ -10,7 +10,8 @@ var (
 	mongoDBName       = os.Getenv("MONGODB_DATABASE")
 	mongoDBUser       = os.Getenv("MONGODB_USER")
 	mongoDBPassword   = os.Getenv("MONGODB_PASSWORD")
-	mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName)
+	mongoDBReplicaSet = os.Getenv("MONGODB_REPLICASET")
+	mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s?replicaSet=%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName, mongoDBReplicaSet)
 )
 
 const (

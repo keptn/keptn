@@ -76,6 +76,11 @@ spec:
             secretKeyRef:
                 name: mongodb-credentials
                 key: password
+        - name: MONGODB_REPLICASET
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: replica_set
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532

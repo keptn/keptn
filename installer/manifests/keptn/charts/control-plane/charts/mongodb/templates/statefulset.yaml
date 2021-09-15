@@ -1,23 +1,14 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongodb
-  labels:
-    app.kubernetes.io/name: mongodb
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "mongodb.name" . }}
-    app.kubernetes.io/version: "{{ .Values.image.tag }}"
-    helm.sh/chart: {{ include "mongodb.chart" . }}
 spec:
-  replicas: 1
+  serviceName: "mongo"
   selector:
     matchLabels:
-      app.kubernetes.io/name: mongodb
+      app: mongodb
       app.kubernetes.io/instance: {{ .Release.Name }}
-  strategy:
-    type: Recreate
+  replicas: 3
   template:
     metadata:
       labels:
@@ -33,27 +24,12 @@ spec:
       serviceAccountName: keptn-default
       securityContext:
         fsGroup: 184
+      terminationGracePeriodSeconds: 10
       containers:
         - image: {{ dict "space" .Values "context" . | include "keptn.image.name" }}
           name: mongodb
-          env:
-            - name: MONGODB_DATABASE
-              value: "keptn"
-            - name: MONGODB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: user
-            - name: MONGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                    name: mongodb-credentials
-                    key: password
-            - name: MONGODB_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                    name: mongodb-credentials
-                    key: admin_password
+          args:
+            - run-mongod-replication
           ports:
             - containerPort: 27017
           resources:
@@ -66,12 +42,46 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/mongodb/data
               name: mongodata
+          env:
+            - name: MONGODB_DATABASE
+              value: "keptn"
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: password
+            - name: MONGODB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: admin_password
+            - name: MONGODB_REPLICA_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: replica_set
+            - name: MONGODB_KEYFILE_VALUE
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: keyfile_value
+            - name: MONGODB_SERVICE_NAME
+              value: mongo
+          readinessProbe:
+            exec:
+              command:
+                - stat
+                - /tmp/initialized
           securityContext:
             runAsNonRoot: true
             runAsUser: 184
             readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
-      restartPolicy: Always
       volumes:
         - name: mongodata
           persistentVolumeClaim:

@@ -15,9 +15,11 @@ var mongoDBHost = os.Getenv("MONGODB_HOST")
 var databaseName = os.Getenv("MONGO_DB_NAME")
 var mongoDBUser = os.Getenv("MONGODB_USER")
 var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
+var mongoDBReplicaSet = os.Getenv("MONGODB_REPLICASET")
+
 var mutex = &sync.Mutex{}
 
-var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
+var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s?replicaSet=%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName, mongoDBReplicaSet)
 
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
