@@ -518,7 +518,14 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: bridge-e2e-screenshots
-          path: bridge/e2e/screenshots/*.png
+          path: bridge/dist/cypress/screenshots/
+
+      - name: Upload Bridge E2E Videos
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: bridge-e2e-videos
+          path: bridge/dist/cypress/videos/
 
       - name: Upload test report as an artifact
         if: always()
