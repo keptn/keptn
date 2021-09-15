@@ -74,8 +74,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     if (!webhook) {
       this.spec.webhooks.push({type: eventType, requests: [curl]});
     } else { // overwrite
-      webhook.type = eventType;
-      webhook.requests = [curl];
+      webhook.requests[0] = curl;
     }
 
   }
