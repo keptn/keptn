@@ -52,7 +52,7 @@
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field>
-      <dt-label>Proxy (optional)</dt-label>
+      <dt-label>Proxy</dt-label>
       <input formControlName="proxy" type="url" dtInput placeholder="Proxy"/>
       <dt-error *ngIf="getFormControl('proxy').errors?.pattern">Proxy must be a valid url</dt-error>
     </dt-form-field>
