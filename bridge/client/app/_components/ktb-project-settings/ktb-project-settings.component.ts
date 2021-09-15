@@ -68,7 +68,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
         map((projects: Project[]) => projects.map(project => project.projectName)),
       ).subscribe((projectNames) => {
       if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
-        this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
+        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {queryParams: {created: true}});
       }
       this.projectNameControl.setValidators([
         Validators.required,
@@ -109,7 +109,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
           routerLink: `/project/${this.projectName}/settings/services/create`,
         });
         // Remove query param for not showing notification on reload
-        this.router.navigate(['/', 'project', this.projectName, 'settings']);
+        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
       }
     });
 

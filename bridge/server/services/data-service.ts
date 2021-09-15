@@ -13,6 +13,10 @@ import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
+import { Resource } from '../../shared/interfaces/resource';
+import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
+
+type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 
 export class DataService {
   private apiService: ApiService;
@@ -236,6 +240,33 @@ export class DataService {
     return tasks;
   }
 
+  public async getResourceFileTreesForService(projectName: string, serviceName: string): Promise<FileTree[]> {
+    const projectRes = await this.apiService.getProject(projectName);
+    const stages = projectRes.data.stages;
+
+    const fileTrees: FileTree[] = [];
+
+    for (const stage of stages) {
+      let nextPage: string | undefined;
+      let resourceResponses: Resource[] = [];
+      const fileTree: FileTree = {
+        stageName: stage.stageName,
+        tree: [],
+      };
+
+      do {
+        const resourceRes = await this.apiService.getServiceResource(projectName, stage.stageName, serviceName, nextPage || undefined);
+        nextPage = resourceRes.data.nextPageKey;
+        resourceResponses = [...resourceResponses, ...resourceRes.data.resources];
+      } while (parseInt(nextPage, 10) !== 0);
+
+      fileTree.tree = this._getResourceFileTree(resourceResponses);
+      fileTrees.push(fileTree);
+    }
+
+    return fileTrees;
+  }
+
   private async getShipyard(projectName: string): Promise<Shipyard> {
     const response = await this.apiService.getShipyard(projectName);
     const shipyard = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
@@ -244,5 +275,51 @@ export class DataService {
 
   private buildRemediationEvent(stageName: string): string {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
+  }
+
+  private _getResourceFileTree(resources: Resource[]): TreeEntry[] {
+    const directory: TreeDirectory = {_: []};
+
+    for (const res of resources) {
+      const parts = res.resourceURI.split('/').filter(item => !!item);
+      this._addToTreeDirectory(directory, parts);
+    }
+
+    return this._buildTree(directory, '').children || [];
+  }
+
+  private _addToTreeDirectory(currentDirectory: TreeDirectory, parts: string[]): void {
+    let index = 0;
+    for (; index < parts.length - 1; ++index) {
+      const part = parts[index];
+      // @ts-ignore
+      currentDirectory[part] ??= {_: []};
+      // @ts-ignore
+      currentDirectory = currentDirectory[part];
+    }
+    currentDirectory._.push(parts[index]);
+  }
+
+  private _buildTree(currentDirectory: TreeDirectory, fileName: string): TreeEntry {
+    const tree: TreeEntry = {fileName, children: [] as TreeEntry[]};
+    const dict: { [key: string]: boolean } = {_: true};
+    const folders: TreeEntry[] = [];
+    const files: TreeEntry[] = [];
+    for (const key in currentDirectory) {
+      if (dict[key]) {
+        files.push(...currentDirectory._.map(item => {
+          return {
+            fileName: item,
+          } as TreeEntry;
+        }));
+      } else {
+        // @ts-ignore
+        folders.push(this._buildTree(currentDirectory[key] as TreeDirectory, key));
+      }
+    }
+    folders.sort((a, b) => a.fileName.localeCompare(b.fileName));
+    files.sort((a, b) => a.fileName.localeCompare(b.fileName));
+    tree.children = [...folders, ...files];
+    return tree;
   }
 }

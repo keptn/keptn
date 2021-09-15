@@ -21,6 +21,7 @@ import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
+import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
 @Injectable({
   providedIn: 'root',
@@ -579,6 +580,10 @@ export class DataService {
       .pipe(
         map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))),
       );
+  }
+
+  public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
+    return this.apiService.getFileTreeForService(projectName, serviceName);
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {
