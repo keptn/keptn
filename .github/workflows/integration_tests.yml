@@ -415,10 +415,6 @@ jobs:
         run: |
           source test/utils.sh
 
-          echo "Check kubecontext..."
-          kubectl config get-contexts
-          kubectl config current-context
-
           # authenticate at Keptn API
           if [[ "$PLATFORM" == "openshift" ]]; then
             KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
@@ -582,6 +578,8 @@ jobs:
           npm run cypress:run -- --browser=chrome --config baseUrl=$KEPTN_BRIDGE_URL
 
           # re-enable basic auth of bridge
+          kubectl get ns
+          kubectl get ns keptn -oyaml
           kubectl create secret generic my-secret -n keptn --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
 
       - name: Test Delivery Assistant
