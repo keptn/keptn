@@ -2598,6 +2598,7 @@ func TestCalculateScore(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
+					Message: "Evaluation failed since the calculated score of 50 is below the target value of 90",
 				},
 			},
 			ExpectedError: nil,

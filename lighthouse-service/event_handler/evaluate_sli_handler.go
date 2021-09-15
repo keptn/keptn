@@ -298,6 +298,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 		evaluationResult.Evaluation.Result = "fail"
 		evaluationResult.Result = keptnv2.ResultFailed
 		evaluationResult.Status = keptnv2.StatusSucceeded
+		evaluationResult.Message = fmt.Sprintf("Evaluation failed since the calculated score of %v is below the target value of %v", achievedPercentage, passTargetPercentage)
 	}
 
 	return nil
