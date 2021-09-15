@@ -162,8 +162,12 @@ func initChecks(autoApplyNewContext bool, cm CredentialManagerInterface) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		cm.SetCurrentKeptnCLIConfig(*updatedCLIConfig)
-		cm.SetCurrentKubeConfig(*kubeConfig)
+		if updatedCLIConfig != nil {
+			cm.SetCurrentKeptnCLIConfig(*updatedCLIConfig)
+		}
+		if kubeConfig != nil {
+			cm.SetCurrentKubeConfig(*kubeConfig)
+		}
 		GlobalCheckForContextChange = true
 	} else {
 		cm.SetCurrentKeptnCLIConfig(cliConfig)
