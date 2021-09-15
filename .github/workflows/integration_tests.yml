@@ -417,7 +417,7 @@ jobs:
 
           echo "Check kubecontext..."
           kubectl config get-contexts
-          kubectl confix current-context
+          kubectl config current-context
 
           # authenticate at Keptn API
           if [[ "$PLATFORM" == "openshift" ]]; then
