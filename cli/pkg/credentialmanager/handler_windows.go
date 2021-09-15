@@ -16,7 +16,7 @@ type CredentialManager struct {
 func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
 	cm := &CredentialManager{}
 	initChecks(autoApplyNewContext, cm)
-	return
+	return cm
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token in the keychain.
