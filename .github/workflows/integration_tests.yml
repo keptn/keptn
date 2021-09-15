@@ -458,7 +458,7 @@ jobs:
 
       - name: Test Uniform Registration
         # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
         id: test_uniform_registration
         timeout-minutes: 10
         continue-on-error: true
