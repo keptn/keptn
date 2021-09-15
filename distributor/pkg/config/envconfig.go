@@ -22,7 +22,7 @@ type EnvConfig struct {
 	PubSubRecipient      string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
 	PubSubRecipientPort  string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
 	PubSubRecipientPath  string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
-	PubSubReceiverGroup  string `envconfig:"PUBSUB_RECIPIENT_GROUP" default:""`
+	PubSubGroup          string `envconfig:"PUBSUB_GROUP" default:""`
 	ProjectFilter        string `envconfig:"PROJECT_FILTER" default:""`
 	StageFilter          string `envconfig:"STAGE_FILTER" default:""`
 	ServiceFilter        string `envconfig:"SERVICE_FILTER" default:""`

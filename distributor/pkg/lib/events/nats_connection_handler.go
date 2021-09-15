@@ -66,9 +66,8 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			logger.Infof("Subscribing to topic %s ...", topic)
-			sub, err := nch.NatsConnection.QueueSubscribe(topic, config.Global.PubSubReceiverGroup, nch.MessageHandler)
-			//sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
+			logger.Infof("Subscribing to topic %s via queue group %s", topic, config.Global.PubSubGroup)
+			sub, err := nch.NatsConnection.QueueSubscribe(topic, config.Global.PubSubGroup, nch.MessageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
 			}

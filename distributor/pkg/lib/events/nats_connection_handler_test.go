@@ -188,7 +188,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 }
 
 func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
-	config.Global.PubSubReceiverGroup = "a-group"
+	config.Global.PubSubGroup = "a-group"
 
 	natsServer := RunServerOnPort(TEST_PORT)
 	defer natsServer.Shutdown()
