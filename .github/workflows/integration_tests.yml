@@ -454,7 +454,7 @@ jobs:
           npm run cypress:run -- --browser=chrome --config baseUrl=$KEPTN_BRIDGE_URL
 
           # re-enable basic auth of bridge
-          kubectl create secret generic my-secret -n "$KEPTN_NAMESPACE" --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
+          kubectl create secret generic bridge-credentials -n "$KEPTN_NAMESPACE" --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
 
       - name: keptn generate support-archive
         if: always()
