@@ -22,7 +22,7 @@ import (
 // 			GetCurrentKeptnCLIConfigFunc: func() config.CLIConfig {
 // 				panic("mock out the GetCurrentKeptnCLIConfig method")
 // 			},
-// 			GetCurrentKubeConfigFunc: func() credentialmanager.kubeConfigFileType {
+// 			GetCurrentKubeConfigFunc: func() credentialmanager.KubeConfigFileType {
 // 				panic("mock out the GetCurrentKubeConfig method")
 // 			},
 // 			GetInstallCredsFunc: func() (string, error) {
@@ -34,7 +34,7 @@ import (
 // 			SetCurrentKeptnCLIConfigFunc: func(cliConfig config.CLIConfig)  {
 // 				panic("mock out the SetCurrentKeptnCLIConfig method")
 // 			},
-// 			SetCurrentKubeConfigFunc: func(kubeConfig credentialmanager.kubeConfigFileType)  {
+// 			SetCurrentKubeConfigFunc: func(kubeConfig credentialmanager.KubeConfigFileType)  {
 // 				panic("mock out the SetCurrentKubeConfig method")
 // 			},
 // 			SetInstallCredsFunc: func(creds string) error {
@@ -54,7 +54,7 @@ type CredentialManagerInterfaceMock struct {
 	GetCurrentKeptnCLIConfigFunc func() config.CLIConfig
 
 	// GetCurrentKubeConfigFunc mocks the GetCurrentKubeConfig method.
-	GetCurrentKubeConfigFunc func() credentialmanager.kubeConfigFileType
+	GetCurrentKubeConfigFunc func() credentialmanager.KubeConfigFileType
 
 	// GetInstallCredsFunc mocks the GetInstallCreds method.
 	GetInstallCredsFunc func() (string, error)
@@ -66,7 +66,7 @@ type CredentialManagerInterfaceMock struct {
 	SetCurrentKeptnCLIConfigFunc func(cliConfig config.CLIConfig)
 
 	// SetCurrentKubeConfigFunc mocks the SetCurrentKubeConfig method.
-	SetCurrentKubeConfigFunc func(kubeConfig credentialmanager.kubeConfigFileType)
+	SetCurrentKubeConfigFunc func(kubeConfig credentialmanager.KubeConfigFileType)
 
 	// SetInstallCredsFunc mocks the SetInstallCreds method.
 	SetInstallCredsFunc func(creds string) error
@@ -104,7 +104,7 @@ type CredentialManagerInterfaceMock struct {
 		// SetCurrentKubeConfig holds details about calls to the SetCurrentKubeConfig method.
 		SetCurrentKubeConfig []struct {
 			// KubeConfig is the kubeConfig argument value.
-			KubeConfig credentialmanager.kubeConfigFileType
+			KubeConfig credentialmanager.KubeConfigFileType
 		}
 		// SetInstallCreds holds details about calls to the SetInstallCreds method.
 		SetInstallCreds []struct {
@@ -180,7 +180,7 @@ func (mock *CredentialManagerInterfaceMock) GetCurrentKeptnCLIConfigCalls() []st
 }
 
 // GetCurrentKubeConfig calls GetCurrentKubeConfigFunc.
-func (mock *CredentialManagerInterfaceMock) GetCurrentKubeConfig() credentialmanager.kubeConfigFileType {
+func (mock *CredentialManagerInterfaceMock) GetCurrentKubeConfig() credentialmanager.KubeConfigFileType {
 	if mock.GetCurrentKubeConfigFunc == nil {
 		panic("CredentialManagerInterfaceMock.GetCurrentKubeConfigFunc: method is nil but CredentialManagerInterface.GetCurrentKubeConfig was just called")
 	}
@@ -302,12 +302,12 @@ func (mock *CredentialManagerInterfaceMock) SetCurrentKeptnCLIConfigCalls() []st
 }
 
 // SetCurrentKubeConfig calls SetCurrentKubeConfigFunc.
-func (mock *CredentialManagerInterfaceMock) SetCurrentKubeConfig(kubeConfig credentialmanager.kubeConfigFileType) {
+func (mock *CredentialManagerInterfaceMock) SetCurrentKubeConfig(kubeConfig credentialmanager.KubeConfigFileType) {
 	if mock.SetCurrentKubeConfigFunc == nil {
 		panic("CredentialManagerInterfaceMock.SetCurrentKubeConfigFunc: method is nil but CredentialManagerInterface.SetCurrentKubeConfig was just called")
 	}
 	callInfo := struct {
-		KubeConfig credentialmanager.kubeConfigFileType
+		KubeConfig credentialmanager.KubeConfigFileType
 	}{
 		KubeConfig: kubeConfig,
 	}
@@ -321,10 +321,10 @@ func (mock *CredentialManagerInterfaceMock) SetCurrentKubeConfig(kubeConfig cred
 // Check the length with:
 //     len(mockedCredentialManagerInterface.SetCurrentKubeConfigCalls())
 func (mock *CredentialManagerInterfaceMock) SetCurrentKubeConfigCalls() []struct {
-	KubeConfig credentialmanager.kubeConfigFileType
+	KubeConfig credentialmanager.KubeConfigFileType
 } {
 	var calls []struct {
-		KubeConfig credentialmanager.kubeConfigFileType
+		KubeConfig credentialmanager.KubeConfigFileType
 	}
 	mock.lockSetCurrentKubeConfig.RLock()
 	calls = mock.calls.SetCurrentKubeConfig
