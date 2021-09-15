@@ -24,15 +24,15 @@ export class KtbEditServiceFileListComponent {
 
   constructor() {
     this.treeControl = new DtTreeControl<TreeFlatEntry>(
-      this.getEntryLevel,
-      this.isEntryExpendable,
+      this.getLevel,
+      this.isExpandable,
     );
 
     this.treeFlattener = new DtTreeFlattener(
       this.treeTransformer,
-      this.getEntryLevel,
-      this.isEntryExpendable,
-      this.getEntryChildren,
+      this.getLevel,
+      this.isExpandable,
+      this.getChildren,
     );
     this.treeDataSource = new DtTreeDataSource(
       this.treeControl,
@@ -63,19 +63,16 @@ export class KtbEditServiceFileListComponent {
     return '';
   }
 
-  private getEntryLevel(entry: TreeFlatEntry): number {
+  private getLevel(entry: TreeFlatEntry): number {
     return entry.level;
   }
 
-  private isEntryExpendable(entry: TreeFlatEntry): boolean {
+  private isExpandable(entry: TreeFlatEntry): boolean {
     return entry.expandable;
   }
 
-  private getEntryChildren(entry: TreeEntry): TreeEntry[] {
-    if (!entry.children) {
-      return [];
-    }
-    return entry.children;
+  private getChildren(entry: TreeEntry): TreeEntry[] {
+    return entry.children || [];
   }
 
   private treeTransformer(node: TreeEntry, level: number): TreeFlatEntry {
