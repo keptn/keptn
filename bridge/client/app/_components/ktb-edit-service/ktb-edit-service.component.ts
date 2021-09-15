@@ -177,7 +177,6 @@ export class KtbEditServiceComponent implements OnDestroy {
       files.sort((a, b) => this._compareStrings(a, b));
 
       parent.children = [...folders, ...files];
-      return;
     }
   }
 
