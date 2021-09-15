@@ -414,6 +414,11 @@ jobs:
         timeout-minutes: 5
         run: |
           source test/utils.sh
+
+          echo "Check kubecontext..."
+          kubectl config get-contexts
+          kubectl confix current-context
+
           # authenticate at Keptn API
           if [[ "$PLATFORM" == "openshift" ]]; then
             KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
