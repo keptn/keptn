@@ -19,6 +19,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/common"
@@ -105,7 +106,7 @@ keptn install --hide-sensitive-data                                    # install
 				logging.PrintLog("Note: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 			}
 
-			installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier)
+			installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier, credentialmanager.NewCredentialManager(assumeYes))
 			if err != nil {
 				return err
 			}

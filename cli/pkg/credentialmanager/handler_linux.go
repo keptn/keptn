@@ -38,8 +38,9 @@ func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	initChecks(autoApplyNewContext)
-	return &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
+	cm := &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
+	initChecks(autoApplyNewContext, cm)
+	return cm
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token using pass or into a file in case
@@ -116,4 +117,20 @@ func (cm *CredentialManager) GetInstallCreds() (string, error) {
 func (cm *CredentialManager) getLinuxApiTokenFile(namespace string) string {
 	sanitizedCurrentContext := strings.ReplaceAll(keptnContext, "/", "-")
 	return cm.apiTokenFile + "__" + sanitizedCurrentContext + "__" + namespace
+}
+
+func (cm *CredentialManager) SetCurrentKubeConfig(kubeConfig KubeConfigFileType) {
+	cm.kubeConfig = kubeConfig
+}
+
+func (cm *CredentialManager) GetCurrentKubeConfig() KubeConfigFileType {
+	return cm.kubeConfig
+}
+
+func (cm *CredentialManager) SetCurrentKeptnCLIConfig(cliConfig config.CLIConfig) {
+	cm.cliConfig = cliConfig
+}
+
+func (cm *CredentialManager) GetCurrentKeptnCLIConfig() config.CLIConfig {
+	return cm.cliConfig
 }

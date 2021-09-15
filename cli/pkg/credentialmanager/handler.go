@@ -29,6 +29,10 @@ type CredentialManagerInterface interface {
 	GetCreds(namespace string) (url.URL, string, error)
 	SetInstallCreds(creds string) error
 	GetInstallCreds() (string, error)
+	SetCurrentKubeConfig(kubeConfig KubeConfigFileType)
+	GetCurrentKubeConfig() KubeConfigFileType
+	SetCurrentKeptnCLIConfig(cliConfig config.CLIConfig)
+	GetCurrentKeptnCLIConfig() config.CLIConfig
 }
 
 var MockAuthCreds bool
@@ -49,11 +53,11 @@ type keptnConfigFile struct {
 	Contexts []keptnConfig `yaml:"contexts"`
 }
 
-type kubeConfigFileType struct {
+type KubeConfigFileType struct {
 	CurrentContext string `yaml:"current-context"`
 }
 
-var kubeConfigFile kubeConfigFileType
+var kubeConfigFile KubeConfigFileType
 
 var keptnContext string
 
@@ -146,7 +150,7 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 }
 
 // initChecks needs to be run when credentialManager is called or initialized
-func initChecks(autoApplyNewContext bool) {
+func initChecks(autoApplyNewContext bool, cm CredentialManagerInterface) {
 	cliConfigManager := config.NewCLIConfigManager()
 	cliConfig, err := cliConfigManager.LoadCLIConfig()
 	if err != nil {
@@ -154,8 +158,16 @@ func initChecks(autoApplyNewContext bool) {
 	}
 	if cliConfig.KubeContextCheck && !GlobalCheckForContextChange {
 		getCurrentContextFromKubeConfig()
-		checkForContextChange(cliConfigManager, autoApplyNewContext)
+		updatedCLIConfig, kubeConfig, err := checkForContextChange(cliConfigManager, autoApplyNewContext)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cm.SetCurrentKeptnCLIConfig(*updatedCLIConfig)
+		cm.SetCurrentKubeConfig(*kubeConfig)
 		GlobalCheckForContextChange = true
+	} else {
+		cm.SetCurrentKeptnCLIConfig(cliConfig)
+		cm.SetCurrentKubeConfig(kubeConfigFile)
 	}
 }
 
@@ -184,14 +196,14 @@ func getCurrentContextFromKubeConfig() {
 	}
 }
 
-func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) error {
+func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) (*config.CLIConfig, *KubeConfigFileType, error) {
 	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
-		return nil
+		return nil, nil, nil
 	}
 	cliConfig, err := cliConfigManager.LoadCLIConfig()
 	if err != nil {
-		log.Fatal(err)
+		return &cliConfig, &kubeConfigFile, err
 	}
 
 	if cliConfig.KubeContextCheck {
@@ -203,16 +215,16 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 				userConfirmation := common.NewUserInput().AskBool("Do you want to switch to the new Kube context with the Keptn running there?", &common.UserInputOptions{AssumeYes: autoApplyNewContext})
 				fmt.Println("Info: You can turn off the Kube context check by executing: keptn set config KubeContextCheck false")
 				if !userConfirmation {
-					return nil
+					return &cliConfig, &kubeConfigFile, nil
 				}
 			}
 			cliConfig.CurrentContext = kubeConfigFile.CurrentContext
 			keptnContext = kubeConfigFile.CurrentContext
 			err = cliConfigManager.StoreCLIConfig(cliConfig)
 			if err != nil {
-				return err
+				return &cliConfig, &kubeConfigFile, err
 			}
 		}
 	}
-	return nil
+	return &cliConfig, &kubeConfigFile, nil
 }
