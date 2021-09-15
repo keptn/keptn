@@ -7,10 +7,12 @@ import (
 )
 
 type CredentialManager struct {
+	cliConfig  config.CLIConfig
+	kubeConfig KubeConfigFileType
 }
 
 // NewCredentialManager creates a new credential manager
-func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
+func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
 	cm := &CredentialManager{}
 	initChecks(autoApplyNewContext, cm)
 	return

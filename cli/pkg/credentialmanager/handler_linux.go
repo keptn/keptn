@@ -29,10 +29,12 @@ type CredentialManager struct {
 	// MockAuthCreds shows whether the get and set for the auth-creds should be mocked
 	apiTokenFile string
 	credsFile    string
+	cliConfig    config.CLIConfig
+	kubeConfig   KubeConfigFileType
 }
 
 // NewCredentialManager creates a new credential manager
-func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
+func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
 
 	dir, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
