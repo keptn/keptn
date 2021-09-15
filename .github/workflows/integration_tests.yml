@@ -28,6 +28,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - CLOUD_PROVIDER: "minishift-on-GHA"
+            PLATFORM: "openshift"
+            PLATFORM_VERSION: "3.11"
+            KEPTN_SERVICE_TYPE: "ClusterIP"
+            RUN_QUALITY_GATES_TEST: "false"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -42,6 +49,15 @@ jobs:
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "k3d-on-GHA"
+            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_AIRGAPPED_TEST: "true"
+            RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -424,6 +440,114 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
+      - name: Test Airgapped Images
+        id: test_airgapped_images
+        if: env.RUN_AIRGAPPED_TEST == 'true'
+        timeout-minutes: 2
+        continue-on-error: true
+        run: test/test_airgapped_images.sh "k3d-container-registry.localhost:12345"
+
+      - name: Test Linking Stages
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_linking_stages
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_linking_stages.sh
+
+      - name: Test Uniform Registration
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
+        id: test_uniform_registration
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run UniformRegistration -v
+
+      - name: Test Log Ingestion
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_log_ingestion
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run LogIngestion -v
+
+      - name: Test Log Forwarding
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_log_forwarding
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run LogForwarding -v
+
+      - name: Test Sequence States
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_states
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
+
+      - name: Test Sequence Loop
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_loop
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
+
+      - name: Test Delayed Tasks
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_delayed_tasks
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_delayed_tasks.sh
+
+      - name: Test Quality Gates Standalone
+        id: test_quality_gates
+        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_QualityGates -v
+
+      - name: Test Quality Gates Backwards compatibility
+        id: test_quality_gates_backwards_compatibility
+        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_quality_gates_backwards_compatibility.sh
+
+      - name: Test Self Healing
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_self_healing
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          UNLEASH_SERVICE_VERSION: "release-0.3.2"
+        run: cd test/go-tests && go test -run Test_SelfHealing -v
+
       - name: Bridge E2E Tests (Cypress)
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
@@ -456,6 +580,125 @@ jobs:
           # re-enable basic auth of bridge
           kubectl create secret generic bridge-credentials -n "$KEPTN_NAMESPACE" --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
           kubectl -n ${KEPTN_NAMESPACE} delete pods --selector=app.kubernetes.io/name=bridge
+
+      - name: Test Delivery Assistant
+        id: test_delivery_assistant
+        # Delivery Assistant only works when we install keptn with continuous delivery use-case
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
+
+      - name: Test User Managed Delivery
+        id: test_user_managed_delivery
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
+
+      - name: Install Remote Execution Plane
+        id: install_remote_execution_plane
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
+          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+
+          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+
+          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+
+          helm test jmeter-service -n keptn-jmeter-service
+          helm test helm-service -n keptn-helm-service
+
+      - name: Test Continuous Delivery with parallel stages (with sockshop)
+        id: test_continuous_delivery
+        if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "sockshop"
+          SERVICE: "carts"
+        run: |
+          test/test_onboard_service.sh
+          test/test_new_artifact.sh
+          test/test_delete_project.sh
+
+      - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
+        id: test_continuous_delivery_remote_exec
+        if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "sockshop"
+          SERVICE: "carts"
+        run: |
+          test/test_onboard_service.sh
+          test/test_new_artifact.sh
+          test/test_delete_project.sh
+
+      - name: Test Manage Secrets
+        id: test_manage_secrets
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_manage_secrets.sh
+
+      #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
+      #        id: test_continuous_delivery
+      #        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+      #        continue-on-error: true
+      #        env:
+      #          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+      #        run: |
+      #          test/test_self_healing_scaling.sh
+
+      # for debugging etc... it makes sense to have the support archive attached as an artifact
+
+      - name: Test Sequence Timeout
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_timeout
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceTimeout -v
+
+      - name: Test Sequence Control
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_control
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceControl -v
+
+      - name: Test Sequence Queue
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_queue
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceQueue -v
 
       - name: keptn generate support-archive
         if: always()
