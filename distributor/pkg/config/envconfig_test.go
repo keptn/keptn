@@ -234,3 +234,13 @@ func Test_ValidateKeptnAPIEndpointURL(t *testing.T) {
 	config = EnvConfig{KeptnAPIEndpoint: ""}
 	assert.Nil(t, config.ValidateKeptnAPIEndpointURL())
 }
+
+func Test_GetPubSubTopics(t *testing.T) {
+	// multiple topics
+	config := EnvConfig{PubSubTopic: "a,b,c"}
+	assert.Equal(t, 3, len(config.GetPubSubTopics()))
+
+	// zero topics
+	config = EnvConfig{}
+	assert.Equal(t, 0, len(config.GetPubSubTopics()))
+}

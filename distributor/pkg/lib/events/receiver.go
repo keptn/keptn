@@ -8,7 +8,6 @@ import (
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -40,7 +39,6 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 		eventMatcher:          eventMatcher,
 		natsConnectionHandler: nch,
 	}
-
 }
 
 func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
@@ -48,14 +46,8 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 		logger.Warn("No pubsub recipient defined")
 		return
 	}
-	if n.env.PubSubTopic == "" {
-		logger.Warn("No pubsub topic defined. No need to create NATS client connection.")
-		ctx.Wg.Done()
-		return
-	}
-
 	n.natsConnectionHandler.MessageHandler = n.handleMessage
-	err := n.natsConnectionHandler.SubscribeToTopics(strings.Split(n.env.PubSubTopic, ","))
+	err := n.natsConnectionHandler.SubscribeToTopics(n.env.GetPubSubTopics())
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -69,8 +61,6 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 
 	for {
 		select {
-		//case <-uptimeTicker.C:
-		//	_ = nch.SubscribeToTopics()
 		case <-n.closeChan:
 			return
 		case <-ctx.Done():
@@ -91,7 +81,6 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubs
 	if err != nil {
 		logger.Errorf("Unable to subscribe to topics %v", topics)
 	}
-
 }
 
 func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
