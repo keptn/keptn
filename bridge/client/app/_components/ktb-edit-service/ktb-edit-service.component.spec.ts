@@ -120,7 +120,7 @@ describe('KtbEditServiceComponent', () => {
     });
   });
 
-  it('should a note that the Git upstream has to be set if the remoteURI is not set', () => {
+  it('should show a note that the Git upstream has to be set if the remoteURI is not set', () => {
     // given, when
     const projectMock = ProjectMock;
     projectMock.gitRemoteURI = '';
