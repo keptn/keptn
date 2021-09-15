@@ -8,7 +8,7 @@ spec:
     matchLabels:
       app: mongodb
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 3
+  replicas: {{ .Values.replicas | default 1 }}
   template:
     metadata:
       labels:

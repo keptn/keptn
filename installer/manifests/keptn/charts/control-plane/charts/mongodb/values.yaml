@@ -5,4 +5,5 @@ image:
 
 # storage and storageClass are the settings for the used PVC
 storage: 5Gi
+replicas: 1
 storageClass:
