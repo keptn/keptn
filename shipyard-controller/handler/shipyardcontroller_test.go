@@ -1341,9 +1341,9 @@ func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
 	// send unknown.artifact-delivery.triggered event
 	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("unknown"), true)
 
-	require.NotNil(t, err)
-
-	require.Empty(t, len(mockEventDispatcher.AddCalls()))
+	require.Nil(t, err)
+	require.Len(t, mockEventDispatcher.AddCalls(), 1)
+	require.Equal(t, keptnv2.GetFinishedEventType("unknown.artifact-delivery"), mockEventDispatcher.AddCalls()[0].Event.Event.Type())
 	require.Empty(t, mockSequenceDispatcher.AddCalls())
 }
 
