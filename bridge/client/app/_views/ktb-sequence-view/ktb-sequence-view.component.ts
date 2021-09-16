@@ -48,7 +48,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           {name: 'Active', value: 'started'},
           {name: 'Failed', value: 'failed'},
           {name: 'Succeeded', value: 'succeeded'},
-          {name: 'Waiting', value: 'waiting'}
+          {name: 'Waiting', value: 'waiting'},
         ],
       },
     ],
@@ -63,9 +63,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   private _tracesTimerInterval = 10_000;
   private _sequenceTimerInterval = 30_000;
   private _tracesTimer: Subscription = Subscription.EMPTY;
+  private sequencesUpdated$: Observable<void>;
 
   public project$: Observable<Project | undefined>;
-  public sequences$: Observable<Sequence[]>;
   public currentSequence?: Sequence;
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(
@@ -88,10 +88,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         map(params => params.projectName),
       );
 
-    this.sequences$ = this.dataService.sequences
+    this.sequencesUpdated$ = this.dataService.sequences
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter((sequences: Sequence[] | undefined): sequences is Sequence[] => !!sequences?.length),
       );
 
     this.project$ = projectName$.pipe(
@@ -114,7 +113,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
         startWith(0),
@@ -137,14 +136,14 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
 
     // init; set parameters
-    combineLatest([this.route.params, this.sequences$])
+    combineLatest([this.route.params, this.sequencesUpdated$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        takeWhile( ([params]) => !this.currentSequence && params.shkeptncontext)
+        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext),
       )
-      .subscribe(([params, sequences]: [Params, Sequence[]]) => {
-        if (params.shkeptncontext) {
-          const sequence = sequences.find(s => s.shkeptncontext === params.shkeptncontext);
+      .subscribe(([params, _]: [Params, void]) => {
+        if (params.shkeptncontext && this.project?.sequences) {
+          const sequence = this.project.sequences.find(s => s.shkeptncontext === params.shkeptncontext);
           const stage = params.eventId ? sequence?.traces.find(t => t.id === params.eventId)?.stage : params.stage;
           const eventId = params.eventId;
           if (sequence) {
@@ -155,11 +154,13 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.sequences$.subscribe(sequences => {
-      this.updateFilterSequence(sequences);
-      this.refreshFilterDataSource();
-      // Set unfinished sequences so that the state updates can be loaded
-      this.unfinishedSequences = sequences.filter(sequence => !sequence.isFinished());
+    this.sequencesUpdated$.subscribe(() => {
+      if (this.project?.sequences) {
+        this.updateFilterSequence(this.project.sequences);
+        this.refreshFilterDataSource();
+        // Set unfinished sequences so that the state updates can be loaded
+        this.unfinishedSequences = this.project.sequences.filter(sequence => !sequence.isFinished());
+      }
     });
   }
 
@@ -195,7 +196,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   // tslint:disable-next-line:no-any
-  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: [] }) {
+  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: [] }): void {
     this._seqFilters = event.filters;
     this.sequenceFilters = this._seqFilters.reduce((filters, currentFilter) => {
       if (!filters[currentFilter[0].name]) {
@@ -206,7 +207,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }, {});
   }
 
-  updateFilterSequence(sequences: Sequence[]) {
+  updateFilterSequence(sequences: Sequence[]): void {
     if (sequences) {
       const filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Sequence');
       if (filterItem) {
@@ -218,12 +219,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateFilterDataSource(project: Project) {
+  updateFilterDataSource(project: Project): void {
     let filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Service');
     if (filterItem) {
       filterItem.autocomplete = project.getServices().map(s => Object.assign({}, {
         name: s.serviceName,
-        value: s.serviceName
+        value: s.serviceName,
       }));
     }
     filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Stage');
@@ -237,7 +238,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
-  private refreshFilterDataSource() {
+  private refreshFilterDataSource(): void {
     this._filterDataSource = new DtQuickFilterDefaultDataSource(
       this.filterFieldData,
       this._config,
@@ -273,11 +274,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     return this.dataService.getTracesLastUpdated(sequence);
   }
 
-  showReloadButton(sequence: Sequence) {
+  showReloadButton(sequence: Sequence): boolean {
     return moment().subtract(1, 'day').isAfter(sequence.time);
   }
 
-  selectStage(stageName: string) {
+  selectStage(stageName: string): void {
     if (this.currentSequence) {
       const routeUrl = this.router.createUrlTree(['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName]);
       this.location.go(routeUrl.toString());

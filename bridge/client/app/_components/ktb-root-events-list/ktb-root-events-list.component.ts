@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input, OnDestroy,
-  OnInit, Output,
-  ViewEncapsulation
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { DateUtil } from '../../_utils/date.utils';
-import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { Subject } from 'rxjs';
@@ -20,7 +12,7 @@ import { Sequence } from '../../_models/sequence';
   templateUrl: './ktb-root-events-list.component.html',
   styleUrls: ['./ktb-root-events-list.component.scss'],
   host: {
-    class: 'ktb-root-events-list'
+    class: 'ktb-root-events-list',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
@@ -63,18 +55,17 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
               private route: ActivatedRoute, private dataService: DataService) {
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.params.pipe(
       map(params => params.projectName),
       switchMap(projectName => this.dataService.getProject(projectName)),
-      takeUntil(this.unsubscribe$)
+      takeUntil(this.unsubscribe$),
     ).subscribe(project => {
       this.project = project;
     });
 
     this.dataService.sequences.pipe(
       takeUntil(this.unsubscribe$),
-      filter(sequences => !!sequences)
     ).subscribe(() => {
       this.loading = false;
       this._changeDetectorRef.markForCheck();
@@ -90,7 +81,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     return item?.time;
   }
 
-  loadOldSequences() {
+  loadOldSequences(): void {
     if (this.project) {
       this.loading = true;
       this._changeDetectorRef.markForCheck();
@@ -103,7 +94,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     this.unsubscribe$.complete();
   }
 
-  public getShortType(type: string | undefined): string | undefined{
+  public getShortType(type: string | undefined): string | undefined {
     return type ? Sequence.getShortType(type) : undefined;
   }
 }

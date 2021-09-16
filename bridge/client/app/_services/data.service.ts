@@ -29,7 +29,7 @@ import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 export class DataService {
 
   protected _projects = new BehaviorSubject<Project[] | undefined>(undefined);
-  protected _sequences = new BehaviorSubject<Sequence[] | undefined>(undefined);
+  protected _sequences = new Subject<void>();
   protected _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
@@ -55,7 +55,7 @@ export class DataService {
     return this._projects.asObservable();
   }
 
-  get sequences(): Observable<Sequence[] | undefined> {
+  get sequences(): Observable<void> {
     return this._sequences.asObservable();
   }
 
@@ -395,7 +395,7 @@ export class DataService {
       project.stages.forEach(stage => {
         this.stageSequenceMapper(stage, project);
       });
-      this._sequences.next(project.sequences);
+      this._sequences.next();
     });
   }
 
@@ -459,13 +459,14 @@ export class DataService {
       map(response => response.body?.states || []),
       map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)).shift()),
     ).subscribe(sequence => {
-      const sequences = this._sequences.getValue();
+      const project = this._projects.getValue()?.find(p => p.projectName === projectName);
+      const sequences = project?.sequences;
       const oldSequence = sequences?.find(seq => seq.shkeptncontext === keptnContext);
       if (oldSequence && sequence) {
         const {traces, ...copySequence} = sequence; // don't overwrite loaded traces
         Object.assign(oldSequence, copySequence);
       }
-      this._sequences.next(sequences);
+      this._sequences.next();
     });
   }
 
@@ -498,7 +499,7 @@ export class DataService {
               });
             }
           });
-        this._sequences.next([...this._sequences.getValue() ?? []]);
+        this._sequences.next();
       });
   }
 
