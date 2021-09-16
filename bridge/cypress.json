@@ -1,0 +1,14 @@
+{
+  "integrationFolder": "cypress/integration",
+  "supportFile": "cypress/support/index.ts",
+  "videosFolder": "dist/cypress/videos",
+  "screenshotsFolder": "dist/cypress/screenshots",
+  "pluginsFile": "cypress/plugins/index.ts",
+  "fixturesFolder": "cypress/fixtures",
+  "baseUrl": "http://localhost:3000",
+  "video": true,
+  "screenshotOnRunFailure": true,
+  "viewportHeight": 1080,
+  "viewportWidth": 1920,
+  "chromeWebSecurity": false
+}
