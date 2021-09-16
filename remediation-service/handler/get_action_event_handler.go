@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 )
 
 const remediationSpecVersion = "spec.keptn.sh/0.1.4"
@@ -19,8 +19,12 @@ func NewGetActionEventHandler() *GetActionEventHandler {
 	return &GetActionEventHandler{}
 }
 
-func (g *GetActionEventHandler) Execute(k sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
-	getActionTriggeredData := data.(*keptnv2.GetActionTriggeredEventData)
+func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
+	getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
+
+	if err := keptnv2.Decode(event.Data, getActionTriggeredData); err != nil {
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not decode input event data"}
+	}
 
 	// get remediation.yaml resource
 	resource, err := g.getRemediationResource(k, getActionTriggeredData)
@@ -47,10 +51,6 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, data interface{}) (interfa
 	}
 
 	return finishedEventData, nil
-}
-
-func (g *GetActionEventHandler) InitData() interface{} {
-	return &keptnv2.GetActionTriggeredEventData{}
 }
 
 func (g *GetActionEventHandler) getRemediationResource(keptn sdk.IKeptn, eventData *keptnv2.GetActionTriggeredEventData) (*models.Resource, error) {

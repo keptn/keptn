@@ -290,9 +290,9 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Nil(t, err)
 
 	// wait for echo integration registered
-	var fetchedEchoIntegration models.Integration
+	var fetchedEchoIntegration keptnmodels.Integration
 	require.Eventually(t, func() bool {
-		fetchedEchoIntegration, err = getIntegrationWithName("echo-service")
+		fetchedEchoIntegration, err = GetIntegrationWithName("echo-service")
 		return err == nil
 	}, time.Second*20, time.Second*3)
 
@@ -338,18 +338,4 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 
 	// uninstall echo integration
 	cleanupIntegrationFunc()
-}
-
-func getIntegrationWithName(name string) (models.Integration, error) {
-	resp, _ := ApiGETRequest("/controlPlane/v1/uniform/registration")
-	integrations := []models.Integration{}
-	if err := resp.ToJSON(&integrations); err != nil {
-		return models.Integration{}, err
-	}
-	for _, r := range integrations {
-		if r.Name == name {
-			return r, nil
-		}
-	}
-	return models.Integration{}, fmt.Errorf("No Keptn Integration with name %s found", name)
 }
