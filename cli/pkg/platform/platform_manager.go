@@ -28,35 +28,40 @@ type platform interface {
 
 // PlatformManager allows to manage (i.e. check requirements) for supported platforms
 type PlatformManager struct {
-	platform platform
+	platform          platform
+	credentialManager credentialmanager.CredentialManagerInterface
 }
 
 // NewPlatformManager creates a new manager for the provided platform
-func NewPlatformManager(platformIdentifier string) (*PlatformManager, error) {
+func NewPlatformManager(platformIdentifier string, cm credentialmanager.CredentialManagerInterface) (*PlatformManager, error) {
 
 	switch strings.ToLower(platformIdentifier) {
 	case OpenShiftIdentifier:
-		return &PlatformManager{platform: newOpenShiftPlatform()}, nil
+		return &PlatformManager{platform: newOpenShiftPlatform(), credentialManager: cm}, nil
 	case KubernetesIdentifier:
-		return &PlatformManager{platform: newKubernetesPlatform()}, nil
+		return &PlatformManager{platform: newKubernetesPlatform(), credentialManager: cm}, nil
 	default:
 		return nil, errors.New("Unsupported platform '" + platformIdentifier +
 			"'. The following platforms are supported: OpenShiftIdentifier and KubernetesIdentifier")
 	}
 }
 
+func (mng *PlatformManager) GetCredentialManager() credentialmanager.CredentialManagerInterface {
+	return mng.credentialManager
+}
+
 // CheckRequirements checks the platform's requirements
-func (mng PlatformManager) CheckRequirements() error {
+func (mng *PlatformManager) CheckRequirements() error {
 	return mng.platform.checkRequirements()
 }
 
 // CheckCreds checks the provided creds
-func (mng PlatformManager) CheckCreds() error {
+func (mng *PlatformManager) CheckCreds() error {
 	return mng.platform.checkCreds()
 }
 
 // ParseConfig reads and parses the provided config file
-func (mng PlatformManager) ParseConfig(configFile string) error {
+func (mng *PlatformManager) ParseConfig(configFile string) error {
 	data, err := fileutils.ReadFile(configFile)
 	if err != nil {
 		return err
@@ -65,10 +70,8 @@ func (mng PlatformManager) ParseConfig(configFile string) error {
 }
 
 // ReadCreds reads the credentials for the platform
-func (mng PlatformManager) ReadCreds(assumeYes bool) error {
-
-	cm := credentialmanager.NewCredentialManager(assumeYes)
-	credsStr, err := cm.GetInstallCreds()
+func (mng *PlatformManager) ReadCreds(assumeYes bool) error {
+	credsStr, err := mng.credentialManager.GetInstallCreds()
 	if err != nil {
 		credsStr = ""
 	}
@@ -105,5 +108,5 @@ func (mng PlatformManager) ReadCreds(assumeYes bool) error {
 	newCreds, _ := json.Marshal(mng.platform.getCreds())
 	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
 	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
-	return cm.SetInstallCreds(newCredsStr)
+	return mng.credentialManager.SetInstallCreds(newCredsStr)
 }

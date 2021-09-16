@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.5",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "cookie-parser": "^1.4.5",
     "crypto-random-string": "^4.0.0",
     "depd": "^2.0.0",

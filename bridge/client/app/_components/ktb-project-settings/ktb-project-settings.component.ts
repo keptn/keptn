@@ -9,7 +9,7 @@ import { DataService } from '../../_services/data.service';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { NotificationsService } from '../../_services/notifications.service';
 import { EventService } from '../../_services/event.service';
-import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
@@ -18,6 +18,7 @@ import { NotificationType, TemplateRenderedNotifications } from '../../_models/n
   selector: 'ktb-project-settings',
   templateUrl: './ktb-project-settings.component.html',
   styleUrls: ['./ktb-project-settings.component.scss'],
+  providers: [NotificationsService],
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
@@ -67,11 +68,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
         map((projects: Project[]) => projects.map(project => project.projectName)),
       ).subscribe((projectNames) => {
       if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
-        this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
+        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {queryParams: {created: true}});
       }
       this.projectNameControl.setValidators([
         Validators.required,
-        FormUtils.projectNameExistsValidator(projectNames),
+        FormUtils.nameExistsValidator(projectNames),
         Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
       ]);
     });
@@ -105,10 +106,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
         this.unsavedDialogState = null;
         this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {
           projectName: this.projectName,
-          routerLink: `/project/${this.projectName}/service`,
+          routerLink: `/project/${this.projectName}/settings/services/create`,
         });
         // Remove query param for not showing notification on reload
-        this.router.navigate(['/', 'project', this.projectName, 'settings']);
+        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
       }
     });
 
@@ -124,6 +125,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    this.notificationsService.clearNotifications();
   }
 
   public updateGitData(gitData: GitData): void {
@@ -154,7 +156,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
           this.gitData = {...this.gitData};
           this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
         }, (err) => {
-          console.log(err);
           this.isGitUpstreamInProgress = false;
           this.notificationsService.addNotification(NotificationType.Error, `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`);
         });
@@ -187,29 +188,26 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public deleteProject(projectName: string): void {
     this.eventService.deletionProgressEvent.next({isInProgress: true});
 
-    this.dataService.projects
+    this.dataService.projectExists(projectName)
       .pipe(
         takeUntil(this.unsubscribe$),
-        take(1),
+        filter(status => status === false),
       ).subscribe(() => {
       this.router.navigate(['/', 'dashboard']);
     });
 
     this.dataService.deleteProject(projectName)
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        take(1),
-      ).subscribe(() => {
-      this.dataService.loadProjects();
-      this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
-    }, (err) => {
-      const deletionError = 'Project could not be deleted: ' + err.message;
-      this.eventService.deletionProgressEvent.next({
-        error: deletionError,
-        isInProgress: false,
-        result: DeleteResult.ERROR,
+      .subscribe(() => {
+        this.dataService.loadProjects();
+        this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
+      }, (err) => {
+        const deletionError = 'Project could not be deleted: ' + err.message;
+        this.eventService.deletionProgressEvent.next({
+          error: deletionError,
+          isInProgress: false,
+          result: DeleteResult.ERROR,
+        });
       });
-    });
   }
 
   public reset(): void {

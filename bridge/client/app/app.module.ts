@@ -115,6 +115,13 @@ import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils
 import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { environment } from '../environments/environment';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
+import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
+import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
+import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
+import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
+import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
+import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list/ktb-edit-service-file-list.component';
+import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 
 registerLocaleData(localeEn, 'en');
 
@@ -192,6 +199,12 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbProjectSettingsComponent,
     KtbDeleteConfirmationComponent,
     KtbModifyUniformSubscriptionComponent,
+    KtbServiceSettingsComponent,
+    KtbCreateServiceComponent,
+    KtbServiceSettingsOverviewComponent,
+    KtbServiceSettingsListComponent,
+    KtbEditServiceComponent,
+    KtbEditServiceFileListComponent,
   ],
   imports: [
     BrowserModule,
@@ -242,6 +255,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     BrowserAnimationsModule,
     DtFilterFieldModule,
     ReactiveFormsModule,
+    DtTreeTableModule,
   ],
   entryComponents: [
     KtbDeletionDialogComponent,

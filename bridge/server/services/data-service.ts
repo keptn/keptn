@@ -13,6 +13,10 @@ import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
+import { Resource } from '../../shared/interfaces/resource';
+import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
+
+type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 
 export class DataService {
   private apiService: ApiService;
@@ -71,9 +75,9 @@ export class DataService {
   public async getSequence(projectName: string, stageName?: string, keptnContext?: string, includeEvaluationTrace = false): Promise<Sequence | undefined> {
     const response = await this.apiService.getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext);
     let sequence = response.data.states[0];
-    if (sequence && stageName) { // we just need the result of a stage
+    if (sequence) {
       sequence = Sequence.fromJSON(sequence);
-      if (includeEvaluationTrace) {
+      if (includeEvaluationTrace && stageName) { // we just need the result of a stage
         const stage = sequence.stages.find(s => s.name === stageName);
         if (stage) { // get latest evaluation
           const evaluationTraces = await this.getEvaluationResults(projectName, sequence.service, stageName, 1, sequence.shkeptncontext);
@@ -83,7 +87,7 @@ export class DataService {
         }
       }
     }
-    return sequence ?? Sequence.fromJSON(sequence);
+    return sequence;
   }
 
   public async getDeploymentInformation(service: Service, projectName: string, stageName: string): Promise<DeploymentInformation | undefined> {
@@ -180,7 +184,7 @@ export class DataService {
 
   public async hasUnreadUniformRegistrationLogs(uniformDates: { [key: string]: string }): Promise<boolean> {
     const response = await this.apiService.getUniformRegistrations();
-    const registrations = response.data;
+    const registrations = await this.getValidRegistrations(response.data);
     let status = false;
     for (let i = 0; i < registrations.length && !status; ++i) {
       const registration = registrations[i];
@@ -194,14 +198,20 @@ export class DataService {
 
   public async getUniformRegistrations(uniformDates: { [key: string]: string }): Promise<UniformRegistration[]> {
     const response = await this.apiService.getUniformRegistrations();
-    const registrations = response.data;
+    const registrations = await this.getValidRegistrations(response.data);
+    for (const registration of registrations) {
+      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
+      registration.unreadEventsCount = logResponse.data.logs.length;
+    }
+    return registrations;
+  }
+
+  private async getValidRegistrations(registrations: UniformRegistration[]): Promise<UniformRegistration[]> {
     const currentDate = new Date().getTime();
     const validRegistrations: UniformRegistration[] = [];
     for (const registration of registrations) {
       const diffMins = (currentDate - new Date(registration.metadata.lastseen).getTime()) / 60_000;
       if (diffMins < 2) {
-        const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
-        registration.unreadEventsCount = logResponse.data.logs.length;
         validRegistrations.push(registration);
       }
     }
@@ -230,6 +240,33 @@ export class DataService {
     return tasks;
   }
 
+  public async getResourceFileTreesForService(projectName: string, serviceName: string): Promise<FileTree[]> {
+    const projectRes = await this.apiService.getProject(projectName);
+    const stages = projectRes.data.stages;
+
+    const fileTrees: FileTree[] = [];
+
+    for (const stage of stages) {
+      let nextPage: string | undefined;
+      let resourceResponses: Resource[] = [];
+      const fileTree: FileTree = {
+        stageName: stage.stageName,
+        tree: [],
+      };
+
+      do {
+        const resourceRes = await this.apiService.getServiceResource(projectName, stage.stageName, serviceName, nextPage || undefined);
+        nextPage = resourceRes.data.nextPageKey;
+        resourceResponses = [...resourceResponses, ...resourceRes.data.resources];
+      } while (parseInt(nextPage, 10) !== 0);
+
+      fileTree.tree = this._getResourceFileTree(resourceResponses);
+      fileTrees.push(fileTree);
+    }
+
+    return fileTrees;
+  }
+
   private async getShipyard(projectName: string): Promise<Shipyard> {
     const response = await this.apiService.getShipyard(projectName);
     const shipyard = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
@@ -238,5 +275,51 @@ export class DataService {
 
   private buildRemediationEvent(stageName: string): string {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
+  }
+
+  private _getResourceFileTree(resources: Resource[]): TreeEntry[] {
+    const directory: TreeDirectory = {_: []};
+
+    for (const res of resources) {
+      const parts = res.resourceURI.split('/').filter(item => !!item);
+      this._addToTreeDirectory(directory, parts);
+    }
+
+    return this._buildTree(directory, '').children || [];
+  }
+
+  private _addToTreeDirectory(currentDirectory: TreeDirectory, parts: string[]): void {
+    let index = 0;
+    for (; index < parts.length - 1; ++index) {
+      const part = parts[index];
+      // @ts-ignore
+      currentDirectory[part] ??= {_: []};
+      // @ts-ignore
+      currentDirectory = currentDirectory[part];
+    }
+    currentDirectory._.push(parts[index]);
+  }
+
+  private _buildTree(currentDirectory: TreeDirectory, fileName: string): TreeEntry {
+    const tree: TreeEntry = {fileName, children: [] as TreeEntry[]};
+    const dict: { [key: string]: boolean } = {_: true};
+    const folders: TreeEntry[] = [];
+    const files: TreeEntry[] = [];
+    for (const key in currentDirectory) {
+      if (dict[key]) {
+        files.push(...currentDirectory._.map(item => {
+          return {
+            fileName: item,
+          } as TreeEntry;
+        }));
+      } else {
+        // @ts-ignore
+        folders.push(this._buildTree(currentDirectory[key] as TreeDirectory, key));
+      }
+    }
+    folders.sort((a, b) => a.fileName.localeCompare(b.fileName));
+    files.sort((a, b) => a.fileName.localeCompare(b.fileName));
+    tree.children = [...folders, ...files];
+    return tree;
   }
 }

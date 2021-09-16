@@ -15,7 +15,7 @@ on:
         required: true
         default: 'master'
 env:
-  META_KEPTN_VERSION: 0.8.7
+  META_KEPTN_VERSION: 0.9.0
   META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
@@ -289,12 +289,12 @@ jobs:
         if: env.RUN_AIRGAPPED_TEST == 'true'
         run: |
           # Deny egress traffic: https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-and-all-egress-traffic
-          kubectl apply -f - <<EOF
+          kubectl apply -f - << EOF
           ---
           apiVersion: networking.k8s.io/v1
           kind: NetworkPolicy
           metadata:
-            name: default-deny-all
+            name: default-deny-all-egress
           spec:
             podSelector: {}
             policyTypes:
@@ -302,7 +302,7 @@ jobs:
           EOF
 
           # wait a bit
-          sleep 30
+          sleep 15
 
       - name: Install Keptn
         id: keptn_install
@@ -414,6 +414,7 @@ jobs:
         timeout-minutes: 5
         run: |
           source test/utils.sh
+
           # authenticate at Keptn API
           if [[ "$PLATFORM" == "openshift" ]]; then
             KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
@@ -458,7 +459,7 @@ jobs:
 
       - name: Test Uniform Registration
         # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
         id: test_uniform_registration
         timeout-minutes: 10
         continue-on-error: true
@@ -546,6 +547,39 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
         run: cd test/go-tests && go test -run Test_SelfHealing -v
+
+      - name: Bridge E2E Tests (Cypress)
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_bridge_e2e
+        timeout-minutes: 15
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        # Note: Webdriver + Chrome are pre-installed on Ubuntu 20.04
+        # https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md#browsers-and-drivers
+        run: |
+          # extract Keptn API Token
+          export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+
+          # extract Keptn Bridge Info
+          statusresponse=$(keptn status)
+          export KEPTN_BRIDGE_URL=$(echo "$statusresponse" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
+          export KEPTN_BRIDGE_USER=$(kubectl get secret -n "$KEPTN_NAMESPACE" bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
+          export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n "$KEPTN_NAMESPACE" bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
+
+          # disable basic auth
+          kubectl -n ${KEPTN_NAMESPACE} delete secret bridge-credentials
+          kubectl -n ${KEPTN_NAMESPACE} delete pods --selector=app.kubernetes.io/name=bridge
+
+          # start e2e tests in bridge folder
+          cd bridge
+          npm ci
+          npm run cypress:run -- --browser=chrome --config baseUrl=$KEPTN_BRIDGE_URL
+
+          # re-enable basic auth of bridge
+          kubectl create secret generic bridge-credentials -n "$KEPTN_NAMESPACE" --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
+          kubectl -n ${KEPTN_NAMESPACE} delete pods --selector=app.kubernetes.io/name=bridge
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant
@@ -729,8 +763,22 @@ jobs:
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
           # please check with headings in print_test_report task roughly 50 lines below
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} | ${{ steps.test_bridge_e2e.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
+
+      - name: Upload Bridge E2E Screenshots
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: bridge-e2e-screenshots
+          path: bridge/dist/cypress/screenshots/
+
+      - name: Upload Bridge E2E Videos
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: bridge-e2e-videos
+          path: bridge/dist/cypress/videos/
 
       - name: Upload test report as an artifact
         if: always()
@@ -774,8 +822,8 @@ jobs:
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
           # please check with output in write_test_report task roughly 50 lines above
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration | Bridge E2E |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ------------------- | ---------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
@@ -876,7 +924,7 @@ jobs:
       - name: Find PR number for current build
         id: find_pr_for_build
         if: always()
-        uses: jwalton/gh-find-current-pr@v1.1.0
+        uses: jwalton/gh-find-current-pr@v1.2.0
 
       - name: Create PR comment if tests failed
         # Only run if not on master branch and we have a PR number
@@ -938,7 +986,7 @@ jobs:
           echo "</details>" >> release-notes.txt
 
       - name: Abort if (published) release already exists
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v4.1
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -962,7 +1010,7 @@ jobs:
             }
 
       - name: Delete draft release if it already exists
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v4.1
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |

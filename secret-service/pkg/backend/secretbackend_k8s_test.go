@@ -178,9 +178,12 @@ func TestGetSecret(t *testing.T) {
 	secrets, err := backend.GetSecrets()
 	require.Nil(t, err)
 
-	require.Equal(t, []model.SecretMetadata{
+	require.Equal(t, []model.GetSecretResponseItem{
 		{
-			Name: "my-secret",
+			SecretMetadata: model.SecretMetadata{
+				Name: "my-secret",
+			},
+			Keys: []string{"password"},
 		},
 	}, secrets)
 }

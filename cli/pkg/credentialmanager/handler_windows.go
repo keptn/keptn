@@ -4,15 +4,19 @@ import (
 	"net/url"
 
 	"github.com/docker/docker-credential-helpers/wincred"
+	"github.com/keptn/keptn/cli/pkg/config"
 )
 
 type CredentialManager struct {
+	cliConfig  config.CLIConfig
+	kubeConfig KubeConfigFileType
 }
 
 // NewCredentialManager creates a new credential manager
-func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
-	initChecks(autoApplyNewContext)
-	return &CredentialManager{}
+func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
+	cm := &CredentialManager{}
+	initChecks(autoApplyNewContext, cm)
+	return cm
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token in the keychain.
@@ -33,4 +37,20 @@ func (cm *CredentialManager) SetInstallCreds(creds string) error {
 // GetInstallCreds gets the install credentials
 func (cm *CredentialManager) GetInstallCreds() (string, error) {
 	return getInstallCreds(wincred.Wincred{})
+}
+
+func (cm *CredentialManager) SetCurrentKubeConfig(kubeConfig KubeConfigFileType) {
+	cm.kubeConfig = kubeConfig
+}
+
+func (cm *CredentialManager) GetCurrentKubeConfig() KubeConfigFileType {
+	return cm.kubeConfig
+}
+
+func (cm *CredentialManager) SetCurrentKeptnCLIConfig(cliConfig config.CLIConfig) {
+	cm.cliConfig = cliConfig
+}
+
+func (cm *CredentialManager) GetCurrentKeptnCLIConfig() config.CLIConfig {
+	return cm.cliConfig
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -109,7 +110,7 @@ func TestGetByNameNotFound(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
 	assert.NotNil(t, err)
-	assert.Equal(t, errProjectNotFound, err)
+	assert.Equal(t, ErrProjectNotFound, err)
 	assert.Nil(t, project)
 	assert.Equal(t, "my-project", projectsDBOperations.GetProjectCalls()[0].ProjectName)
 }
@@ -469,6 +470,37 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 
 }
 
+func TestUpdate_OldProjectNotAvailable(t *testing.T) {
+
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+		return nil, nil
+	}
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return nil, nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	params := &operations.UpdateProjectParams{
+		GitRemoteURL: "git-url",
+		GitToken:     "git-token",
+		GitUser:      "git-user",
+		Name:         common.Stringp("my-project"),
+	}
+	err, rollback := instance.Update(params)
+	assert.NotNil(t, err)
+	assert.Equal(t, ErrProjectNotFound, err)
+	rollback()
+
+}
+
 func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
@@ -487,7 +519,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 		return fmt.Errorf("whoops")
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, nil
+		return &models.ExpandedProject{}, nil
 	}
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &operations.UpdateProjectParams{
@@ -499,6 +531,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
 	rollback()
+	require.Len(t, secretStore.UpdateSecretCalls(), 1)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 
 }
@@ -574,6 +607,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	// rollbacks
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
 	assert.Equal(t, rollbackSecretsData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, rollbackProjectData.GitRemoteURI, configStore.UpdateProjectCalls()[1].Project.GitRemoteURI)
 }
 
 func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {

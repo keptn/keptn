@@ -2,13 +2,13 @@
 
 This page borrows parts of its contents from https://kubernetes.io/security/
 
-## Report a Vulnerability 
+## Report a Vulnerability
 
 We are extremely grateful for security researchers and users that report vulnerabilities to the Keptn Open Source Community. All reports are thoroughly investigated by a set of community members.
 
 To make a report, submit your vulnerability to all security contacts of Keptn [listed below](#security-contacts). This allows triage and handling of the vulnerability with standardized response times.
 
-### When Should I Report a Vulnerability? 
+### When Should I Report a Vulnerability?
 
 - You think you discovered a potential security vulnerability in Keptn
 - You are unsure how a vulnerability affects Keptn
@@ -43,5 +43,6 @@ Defined below are the security contacts for this repository. In case you identif
 - johannes.braeuer
 - andreas.grimmer
 - christian.kreuzberger
+- giovanni.liva
 
 Please append the email addresses with [at] dynatrace [.com] and address your email to all security contacts.

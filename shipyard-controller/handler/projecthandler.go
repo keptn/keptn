@@ -100,7 +100,7 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 
 	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
-		if project == nil && err == errProjectNotFound {
+		if project == nil && err == ErrProjectNotFound {
 			SetNotFoundErrorResponse(nil, c, "Project not found: "+projectName)
 			return
 		}
@@ -196,7 +196,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
-		SetInternalServerErrorResponse(err, c)
+		if err == ErrProjectNotFound {
+			SetNotFoundErrorResponse(err, c)
+		} else {
+			SetInternalServerErrorResponse(err, c)
+		}
 		return
 	}
 
