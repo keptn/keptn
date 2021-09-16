@@ -2,7 +2,7 @@
 
 if [[ $# -ne 4 ]]; then
     echo "Please provide the target registry and helm charts as parameters, e.g., "
-    echo "$1 \"docker.io/your-username/\" \"keptn-0.8.4.tgz\" \"helm-service-0.8.4.tgz\" \"jmeter-service-0.8.4.tgz\""
+    echo "$1 \"docker.io/your-username/\" \"keptn-0.9.0.tgz\" \"helm-service-0.9.0.tgz\" \"jmeter-service-0.9.0.tgz\""
     exit 1
 fi
 
@@ -18,8 +18,10 @@ echo "-----------------------------------------------------------------------"
 echo "Installing Keptn Core Helm Chart in Namespace ${KEPTN_NAMESPACE}"
 echo "-----------------------------------------------------------------------"
 
+kubectl create namespace "${KEPTN_NAMESPACE}"
 
-helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --create-namespace --wait --set="control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuous-delivery.enabled=true,\
+helm upgrade keptn "${KEPTN_HELM_CHART}" --install --create-namespace -n "${KEPTN_NAMESPACE}" --wait \
+--set="control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuous-delivery.enabled=true,\
 control-plane.mongodb.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}centos/mongodb-36-centos7,\
 control-plane.nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.1.9-alpine3.14,\
 control-plane.nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}connecteverything/nats-server-config-reloader:0.6.0,\
@@ -45,7 +47,8 @@ echo "-----------------------------------------------------------------------"
 echo "Installing Keptn Helm-Service Helm Chart in Namespace ${KEPTN_NAMESPACE}"
 echo "-----------------------------------------------------------------------"
 
-helm upgrade helm-service "${KEPTN_HELM_SERVICE_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --set="helmservice.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/helm-service,\
+helm upgrade helm-service "${KEPTN_HELM_SERVICE_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" \
+--set="helmservice.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/helm-service,\
 distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/distributor"
 
 echo ""
@@ -54,9 +57,11 @@ echo "-----------------------------------------------------------------------"
 echo "Installing Keptn JMeter-Service Helm Chart in Namespace ${KEPTN_NAMESPACE}"
 echo "-----------------------------------------------------------------------"
 
-helm upgrade jmeter-service "${KEPTN_JMETER_SERVICE_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --set="jmeterservice.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/jmeter-service,\
+helm upgrade jmeter-service "${KEPTN_JMETER_SERVICE_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" \
+--set="jmeterservice.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/jmeter-service,\
 distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/distributor"
 
 
 # add keptn.sh/managed-by annotation to the namespace
-kubectl patch namespace "${KEPTN_NAMESPACE}" -p "{\"metadata\": {\"annotations\": {\"keptn.sh/managed-by\": \"keptn\"}, \"labels\": {\"keptn.sh/managed-by\": \"keptn\"}}}"
+kubectl patch namespace "${KEPTN_NAMESPACE}" \
+-p "{\"metadata\": {\"annotations\": {\"keptn.sh/managed-by\": \"keptn\"}, \"labels\": {\"keptn.sh/managed-by\": \"keptn\"}}}"
