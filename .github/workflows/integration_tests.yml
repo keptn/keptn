@@ -494,7 +494,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
+        run: cd test/go-tests && go test -run SequenceState -v
 
       - name: Test Sequence Loop
         # do not run this test for the airgapped scenario
