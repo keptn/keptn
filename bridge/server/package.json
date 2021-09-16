@@ -13,7 +13,7 @@
     "url": "https://github.com/keptn/keptn/issues"
   },
   "dependencies": {
-    "adm-zip": "^0.5.5",
+    "adm-zip": "^0.5.6",
     "axios": "^0.21.4",
     "cookie-parser": "^1.4.5",
     "crypto-random-string": "^4.0.0",
