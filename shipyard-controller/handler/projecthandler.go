@@ -196,7 +196,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
-		SetInternalServerErrorResponse(err, c)
+		if err == ErrProjectNotFound {
+			SetNotFoundErrorResponse(err, c)
+		} else {
+			SetInternalServerErrorResponse(err, c)
+		}
 		return
 	}
 

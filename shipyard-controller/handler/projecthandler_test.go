@@ -393,6 +393,23 @@ func TestUpdateProject(t *testing.T) {
 			expectHttpStatus: http.StatusBadRequest,
 		},
 		{
+			name: "Update non-existing project",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+						return ErrProjectNotFound, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+			},
+			jsonPayload:      examplePayload,
+			expectHttpStatus: http.StatusNotFound,
+		},
+		{
 			name: "Update project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{

@@ -179,6 +179,8 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	oldProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
+	} else if oldProject == nil {
+		return ErrProjectNotFound, nilRollback
 	}
 
 	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
