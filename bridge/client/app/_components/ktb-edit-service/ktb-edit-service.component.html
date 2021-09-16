@@ -1,6 +1,37 @@
 <div *ngIf="serviceName" fxFlexFill class="container">
-  <div fxLayoutAlign="space-between stretch" fxLayout="column" class="settings-section full-height">
-    <h2>Edit service {{serviceName}}</h2>
-    <ktb-danger-zone [data]="getServiceDeletionData(serviceName)"></ktb-danger-zone>
+  <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
+    <div>
+      <h2>Edit service: {{serviceName}}</h2>
+      <ng-container *ngIf="project$ | async as project">
+        <div class="settings-section">
+          <h3>Configuration files</h3>
+          <ng-container *ngIf="!project.gitRemoteURI">
+            <span>
+              There is no Git upstream repository set.<br/>To show and manage the configuration files related to the {{serviceName}} service,
+            </span>
+            <a [routerLink]="['/', 'project', project.projectName, 'settings', 'project']">set a Git upstream repository</a>.
+          </ng-container>
+
+          <ng-template #loadingFiles>
+            <dt-loading-spinner></dt-loading-spinner>
+          </ng-template>
+          <ng-container *ngIf="fileTree$ | async as fileTree; else loadingFiles">
+            <div *ngIf="fileTree.length > 0">
+              <ng-container *ngFor="let stageEntry of fileTree">
+                <ktb-edit-service-file-list [stageName]="stageEntry.stageName" [remoteUri]="project.gitRemoteURI" [serviceName]="serviceName" [treeData]="stageEntry.tree"></ktb-edit-service-file-list>
+              </ng-container>
+            </div>
+            <div *ngIf="fileTree.length === 0">
+              There are no files in the Git upstream repository
+            </div>
+          </ng-container>
+
+        </div>
+      </ng-container>
+    </div>
+    <div class="settings-section">
+      <ktb-danger-zone [data]=" getServiceDeletionData(serviceName)
+    "></ktb-danger-zone>
+    </div>
   </div>
 </div>
