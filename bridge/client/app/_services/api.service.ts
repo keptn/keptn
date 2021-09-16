@@ -22,7 +22,6 @@ import { UniformSubscription } from '../_models/uniform-subscription';
 import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
-import { UniformRegistration } from '../_models/uniform-registration';
 import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
