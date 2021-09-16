@@ -2603,7 +2603,7 @@ func TestCalculateScore(t *testing.T) {
 			},
 			ExpectedError: nil,
 		}, {
-			Name:           "Non Key SLI warning",
+			Name:           "Non-Key SLI warning",
 			InMaximumScore: 2,
 			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
@@ -2753,7 +2753,7 @@ func TestCalculateScore(t *testing.T) {
 			},
 			ExpectedError: nil,
 		}, {
-			Name:           "Non Key SLI fail",
+			Name:           "Non-Key SLI fail",
 			InMaximumScore: 2,
 			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
