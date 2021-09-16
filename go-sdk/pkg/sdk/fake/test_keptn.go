@@ -2,7 +2,7 @@ package fake
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 )
 
 type FakeKeptn struct {
@@ -34,12 +34,21 @@ func (f *FakeKeptn) GetEventSender() *TestSender {
 	return f.Keptn.EventSender.(*TestSender)
 }
 
+func WithResourceHandler(handler sdk.ResourceHandler) sdk.KeptnOption {
+	return func(keptn sdk.IKeptn) {
+		fakeKeptn := keptn.(*FakeKeptn)
+		fakeKeptn.TestResourceHandler = handler
+		fakeKeptn.Keptn.ResourceHandler = handler
+	}
+}
+
 func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
 	eventReceiver := &TestReceiver{}
 	eventSender := &TestSender{}
 	resourceHandler := &TestResourceHandler{}
 
 	var fakeKeptn = &FakeKeptn{
+		TestResourceHandler: resourceHandler,
 		Keptn: &sdk.Keptn{
 			EventSender:     eventSender,
 			EventReceiver:   eventReceiver,

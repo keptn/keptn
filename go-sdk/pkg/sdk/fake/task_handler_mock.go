@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"sync"
 )
 
@@ -18,11 +18,8 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 //
 // 		// make and configure a mocked sdk.TaskHandler
 // 		mockedTaskHandler := &TaskHandlerMock{
-// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
+// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 // 				panic("mock out the Execute method")
-// 			},
-// 			InitDataFunc: func() interface{} {
-// 				panic("mock out the InitData method")
 // 			},
 // 		}
 //
@@ -32,10 +29,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 // 	}
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error)
-
-	// InitDataFunc mocks the InitData method.
-	InitDataFunc func() interface{}
+	ExecuteFunc func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -43,33 +37,29 @@ type TaskHandlerMock struct {
 		Execute []struct {
 			// KeptnHandle is the keptnHandle argument value.
 			KeptnHandle sdk.IKeptn
-			// Data is the data argument value.
-			Data interface{}
-		}
-		// InitData holds details about calls to the InitData method.
-		InitData []struct {
+			// Event is the event argument value.
+			Event sdk.KeptnEvent
 		}
 	}
-	lockExecute  sync.RWMutex
-	lockInitData sync.RWMutex
+	lockExecute sync.RWMutex
 }
 
 // Execute calls ExecuteFunc.
-func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but TaskHandler.Execute was just called")
 	}
 	callInfo := struct {
 		KeptnHandle sdk.IKeptn
-		Data        interface{}
+		Event       sdk.KeptnEvent
 	}{
 		KeptnHandle: keptnHandle,
-		Data:        data,
+		Event:       event,
 	}
 	mock.lockExecute.Lock()
 	mock.calls.Execute = append(mock.calls.Execute, callInfo)
 	mock.lockExecute.Unlock()
-	return mock.ExecuteFunc(keptnHandle, data)
+	return mock.ExecuteFunc(keptnHandle, event)
 }
 
 // ExecuteCalls gets all the calls that were made to Execute.
@@ -77,40 +67,14 @@ func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}) (
 //     len(mockedTaskHandler.ExecuteCalls())
 func (mock *TaskHandlerMock) ExecuteCalls() []struct {
 	KeptnHandle sdk.IKeptn
-	Data        interface{}
+	Event       sdk.KeptnEvent
 } {
 	var calls []struct {
 		KeptnHandle sdk.IKeptn
-		Data        interface{}
+		Event       sdk.KeptnEvent
 	}
 	mock.lockExecute.RLock()
 	calls = mock.calls.Execute
 	mock.lockExecute.RUnlock()
-	return calls
-}
-
-// InitData calls InitDataFunc.
-func (mock *TaskHandlerMock) InitData() interface{} {
-	if mock.InitDataFunc == nil {
-		panic("TaskHandlerMock.InitDataFunc: method is nil but TaskHandler.InitData was just called")
-	}
-	callInfo := struct {
-	}{}
-	mock.lockInitData.Lock()
-	mock.calls.InitData = append(mock.calls.InitData, callInfo)
-	mock.lockInitData.Unlock()
-	return mock.InitDataFunc()
-}
-
-// InitDataCalls gets all the calls that were made to InitData.
-// Check the length with:
-//     len(mockedTaskHandler.InitDataCalls())
-func (mock *TaskHandlerMock) InitDataCalls() []struct {
-} {
-	var calls []struct {
-	}
-	mock.lockInitData.RLock()
-	calls = mock.calls.InitData
-	mock.lockInitData.RUnlock()
 	return calls
 }
