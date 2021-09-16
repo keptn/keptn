@@ -192,6 +192,9 @@ func getSequenceStageStates(stageEvents []stageEventTrace) ([]*models.SequenceSt
 			if shouldAddLatestEvent(*stageState) {
 				stageState.LatestEvent = latestEvent
 			}
+			if shouldAddLatestFailedEvent(*scope, *stageState) {
+				stageState.LatestFailedEvent = latestEvent
+			}
 			if keptnv2.IsTaskEventType(scope.EventType) {
 				// not a <stage>.<sequence>.(triggered|finished), but a task event
 				stageState, err = processTaskEventTaskEvent(*scope, event, *stageState)
