@@ -7,3 +7,9 @@ export interface Resource {
     version: string
   };
 }
+
+export interface ResourceResponse {
+  nextPageKey: string;
+  totalCount: string;
+  resources: Resource[];
+}

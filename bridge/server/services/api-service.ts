@@ -6,7 +6,7 @@ import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
 import { UniformRegistration } from '../models/uniform-registration';
 import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
-import { Resource } from '../../shared/interfaces/resource';
+import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
@@ -162,4 +162,13 @@ export class ApiService {
     return this.axios.get<UniformSubscription>(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
   }
 
+  public getServiceResource(projectName: string, stageName: string, serviceName: string, nextPageKey?: string): Promise<AxiosResponse<ResourceResponse>> {
+    const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource`;
+    const params: { [key: string]: string } = {};
+    if (nextPageKey) {
+      params.nextPageKey = nextPageKey;
+    }
+
+    return this.axios.get<ResourceResponse>(url, params);
+  }
 }

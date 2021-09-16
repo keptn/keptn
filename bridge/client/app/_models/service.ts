@@ -22,6 +22,14 @@ export class Service extends sv {
       service.latestSequence = Sequence.fromJSON(service.latestSequence);
     }
 
+    // Support old (deprecated) format from API - openRemediation should be a Sequence but old format just provides an event
+    // If openRemediations do not have stages, it is in the old format and should not be processed as Sequence
+    const hasStages = service.openRemediations?.some(remediation => remediation.stages);
+    if (hasStages) {
+      service.openRemediations = service.openRemediations?.map(remediation => Sequence.fromJSON(remediation)) ?? [];
+    } else {
+      service.openRemediations = [];
+    }
     service.openRemediations = service.openRemediations?.map(remediation => Sequence.fromJSON(remediation)) ?? [];
     service.openApprovals = service.openApprovals.map(approval => {
       approval.trace = Trace.fromJSON(approval.trace);
@@ -44,6 +52,7 @@ export class Service extends sv {
   get evaluationContext(): string | undefined {
     return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }
+
   public getShortImageName(): string | undefined {
     return this.deployedImage?.split('/').pop()?.split(':').find(() => true);
   }

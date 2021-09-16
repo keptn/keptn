@@ -11,5 +11,5 @@ type SecretBackend interface {
 	CreateSecret(model.Secret) error
 	UpdateSecret(model.Secret) error
 	DeleteSecret(model.Secret) error
-	GetSecrets() ([]model.SecretMetadata, error)
+	GetSecrets() ([]model.GetSecretResponseItem, error)
 }

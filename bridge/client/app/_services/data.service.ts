@@ -23,6 +23,7 @@ import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
+import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
 @Injectable({
   providedIn: 'root',
@@ -589,6 +590,10 @@ export class DataService {
 
   public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
     return this.apiService.getWebhookConfig(eventType, projectName, stageName, serviceName);
+  }
+
+  public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
+    return this.apiService.getFileTreeForService(projectName, serviceName);
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {

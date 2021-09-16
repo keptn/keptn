@@ -1,0 +1,28 @@
+<div class="mt-3 mb-2">
+  <div class="bold">{{stageName}}</div>
+  Add, edit and delete files in your Git repository
+  <a [href]="getGitRepositoryLink()" target="_blank" rel="noopener">
+    <button dt-icon-button variant="nested" aria-label="Open git repository for stage">
+      <dt-icon name="externallink"></dt-icon>
+    </button>
+  </a>
+</div>
+
+<dt-tree-table [dataSource]="treeDataSource" [treeControl]="treeControl">
+  <ng-container dtColumnDef="fileName">
+    <dt-tree-table-header-cell *dtHeaderCellDef>
+      File / Folder
+    </dt-tree-table-header-cell>
+    <dt-tree-table-toggle-cell *dtCellDef="let row">
+      {{ row.fileName }}
+    </dt-tree-table-toggle-cell>
+  </ng-container>
+
+  <dt-header-row
+    *dtHeaderRowDef="['fileName']"
+  ></dt-header-row>
+  <dt-tree-table-row
+    *dtRowDef="let row; columns: ['fileName']"
+    [data]="row"
+  ></dt-tree-table-row>
+</dt-tree-table>

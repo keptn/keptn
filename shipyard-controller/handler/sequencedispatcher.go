@@ -77,6 +77,10 @@ func (sd *SequenceDispatcher) Run(ctx context.Context) {
 func (sd *SequenceDispatcher) dispatchSequences() {
 	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
 	if err != nil {
+		if err == db.ErrNoEventFound {
+			// if no sequences are in the queue, we can return here
+			return
+		}
 		log.WithError(err).Error("could not load queued sequences")
 		return
 	}

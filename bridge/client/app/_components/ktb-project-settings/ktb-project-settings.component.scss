@@ -1,10 +1,5 @@
-.settings-section-bottom {
-  position: absolute;
-  bottom: 0;
-  transition: bottom 200ms;
-
-  &.notification-open {
-    bottom: 100px;
-    transition: bottom 200ms;
-  }
+.container {
+  position: relative;
 }
+
+

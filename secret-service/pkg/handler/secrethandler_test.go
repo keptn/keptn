@@ -298,8 +298,8 @@ func TestHandler_GetSecrets(t *testing.T) {
 			name: "GET Secret - SUCCESS",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{
-					GetSecretsFunc: func() ([]model.SecretMetadata, error) {
-						return []model.SecretMetadata{}, nil
+					GetSecretsFunc: func() ([]model.GetSecretResponseItem, error) {
+						return []model.GetSecretResponseItem{}, nil
 					},
 				},
 			},
@@ -310,7 +310,7 @@ func TestHandler_GetSecrets(t *testing.T) {
 			name: "GET Secret - Backend some error",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{
-					GetSecretsFunc: func() ([]model.SecretMetadata, error) {
+					GetSecretsFunc: func() ([]model.GetSecretResponseItem, error) {
 						return nil, errors.New("oops")
 					},
 				},

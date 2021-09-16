@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
@@ -125,8 +126,8 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	return nil
 }
 
-func (k K8sSecretBackend) GetSecrets() ([]model.SecretMetadata, error) {
-	result := []model.SecretMetadata{}
+func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
+	result := []model.GetSecretResponseItem{}
 
 	namespace := k.KeptnNamespaceProvider()
 	list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{
@@ -136,9 +137,23 @@ func (k K8sSecretBackend) GetSecrets() ([]model.SecretMetadata, error) {
 		return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
 	}
 
-	for _, secret := range list.Items {
-		result = append(result, model.SecretMetadata{
-			Name: secret.Name,
+	for _, secretItem := range list.Items {
+		keys := []string{}
+		for key, _ := range secretItem.StringData {
+			if key != "" {
+				keys = insert(keys, key)
+			}
+		}
+		for key, _ := range secretItem.Data {
+			if key != "" {
+				keys = insert(keys, key)
+			}
+		}
+		result = append(result, model.GetSecretResponseItem{
+			SecretMetadata: model.SecretMetadata{
+				Name: secretItem.Name,
+			},
+			Keys: keys,
 		})
 	}
 
@@ -217,6 +232,16 @@ func remove(s []string, r string) []string {
 			return append(s[:i], s[i+1:]...)
 		}
 	}
+	return s
+}
+
+func insert(s []string, i string) []string {
+	for _, val := range s {
+		if val == i {
+			return s
+		}
+	}
+	s = append(s, i)
 	return s
 }
 
