@@ -5,7 +5,7 @@ package fake
 
 import (
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"sync"
 )
 

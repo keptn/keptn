@@ -118,6 +118,12 @@ approvalService:
     repository: keptn/approval-service
     tag: ''
 
+webhookService:
+  image:
+    registry: docker.io
+    repository: keptn/webhook-service
+    tag: ''
+
 alpine:
   image:
     registry: docker.io

@@ -71,6 +71,18 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-webhook-service
+  labels:
+    app.kubernetes.io/name: keptn-api-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -322,3 +334,23 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-secret-service
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-webhook-service-get-secrets
+  labels:
+    app.kubernetes.io/name: keptn-webhook-service-get-secrets
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-get-secrets
+subjects:
+  - kind: ServiceAccount
+    name: keptn-webhook-service

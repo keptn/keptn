@@ -5,7 +5,7 @@ package fake
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"sync"
 )
 
@@ -19,6 +19,9 @@ var _ sdk.ResourceHandler = &ResourceHandlerMock{}
 //
 // 		// make and configure a mocked sdk.ResourceHandler
 // 		mockedResourceHandler := &ResourceHandlerMock{
+// 			GetProjectResourceFunc: func(project string, resourceURI string) (*models.Resource, error) {
+// 				panic("mock out the GetProjectResource method")
+// 			},
 // 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
 // 				panic("mock out the GetServiceResource method")
 // 			},
@@ -32,6 +35,9 @@ var _ sdk.ResourceHandler = &ResourceHandlerMock{}
 //
 // 	}
 type ResourceHandlerMock struct {
+	// GetProjectResourceFunc mocks the GetProjectResource method.
+	GetProjectResourceFunc func(project string, resourceURI string) (*models.Resource, error)
+
 	// GetServiceResourceFunc mocks the GetServiceResource method.
 	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string) (*models.Resource, error)
 
@@ -40,6 +46,13 @@ type ResourceHandlerMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// GetProjectResource holds details about calls to the GetProjectResource method.
+		GetProjectResource []struct {
+			// Project is the project argument value.
+			Project string
+			// ResourceURI is the resourceURI argument value.
+			ResourceURI string
+		}
 		// GetServiceResource holds details about calls to the GetServiceResource method.
 		GetServiceResource []struct {
 			// Project is the project argument value.
@@ -61,8 +74,44 @@ type ResourceHandlerMock struct {
 			ResourceURI string
 		}
 	}
+	lockGetProjectResource sync.RWMutex
 	lockGetServiceResource sync.RWMutex
 	lockGetStageResource   sync.RWMutex
+}
+
+// GetProjectResource calls GetProjectResourceFunc.
+func (mock *ResourceHandlerMock) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+	if mock.GetProjectResourceFunc == nil {
+		panic("ResourceHandlerMock.GetProjectResourceFunc: method is nil but ResourceHandler.GetProjectResource was just called")
+	}
+	callInfo := struct {
+		Project     string
+		ResourceURI string
+	}{
+		Project:     project,
+		ResourceURI: resourceURI,
+	}
+	mock.lockGetProjectResource.Lock()
+	mock.calls.GetProjectResource = append(mock.calls.GetProjectResource, callInfo)
+	mock.lockGetProjectResource.Unlock()
+	return mock.GetProjectResourceFunc(project, resourceURI)
+}
+
+// GetProjectResourceCalls gets all the calls that were made to GetProjectResource.
+// Check the length with:
+//     len(mockedResourceHandler.GetProjectResourceCalls())
+func (mock *ResourceHandlerMock) GetProjectResourceCalls() []struct {
+	Project     string
+	ResourceURI string
+} {
+	var calls []struct {
+		Project     string
+		ResourceURI string
+	}
+	mock.lockGetProjectResource.RLock()
+	calls = mock.calls.GetProjectResource
+	mock.lockGetProjectResource.RUnlock()
+	return calls
 }
 
 // GetServiceResource calls GetServiceResourceFunc.
