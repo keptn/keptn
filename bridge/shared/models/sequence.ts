@@ -20,6 +20,7 @@ export enum SequenceState {
   FINISHED = 'finished',
   WAITING = 'waiting',
   PAUSED = 'paused',
+  TIMEDOUT = 'timedOut',
   UNKNOWN = ''
 }
 

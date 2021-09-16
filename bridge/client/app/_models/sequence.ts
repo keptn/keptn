@@ -58,7 +58,7 @@ export class Sequence extends sq {
   }
 
   public isFinished(stageName?: string): boolean {
-    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith(SequenceState.FINISHED) ?? false) : this.state === SequenceState.FINISHED;
+    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith(SequenceState.FINISHED) ?? false) : this.state === SequenceState.FINISHED || this.state === SequenceState.TIMEDOUT;
   }
 
   public getEvaluation(stage: string): EvaluationResult | undefined {
