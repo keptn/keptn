@@ -1,6 +1,6 @@
 mongodb:
   enabled: true
-  host: mongodb:27017
+  host: mongo:27017
   user:
   password:
   adminPassword:

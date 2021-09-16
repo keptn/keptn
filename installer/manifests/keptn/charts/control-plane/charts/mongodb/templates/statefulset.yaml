@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mongodb
+  name: mongo
 spec:
   serviceName: "mongo"
   selector:
     matchLabels:
-      app: mongodb
+      app.kubernetes.io/name: mongo
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: {{ .Values.replicas | default 1 }}
+  replicas: {{ .Values.replicas | default 3 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: mongodb
+        app.kubernetes.io/name: mongo
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
@@ -41,7 +41,7 @@ spec:
               cpu: "200m"
           volumeMounts:
             - mountPath: /var/lib/mongodb/data
-              name: mongodata
+              name: mongodata-rs
           env:
             - name: MONGODB_DATABASE
               value: "keptn"
@@ -68,7 +68,7 @@ spec:
             - name: MONGODB_KEYFILE_VALUE
               valueFrom:
                 secretKeyRef:
-                  name: mongodb-credentials
+                  name: mongodb-internal
                   key: keyfile_value
             - name: MONGODB_SERVICE_NAME
               value: mongo
@@ -82,7 +82,21 @@ spec:
             runAsUser: 184
             readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
-      volumes:
-        - name: mongodata
-          persistentVolumeClaim:
-            claimName: mongodata
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodata-rs
+        labels:
+          app.kubernetes.io/name: mongodata
+          app.kubernetes.io/instance: {{ .Release.Name }}
+          app.kubernetes.io/managed-by: {{ .Release.Service }}
+          app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+          app.kubernetes.io/component: {{ include "mongodb.name" . }}
+          helm.sh/chart: {{ include "mongodb.chart" . }}
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.storageClass }}
+        storageClassName: {{ .Values.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: 5Gi

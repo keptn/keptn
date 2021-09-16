@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-mongodb-migration"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-mongodb-migration"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      containers:
+        - name: mongodump
+          image: mongo
+          env:
+            - name: MONGODB_DATABASE
+              value: "keptn"
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: password
+            - name: MONGODB_REPLICA_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: replica_set
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+              mongodump --uri mongodb://user:$(MONGODB_PASSWORD)@mongodb:27017/keptn --out ./dump &&
+              mongorestore --uri mongodb://user:$(MONGODB_PASSWORD)@mongo:27017/keptn?replicaSet=keptn-replicaset --authenticationDatabase keptn --db keptn ./dump/keptn
+          volumeMounts:
+            - mountPath: dump
+              name: mongo-dumps
+      volumes:
+        - name: mongo-dumps
+          persistentVolumeClaim:
+            claimName: mongo-dump-pv-claim
+      restartPolicy: OnFailure
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongo-dump-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

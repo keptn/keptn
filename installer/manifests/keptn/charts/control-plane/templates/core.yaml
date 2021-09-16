@@ -747,7 +747,7 @@ spec:
             - name: NEXT_GEN_EVENTS
               value: 'true'
             - name: MONGODB_HOST
-              value: 'mongodb:27017'
+              value: 'mongo:27017'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
