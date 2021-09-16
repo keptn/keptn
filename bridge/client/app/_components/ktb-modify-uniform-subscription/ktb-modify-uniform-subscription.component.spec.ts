@@ -72,7 +72,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     updateButtonEnabled(false);
 
     // when filter contains service but not a stage
-    const validSpy = jest.spyOn(component, 'isFormValid');
     // @ts-ignore
     component.taskControl.setValue('deployment');
     data.subscription.filter = {
