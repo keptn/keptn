@@ -289,10 +289,12 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 			evaluationResult.Evaluation.Result = "warning"
 			evaluationResult.Result = keptnv2.ResultWarning
 			evaluationResult.Status = keptnv2.StatusSucceeded
+			evaluationResult.Message = fmt.Sprintf("Evaluation returned a warning: the calculated score of %v is close to the warning target value of %v", achievedPercentage, warnTargetPercentage)
 		} else {
 			evaluationResult.Evaluation.Result = "fail"
 			evaluationResult.Result = keptnv2.ResultFailed
 			evaluationResult.Status = keptnv2.StatusSucceeded
+			evaluationResult.Message = fmt.Sprintf("Evaluation of non Key metric failed since the calculated score of %v is below the warning value of %v", achievedPercentage, warnTargetPercentage)
 		}
 	} else {
 		evaluationResult.Evaluation.Result = "fail"
