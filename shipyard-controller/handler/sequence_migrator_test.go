@@ -325,8 +325,8 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 							Time: timestampForAllEvents,
 						},
 						LatestFailedEvent: &models.SequenceStateEvent{
-							Type: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
-							ID:   "staging-task-2-finished-id",
+							Type: keptnv2.GetFinishedEventType("staging.delivery"),
+							ID:   "my-root-event-id-1",
 							Time: timestampForAllEvents,
 						},
 					},
