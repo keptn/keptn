@@ -1,6 +1,6 @@
 import { UniformSubscriptionFilter } from './uniform-subscription';
 
-export type WebhookConfigMethod = 'POST' | 'PUT';
+export type WebhookConfigMethod = 'POST' | 'PUT' | 'GET';
 
 export interface PreviousWebhookConfig {
   filter: UniformSubscriptionFilter;

@@ -23,7 +23,7 @@ export class KtbWebhookSettingsComponent {
     proxy: new FormControl('', [Validators.pattern(FormUtils.URL_PATTERN)]),
   });
 
-  public webhookMethods: WebhookConfigMethod[] = ['POST', 'PUT'];
+  public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   private _subscriptionExists = false;
   public loading = false;
 
