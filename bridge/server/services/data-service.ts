@@ -393,7 +393,7 @@ export class DataService {
       const subscription = response.data;
       const projectName = subscription.filter.projects?.[0];
       if (projectName && subscription.filter.stages?.length) {
-        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages, subscription.filter.services ?? [undefined]);
+        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages, subscription.filter.services?.length ? subscription.filter.services : [undefined]);
       }
     }
     await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
