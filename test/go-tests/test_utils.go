@@ -43,24 +43,37 @@ func (sender *APIEventSender) SendEvent(event v2.Event) error {
 }
 
 func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
-	resp, err := ApiGETRequest("/controlPlane/v1/project/" + projectName)
-	if err != nil {
-		return err
-	}
 
-	if resp.Response().StatusCode != http.StatusNotFound {
-		if recreateIfAlreadyThere {
-			// delete project if it exists
-			_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
-			if err != nil {
-				return err
+	retries := 3
+	var err error
+	var resp *req.Resp
+	for i := 0; i < retries; i++ {
+		if err != nil {
+			<-time.After(5 * time.Second)
+		}
+		resp, err = ApiGETRequest("/controlPlane/v1/project/" + projectName)
+		if err != nil {
+			continue
+		}
+
+		if resp.Response().StatusCode == http.StatusOK {
+			if recreateIfAlreadyThere {
+				// delete project if it exists
+				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+				if err != nil {
+					continue
+				}
+			} else {
+				return errors.New("project already exists")
 			}
-		} else {
-			return errors.New("project already exists")
+		}
+
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, shipyardFilePath))
+
+		if err == nil {
+			return nil
 		}
 	}
-
-	_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, shipyardFilePath))
 
 	return err
 }
