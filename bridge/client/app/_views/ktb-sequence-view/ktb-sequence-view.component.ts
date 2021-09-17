@@ -48,7 +48,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           {name: 'Active', value: 'started'},
           {name: 'Failed', value: 'failed'},
           {name: 'Succeeded', value: 'succeeded'},
-          {name: 'Waiting', value: 'waiting'},
         ],
       },
     ],
