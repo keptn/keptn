@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/version"
 	shellwords "github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
@@ -71,7 +72,7 @@ func executeActionCommandC(cmd string) (string, error) {
 		},
 	}
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-		runVersionCheck(vChecker, os.Args[1:])
+		runVersionCheck(vChecker, os.Args[1:], rootCLIConfig)
 	}
 
 	rootCmd.SetOut(buf)
@@ -183,6 +184,7 @@ func Test_runVersionCheck(t *testing.T) {
 		args            []string
 		wantOutput      string
 		doNotWantOutput string
+		cliConfig       func() config.CLIConfig
 	}{
 		{
 			name:           "get version",
@@ -242,6 +244,34 @@ func Test_runVersionCheck(t *testing.T) {
 			},
 			doNotWantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.0) don't match.",
 		},
+		{
+			name:           "show version check if `AutomaticVersionCheck` is set to true",
+			cliVersion:     "0.8.0",
+			metadataStatus: http.StatusOK,
+			metadataResponse: keptnapimodels.Metadata{
+				Keptnversion: "0.8.1-dev",
+			},
+			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
+			cliConfig: func() config.CLIConfig {
+				cliConfig := rootCLIConfig
+				cliConfig.AutomaticVersionCheck = true
+				return cliConfig
+			},
+		},
+		{
+			name:           "don't show version check if `AutomaticVersionCheck` is set to false",
+			cliVersion:     "0.8.0",
+			metadataStatus: http.StatusOK,
+			metadataResponse: keptnapimodels.Metadata{
+				Keptnversion: "0.8.1-dev",
+			},
+			cliConfig: func() config.CLIConfig {
+				cliConfig := rootCLIConfig
+				cliConfig.AutomaticVersionCheck = false
+				return cliConfig
+			},
+			doNotWantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -262,7 +292,15 @@ func Test_runVersionCheck(t *testing.T) {
 					VersionURL: ts.URL,
 				},
 			}
-			runVersionCheck(vChecker, tt.args)
+
+			var cliConfig config.CLIConfig
+			if tt.cliConfig == nil {
+				cliConfig = rootCLIConfig
+			} else {
+				cliConfig = tt.cliConfig()
+			}
+
+			runVersionCheck(vChecker, tt.args, cliConfig)
 
 			// reset version
 			Version = ""
