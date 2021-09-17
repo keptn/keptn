@@ -38,7 +38,7 @@
               <dt-tag class="mr-1" [textContent]="currentSequence.service"></dt-tag>
             </ng-template>
           </p>
-          <dt-alert *ngIf="currentSequence.isWaiting(currentSequence.getLastStage())" severity="warning">Waiting for previous sequences to be finished.</dt-alert>
+          <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting(currentSequence.getLastStage())" severity="warning">Waiting for previous sequences to be finished.</dt-alert>
         </dt-info-group>
       </div>
       <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" [selectedStage]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
