@@ -83,8 +83,6 @@ export class Sequence extends sq {
       } else {
         status = 'succeeded';
       }
-    } else if (this.state === SequenceState.TRIGGERED) {
-      status = 'started';
     }
     return status;
   }
@@ -103,7 +101,7 @@ export class Sequence extends sq {
   }
 
   public isWaiting(stageName?: string): boolean {
-    return stageName ? !this.isFinished(stageName) && this.state === SequenceState.WAITING : this.state === SequenceState.WAITING;
+    return stageName ? this.isFinished(stageName) && !this.isFinished() : this.state === SequenceState.WAITING || this.state === SequenceState.TRIGGERED;
   }
 
   public isRemediation(): boolean {

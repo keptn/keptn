@@ -120,6 +120,7 @@ import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
+import { DtAlertModule } from '@dynatrace/barista-components/alert';
 import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list/ktb-edit-service-file-list.component';
 import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 
@@ -255,6 +256,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     BrowserAnimationsModule,
     DtFilterFieldModule,
     ReactiveFormsModule,
+    DtAlertModule,
     DtTreeTableModule,
   ],
   entryComponents: [
