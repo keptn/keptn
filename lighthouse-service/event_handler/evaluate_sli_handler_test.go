@@ -2898,7 +2898,7 @@ func TestCalculateScore(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
-					Message: "Evaluation of non Key metric failed since the calculated score of 74 is below the warning value of 75",
+					Message: "Evaluation failed since the calculated score of 74 is below the warning value of 75",
 				},
 			},
 			ExpectedError: nil,
