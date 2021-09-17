@@ -108,7 +108,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 				if cliVersionCheck {
 					return fmt.Errorf("Please upgrade Keptn CLI to upgrade your Keptn Cluster!")
 				}
-				return fmt.Errorf("Unable to check for upgrades due to aforementioned error")
+				return fmt.Errorf("Unable to upgrade due to aforementioned error")
 			}
 			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
 				installedKeptnVersion, getAppVersion(keptnUpgradeChart))
