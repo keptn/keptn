@@ -18,7 +18,7 @@ import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataServiceMock extends DataService {
   constructor(apiService: ApiService) {
@@ -55,7 +55,7 @@ export class DataServiceMock extends DataService {
     project.stages.forEach(stage => {
       this.stageSequenceMapper(stage, project);
     });
-    this._sequences.next(project.sequences);
+    this._sequencesUpdated.next();
   }
 
   public getProject(projectName: string): Observable<Project | undefined> {
@@ -74,7 +74,7 @@ export class DataServiceMock extends DataService {
 
   public loadTraces(sequence: Sequence) {
     sequence.traces = [...Traces || [], ...sequence.traces || []];
-    this._sequences.next([...this._sequences.getValue() || []]);
+    this._sequencesUpdated.next();
   }
 
   public loadTracesByContext(shkeptncontext: string) {
@@ -85,7 +85,7 @@ export class DataServiceMock extends DataService {
     this._evaluationResults.next({
       type: 'evaluationHistory',
       triggerEvent: event,
-      traces: [Evaluations]
+      traces: [Evaluations],
     });
   }
 
