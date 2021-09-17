@@ -36,6 +36,20 @@ describe('HttpErrorInterceptorService', () => {
     expect(httpErrorInterceptor).toBeTruthy();
   });
 
+  it('should show an error when any other error than 401 is returned', async () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(DtToast), 'create');
+
+    await apiService.getMetadata().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', {error: {}});
+    testRequest.error(errorEvent, {status: 404});
+
+    // then
+    expect(spy).toHaveBeenCalled();
+  });
+
   it('should show an generic error when unauthorized', async () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
