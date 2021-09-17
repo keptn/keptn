@@ -88,7 +88,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         map(params => params.projectName),
       );
 
-    this.sequencesUpdated$ = this.dataService.sequences
+    this.sequencesUpdated$ = this.dataService.sequencesUpdated
       .pipe(
         takeUntil(this.unsubscribe$),
       );

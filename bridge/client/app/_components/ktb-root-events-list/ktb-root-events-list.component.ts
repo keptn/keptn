@@ -64,7 +64,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
       this.project = project;
     });
 
-    this.dataService.sequences.pipe(
+    this.dataService.sequencesUpdated.pipe(
       takeUntil(this.unsubscribe$),
     ).subscribe(() => {
       this.loading = false;
