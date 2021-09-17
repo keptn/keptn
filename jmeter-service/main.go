@@ -195,10 +195,18 @@ func getTestInfo(data keptnv2.TestTriggeredEventData, shkeptncontext string) *Te
 //
 func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 	if len(data.Deployment.DeploymentURIsLocal) > 0 && data.Deployment.DeploymentURIsLocal[0] != "" {
-		return url.Parse(data.Deployment.DeploymentURIsLocal[0])
+		newurl, err := url.Parse(data.Deployment.DeploymentURIsLocal[0])
+		if newurl.Path == "" {
+			newurl.Path += "/"
+		}
+		return newurl, err
 
 	} else if len(data.Deployment.DeploymentURIsPublic) > 0 && data.Deployment.DeploymentURIsPublic[0] != "" {
-		return url.Parse(data.Deployment.DeploymentURIsPublic[0])
+		newurl, err := url.Parse(data.Deployment.DeploymentURIsPublic[0])
+		if newurl.Path == "" {
+			newurl.Path += "/"
+		}
+		return newurl, err
 	}
 
 	return nil, errors.New("no deployment URI included in event")
