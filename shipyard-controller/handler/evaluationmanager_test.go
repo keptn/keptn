@@ -50,8 +50,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				service: "test-service",
 				params: &operations.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
-					Start:     "2020-01-02T15:00:00",
-					End:       "2020-01-02T16:00:00",
+					Start:     "2020-01-02T15:00:00.000Z",
+					End:       "2020-01-02T16:00:00.000Z",
 					Timeframe: "",
 				},
 			},
