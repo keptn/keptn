@@ -30,24 +30,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         catchError((error: HttpErrorResponse) => {
 
           if (error.status === 401) {
-            const authType = error.headers.get('keptn-auth-type');
-            if (authType === 'OAUTH' && !this.isReloading) {
-              this.isReloading = true;
-              this.toast.create('Login required. Redirecting to login.');
-              // Wait for few moments to let user see the toast message and navigate to external login route
-              setTimeout(
-                () => window.location.href = this.location.prepareExternalUrl('/login'),
-                1000,
-              );
-            } else if (authType === 'BASIC') {
-              this.notificationService.addNotification(NotificationType.Error, 'Login credentials invalid. Please check your provided username and password.');
-            } else {
-              if (error.error === 'incorrect api key auth') {
-                this.notificationService.addNotification(NotificationType.Error, 'Could not authorize API token. Please check the provided API token.');
-              } else {
-                this.notificationService.addNotification(NotificationType.Error, 'Could not authorize. ' + error.error);
-              }
-            }
+            this._handleUnauthorizedError(error);
           } else if (error.error instanceof ErrorEvent) {
             // A client-side or network error occurred. Handle it accordingly.
             console.error('An error occurred:', error.error.message);
@@ -62,5 +45,24 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           return throwError(error);
         }),
       );
+  }
+
+  private _handleUnauthorizedError(error: HttpErrorResponse): void {
+    const authType = error.headers.get('keptn-auth-type');
+    if (authType === 'OAUTH' && !this.isReloading) {
+      this.isReloading = true;
+      this.toast.create('Login required. Redirecting to login.');
+      // Wait for few moments to let user see the toast message and navigate to external login route
+      setTimeout(
+        () => window.location.href = this.location.prepareExternalUrl('/login'),
+        1000,
+      );
+    } else if (authType === 'BASIC') {
+      this.notificationService.addNotification(NotificationType.Error, 'Login credentials invalid. Please check your provided username and password.');
+    } else if (error.error === 'incorrect api key auth') {
+      this.notificationService.addNotification(NotificationType.Error, 'Could not authorize API token. Please check the provided API token.');
+    } else {
+      this.notificationService.addNotification(NotificationType.Error, 'Could not authorize. ' + error.error);
+    }
   }
 }
