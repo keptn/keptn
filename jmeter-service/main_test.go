@@ -19,6 +19,7 @@ var serviceURLTests = []struct {
 }{
 	{"local", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "https://carts.sockshop-dev.svc.cluster.local/test", "carts.sockshop-dev.mydomain.com"), getURL("https://carts.sockshop-dev.svc.cluster.local/test")},
 	{"public", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "", "http://carts.sockshop-dev.mydomain.com:8080/myendpoint"), getURL("http://carts.sockshop-dev.mydomain.com:8080/myendpoint")},
+	{"no path but valid uri", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "", "http://carts.sockshop-dev.mydomain.com:8080"), getURL("http://carts.sockshop-dev.mydomain.com:8080/")},
 }
 
 func getURL(urlString string) *url.URL {
