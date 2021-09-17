@@ -8,9 +8,9 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
-import { execSync } from 'child_process';
 import admZip from 'adm-zip';
 import { apiRouter } from './api';
+import { execSync } from 'child_process';
 
 // tslint:disable-next-line:variable-name whitespace
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -146,20 +146,7 @@ async function init(): Promise<Express> {
   app.use(cookieParser());
   app.use(helmet.frameguard());
 
-  let authType: string;
-
-  if (process.env.OAUTH_ENABLED === 'true') {
-    await setOAUTH();
-    authType = 'OAUTH';
-
-  } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
-    authType = 'BASIC';
-    await setBasisAUTH();
-  } else {
-    authType = 'NONE';
-    console.error('Not installing authentication middleware');
-  }
-
+  const authType: string = await setAuth();
 
 // everything starting with /api is routed to the api implementation
   app.use('/api', apiRouter({apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType}));
@@ -239,6 +226,23 @@ async function setBasisAUTH(): Promise<void> {
     // Access granted
     return next();
   });
+}
+
+async function setAuth(): Promise<string> {
+  let authType;
+  if (process.env.OAUTH_ENABLED === 'true') {
+    await setOAUTH();
+    authType = 'OAUTH';
+
+  } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
+    authType = 'BASIC';
+    await setBasisAUTH();
+  } else {
+    authType = 'NONE';
+    console.error('Not installing authentication middleware');
+  }
+
+  return authType;
 }
 
 function updateBucket(loginAttempt: boolean, userIP?: string): void {
