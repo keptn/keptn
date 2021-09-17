@@ -18,7 +18,6 @@ export enum SequenceState {
   TRIGGERED = 'triggered',
   STARTED = 'started',
   FINISHED = 'finished',
-  WAITING = 'waiting',
   PAUSED = 'paused',
   TIMEDOUT = 'timedOut',
   UNKNOWN = ''

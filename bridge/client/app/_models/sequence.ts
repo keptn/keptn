@@ -101,7 +101,7 @@ export class Sequence extends sq {
   }
 
   public isWaiting(stageName?: string): boolean {
-    return stageName ? this.isFinished(stageName) && !this.isFinished() : this.state === SequenceState.WAITING || this.state === SequenceState.TRIGGERED;
+    return stageName ? this.isFinished(stageName) && !this.isFinished() : this.state === SequenceState.TRIGGERED;
   }
 
   public isRemediation(): boolean {
@@ -121,14 +121,8 @@ export class Sequence extends sq {
   }
 
   public getIcon(stageName?: string): DtIconType {
-    let icon;
-    if (this.state === SequenceState.WAITING) {
-      icon = EVENT_ICONS.waiting;
-    } else {
-      const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
-      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
-    }
-    return icon;
+    const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
+    return stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
   }
 
   public getShortImageName(): string | undefined {
