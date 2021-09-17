@@ -79,12 +79,18 @@ func TestCheckCLIVersion(t *testing.T) {
 	versionChecker.VersionFetcherClient.HTTPClient = httpClient
 	versionChecker.VersionFetcherClient.VersionURL = url
 
-	res, err := versionChecker.getNewerCLIVersion("0.6.0")
+	//test no upgrade
+	av, b := versionChecker.CheckCLIVersion("0.6.1", false)
+	assert.Equal(t, b, true, "No message was displayed")
+	assert.Equal(t, av, false, "Some version matched")
 
+	//test upgrade available
+	res, err := versionChecker.getNewerCLIVersion("0.6.0")
 	expectedRes := availableVersionInitHelper("0.6.1", "", "", "")
 
 	assert.Equal(t, err, nil, "Unexpected error")
 	assert.Equal(t, res.equal(expectedRes), true, "Wrong versions")
+
 }
 
 var iskeptnVersions = []struct {
