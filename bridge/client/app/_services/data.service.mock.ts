@@ -57,7 +57,7 @@ export class DataServiceMock extends DataService {
     project.stages.forEach(stage => {
       this.stageSequenceMapper(stage, project);
     });
-    this._sequences.next(project.sequences);
+    this._sequencesUpdated.next();
   }
 
   public getProject(projectName: string): Observable<Project | undefined> {
@@ -76,7 +76,7 @@ export class DataServiceMock extends DataService {
 
   public loadTraces(sequence: Sequence): void {
     sequence.traces = [...Traces || [], ...sequence.traces || []];
-    this._sequences.next([...this._sequences.getValue() || []]);
+    this._sequencesUpdated.next();
   }
 
   public loadTracesByContext(shkeptncontext: string): void {
