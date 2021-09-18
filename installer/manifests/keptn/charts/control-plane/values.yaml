@@ -129,3 +129,12 @@ alpine:
     registry: docker.io
     repository: alpine
     tag: '3.13'
+
+ingress:
+  enabled: false
+  annotations: {}
+  host: {}
+  path: /
+  pathType: Prefix
+  tls:
+    []
