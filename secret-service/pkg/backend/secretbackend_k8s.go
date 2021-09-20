@@ -87,6 +87,16 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 		}
 	}
 
+	roleBinding := k.createK8sRoleBindingObj(secret, roles, namespace)
+	_, err = k.KubeAPI.RbacV1().RoleBindings(namespace).Create(context.TODO(), &roleBinding, metav1.CreateOptions{})
+	if err != nil {
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+			//no op
+		} else {
+			log.Errorf("Unable to create role binding: %s", err.Error())
+			return err
+		}
+	}
 	return nil
 }
 
@@ -178,7 +188,6 @@ func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 }
 
 func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Scopes, namespace string) []rbacv1.Role {
-
 	var k8sRolesToCreate []rbacv1.Role
 
 	if scope, ok := scopes.Scopes[secret.Scope]; ok {
@@ -206,6 +215,32 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Sco
 		}
 	}
 	return k8sRolesToCreate
+}
+
+func (k K8sSecretBackend) createK8sRoleBindingObj(secret model.Secret, roles []rbacv1.Role, namespace string) rbacv1.RoleBinding {
+	roleBindingName := secret.Scope + "-rolebinding"
+	log.Infof("creating rolebinding %s for secret %s with role %s and service account %s in namespace %s", roleBindingName, secret.Name, roles[0].Name, secret.Scope, namespace)
+
+	roleBinding := rbacv1.RoleBinding{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "RoleBinding",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      roleBindingName,
+			Namespace: namespace,
+		},
+		Subjects: []rbacv1.Subject{rbacv1.Subject{
+			Kind: "ServiceAccount",
+			Name: secret.Scope,
+		}},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "Role",
+			Name:     roles[0].Name,
+		},
+	}
+	return roleBinding
 }
 
 func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace string) *corev1.Secret {

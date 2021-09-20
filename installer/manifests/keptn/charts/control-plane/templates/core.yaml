@@ -445,6 +445,16 @@ data:
           keptn-secrets-default-read:
             Permissions:
               - get
+      keptn-webhook-service
+        Capabilities:
+          keptn-webhook-svc-read:
+            Permissions:
+              - get
+      keptn-dynatrace-service
+        Capabilities:
+          keptn-dynatrace-svc-read:
+            Permissions:
+              - get
 ---
 apiVersion: apps/v1
 kind: Deployment

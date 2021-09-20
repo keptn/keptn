@@ -71,6 +71,9 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, k8sRole2.Rules[0].Verbs, []string{"create", "read", "update"})
 	assert.Equal(t, k8sRole1.Rules[0].APIGroups, []string{""}) // at least on api group must be present
 
+	k8sRoleBinding, _ := kubernetes.RbacV1().RoleBindings(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-rolebinding", metav1.GetOptions{})
+	assert.Equal(t, "my-scope", k8sRoleBinding.Subjects[0].Name)
+
 	nextSecret := createTestSecret("my-secret-2", "my-scope")
 	err = backend.CreateSecret(nextSecret)
 	assert.Nil(t, err)
@@ -79,7 +82,6 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole1.Rules[0].ResourceNames)
 	k8sRole2, err = kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-manage-secrets", metav1.GetOptions{})
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole2.Rules[0].ResourceNames)
-
 }
 
 func TestCreateSecret_FetchingScopesFails(t *testing.T) {
