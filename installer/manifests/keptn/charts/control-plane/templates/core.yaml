@@ -445,12 +445,12 @@ data:
           keptn-secrets-default-read:
             Permissions:
               - get
-      keptn-webhook-service
+      keptn-webhook-service:
         Capabilities:
           keptn-webhook-svc-read:
             Permissions:
               - get
-      dynatrace-service
+      dynatrace-service:
         Capabilities:
           keptn-dynatrace-svc-read:
             Permissions:
