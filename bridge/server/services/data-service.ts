@@ -13,6 +13,7 @@ import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
+import { EventResult } from '../interfaces/event-result';
 
 export class DataService {
   private apiService: ApiService;
@@ -234,6 +235,16 @@ export class DataService {
       }
     }
     return tasks;
+  }
+
+  public async getRoots(projectName: string | undefined, pageSize: string | undefined, serviceName: string | undefined, fromTime?: string | undefined, beforeTime?: string | undefined, keptnContext?: string | undefined): Promise<EventResult> {
+    const response = await this.apiService.getRoots(projectName, pageSize, serviceName, fromTime, beforeTime, keptnContext);
+    return response.data;
+  }
+
+  public async getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined): Promise<EventResult> {
+    const response = await this.apiService.getTracesByContext(keptnContext, projectName, fromTime);
+    return response.data;
   }
 
   private async getShipyard(projectName: string): Promise<Shipyard> {
