@@ -58,7 +58,7 @@ export class Sequence extends sq {
   }
 
   public isFinished(stageName?: string): boolean {
-    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith(SequenceState.FINISHED) ?? false) : this.state === SequenceState.FINISHED;
+    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith(SequenceState.FINISHED) ?? false) : this.state === SequenceState.FINISHED || this.state === SequenceState.TIMEDOUT;
   }
 
   public getEvaluation(stage: string): EvaluationResult | undefined {
@@ -83,8 +83,8 @@ export class Sequence extends sq {
       } else {
         status = 'succeeded';
       }
-    } else if (this.state === SequenceState.TRIGGERED) {
-      status = 'started';
+    } else if(this.isWaiting()) {
+      status = 'waiting';
     }
     return status;
   }
@@ -102,8 +102,16 @@ export class Sequence extends sq {
     return this.getStage(stageName)?.latestEvaluation?.result === ResultTypes.WARNING;
   }
 
-  public isWaiting(stageName?: string): boolean {
-    return stageName ? !this.isFinished(stageName) && this.state === SequenceState.WAITING : this.state === SequenceState.WAITING;
+  public isWaiting(): boolean {
+    const lastStageName = this.getLastStage();
+    if (lastStageName && this.state === SequenceState.STARTED) {
+      const lastStage = this.getStage(lastStageName);
+      return lastStage?.state === SequenceState.FINISHED || // last stages is finished, but sequence is still started, means it is waiting for next stage to be triggered
+        (lastStage?.state === SequenceState.TRIGGERED && this.getTraces(lastStageName).every(seq => !seq.isLoading())); // last stage is triggered, but has no running tasks
+    } else {
+      // no stages yet, sequence is triggered, so waiting
+      return this.state === SequenceState.TRIGGERED;
+    }
   }
 
   public isRemediation(): boolean {
@@ -123,18 +131,16 @@ export class Sequence extends sq {
   }
 
   public getIcon(stageName?: string): DtIconType {
-    let icon;
-    if (this.state === SequenceState.WAITING) {
-      icon = EVENT_ICONS.waiting;
-    } else {
-      const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
-      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
-    }
-    return icon;
+    const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
+    return stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
   }
 
   public getShortImageName(): string | undefined {
     return this.stages[0]?.image?.split('/').pop();
+  }
+
+  public getTraces(stageName: string): Trace[] {
+    return this.traces.filter(trace => trace.stage === stageName);
   }
 
   public findTrace(comp: (args: Trace) => boolean): Trace | undefined {
