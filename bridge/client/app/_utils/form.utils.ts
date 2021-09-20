@@ -1,7 +1,7 @@
 import { AbstractControl, ValidatorFn } from '@angular/forms';
 
 export class FormUtils {
-  public static URL_PATTERN = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+  public static URL_PATTERN = /^(?:http(s)?:\/\/)?[\w\.\-]+(?:\.[\w\.\-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=\.]+$/;
 
   public static nameExistsValidator(names: string[]): ValidatorFn {
     return (control: AbstractControl): { duplicate: { value: boolean } } | null => {
