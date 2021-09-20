@@ -281,7 +281,6 @@ export class ApiService {
   public getTraces(keptnContext: string, projectName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
     const url = `${this._baseUrl}/mongodb-datastore/event`;
     const params = {
-      pageSize: '100',
       keptnContext,
       ...projectName && {project: projectName},
       ...fromTime && {fromTime},

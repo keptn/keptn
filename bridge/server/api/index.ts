@@ -135,6 +135,20 @@ function apiRouter(params:
     }
   });
 
+  router.get('/mongodb-datastore/event', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (req.params.roots === 'true') {
+        const response = await dataService.getRoots(req.query.project?.toString(), req.query.pageSize?.toString(), req.query.serviceName?.toString(), req.query.fromTime?.toString(), req.query.beforeTime?.toString(), req.query.keptnContext?.toString());
+        return res.json(response);
+      } else {
+        const response = await dataService.getTracesByContext(req.query.keptnContext?.toString(), req.query.project?.toString(), req.query.fromTime?.toString());
+        return res.json(response);
+      }
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.all('*', async (req, res, next) => {
     try {
       const result = await axios({
