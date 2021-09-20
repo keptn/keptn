@@ -25,7 +25,7 @@ type projectMetadata struct {
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -35,6 +35,13 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	common.LockProject(params.Project.ProjectName)
 	defer common.UnlockProject(params.Project.ProjectName)
+
+	rollbackFunc := func() {
+		logger.Infof("Rollback: try to delete created directory for project %s", params.Project.ProjectName)
+		if err := os.RemoveAll(config.ConfigDir + "/" + params.Project.ProjectName); err != nil {
+			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", params.Project.ProjectName, err.Error())
+		}
+	}
 
 	////////////////////////////////////////////////////
 	// clone existing repo
@@ -49,6 +56,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
+			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
 		}
 
@@ -59,6 +67,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could make directory during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
+			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
 		}
 
@@ -66,6 +75,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could not initialize git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
+			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
 		}
 	}
@@ -81,7 +91,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
-
+		rollbackFunc()
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
@@ -89,6 +99,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
+		rollbackFunc()
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	return project.NewPostProjectNoContent()
@@ -96,7 +107,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	projectName := params.Project.ProjectName
 
@@ -114,14 +125,14 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 		}
 	} else {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
 	return project.NewPutProjectProjectNameNoContent()
 }
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)

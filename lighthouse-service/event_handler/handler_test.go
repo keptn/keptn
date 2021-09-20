@@ -1,6 +1,9 @@
 package event_handler
 
 import (
+	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
 	"net/http"
 	"os"
 	"testing"
@@ -71,8 +74,9 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.ConfigureMonitoringEventType,
 			want: &ConfigureMonitoringHandler{
-				Event:        incomingEvent,
-				KeptnHandler: keptnHandler,
+				Event:     incomingEvent,
+				Logger:    logrus.New(),
+				K8sClient: fake.NewSimpleClientset(),
 			},
 			wantErr: false,
 		},
@@ -90,6 +94,9 @@ func TestNewEventHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			GetConfig().GetKubeAPI = func() (kubernetes.Interface, error) {
+				return fake.NewSimpleClientset(), nil
+			}
 			tt.args.event.SetType(tt.eventType)
 			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
 			got, err := NewEventHandler(tt.args.event, tt.args.logger)

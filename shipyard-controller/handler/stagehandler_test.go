@@ -30,7 +30,7 @@ func TestGetStage(t *testing.T) {
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
 					GetStageFunc: func(projectName string, stageName string) (*models.ExpandedStage, error) {
-						return nil, errProjectNotFound
+						return nil, ErrProjectNotFound
 					},
 				},
 			},
@@ -41,7 +41,7 @@ func TestGetStage(t *testing.T) {
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
 					GetStageFunc: func(projectName string, stageName string) (*models.ExpandedStage, error) {
-						return nil, errStageNotFound
+						return nil, ErrStageNotFound
 					},
 				},
 			},
@@ -106,7 +106,7 @@ func TestGetStages(t *testing.T) {
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
 					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
-						return nil, errProjectNotFound
+						return nil, ErrProjectNotFound
 					},
 				},
 			},

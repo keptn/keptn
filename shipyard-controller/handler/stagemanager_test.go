@@ -32,7 +32,7 @@ func TestGetAllStages_ProjectNotFound(t *testing.T) {
 
 	stage, err := instance.GetAllStages("my-project")
 	assert.Nil(t, stage)
-	assert.Equal(t, errProjectNotFound, err)
+	assert.Equal(t, ErrProjectNotFound, err)
 
 }
 
@@ -84,7 +84,7 @@ func TestGetStage_ProjectNotFound(t *testing.T) {
 
 	stage, err := instance.GetStage("my-project", "the-stage")
 	assert.Nil(t, stage)
-	assert.Equal(t, errProjectNotFound, err)
+	assert.Equal(t, ErrProjectNotFound, err)
 
 }
 
@@ -108,5 +108,5 @@ func TestGetStage_StageNotFound(t *testing.T) {
 	}
 	stage, err := instance.GetStage("my-project", "unknown-stage")
 	assert.Nil(t, stage)
-	assert.Equal(t, errStageNotFound, err)
+	assert.Equal(t, ErrStageNotFound, err)
 }

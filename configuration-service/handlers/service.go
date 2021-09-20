@@ -22,7 +22,7 @@ type serviceMetadata struct {
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -44,7 +44,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
 	err = os.MkdirAll(servicePath, os.ModePerm)
@@ -73,7 +73,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc deletes a service
 func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -94,7 +94,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", params.StageName, params.ProjectName, err.Error()))
-		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
 	err = os.RemoveAll(servicePath)

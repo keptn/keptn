@@ -79,7 +79,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 		return nil, err
 	}
 	if project == nil {
-		return nil, errProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 	return project, err
 }
@@ -218,11 +218,15 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	if err != nil {
 		return err, func() error {
 			// try to rollback already updated git repository secret
-			return pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
+			if err := pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 				User:      oldSecret.User,
 				Token:     oldSecret.Token,
 				RemoteURI: oldSecret.RemoteURI,
-			})
+			}); err != nil {
+				return err
+			}
+			// try to rollback already updated project in configuration store
+			return pm.ConfigurationStore.UpdateProject(projectToRollback)
 		}
 	}
 

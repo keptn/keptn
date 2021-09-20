@@ -76,8 +76,13 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if err != nil {
-		SetInternalServerErrorResponse(err, c)
-		return
+		if err == ErrProjectNotFound {
+			SetNotFoundErrorResponse(err, c)
+			return
+		} else {
+			SetInternalServerErrorResponse(err, c)
+			return
+		}
 	}
 
 	paginationInfo := common.Paginate(len(events), params.PageSize, params.NextPageKey)
