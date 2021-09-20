@@ -101,7 +101,7 @@ export class Sequence extends sq {
   }
 
   public isWaiting(stageName?: string): boolean {
-    return stageName ? this.isFinished(stageName) && !this.isFinished() : this.state === SequenceState.TRIGGERED;
+    return stageName ? this.getStage(stageName)?.state === SequenceState.TRIGGERED : this.state === SequenceState.TRIGGERED;
   }
 
   public isRemediation(): boolean {
