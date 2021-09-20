@@ -109,6 +109,7 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	namespace := k.KeptnNamespaceProvider()
 	secretName := secret.Name
 
+	// delete secret
 	err = k.KubeAPI.CoreV1().Secrets(namespace).Delete(context.TODO(), secretName, metav1.DeleteOptions{})
 	if err != nil {
 		log.Errorf("Unable to delete secret %s with scope %s: %s", secret.Name, secret.Scope, err)
@@ -118,6 +119,7 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 		return err
 	}
 
+	// update roles
 	roles := k.createK8sRoleObj(secret, scopes, namespace)
 	for i := range roles {
 		log.Infof("Updating role %s", roles[i].Name)
@@ -133,6 +135,20 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 		}
 	}
 
+	// cleanup roles and role bindings if there is no secret bound to this scope anymore
+	secretsWithScope, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope})
+	if err != nil {
+		return err
+	}
+	if len(secretsWithScope.Items) == 0 {
+		log.Infof("No more secret with scope: %s. Deleting associated roles and role bindings", secret.Scope)
+		if err := k.KubeAPI.RbacV1().Roles(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
+			log.Warnf("Unable to delete roles: %s", err.Error())
+		}
+		if err := k.KubeAPI.RbacV1().RoleBindings(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
+			log.Warnf("Unable to delete role bindings: %s", err.Error())
+		}
+	}
 	return nil
 }
 

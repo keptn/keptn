@@ -9,7 +9,8 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/repository/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/rbac/v1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
@@ -143,7 +144,6 @@ func TestCreateSecret_K8sRolesCreationFails(t *testing.T) {
 }
 
 func TestCreateSecret_NoMatchingScopeConfigured(t *testing.T) {
-
 	kubernetes := k8sfake.NewSimpleClientset()
 	scopesRepository := &fake.ScopesRepositoryMock{}
 	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
@@ -212,9 +212,6 @@ func TestGetSecret_Fails(t *testing.T) {
 	require.Nil(t, secrets)
 }
 
-/**
-DELETE SECRET TESTS
-*/
 func TestDeleteK8sSecret(t *testing.T) {
 	kubernetes := k8sfake.NewSimpleClientset()
 	scopesRepository := &fake.ScopesRepositoryMock{}
@@ -226,19 +223,31 @@ func TestDeleteK8sSecret(t *testing.T) {
 		ScopesRepository:       scopesRepository,
 	}
 
+	kubernetes.Fake.PrependReactor("list", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, &corev1.SecretList{
+			Items: []corev1.Secret{corev1.Secret{
+
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "still-existing-secret",
+					Labels: map[string]string{"app.kubernetes.io/scope": "my-scope"},
+				},
+			}},
+		}, nil
+	})
+
+	kubernetes.Fake.PrependReactor("update", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, nil
+	})
+
 	kubernetes.Fake.PrependReactor("get", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &v1.Role{
-			Rules: []v1.PolicyRule{
+		return true, &rbacv1.Role{
+			Rules: []rbacv1.PolicyRule{
 				{
 					Resources:     []string{"secrets"},
 					ResourceNames: []string{"my-other-secret", "my-secret"},
 				},
 			},
 		}, nil
-	})
-
-	kubernetes.Fake.PrependReactor("update", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, nil
 	})
 
 	kubernetes.Fake.PrependReactor("delete", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
@@ -252,15 +261,66 @@ func TestDeleteK8sSecret(t *testing.T) {
 		},
 	})
 
-	actions := kubernetes.Fake.Actions()
-	_ = actions
-
 	assert.Nil(t, err)
 	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
 	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
 	assert.True(t, kubernetes.Fake.Actions()[2].Matches("update", "roles"))
 	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
 	assert.True(t, kubernetes.Fake.Actions()[4].Matches("update", "roles"))
+}
+
+func TestDeleteLastK8sSecret(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	kubernetes.Fake.PrependReactor("list", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, &corev1.SecretList{}, nil
+	})
+
+	kubernetes.Fake.PrependReactor("update", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, nil
+	})
+
+	kubernetes.Fake.PrependReactor("get", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, &rbacv1.Role{
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-other-secret", "my-secret"},
+				},
+			},
+		}, nil
+	})
+
+	kubernetes.Fake.PrependReactor("delete", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, nil
+	})
+
+	err := backend.DeleteSecret(model.Secret{
+		SecretMetadata: model.SecretMetadata{
+			Name:  "my-secret",
+			Scope: "my-scope",
+		},
+	})
+
+	appliedActions := kubernetes.Fake.Actions()
+	_ = appliedActions
+	assert.Nil(t, err)
+	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
+	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[2].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[4].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[5].Matches("list", "secrets"))
+	assert.True(t, kubernetes.Fake.Actions()[6].Matches("delete-collection", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[7].Matches("delete-collection", "rolebindings"))
 
 }
 

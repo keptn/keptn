@@ -148,13 +148,14 @@ rules:
       - get
       - delete
       - update
+      - deletecollection
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-manage-roles-bindings
+  name: keptn-manage-rolebindings
   labels:
-    app.kubernetes.io/name: keptn-manage-roles
+    app.kubernetes.io/name: keptn-manage-rolebindings
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
@@ -170,6 +171,7 @@ rules:
       - get
       - delete
       - update
+      - deletecollection
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
