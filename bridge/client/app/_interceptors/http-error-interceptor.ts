@@ -58,7 +58,6 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         () => window.location.href = this.location.prepareExternalUrl('/login'),
         1000,
       );
-      return;
     } else if (authType === 'BASIC' && !this.isAuthorizedErrorShown) {
       this.isAuthorizedErrorShown = true;
       this.notificationService.addNotification(NotificationType.Error, 'Login credentials invalid. Please check your provided username and password.');
