@@ -2598,6 +2598,307 @@ func TestCalculateScore(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
+					Message: "Evaluation failed since the calculated score of 50 is below the target value of 90",
+				},
+			},
+			ExpectedError: nil,
+		}, {
+			Name:           "Non-Key SLI warning",
+			InMaximumScore: 2,
+			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // to be calculated
+					Score:     0,  // to be calculated
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+						{
+							Score: 0.506,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-metric",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=8.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=13.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI: "my-metric",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=8.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=12.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InKeySLIFailed: false,
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "warning",
+					Score:     75.3,
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+						{
+							Score: 0.506,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-metric",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "warning",
+					Status:  "succeeded",
+					Labels:  nil,
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Message: "Evaluation returned a warning: the calculated score of 75.3 is close to the warning target value of 75",
+				},
+			},
+			ExpectedError: nil,
+		}, {
+			Name:           "Non-Key SLI fail",
+			InMaximumScore: 2,
+			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // to be calculated
+					Score:     0,  // to be calculated
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+						{
+							Score: 0.48,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-metric",
+								Value:   10.0,
+								Success: false,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "fail",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=8.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=10.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI: "my-metric",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=8.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=10.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InKeySLIFailed: false,
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "fail",
+					Score:     74,
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+						{
+							Score: 0.48,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-metric",
+								Value:   10.0,
+								Success: false,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "fail",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "fail",
+					Status:  "succeeded",
+					Labels:  nil,
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Message: "Evaluation failed since the calculated score of 74 is below the warning value of 75",
 				},
 			},
 			ExpectedError: nil,
