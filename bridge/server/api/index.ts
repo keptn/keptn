@@ -142,13 +142,6 @@ function apiRouter(params:
         return res.json(response);
       } else {
         const response = await dataService.getTracesByContext(req.query.keptnContext?.toString(), req.query.project?.toString(), req.query.fromTime?.toString());
-        while (response.totalCount > response.pageSize) {
-          const nextResponse = await dataService.getTracesByContext(req.query.keptnContext?.toString(), req.query.project?.toString(), req.query.fromTime?.toString());
-          response.pageSize = response.pageSize + nextResponse.pageSize;
-          response.totalCount = nextResponse.totalCount;
-          response.events = response.events.concat(nextResponse.events);
-        }
-
         return res.json(response);
       }
     } catch (error) {
