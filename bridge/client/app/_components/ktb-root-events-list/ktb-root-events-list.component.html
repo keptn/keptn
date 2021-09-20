@@ -10,14 +10,15 @@
         <div class="container">
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
             <div fxFlex fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-              <dt-icon *ngIf="!sequence.isLoading() || sequence.hasPendingApproval(); else showLoading" class="event-icon"
+              <dt-icon *ngIf="(!sequence.isLoading() && !sequence.isWaiting()) || sequence.hasPendingApproval(); else showLoading" class="event-icon"
                        [name]="sequence.getIcon()"
                        [class.error]="sequence.isFaulty()"
                        [class.highlight]="sequence.hasPendingApproval()"></dt-icon>
               <ng-template #showLoading>
-                <button class="m-0 p-0" dt-button disabled variant="nested">
+                <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="sequence.isLoading() && !sequence.isWaiting()">
                   <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
                 </button>
+                <dt-icon *ngIf="sequence.isWaiting()" class="event-icon" name="idle"></dt-icon>
               </ng-template>
               <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
                 <p class="m-0">

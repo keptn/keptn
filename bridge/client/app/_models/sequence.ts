@@ -83,6 +83,8 @@ export class Sequence extends sq {
       } else {
         status = 'succeeded';
       }
+    } else if(this.isWaiting()) {
+      status = 'waiting';
     }
     return status;
   }
