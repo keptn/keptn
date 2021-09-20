@@ -1,14 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { DataService } from '../../_services/data.service';
 import { FormUtils } from '../../_utils/form.utils';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
+import { WebhookConfig } from '../../../../shared/models/webhook-config';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
 @Component({
-  selector: 'ktb-webhook-settings[subscriptionExists][projectName][subscription]',
+  selector: 'ktb-webhook-settings',
   templateUrl: './ktb-webhook-settings.component.html',
   styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
@@ -24,43 +24,8 @@ export class KtbWebhookSettingsComponent {
   });
 
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
-  private _subscriptionExists = false;
-  public loading = false;
 
-  @Input() set subscriptionExists(status: boolean) {
-    if (this._subscriptionExists !== status) {
-      this._subscriptionExists = status;
-      this.getWebhook();
-    }
-  }
-
-  get subscriptionExists(): boolean {
-    return this._subscriptionExists;
-  }
-
-  @Input()
-  get projectName(): string {
-    return this._projectName || '';
-  }
-
-  set projectName(projectName: string) {
-    if (this._projectName !== projectName) {
-      this._projectName = projectName;
-      this.getWebhook();
-    }
-  }
-
-  @Input()
-  get subscription(): UniformSubscription | undefined {
-    return this._subscription;
-  }
-
-  set subscription(value: UniformSubscription | undefined) {
-    if (this._subscription !== value) {
-      this._subscription = value;
-      this.getWebhook();
-    }
-  }
+  @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   get header(): FormArray {
     return this.getFormControl('header') as FormArray;
@@ -70,34 +35,27 @@ export class KtbWebhookSettingsComponent {
     return this.header.controls as FormGroup[];
   }
 
-  constructor(private dataService: DataService) {
+  constructor() {
+    this.webhookConfigForm.statusChanges.subscribe(status => {
+      this.validityChanged.next(status);
+    });
   }
 
-  private getWebhook(): void {
-    if (this.subscriptionExists && this.subscription && this.projectName) {
-      this.loading = true;
-      const stage: string | undefined = this.subscription.filter?.stages?.[0];
-      const services: string | undefined = this.subscription.filter?.services?.[0];
-      this.dataService.getWebhookConfig(this.subscription.event, this.projectName, stage, services)
-        .subscribe(webhookConfig => {
-          this.getFormControl('method').setValue(webhookConfig.method);
-          this.getFormControl('url').setValue(webhookConfig.url);
-          this.getFormControl('payload').setValue(webhookConfig.payload);
-          this.getFormControl('proxy').setValue(webhookConfig.proxy);
+  @Input()
+  set webhook(webhookConfig: WebhookConfig | undefined) {
+    if (webhookConfig) {
+      this.getFormControl('method').setValue(webhookConfig.method);
+      this.getFormControl('url').setValue(webhookConfig.url);
+      this.getFormControl('payload').setValue(webhookConfig.payload);
+      this.getFormControl('proxy').setValue(webhookConfig.proxy);
 
+      for (const header of webhookConfig.header || []) {
+        this.addHeader(header.name, header.value);
+      }
 
-          for (const header of webhookConfig.header || []) {
-            this.addHeader(header.name, header.value);
-          }
-
-          for (const controlKey of Object.keys(this.webhookConfigForm.controls)) {
-            this.webhookConfigForm.get(controlKey)?.markAsDirty();
-          }
-
-          this.loading = false;
-        }, () => {
-          this.loading = false;
-        });
+      for (const controlKey of Object.keys(this.webhookConfigForm.controls)) {
+        this.webhookConfigForm.get(controlKey)?.markAsDirty();
+      }
     }
   }
 

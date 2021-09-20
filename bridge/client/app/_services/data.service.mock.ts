@@ -21,6 +21,7 @@ import { AppUtils } from '../_utils/app.utils';
 import { WebhookConfigMock } from './_mockData/webhook-config.mock';
 import { FileTreeMock } from '../_models/fileTree.mock';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
+import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 
 @Injectable({
   providedIn: 'root',
@@ -138,5 +139,13 @@ export class DataServiceMock extends DataService {
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
     return of(FileTreeMock);
+  }
+
+  public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
+    const registration = UniformRegistrationsMock.find(r => r.id === integrationId);
+    return of({
+      isWebhookService: registration?.isWebhookService ?? false,
+      isControlPlane: registration?.metadata.location === 'control-plane' ?? false
+    });
   }
 }

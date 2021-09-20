@@ -53,8 +53,8 @@ const services: UniformRegistrationResult[] = [
       [{
         filter: {
           projects: [],
-          services: ['carts'],
-          stages: ['dev'],
+          services: [],
+          stages: [],
         },
         event: 'sh.keptn.event.deployment.triggered',
         id: 'myHelmSubscriptionId',
@@ -109,10 +109,11 @@ const services: UniformRegistrationResult[] = [
       [{
         filter: {
           projects: [],
-          services: [],
-          stages: [],
+          services: ['carts'],
+          stages: ['dev'],
         },
         event: 'sh.keptn.event.evaluation.triggered',
+        id: 'subscriptionId',
       }],
   },
   {

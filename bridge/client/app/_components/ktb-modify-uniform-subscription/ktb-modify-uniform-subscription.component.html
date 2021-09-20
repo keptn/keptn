@@ -1,10 +1,25 @@
+<ktb-notification-bar></ktb-notification-bar>
 <div class="container">
   <ng-container *ngIf="data$ | async as data, else loading">
     <h2>{{editMode ? 'Edit' : 'Create'}} subscription</h2>
     <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field *ngIf="!isWebhookService">
-          <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox">Use for all projects</dt-checkbox>
+          <ng-container [ngTemplateOutlet]="data.subscription.hasFilter() ? showOverlay : isGlobalCheckbox">
+          </ng-container>
+
+          <ng-template #showOverlay>
+            <div [dtOverlay]="projectFilterOverlay" class="checkbox-container">
+              <ng-container *ngTemplateOutlet="isGlobalCheckbox"></ng-container>
+            </div>
+            <ng-template #projectFilterOverlay>
+              It is not allowed to have filters for a subscription that is active for all projects
+            </ng-template>
+          </ng-template>
+          <ng-template #isGlobalCheckbox>
+            <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox">Use for all projects</dt-checkbox>
+          </ng-template>
+
         </dt-form-field>
         <div fxLayout="row" fxLayoutGap="5px">
           <dt-form-field>
@@ -25,14 +40,14 @@
           <dt-filter-field
             [dataSource]="_dataSource"
             [filters]="data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)"
-            (filterChanges)="data.subscription.filterChanged($event)"
+            (filterChanges)="data.subscription.filterChanged($event, data.project.projectName); updateIsGlobalCheckbox(data.subscription)"
             class="mb-2"
             aria-label="Filter by stage and service"
             clearAllLabel="Clear all"
           ></dt-filter-field>
           <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length">If you add a service you must add a stage</dt-error>
         </div>
-        <ktb-webhook-settings #webhookSettings *ngIf="isWebhookService" [subscriptionExists]="editMode" [projectName]="data.project.projectName" [subscription]="data.subscription"></ktb-webhook-settings>
+        <ktb-webhook-settings #webhookSettings *ngIf="isWebhookService" [webhook]="data.webhook" (validityChanged)="isWebhookFormValid = $event"></ktb-webhook-settings>
         <div fxLayout="row">
           <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!isFormValid(data.subscription)" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
             <dt-loading-spinner *ngIf="updating" aria-label="{{editMode ? 'Updating' : 'Creating'}} subscription"></dt-loading-spinner>

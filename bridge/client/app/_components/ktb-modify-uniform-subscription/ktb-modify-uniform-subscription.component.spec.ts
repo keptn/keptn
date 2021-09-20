@@ -46,32 +46,42 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have disabled button', async () => {
+  it('should have disabled button if first and second control is invalid', async () => {
     // given
-    const data = await component.data$.toPromise();
     fixture.detectChanges();
 
-    // when first and second invalid
     // then
-    updateButtonEnabled(false);
+    assertIsUpdateButtonEnabled(false);
+  });
 
-    // when first valid and second invalid
+  it('should have disabled button if first control is valid and second control is invalid', async () => {
+    // given
+    fixture.detectChanges();
     // @ts-ignore
     component.taskControl.setValue('deployment');
     fixture.detectChanges();
     // then
-    updateButtonEnabled(false);
+    assertIsUpdateButtonEnabled(false);
+  });
 
-    // when first invalid and second valid
+  it('should have disabled button if first control is invalid and second control is valid', async () => {
+    // given
+    fixture.detectChanges();
     // @ts-ignore
     component.taskControl.setValue('');
     // @ts-ignore
     component.taskSuffixControl.setValue('triggered');
     fixture.detectChanges();
     // then
-    updateButtonEnabled(false);
+    assertIsUpdateButtonEnabled(false);
+  });
 
-    // when filter contains service but not a stage
+  it('should have disabled button if filter contains service but not a stage', async () => {
+    // given
+    const data = await component.data$.toPromise();
+    fixture.detectChanges();
+
+    // when
     // @ts-ignore
     component.taskControl.setValue('deployment');
     data.subscription.filter = {
@@ -96,10 +106,23 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    updateButtonEnabled(false);
+    assertIsUpdateButtonEnabled(false);
   });
 
-  it('should have enabled button', async () => {
+  it('should have enabled button if task is valid', () => {
+    // given
+    fixture.detectChanges();
+    // @ts-ignore
+    component.taskControl.setValue('deployment');
+    // @ts-ignore
+    component.taskSuffixControl.setValue('triggered');
+    fixture.detectChanges();
+
+    // then
+    assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should have enabled button if filter contains a stage and a service', async () => {
     // given
     const data = await component.data$.toPromise();
     fixture.detectChanges();
@@ -108,12 +131,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     component.taskControl.setValue('deployment');
     // @ts-ignore
     component.taskSuffixControl.setValue('triggered');
-    fixture.detectChanges();
-
-    // then
-    updateButtonEnabled(true);
-
-    // when
 
     data.subscription.filter = {
       projects: ['sockshop'],
@@ -124,6 +141,17 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
     // then
     expect(component.isFormValid(data.subscription)).toBe(true);
+  });
+
+  it('should have enabled button if filter contains just a stages', async () => {
+    // given
+    const data = await component.data$.toPromise();
+    fixture.detectChanges();
+    // when
+    // @ts-ignore
+    component.taskControl.setValue('deployment');
+    // @ts-ignore
+    component.taskSuffixControl.setValue('triggered');
 
     // when
     data.subscription.filter = {
@@ -137,31 +165,31 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(component.isFormValid(data.subscription)).toBe(true);
   });
 
-  it('should have disabled button if service is webhook', () => {
+  it('should have a disabled button if the webhook form is invalid', () => {
     // given
     setSubscription(10);
     fixture.detectChanges();
-    jest.spyOn(component, 'isWebhookFormValid', 'get').mockReturnValue(false);
+    component.isWebhookFormValid = false;
     fixture.detectChanges();
 
     // then
-    updateButtonEnabled(false);
+    assertIsUpdateButtonEnabled(false);
   });
 
-  it('should have enabled button if service is webhook', () => {
+  it('should have a enabled button if the webhook form is valid', () => {
     // given
     setSubscription(10, 0);
     fixture.detectChanges();
-    jest.spyOn(component, 'isWebhookFormValid', 'get').mockReturnValue(true);
+    component.isWebhookFormValid = true;
     fixture.detectChanges();
 
     // then
-    updateButtonEnabled(true);
+    assertIsUpdateButtonEnabled(true);
   });
 
-  it('should fill data', () => {
+  it('should set the right properties and enable the button when a global subscription is set', () => {
     // given
-    const subscription = setSubscription(1, 0);
+    setSubscription(1, 0);
     fixture.detectChanges();
 
     // then
@@ -173,10 +201,28 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(component.taskSuffixControl.value).toEqual('triggered');
 
     const filterPairs: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container'));
+    expect(filterPairs.length).toEqual(0);
+    assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should set the right properties and enable the button when a subscription is set', () => {
+    // given
+    const subscription = setSubscription(2, 0);
+    fixture.detectChanges();
+
+    // then
+    // @ts-ignore
+    expect(component.isGlobalControl.value).toEqual(false);
+    // @ts-ignore
+    expect(component.taskControl.value).toEqual('test');
+    // @ts-ignore
+    expect(component.taskSuffixControl.value).toEqual('triggered');
+
+    const filterPairs: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container'));
     expect(subscription.filter.stages?.every(stage => filterPairs.some(pair => pair.textContent === `Stage${stage}`))).toEqual(true);
     expect(subscription.filter.services?.every(service => filterPairs.some(pair => pair.textContent === `Service${service}`))).toEqual(true);
     expect(filterPairs.length).toEqual((subscription.filter.stages?.length ?? 0) + (subscription.filter.services?.length ?? 0));
-    updateButtonEnabled(true);
+    assertIsUpdateButtonEnabled(true);
   });
 
   it('should update subscription', () => {
@@ -341,7 +387,32 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(checkbox).toBeFalsy();
   });
 
-  function updateButtonEnabled(isEnabled: boolean): void {
+  it('it should enable "use for all projects" checkbox if filter is cleared', () => {
+    // given
+    setSubscription(2, 0);
+    fixture.detectChanges();
+
+    // when
+    fixture.nativeElement.querySelector('.dt-filter-field-clear-all-button').click();
+    fixture.detectChanges();
+    // then
+    // @ts-ignore
+    expect(component.isGlobalControl.enabled).toEqual(true);
+  });
+
+  it('it should disable "use for all projects" checkbox and set to false if filter is set', () => {
+    // given
+    setSubscription(3, 0);
+    fixture.detectChanges();
+
+    // then
+    // @ts-ignore
+    expect(component.isGlobalControl.disabled).toEqual(true);
+    // @ts-ignore
+    expect(component.isGlobalControl.value).toEqual(false);
+  });
+
+  function assertIsUpdateButtonEnabled(isEnabled: boolean): void {
     const element = expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled'));
     (isEnabled ? element : element.not).toBeNull();
   }

@@ -14,17 +14,22 @@ import { KtbWebhookSettingsComponent } from '../ktb-webhook-settings/ktb-webhook
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { AppUtils } from '../../_utils/app.utils';
 import { PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-config';
+import { NotificationsService } from '../../_services/notifications.service';
+import { NotificationType } from '../../_models/notification';
+import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
+  providers: [NotificationsService],
+  styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   private taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<{ taskNames: string[], subscription: UniformSubscription, project: Project, integrationId: string }>;
+  public data$: Observable<{ taskNames: string[], subscription: UniformSubscription, project: Project, integrationId: string, webhook?: WebhookConfig }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -36,6 +41,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private webhookSettings?: KtbWebhookSettingsComponent;
   private _previousFilter?: PreviousWebhookConfig;
   public uniformRegistration?: UniformRegistration;
+  public isWebhookFormValid = true;
   public isWebhookService = false;
   public suffixes: { value: string, displayValue: string }[] = [
     {
@@ -62,11 +68,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
   }
 
-  public get isWebhookFormValid(): boolean {
-    return this.webhookSettings?.webhookConfigForm.valid ?? true;
-  }
-
-  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router, private _changeDetectorRef: ChangeDetectorRef) {
+  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router, private _changeDetectorRef: ChangeDetectorRef, private notificationsService: NotificationsService) {
     const subscription$ = this.route.paramMap.pipe(
       map(paramMap => {
         return {
@@ -94,6 +96,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         this.taskControl.setValue(subscription.prefix);
         this.taskSuffixControl.setValue(subscription.suffix);
         this.isGlobalControl.setValue(subscription.isGlobal);
+
+        this.updateIsGlobalCheckbox(subscription);
       }),
       take(1),
     );
@@ -105,10 +109,13 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         take(1),
       );
 
-    integrationId$.pipe(
+    const integrationInfo$ = integrationId$.pipe(
       switchMap(integrationId => this.dataService.getUniformRegistrationInfo(integrationId)),
+      take(1),
       takeUntil(this.unsubscribe$),
-    ).subscribe(info => {
+    );
+
+    integrationInfo$.subscribe(info => {
       if (!info.isControlPlane) {
         this.suffixes = [
           {
@@ -124,6 +131,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       .pipe(
         map(paramMap => paramMap.get('projectName')),
         filter((projectName: string | null): projectName is string => !!projectName),
+        take(1),
       );
 
     const taskNames$ = projectName$
@@ -138,12 +146,31 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         tap(project => this.updateDataSource(project)),
         take(1),
       );
+    const webhook$ = forkJoin({
+      subscription: subscription$,
+      projectName: projectName$,
+      integrationInfo: integrationInfo$,
+    }).pipe(
+      switchMap((data: { subscription: UniformSubscription, projectName: string, integrationInfo: UniformRegistrationInfo }) => {
+        let webhook: Observable<WebhookConfig | undefined>;
+        if (data.integrationInfo.isWebhookService && this.editMode) {
+          const stage: string | undefined = data.subscription.filter?.stages?.[0];
+          const services: string | undefined = data.subscription.filter?.services?.[0];
+          webhook = this.dataService.getWebhookConfig(data.subscription.event, data.projectName, stage, services);
+        } else {
+          webhook = of(undefined);
+        }
+        return webhook;
+      }),
+      take(1),
+    );
 
     this.data$ = forkJoin({
       taskNames: taskNames$,
       subscription: subscription$,
       project: project$,
       integrationId: integrationId$,
+      webhook: webhook$,
     });
   }
 
@@ -206,6 +233,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       this.updating = false;
       this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
     }, () => {
+      this.notificationsService.addNotification(NotificationType.Error, 'The subscription could not be updated', 5_000);
       this.updating = false;
     });
   }
@@ -214,7 +242,17 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     return this.subscriptionForm.valid && (!!subscription.filter.stages?.length || !subscription.filter.services?.length) && this.isWebhookFormValid && !this.updating;
   }
 
+  public updateIsGlobalCheckbox(subscription: UniformSubscription): void {
+    if (subscription.hasFilter()) {
+      this.isGlobalControl.disable({onlySelf: true, emitEvent: false});
+      this.isGlobalControl.setValue(false);
+    } else {
+      this.isGlobalControl.enable({onlySelf: true, emitEvent: false});
+    }
+  }
+
   public ngOnDestroy(): void {
+    this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

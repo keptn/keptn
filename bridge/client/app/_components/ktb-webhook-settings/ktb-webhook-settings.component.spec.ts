@@ -4,11 +4,7 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
-import { UniformSubscription } from '../../_models/uniform-subscription';
-import { UniformRegistrationsMock } from '../../_models/uniform-registrations.mock';
 import { DataService } from '../../_services/data.service';
-import { throwError } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
 import { DataServiceMock } from '../../_services/data.service.mock';
 
 describe('KtbWebhookSettingsComponent', () => {
@@ -25,9 +21,6 @@ describe('KtbWebhookSettingsComponent', () => {
 
     fixture = TestBed.createComponent(KtbWebhookSettingsComponent);
     component = fixture.componentInstance;
-    component.subscription = new UniformSubscription();
-    component.subscriptionExists = false;
-    component.projectName = 'sockshop';
     fixture.detectChanges();
   });
 
@@ -88,7 +81,7 @@ describe('KtbWebhookSettingsComponent', () => {
     expect(lengthBefore - 1).toEqual(removeButtons.length);
   });
 
-  it('should fill data', () => {
+  it('should fill form fields with provided data', () => {
     // given
     setParameters();
     fixture.detectChanges();
@@ -109,52 +102,40 @@ describe('KtbWebhookSettingsComponent', () => {
     expect(headers.length).toEqual(WebhookConfigMock.header.length);
   });
 
-  it('should revert loading on fail', () => {
-    const dataService = TestBed.inject(DataService);
-    const getWebhookSpy = jest.spyOn(dataService, 'getWebhookConfig');
-    getWebhookSpy.mockReturnValue(throwError(new HttpErrorResponse({error: ''})));
-    setParameters();
-    fixture.detectChanges();
-    expect(getWebhookSpy).toHaveBeenCalled();
-    expect(component.loading).toEqual(false);
-  });
-
   function setParameters(): void {
-    component.subscription = UniformRegistrationsMock[2].subscriptions[0];
-    component.subscriptionExists = true;
-    component.projectName = 'sockshop';
+    component.webhook = WebhookConfigMock;
   }
 
-  it('should be invalid form', () => {
+  it('should be invalid form if only URL is set', () => {
+    // given
+    const urlControl = component.getFormControl('url');
+    urlControl.setValue('keptn.sh');
+    expect(component.webhookConfigForm.valid).toEqual(false);
+  });
+
+  it('should be invalid form if proxy is invalid', () => {
     // given
     const urlControl = component.getFormControl('url');
     const methodControl = component.getFormControl('method');
-    const payload = component.getFormControl('payload');
     const proxyControl = component.getFormControl('proxy');
-
-    expect(component.webhookConfigForm.valid).toEqual(false);
 
     // when
     urlControl.setValue('keptn.sh');
-    // then
-    expect(component.webhookConfigForm.valid).toEqual(false);
-
-    // when
     methodControl.setValue('POST');
-    expect(component.webhookConfigForm.valid).toEqual(true);
-
-    // when
-    payload.setValue('{}');
-    // then
-    expect(component.webhookConfigForm.valid).toEqual(true);
-
-    // when
     proxyControl.setValue('keptn');
     // then
     expect(component.webhookConfigForm.valid).toEqual(false);
+  });
+
+  it('should be invalid form if it has empty header configuration', () => {
+    // given
+    const urlControl = component.getFormControl('url');
+    const methodControl = component.getFormControl('method');
 
     // when
-    proxyControl.setValue('keptn.sh');
+    urlControl.setValue('keptn.sh');
+    methodControl.setValue('POST');
+
     const addHeaderButton = getAddHeaderButton();
     addHeaderButton.click();
     component.addHeader();
@@ -163,7 +144,18 @@ describe('KtbWebhookSettingsComponent', () => {
     expect(component.webhookConfigForm.valid).toEqual(false);
   });
 
-  it('should be valid form', () => {
+  it('should be valid form if URL and method is set', () => {
+    // given
+    const urlControl = component.getFormControl('url');
+    const methodControl = component.getFormControl('method');
+
+    // when
+    urlControl.setValue('keptn.sh');
+    methodControl.setValue('POST');
+    expect(component.webhookConfigForm.valid).toEqual(true);
+  });
+
+  it('should be valid form if valid proxy is set', () => {
     // given
     const urlControl = component.getFormControl('url');
     const methodControl = component.getFormControl('method');
@@ -173,16 +165,20 @@ describe('KtbWebhookSettingsComponent', () => {
     // when
     urlControl.setValue('https://keptn.sh');
     methodControl.setValue('POST');
-    payload.setValue('{}');
-
-    // then
-    expect(component.webhookConfigForm.valid).toEqual(true);
-
-    // when
     proxyControl.setValue('https://keptn.sh');
 
     // then
     expect(component.webhookConfigForm.valid).toEqual(true);
+  });
+
+  it('should be valid form if valid header is added', () => {
+    // given
+    const urlControl = component.getFormControl('url');
+    const methodControl = component.getFormControl('method');
+
+    // when
+    urlControl.setValue('https://keptn.sh');
+    methodControl.setValue('POST');
 
     // when
     component.addHeader('content-type', 'application/json');

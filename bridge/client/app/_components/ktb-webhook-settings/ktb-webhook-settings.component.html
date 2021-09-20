@@ -1,5 +1,5 @@
 <h2>Webhook configuration</h2>
-<form class="mb-2" [formGroup]="webhookConfigForm" id="webhook-config-form" *ngIf="!loading, else loadingTemplate">
+<form class="mb-2" [formGroup]="webhookConfigForm" id="webhook-config-form">
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field fxFlex="160px">
       <dt-label class="required">Request Method</dt-label>
@@ -58,6 +58,3 @@
     </dt-form-field>
   </div>
 </form>
-<ng-template #loadingTemplate>
-  <dt-loading-spinner></dt-loading-spinner>
-</ng-template>
