@@ -14,6 +14,7 @@ import { NotificationType } from '../_models/notification';
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
   private isReloading = false;
+  private isAuthorizedErrorShown = false;
 
   constructor(private readonly toast: DtToast,
               private readonly location: Location,
@@ -57,12 +58,19 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         () => window.location.href = this.location.prepareExternalUrl('/login'),
         1000,
       );
-    } else if (authType === 'BASIC') {
+      return;
+    } else if (authType === 'BASIC' && !this.isAuthorizedErrorShown) {
+      this.isAuthorizedErrorShown = true;
       this.notificationService.addNotification(NotificationType.Error, 'Login credentials invalid. Please check your provided username and password.');
-    } else if (error.error === 'incorrect api key auth') {
-      this.notificationService.addNotification(NotificationType.Error, 'Could not authorize API token. Please check the provided API token.');
-    } else {
-      this.notificationService.addNotification(NotificationType.Error, 'Could not authorize. ' + error.error);
+    } else if (!this.isAuthorizedErrorShown) {
+      let errorInfo;
+      if (error.error === 'incorrect api key auth') {
+        errorInfo = 'Could not authorize API token. Please check the configured API token.';
+      } else {
+        errorInfo = 'Could not authorize. ' + error.error;
+      }
+      this.isAuthorizedErrorShown = true;
+      this.notificationService.addNotification(NotificationType.Error, ' ' + errorInfo);
     }
   }
 }
