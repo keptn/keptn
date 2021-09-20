@@ -11,6 +11,7 @@ export type SequenceStage = {
   latestEvaluation?: EvaluationResult,
   latestEvent?: SequenceEvent,
   latestFailedEvent?: SequenceEvent,
+  state: SequenceState,
   name: string,
 };
 
