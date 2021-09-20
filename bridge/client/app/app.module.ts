@@ -115,6 +115,7 @@ import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils
 import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { environment } from '../environments/environment';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
+import { DtAlertModule } from '@dynatrace/barista-components/alert';
 
 registerLocaleData(localeEn, 'en');
 
@@ -242,6 +243,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     BrowserAnimationsModule,
     DtFilterFieldModule,
     ReactiveFormsModule,
+    DtAlertModule,
   ],
   entryComponents: [
     KtbDeletionDialogComponent,

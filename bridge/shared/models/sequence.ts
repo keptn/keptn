@@ -11,6 +11,7 @@ export type SequenceStage = {
   latestEvaluation?: EvaluationResult,
   latestEvent?: SequenceEvent,
   latestFailedEvent?: SequenceEvent,
+  state: SequenceState,
   name: string,
 };
 
@@ -18,8 +19,8 @@ export enum SequenceState {
   TRIGGERED = 'triggered',
   STARTED = 'started',
   FINISHED = 'finished',
-  WAITING = 'waiting',
   PAUSED = 'paused',
+  TIMEDOUT = 'timedOut',
   UNKNOWN = ''
 }
 
