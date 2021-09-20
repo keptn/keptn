@@ -201,6 +201,10 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Sco
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      capabilityName,
 					Namespace: namespace,
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by": "keptn-secret-service",
+						"app.kubernetes.io/scope":      secret.Scope,
+					},
 				},
 				Rules: []rbacv1.PolicyRule{
 					{
@@ -219,7 +223,7 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Sco
 
 func (k K8sSecretBackend) createK8sRoleBindingObj(secret model.Secret, roles []rbacv1.Role, namespace string) rbacv1.RoleBinding {
 	roleBindingName := secret.Scope + "-rolebinding"
-	log.Infof("creating rolebinding %s for secret %s with role %s and service account %s in namespace %s", roleBindingName, secret.Name, roles[0].Name, secret.Scope, namespace)
+	log.Infof("creating role binding %s for secret %s with role %s and service account %s in namespace %s", roleBindingName, secret.Name, roles[0].Name, secret.Scope, namespace)
 
 	roleBinding := rbacv1.RoleBinding{
 		TypeMeta: metav1.TypeMeta{
@@ -229,6 +233,10 @@ func (k K8sSecretBackend) createK8sRoleBindingObj(secret model.Secret, roles []r
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      roleBindingName,
 			Namespace: namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "keptn-secret-service", // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/scope":      secret.Scope,
+			},
 		},
 		Subjects: []rbacv1.Subject{rbacv1.Subject{
 			Kind: "ServiceAccount",
@@ -254,6 +262,7 @@ func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace stri
 			Namespace: namespace,
 			Labels: map[string]string{
 				"app.kubernetes.io/managed-by": "keptn-secret-service", // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/scope":      secret.Scope,
 			},
 		},
 		StringData: secret.Data,

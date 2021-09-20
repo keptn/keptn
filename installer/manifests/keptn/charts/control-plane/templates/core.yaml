@@ -450,7 +450,7 @@ data:
           keptn-webhook-svc-read:
             Permissions:
               - get
-      keptn-dynatrace-service
+      dynatrace-service
         Capabilities:
           keptn-dynatrace-svc-read:
             Permissions:
