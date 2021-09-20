@@ -183,7 +183,8 @@ func TestGetSecret(t *testing.T) {
 	require.Equal(t, []model.GetSecretResponseItem{
 		{
 			SecretMetadata: model.SecretMetadata{
-				Name: "my-secret",
+				Name:  "my-secret",
+				Scope: "my-scope",
 			},
 			Keys: []string{"password"},
 		},

@@ -161,7 +161,8 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 		}
 		result = append(result, model.GetSecretResponseItem{
 			SecretMetadata: model.SecretMetadata{
-				Name: secretItem.Name,
+				Name:  secretItem.Name,
+				Scope: secretItem.Labels["app.kubernetes.io/scope"],
 			},
 			Keys: keys,
 		})
