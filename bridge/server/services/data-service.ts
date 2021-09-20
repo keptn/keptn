@@ -247,8 +247,25 @@ export class DataService {
   }
 
   public async getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined): Promise<EventResult> {
-    const response = await this.apiService.getTracesByContext(keptnContext, projectName, fromTime);
-    return response.data;
+    let result: EventResult = {
+      events: [],
+      pageSize: 0,
+      nextPageKey: 0,
+      totalCount: 0
+    };
+    let nextPage = 0;
+    do {
+      const response = await this.apiService.getTracesByContext(keptnContext, projectName, fromTime, nextPage.toString());
+      nextPage = response.data.nextPageKey || 0;
+      result = {
+        events: [...result?.events, ...response.data.events],
+        pageSize: result.pageSize + response.data.pageSize,
+        nextPageKey: response.data.nextPageKey,
+        totalCount: response.data.totalCount
+      };
+    } while (nextPage !== 0);
+
+    return result;
   }
 
   public async getResourceFileTreesForService(projectName: string, serviceName: string): Promise<FileTree[]> {

@@ -56,10 +56,11 @@ export class ApiService {
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
   }
 
-  public getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined): Promise<AxiosResponse<EventResult>> {
+  public getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined, nextPageKey?: string | undefined): Promise<AxiosResponse<EventResult>> {
     const params = {
       keptnContext,
       pageSize: '100',
+      ...nextPageKey && {nextPageKey},
       ...projectName && {project: projectName},
       ...fromTime && {fromTime},
     };
