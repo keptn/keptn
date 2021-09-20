@@ -100,8 +100,16 @@ export class Sequence extends sq {
     return this.getStage(stageName)?.latestEvaluation?.result === ResultTypes.WARNING;
   }
 
-  public isWaiting(stageName?: string): boolean {
-    return stageName ? (this.getStage(stageName)?.state === SequenceState.FINISHED && this.state === SequenceState.STARTED) : this.state === SequenceState.TRIGGERED;
+  public isWaiting(): boolean {
+    const lastStageName = this.getLastStage();
+    if (lastStageName && this.state === SequenceState.STARTED) {
+      const lastStage = this.getStage(lastStageName);
+      return lastStage?.state === SequenceState.FINISHED || // last stages is finished, but sequence is still started, means it is waiting for next stage to be triggered
+        (lastStage?.state === SequenceState.TRIGGERED && this.getTraces(lastStageName).every(seq => !seq.isLoading())); // last stage is triggered, but has no running tasks
+    } else {
+      // no stages yet, sequence is triggered, so waiting
+      return this.state === SequenceState.TRIGGERED;
+    }
   }
 
   public isRemediation(): boolean {
@@ -127,6 +135,10 @@ export class Sequence extends sq {
 
   public getShortImageName(): string | undefined {
     return this.stages[0]?.image?.split('/').pop();
+  }
+
+  public getTraces(stageName: string): Trace[] {
+    return this.traces.filter(trace => trace.stage === stageName);
   }
 
   public findTrace(comp: (args: Trace) => boolean): Trace | undefined {
