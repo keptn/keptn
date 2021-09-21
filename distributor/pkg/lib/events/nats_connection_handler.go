@@ -9,11 +9,11 @@ import (
 )
 
 type NatsConnectionHandler struct {
-	NatsConnection *nats.Conn
-	Subscriptions  []*nats.Subscription
+	natsConnection *nats.Conn
+	subscriptions  []*nats.Subscription
 	topics         []string
 	natsURL        string
-	MessageHandler func(m *nats.Msg)
+	messageHandler func(m *nats.Msg)
 	mux            sync.Mutex
 }
 
@@ -21,43 +21,44 @@ func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 	nch := &NatsConnectionHandler{
 		natsURL: natsURL,
 	}
-
 	return nch
 }
 
 func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
-	for _, sub := range nch.Subscriptions {
-		// Unsubscribe
+	for _, sub := range nch.subscriptions {
 		_ = sub.Unsubscribe()
 		logger.Infof("Unsubscribed from NATS topic: %s", sub.Subject)
 	}
-	nch.Subscriptions = nch.Subscriptions[:0]
+	nch.subscriptions = nch.subscriptions[:0]
 }
 
-// SubscribeToTopics expresses interest in the given subject on the NATS message broker.
-// Note, that when you pass in subjects via the topics parameter, the NatsConnectionHandler will
-// try to subscribe to these topics. If you don't pass any subjects via the topics parameter
-// the NatsConnectionHandler will subscribe to the topics configured at instantiation time
+// SubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
 func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
+	return nch.QueueSubscribeToTopics(topics, "")
+}
+
+// QueueSubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
+// The queueGroup parameter defines a NATS queue group to join when subscribing to the topic(s).
+// Only one member of a queue group will be able to receive a published message via NATS.
+// Note, that passing queueGroup = "" is equivalent to not using any queue group at all.
+func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueGroup string) error {
 	nch.mux.Lock()
 	defer nch.mux.Unlock()
 	if nch.natsURL == "" {
 		return errors.New("no PubSub URL defined")
 	}
 
-	if nch.NatsConnection == nil || !nch.NatsConnection.IsConnected() {
+	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
 		var err error
 		nch.RemoveAllSubscriptions()
 
-		nch.NatsConnection.Close()
+		nch.natsConnection.Close()
 		logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
-		nch.NatsConnection, err = nats.Connect(nch.natsURL)
+		nch.natsConnection, err = nats.Connect(nch.natsURL)
 
 		if err != nil {
 			return errors.New("failed to create NATS connection: " + err.Error())
 		}
-
-		logger.Info("Connected to NATS server")
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
@@ -65,13 +66,12 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			logger.Infof("Subscribing to topic %s ...", topic)
-			sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
+			logger.Infof("Subscribing to topic <%s> with queue group <%s>", topic, queueGroup)
+			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.messageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
 			}
-			logger.Infof("Subscribed to topic %s", topic)
-			nch.Subscriptions = append(nch.Subscriptions, sub)
+			nch.subscriptions = append(nch.subscriptions, sub)
 		}
 	}
 	return nil
