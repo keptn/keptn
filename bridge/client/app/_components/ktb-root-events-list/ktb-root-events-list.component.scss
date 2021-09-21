@@ -2,9 +2,11 @@
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
 .ktb-root-events-list {
-  .ktb-selectable-tile.ktb-tile-error,
-  .ktb-selectable-tile.ktb-tile-success,
-  .ktb-selectable-tile.ktb-tile-highlight {
+  .ktb-selectable-tile {
+    .ktb-selectable-tile-container {
+      border: 1px solid $gray-200;
+    }
+
     &:hover {
       .ktb-selectable-tile-container {
         border-color: $gray-300;
@@ -15,36 +17,41 @@
       }
     }
 
-    .ktb-selectable-tile-container {
-      border: 1px solid $gray-200;
+    &.ktb-tile-selected .ktb-selectable-tile-container:before {
+      content: '';
+      position: absolute;
+      height: 100%;
+      width: 6px;
+      left: 0;
+      top: 0;
+      background: $gray-300;
     }
 
-    &.ktb-tile-selected {
-      &:hover .ktb-selectable-tile-container,
-      .ktb-selectable-tile-container {
-        border-left-width: 7px;
-      }
+    &.ktb-tile-error:hover .ktb-selectable-tile-container,
+    &.ktb-tile-error .ktb-selectable-tile-container {
+      border-color: $error-color;
     }
-  }
 
-  .ktb-selectable-tile.ktb-tile-error {
-    &:hover .ktb-selectable-tile-container,
-    .ktb-selectable-tile-container {
-      border-left: 3px solid $error-color;
+    &.ktb-tile-selected.ktb-tile-error .ktb-selectable-tile-container:before {
+      background: $error-color;
     }
-  }
 
-  .ktb-selectable-tile.ktb-tile-success {
-    &:hover .ktb-selectable-tile-container,
-    .ktb-selectable-tile-container {
-      border-left: 3px solid $cta-color;
+    &.ktb-tile-success:hover .ktb-selectable-tile-container,
+    &.ktb-tile-success .ktb-selectable-tile-container {
+      border-color: $cta-color;
     }
-  }
 
-  .ktb-selectable-tile.ktb-tile-highlight {
-    &:hover .ktb-selectable-tile-container,
-    .ktb-selectable-tile-container {
-      border-left: 3px solid $blue-400;
+    &.ktb-tile-selected.ktb-tile-success .ktb-selectable-tile-container:before {
+      background: $cta-color;
+    }
+
+    &.ktb-tile-highlight:hover .ktb-selectable-tile-container,
+    &.ktb-tile-highlight .ktb-selectable-tile-container {
+      border-color: $blue-400;
+    }
+
+    &.ktb-tile-selected.ktb-tile-highlight .ktb-selectable-tile-container:before {
+      background: $blue-400;
     }
   }
 }
