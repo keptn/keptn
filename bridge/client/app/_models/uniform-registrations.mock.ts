@@ -1,9 +1,9 @@
-import { UniformRegistration as ur } from '../../../server/interfaces/uniform-registration';
+import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { UniformRegistration } from './uniform-registration';
 import { UniformRegistrationLocations } from '../../../shared/interfaces/uniform-registration-locations';
 
 
-const services: ur[] = [
+const services: UniformRegistrationResult[] = [
   {
     id: 'keptn-uniform-ansible-service-f01334c8312486183460649bab6cd4a7',
     metadata: {
@@ -53,8 +53,8 @@ const services: ur[] = [
       [{
         filter: {
           projects: [],
-          services: ['carts'],
-          stages: ['dev'],
+          services: [],
+          stages: [],
         },
         event: 'sh.keptn.event.deployment.triggered',
         id: 'myHelmSubscriptionId',
@@ -109,10 +109,11 @@ const services: ur[] = [
       [{
         filter: {
           projects: [],
-          services: [],
-          stages: [],
+          services: ['carts'],
+          stages: ['dev'],
         },
         event: 'sh.keptn.event.evaluation.triggered',
+        id: 'subscriptionId',
       }],
   },
   {
@@ -294,6 +295,36 @@ const services: ur[] = [
             stages: [],
           },
           event: 'sh.keptn.event.deployment.triggered',
+        },
+      ],
+  },
+  {
+    id: 'keptn-uniform-webhook-service-55875464c5b6d3e313e58b99d2ed7e09',
+    metadata: {
+      deplyomentname: 'webhook-service',
+      distributorversion: '0.8.3',
+      hostname: 'gke_research_us-central1-c_prod-customer-A',
+      integrationversion: 'servicenow-service:0.8.3',
+      kubernetesmetadata: {
+        deploymentname: 'webhook-service',
+        namespace: 'keptn',
+        podname: 'webhook-service-123456789',
+      },
+      location: 'Execution plane-A',
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z',
+    },
+    name: 'webhook-service',
+    subscriptions:
+      [
+        {
+          filter: {
+            projects: ['sockshop'],
+            services: [],
+            stages: [],
+          },
+          event: 'sh.keptn.event.deployment.triggered',
+          id: 'subscriptionId',
         },
       ],
   },

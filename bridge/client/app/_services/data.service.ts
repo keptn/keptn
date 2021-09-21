@@ -21,6 +21,8 @@ import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
+import { WebhookConfig } from '../../../shared/models/webhook-config';
+import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
 @Injectable({
@@ -136,8 +138,8 @@ export class DataService {
     );
   }
 
-  public getIsUniformRegistrationControlPlane(integrationId: string): Observable<boolean> {
-    return this.apiService.getIsUniformRegistrationControlPlane(integrationId);
+  public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
+    return this.apiService.getUniformRegistrationInfo(integrationId);
   }
 
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
@@ -184,8 +186,8 @@ export class DataService {
     return this.apiService.deleteSecret(name, scope);
   }
 
-  public deleteSubscription(integrationId: string, id: string): Observable<object> {
-    return this.apiService.deleteSubscription(integrationId, id);
+  public deleteSubscription(integrationId: string, id: string, isWebhookService: boolean): Observable<object> {
+    return this.apiService.deleteSubscription(integrationId, id, isWebhookService);
   }
 
   public getRootsLastUpdated(project: Project): Date {
@@ -581,6 +583,14 @@ export class DataService {
       .pipe(
         map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))),
       );
+  }
+
+  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
+    return this.apiService.saveWebhookConfig(config);
+  }
+
+  public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    return this.apiService.getWebhookConfig(eventType, projectName, stageName, serviceName);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {

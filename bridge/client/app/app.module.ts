@@ -115,6 +115,7 @@ import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils
 import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { environment } from '../environments/environment';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
+import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
@@ -200,6 +201,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbProjectSettingsComponent,
     KtbDeleteConfirmationComponent,
     KtbModifyUniformSubscriptionComponent,
+    KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
     KtbCreateServiceComponent,
     KtbServiceSettingsOverviewComponent,
