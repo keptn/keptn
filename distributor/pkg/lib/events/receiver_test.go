@@ -3,13 +3,11 @@ package events
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"log"
 	"testing"
 	"time"
 )
@@ -101,112 +99,112 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 	}
 }
 
-func Test_JetstreamPubSub(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	s := RunServerOnPort(TEST_PORT)
-
-	defer s.Shutdown()
-
-	natsPublisher, _ := nats.Connect(natsURL)
-	js, err := natsPublisher.JetStream()
-	require.Nil(t, err)
-
-	streamName := "KEPTN"
-
-	stream, err := js.StreamInfo(streamName)
-	if err != nil {
-		log.Print(err)
-	}
-	if stream == nil {
-		log.Printf("creating stream %q", streamName)
-		_, err = js.AddStream(&nats.StreamConfig{
-			Name:     streamName,
-			Subjects: []string{streamName + ".>"},
-		})
-		require.Nil(t, err)
-	} else {
-		_, err = js.UpdateStream(&nats.StreamConfig{
-			Name:     streamName,
-			Subjects: []string{streamName + ".>"},
-		})
-		require.Nil(t, err)
-	}
-	msgPayload := "approval" + uuid.New().String()
-	_, err = js.Publish("KEPTN.approval.triggered", []byte(msgPayload))
-	require.Nil(t, err)
-
-	//js.AddConsumer("KEPTN", &nats.ConsumerConfig{
-	//	Durable: "consumer-id",
-	//})
-
-	done := make(chan bool, 1)
-	js.Subscribe("KEPTN.approval.triggered", func(m *nats.Msg) {
-		fmt.Println(string(m.Data))
-		err := m.Ack()
-		require.Nil(t, err)
-		//done <- true
-	})
-
-	select {
-	case <-time.After(5 * time.Second):
-		log.Fatalf("failed to get approval")
-	case <-done:
-		log.Printf("got approval")
-	}
-}
-
-func Test_JetstreamPubSubWithConsumer(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	s := RunServerOnPort(TEST_PORT)
-
-	defer s.Shutdown()
-
-	natsPublisher, _ := nats.Connect(natsURL)
-	js, err := natsPublisher.JetStream()
-	require.Nil(t, err)
-
-	streamName := "KEPTN"
-
-	stream, err := js.StreamInfo(streamName)
-	if err != nil {
-		log.Print(err)
-	}
-	if stream == nil {
-		log.Printf("creating stream %q", streamName)
-		_, err = js.AddStream(&nats.StreamConfig{
-			Name:     streamName,
-			Subjects: []string{streamName + ".>"},
-		})
-		require.Nil(t, err)
-	} else {
-		_, err = js.UpdateStream(&nats.StreamConfig{
-			Name:     streamName,
-			Subjects: []string{streamName + ".>"},
-		})
-		require.Nil(t, err)
-	}
-	msgPayload := "approval" + uuid.New().String()
-	_, err = js.Publish("KEPTN.approval.triggered", []byte(msgPayload))
-	require.Nil(t, err)
-
-	consumer, err := js.AddConsumer("KEPTN", &nats.ConsumerConfig{
-		Durable:   "consumer-id",
-		AckPolicy: nats.AckExplicitPolicy,
-	})
-	require.Nil(t, err)
-	require.NotNil(t, consumer)
-
-	sub, err := js.PullSubscribe("KEPTN.approval.triggered", "consumer", nats.ManualAck())
-	require.Nil(t, err)
-	require.NotNil(t, sub)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	msgs, _ := sub.Fetch(10, nats.Context(ctx))
-	for _, m := range msgs {
-		fmt.Println(string(m.Data))
-		//err := m.Ack()
-		//require.Nil(t, err)
-	}
-}
+//func Test_JetstreamPubSub(t *testing.T) {
+//	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+//	s := RunServerOnPort(TEST_PORT)
+//
+//	defer s.Shutdown()
+//
+//	natsPublisher, _ := nats.Connect(natsURL)
+//	js, err := natsPublisher.JetStream()
+//	require.Nil(t, err)
+//
+//	streamName := "KEPTN"
+//
+//	stream, err := js.StreamInfo(streamName)
+//	if err != nil {
+//		log.Print(err)
+//	}
+//	if stream == nil {
+//		log.Printf("creating stream %q", streamName)
+//		_, err = js.AddStream(&nats.StreamConfig{
+//			Name:     streamName,
+//			Subjects: []string{streamName + ".>"},
+//		})
+//		require.Nil(t, err)
+//	} else {
+//		_, err = js.UpdateStream(&nats.StreamConfig{
+//			Name:     streamName,
+//			Subjects: []string{streamName + ".>"},
+//		})
+//		require.Nil(t, err)
+//	}
+//	msgPayload := "approval" + uuid.New().String()
+//	_, err = js.Publish("KEPTN.approval.triggered", []byte(msgPayload))
+//	require.Nil(t, err)
+//
+//	//js.AddConsumer("KEPTN", &nats.ConsumerConfig{
+//	//	Durable: "consumer-id",
+//	//})
+//
+//	done := make(chan bool, 1)
+//	js.Subscribe("KEPTN.approval.triggered", func(m *nats.Msg) {
+//		fmt.Println(string(m.Data))
+//		err := m.Ack()
+//		require.Nil(t, err)
+//		//done <- true
+//	})
+//
+//	select {
+//	case <-time.After(5 * time.Second):
+//		log.Fatalf("failed to get approval")
+//	case <-done:
+//		log.Printf("got approval")
+//	}
+//}
+//
+//func Test_JetstreamPubSubWithConsumer(t *testing.T) {
+//	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+//	s := RunServerOnPort(TEST_PORT)
+//
+//	defer s.Shutdown()
+//
+//	natsPublisher, _ := nats.Connect(natsURL)
+//	js, err := natsPublisher.JetStream()
+//	require.Nil(t, err)
+//
+//	streamName := "KEPTN"
+//
+//	stream, err := js.StreamInfo(streamName)
+//	if err != nil {
+//		log.Print(err)
+//	}
+//	if stream == nil {
+//		log.Printf("creating stream %q", streamName)
+//		_, err = js.AddStream(&nats.StreamConfig{
+//			Name:     streamName,
+//			Subjects: []string{streamName + ".>"},
+//		})
+//		require.Nil(t, err)
+//	} else {
+//		_, err = js.UpdateStream(&nats.StreamConfig{
+//			Name:     streamName,
+//			Subjects: []string{streamName + ".>"},
+//		})
+//		require.Nil(t, err)
+//	}
+//	msgPayload := "approval" + uuid.New().String()
+//	_, err = js.Publish("KEPTN.approval.triggered", []byte(msgPayload))
+//	require.Nil(t, err)
+//
+//	consumer, err := js.AddConsumer("KEPTN", &nats.ConsumerConfig{
+//		Durable:   "consumer-id",
+//		AckPolicy: nats.AckExplicitPolicy,
+//	})
+//	require.Nil(t, err)
+//	require.NotNil(t, consumer)
+//
+//	sub, err := js.PullSubscribe("KEPTN.approval.triggered", "consumer", nats.ManualAck())
+//	require.Nil(t, err)
+//	require.NotNil(t, sub)
+//
+//	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+//	defer cancel()
+//
+//	msgs, _ := sub.Fetch(10, nats.Context(ctx))
+//	for _, m := range msgs {
+//		fmt.Println(string(m.Data))
+//		//err := m.Ack()
+//		//require.Nil(t, err)
+//	}
+//}
