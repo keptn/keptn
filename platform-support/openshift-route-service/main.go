@@ -14,6 +14,7 @@ import (
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 type envConfig struct {
@@ -55,12 +56,12 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger.Debug(fmt.Sprintf("Got Event Context: %+v", event.Context))
 
-	data := &keptn.ProjectCreateEventData{}
+	data := &keptnv2.ProjectCreateFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	if event.Type() != keptn.InternalProjectCreateEventType {
+	if event.Type() != keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName) {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
@@ -75,9 +76,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func createRoutes(data *keptn.ProjectCreateEventData) error {
+func createRoutes(data *keptnv2.ProjectCreateFinishedEventData) error {
 	shipyard := keptn.Shipyard{}
-	decodedStr, err := base64.StdEncoding.DecodeString(data.Shipyard)
+	decodedStr, err := base64.StdEncoding.DecodeString(data.CreatedProject.Shipyard)
 	if err != nil {
 		return err
 	}

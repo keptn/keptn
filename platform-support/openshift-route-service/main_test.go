@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"reflect"
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-
-	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 func Test_getEnableMeshCommandArgs(t *testing.T) {
@@ -82,7 +81,7 @@ func Test_gotEvent(t *testing.T) {
 
 func Test_createRoutes(t *testing.T) {
 	type args struct {
-		data *keptn.ProjectCreateEventData
+		data *keptnv2.ProjectCreateFinishedEventData
 	}
 	tests := []struct {
 		name string
@@ -91,9 +90,10 @@ func Test_createRoutes(t *testing.T) {
 		{
 			name: "invalid shipyard should throw error",
 			args: args{
-				data: &keptn.ProjectCreateEventData{
-					Project:  "sockshop",
-					Shipyard: "this is not base 64 encoded",
+				data: &keptnv2.ProjectCreateFinishedEventData{
+					CreatedProject: keptnv2.ProjectCreateData{
+						Shipyard: "this is not base 64 encoded",
+					},
 				},
 			},
 		},
