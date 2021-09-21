@@ -544,14 +544,6 @@ github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfV
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/keptn/go-utils v0.8.5/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
-github.com/keptn/go-utils v0.9.0 h1:UVRB6GEvcjszSCdszYccLzEcAVbBD8Jv+vBl5uy9ZNo=
-github.com/keptn/go-utils v0.9.0/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
-github.com/keptn/go-utils v0.9.1-0.20210902133838-591003f97fce h1:QxFLDshKzuevgeMXI1twpJfVdJb3nCUbUBbFNplpvOQ=
-github.com/keptn/go-utils v0.9.1-0.20210902133838-591003f97fce/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
-github.com/keptn/go-utils v0.9.1-0.20210903084650-804c45865c48 h1:qPCzetG+MheN55JjS02pzMQvtaeW9S/aovrNZkKAZ7U=
-github.com/keptn/go-utils v0.9.1-0.20210903084650-804c45865c48/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
-github.com/keptn/go-utils v0.9.1-0.20210903085012-3e16fa3c6489 h1:Akf339Z2Q/XWm5V6UYtzAI7xmzG6xyA7Mci3FI0RGi4=
-github.com/keptn/go-utils v0.9.1-0.20210903085012-3e16fa3c6489/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
 github.com/keptn/go-utils v0.9.1-0.20210903095045-8cbfa3ca1ec9 h1:O4vhtxUGCEwBKaqvMEb2+2vmUHNqfbdLBWfDfurWI4k=
 github.com/keptn/go-utils v0.9.1-0.20210903095045-8cbfa3ca1ec9/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
 github.com/keptn/kubernetes-utils v0.9.0 h1:UlU3qj/80TcFEAHShRlLwvgJtpK/b5/+GpVJCCGcarM=
@@ -633,8 +625,9 @@ github.com/mitchellh/gox v0.4.0/go.mod h1:Sd9lOJ0+aimLBi73mGofS1ycjY8lL3uZM3JPS4
 github.com/mitchellh/iochan v1.0.0/go.mod h1:JwYml1nuB7xOzsp52dPpHFffvOCDupsG0QubkSMEySY=
 github.com/mitchellh/mapstructure v0.0.0-20160808181253-ca63d7c062ee/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
-github.com/mitchellh/mapstructure v1.4.1 h1:CpVNEelQCZBooIPDn+AR3NpivK/TIKU8bDxdASFVQag=
 github.com/mitchellh/mapstructure v1.4.1/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
+github.com/mitchellh/mapstructure v1.4.2 h1:6h7AQ0yhTcIsmFmnAwQls75jp2Gzs4iB8W7pjMO+rqo=
+github.com/mitchellh/mapstructure v1.4.2/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f/go.mod h1:OkQIRizQZAeMln+1tSwduZz7+Af5oFlKirV/MSYes2A=
 github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/mitchellh/reflectwalk v1.0.1 h1:FVzMWA5RllMAKIdUSC8mdWo3XtwoecrH79BY70sEEpE=
