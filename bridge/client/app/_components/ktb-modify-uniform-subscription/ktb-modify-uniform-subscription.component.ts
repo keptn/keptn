@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
@@ -10,13 +10,12 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { UniformRegistration } from '../../_models/uniform-registration';
-import { KtbWebhookSettingsComponent } from '../ktb-webhook-settings/ktb-webhook-settings.component';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { AppUtils } from '../../_utils/app.utils';
 import { PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-config';
 import { NotificationsService } from '../../_services/notifications.service';
-import { NotificationType } from '../../_models/notification';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
+import { NotificationType } from '../../_models/notification';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -38,7 +37,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     taskSuffix: this.taskSuffixControl,
     isGlobal: this.isGlobalControl,
   });
-  private webhookSettings?: KtbWebhookSettingsComponent;
   private _previousFilter?: PreviousWebhookConfig;
   public uniformRegistration?: UniformRegistration;
   public isWebhookFormValid = true;
@@ -61,14 +59,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       displayValue: 'finished',
     }];
 
-  @ViewChild('webhookSettings', {static: false}) set webhookSettingsElement(webhookSettings: KtbWebhookSettingsComponent) {
-    if (webhookSettings) { // initially setter gets called with undefined
-      this.webhookSettings = webhookSettings;
-      this._changeDetectorRef.detectChanges(); // prevent "Expression has changed after it was checked"-error at isWebhookFormValid
-    }
-  }
-
-  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router, private _changeDetectorRef: ChangeDetectorRef, private notificationsService: NotificationsService) {
+  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router, private notificationsService: NotificationsService) {
     const subscription$ = this.route.paramMap.pipe(
       map(paramMap => {
         return {
@@ -197,7 +188,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     } as DtFilterFieldDefaultDataSourceAutocomplete;
   }
 
-  public updateSubscription(projectName: string, integrationId: string, subscription: UniformSubscription): void {
+  public updateSubscription(projectName: string, integrationId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): void {
     this.updating = true;
     const updates = [];
     subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
@@ -209,21 +200,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       updates.push(this.dataService.createUniformSubscription(integrationId, subscription));
     }
 
-    if (this.webhookSettings) {
-      const webhookConfig: WebhookConfig = new WebhookConfig();
+    if (webhookConfig) {
       webhookConfig.type = subscription.event;
       webhookConfig.filter = subscription.filter;
       webhookConfig.prevConfiguration = this._previousFilter;
-      webhookConfig.method = this.webhookSettings.getFormControl('method').value;
-      webhookConfig.url = this.webhookSettings.getFormControl('url').value;
-      webhookConfig.payload = this.webhookSettings.getFormControl('payload').value;
-      webhookConfig.proxy = this.webhookSettings.getFormControl('proxy').value;
-      for (const header of this.webhookSettings.headerControls) {
-        webhookConfig.header.push({
-          name: header.get('name')?.value,
-          value: header.get('value')?.value,
-        });
-      }
       updates.push(this.dataService.saveWebhookConfig(webhookConfig));
     }
 

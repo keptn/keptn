@@ -248,20 +248,22 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const updateSpy = jest.spyOn(dataService, 'saveWebhookConfig');
     const webhookConfig = new WebhookConfig();
     fixture.detectChanges();
-    webhookConfig.type = subscription.event;
-    webhookConfig.filter = subscription.filter;
-    webhookConfig.prevConfiguration = {
-      filter: subscription.filter,
-      type: subscription.event,
-    };
+
     webhookConfig.method = 'POST';
     webhookConfig.url = 'https://keptn.sh';
     webhookConfig.payload = '{}';
     webhookConfig.header = [{name: 'Content-Type', value: 'application/json'}];
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription);
+    component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
     fixture.detectChanges();
+
+    webhookConfig.type = subscription.event;
+    webhookConfig.filter = subscription.filter;
+    webhookConfig.prevConfiguration = {
+      filter: subscription.filter,
+      type: subscription.event,
+    };
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(webhookConfig);
