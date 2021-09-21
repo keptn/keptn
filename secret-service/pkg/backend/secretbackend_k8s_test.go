@@ -33,7 +33,6 @@ func TestCreateK8sSecretBackend(t *testing.T) {
 CREATE SECRET TESTS
 */
 func TestCreateSecrets(t *testing.T) {
-
 	kubernetes := k8sfake.NewSimpleClientset()
 	scopesRepository := &fake.ScopesRepositoryMock{}
 	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
@@ -263,10 +262,11 @@ func TestDeleteK8sSecret(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[2].Matches("update", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[4].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[1].Matches("list", "secrets"))
+	assert.True(t, kubernetes.Fake.Actions()[2].Matches("get", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[3].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[4].Matches("get", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[5].Matches("update", "roles"))
 }
 
 func TestDeleteLastK8sSecret(t *testing.T) {
@@ -284,21 +284,6 @@ func TestDeleteLastK8sSecret(t *testing.T) {
 		return true, &corev1.SecretList{}, nil
 	})
 
-	kubernetes.Fake.PrependReactor("update", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, nil
-	})
-
-	kubernetes.Fake.PrependReactor("get", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &rbacv1.Role{
-			Rules: []rbacv1.PolicyRule{
-				{
-					Resources:     []string{"secrets"},
-					ResourceNames: []string{"my-other-secret", "my-secret"},
-				},
-			},
-		}, nil
-	})
-
 	kubernetes.Fake.PrependReactor("delete", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, nil
 	})
@@ -314,13 +299,9 @@ func TestDeleteLastK8sSecret(t *testing.T) {
 	_ = appliedActions
 	assert.Nil(t, err)
 	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[2].Matches("update", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[4].Matches("update", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[5].Matches("list", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[6].Matches("delete-collection", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[7].Matches("delete-collection", "rolebindings"))
+	assert.True(t, kubernetes.Fake.Actions()[1].Matches("list", "secrets"))
+	assert.True(t, kubernetes.Fake.Actions()[2].Matches("delete-collection", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[3].Matches("delete-collection", "rolebindings"))
 
 }
 
