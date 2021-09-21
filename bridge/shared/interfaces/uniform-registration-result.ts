@@ -1,9 +1,8 @@
-import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
+import { UniformSubscription } from './uniform-subscription';
 
-
-export class UniformRegistration {
-  id!: string;
-  metadata!: {
+export interface UniformRegistrationResult {
+  id: string;
+  metadata: {
     deplyomentname: string,
     distributorversion: string,
     hostname: string,
@@ -18,7 +17,6 @@ export class UniformRegistration {
     lastseen: string
   };
   unreadEventsCount?: number;
-  name!: string;
-  subscriptions: UniformSubscription[] = [];
+  name: string;
+  subscriptions: UniformSubscription[];
 }
-

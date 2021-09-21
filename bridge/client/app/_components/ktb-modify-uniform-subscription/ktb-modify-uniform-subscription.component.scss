@@ -1,0 +1,7 @@
+.checkbox-container {
+  display: inline-block !important;
+}
+
+::ng-deep .dt-form-field-disabled .dt-form-field-infix {
+  height: 22px;
+}

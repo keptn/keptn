@@ -1,6 +1,7 @@
-import { UniformRegistration as ur } from '../../../server/interfaces/uniform-registration';
+import { UniformRegistration as ur } from '../../../shared/models/uniform-registration';
 import { UniformSubscription } from './uniform-subscription';
 import semver from 'semver/preload';
+import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 
 const preventSubscriptionUpdate = ['approval-service', 'remediation-service', 'lighthouse-service'];
 
@@ -8,7 +9,7 @@ export class UniformRegistration extends ur {
   public subscriptions: UniformSubscription[] = [];
   public unreadEventsCount!: number;
 
-  public static fromJSON(data: unknown): UniformRegistration {
+  public static fromJSON(data: UniformRegistrationResult): UniformRegistration {
     const uniformRegistration = Object.assign(new this(), data);
     uniformRegistration.subscriptions = uniformRegistration.subscriptions?.map(subscription => UniformSubscription.fromJSON(subscription)) ?? [];
     return uniformRegistration;

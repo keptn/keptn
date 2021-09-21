@@ -1,12 +1,12 @@
 import { DtAutoComplete, DtFilterArray } from './dt-filter';
 import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-field';
-import { UniformSubscription as us } from '../../../shared/interfaces/uniform-subscription';
+import { UniformSubscription as us, UniformSubscriptionFilter } from '../../../shared/interfaces/uniform-subscription';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 
 export class UniformSubscription implements us {
   public id?: string;
-  public filter!: { projects: string[] | null; stages: string[] | null; services: string[] | null };
+  public filter!: UniformSubscriptionFilter;
   public event = '';
   public parameters: { key: string, value: string, visible: boolean }[] = [];
   private _filter?: DtFilterArray[];
@@ -15,7 +15,7 @@ export class UniformSubscription implements us {
     this.filter = {
       projects: projectName ? [projectName] : [],
       stages: [],
-      services: []
+      services: [],
     };
   }
 
@@ -48,7 +48,7 @@ export class UniformSubscription implements us {
     return this.event.replace('>', '*');
   }
 
-  public setIsGlobal(status: boolean, projectName: string) {
+  public setIsGlobal(status: boolean, projectName: string): void {
     if (status) {
       this.filter.projects = [];
     } else if (!this.hasProject(projectName)) {
@@ -63,11 +63,11 @@ export class UniformSubscription implements us {
     return this.filter.projects?.includes(projectName) || includeEmpty && !this.filter.projects?.length;
   }
 
-  public addParameter() {
+  public addParameter(): void {
     this.parameters.push({key: '', value: '', visible: true});
   }
 
-  public deleteParameter(index: number) {
+  public deleteParameter(index: number): void {
     this.parameters.splice(index, 1);
   }
 
@@ -77,16 +77,16 @@ export class UniformSubscription implements us {
         ...this.filter.stages?.map(stage => {
           return [
             data.autocomplete[0],
-            {name: stage}
+            {name: stage},
           ] as DtFilterArray;
         }) ?? [],
         ...this.filter.services?.map(service => {
             return [
               data.autocomplete[1],
-              {name: service}
+              {name: service},
             ] as DtFilterArray;
-          }
-        ) ?? []
+          },
+        ) ?? [],
       ];
       if (filter.length !== this._filter?.length) {
         this._filter = filter;
@@ -98,7 +98,7 @@ export class UniformSubscription implements us {
   }
 
   // tslint:disable-next-line:no-any
-  public filterChanged(event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
+  public filterChanged(event: DtFilterFieldChangeEvent<any>, projectName: string): void { // can't set another type because of "is not assignable to..."
     const eventCasted = event as DtFilterFieldChangeEvent<DtAutoComplete>;
     const result = eventCasted.filters.reduce((filters: { Stage: string[], Service: string[] }, filter) => {
       filters[filter[0].name as 'Stage' | 'Service'].push(filter[1].name);
@@ -106,9 +106,16 @@ export class UniformSubscription implements us {
     }, {Stage: [], Service: []});
     this.filter.services = result.Service;
     this.filter.stages = result.Stage;
+    if (this.filter.projects?.length && this.hasFilter()) {
+      this.setIsGlobal(false, projectName);
+    }
   }
 
   public formatFilter(key: 'services' | 'stages' | 'projects'): string {
     return this.filter[key]?.join(', ') || 'all';
+  }
+
+  public hasFilter(): boolean {
+    return !!(this.filter.stages?.length || this.filter.services?.length);
   }
 }

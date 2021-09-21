@@ -9,6 +9,10 @@ export class AppUtils {
 
     return timer(delay, dueTime);
   }
+
+  public static copyObject<T>(data: T): T {
+    return JSON.parse(JSON.stringify(data));
+  }
 }
 
 export const POLLING_INTERVAL_MILLIS = new InjectionToken<number>('Polling interval in millis');

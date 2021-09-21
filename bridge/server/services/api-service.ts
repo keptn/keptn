@@ -4,13 +4,16 @@ import { Project } from '../models/project';
 import { ResultTypes } from '../../shared/models/result-types';
 import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
-import { UniformRegistration } from '../interfaces/uniform-registration';
+import { UniformRegistration } from '../models/uniform-registration';
 import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
+import { ProjectResult } from '../interfaces/project-result';
+import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
+  private readonly escapeSlash = '%252F';
 
   constructor(private readonly baseUrl: string, private readonly apiToken: string) {
     this.axios = Axios.create({
@@ -25,6 +28,9 @@ export class ApiService {
     });
   }
 
+  public getProjects(): Promise<AxiosResponse<ProjectResult>> {
+    return this.axios.get<ProjectResult>(`${this.baseUrl}/controlPlane/v1/project`);
+  }
 
   public getProject(projectName: string): Promise<AxiosResponse<Project>> {
     return this.axios.get<Project>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`);
@@ -127,6 +133,57 @@ export class ApiService {
 
   public getShipyard(projectName: string): Promise<AxiosResponse<Resource>> {
     return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
+  }
+
+  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
+    if (serviceName) {
+      url += `/service/${serviceName}`;
+    }
+    url += `/resource/webhook${this.escapeSlash}webhook.yaml`;
+
+    return this.axios.get<Resource>(url);
+  }
+
+  public deleteWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
+    if (serviceName) {
+      url += `/service/${serviceName}`;
+    }
+    url += `/resource/webhook${this.escapeSlash}webhook.yaml`;
+
+    return this.axios.delete<Resource>(url);
+  }
+
+  public saveWebhookConfig(content: string, projectName: string, stageName: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}`;
+    if (serviceName) {
+      url += `/service/${serviceName}`;
+    }
+    url += `/resource`; // /resource/resourceURI does not overwrite, fallback to this endpoint
+
+    return this.axios.put<Resource>(url, {
+      resources: [
+        {
+          resourceURI: 'webhook/webhook.yaml',
+          resourceContent: Buffer.from(content).toString('base64'),
+        },
+      ],
+    });
+  }
+
+  public deleteUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<object>> {
+    return this.axios.delete(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
+  }
+
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<UniformSubscription>> {
+    return this.axios.get<UniformSubscription>(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
   }
 
   public getServiceResource(projectName: string, stageName: string, serviceName: string, nextPageKey?: string): Promise<AxiosResponse<ResourceResponse>> {
