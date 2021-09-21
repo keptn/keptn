@@ -15,6 +15,7 @@ import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
+import { EventResult } from '../interfaces/event-result';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 
@@ -238,6 +239,33 @@ export class DataService {
       }
     }
     return tasks;
+  }
+
+  public async getRoots(projectName: string | undefined, pageSize: string | undefined, serviceName: string | undefined, fromTime?: string | undefined, beforeTime?: string | undefined, keptnContext?: string | undefined): Promise<EventResult> {
+    const response = await this.apiService.getRoots(projectName, pageSize, serviceName, fromTime, beforeTime, keptnContext);
+    return response.data;
+  }
+
+  public async getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined): Promise<EventResult> {
+    let result: EventResult = {
+      events: [],
+      pageSize: 0,
+      nextPageKey: 0,
+      totalCount: 0
+    };
+    let nextPage = 0;
+    do {
+      const response = await this.apiService.getTracesByContext(keptnContext, projectName, fromTime, nextPage.toString());
+      nextPage = response.data.nextPageKey || 0;
+      result = {
+        events: [...result?.events, ...response.data.events],
+        pageSize: result.pageSize + response.data.pageSize,
+        nextPageKey: response.data.nextPageKey,
+        totalCount: response.data.totalCount
+      };
+    } while (nextPage !== 0);
+
+    return result;
   }
 
   public async getResourceFileTreesForService(projectName: string, serviceName: string): Promise<FileTree[]> {

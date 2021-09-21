@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
@@ -36,7 +37,7 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 
 	messagesReceived := make(chan int)
 	nch := NewNatsConnectionHandler(natsURL)
-	nch.MessageHandler = func(m *nats.Msg) {
+	nch.messageHandler = func(m *nats.Msg) {
 		messagesReceived <- 1
 	}
 	err := nch.SubscribeToTopics([]string{"test-topic"})
@@ -57,7 +58,7 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 
 	nch.RemoveAllSubscriptions()
 
-	if len(nch.Subscriptions) != 0 {
+	if len(nch.subscriptions) != 0 {
 		t.Error("SubscribeToTopics(): did not clean up subscriptions")
 	}
 
@@ -140,10 +141,10 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			nch := &NatsConnectionHandler{
-				NatsConnection: tt.fields.NatsConnection,
-				Subscriptions:  tt.fields.Subscriptions,
+				natsConnection: tt.fields.NatsConnection,
+				subscriptions:  tt.fields.Subscriptions,
 				natsURL:        tt.fields.NatsURL,
-				MessageHandler: tt.fields.MessageHandler,
+				messageHandler: tt.fields.MessageHandler,
 				mux:            tt.fields.mux,
 			}
 			err := nch.SubscribeToTopics(tt.fields.Topics)
@@ -156,7 +157,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				return
 			}
 
-			if nch.NatsConnection == nil || !nch.NatsConnection.IsConnected() {
+			if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
 				t.Errorf("SubscribeToTopics(): Could not establish NATS connection")
 				return
 			}
@@ -179,9 +180,64 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 
 			nch.RemoveAllSubscriptions()
 
-			if len(nch.Subscriptions) != 0 {
+			if len(nch.subscriptions) != 0 {
 				t.Error("SubscribeToTopics(): did not clean up subscriptions")
 			}
 		})
 	}
+}
+
+func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	topics := []string{
+		"test-topic",
+	}
+	// subscribe with first subscriber
+	firstSubscriber := make(chan struct{})
+	nch1 := &NatsConnectionHandler{
+		natsURL: natsURL,
+		messageHandler: func(m *nats.Msg) {
+			firstSubscriber <- struct{}{}
+		},
+	}
+	err := nch1.QueueSubscribeToTopics(topics, "a-group")
+	require.Nil(t, err)
+
+	// subscribe with second subscriber
+	secondSubscriber := make(chan struct{})
+	nch2 := &NatsConnectionHandler{
+		natsURL: natsURL,
+		messageHandler: func(m *nats.Msg) {
+			secondSubscriber <- struct{}{}
+		},
+	}
+	err = nch2.QueueSubscribeToTopics(topics, "a-group")
+	require.Nil(t, err)
+
+	// publish a message
+	<-time.After(1 * time.Second)
+	_ = natsPublisher.Publish("test-topic", []byte("message1"))
+
+	var totalNumberOfDeliveries int
+
+	// handle messages for first subscriber
+	select {
+	case <-firstSubscriber:
+		totalNumberOfDeliveries++
+	case <-time.After(5 * time.Second):
+	}
+
+	// handle messages for second sub subscriber
+	select {
+	case <-secondSubscriber:
+		totalNumberOfDeliveries++
+	case <-time.After(5 * time.Second):
+	}
+	// assert that only one of the two subscriber has processed/received a message
+	assert.Equal(t, 1, totalNumberOfDeliveries)
+
 }

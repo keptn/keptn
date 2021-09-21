@@ -56,6 +56,30 @@ export class ApiService {
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
   }
 
+  public getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined, nextPageKey?: string | undefined): Promise<AxiosResponse<EventResult>> {
+    const params = {
+      keptnContext,
+      pageSize: '100',
+      ...nextPageKey && {nextPageKey},
+      ...projectName && {project: projectName},
+      ...fromTime && {fromTime},
+    };
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
+  }
+
+  public getRoots(projectName: string | undefined, pageSize: string | undefined, serviceName: string | undefined, fromTime?: string | undefined, beforeTime?: string | undefined, keptnContext?: string | undefined): Promise<AxiosResponse<EventResult>> {
+    const params = {
+      root: 'true',
+      project: projectName,
+      limit: pageSize,
+      ...(serviceName && {serviceName}),
+      ...(fromTime && {fromTime}),
+      ...(beforeTime && {beforeTime}),
+      ...(keptnContext && {keptnContext}),
+    };
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
+  }
+
   public getTracesWithResult(eventType: EventTypes, pageSize: number, projectName: string, stageName: string, serviceName: string, resultType: ResultTypes): Promise<AxiosResponse<EventResult>> {
     const params = {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName} AND data.result:${resultType}`,

@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, copyFileSync, createWriteStream, unlinkSync, WriteStream } from 'fs';
-import { join, dirname } from 'path';
+import { copyFileSync, createWriteStream, existsSync, mkdirSync, unlinkSync, WriteStream } from 'fs';
+import { dirname, join } from 'path';
 import { unlink } from 'fs/promises';
 import * as https from 'https';
 import * as http from 'http';
@@ -8,9 +8,9 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
-import { execSync } from 'child_process';
 import admZip from 'adm-zip';
-import { apiRouter } from './api/index';
+import { apiRouter } from './api';
+import { execSync } from 'child_process';
 
 // tslint:disable-next-line:variable-name whitespace
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -23,7 +23,7 @@ const lookAndFeelUrl: string | undefined = process.env.LOOK_AND_FEEL_URL;
 const requestTimeLimit = (+(process.env.REQUEST_TIME_LIMIT || 60)) * 60 * 1000; // x minutes
 const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x requests within {requestTimeLimit}
 const cleanBucketsInterval = (+(process.env.CLEAN_BUCKET_INTERVAL || 60)) * 60 * 1000; // clean buckets every x minutes
-const throttleBucket: {[ip: string]: number[]} = {};
+const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, '../../../');
 const serverFolder = join(rootFolder, 'server');
 
@@ -35,7 +35,7 @@ try {
   const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
 
   if (!existsSync(destDir)) {
-    mkdirSync(destDir, { recursive: true });
+    mkdirSync(destDir, {recursive: true});
   }
 
   brandingFiles.forEach((file) => {
@@ -55,7 +55,7 @@ if (lookAndFeelUrl) {
     const destFile = join(destDir, '/lookandfeel.zip');
 
     if (!existsSync(destDir)) {
-      mkdirSync(destDir, { recursive: true });
+      mkdirSync(destDir, {recursive: true});
     }
 
     file = createWriteStream(destFile);
@@ -72,8 +72,7 @@ if (lookAndFeelUrl) {
             unlinkSync(destFile);
             console.log('Custom Look-and-Feel downloaded and extracted successfully');
           });
-        }
-        catch (err) {
+        } catch (err) {
           console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
         }
       });
@@ -81,8 +80,7 @@ if (lookAndFeelUrl) {
         file.end();
         try {
           await unlink(destFile);
-        }
-        catch (error){
+        } catch (error) {
           console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
         }
         console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
@@ -134,7 +132,7 @@ async function init(): Promise<Express> {
           res.setHeader('Cache-Control', 'no-cache');
         }
       },
-    })
+    }),
   );
 
   // Server views based on Pug
@@ -148,26 +146,13 @@ async function init(): Promise<Express> {
   app.use(cookieParser());
   app.use(helmet.frameguard());
 
-  let authType: string;
-
-  if (process.env.OAUTH_ENABLED === 'true') {
-    await setOAUTH();
-    authType = 'OAUTH';
-
-  } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
-    authType = 'BASIC';
-    await setBasisAUTH();
-  } else {
-    authType = 'NONE';
-    console.error('Not installing authentication middleware');
-  }
-
+  const authType: string = await setAuth();
 
 // everything starting with /api is routed to the api implementation
   app.use('/api', apiRouter({apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType}));
 
 // fallback: go to index.html
-  app.use((req, res, next) => {
+  app.use((req, res) => {
     console.error('Not found: ' + req.url);
     res.sendFile(join(rootFolder, 'dist/index.html'), {maxAge: 0});
   });
@@ -182,6 +167,10 @@ async function init(): Promise<Express> {
     if (err.response?.data?.message) {
       err.message = err.response.data.message;
     }
+    if (err.response?.status === 401) {
+      res.setHeader('keptn-auth-type', authType);
+    }
+
     res.status(err.response?.status || 500).send(err.message);
     console.error(err);
   });
@@ -225,8 +214,7 @@ async function setBasisAUTH(): Promise<void> {
       console.error('Request limit reached');
       res.status(429).send('Reached request limit');
       return;
-    }
-    else if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
+    } else if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
       updateBucket(!!(login || password), userIP);
 
       console.error('Access denied');
@@ -240,7 +228,24 @@ async function setBasisAUTH(): Promise<void> {
   });
 }
 
-function updateBucket(loginAttempt: boolean, userIP?: string) {
+async function setAuth(): Promise<string> {
+  let authType;
+  if (process.env.OAUTH_ENABLED === 'true') {
+    await setOAUTH();
+    authType = 'OAUTH';
+
+  } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
+    authType = 'BASIC';
+    await setBasisAUTH();
+  } else {
+    authType = 'NONE';
+    console.error('Not installing authentication middleware');
+  }
+
+  return authType;
+}
+
+function updateBucket(loginAttempt: boolean, userIP?: string): void {
   // only fill buckets if the user tries to login
   if (userIP && loginAttempt) {
     if (!throttleBucket[userIP]) {
@@ -261,7 +266,7 @@ function updateBucket(loginAttempt: boolean, userIP?: string) {
  * @returns true if there are more than {requestLimitWithinTime} requests
  *          and the difference between first and last request of an IP is less than {requestTimeLimit}
  */
-function isIPThrottled(ip: string) {
+function isIPThrottled(ip: string): boolean {
   const ipBucket = throttleBucket[ip];
   return ipBucket && ipBucket.length >= requestsWithinTime && (new Date().getTime() - ipBucket[0]) <= requestTimeLimit;
 }
@@ -269,11 +274,10 @@ function isIPThrottled(ip: string) {
 /**
  * Delete an IP from the bucket if the last request is older than {requestTimeLimit}
  */
-function cleanIpBuckets() {
+function cleanIpBuckets(): void {
   for (const ip of Object.keys(throttleBucket)) {
     const ipBucket = throttleBucket[ip];
-    if (ipBucket && (new Date().getTime() - ipBucket[ipBucket.length - 1]) > requestTimeLimit)
-    {
+    if (ipBucket && (new Date().getTime() - ipBucket[ipBucket.length - 1]) > requestTimeLimit) {
       delete throttleBucket[ip];
     }
   }
