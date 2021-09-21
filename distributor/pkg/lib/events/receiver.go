@@ -28,7 +28,6 @@ type NATSEventReceiver struct {
 }
 
 func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
-
 	eventMatcher := NewEventMatcherFromEnv(env)
 	nch := NewNatsConnectionHandler(env.PubSubURL)
 
@@ -46,8 +45,8 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 		logger.Warn("No pubsub recipient defined")
 		return
 	}
-	n.natsConnectionHandler.MessageHandler = n.handleMessage
-	err := n.natsConnectionHandler.SubscribeToTopics(n.env.GetPubSubTopics())
+	n.natsConnectionHandler.messageHandler = n.handleMessage
+	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.GetPubSubTopics(), n.env.PubSubGroup)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -77,7 +76,7 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubs
 	for _, s := range subscriptions {
 		topics = append(topics, s.Event)
 	}
-	err := n.natsConnectionHandler.SubscribeToTopics(topics)
+	err := n.natsConnectionHandler.QueueSubscribeToTopics(topics, n.env.PubSubGroup)
 	if err != nil {
 		logger.Errorf("Unable to subscribe to topics %v", topics)
 	}
