@@ -19,7 +19,9 @@ import { KeptnVersions } from '../_models/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { UniformRegistration } from '../_models/uniform-registration';
+import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
+import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
+import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 
@@ -159,14 +161,14 @@ export class ApiService {
       .get<ProjectResult>(url, {params});
   }
 
-  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistration[]> {
+  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistrationResult[]> {
     const url = `${this._baseUrl}/uniform/registration`;
-    return this.http.post<UniformRegistration[]>(url, uniformDates);
+    return this.http.post<UniformRegistrationResult[]>(url, uniformDates);
   }
 
-  public getIsUniformRegistrationControlPlane(integrationId: string): Observable<boolean> {
-    const url = `${this._baseUrl}/uniform/registration/${integrationId}/isControlPlane`;
-    return this.http.get<boolean>(url);
+  public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/info`;
+    return this.http.get<UniformRegistrationInfo>(url);
   }
 
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
@@ -213,9 +215,13 @@ export class ApiService {
     return this.http.delete(url, {params});
   }
 
-  public deleteSubscription(integrationId: string, subscriptionId: string): Observable<object> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
-    return this.http.delete(url);
+  public deleteSubscription(integrationId: string, subscriptionId: string, isWebhookService: boolean): Observable<object> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
+    return this.http.delete(url, {
+      params: {
+        isWebhookService: String(isWebhookService),
+      },
+    });
   }
 
   public getMetadata(): Observable<Metadata> {
@@ -392,6 +398,26 @@ export class ApiService {
     return this.http
       .post<unknown>(url, {
         state,
+      });
+  }
+
+  public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${eventType}`;
+    const params = {
+      projectName,
+      ...stageName && {stageName},
+      ...serviceName && {serviceName},
+    };
+    return this.http
+      .get<WebhookConfig>(url, {params});
+  }
+
+  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config`;
+
+    return this.http
+      .post<unknown>(url, {
+        config,
       });
   }
 

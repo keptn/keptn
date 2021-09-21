@@ -13,3 +13,7 @@
 .dt-menu.uniform-submenu .dt-menu-item:active {
   background-color: $gray-200 !important;
 }
+
+.uniform-container {
+  overflow: auto;
+}
