@@ -43,6 +43,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 				PubSubRecipient:     "http://127.0.0.1",
 				PubSubTopic:         "sh.keptn.event.task5.triggered,sh.keptn.event.task6.triggered",
 				PubSubURL:           natsURL,
+				PubSubGroup:         "my-group",
 				HTTPPollingInterval: "1",
 			}},
 			eventSender:            &keptnv2.TestSender{},
@@ -63,7 +64,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			receiver := NewNATSEventReceiver(tt.args.envConfig, tt.eventSender)
+			receiver := NewNATSEventReceiver(tt.args.envConfig, tt.eventSender, nil)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			executionContext := NewExecutionContext(ctx, 1)
@@ -208,5 +209,4 @@ func Test_JetstreamPubSubWithConsumer(t *testing.T) {
 		//err := m.Ack()
 		//require.Nil(t, err)
 	}
-
 }

@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,7 +37,7 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 	defer natsPublisher.Close()
 
 	messagesReceived := make(chan int)
-	nch := NewNatsConnectionHandler(natsURL)
+	nch := NewNatsConnectionHandler(natsURL, context.TODO())
 	nch.messageHandler = func(m *nats.Msg) {
 		messagesReceived <- 1
 	}
@@ -93,7 +94,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 
 	type fields struct {
 		NatsConnection *nats.Conn
-		Subscriptions  []*nats.Subscription
+		Subscriptions  []*PullSubscription
 		Topics         []string
 		NatsURL        string
 		MessageHandler func(m *nats.Msg)

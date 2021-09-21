@@ -1,25 +1,32 @@
 package events
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
 	"sync"
 )
 
+const streamName = "sh"
+
 type NatsConnectionHandler struct {
 	natsConnection *nats.Conn
-	subscriptions  []*nats.Subscription
+	subscriptions  []*PullSubscription // TODO should be an interface
 	topics         []string
 	natsURL        string
 	messageHandler func(m *nats.Msg)
 	mux            sync.Mutex
+	ctx            context.Context
+	jetStream      nats.JetStreamContext
 }
 
-func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
+func NewNatsConnectionHandler(natsURL string, ctx context.Context) *NatsConnectionHandler {
 	nch := &NatsConnectionHandler{
 		natsURL: natsURL,
+		ctx:     ctx,
 	}
 	return nch
 }
@@ -27,7 +34,7 @@ func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 	for _, sub := range nch.subscriptions {
 		_ = sub.Unsubscribe()
-		logger.Infof("Unsubscribed from NATS topic: %s", sub.Subject)
+		logger.Infof("Unsubscribed from NATS topic: %s", sub.subscription.Subject)
 	}
 	nch.subscriptions = nch.subscriptions[:0]
 }
@@ -59,6 +66,11 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 		if err != nil {
 			return errors.New("failed to create NATS connection: " + err.Error())
 		}
+
+		err = nch.setupJetStreamContext()
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
@@ -66,14 +78,45 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			logger.Infof("Subscribing to topic <%s> with queue group <%s>", topic, queueGroup)
-			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.messageHandler)
-			if err != nil {
-				return errors.New("failed to subscribe to topic: " + err.Error())
+			subscription := NewPullSubscription(queueGroup, topic, nch.jetStream, nch.messageHandler)
+			if err := subscription.Activate(); err != nil {
+				return fmt.Errorf("could not start subscription: %s", err.Error())
 			}
-			nch.subscriptions = append(nch.subscriptions, sub)
+			nch.subscriptions = append(nch.subscriptions, subscription)
 		}
 	}
+	return nil
+}
+
+func (nch *NatsConnectionHandler) setupJetStreamContext() error {
+	js, err := nch.natsConnection.JetStream()
+	if err != nil {
+		return fmt.Errorf("failed to create nats jetStream context: %s", err.Error())
+	}
+
+	stream, err := js.StreamInfo(streamName)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve stream info: %s", err.Error())
+	}
+	if stream == nil {
+		logger.Infof("creating stream %q", streamName)
+		_, err = js.AddStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: []string{streamName + ".>"},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to add stream: %s", err.Error())
+		}
+	} else {
+		_, err = js.UpdateStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: []string{streamName + ".>"},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update stream: %s", err.Error())
+		}
+	}
+	nch.jetStream = js
 	return nil
 }
 

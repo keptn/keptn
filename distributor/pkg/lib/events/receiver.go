@@ -27,9 +27,9 @@ type NATSEventReceiver struct {
 	currentSubscriptions  []models.EventSubscription
 }
 
-func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
+func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender, ctx context.Context) *NATSEventReceiver {
 	eventMatcher := NewEventMatcherFromEnv(env)
-	nch := NewNatsConnectionHandler(env.PubSubURL)
+	nch := NewNatsConnectionHandler(env.PubSubURL, ctx)
 
 	return &NATSEventReceiver{
 		env:                   env,
