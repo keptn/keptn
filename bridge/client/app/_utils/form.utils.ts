@@ -1,13 +1,22 @@
 import { AbstractControl, ValidatorFn } from '@angular/forms';
 
 export class FormUtils {
-  public static URL_PATTERN = /^(?:http(s)?:\/\/)?[\w\.\-]+(?:\.[\w\.\-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=\.]+$/;
-
   public static nameExistsValidator(names: string[]): ValidatorFn {
     return (control: AbstractControl): { duplicate: { value: boolean } } | null => {
       const name = names.includes(control.value);
       return name ? {duplicate: {value: name}} : null;
     };
+  }
+
+  public static urlValidator(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
+    let result: { url: { pattern?: boolean, special?: boolean } } | null = null;
+    const value = control.value.toString();
+    if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]*$/)) {
+      result = {url: {special: true}};
+    } else if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-._~:\/?#\[\]@!$&'()*+,;=]+$/)) {
+      result = {url: {pattern: true}};
+    }
+    return result;
   }
 
   public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {

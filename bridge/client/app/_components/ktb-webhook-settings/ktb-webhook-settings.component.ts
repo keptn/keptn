@@ -18,10 +18,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public _subscription?: UniformSubscription;
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
-    url: new FormControl('', [Validators.required, Validators.pattern(FormUtils.URL_PATTERN)]),
+    url: new FormControl('', [Validators.required, FormUtils.urlValidator]),
     payload: new FormControl('', []),
     header: new FormArray([]),
-    proxy: new FormControl('', [Validators.pattern(FormUtils.URL_PATTERN)]),
+    proxy: new FormControl('', [FormUtils.urlValidator]),
   });
 
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];

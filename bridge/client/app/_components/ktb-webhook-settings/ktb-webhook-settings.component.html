@@ -12,7 +12,8 @@
       <dt-label class="required">URL</dt-label>
       <input formControlName="url" dtInput placeholder="URL"/>
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
-      <dt-error *ngIf="getFormControl('url').errors?.pattern">URL must be a valid URL</dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.url?.special">URL contains a special character causing it to be invalid. Please remove the special character.</dt-error>
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -54,7 +55,8 @@
     <dt-form-field>
       <dt-label>Proxy</dt-label>
       <input formControlName="proxy" type="url" dtInput placeholder="Proxy"/>
-      <dt-error *ngIf="getFormControl('proxy').errors?.pattern">Proxy must be a valid URL</dt-error>
+      <dt-error *ngIf="getFormControl('proxy').errors?.url?.pattern">Proxy must be a valid URL</dt-error>
+      <dt-error *ngIf="getFormControl('proxy').errors?.url?.special">Proxy contains a special character causing it to be invalid. Please remove the special character.</dt-error>
     </dt-form-field>
   </div>
 </form>
