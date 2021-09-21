@@ -8,6 +8,7 @@ import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Project } from '../../_models/project';
+import { By } from '@angular/platform-browser';
 
 describe('KtbEventsListComponent', () => {
   let component: KtbRootEventsListComponent;
@@ -160,7 +161,66 @@ describe('KtbEventsListComponent', () => {
     expect(changeEvent).toHaveBeenCalledWith({sequence: project.sequences[selectedSequenceIndex], stage: stageName});
   });
 
-  function getSequenceTile(index: number) {
+  it('should have a no specific class when a sequence is running', () => {
+    // given
+    prepareSequenceElement(false, false, false);
+
+    // when
+    const sequence = fixture.debugElement.queryAll(By.css('.ktb-selectable-tile'))[0];
+    sequence.nativeElement.click();
+    fixture.detectChanges();
+
+    // then
+    expect(sequence.classes['ktb-tile-selected']).toBe(true);
+  });
+
+  it('should have an error class when a sequence is finished and failed', () => {
+    // given
+    prepareSequenceElement(true, true, false);
+
+    // when
+    const sequence = fixture.debugElement.queryAll(By.css('.ktb-selectable-tile'))[0];
+    fixture.detectChanges();
+
+    // then
+    expect(sequence.classes['ktb-tile-error']).toBe(true);
+  });
+
+  it('should have a success class when a sequence is finished and not failed', () => {
+    // given
+    prepareSequenceElement(true, false, false);
+
+    // when
+    const sequence = fixture.debugElement.queryAll(By.css('.ktb-selectable-tile'))[0];
+    fixture.detectChanges();
+
+    // then
+    expect(sequence.classes['ktb-tile-success']).toBe(true);
+  });
+
+  it('should have a highlight class when a sequence has pending approvals', () => {
+    // given
+    prepareSequenceElement(false, false, true);
+
+    // when
+    const sequence = fixture.debugElement.queryAll(By.css('.ktb-selectable-tile'))[0];
+    fixture.detectChanges();
+
+    // then
+    expect(sequence.classes['ktb-tile-highlight']).toBe(true);
+  });
+
+  // tslint:disable-next-line:no-any
+  function getSequenceTile(index: number): any {
     return fixture.nativeElement.querySelector(`ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`);
+  }
+
+  function prepareSequenceElement(isFinished: boolean, isFaulty: boolean, hasPendingApproval: boolean): void {
+    dataService.loadSequences(project);
+    component.events = project.sequences;
+    jest.spyOn(component.events[0], 'isFinished').mockReturnValue(isFinished);
+    jest.spyOn(component.events[0], 'isFaulty').mockReturnValue(isFaulty);
+    jest.spyOn(component.events[0], 'hasPendingApproval').mockReturnValue(hasPendingApproval);
+    fixture.detectChanges();
   }
 });
