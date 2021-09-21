@@ -15,6 +15,7 @@ Thus, each service has its own distributor that is configured by the two environ
 - `PUBSUB_RECIPIENT` - Hostname of the execution plane service the distributor should forward incoming CloudEvents to. default = `http://127.0.0.1`
 - `PUBSUB_RECIPIENT_PORT` - Port of the execution plane service the distributor should forward incoming CloudEvents to. default = `8080`
 - `PUBSUB_RECIPIENT_PATH` - Path of the execution plane service the distributor should forward incoming CloudEvents to. default = `/`
+- `PUBSUB_GROUP` - Used to join a group for receiving messages from the message broker. Note, that only **one** instance of a distributor in a set of distributors having the same `PUBSUB_GROUP` will be able to receive the event. default = `""`
 - `PROJECT_FILTER` - Filter events for a specific project. default = `""`, supports a comma-separated list of projects.
 - `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-separated list of stages.
 - `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-separated list of services.
