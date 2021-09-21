@@ -14,7 +14,7 @@ export class FormUtils {
     if (value) {
       if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]*$/)) {
         result = {url: {special: true}};
-      } else if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-._~:\/?#\[\]@!$&'()*+,;=]+$/)) {
+      } else if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;=]+$/)) {
         result = {url: {pattern: true}};
       }
     }
