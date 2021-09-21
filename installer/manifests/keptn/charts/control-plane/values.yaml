@@ -12,6 +12,18 @@ keptnSpecVersion: latest
 nats:
   nameOverride: keptn-nats-cluster
   nats.cluster.replicas: 3
+  jetstream:
+    enabled: true
+
+    memStorage:
+      enabled: true
+      size: 2Gi
+
+    fileStorage:
+      enabled: true
+      size: 5Gi
+      storageDirectory: /data/
+      storageClassName: default
 
   natsbox:
     enabled: false

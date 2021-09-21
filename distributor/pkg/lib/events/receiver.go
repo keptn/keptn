@@ -99,6 +99,12 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 			if err != nil {
 				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
+			err = m.Ack()
+			// check if message has already been acknowledged
+			if err != nil && err == nats.ErrInvalidJSAck {
+				logger.Errorf("Could not acknowledge CloudEvent: %v", err)
+				return
+			}
 		}
 	}()
 }

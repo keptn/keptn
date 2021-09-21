@@ -17,6 +17,7 @@ const TEST_PORT = 8369
 func RunServerOnPort(port int) *server.Server {
 	opts := natsserver.DefaultTestOptions
 	opts.Port = port
+	opts.JetStream = true
 	return RunServerWithOptions(&opts)
 }
 
@@ -109,7 +110,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				NatsConnection: nil,
 				Subscriptions:  nil,
 				Topics: []string{
-					"test-topic",
+					"sh.keptn.test-topic",
 				},
 				NatsURL: natsURL,
 				MessageHandler: func(m *nats.Msg) {
@@ -163,7 +164,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 			<-time.After(1 * time.Second)
 			for _, msg := range tt.sendMessages {
 				fmt.Println("sending message: " + msg)
-				_ = natsPublisher.Publish("test-topic", []byte(msg))
+				_ = natsPublisher.Publish("sh.keptn.test-topic", []byte(msg))
 			}
 
 			count := 0
