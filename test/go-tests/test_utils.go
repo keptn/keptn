@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"os"
 	"strings"
@@ -68,7 +69,7 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, shipyardFilePath))
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s", projectName, shipyardFilePath))
 
 		if err == nil {
 			return nil
@@ -269,7 +270,7 @@ func CreateTmpShipyardFile(shipyardContent string) (string, error) {
 }
 
 func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
-	file, err := ioutil.TempFile(".", fileNamePattern)
+	file, err := ioutil.TempFile("", fileNamePattern)
 	if err != nil {
 		return "", err
 	}
@@ -280,12 +281,21 @@ func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
 	return file.Name(), nil
 }
 
+func CreateTmpDir() (string, error) {
+	return ioutil.TempDir("","")
+}
+
 func ExecuteCommand(cmd string) (string, error) {
 	split := strings.Split(cmd, " ")
 	if len(split) == 0 {
 		return "", errors.New("invalid command")
 	}
 	return keptnkubeutils.ExecuteCommand(split[0], split[1:])
+}
+
+func ExecuteCommandf(cmd string, a ...interface{}) (string, error) {
+	cmdf := fmt.Sprintf(cmd, a...) //nolint:govet
+	return ExecuteCommand(cmdf)
 }
 
 func GetKeptnNameSpaceFromEnv() string {
@@ -368,6 +378,12 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func KubeClient(t *testing.T) *kubernetes.Clientset {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	require.Nil(t, err)
+	return clientset
 }
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
