@@ -41,11 +41,11 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 	nch.messageHandler = func(m *nats.Msg) {
 		messagesReceived <- 1
 	}
-	err := nch.SubscribeToTopics([]string{"test-topic"})
+	err := nch.SubscribeToTopics([]string{"sh.keptn.test-topic"})
 	require.Nil(t, err)
 
 	<-time.After(1 * time.Second)
-	natsPublisher.Publish("test-topic", []byte("hello"))
+	natsPublisher.Publish("sh.keptn.test-topic", []byte("hello"))
 
 	count := 0
 	select {
@@ -63,11 +63,11 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 		t.Error("SubscribeToTopics(): did not clean up subscriptions")
 	}
 
-	nch.SubscribeToTopics([]string{"another-topic"})
+	nch.SubscribeToTopics([]string{"sh.keptn.another-topic"})
 	require.Nil(t, err)
 
 	<-time.After(1 * time.Second)
-	natsPublisher.Publish("another-topic", []byte("hello"))
+	natsPublisher.Publish("sh.keptn.another-topic", []byte("hello"))
 	count = 0
 	select {
 	case count = <-messagesReceived:
@@ -195,7 +195,7 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	topics := []string{
-		"test-topic",
+		"sh.keptn.test-topic-a",
 	}
 	// subscribe with first subscriber
 	firstSubscriber := make(chan struct{})
@@ -221,7 +221,7 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 
 	// publish a message
 	<-time.After(1 * time.Second)
-	_ = natsPublisher.Publish("test-topic", []byte("message1"))
+	_ = natsPublisher.Publish("sh.keptn.test-topic-a", []byte("message1"))
 
 	var totalNumberOfDeliveries int
 

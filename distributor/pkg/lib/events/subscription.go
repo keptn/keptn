@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
+	"strings"
 	"sync"
 )
 
@@ -36,14 +37,22 @@ func NewPullSubscription(queueGroup, topic string, js nats.JetStreamContext, mes
 }
 
 func (ps *PullSubscription) Activate() error {
-	_, err := ps.jetStream.AddConsumer(streamName, &nats.ConsumerConfig{
-		Durable:   ps.queueGroup,
-		AckPolicy: nats.AckExplicitPolicy,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create nats consumer: %s", err.Error())
+	consumerName := ps.queueGroup + ":" + ps.topic
+	consumerName = strings.Replace(consumerName, ".", "-", -1)
+	consumerInfo, _ := ps.jetStream.ConsumerInfo(streamName, consumerName)
+	if consumerInfo == nil {
+		_, err := ps.jetStream.AddConsumer(streamName, &nats.ConsumerConfig{
+			Durable:       consumerName,
+			AckPolicy:     nats.AckExplicitPolicy,
+			FilterSubject: ps.topic,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create nats consumer: %s", err.Error())
+		}
 	}
-	sub, err := ps.jetStream.PullSubscribe(ps.topic, ps.queueGroup, nats.ManualAck())
+
+	sub, err := ps.jetStream.PullSubscribe(ps.topic, consumerName, nats.ManualAck())
+	//sub, err := ps.jetStream.PullSubscribe(ps.topic, ps.queueGroup)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to topic: %s", err.Error())
 	}
@@ -62,6 +71,7 @@ func (ps *PullSubscription) Activate() error {
 				logger.WithError(err).Errorf("could not fetch messages for topic %s", ps.subscription.Subject)
 			}
 			for _, msg := range msgs {
+				msg.Ack()
 				ps.messageHandler(msg)
 			}
 		}

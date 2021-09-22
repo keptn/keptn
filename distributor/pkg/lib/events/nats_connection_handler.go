@@ -41,7 +41,7 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 
 // SubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
 func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
-	return nch.QueueSubscribeToTopics(topics, "")
+	return nch.QueueSubscribeToTopics(topics, "default")
 }
 
 // QueueSubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
@@ -102,7 +102,7 @@ func (nch *NatsConnectionHandler) setupJetStreamContext() error {
 		logger.Infof("creating stream %q", streamName)
 		_, err = js.AddStream(&nats.StreamConfig{
 			Name:     streamName,
-			Subjects: []string{streamName + ".>"},
+			Subjects: []string{"sh.keptn.>"},
 		})
 		if err != nil {
 			return fmt.Errorf("failed to add stream: %s", err.Error())
@@ -110,7 +110,7 @@ func (nch *NatsConnectionHandler) setupJetStreamContext() error {
 	} else {
 		_, err = js.UpdateStream(&nats.StreamConfig{
 			Name:     streamName,
-			Subjects: []string{streamName + ".>"},
+			Subjects: []string{"sh.keptn.>"},
 		})
 		if err != nil {
 			return fmt.Errorf("failed to update stream: %s", err.Error())
