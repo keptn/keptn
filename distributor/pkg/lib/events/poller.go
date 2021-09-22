@@ -90,6 +90,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	for index := range events {
 		event := *events[index]
 
+		logger.Infof("Adding additional data to event: <subscriptionID=%s>", subscription.ID)
 		err := AddAdditionalEventData(&event, AdditionalEventData{"subscriptionID": subscription.ID})
 		if err != nil {
 			return
