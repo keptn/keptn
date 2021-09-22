@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.9.1-0.20210921105323-c6aa0eaeb562
-	github.com/keptn/kubernetes-utils v0.9.1-0.20210921105500-2feef43a5cfe
+	github.com/keptn/kubernetes-utils v0.9.1-0.20210922074106-4fb89e149fe6
 	github.com/kinbiko/jsonassert v1.0.2
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
