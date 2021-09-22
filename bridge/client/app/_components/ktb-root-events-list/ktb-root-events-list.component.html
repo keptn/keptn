@@ -8,8 +8,8 @@
                          *ngIf="sequence">
       <ktb-selectable-tile-header>
         <div class="container">
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <ktb-sequence-state-info [sequence]="sequence" (stageClicked)="stageClick($event)"></ktb-sequence-state-info>
+          <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="5px">
+            <ktb-sequence-state-info fxFlex fxFlexFill [sequence]="sequence" (stageClicked)="selectEvent($event.sequence, $event.stage)"></ktb-sequence-state-info>
             <ktb-sequence-controls [sequence]="sequence" [smallButtons]="true"></ktb-sequence-controls>
           </div>
         </div>

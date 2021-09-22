@@ -89,10 +89,6 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     }
   }
 
-  stageClick($event: any): void {
-    console.log('event', $event);
-  }
-
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
