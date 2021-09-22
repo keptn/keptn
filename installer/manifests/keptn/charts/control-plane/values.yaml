@@ -10,7 +10,8 @@ prefixPath: ''
 keptnSpecVersion: latest
 
 nats:
-  nameOverride: keptn-nats-cluster
+  image: synadia/nats-server:nightly
+  nameOverride: nats-cluster
   nats.cluster.replicas: 3
   jetstream:
     enabled: true
