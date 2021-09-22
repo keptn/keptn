@@ -3,6 +3,7 @@ import { Secret as scrt, SecretKeyValuePair, SecretScope } from '../../../shared
 export class Secret implements scrt {
   name!: string;
   scope!: SecretScope;
+  keys?: string[];
   data: SecretKeyValuePair[];
 
   constructor() {

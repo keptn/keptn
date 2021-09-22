@@ -430,7 +430,6 @@ export class DataService {
 
   public async getSecretsForScope(scope: string): Promise<Secret[]> {
     const response = await this.apiService.getSecrets();
-    console.log('response', response.data);
     const secrets = response.data.Secrets.map(secret => {
       return Secret.fromJSON(secret);
     });

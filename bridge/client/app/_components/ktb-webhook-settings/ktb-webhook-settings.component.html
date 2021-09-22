@@ -8,12 +8,16 @@
       </dt-select>
       <dt-error *ngIf="getFormControl('method').errors?.required">Method must not be empty</dt-error>
     </dt-form-field>
+
     <dt-form-field fxFlex="calc(100% - 175px)">
       <dt-label class="required">URL</dt-label>
       <input formControlName="url" dtInput placeholder="URL"/>
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special">URL contains a special character causing it to be invalid. Please remove the special character.</dt-error>
+      <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource">
+        <dt-icon name="resetpassword"></dt-icon>
+      </button>
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -36,6 +40,9 @@
             <dt-label class="required">Value</dt-label>
             <input formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
+            <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret">
+              <dt-icon name="resetpassword"></dt-icon>
+            </button>
           </dt-form-field>
           <button type="button" dt-icon-button variant="nested" aria-label="Remove Header" title="Remove Header" (click)="removeHeader(i)">
             <dt-icon name="removerow"></dt-icon>

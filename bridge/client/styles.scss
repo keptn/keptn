@@ -3,6 +3,8 @@ $fonts-dir: '^./assets/fonts';
 @import 'variables';
 @import '~normalize.css';
 
+@import '~@angular/cdk/overlay-prebuilt.css';
+
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
