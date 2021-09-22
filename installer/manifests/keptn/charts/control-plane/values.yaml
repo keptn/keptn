@@ -10,8 +10,10 @@ prefixPath: ''
 keptnSpecVersion: latest
 
 nats:
-  nameOverride: keptn-nats-cluster
-  #nats.cluster.replicas: 3
+  nameOverride: nats-cluster
+  cluster:
+    replicas: 3
+    name: nats-cluster
   nats:
     jetstream:
       enabled: true
