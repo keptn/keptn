@@ -25,7 +25,7 @@ nats:
         enabled: true
         size: 5Gi
         storageDirectory: /data/
-        storageClassName: default
+        storageClassName: ""
 
   natsbox:
     enabled: false
