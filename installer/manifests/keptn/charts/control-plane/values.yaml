@@ -10,21 +10,22 @@ prefixPath: ''
 keptnSpecVersion: latest
 
 nats:
-  image: synadia/nats-server:nightly
+  image: nats:alpine
   nameOverride: nats-cluster
-  nats.cluster.replicas: 3
-  jetstream:
-    enabled: true
-
-    memStorage:
+  #nats.cluster.replicas: 3
+  nats:
+    jetstream:
       enabled: true
-      size: 2Gi
 
-    fileStorage:
-      enabled: true
-      size: 5Gi
-      storageDirectory: /data/
-      storageClassName: default
+      memStorage:
+        enabled: true
+        size: 2Gi
+
+      fileStorage:
+        enabled: true
+        size: 5Gi
+        storageDirectory: /data/
+        storageClassName: default
 
   natsbox:
     enabled: false
