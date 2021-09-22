@@ -43,7 +43,7 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 	*evaluationStart.End = ""
 
 	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
-		"--timeframe=%s --start=%s --mock", "sockshop", "hardening", "carts", "5m", "2019-07-24T10:17:12")
+		"--timeframe=%s --start=%s --mock", "sockshop", "hardening", "carts", "5m", "2019-07-24T10:17:12.000Z")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -61,7 +61,7 @@ func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 	*evaluationStart.End = ""
 
 	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
-		"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12", "2019-07-24T10:20:12")
+		"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12.000Z", "2019-07-24T10:20:12.000Z")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -79,8 +79,8 @@ func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 	*evaluationStart.End = ""
 
 	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
-		"--start=%s --end=%s --timeframe=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12",
-		"2019-07-24T10:20:12", "5m")
+		"--start=%s --end=%s --timeframe=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12.000Z",
+		"2019-07-24T10:20:12.000Z", "5m")
 	_, err := executeActionCommandC(cmd)
 
 	if err == nil {
@@ -100,7 +100,7 @@ func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	*evaluationStart.End = ""
 
 	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
-		"--start=%s --end=%s  --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12", "2019-07-24T10:10:12")
+		"--start=%s --end=%s  --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12.000Z", "2019-07-24T10:10:12.000Z")
 	_, err := executeActionCommandC(cmd)
 
 	if err == nil {
