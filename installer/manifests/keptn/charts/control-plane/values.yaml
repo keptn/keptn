@@ -11,7 +11,7 @@ keptnSpecVersion: latest
 
 nats:
   image: nats:alpine
-  nameOverride: nats-cluster
+  nameOverride: keptn-nats-cluster
   #nats.cluster.replicas: 3
   nats:
     jetstream:
