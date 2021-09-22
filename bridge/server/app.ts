@@ -191,7 +191,7 @@ async function setOAUTH(): Promise<void> {
   // Authentication filter for API requests
   app.use('/api', (req, resp, next) => {
     if (!authCheck(req)) {
-      resp.status(401).send('Unauthorized');
+      next({response: {status: 401}});
       return;
     }
     return next();
@@ -219,7 +219,7 @@ async function setBasisAUTH(): Promise<void> {
 
       console.error('Access denied');
       res.set('WWW-Authenticate', 'Basic realm="Keptn"');
-      res.status(401).send('Authentication required.'); // custom message
+      next({response: {status: 401}});
       return;
     }
 
