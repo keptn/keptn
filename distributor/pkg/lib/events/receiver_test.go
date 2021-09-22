@@ -25,14 +25,6 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 	js, err := natsPublisher.JetStream()
 	require.Nil(t, err)
 
-	//js.AddStream(&nats.StreamConfig{Name: "sh", Subjects: []string{"sh.keptn.event.task5.triggered", "sh.keptn.event.task6.triggered"}})
-
-	js.PurgeStream("sh")
-
-	info, err := js.StreamInfo("sh")
-
-	require.NotNil(t, info)
-
 	type args struct {
 		envConfig config.EnvConfig
 	}
