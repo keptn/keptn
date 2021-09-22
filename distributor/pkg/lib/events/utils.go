@@ -165,3 +165,22 @@ func (c *CloudEventsCache) Length(topicName string) int {
 	defer c.RUnlock()
 	return len(c.cache[topicName])
 }
+
+// AdditionalEventData represents additional data to be added
+// to the data of a keptn event
+// TODO: consider moving to to-utils
+type AdditionalEventData map[string]interface{}
+
+// AddAdditionalEventData adds further properties to the data section of the event
+// All additional properties are added under the key "additionalData"
+// TODO: consider moving to go-utils
+func AddAdditionalEventData(ce *keptnmodels.KeptnContextExtendedCE, additionalData AdditionalEventData) error {
+	tmp := map[string]interface{}{}
+	err := ce.DataAs(&tmp)
+	if err != nil {
+		return err
+	}
+	tmp["additionalData"] = additionalData
+	ce.Data = tmp
+	return nil
+}
