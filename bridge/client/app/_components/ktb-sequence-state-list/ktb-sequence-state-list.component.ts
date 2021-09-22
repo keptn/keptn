@@ -68,14 +68,6 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     this.dataSource = new DtTableDataSource(this.sequenceStates.slice(0, this.PAGE_SIZE) || []);
   }
 
-  getServiceLink(sequence: Sequence) {
-    return ['/project', sequence.project, 'service', sequence.service, 'context', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
-  }
-
-  getSequenceLink(sequence: Sequence) {
-    return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
-  }
-
   ngOnDestroy(): void {
     this._timer.unsubscribe();
   }

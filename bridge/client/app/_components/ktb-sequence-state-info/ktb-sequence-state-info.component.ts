@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {Sequence} from '../../_models/sequence';
 
 @Component({
@@ -9,6 +9,9 @@ import {Sequence} from '../../_models/sequence';
 export class KtbSequenceStateInfoComponent {
 
   private _sequence?: Sequence;
+  private _showOnlyLastStage = false;
+
+  @Output() readonly stageClicked = new EventEmitter<{ sequence: Sequence, stage?: string }>();
 
   @Input()
   get sequence(): Sequence | undefined {
@@ -20,6 +23,32 @@ export class KtbSequenceStateInfoComponent {
     }
   }
 
+  @Input()
+  get showOnlyLastStage(): boolean {
+    return this._showOnlyLastStage;
+  }
+  set showOnlyLastStage(showOnlyLastStage: boolean) {
+    if (this._showOnlyLastStage !== showOnlyLastStage) {
+      this._showOnlyLastStage = showOnlyLastStage;
+    }
+  }
+
   constructor() {
+  }
+
+  getStages(): (string | undefined)[] | undefined {
+    return this.showOnlyLastStage ? [this.sequence?.getLastStage()] : this.sequence?.getStages();
+  }
+
+  getServiceLink(sequence: Sequence): (string | undefined)[] {
+    return ['/project', sequence.project, 'service', sequence.service, 'context', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
+  }
+
+  getSequenceLink(sequence: Sequence): (string | undefined)[] {
+    return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
+  }
+
+  stageClick(sequence: Sequence, stage: string): void {
+    this.stageClicked.emit({sequence, stage});
   }
 }

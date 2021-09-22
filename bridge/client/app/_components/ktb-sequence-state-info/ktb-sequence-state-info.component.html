@@ -1,3 +1,48 @@
-<ng-container *ngIf="currentSequence">
-
+<ng-container *ngIf="sequence">
+  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+    <dt-icon *ngIf="(!sequence.isLoading() && !sequence.isWaiting()) || sequence.hasPendingApproval(); else showLoading"
+             class="event-icon"
+             [name]="sequence.getIcon()"
+             [class.success]="sequence.isSuccessful()"
+             [class.error]="sequence.isFaulty()"
+             [class.highlight]="sequence.hasPendingApproval()"></dt-icon>
+    <ng-template #showLoading>
+      <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="sequence.isLoading() && !sequence.isWaiting()">
+        <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+      </button>
+      <dt-icon *ngIf="sequence.isWaiting()" class="event-icon" name="idle"></dt-icon>
+    </ng-template>
+    <p class="m-0 small">
+      <a class="m-0 bold"
+         uitestid="keptn-sequence-info-sequenceName"
+         [routerLink]="getSequenceLink(sequence)"
+         [class.error]="sequence.isFaulty()"
+         [textContent]="sequence.name"></a>
+      of
+      <a *ngIf="sequence.getShortImageName(); else noImageName"
+         class="m-0 mr-1 bold nobreak"
+         uitestid="keptn-sequence-info-serviceName"
+         [routerLink]="getServiceLink(sequence)"
+         [textContent]="sequence.getShortImageName()"></a>
+      <ng-template #noImageName>
+        <a *ngIf="sequence.service"
+           class="m-0 mr-1 bold nobreak"
+           uitestid="keptn-sequence-info-serviceName"
+           [routerLink]="getServiceLink(sequence)"
+           [textContent]="sequence.service"></a>
+      </ng-template>
+      <span [textContent]="sequence.getStatus()" uitestid="keptn-sequence-info-status"></span>
+    </p>
+  </div>
+  <div class="mt-2" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" uitestid="keptn-sequence-info-stageDetails">
+    <ng-container *ngFor="let stage of getStages()">
+      <ng-container *ngIf="stage">
+        <ktb-stage-badge [stage]="stage" [evaluationResult]="sequence.getEvaluation(stage)"
+                         [success]="sequence.isSuccessful(stage)"
+                         [error]="sequence.isFaulty(stage)" [class.warning]="sequence.isWarning(stage)"
+                         [highlight]="sequence.hasPendingApproval(stage)"
+                         (click)="$event.stopPropagation();stageClick(sequence, stage)"></ktb-stage-badge>
+      </ng-container>
+    </ng-container>
+  </div>
 </ng-container>

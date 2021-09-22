@@ -1,42 +1,10 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <ng-container *ngIf="sequenceStates && sequenceStates.length > 0; else noSequence">
     <dt-table [dataSource]="dataSource">
-      <ng-container dtColumnDef="serviceName" [dtColumnProportion]="3" uitestid="keptn-sequence-states-list-container">
-        <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType : SequenceClass as sequence">
-            <div class="mt-1 mb-1">
-              <p class="m-0 mb-1 small nobreak">
-                <a [routerLink]="getServiceLink(sequence)" [textContent]="sequence.service"></a> in
-              </p>
-              <ng-container *ngIf="sequence.getLastStage() as stage">
-                <ktb-stage-badge [stage]="stage" [evaluationResult]="sequence.getEvaluation(stage)"
-                                 [success]="sequence.isSuccessful(stage)"
-                                 [error]="sequence.isFaulty(stage)" [class.warning]="sequence.isWarning(stage)"
-                                 [highlight]="sequence.hasPendingApproval(stage)"></ktb-stage-badge>
-              </ng-container>
-            </div>
-          </ng-container>
-        </dt-cell>
-      </ng-container>
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="4">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : SequenceClass as sequence">
-            <div class="mt-1 mb-1" fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start center">
-              <dt-icon *ngIf="!sequence.isLoading() || sequence.hasPendingApproval(); else showLoading" class="event-icon"
-                       [name]="sequence.getIcon()"
-                       [class.success]="sequence.isSuccessful()"
-                       [class.error]="sequence.isFaulty()"
-                       [class.highlight]="sequence.hasPendingApproval()"></dt-icon>
-              <ng-template #showLoading>
-                <button class="m-0 p-0" dt-button disabled variant="nested">
-                  <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-                </button>
-              </ng-template>
-              <a [routerLink]="getSequenceLink(sequence)" class="m-0 small" [class.error]="sequence.isFaulty()">
-                <span class="bold" [textContent]="sequence.name"></span>&nbsp;
-                <span [textContent]="sequence.getStatus()"></span>
-              </a>
-            </div>
+            <ktb-sequence-state-info [sequence]="sequence" [showOnlyLastStage]="true"></ktb-sequence-state-info>
           </ng-container>
         </dt-cell>
       </ng-container>
@@ -47,7 +15,7 @@
           </ng-container>
         </dt-cell>
       </ng-container>
-      <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
+      <dt-row *dtRowDef="let row; columns: ['recentSequence', 'recentEvaluation']"></dt-row>
     </dt-table>
   </ng-container>
 </div>
