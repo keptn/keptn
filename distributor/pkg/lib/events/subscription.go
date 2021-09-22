@@ -39,6 +39,8 @@ func NewPullSubscription(queueGroup, topic string, js nats.JetStreamContext, mes
 func (ps *PullSubscription) Activate() error {
 	consumerName := ps.queueGroup + ":" + ps.topic
 	consumerName = strings.Replace(consumerName, ".", "-", -1)
+	consumerName = strings.Replace(consumerName, "*", "all", -1)
+	consumerName = strings.Replace(consumerName, ">", "all", -1)
 	consumerInfo, _ := ps.jetStream.ConsumerInfo(streamName, consumerName)
 	if consumerInfo == nil {
 		_, err := ps.jetStream.AddConsumer(streamName, &nats.ConsumerConfig{
