@@ -63,7 +63,7 @@ keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --
 }
 
 func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
-	const userFriendlyDateLayout = "2006-01-02T15:04:05"
+	const userFriendlyDateLayout = "2006-01-02T15:04:05.000Z"
 
 	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
