@@ -62,17 +62,19 @@ spec:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"
         - name: MONGODB_HOST
-          value: '{{ .Values.mongodb.host }}'
-        - name: MONGO_DB_NAME
-          value: {{ .Values.mongodb.dbName | default "keptn"}}
+          value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+        - name: MONGODB_DATABASE
+          value: {{ .Values.mongo.auth.database | default "keptn" }}
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:
-                name: mongodb-credentials
-                key: user
+              name: mongodb-credentials
+              key: mongodb-user
         - name: MONGODB_PASSWORD
           valueFrom:
             secretKeyRef:
+              name: mongodb-credentials
+              key: mongodb-password
                 name: mongodb-credentials
                 key: password
         - name: MONGODB_EXTERNAL_CONNECTION_STRING

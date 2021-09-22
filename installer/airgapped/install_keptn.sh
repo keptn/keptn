@@ -22,7 +22,7 @@ kubectl create namespace "${KEPTN_NAMESPACE}"
 
 helm upgrade keptn "${KEPTN_HELM_CHART}" --install --create-namespace -n "${KEPTN_NAMESPACE}" --wait \
 --set="control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuous-delivery.enabled=true,\
-control-plane.mongodb.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}centos/mongodb-36-centos7,\
+control-plane.mongodb.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY},\
 control-plane.nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.1.9-alpine3.12,\
 control-plane.nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}connecteverything/nats-server-config-reloader:0.6.0,\
 control-plane.nats.exporter.image=${TARGET_INTERNAL_DOCKER_REGISTRY}synadia/prometheus-nats-exporter:0.5.0,\
