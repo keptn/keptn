@@ -10,7 +10,6 @@ prefixPath: ''
 keptnSpecVersion: latest
 
 nats:
-  image: nats:alpine
   nameOverride: keptn-nats-cluster
   #nats.cluster.replicas: 3
   nats:
