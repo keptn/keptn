@@ -95,9 +95,9 @@ func (nch *NatsConnectionHandler) setupJetStreamContext() error {
 	}
 
 	stream, err := js.StreamInfo(streamName)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve stream info: %s", err.Error())
-	}
+	//if err != nil {
+	//	return fmt.Errorf("failed to retrieve stream info: %s", err.Error())
+	//}
 	if stream == nil {
 		logger.Infof("creating stream %q", streamName)
 		_, err = js.AddStream(&nats.StreamConfig{
