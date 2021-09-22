@@ -55,6 +55,13 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
           image: {{ dict "space" .Values.distributor "context" . | include "jmeter-service.image.name" }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/bash
+                  - -c
+                  - sleep 60
           livenessProbe:
             httpGet:
               path: /health
@@ -121,7 +128,7 @@ spec:
               {{- $apiValidateTls := .Values.remoteControlPlane.api.apiValidateTls | ternary "true" "false" }}
               value: "{{ $apiValidateTls }}"
             {{- end }}
-
+      terminationGracePeriodSeconds: 160
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

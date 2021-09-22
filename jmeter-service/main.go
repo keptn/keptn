@@ -4,12 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/signal"
+	"sync"
+	"syscall"
+
+	//"github.com/keptn/keptn/distributor/pkg/lib/events"
 	"log"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -62,9 +68,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Info("Received '" + TestStrategy_RealUser + "' test strategy, hence no tests are triggered")
 		return nil
 	}
-
-	go runTests(event, shkeptncontext, *data, logger)
-
+	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	go runTests(event, shkeptncontext, *data, logger, ctx)
 	return nil
 }
 
@@ -72,12 +77,29 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // This method executes the correct tests based on the passed testStrategy in the deployment finished event
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
-func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData, logger *keptncommon.Logger) {
-	sendTestsStartedEvent(shkeptncontext, event, logger)
+func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData, logger *keptncommon.Logger, ctx context.Context) {
 
+	sendTestsStartedEvent(shkeptncontext, event, logger)
 	testInfo := getTestInfo(data, shkeptncontext)
 	startedAt := time.Now()
+	testReady := make(chan string, 1)
 
+	defer func() { testReady <- "done" }()
+
+	go func() {
+		select {
+		case msg := <-testReady:
+			logger.Info(msg)
+			ctx.Value("Wg").(*sync.WaitGroup).Done()
+		case <-ctx.Done():
+			logger.Error("Error sending test finished event" + testInfo.ToString())
+			if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, "terminated", logger); err != nil {
+				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+			}
+			ctx.Value("Wg").(*sync.WaitGroup).Done()
+			return
+		}
+	}()
 	// load the workloads from JMeterConf
 	var err error
 	var jmeterconf *JMeterConf
@@ -108,6 +130,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
+
 			return
 		}
 
@@ -118,6 +141,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 			if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
+
 			return
 		}
 
@@ -126,6 +150,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
+
 			return
 		}
 		logger.Info("Health Check test passed = " + strconv.FormatBool(res) + ". " + testInfo.ToString())
@@ -153,6 +178,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 				if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
 					logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 				}
+
 				return
 			} else {
 				logger.Info(fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString()))
@@ -176,6 +202,8 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultPass, logger); err != nil {
 		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 	}
+
+	return
 }
 
 //
@@ -335,9 +363,16 @@ func _main(args []string, env envConfig) int {
 	if runlocal {
 		log.Println("Running LOCALLY: env=runlocal")
 	}
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	go func() {
+		<-ch
+		log.Println("Killing")
+		cancel()
+	}()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
 	if err != nil {
@@ -349,6 +384,8 @@ func _main(args []string, env envConfig) int {
 	}
 
 	log.Fatal(c.StartReceiver(ctx, gotEvent))
+
+	wg.Wait()
 	return 0
 }
 
