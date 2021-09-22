@@ -21,6 +21,7 @@ import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
+import { Secret } from '../models/secret';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 
@@ -264,7 +265,7 @@ export class DataService {
       events: [],
       pageSize: 0,
       nextPageKey: 0,
-      totalCount: 0
+      totalCount: 0,
     };
     let nextPage = 0;
     do {
@@ -274,7 +275,7 @@ export class DataService {
         events: [...result?.events, ...response.data.events],
         pageSize: result.pageSize + response.data.pageSize,
         nextPageKey: response.data.nextPageKey,
-        totalCount: response.data.totalCount
+        totalCount: response.data.totalCount,
       };
     } while (nextPage !== 0);
 
@@ -425,6 +426,15 @@ export class DataService {
       }
     }
     await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
+  }
+
+  public async getSecretsForScope(scope: string): Promise<Secret[]> {
+    const response = await this.apiService.getSecrets();
+    console.log('response', response.data);
+    const secrets = response.data.Secrets.map(secret => {
+      return Secret.fromJSON(secret);
+    });
+    return secrets.filter(secret => secret.scope === scope);
   }
 
   private async removeWebhooks(eventType: string, projectName: string, stages: string[], services: string[] | [undefined]): Promise<void> {

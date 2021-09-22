@@ -24,6 +24,7 @@ import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-regi
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
+import { SecretScope } from '../../../shared/interfaces/secret';
 
 @Injectable({
   providedIn: 'root',
@@ -199,6 +200,11 @@ export class ApiService {
   public getSecrets(): Observable<{ Secrets: Secret[] }> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
     return this.http.get<{ Secrets: Secret[] }>(url);
+  }
+
+  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+    const url = `${this._baseUrl}/secrets/scope/${scope}`;
+    return this.http.get<Secret[]>(url);
   }
 
   public addSecret(secret: Secret): Observable<object> {

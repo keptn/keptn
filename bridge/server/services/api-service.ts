@@ -10,6 +10,7 @@ import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
+import { Secret } from '../../shared/interfaces/secret';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -194,5 +195,10 @@ export class ApiService {
     }
 
     return this.axios.get<ResourceResponse>(url, params);
+  }
+
+  public getSecrets(): Promise<AxiosResponse<{ Secrets: Secret[] }>> {
+    const url = `${this.baseUrl}/secrets/v1/secret`;
+    return this.axios.get<{ Secrets: Secret[] }>(url);
   }
 }

@@ -16,6 +16,8 @@ import { PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-con
 import { NotificationsService } from '../../_services/notifications.service';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { NotificationType } from '../../_models/notification';
+import { SecretScope } from '../../../../shared/interfaces/secret';
+import { Secret } from '../../_models/secret';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -28,7 +30,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private taskControl = new FormControl('', [Validators.required]);
   private taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<{ taskNames: string[], subscription: UniformSubscription, project: Project, integrationId: string, webhook?: WebhookConfig }>;
+  public data$: Observable<{ taskNames: string[], subscription: UniformSubscription, project: Project, integrationId: string, webhook?: WebhookConfig, webhookSecrets?: Secret[] }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -137,6 +139,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         tap(project => this.updateDataSource(project)),
         take(1),
       );
+
     const webhook$ = forkJoin({
       subscription: subscription$,
       projectName: projectName$,
@@ -156,12 +159,20 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       take(1),
     );
 
+    const webhookSecrets$ = integrationInfo$.pipe(switchMap(info => {
+      if (info.isWebhookService) {
+        return this.dataService.getSecretsForScope(SecretScope.WEBHOOK);
+      }
+      return of(undefined);
+    }));
+
     this.data$ = forkJoin({
       taskNames: taskNames$,
       subscription: subscription$,
       project: project$,
       integrationId: integrationId$,
       webhook: webhook$,
+      webhookSecrets: webhookSecrets$,
     });
   }
 

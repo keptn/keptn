@@ -47,7 +47,7 @@
           ></dt-filter-field>
           <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length">If you add a service you must add a stage</dt-error>
         </div>
-        <ktb-webhook-settings *ngIf="isWebhookService" [(webhook)]="data.webhook" (validityChanged)="isWebhookFormValid = $event"></ktb-webhook-settings>
+        <ktb-webhook-settings *ngIf="isWebhookService" [(webhook)]="data.webhook" [secrets]="data.webhookSecrets" (validityChanged)="isWebhookFormValid = $event"></ktb-webhook-settings>
         <div fxLayout="row">
           <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!isFormValid(data.subscription)" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)" dt-button>
             <dt-loading-spinner *ngIf="updating" aria-label="{{editMode ? 'Updating' : 'Creating'}} subscription"></dt-loading-spinner>

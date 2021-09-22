@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormUtils } from '../../_utils/form.utils';
-import { UniformSubscription } from '../../_models/uniform-subscription';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { combineLatest } from 'rxjs';
+import { Secret } from '../../_models/secret';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
@@ -14,8 +14,6 @@ type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
   styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
 export class KtbWebhookSettingsComponent implements OnInit {
-  public _projectName?: string;
-  public _subscription?: UniformSubscription;
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
     url: new FormControl('', [Validators.required, FormUtils.urlValidator]),
@@ -27,6 +25,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   private _webhook?: WebhookConfig;
 
+  @Input() secrets: Secret[] | undefined;
   @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() webhookChange: EventEmitter<WebhookConfig> = new EventEmitter<WebhookConfig>();
 
@@ -98,5 +97,4 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public getFormControl(controlName: ControlType): AbstractControl {
     return this.webhookConfigForm.get(controlName) as AbstractControl;
   }
-
 }
