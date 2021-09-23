@@ -4,7 +4,7 @@
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="4">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : SequenceClass as sequence">
-            <ktb-sequence-state-info [sequence]="sequence" [showOnlyLastStage]="true"></ktb-sequence-state-info>
+            <ktb-sequence-state-info [sequence]="sequence" [showOnlyLastStage]="true" (stageClicked)="selectSequence($event)"></ktb-sequence-state-info>
           </ng-container>
         </dt-cell>
       </ng-container>
