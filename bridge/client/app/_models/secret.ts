@@ -4,7 +4,7 @@ export class Secret implements scrt {
   name!: string;
   scope!: SecretScope;
   keys?: string[];
-  data: SecretKeyValuePair[];
+  data?: SecretKeyValuePair[];
 
   constructor() {
     this.scope = SecretScope.DEFAULT;
@@ -24,6 +24,10 @@ export class Secret implements scrt {
   }
 
   getData(index: number): SecretKeyValuePair {
+    if (!this.data) {
+      this.data = [];
+    }
+
     return this.data[index];
   }
 

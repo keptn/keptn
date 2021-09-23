@@ -1,4 +1,4 @@
-import { Component, Directive, ElementRef, EventEmitter, HostListener, Input, OnInit } from '@angular/core';
+import { Component, Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { Overlay, OverlayPositionBuilder, OverlayRef } from '@angular/cdk/overlay';
@@ -24,15 +24,23 @@ export class KtbTreeListSelectDirective implements OnInit {
   private overlayRef?: OverlayRef;
 
   @Input() data: SelectTreeNode[] = [];
+  @Output() secret: EventEmitter<string> = new EventEmitter<string>();
 
   @HostListener('click')
   show(): void {
-    const tooltipPortal = new ComponentPortal(KtbTreeListSelectComponent);
+    const tooltipPortal: ComponentPortal<KtbTreeListSelectComponent> = new ComponentPortal(KtbTreeListSelectComponent);
+    // Disable origin to prevent 'Host has already a portal attached' error
+    this.elementRef.nativeElement.disabled = true;
 
     // @ts-ignore
     const contentRef = this.overlayRef.attach(tooltipPortal);
     contentRef.instance.data = this.data;
     contentRef.instance.closeDialog.subscribe(() => {
+      this.close();
+    });
+
+    contentRef.instance.selectedSecret.subscribe(secret => {
+      this.secret.emit(secret);
       this.close();
     });
   }
@@ -57,6 +65,7 @@ export class KtbTreeListSelectDirective implements OnInit {
   }
 
   public close(): void {
+    this.elementRef.nativeElement.disabled = false;
     this.overlayRef?.detach();
   }
 }
@@ -67,22 +76,18 @@ export class KtbTreeListSelectDirective implements OnInit {
   templateUrl: './ktb-tree-list-select.component.html',
   styleUrls: ['./ktb-tree-list-select.component.scss'],
 })
-export class KtbTreeListSelectComponent implements OnInit {
+export class KtbTreeListSelectComponent {
   private secretTreeFlattener: DtTreeFlattener<SelectTreeNode, SelectTreeFlatNode> = new DtTreeFlattener(this.secretTreeTransformer, this.getSecretLevel, this.isSecretExpandable, this.getSecretChildren);
   public secretTreeControl: FlatTreeControl<SelectTreeFlatNode> = new DtTreeControl<SelectTreeFlatNode>(this.getSecretLevel, this.isSecretExpandable);
   public secretDataSource: DtTreeDataSource<SelectTreeNode, SelectTreeFlatNode> = new DtTreeDataSource(this.secretTreeControl, this.secretTreeFlattener);
-  public closeDialog: EventEmitter<void> = new EventEmitter<void>();
 
   @Input()
   set data(data: SelectTreeNode[]) {
     this.secretDataSource.data = data;
   }
 
-  constructor() {
-  }
-
-  ngOnInit(): void {
-  }
+  @Output() closeDialog: EventEmitter<void> = new EventEmitter<void>();
+  @Output() selectedSecret: EventEmitter<string> = new EventEmitter<string>();
 
   private getSecretLevel(node: SelectTreeFlatNode): number {
     return node.level;
@@ -106,6 +111,7 @@ export class KtbTreeListSelectComponent implements OnInit {
   }
 
   public selectSecret(path: string): void {
-    // TODO determine last focused field and paste
+    const variable = `{{.${path}}}`;
+    this.selectedSecret.emit(variable);
   }
 }

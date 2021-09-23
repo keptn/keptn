@@ -8,14 +8,45 @@ export class FormUtils {
     };
   }
 
-  public static urlValidator(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
-    let result: { url: { pattern?: boolean, special?: boolean } } | null = null;
+  public static isUrlValidator(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
+    let result: { url: { pattern: boolean } } | null = null;
+    const value = control.value?.toString();
+    if (value) {
+      if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;=]+$/)) {
+        result = {url: {pattern: true}};
+      }
+    }
+    return result;
+  }
+
+  public static isUrlValidatorWithVariable(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
+    let result: { url: { pattern: boolean } } | null = null;
+    const value = control.value?.toString();
+    if (value) {
+      if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;={}]+$/)) {
+        result = {url: {pattern: true}};
+      }
+    }
+    return result;
+  }
+
+  public static urlSpecialCharsValidator(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
+    let result: { url: { special: boolean } } | null = null;
     const value = control.value?.toString();
     if (value) {
       if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]*$/)) {
         result = {url: {special: true}};
-      } else if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;=]+$/)) {
-        result = {url: {pattern: true}};
+      }
+    }
+    return result;
+  }
+
+  public static urlSpecialCharsWithVariablesValidator(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
+    let result: { url: { special: boolean } } | null = null;
+    const value = control.value?.toString();
+    if (value) {
+      if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;={}]*$/)) {
+        result = {url: {special: true}};
       }
     }
     return result;

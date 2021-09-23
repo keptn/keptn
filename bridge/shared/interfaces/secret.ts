@@ -11,5 +11,6 @@ export enum SecretScope {
 export interface Secret {
   name: string;
   scope: SecretScope;
-  data: SecretKeyValuePair[];
+  data?: SecretKeyValuePair[];
+  keys?: string[];
 }

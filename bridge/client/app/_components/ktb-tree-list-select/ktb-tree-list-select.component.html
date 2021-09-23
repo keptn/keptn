@@ -6,7 +6,7 @@
 </div>
 <dt-tree-table [dataSource]="secretDataSource" [treeControl]="secretTreeControl">
   <ng-container dtColumnDef="name">
-    <dt-tree-table-toggle-cell *dtCellDef="let row" [ngClass]="{'secret-selectable' : !row.expandable}" (click)="row.expandable ? selectSecret(row.path) : null">
+    <dt-tree-table-toggle-cell *dtCellDef="let row" [ngClass]="{'secret-selectable' : !row.expandable}" (click)="!row.expandable ? selectSecret(row.path) : null">
       {{row.name}}
     </dt-tree-table-toggle-cell>
   </ng-container>

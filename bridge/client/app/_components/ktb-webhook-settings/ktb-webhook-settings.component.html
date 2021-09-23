@@ -15,7 +15,7 @@
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special">URL contains a special character causing it to be invalid. Please remove the special character.</dt-error>
-      <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource">
+      <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" (secret)="setSecret($event, 'url')">
         <dt-icon name="resetpassword"></dt-icon>
       </button>
     </dt-form-field>
@@ -40,7 +40,7 @@
             <dt-label class="required">Value</dt-label>
             <input formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
-            <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret">
+            <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" (secret)="setSecret($event, 'header', i)">
               <dt-icon name="resetpassword"></dt-icon>
             </button>
           </dt-form-field>
@@ -52,10 +52,13 @@
     </ng-container>
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field>
+    <dt-form-field class="text-area">
       <dt-label>Custom payload</dt-label>
       <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
+      <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" (secret)="setSecret($event, 'payload')">
+        <dt-icon name="resetpassword"></dt-icon>
+      </button>
     </dt-form-field>
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">

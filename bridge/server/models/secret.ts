@@ -3,7 +3,8 @@ import { Secret as scrt, SecretKeyValuePair, SecretScope } from '../../shared/in
 export class Secret implements scrt {
   name!: string;
   scope!: SecretScope;
-  data!: SecretKeyValuePair[];
+  data?: SecretKeyValuePair[];
+  keys?: string[];
 
   public static fromJSON(data: unknown): Secret {
     return Object.assign(new this(), data);

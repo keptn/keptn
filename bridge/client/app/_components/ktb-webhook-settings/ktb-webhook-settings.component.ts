@@ -19,10 +19,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
   private _webhook?: WebhookConfig;
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
-    url: new FormControl('', [Validators.required, FormUtils.urlValidator]),
+    url: new FormControl('', [Validators.required, FormUtils.isUrlValidatorWithVariable, FormUtils.urlSpecialCharsWithVariablesValidator]),
     payload: new FormControl('', []),
     header: new FormArray([]),
-    proxy: new FormControl('', [FormUtils.urlValidator]),
+    proxy: new FormControl('', [FormUtils.isUrlValidator, FormUtils.urlSpecialCharsValidator]),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
@@ -49,15 +49,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   @Input()
   set secrets(secrets: Secret[] | undefined) {
     if (secrets) {
-      this.secretDataSource = secrets.map((secret: Secret) => {
-        const scrt: SelectTreeNode = {name: secret.name};
-        if (secret.keys) {
-          scrt.keys = secret.keys.map((key) => {
-            return {name: key, path: secret.name + '.' + key};
-          });
-        }
-        return scrt;
-      });
+      this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
   }
 
@@ -101,8 +93,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   public addHeader(name?: string, value?: string): void {
     this.header.push(new FormGroup({
-      name: new FormControl(name, [Validators.required]),
-      value: new FormControl(value, [Validators.required]),
+      name: new FormControl(name || '', [Validators.required]),
+      value: new FormControl(value || '', [Validators.required]),
     }));
   }
 
@@ -112,5 +104,27 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   public getFormControl(controlName: ControlType): AbstractControl {
     return this.webhookConfigForm.get(controlName) as AbstractControl;
+  }
+
+  public setSecret(secret: string, controlName: ControlType, controlIndex?: number): void {
+    let control: AbstractControl;
+    if (controlName === 'header' && controlIndex !== undefined) {
+      const group = this.header.at(controlIndex) as FormGroup;
+      control = group.controls.value;
+    } else {
+      control = this.getFormControl(controlName);
+    }
+    control.setValue(control.value + secret);
+  }
+
+  private mapSecret(secret: Secret): SelectTreeNode {
+    const scrt: SelectTreeNode = {name: secret.name};
+    if (secret.keys) {
+      scrt.keys = secret.keys.map((key: string) => {
+        return {name: key, path: `${secret.name}.${key}`};
+      });
+      scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return scrt;
   }
 }
