@@ -53,7 +53,7 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, "my-secret", k8sSecret.Name)
 	assert.Equal(t, map[string]string(secret.Data), k8sSecret.StringData)
 	assert.Equal(t, FakeNamespaceProvider()(), k8sSecret.Namespace)
-	assert.Equal(t, "keptn-secret-service", k8sSecret.Labels["app.kubernetes.io/managed-by"])
+	assert.Equal(t, SecretServiceName, k8sSecret.Labels["app.kubernetes.io/managed-by"])
 
 	k8sRole1, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-read-secrets", metav1.GetOptions{})
 	assert.Nil(t, err)
@@ -212,7 +212,44 @@ func TestGetSecret_Fails(t *testing.T) {
 }
 
 func TestDeleteK8sSecret(t *testing.T) {
-	kubernetes := k8sfake.NewSimpleClientset()
+	kubernetes := k8sfake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-secret",
+			Namespace: "keptn_namespace",
+			Labels:    map[string]string{"app.kubernetes.io/scope": "my-scope"},
+		},
+	},
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-other-secret",
+				Namespace: "keptn_namespace",
+				Labels:    map[string]string{"app.kubernetes.io/scope": "my-scope"},
+			},
+		},
+		&rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-scope-read-secrets",
+				Namespace: "keptn_namespace",
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-other-secret", "my-secret"},
+				},
+			},
+		},
+		&rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-scope-manage-secrets",
+				Namespace: "keptn_namespace",
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-other-secret", "my-secret"},
+				},
+			},
+		})
 	scopesRepository := &fake.ScopesRepositoryMock{}
 	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
 
@@ -221,37 +258,6 @@ func TestDeleteK8sSecret(t *testing.T) {
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
 		ScopesRepository:       scopesRepository,
 	}
-
-	kubernetes.Fake.PrependReactor("list", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &corev1.SecretList{
-			Items: []corev1.Secret{corev1.Secret{
-
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "still-existing-secret",
-					Labels: map[string]string{"app.kubernetes.io/scope": "my-scope"},
-				},
-			}},
-		}, nil
-	})
-
-	kubernetes.Fake.PrependReactor("update", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, nil
-	})
-
-	kubernetes.Fake.PrependReactor("get", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &rbacv1.Role{
-			Rules: []rbacv1.PolicyRule{
-				{
-					Resources:     []string{"secrets"},
-					ResourceNames: []string{"my-other-secret", "my-secret"},
-				},
-			},
-		}, nil
-	})
-
-	kubernetes.Fake.PrependReactor("delete", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, nil
-	})
 
 	err := backend.DeleteSecret(model.Secret{
 		SecretMetadata: model.SecretMetadata{
@@ -270,7 +276,37 @@ func TestDeleteK8sSecret(t *testing.T) {
 }
 
 func TestDeleteLastK8sSecret(t *testing.T) {
-	kubernetes := k8sfake.NewSimpleClientset()
+	kubernetes := k8sfake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-secret",
+			Namespace: "keptn_namespace",
+			Labels:    map[string]string{"app.kubernetes.io/scope": "my-scope"},
+		},
+	},
+		&rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-scope-read-secrets",
+				Namespace: "keptn_namespace",
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-secret"},
+				},
+			},
+		},
+		&rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-scope-manage-secrets",
+				Namespace: "keptn_namespace",
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-secret"},
+				},
+			},
+		})
 	scopesRepository := &fake.ScopesRepositoryMock{}
 	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
 
@@ -279,14 +315,6 @@ func TestDeleteLastK8sSecret(t *testing.T) {
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
 		ScopesRepository:       scopesRepository,
 	}
-
-	kubernetes.Fake.PrependReactor("list", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &corev1.SecretList{}, nil
-	})
-
-	kubernetes.Fake.PrependReactor("delete", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, nil
-	})
 
 	err := backend.DeleteSecret(model.Secret{
 		SecretMetadata: model.SecretMetadata{
@@ -331,7 +359,6 @@ func TestDeleteK8sSecret_SecretNotFound(t *testing.T) {
 UPDATE SECRET TESTS
 */
 func TestUpdateSecret(t *testing.T) {
-
 	kubernetes := k8sfake.NewSimpleClientset()
 	scopesRepository := &fake.ScopesRepositoryMock{}
 	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
@@ -349,11 +376,9 @@ func TestUpdateSecret(t *testing.T) {
 	secret := createTestSecret("my-secret", "my-scope")
 	err := backend.UpdateSecret(secret)
 	assert.Nil(t, err)
-
 }
 
 func TestUpdateSecret_SecretNotFound(t *testing.T) {
-
 	kubernetes := k8sfake.NewSimpleClientset()
 	scopesRepository := &fake.ScopesRepositoryMock{}
 	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }

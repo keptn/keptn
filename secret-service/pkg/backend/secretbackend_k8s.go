@@ -18,6 +18,7 @@ import (
 )
 
 const SecretBackendTypeK8s = "kubernetes"
+const SecretServiceName = "keptn-secret-service"
 
 var ErrSecretAlreadyExists = errors.New("secret already exists")
 var ErrSecretNotFound = errors.New("secret not found")
@@ -160,7 +161,7 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 
 	namespace := k.KeptnNamespaceProvider()
 	list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/managed-by=keptn-secret-service",
+		LabelSelector: "app.kubernetes.io/managed-by=" + SecretServiceName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
@@ -222,7 +223,7 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Sco
 					Name:      capabilityName,
 					Namespace: namespace,
 					Labels: map[string]string{
-						"app.kubernetes.io/managed-by": "keptn-secret-service",
+						"app.kubernetes.io/managed-by": SecretServiceName,
 						"app.kubernetes.io/scope":      secret.Scope,
 					},
 				},
@@ -254,7 +255,7 @@ func (k K8sSecretBackend) createK8sRoleBindingObj(secret model.Secret, roles []r
 			Name:      roleBindingName,
 			Namespace: namespace,
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "keptn-secret-service", // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/managed-by": SecretServiceName, // add a 'managed-by' label so we can identify secrets managed by the secret-service
 				"app.kubernetes.io/scope":      secret.Scope,
 			},
 		},
@@ -281,7 +282,7 @@ func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace stri
 			Name:      secret.Name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "keptn-secret-service", // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/managed-by": SecretServiceName, // add a 'managed-by' label so we can identify secrets managed by the secret-service
 				"app.kubernetes.io/scope":      secret.Scope,
 			},
 		},
