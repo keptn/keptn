@@ -18,6 +18,7 @@ import (
 )
 
 const SecretBackendTypeK8s = "kubernetes"
+const SecretServiceName = "keptn-secret-service"
 
 var ErrSecretAlreadyExists = errors.New("secret already exists")
 var ErrSecretNotFound = errors.New("secret not found")
@@ -87,6 +88,16 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 		}
 	}
 
+	roleBinding := k.createK8sRoleBindingObj(secret, roles, namespace)
+	_, err = k.KubeAPI.RbacV1().RoleBindings(namespace).Create(context.TODO(), &roleBinding, metav1.CreateOptions{})
+	if err != nil {
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+			//no op
+		} else {
+			log.Errorf("Unable to create role binding: %s", err.Error())
+			return err
+		}
+	}
 	return nil
 }
 
@@ -99,6 +110,7 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	namespace := k.KeptnNamespaceProvider()
 	secretName := secret.Name
 
+	// delete secret
 	err = k.KubeAPI.CoreV1().Secrets(namespace).Delete(context.TODO(), secretName, metav1.DeleteOptions{})
 	if err != nil {
 		log.Errorf("Unable to delete secret %s with scope %s: %s", secret.Name, secret.Scope, err)
@@ -108,18 +120,36 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 		return err
 	}
 
-	roles := k.createK8sRoleObj(secret, scopes, namespace)
-	for i := range roles {
-		log.Infof("Updating role %s", roles[i].Name)
-		role, err := k.KubeAPI.RbacV1().Roles(namespace).Get(context.TODO(), roles[i].Name, metav1.GetOptions{})
-		if err != nil {
-			log.Errorf("Unable to get details of role %s", roles[i].Name)
-			return err
+	// get current secrets with scope
+	secretsWithScope, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope})
+	if err != nil {
+		return err
+	}
+	// if there are no secret with that scope
+	// delete associated roles and rolebinding
+	if len(secretsWithScope.Items) == 0 {
+		log.Infof("No more secret with scope: %s. Deleting associated roles and role bindings", secret.Scope)
+		if err := k.KubeAPI.RbacV1().Roles(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
+			log.Warnf("Unable to delete roles: %s", err.Error())
 		}
-		role.Rules[0].ResourceNames = remove(role.Rules[0].ResourceNames, secret.Name)
-		if _, err := k.KubeAPI.RbacV1().Roles(namespace).Update(context.TODO(), role, metav1.UpdateOptions{}); err != nil {
-			log.Errorf("Unable to update role %s", roles[i].Name)
-			return err
+		if err := k.KubeAPI.RbacV1().RoleBindings(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
+			log.Warnf("Unable to delete role bindings: %s", err.Error())
+		}
+	} else {
+		// update the role resources, otherwise
+		roles := k.createK8sRoleObj(secret, scopes, namespace)
+		for i := range roles {
+			log.Infof("Updating role %s", roles[i].Name)
+			role, err := k.KubeAPI.RbacV1().Roles(namespace).Get(context.TODO(), roles[i].Name, metav1.GetOptions{})
+			if err != nil {
+				log.Errorf("Unable to get details of role %s", roles[i].Name)
+				return err
+			}
+			role.Rules[0].ResourceNames = remove(role.Rules[0].ResourceNames, secret.Name)
+			if _, err := k.KubeAPI.RbacV1().Roles(namespace).Update(context.TODO(), role, metav1.UpdateOptions{}); err != nil {
+				log.Errorf("Unable to update role %s", roles[i].Name)
+				return err
+			}
 		}
 	}
 
@@ -131,7 +161,7 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 
 	namespace := k.KeptnNamespaceProvider()
 	list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/managed-by=keptn-secret-service",
+		LabelSelector: "app.kubernetes.io/managed-by=" + SecretServiceName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
@@ -139,19 +169,20 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 
 	for _, secretItem := range list.Items {
 		keys := []string{}
-		for key, _ := range secretItem.StringData {
+		for key := range secretItem.StringData {
 			if key != "" {
 				keys = insert(keys, key)
 			}
 		}
-		for key, _ := range secretItem.Data {
+		for key := range secretItem.Data {
 			if key != "" {
 				keys = insert(keys, key)
 			}
 		}
 		result = append(result, model.GetSecretResponseItem{
 			SecretMetadata: model.SecretMetadata{
-				Name: secretItem.Name,
+				Name:  secretItem.Name,
+				Scope: secretItem.Labels["app.kubernetes.io/scope"],
 			},
 			Keys: keys,
 		})
@@ -178,7 +209,6 @@ func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 }
 
 func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Scopes, namespace string) []rbacv1.Role {
-
 	var k8sRolesToCreate []rbacv1.Role
 
 	if scope, ok := scopes.Scopes[secret.Scope]; ok {
@@ -192,6 +222,10 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Sco
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      capabilityName,
 					Namespace: namespace,
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by": SecretServiceName,
+						"app.kubernetes.io/scope":      secret.Scope,
+					},
 				},
 				Rules: []rbacv1.PolicyRule{
 					{
@@ -208,6 +242,36 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Sco
 	return k8sRolesToCreate
 }
 
+func (k K8sSecretBackend) createK8sRoleBindingObj(secret model.Secret, roles []rbacv1.Role, namespace string) rbacv1.RoleBinding {
+	roleBindingName := secret.Scope + "-rolebinding"
+	log.Infof("creating role binding %s for secret %s with role %s and service account %s in namespace %s", roleBindingName, secret.Name, roles[0].Name, secret.Scope, namespace)
+
+	roleBinding := rbacv1.RoleBinding{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "RoleBinding",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      roleBindingName,
+			Namespace: namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": SecretServiceName, // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/scope":      secret.Scope,
+			},
+		},
+		Subjects: []rbacv1.Subject{rbacv1.Subject{
+			Kind: "ServiceAccount",
+			Name: secret.Scope,
+		}},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "Role",
+			Name:     roles[0].Name,
+		},
+	}
+	return roleBinding
+}
+
 func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace string) *corev1.Secret {
 	return &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -218,7 +282,8 @@ func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace stri
 			Name:      secret.Name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "keptn-secret-service", // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/managed-by": SecretServiceName, // add a 'managed-by' label so we can identify secrets managed by the secret-service
+				"app.kubernetes.io/scope":      secret.Scope,
 			},
 		},
 		StringData: secret.Data,

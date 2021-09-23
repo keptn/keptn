@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"os"
 	"strings"
@@ -288,6 +289,11 @@ func ExecuteCommand(cmd string) (string, error) {
 	return keptnkubeutils.ExecuteCommand(split[0], split[1:])
 }
 
+func ExecuteCommandf(cmd string, a ...interface{}) (string, error) {
+	cmdf := fmt.Sprintf(cmd, a...) //nolint:govet
+	return ExecuteCommand(cmdf)
+}
+
 func GetKeptnNameSpaceFromEnv() string {
 	return osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
 }
@@ -368,6 +374,12 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func KubeClient(t *testing.T) *kubernetes.Clientset {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	require.Nil(t, err)
+	return clientset
 }
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
