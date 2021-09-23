@@ -21,6 +21,7 @@ import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
+import { IRemediationAction } from '../../shared/models/remediation-action';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 
@@ -147,28 +148,35 @@ export class DataService {
         const traces = response.data.events;
         const stage = {...sequence.stages[0], actions: []};
         const remediation: Remediation = Remediation.fromJSON({...sequence, stages: [stage]});
+        const actions = this.getRemediationActions(traces);
 
         remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
-        for (const trace of traces) {
-          if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
-            const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
-            const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
-            let state: EventState;
-            if (finishedAction) {
-              state = EventState.FINISHED;
-            } else if (startedAction) {
-              state = EventState.STARTED;
-            } else {
-              state = EventState.TRIGGERED;
-            }
-
-            remediation.stages[0].actions.push({...trace.data.action, state, result: finishedAction?.data.result});
-          }
-        }
+        remediation.stages[0].actions.push(...actions);
         remediations.push(remediation);
       }
     }
     return remediations;
+  }
+
+  private getRemediationActions(traces: Trace[]): IRemediationAction[] {
+    const actions: IRemediationAction[] = [];
+    for (const trace of traces) {
+      if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
+        const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
+        const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
+        let state: EventState;
+        if (finishedAction) {
+          state = EventState.FINISHED;
+        } else if (startedAction) {
+          state = EventState.STARTED;
+        } else {
+          state = EventState.TRIGGERED;
+        }
+
+        actions.push({...trace.data.action, state, result: finishedAction?.data.result});
+      }
+    }
+    return actions;
   }
 
   private async getTrace(keptnContext: string, projectName: string, stageName: string, serviceName: string, eventType: EventTypes): Promise<Trace | undefined> {
