@@ -109,7 +109,6 @@ describe('KtbSequenceStateInfoComponent', () => {
     stageDetails[0].click();
 
     // then
-    expect(spy).toHaveBeenCalled();
     expect(spy).toHaveBeenCalledWith(sequence, sequence.getStages()[0]);
   });
 });
