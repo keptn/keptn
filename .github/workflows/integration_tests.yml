@@ -657,7 +657,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: test/test_manage_secrets.sh
+        run:  cd test/go-tests && go test -run ManageSecrets -v
 
       - name: Test Webhook Integration
         id: test_webhook_integration
