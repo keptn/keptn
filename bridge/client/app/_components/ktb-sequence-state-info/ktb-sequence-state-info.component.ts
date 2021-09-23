@@ -37,8 +37,16 @@ export class KtbSequenceStateInfoComponent {
     }
   }
 
-  getStages(): (string | undefined)[] | undefined {
-    return this.showOnlyLastStage ? [this.sequence?.getLastStage()] : this.sequence?.getStages();
+  getStages(): string[] {
+    let stages: string[];
+    if (this.showOnlyLastStage) {
+      const stage = this.sequence?.getLastStage();
+      stages = stage ? [stage] : [];
+    }
+    else {
+      stages = this.sequence?.getStages() ?? [];
+    }
+    return stages;
   }
 
   getServiceLink(sequence: Sequence): (string | undefined)[] {
