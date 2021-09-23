@@ -54,7 +54,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  constructor(public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number, private router: Router, private location: Location) {
+  constructor(public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number, private router: Router) {
   }
 
   loadLatestSequences(): void {
@@ -72,9 +72,8 @@ export class KtbSequenceStateListComponent implements OnDestroy {
 
   selectSequence(event: { sequence: Sequence, stage?: string }): void {
     const stage = event.stage || event.sequence.getStages().pop();
-    const routeUrl = this.router.createUrlTree(['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext,
+    this.router.navigate(['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext,
       ...(stage ? ['stage', stage] : [])]);
-    this.location.go(routeUrl.toString());
   }
 
   ngOnDestroy(): void {
