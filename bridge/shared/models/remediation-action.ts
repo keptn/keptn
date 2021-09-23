@@ -1,10 +1,19 @@
 import { ResultTypes } from './result-types';
+import { EventState } from './event-state';
 
-export class RemediationAction {
+export type IRemediationAction = {
+  action: string;
+  description: string;
+  name: string;
+  state: EventState,
+  result?: ResultTypes
+};
+
+export class RemediationAction implements IRemediationAction {
   action!: string;
   description!: string;
   name!: string;
-  state!: 'triggered' | 'started' | 'finished';
+  state!: EventState;
   result?: ResultTypes;
 
   public static fromJSON(data: unknown): RemediationAction {
