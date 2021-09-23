@@ -105,7 +105,7 @@ func Test_decodeCloudEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DecodeCloudEvent(tt.args.data)
+			got, err := DecodeNATSMessage(tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("decodeCloudEvent() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -93,6 +93,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		logger.Infof("Adding additional data to event: <subscriptionID=%s>", subscription.ID)
 		err := AddAdditionalEventData(&event, AdditionalEventData{"subscriptionID": subscription.ID})
 		if err != nil {
+			logger.Error("Unable to add additional information about subscriptions to event. Event will not be forwarded")
 			return
 		}
 		logger.Infof("Check if event %s has already been sent", event.ID)

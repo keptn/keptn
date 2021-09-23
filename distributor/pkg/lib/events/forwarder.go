@@ -70,7 +70,7 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	event, err := DecodeCloudEvent(body)
+	event, err := DecodeNATSMessage(body)
 	if err != nil {
 		logger.Errorf("Failed to decode CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)

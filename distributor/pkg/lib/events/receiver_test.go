@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
@@ -11,80 +12,80 @@ import (
 	"time"
 )
 
-func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
+func Test_ReceiveFromNATSAndForwaredEvent(t *testing.T) {
+	fmt.Println("BEGIN")
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	s := RunServerOnPort(TEST_PORT)
-	defer s.Shutdown()
-
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	type args struct {
-		envConfig config.EnvConfig
+	testSender := &keptnv2.TestSender{}
+	config := config.EnvConfig{
+		PubSubRecipient:     "http://127.0.0.1",
+		PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
+		PubSubURL:           natsURL,
+		HTTPPollingInterval: "1",
 	}
-	tests := []struct {
-		name                   string
-		args                   args
-		eventSender            EventSender
-		numberOfReceivedEvents int
-	}{
+	receiver := NewNATSEventReceiver(config, testSender)
+	ctx, cancelReceiver := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go receiver.Start(executionContext)
+	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
-			name: "subscribe to multiple topics - receive events via NATS and forward",
-			args: args{envConfig: config.EnvConfig{
-				PubSubRecipient:     "http://127.0.0.1",
-				PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
-				PubSubURL:           natsURL,
-				HTTPPollingInterval: "1",
-			}},
-			eventSender:            &keptnv2.TestSender{},
-			numberOfReceivedEvents: 2,
+			ID:     "id1",
+			Event:  "sh.keptn.event.task.triggered",
+			Filter: models.EventSubscriptionFilter{},
 		},
 		{
-			name: "subscribe to zero topics - receive no events via NATS",
-			args: args{envConfig: config.EnvConfig{
-				PubSubRecipient:     "http://127.0.0.1",
-				PubSubTopic:         "",
-				PubSubURL:           natsURL,
-				HTTPPollingInterval: "1",
-			}},
-			eventSender:            &keptnv2.TestSender{},
-			numberOfReceivedEvents: 0,
+			ID:     "id2",
+			Event:  "sh.keptn.event.task2.triggered",
+			Filter: models.EventSubscriptionFilter{},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			receiver := NewNATSEventReceiver(tt.args.envConfig, tt.eventSender)
-
-			ctx, cancel := context.WithCancel(context.Background())
-			executionContext := NewExecutionContext(ctx, 1)
-			go receiver.Start(executionContext)
-
-			//TODO: remove waiting
-			time.Sleep(2 * time.Second)
-			natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
-					"data": "",
+	})
+	time.Sleep(5 * time.Second)
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
+					"data": {
+						"project" : "sockshop",
+                        "stage" : "dev",
+						"service" : "service"
+					},
 					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 					"source": "shipyard-controller",
 					"specversion": "1.0",
 					"type": "sh.keptn.event.task.triggered",
 					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 				}`))
-
-			natsPublisher.Publish("sh.keptn.event.task2.triggered", []byte(`{
-					"data": "",
-					"id": "5de83495-4f83-481c-8dbe-fcceb2e0243b",
+	time.Sleep(100 * time.Millisecond)
+	natsPublisher.Publish("sh.keptn.event.task2.triggered", []byte(`{
+					"data": {
+						"project" : "sockshop",
+                        "stage" : "dev",
+						"service" : "service"
+					},
+					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 					"source": "shipyard-controller",
 					"specversion": "1.0",
 					"type": "sh.keptn.event.task2.triggered",
-					"shkeptncontext": "2c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
+					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fc"
 				}`))
 
-			assert.Eventually(t, func() bool {
-				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == tt.numberOfReceivedEvents
-			}, time.Second*time.Duration(10), time.Second)
+	assert.Eventually(t, func() bool {
+		if len(testSender.SentEvents) != 2 {
+			return false
+		}
+		firstSentEvent := testSender.SentEvents[0]
+		dataAsMap := map[string]interface{}{}
+		firstSentEvent.DataAs(&dataAsMap)
+		subscriptionIDInFirstEvent := dataAsMap["additionalData"].(map[string]interface{})["subscriptionID"]
 
-			cancel()
-			executionContext.Wg.Wait()
-		})
-	}
+		secondSentEvent := testSender.SentEvents[1]
+		dataAsMap = map[string]interface{}{}
+		secondSentEvent.DataAs(&dataAsMap)
+		subscriptionIDInSecondEvent := dataAsMap["additionalData"].(map[string]interface{})["subscriptionID"]
+
+		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2"
+	}, time.Second*time.Duration(5), time.Second)
+
+	cancelReceiver()
+	executionContext.Wg.Wait()
 }
