@@ -583,7 +583,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   highlightHeatmap(): void {
     if (this._selectedEvaluationData && !this.isInvalidated) {
-      const _this = this;
       const highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
       const secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation?.comparedEvents
         ?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e.evaluation?.id === eventId));
@@ -597,30 +596,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         });
       }
       if (secondaryHighlightIndexes) {
-        const index = secondaryHighlightIndexes.find(idx => idx >= 0) ?? -1;
-        this.comparedIndicatorResults = index >= 0
-          ? this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? []
-          : [];
-
-        secondaryHighlightIndexes.forEach(secondaryHighlightIndex => {
-          if (secondaryHighlightIndex >= 0) {
-            plotBands.push({
-              className: 'highlight-secondary',
-              from: secondaryHighlightIndex - 0.5,
-              to: secondaryHighlightIndex + 0.5,
-              zIndex: 100,
-              events: {
-                click(): void {
-                  // @ts-ignore
-                  const idx = this.options.from + 0.5;
-                  setTimeout(() => {
-                    _this.selectEvaluationData(_this._heatmapSeries[0]?.data[idx]?.evaluation);
-                  });
-                },
-              },
-            });
-          }
-        });
+        this.setSecondaryHighlight(secondaryHighlightIndexes, plotBands);
       } else {
         this.comparedIndicatorResults = [];
       }
@@ -638,6 +614,31 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
     this.heatmapChart?._update();
     this._changeDetectorRef.detectChanges();
+  }
+
+  private setSecondaryHighlight(secondaryHighlightIndices: number[], plotBands: NavigatorXAxisPlotBandsOptions[]): void {
+    const _this = this;
+    const index = secondaryHighlightIndices.find(idx => idx >= 0) ?? -1;
+    this.comparedIndicatorResults = index >= 0 ? this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [] : [];
+    for (const secondaryHighlightIndex of secondaryHighlightIndices) {
+      if (secondaryHighlightIndex >= 0) {
+        plotBands.push({
+          className: 'highlight-secondary',
+          from: secondaryHighlightIndex - 0.5,
+          to: secondaryHighlightIndex + 0.5,
+          zIndex: 100,
+          events: {
+            click(): void {
+              // @ts-ignore
+              const idx = this.options.from + 0.5;
+              setTimeout(() => {
+                _this.selectEvaluationData(_this._heatmapSeries[0]?.data[idx]?.evaluation);
+              });
+            },
+          },
+        });
+      }
+    }
   }
 
   showSloDialog(): void {
