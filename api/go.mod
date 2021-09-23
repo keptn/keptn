@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.9.1-0.20210921105323-c6aa0eaeb562
+	github.com/keptn/go-utils v0.9.1-0.20210923112824-b42670d7834c
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.13.0 // indirect
