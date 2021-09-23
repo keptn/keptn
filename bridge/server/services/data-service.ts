@@ -140,30 +140,33 @@ export class DataService {
     const sequences = await this.getSequences(projectName, SequenceTypes.REMEDIATION);
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
-      const stageName = sequence.stages[0].name;
-      const response = await this.apiService.getTraces(this.buildRemediationEvent(stageName), this.MAX_TRACE_PAGE_SIZE, projectName, stageName, sequence.service);
-      const traces = response.data.events;
-      const stage = {...sequence.stages[0], actions: []};
-      const remediation: Remediation = Remediation.fromJSON({...sequence, stages: [stage]});
+      const stageName = sequence.stages[0]?.name;
+      // there could be invalid sequences that don't have a stage because the triggered sequence was not present in the shipyard file
+      if (stageName) {
+        const response = await this.apiService.getTraces(this.buildRemediationEvent(stageName), this.MAX_TRACE_PAGE_SIZE, projectName, stageName, sequence.service);
+        const traces = response.data.events;
+        const stage = {...sequence.stages[0], actions: []};
+        const remediation: Remediation = Remediation.fromJSON({...sequence, stages: [stage]});
 
-      remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
-      for (const trace of traces) {
-        if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
-          const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
-          const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
-          let state: EventState;
-          if (finishedAction) {
-            state = EventState.FINISHED;
-          } else if (startedAction) {
-            state = EventState.STARTED;
-          } else {
-            state = EventState.TRIGGERED;
+        remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
+        for (const trace of traces) {
+          if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
+            const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
+            const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
+            let state: EventState;
+            if (finishedAction) {
+              state = EventState.FINISHED;
+            } else if (startedAction) {
+              state = EventState.STARTED;
+            } else {
+              state = EventState.TRIGGERED;
+            }
+
+            remediation.stages[0].actions.push({...trace.data.action, state, result: finishedAction?.data.result});
           }
-
-          remediation.stages[0].actions.push({...trace.data.action, state, result: finishedAction?.data.result});
         }
+        remediations.push(remediation);
       }
-      remediations.push(remediation);
     }
     return remediations;
   }
@@ -264,7 +267,7 @@ export class DataService {
       events: [],
       pageSize: 0,
       nextPageKey: 0,
-      totalCount: 0
+      totalCount: 0,
     };
     let nextPage = 0;
     do {
@@ -274,7 +277,7 @@ export class DataService {
         events: [...result?.events, ...response.data.events],
         pageSize: result.pageSize + response.data.pageSize,
         nextPageKey: response.data.nextPageKey,
-        totalCount: response.data.totalCount
+        totalCount: response.data.totalCount,
       };
     } while (nextPage !== 0);
 
