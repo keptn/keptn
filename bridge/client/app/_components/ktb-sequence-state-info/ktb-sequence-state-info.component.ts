@@ -37,9 +37,6 @@ export class KtbSequenceStateInfoComponent {
     }
   }
 
-  constructor() {
-  }
-
   getStages(): (string | undefined)[] | undefined {
     return this.showOnlyLastStage ? [this.sequence?.getLastStage()] : this.sequence?.getStages();
   }
