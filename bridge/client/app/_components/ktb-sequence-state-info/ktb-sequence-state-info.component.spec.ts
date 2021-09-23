@@ -4,11 +4,7 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
-import { KtbRootEventsListComponent } from '../ktb-root-events-list/ktb-root-events-list.component';
 import { Project } from '../../_models/project';
-import { DeleteType } from '../../_interfaces/delete';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
