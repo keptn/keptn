@@ -19,22 +19,17 @@
          [class.error]="sequence.isFaulty()"
          [textContent]="sequence.name"></a>
       of
-      <a *ngIf="sequence.getShortImageName(); else noImageName"
-         class="m-0 mr-1 bold nobreak"
+      <a class="m-0 mr-1 bold nobreak"
          uitestid="keptn-sequence-info-serviceName"
-         [routerLink]="getServiceLink(sequence)"
-         [textContent]="sequence.getShortImageName()"></a>
-      <ng-template #noImageName>
-        <a *ngIf="sequence.service"
-           class="m-0 mr-1 bold nobreak"
-           uitestid="keptn-sequence-info-serviceName"
-           [routerLink]="getServiceLink(sequence)"
-           [textContent]="sequence.service"></a>
-      </ng-template>
+         [routerLink]="getServiceLink(sequence)">
+        <span [textContent]="sequence.service"></span>
+        <ng-container *ngIf="sequence.getShortImageName()"> (<span [textContent]="sequence.getShortImageName()"></span>)</ng-container>
+      </a>
       <span [textContent]="sequence.getStatus()" uitestid="keptn-sequence-info-status"></span>
     </p>
   </div>
-  <div class="mt-2 stages-list" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" uitestid="keptn-sequence-info-stageDetails">
+  <div class="mt-2 stages-list" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+       uitestid="keptn-sequence-info-stageDetails">
     <ng-container *ngFor="let stage of getStages()">
       <ktb-stage-badge [stage]="stage" [evaluationResult]="sequence.getEvaluation(stage)"
                        [success]="sequence.isSuccessful(stage)"
