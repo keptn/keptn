@@ -65,7 +65,7 @@ spec:
         - name: MONGODB_HOST
           value: '{{ .Values.mongodb.host }}'
         - name: MONGO_DB_NAME
-          value: 'keptn'
+          value: {{ .Values.mongodb.dbName | default "keptn"}}
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:

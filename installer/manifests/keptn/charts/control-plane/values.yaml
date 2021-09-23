@@ -1,4 +1,5 @@
 mongodb:
+  dbName: keptn
   enabled: true
   host: mongodb:27017
   user:

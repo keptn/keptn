@@ -359,7 +359,7 @@ spec:
                   name: mongodb-credentials
                   key: password
             - name: MONGO_DB_NAME
-              value: 'keptn'
+              value: {{ .Values.mongodb.dbName | default "keptn"}}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
@@ -760,7 +760,7 @@ spec:
                   name: mongodb-credentials
                   key: password
             - name: MONGO_DB_NAME
-              value: keptn
+              value: {{ .Values.mongodb.dbName | default "keptn"}}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
