@@ -7,60 +7,76 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'ktb-http-loading-bar',
   templateUrl: './ktb-http-loading-bar.component.html',
-  styleUrls: [],
+  styleUrls: []
 })
 export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
+
   private readonly unsubscribe$ = new Subject<void>();
 
   private hideLoadingTimer?: ReturnType<typeof setTimeout>;
   private animateLoadingBarInterval?: ReturnType<typeof setInterval>;
 
-  public loading = false;
+  public loading = 0;
   @Input() public filterBy: string | null = null;
 
   public value = 0;
   public align: 'start' | 'end' = 'start';
   public state = 'recovered';
 
-  constructor(private httpStateService: HttpStateService) {}
+  private loadedUrls: string[] = [];
+  private finishedUrls: string[] = [];
 
-  ngOnInit(): void {
-    this.httpStateService.state.pipe(takeUntil(this.unsubscribe$)).subscribe((progress: HttpState) => {
-      if (progress && progress.url) {
-        if (!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
-          if (progress.state === HttpProgressState.START) {
-            this.showLoadingBar();
-          } else {
-            this.hideLoadingBar();
-          }
-        }
-      }
-    });
+  constructor(private httpStateService: HttpStateService) {
   }
 
-  showLoadingBar(): void {
-    if (!this.loading) {
-      if (this.hideLoadingTimer) {
-        clearTimeout(this.hideLoadingTimer);
+  ngOnInit(): void {
+    this.httpStateService.state
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((progress: HttpState) => {
+        if (progress && progress.url) {
+          if (!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
+            if (progress.state === HttpProgressState.start) {
+              this.showLoadingBar(progress.url);
+            } else {
+              this.hideLoadingBar(progress.url);
+            }
+          }
+        }
+      });
+  }
+
+  showLoadingBar(url: string): void {
+    if (!this.loadedUrls.includes(url)) {
+      this.loadedUrls.push(url);
+      if (this.loading === 0) {
+        this.animateLoadingBarInterval = setInterval(() => this.animateLoadingBar(), 500);
       }
-      this.loading = true;
-      this.animateLoadingBarInterval = setInterval(() => this.animateLoadingBar(), 500);
+      this.loading++;
     }
   }
 
-  hideLoadingBar(): void {
-    if (this.loading) {
-      if (this.animateLoadingBarInterval) {
-        clearInterval(this.animateLoadingBarInterval);
-      }
+  hideLoadingBar(url: string): void {
+    if (!this.finishedUrls.includes(url)) {
+      this.finishedUrls.push(url);
       this.hideLoadingTimer = setTimeout(() => this.resetValues(), 500);
     }
   }
 
+  isLoading(): boolean {
+    return this.loading > 0;
+  }
+
   resetValues(): void {
-    this.loading = false;
-    this.value = 0;
-    this.align = 'start';
+    if (this.loading > 0) {
+      this.loading--;
+    }
+    if (this.loading === 0) {
+      if (this.animateLoadingBarInterval) {
+        clearInterval(this.animateLoadingBarInterval);
+      }
+      this.value = 0;
+      this.align = 'start';
+    }
   }
 
   animateLoadingBar(): void {
@@ -82,4 +98,5 @@ export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
   }
+
 }
