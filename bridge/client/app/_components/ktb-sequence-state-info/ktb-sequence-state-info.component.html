@@ -21,10 +21,8 @@
       of
       <a class="m-0 mr-1 bold nobreak"
          uitestid="keptn-sequence-info-serviceName"
-         [routerLink]="getServiceLink(sequence)">
-        <span [textContent]="sequence.service"></span>
-        <ng-container *ngIf="sequence.getShortImageName()"> (<span [textContent]="sequence.getShortImageName()"></span>)</ng-container>
-      </a>
+         [routerLink]="getServiceLink(sequence)"
+         [textContent]="sequence.service"></a>
       <span [textContent]="sequence.getStatus()" uitestid="keptn-sequence-info-status"></span>
     </p>
   </div>
