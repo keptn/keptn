@@ -133,6 +133,8 @@ github.com/keptn/go-utils v0.9.1-0.20210921105323-c6aa0eaeb562 h1:Re+LiiPAq+xTlb
 github.com/keptn/go-utils v0.9.1-0.20210921105323-c6aa0eaeb562/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
 github.com/keptn/go-utils v0.9.1-0.20210923085941-10ae4c5609b8 h1:e2629hhhnM0cT3AMHLupgHeIwtsJSTrAH18K/8fBOWM=
 github.com/keptn/go-utils v0.9.1-0.20210923085941-10ae4c5609b8/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
+github.com/keptn/go-utils v0.9.1-0.20210923112824-b42670d7834c h1:uedm4Bk2z0zJ3f0byskKFD4xb/ajs2UP9a6uUu6bGtE=
+github.com/keptn/go-utils v0.9.1-0.20210923112824-b42670d7834c/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
 github.com/klauspost/compress v1.9.5 h1:U+CaK85mrNNb4k8BNOfgJtJ/gr6kswUCFj6miSzVC6M=
 github.com/klauspost/compress v1.9.5/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
