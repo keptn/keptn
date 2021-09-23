@@ -4,6 +4,8 @@ mongodb:
   user:
   password:
   adminPassword:
+  external:
+    connectionString:
 
 prefixPath: ''
 

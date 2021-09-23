@@ -360,6 +360,12 @@ spec:
                   key: password
             - name: MONGO_DB_NAME
               value: 'keptn'
+            - name: MONGODB_EXTERNAL_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: external_connection_string
+                  optional: true
             - name: KEPTN_SPEC_VERSION
               value: {{ .Values.keptnSpecVersion }}
             - name: TASK_STARTED_WAIT_DURATION
@@ -755,6 +761,12 @@ spec:
                   key: password
             - name: MONGO_DB_NAME
               value: keptn
+            - name: MONGODB_EXTERNAL_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: external_connection_string
+                  optional: true
           ports:
             - containerPort: 8080
           resources:

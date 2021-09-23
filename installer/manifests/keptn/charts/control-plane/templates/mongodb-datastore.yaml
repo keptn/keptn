@@ -64,7 +64,7 @@ spec:
           value: "{{ .Values.prefixPath }}"
         - name: MONGODB_HOST
           value: '{{ .Values.mongodb.host }}'
-        - name: MONGODB_DATABASE
+        - name: MONGO_DB_NAME
           value: 'keptn'
         - name: MONGODB_USER
           valueFrom:
@@ -76,6 +76,12 @@ spec:
             secretKeyRef:
                 name: mongodb-credentials
                 key: password
+        - name: MONGODB_EXTERNAL_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: external_connection_string
+              optional: true
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532

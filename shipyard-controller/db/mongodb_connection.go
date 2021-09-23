@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
@@ -26,15 +27,6 @@ func GetMongoDBConnectionInstance() *MongoDBConnection {
 		mongoDBConnectionInstance = &MongoDBConnection{}
 	})
 	return mongoDBConnectionInstance
-}
-
-func GetMongoDBConnectionString() string {
-	mongoDBHost := os.Getenv("MONGODB_HOST")
-	databaseName := os.Getenv("MONGO_DB_NAME")
-	mongoDBUser := os.Getenv("MONGODB_USER")
-	mongoDBPassword := os.Getenv("MONGODB_PASSWORD")
-
-	return fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
 }
 
 func getDatabaseName() string {
@@ -61,7 +53,13 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
 	var err error
-	m.Client, err = mongo.NewClient(options.Client().ApplyURI(GetMongoDBConnectionString()))
+
+	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
+	if err != nil {
+		err := fmt.Errorf("failed to create mongo client: %v", err)
+		return err
+	}
+	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
 		err := fmt.Errorf("failed to create mongo client: %v", err)
 		return err

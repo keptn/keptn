@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
-	"os"
+	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
 	"sync"
 	"time"
 
@@ -11,13 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var mongoDBHost = os.Getenv("MONGODB_HOST")
-var databaseName = os.Getenv("MONGO_DB_NAME")
-var mongoDBUser = os.Getenv("MONGODB_USER")
-var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
-var mutex = &sync.Mutex{}
+var databaseName string
 
-var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
+var mutex = &sync.Mutex{}
 
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
@@ -44,7 +40,13 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
 	var err error
-	m.Client, err = mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
+	connectionString, dbName, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
+	if err != nil {
+		err := fmt.Errorf("failed to create mongo client: %v", err)
+		return err
+	}
+	databaseName = dbName
+	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
 		err := fmt.Errorf("failed to create mongo client: %v", err)
 		return err

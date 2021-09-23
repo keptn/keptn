@@ -40,6 +40,7 @@ var (
 	invalidatedEventsIndexes = []string{"triggeredid"}
 	// keep track of created indexes in memory to save some calls to the mongodb API
 	skipCreateIndex = map[string]bool{}
+	mongoDBName     string
 )
 
 // LockProject locks the collections for a project
@@ -85,7 +86,13 @@ func ensureDBConnection(logger *keptncommon.Logger) error {
 
 func connectMongoDBClient() error {
 	var err error
-	client, err = mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
+	connectionString, dbName, err := GetMongoDBConnectionString()
+	if err != nil {
+		err := fmt.Errorf("failed to create mongo client: %v", err)
+		return err
+	}
+	mongoDBName = dbName
+	client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
 		err := fmt.Errorf("failed to create mongo client: %v", err)
 		return err

@@ -1,3 +1,4 @@
+{{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -76,3 +77,4 @@ spec:
         - name: mongodata
           persistentVolumeClaim:
             claimName: mongodata
+{{- end -}}
