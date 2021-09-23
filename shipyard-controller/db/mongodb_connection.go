@@ -56,8 +56,7 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 
 	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
 	if err != nil {
-		err := fmt.Errorf("failed to create mongo client: %v", err)
-		return err
+		return fmt.Errorf("failed to create mongo client: %v", err)
 	}
 	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {

@@ -88,8 +88,7 @@ func connectMongoDBClient() error {
 	var err error
 	connectionString, dbName, err := GetMongoDBConnectionString()
 	if err != nil {
-		err := fmt.Errorf("failed to create mongo client: %v", err)
-		return err
+		return fmt.Errorf("failed to create mongo client: %v", err)
 	}
 	mongoDBName = dbName
 	client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
