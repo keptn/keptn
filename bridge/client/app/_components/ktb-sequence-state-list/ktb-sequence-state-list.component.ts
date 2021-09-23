@@ -7,7 +7,6 @@ import { Subscription } from 'rxjs';
 import { Project } from '../../_models/project';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
 
 @Component({
   selector: 'ktb-sequence-state-list',
