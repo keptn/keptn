@@ -41,13 +41,17 @@ spec:
           - name: env
             value: 'production'
           livenessProbe:
-            tcpSocket:
-              port: 8080
+            exec:
+              command:
+                - cat
+                - /opt/jmeter/apache-jmeter/bin/jmeter
             initialDelaySeconds: 0
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
-              port: 8080
+            exec:
+              command:
+                - cat
+                - /opt/jmeter/apache-jmeter/bin/jmeter
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
@@ -55,17 +59,15 @@ spec:
         - name: distributor
           image: {{ dict "space" .Values.distributor "context" . | include "jmeter-service.image.name" }}
           livenessProbe:
-            exec:
-              command:
-                - cat
-                - /opt/jmeter/apache-jmeter/bin/jmeter
+            httpGet:
+              path: /health
+              port: 10999
             initialDelaySeconds: 0
             periodSeconds: 5
           readinessProbe:
-            exec:
-              command:
-                - cat
-                - /opt/jmeter/apache-jmeter/bin/jmeter
+            httpGet:
+              path: /health
+              port: 10999
             initialDelaySeconds: 5
             periodSeconds: 5
           imagePullPolicy: Always
