@@ -5,6 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { Project } from '../../_models/project';
+import { filter } from 'rxjs/operators';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
@@ -32,8 +33,9 @@ describe('KtbSequenceStateInfoComponent', () => {
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
-    // @ts-ignore
-    project = await dataService.getProject(projectName).toPromise();
+    project = await dataService.getProject(projectName).pipe(
+      filter((p: Project | undefined): p is Project => !!p)
+    ).toPromise();
   });
 
   it('should create', () => {
