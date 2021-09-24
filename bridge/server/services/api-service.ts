@@ -162,8 +162,11 @@ export class ApiService {
     return this.axios.delete<Resource>(url);
   }
 
-  public saveWebhookConfig(content: string, projectName: string, stageName: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}`;
+  public saveWebhookConfig(content: string, projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
     if (serviceName) {
       url += `/service/${serviceName}`;
     }

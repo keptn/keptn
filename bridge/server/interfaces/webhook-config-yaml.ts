@@ -1,6 +1,6 @@
 import Yaml from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
-import { WebhookConfig } from '../../shared/models/webhook-config';
+import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
 import { WebhookConfigYamlResult } from './webhook-config-yaml-result';
 
 const order: { [key: string]: number } = {
@@ -19,7 +19,8 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   spec: {
     webhooks: {
       type: string, // type === event
-      requests: string[]
+      requests: string[],
+      envFrom?: WebhookSecret[]
     } []
   };
 
@@ -69,12 +70,19 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @params eventType
    * @params curl
    */
-  public addWebhook(eventType: string, curl: string): void {
+  public addWebhook(eventType: string, curl: string, secrets: WebhookSecret[]): void {
     const webhook = this.spec.webhooks.find(w => w.type === eventType);
     if (!webhook) {
-      this.spec.webhooks.push({type: eventType, requests: [curl]});
+      if (secrets) {
+        this.spec.webhooks.push({type: eventType, requests: [curl], envFrom: secrets});
+      } else {
+        this.spec.webhooks.push({type: eventType, requests: [curl]});
+      }
     } else { // overwrite
       webhook.requests[0] = curl;
+      if (secrets) {
+        webhook.envFrom = secrets;
+      }
     }
 
   }

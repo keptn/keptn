@@ -6,6 +6,7 @@ import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { combineLatest } from 'rxjs';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
+import { startWith } from 'rxjs/operators';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
@@ -69,11 +70,11 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.validityChanged.next(status === 'VALID');
     });
     combineLatest([
-      this.getFormControl('method').valueChanges,
-      this.getFormControl('url').valueChanges,
-      this.getFormControl('payload').valueChanges,
-      this.getFormControl('proxy').valueChanges,
-      this.getFormControl('header').valueChanges,
+      this.getFormControl('method').valueChanges.pipe(startWith('')),
+      this.getFormControl('url').valueChanges.pipe(startWith('')),
+      this.getFormControl('payload').valueChanges.pipe(startWith('')),
+      this.getFormControl('proxy').valueChanges.pipe(startWith('')),
+      this.getFormControl('header').valueChanges.pipe(startWith([])),
     ]).subscribe(([method, url, payload, proxy, header]) => {
       if (!this._webhook) {
         this._webhook = new WebhookConfig();
