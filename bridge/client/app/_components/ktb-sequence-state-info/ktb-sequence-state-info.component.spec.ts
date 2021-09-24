@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { KtbSequenceStateInfoComponent } from './ktb-sequence-state-info.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -14,8 +14,8 @@ describe('KtbSequenceStateInfoComponent', () => {
   const projectName = 'sockshop';
   let project: Project;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -39,7 +39,7 @@ describe('KtbSequenceStateInfoComponent', () => {
       project = pr;
       fixture.detectChanges();
     });
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
