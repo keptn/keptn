@@ -32,10 +32,13 @@ describe('KtbSequenceStateInfoComponent', () => {
     fixture = TestBed.createComponent(KtbSequenceStateInfoComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
-    dataService.loadProjects(); // reset project.sequences
-    project = await dataService.getProject(projectName).pipe(
-      filter((p: Project | undefined): p is Project => !!p)
-    ).toPromise();
+    dataService.getProject(projectName)
+      .pipe(
+        filter((p: Project | undefined): p is Project => !!p)
+      ).subscribe((pr: Project) => {
+      project = pr;
+      fixture.detectChanges();
+    });
   });
 
   it('should create', () => {
@@ -54,7 +57,7 @@ describe('KtbSequenceStateInfoComponent', () => {
     const status = fixture.nativeElement.querySelector('[uitestid=keptn-sequence-info-status]');
 
     expect(sequenceName.textContent).toEqual('delivery');
-    expect(serviceName.textContent).toEqual('carts:0.12.1');
+    expect(serviceName.textContent).toEqual('carts');
     expect(status.textContent).toEqual('succeeded');
   });
 
