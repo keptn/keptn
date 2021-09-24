@@ -126,7 +126,7 @@ func sdkError(msg string, err error) *sdk.Error {
 func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.EventDataModifier) (*lib.Webhook, error) {
 	// TODO: use go-utils methods for that once available
 	tmpData := &TemporaryData{}
-	if err := keptnv2.Decode(nedc.Get(), tmpData); err != nil {
+	if err := keptnv2.Decode(nedc.Get()["data"], tmpData); err != nil {
 		return nil, fmt.Errorf("could not decode temporary data of incoming event: %s", err)
 	}
 

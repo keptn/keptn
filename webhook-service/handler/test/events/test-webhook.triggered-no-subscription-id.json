@@ -6,11 +6,6 @@
   "data": {
     "project": "myproject",
     "service": "myservice",
-    "stage": "mystage",
-    "temporaryData": {
-      "uniform": {
-        "subscriptionID": "my-subscription-id"
-      }
-    }
+    "stage": "mystage"
   }
 }
