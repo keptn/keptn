@@ -43,6 +43,14 @@ ktb-root {
   white-space: normal;
 }
 
+p.smaller,
+span.smaller {
+  font-family: BerninaSansWeb, OpenSans, sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  color: $gray-700;
+}
+
 p.small,
 span.small {
   font-family: BerninaSansWeb, OpenSans, sans-serif;
