@@ -32,6 +32,7 @@ describe('KtbSequenceStateInfoComponent', () => {
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
+    // @ts-ignore
     project = await dataService.getProject(projectName).toPromise();
   });
 
