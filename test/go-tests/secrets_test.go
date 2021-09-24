@@ -3,6 +3,7 @@ package go_tests
 import (
 	"context"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 )
@@ -45,12 +46,15 @@ func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
 	require.Contains(t, role.Rules[0].ResourceNames, secret1)
 	require.Contains(t, role.Rules[0].ResourceNames, secret2)
 
+	// delete secret 1
 	_, err = ExecuteCommandf("keptn delete secret %s", secret1)
 	require.Nil(t, err)
 
+	// delete secret 2
 	_, err = ExecuteCommandf("keptn delete secret %s", secret2)
 	require.Nil(t, err)
 
-	role, _ = k8s.RbacV1().Roles(ns).Get(context.TODO(), "keptn-secrets-default-read", v1.GetOptions{})
-	require.NotContains(t, role.Rules[0].ResourceNames, secret1)
+	// check if associated role was deleted
+	_, err = k8s.RbacV1().Roles(ns).Get(context.TODO(), "keptn-secrets-default-read", v1.GetOptions{})
+	require.True(t, errors.IsNotFound(err))
 }
