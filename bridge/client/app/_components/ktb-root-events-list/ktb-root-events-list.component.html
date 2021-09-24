@@ -8,42 +8,9 @@
                          *ngIf="sequence">
       <ktb-selectable-tile-header>
         <div class="container">
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <div fxFlex fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-              <dt-icon *ngIf="(!sequence.isLoading() && !sequence.isWaiting()) || sequence.hasPendingApproval(); else showLoading" class="event-icon"
-                       [name]="sequence.getIcon()"
-                       [class.error]="sequence.isFaulty()"
-                       [class.highlight]="sequence.hasPendingApproval()"></dt-icon>
-              <ng-template #showLoading>
-                <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="sequence.isLoading() && !sequence.isWaiting()">
-                  <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-                </button>
-                <dt-icon *ngIf="sequence.isWaiting()" class="event-icon" name="idle"></dt-icon>
-              </ng-template>
-              <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
-                <p class="m-0">
-                  <span class="bold" [textContent]="sequence.name"></span>
-                  of <span [textContent]="sequence.service"></span>&nbsp;<span [textContent]="sequence.getStatus()"></span>
-                </p>
-              </div>
-            </div>
-            <div class="mb-2">
-              <ktb-sequence-controls [sequence]="sequence" [smallButtons]="true"></ktb-sequence-controls>
-            </div>
-          </div>
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" uitestid="keptn-root-events-list-stageDetails">
-            <p class="m-0 mr-1 small bold" *ngIf="sequence.getShortImageName(); else noImageName" [textContent]="sequence.getShortImageName()"></p>
-            <ng-template #noImageName>
-              <p class="m-0 mr-1 small bold" *ngIf="sequence.service" [textContent]="sequence.service"></p>
-            </ng-template>
-            <p class="m-0 mr-1 small" *ngIf="sequence.getStages().length > 0">in</p>
-            <ng-container *ngFor="let stage of sequence.getStages();">
-              <ktb-stage-badge [stage]="stage" [evaluationResult]="sequence.getEvaluation(stage)"
-                               [success]="sequence.isSuccessful(stage)"
-                               [error]="sequence.isFaulty(stage)" [class.warning]="sequence.isWarning(stage)"
-                               [highlight]="sequence.hasPendingApproval(stage)"
-                               (click)="$event.stopPropagation();selectEvent(sequence, stage)"></ktb-stage-badge>
-            </ng-container>
+          <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="5px">
+            <ktb-sequence-state-info fxFlex fxFlexFill [sequence]="sequence" (stageClicked)="selectEvent($event.sequence, $event.stage)"></ktb-sequence-state-info>
+            <ktb-sequence-controls [sequence]="sequence" [smallButtons]="true"></ktb-sequence-controls>
           </div>
         </div>
       </ktb-selectable-tile-header>
