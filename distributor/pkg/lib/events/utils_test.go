@@ -1,7 +1,6 @@
 package events
 
 import (
-	"encoding/json"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -346,21 +345,6 @@ func Test_matchesFilter(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestAddAdditionalEventData(t *testing.T) {
-	data := keptnv2.EvaluationFinishedEventData{
-		EventData: keptnv2.EventData{Project: "project", Service: "service", Stage: "stage"},
-	}
-
-	event, _ := keptnv2.KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", data).Build()
-	AddAdditionalEventData(&event, AdditionalEventData{"something": "additional"})
-
-	dataAsMap := map[string]interface{}{}
-	marshal, _ := json.Marshal(event.Data)
-	json.Unmarshal(marshal, &dataAsMap)
-
-	assert.Equal(t, map[string]interface{}{"something": "additional"}, dataAsMap["additionalData"])
 }
 
 func getCloudEventWithEventData(eventData keptnv2.EventData) cloudevents.Event {
