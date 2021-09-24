@@ -5,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { Project } from '../../_models/project';
-import { filter } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
@@ -14,8 +14,8 @@ describe('KtbSequenceStateInfoComponent', () => {
   const projectName = 'sockshop';
   let project: Project;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -32,14 +32,13 @@ describe('KtbSequenceStateInfoComponent', () => {
     fixture = TestBed.createComponent(KtbSequenceStateInfoComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
-    dataService.getProject(projectName)
-      .pipe(
-        filter((p: Project | undefined): p is Project => !!p)
-      ).subscribe((pr: Project) => {
-      project = pr;
-      fixture.detectChanges();
-    });
-  }));
+    project = await dataService.getProject(projectName).pipe(
+      filter((p: Project | undefined): p is Project => !!p),
+      take(1)
+    ).toPromise();
+
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
