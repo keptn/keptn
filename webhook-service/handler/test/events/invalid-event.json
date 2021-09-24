@@ -1,0 +1,13 @@
+{
+  "type": "sh.keptn.event.webhook.triggered",
+  "specversion": "1.0",
+  "source": "test",
+  "contenttype": "application/json",
+  "data": {
+    "temporaryData": {
+      "uniform": {
+        "subscriptionID": "my-subscription-id"
+      }
+    }
+  }
+}

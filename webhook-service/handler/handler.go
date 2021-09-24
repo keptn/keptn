@@ -48,11 +48,8 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	if err != nil {
 		return nil, sdkError(fmt.Sprintf("could not retrieve Webhook config: %s", err.Error()), err)
 	}
-	responses := []string{}
 
-	if webhook == nil {
-		return nil, sdkError(fmt.Sprintf("no webhook for event type %s has been configured", *event.Type), nil)
-	}
+	responses := []string{}
 
 	secretEnvVars, sdkErr := th.gatherSecretEnvVars(*webhook)
 	if sdkErr != nil {
