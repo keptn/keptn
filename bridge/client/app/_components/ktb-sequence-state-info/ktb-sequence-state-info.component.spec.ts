@@ -74,19 +74,16 @@ describe('KtbSequenceStateInfoComponent', () => {
     expect(thirdStage.textContent).toEqual('production');
   });
 
-  it('should show sequence info with 1 stage if showOnlyLastStage is true', () => {
+  it('should show sequence info without stages if showStages is false', () => {
     // given
     dataService.loadSequences(project);
     component.sequence = project.sequences[11];
-    component.showOnlyLastStage = true;
+    component.showStages = false;
     fixture.detectChanges();
 
     // then
     const stageDetails = fixture.nativeElement.querySelectorAll('[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge');
-    expect(stageDetails.length).toEqual(1);
-
-    const firstStage = stageDetails[0].querySelector('dt-tag');
-    expect(firstStage.textContent).toEqual('production');
+    expect(stageDetails.length).toEqual(0);
   });
 
   it('should trigger click callback on stage', () => {

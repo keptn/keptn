@@ -26,9 +26,9 @@
       <span [textContent]="sequence.getStatus()" uitestid="keptn-sequence-info-status"></span>
     </p>
   </div>
-  <div class="mt-2 stages-list" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+  <div *ngIf="showStages" class="mt-2 stages-list" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
        uitestid="keptn-sequence-info-stageDetails">
-    <ng-container *ngFor="let stage of getStages()">
+    <ng-container *ngFor="let stage of sequence.getStages()">
       <ktb-stage-badge [stage]="stage" [evaluationResult]="sequence.getEvaluation(stage)"
                        [success]="sequence.isSuccessful(stage)"
                        [error]="sequence.isFaulty(stage)" [class.warning]="sequence.isWarning(stage)"

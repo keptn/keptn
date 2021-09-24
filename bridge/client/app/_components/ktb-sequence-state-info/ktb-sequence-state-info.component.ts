@@ -13,7 +13,7 @@ import {Sequence} from '../../_models/sequence';
 export class KtbSequenceStateInfoComponent {
 
   private _sequence?: Sequence;
-  private _showOnlyLastStage = false;
+  private _showStages = true;
 
   @Output() readonly stageClicked = new EventEmitter<{ sequence: Sequence, stage?: string }>();
 
@@ -28,25 +28,13 @@ export class KtbSequenceStateInfoComponent {
   }
 
   @Input()
-  get showOnlyLastStage(): boolean {
-    return this._showOnlyLastStage;
+  get showStages(): boolean {
+    return this._showStages;
   }
-  set showOnlyLastStage(showOnlyLastStage: boolean) {
-    if (this._showOnlyLastStage !== showOnlyLastStage) {
-      this._showOnlyLastStage = showOnlyLastStage;
+  set showStages(showStages: boolean) {
+    if (this._showStages !== showStages) {
+      this._showStages = showStages;
     }
-  }
-
-  getStages(): string[] {
-    let stages: string[];
-    if (this.showOnlyLastStage) {
-      const stage = this.sequence?.getLastStage();
-      stages = stage ? [stage] : [];
-    }
-    else {
-      stages = this.sequence?.getStages() ?? [];
-    }
-    return stages;
   }
 
   getServiceLink(sequence: Sequence): (string | undefined)[] {
