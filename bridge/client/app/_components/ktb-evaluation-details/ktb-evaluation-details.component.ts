@@ -252,6 +252,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           this._selectedEvaluationData = this._selectedEvaluationData?.id
             ? this.evaluationData.data.evaluationHistory?.find(h => h.id === this._selectedEvaluationData?.id)
             : undefined;
+          this.parseSloFile(this._selectedEvaluationData);
           if (this.evaluationData.data.evaluationHistory) {
             this.updateChartData(this.evaluationData.data.evaluationHistory);
           }
