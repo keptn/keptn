@@ -22,7 +22,6 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 		var events keptnmodels.Events
 		if eventType == "sh.keptn.event.task.triggered" {
 			events = keptnmodels.Events{
-
 				Events: []*keptnmodels.KeptnContextExtendedCE{
 					{
 						ID:          "id-1",
@@ -39,7 +38,6 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 		}
 		if eventType == "sh.keptn.event.task2.triggered" {
 			events = keptnmodels.Events{
-
 				Events: []*keptnmodels.KeptnContextExtendedCE{
 					{
 						ID:          "id-2",
