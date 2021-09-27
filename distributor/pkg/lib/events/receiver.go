@@ -104,7 +104,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 
 		// add subscription ID as additional information to the keptn event
 		if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{}); err != nil {
-			logger.Error("Unable to add additional information about subscriptions to event. Event will not be forwarded")
+			logger.Error("Unable to add additional information about subscriptions to event")
 		}
 
 		// forward keptn event
