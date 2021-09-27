@@ -121,7 +121,7 @@ func Test_Webhook(t *testing.T) {
 	<-time.After(20 * time.Second) // sorry :(
 
 	// now, let's add an webhook.yaml file to our service
-	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYaml)
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
 	defer os.Remove(webhookFilePath)
 
