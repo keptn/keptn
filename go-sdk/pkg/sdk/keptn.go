@@ -49,6 +49,12 @@ func WithHandler(eventType string, handler TaskHandler, filters ...func(keptnHan
 	}
 }
 
+func WithAutomaticResponse(autoResponse bool) KeptnOption {
+	return func(k IKeptn) {
+		k.SetAutomaticResponse(autoResponse)
+	}
+}
+
 type IKeptn interface {
 	// Start starts the internal event handling logic and needs to be called by the user
 	// after creating value of IKeptn

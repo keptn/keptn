@@ -54,6 +54,12 @@ func WithResourceHandler(handler sdk.ResourceHandler) sdk.KeptnOption {
 	}
 }
 
+func WithAutomaticResponse(autoResponse bool) sdk.KeptnOption {
+	return func(keptn sdk.IKeptn) {
+		keptn.SetAutomaticResponse(autoResponse)
+	}
+}
+
 func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
 	eventReceiver := &TestReceiver{}
 	eventSender := &TestSender{}
@@ -62,12 +68,13 @@ func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler: resourceHandler,
 		Keptn: &sdk.Keptn{
-			EventSender:     eventSender,
-			EventReceiver:   eventReceiver,
-			ResourceHandler: resourceHandler,
-			Source:          source,
-			TaskRegistry:    sdk.NewTasksMap(),
-			SyncProcessing:  true,
+			EventSender:            eventSender,
+			EventReceiver:          eventReceiver,
+			ResourceHandler:        resourceHandler,
+			Source:                 source,
+			TaskRegistry:           sdk.NewTasksMap(),
+			SyncProcessing:         true,
+			AutomaticEventResponse: true,
 		},
 	}
 	for _, opt := range opts {

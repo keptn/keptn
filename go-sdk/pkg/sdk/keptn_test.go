@@ -35,9 +35,10 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	}
 
 	keptn := sdk.Keptn{
-		EventSender:   eventSender,
-		EventReceiver: eventReceiver,
-		TaskRegistry:  taskRegistry,
+		EventSender:            eventSender,
+		EventReceiver:          eventReceiver,
+		TaskRegistry:           taskRegistry,
+		AutomaticEventResponse: true,
 	}
 
 	keptn.Start()
