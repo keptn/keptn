@@ -59,6 +59,10 @@ type IKeptn interface {
 	GetTaskRegistry() *TaskRegistry
 	// SendStartedEvent sends a started event for the given input event to the Keptn API
 	SendStartedEvent(event KeptnEvent) error
+	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
+	SendFinishedEvent(event KeptnEvent, result interface{}) error
+	// SetAutomaticResponse tells the handler if it should automatically response with .started/.finished events
+	SetAutomaticResponse(bool)
 }
 
 // Keptn is the default implementation of IKeptn
@@ -107,12 +111,26 @@ func (k *Keptn) GetTaskRegistry() *TaskRegistry {
 	return k.TaskRegistry
 }
 
-func (k *Keptn) Send(event cloudevents.Event) error {
-	log.Infof("Sending %s event", event.Type())
-	if err := k.EventSender.SendEvent(event); err != nil {
-		log.Println("Error sending .started event")
+func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
+	inputCE := cloudevents.Event{}
+	err := keptnv2.Decode(event, &inputCE)
+	if err != nil {
+		return err
 	}
-	return nil
+	return k.send(k.createStartedEventForTriggeredEvent(inputCE))
+}
+
+func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
+	inputCE := cloudevents.Event{}
+	err := keptnv2.Decode(event, &inputCE)
+	if err != nil {
+		return err
+	}
+	return k.send(k.createFinishedEventForTriggeredEvent(inputCE, result))
+}
+
+func (k *Keptn) SetAutomaticResponse(autoResponse bool) {
+	k.AutomaticEventResponse = autoResponse
 }
 
 func (k *Keptn) gotEvent(event cloudevents.Event) {
@@ -127,7 +145,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
 					// no started event sent yet, so it only makes sense to Send an error log event at this point
-					if err := k.Send(k.createErrorLogEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
+					if err := k.send(k.createErrorLogEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
 						log.Errorf("unable to Send .finished event: %v", err)
 						return
 					}
@@ -144,7 +162,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 
 				// only respond with .started event if the incoming event is a task.triggered event
 				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.AutomaticEventResponse {
-					if err := k.Send(k.createStartedEventForTriggeredEvent(event)); err != nil {
+					if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
 						log.Errorf("unable to Send .started event: %v", err)
 						return
 					}
@@ -154,7 +172,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				if err != nil {
 					log.Errorf("error during task execution %v", err.Err)
 					if k.AutomaticEventResponse {
-						if err := k.Send(k.createErrorEvent(event, result, err)); err != nil {
+						if err := k.send(k.createErrorEvent(event, result, err)); err != nil {
 							log.Errorf("unable to Send .finished event: %v", err)
 							return
 						}
@@ -164,7 +182,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				if result == nil {
 					log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
 				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.AutomaticEventResponse {
-					if err := k.Send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
+					if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
 						log.Errorf("unable to Send .finished event: %v", err)
 					}
 				}
@@ -179,6 +197,14 @@ func (k *Keptn) runEventTaskAction(fn func()) {
 	} else {
 		go fn()
 	}
+}
+
+func (k *Keptn) send(event cloudevents.Event) error {
+	log.Infof("Sending %s event", event.Type())
+	if err := k.EventSender.SendEvent(event); err != nil {
+		log.Println("Error sending .started event")
+	}
+	return nil
 }
 
 func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.Event) cloudevents.Event {

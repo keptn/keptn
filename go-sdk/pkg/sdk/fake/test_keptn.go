@@ -34,6 +34,18 @@ func (f *FakeKeptn) GetEventSender() *TestSender {
 	return f.Keptn.EventSender.(*TestSender)
 }
 
+func (f *FakeKeptn) SendStartedEvent(event sdk.KeptnEvent) error {
+	return f.Keptn.SendStartedEvent(event)
+}
+
+func (f *FakeKeptn) SendFinishedEvent(event sdk.KeptnEvent, result interface{}) error {
+	return f.Keptn.SendFinishedEvent(event, result)
+}
+
+func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
+	f.Keptn.AutomaticEventResponse = autoResponse
+}
+
 func WithResourceHandler(handler sdk.ResourceHandler) sdk.KeptnOption {
 	return func(keptn sdk.IKeptn) {
 		fakeKeptn := keptn.(*FakeKeptn)

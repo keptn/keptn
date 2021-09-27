@@ -13,13 +13,12 @@ import (
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 	taskHandler := &fake.TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}, eventType string) (interface{}, *sdk.Error) {
+	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 		return FakeTaskData{}, nil
 	}
 
 	taskEntry := sdk.TaskEntry{
-		TaskHandler:    taskHandler,
-		ReceivingEvent: &FakeTaskData{},
+		TaskHandler: taskHandler,
 	}
 
 	taskEntries := map[string]sdk.TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
