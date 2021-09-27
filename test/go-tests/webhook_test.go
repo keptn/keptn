@@ -6,6 +6,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -39,6 +40,7 @@ metadata:
 spec:
   webhooks:
     - type: "sh.keptn.event.othertask.triggered"
+      subscriptionID: ${othertask-sub-id}
       envFrom: 
         - name: "secretKey"
           secretRef:
@@ -47,6 +49,7 @@ spec:
       requests:
         - "curl http://shipyard-controller:8080/v1/project{{.unknownKey}}"
     - type: "sh.keptn.event.unallowedtask.triggered"
+      subscriptionID: ${unallowedtask-sub-id}
       envFrom: 
         - name: "secretKey"
           secretRef:
@@ -55,6 +58,7 @@ spec:
       requests:
         - "curl http://kubernetes.default.svc.cluster.local:443/v1"
     - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
       envFrom: 
         - name: "secretKey"
           secretRef:
@@ -97,14 +101,18 @@ func Test_Webhook(t *testing.T) {
 	// create subscriptions for the webhook-service
 	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask"}
 
+	webhookYamlWithSubscriptionIDs := webhookYaml
 	for _, taskType := range taskTypes {
-		err = CreateSubscription(t, "webhook-service", models.EventSubscription{
+		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
 			Event: keptnv2.GetTriggeredEventType(taskType),
 			Filter: models.EventSubscriptionFilter{
 				Projects: []string{projectName},
 			},
 		})
 		require.Nil(t, err)
+
+		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
+		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
 	}
 
 	require.Nil(t, err)
@@ -113,7 +121,7 @@ func Test_Webhook(t *testing.T) {
 	<-time.After(20 * time.Second) // sorry :(
 
 	// now, let's add an webhook.yaml file to our service
-	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYaml)
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
 	defer os.Remove(webhookFilePath)
 
@@ -140,7 +148,6 @@ func Test_Webhook(t *testing.T) {
 		decodedEvent := map[string]interface{}{}
 
 		err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
-
 		require.Nil(t, err)
 
 		verify(t, decodedEvent)
