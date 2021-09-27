@@ -124,7 +124,7 @@ func GetIntegrationWithName(name string) (models.Integration, error) {
 	return models.Integration{}, fmt.Errorf("No Keptn Integration with name %s found", name)
 }
 
-func CreateSubscription(t *testing.T, serviceName string, subscription models.EventSubscription) error {
+func CreateSubscription(t *testing.T, serviceName string, subscription models.EventSubscription) (string, error) {
 	var fetchedIntegration models.Integration
 	var err error
 	require.Eventually(t, func() bool {
@@ -139,14 +139,21 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	for _, s := range fetchedIntegration.Subscriptions {
 		// check if the subscription for the event already exists - if yes, fine
 		if s.Event == subscription.Event {
-			return nil
+			return s.ID, nil
 		}
 	}
 
-	_, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription)
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription)
 	require.Nil(t, err)
 
-	return nil
+	subscriptionResponse := &scmodels.CreateSubscriptionResponse{}
+
+	err = resp.ToJSON(subscriptionResponse)
+	require.Nil(t, err)
+
+	require.NotEmpty(t, subscriptionResponse.ID)
+
+	return subscriptionResponse.ID, nil
 }
 
 func ApiDELETERequest(path string) (*req.Resp, error) {

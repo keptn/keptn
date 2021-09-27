@@ -4,9 +4,6 @@
   "source": "test",
   "contenttype": "application/json",
   "data": {
-    "project": "myproject",
-    "service": "myservice",
-    "stage": "mystage",
     "temporaryData": {
       "distributor": {
         "subscriptionID": "my-subscription-id"
