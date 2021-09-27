@@ -8,7 +8,7 @@
     "service": "myservice",
     "stage": "mystage",
     "temporaryData": {
-      "uniform": {
+      "distributor": {
         "subscriptionID": "my-subscription-id"
       }
     }

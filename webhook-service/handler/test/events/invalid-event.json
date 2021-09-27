@@ -5,7 +5,7 @@
   "contenttype": "application/json",
   "data": {
     "temporaryData": {
-      "uniform": {
+      "distributor": {
         "subscriptionID": "my-subscription-id"
       }
     }

@@ -11,13 +11,13 @@ import (
 
 const webhookConfigFileName = "webhook/webhook.yaml"
 
-type UniformData struct {
+type DistributorData struct {
 	SubscriptionID string `json:"subscriptionID"`
 }
 
 type TemporaryData struct {
 	TemporaryData struct {
-		Uniform UniformData `json:"uniform"`
+		Distributor DistributorData `json:"distributor"`
 	} `json:"temporaryData"`
 }
 
@@ -127,10 +127,10 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.Event
 		return nil, fmt.Errorf("could not decode temporary data of incoming event: %s", err)
 	}
 
-	if tmpData.TemporaryData.Uniform.SubscriptionID == "" {
+	if tmpData.TemporaryData.Distributor.SubscriptionID == "" {
 		return nil, errors.New("incoming event does not contain a subscription ID")
 	}
-	subscriptionID := tmpData.TemporaryData.Uniform.SubscriptionID
+	subscriptionID := tmpData.TemporaryData.Distributor.SubscriptionID
 	// first try to retrieve the webhook config at the service level
 	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(nedc.Project(), nedc.Stage(), nedc.Service(), webhookConfigFileName)
 	if err == nil && resource != nil {
