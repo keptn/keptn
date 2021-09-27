@@ -36,13 +36,15 @@ func NewEventMatcherFromSubscription(subscription keptnmodels.EventSubscription)
 }
 
 func (ef EventMatcher) Matches(e cloudevents.Event) bool {
-	keptnBase := &v0_2_0.EventData{}
-	if err := e.DataAs(keptnBase); err != nil {
-		return true
+	// decode event data
+	generalEventData := &v0_2_0.EventData{}
+	if err := e.DataAs(generalEventData); err != nil {
+		return false
 	}
-	if ef.Project != "" && !sliceutils.ContainsStr(strings.Split(ef.Project, ","), keptnBase.Project) ||
-		ef.Stage != "" && !sliceutils.ContainsStr(strings.Split(ef.Stage, ","), keptnBase.Stage) ||
-		ef.Service != "" && !sliceutils.ContainsStr(strings.Split(ef.Service, ","), keptnBase.Service) {
+
+	if ef.Project != "" && !sliceutils.ContainsStr(strings.Split(ef.Project, ","), generalEventData.Project) ||
+		ef.Stage != "" && !sliceutils.ContainsStr(strings.Split(ef.Stage, ","), generalEventData.Stage) ||
+		ef.Service != "" && !sliceutils.ContainsStr(strings.Split(ef.Service, ","), generalEventData.Service) {
 		return false
 	}
 	return true
@@ -59,11 +61,11 @@ func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionCont
 	return &ExecutionContext{ctx, wg}
 }
 
-type ceVersion struct {
-	SpecVersion string `json:"specversion"`
-}
+func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {
+	type ceVersion struct {
+		SpecVersion string `json:"specversion"`
+	}
 
-func DecodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	cv := &ceVersion{}
 	if err := json.Unmarshal(data, cv); err != nil {
 		return nil, err
@@ -157,7 +159,6 @@ func (c *CloudEventsCache) Keep(topicName string, events []*keptnmodels.KeptnCon
 		}
 	}
 	c.cache[topicName] = eventsToKeep
-
 }
 
 func (c *CloudEventsCache) Length(topicName string) int {
