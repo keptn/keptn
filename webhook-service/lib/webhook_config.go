@@ -20,7 +20,7 @@ type WebHookConfigSpec struct {
 
 type Webhook struct {
 	Type           string    `yaml:"type"`
-	SubscriptionID string    `yaml:"subscriptionID"` // TODO: align with https://github.com/keptn/keptn/issues/5264
+	SubscriptionID string    `yaml:"subscriptionID"`
 	EnvFrom        []EnvFrom `yaml:"envFrom"`
 	Requests       []string  `yaml:"requests"`
 }
