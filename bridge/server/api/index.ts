@@ -185,7 +185,7 @@ function apiRouter(params:
 
   router.get('/mongodb-datastore/event', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (req.params.roots === 'true') {
+      if (req.query.root === 'true') {
         const response = await dataService.getRoots(req.query.project?.toString(), req.query.pageSize?.toString(), req.query.serviceName?.toString(), req.query.fromTime?.toString(), req.query.beforeTime?.toString(), req.query.keptnContext?.toString());
         return res.json(response);
       } else {
