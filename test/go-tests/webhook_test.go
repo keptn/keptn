@@ -148,7 +148,6 @@ func Test_Webhook(t *testing.T) {
 		decodedEvent := map[string]interface{}{}
 
 		err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
-
 		require.Nil(t, err)
 
 		verify(t, decodedEvent)
