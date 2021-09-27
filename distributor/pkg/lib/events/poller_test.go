@@ -88,17 +88,19 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 			return false
 		}
 		firstSentEvent := eventSender.SentEvents[0]
-		dataAsMap := map[string]interface{}{}
-		firstSentEvent.DataAs(&dataAsMap)
-		subscriptionIDInFirstEvent := dataAsMap["additionalData"].(map[string]interface{})["subscriptionID"]
+		event1, _ := keptnv2.ToKeptnEvent(firstSentEvent)
+		var event1TmpData map[string]interface{}
+		event1.GetTemporaryData("distributor", &event1TmpData)
+		subscriptionIDInFirstEvent := event1TmpData["subscriptionID"]
 
 		secondSentEvent := eventSender.SentEvents[1]
-		dataAsMap = map[string]interface{}{}
-		secondSentEvent.DataAs(&dataAsMap)
-		subscriptionIDInSecondEvent := dataAsMap["additionalData"].(map[string]interface{})["subscriptionID"]
+		event, _ := keptnv2.ToKeptnEvent(secondSentEvent)
+		var event2TmpData map[string]interface{}
+		event.GetTemporaryData("distributor", &event2TmpData)
+		subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
+
 		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2"
 	}, time.Second*time.Duration(5), time.Second)
-
 	cancel()
 	executionContext.Wg.Wait()
 

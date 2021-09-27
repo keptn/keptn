@@ -19,14 +19,14 @@ func Test_ReceiveFromNATSAndForwaredEvent(t *testing.T) {
 	defer natsServer.Shutdown()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	testSender := &keptnv2.TestSender{}
+	eventSender := &keptnv2.TestSender{}
 	config := config.EnvConfig{
 		PubSubRecipient:     "http://127.0.0.1",
 		PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
 		PubSubURL:           natsURL,
 		HTTPPollingInterval: "1",
 	}
-	receiver := NewNATSEventReceiver(config, testSender)
+	receiver := NewNATSEventReceiver(config, eventSender)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -70,18 +70,20 @@ func Test_ReceiveFromNATSAndForwaredEvent(t *testing.T) {
 				}`))
 
 	assert.Eventually(t, func() bool {
-		if len(testSender.SentEvents) != 2 {
+		if len(eventSender.SentEvents) != 2 {
 			return false
 		}
-		firstSentEvent := testSender.SentEvents[0]
-		dataAsMap := map[string]interface{}{}
-		firstSentEvent.DataAs(&dataAsMap)
-		subscriptionIDInFirstEvent := dataAsMap["additionalData"].(map[string]interface{})["subscriptionID"]
+		firstSentEvent := eventSender.SentEvents[0]
+		event1, _ := keptnv2.ToKeptnEvent(firstSentEvent)
+		var event1TmpData map[string]interface{}
+		event1.GetTemporaryData("distributor", &event1TmpData)
+		subscriptionIDInFirstEvent := event1TmpData["subscriptionID"]
 
-		secondSentEvent := testSender.SentEvents[1]
-		dataAsMap = map[string]interface{}{}
-		secondSentEvent.DataAs(&dataAsMap)
-		subscriptionIDInSecondEvent := dataAsMap["additionalData"].(map[string]interface{})["subscriptionID"]
+		secondSentEvent := eventSender.SentEvents[1]
+		event, _ := keptnv2.ToKeptnEvent(secondSentEvent)
+		var event2TmpData map[string]interface{}
+		event.GetTemporaryData("distributor", &event2TmpData)
+		subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
 
 		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2"
 	}, time.Second*time.Duration(5), time.Second)
