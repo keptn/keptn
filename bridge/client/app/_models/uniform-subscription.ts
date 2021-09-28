@@ -74,12 +74,8 @@ export class UniformSubscription implements us {
   public getFilter(data?: DtFilterFieldDefaultDataSourceAutocomplete): DtFilterArray[] {
     if (data) {
       const filter = [
-        ...(this.filter.stages?.map((stage) => {
-          return [data.autocomplete[0], { name: stage }] as DtFilterArray;
-        }) ?? []),
-        ...(this.filter.services?.map((service) => {
-          return [data.autocomplete[1], { name: service }] as DtFilterArray;
-        }) ?? []),
+        ...(this.filter.stages?.map((stage) => [data.autocomplete[0], { name: stage }] as DtFilterArray) ?? []),
+        ...(this.filter.services?.map((service) => [data.autocomplete[1], { name: service }] as DtFilterArray) ?? []),
       ];
       if (filter.length !== this._filter?.length) {
         this._filter = filter;

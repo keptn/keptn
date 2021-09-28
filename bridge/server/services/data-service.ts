@@ -682,11 +682,9 @@ export class DataService {
     for (const key in currentDirectory) {
       if (dict[key]) {
         files.push(
-          ...currentDirectory._.map((item) => {
-            return {
+          ...currentDirectory._.map((item) => ({
               fileName: item,
-            } as TreeEntry;
-          })
+            } as TreeEntry))
         );
       } else {
         // @ts-ignore

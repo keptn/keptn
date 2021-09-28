@@ -685,8 +685,7 @@ export class DataService {
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {
     return from(sequences).pipe(
-      mergeMap((sequence) => {
-        return this.apiService.getTraces(sequence.shkeptncontext, sequence.project).pipe(
+      mergeMap((sequence) => this.apiService.getTraces(sequence.shkeptncontext, sequence.project).pipe(
           map((response) => {
             this.updateTracesUpdated(response, sequence.shkeptncontext);
             return response.body;
@@ -697,8 +696,7 @@ export class DataService {
             sequence.traces = traces;
             return sequence;
           })
-        );
-      }),
+        )),
       toArray()
     );
   }
@@ -713,13 +711,11 @@ export class DataService {
 
   private rootMapper(roots: Trace[]): Observable<Root[]> {
     return from(roots).pipe(
-      mergeMap((root) => {
-        return this.apiService.getTraces(root.shkeptncontext, root.data.project).pipe(
+      mergeMap((root) => this.apiService.getTraces(root.shkeptncontext, root.data.project).pipe(
           map((result) => result.body?.events || []),
           map(Trace.traceMapper),
           map((traces) => ({ ...root, traces }))
-        );
-      }),
+        )),
       toArray(),
       map((rs) => rs.map((root) => Root.fromJSON(root)))
     );

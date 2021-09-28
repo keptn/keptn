@@ -52,11 +52,9 @@ export class KtbStageOverviewComponent implements OnDestroy {
         {
           name: 'Services',
           autocomplete:
-            this.project?.getServices().map((service) => {
-              return {
+            this.project?.getServices().map((service) => ({
                 name: service.serviceName,
-              };
-            }) ?? [],
+              })) ?? [],
         } as DtAutoComplete,
       ],
     };
@@ -72,13 +70,11 @@ export class KtbStageOverviewComponent implements OnDestroy {
     }
     this.filterChange.emit(this.filteredServices);
     this.filter = [
-      ...this.filteredServices.map((service) => {
-        return [
+      ...this.filteredServices.map((service) => [
           // @ts-ignore
           this._dataSource.data.autocomplete[0],
           { name: service },
-        ] as DtFilterArray;
-      }),
+        ] as DtFilterArray),
     ];
 
     this._changeDetectorRef.markForCheck();

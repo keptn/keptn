@@ -1180,9 +1180,7 @@ const projectsData: any = [
 
 const Projects: Project[] = projectsData.map((project: Project) => {
   project.stages = project.stages.map((stage) => {
-    stage.services = stage.services.map((service) => {
-      return Service.fromJSON(service);
-    });
+    stage.services = stage.services.map((service) => Service.fromJSON(service));
     return Stage.fromJSON(stage);
   });
   return Project.fromJSON(project);

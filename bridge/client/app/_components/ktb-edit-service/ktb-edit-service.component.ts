@@ -31,12 +31,10 @@ export class KtbEditServiceComponent implements OnDestroy {
     private notificationsService: NotificationsService
   ) {
     const params$ = this.route.paramMap.pipe(
-      map((params) => {
-        return {
+      map((params) => ({
           serviceName: params.get('serviceName'),
           projectName: params.get('projectName'),
-        };
-      }),
+        })),
       filter(
         (params): params is { serviceName: string; projectName: string } => !!params.serviceName && !!params.projectName
       )

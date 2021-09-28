@@ -1999,7 +1999,7 @@ const rootTraces: any = [
 ];
 
 // tslint:disable-next-line:no-any
-let evaluationTraces: any = [
+const evaluationTraces: any = [
   {
     contenttype: 'application/json',
     data: {

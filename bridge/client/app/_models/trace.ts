@@ -71,9 +71,7 @@ class Trace extends tc {
         seq.push(trace);
       } else if (seq.length > 0) {
         seq
-          .reduce((lastSeq: Trace | undefined, s: Trace) => {
-            return s.stage === trace.stage ? s : lastSeq;
-          }, undefined)
+          .reduce((lastSeq: Trace | undefined, s: Trace) => s.stage === trace.stage ? s : lastSeq, undefined)
           ?.traces.push(trace);
       } else {
         seq.push(trace);

@@ -35,9 +35,7 @@ const sessionConfig = {
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  genid: () => {
-    return random({ length: COOKIE_LENGTH, type: 'url-safe' });
-  },
+  genid: () => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
   store: new memoryStore({
     checkPeriod: CHECK_PERIOD,
     ttl: SESSION_TIME,

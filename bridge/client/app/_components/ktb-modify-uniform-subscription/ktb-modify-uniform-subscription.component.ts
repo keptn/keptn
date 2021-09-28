@@ -73,13 +73,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     private notificationsService: NotificationsService
   ) {
     const subscription$ = this.route.paramMap.pipe(
-      map((paramMap) => {
-        return {
+      map((paramMap) => ({
           integrationId: paramMap.get('integrationId'),
           subscriptionId: paramMap.get('subscriptionId'),
           projectName: paramMap.get('projectName'),
-        };
-      }),
+        })),
       filter(
         (params): params is { integrationId: string; subscriptionId: string | null; projectName: string } =>
           !!(params.integrationId && params.projectName)
@@ -187,19 +185,15 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       autocomplete: [
         {
           name: 'Stage',
-          autocomplete: project.stages.map((stage) => {
-            return {
+          autocomplete: project.stages.map((stage) => ({
               name: stage.stageName,
-            };
-          }),
+            })),
         },
         {
           name: 'Service',
-          autocomplete: project.getServices().map((service) => {
-            return {
+          autocomplete: project.getServices().map((service) => ({
               name: service.serviceName,
-            };
-          }),
+            })),
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;

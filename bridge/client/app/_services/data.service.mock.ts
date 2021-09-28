@@ -72,9 +72,7 @@ export class DataServiceMock extends DataService {
       this.loadProjects();
     }
     return this._projects.pipe(
-      map((projects) => {
-        return projects?.find((project) => project.projectName === projectName);
-      })
+      map((projects) => projects?.find((project) => project.projectName === projectName))
     );
   }
 

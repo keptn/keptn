@@ -9,9 +9,7 @@ export class AppInitService {
   public init() {
     return new Promise((resolve) => {
       fetch(environment.appConfigUrl)
-        .then((response) => {
-          return response.text();
-        })
+        .then((response) => response.text())
         .then((config) => {
           try {
             if (config) {

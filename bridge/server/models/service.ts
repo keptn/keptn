@@ -19,9 +19,7 @@ export class Service extends sv {
 
   public getLatestSequence(stageName: string): string | undefined {
     const sequenceEvents = this.getSequenceEvents(stageName);
-    return sequenceEvents.reduce((latestSequence: ServiceEvent | undefined, currentSequence: ServiceEvent) => {
-      return latestSequence && latestSequence.time > currentSequence.time ? latestSequence : currentSequence;
-    }, undefined)?.keptnContext;
+    return sequenceEvents.reduce((latestSequence: ServiceEvent | undefined, currentSequence: ServiceEvent) => latestSequence && latestSequence.time > currentSequence.time ? latestSequence : currentSequence, undefined)?.keptnContext;
   }
 
   private getSequenceEvents(stageName: string): ServiceEvent[] {

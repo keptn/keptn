@@ -189,9 +189,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
 
   public toYAML(): string {
     return Yaml.stringify(this, {
-      sortMapEntries: (a, b) => {
-        return order[a.key] - order[b.key];
-      },
+      sortMapEntries: (a, b) => order[a.key] - order[b.key],
     });
   }
 }

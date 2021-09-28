@@ -186,9 +186,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     colorAxis: {
       dataClasses: Object.keys(this._evaluationColor)
         .filter((key) => key !== 'failed')
-        .map((key) => {
-          return { color: this._evaluationColor[key], name: key };
-        }),
+        .map((key) => ({ color: this._evaluationColor[key], name: key })),
     },
 
     plotOptions: {
