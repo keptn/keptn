@@ -254,10 +254,12 @@ export class DataService {
     const shipyard = await this.getShipyard(projectName);
     const tasks: string[] = ['service.delete', 'service.create', 'evaluation'];
     for (const stage of shipyard.spec.stages) {
-      for (const sequence of stage.sequences) {
-        for (const task of sequence.tasks) {
-          if (!tasks.includes(task.name)) {
-            tasks.push(task.name);
+      if (stage.sequences) {
+        for (const sequence of stage.sequences) {
+          for (const task of sequence.tasks) {
+            if (!tasks.includes(task.name)) {
+              tasks.push(task.name);
+            }
           }
         }
       }

@@ -8,7 +8,7 @@ export interface Shipyard {
     stages: [
       {
         name: string;
-        sequences: [
+        sequences?: [
           {
             name: string;
             triggeredOn?: [
