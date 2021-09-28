@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Secret } from '../../_models/secret';
+import { Scopes, Secret } from '../../_models/secret';
 
 @Component({
   selector: 'ktb-secrets-view',
@@ -16,7 +16,7 @@ export class KtbCreateSecretFormComponent {
   private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
   private secretKeyPattern = '[-._a-zA-Z0-9]+';
 
-  public scopes = ['keptn-default', 'keptn-webhook-service', 'dynatrace-service'];
+  public scopes = Object.values(Scopes);
 
   public createSecretForm = this.fb.group({
     name: ['', [Validators.required, Validators.pattern(this.secretNamePattern)]],

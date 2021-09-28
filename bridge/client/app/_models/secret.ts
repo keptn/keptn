@@ -1,3 +1,9 @@
+export enum Scopes {
+  KeptnDefault = 'keptn-default',
+  KeptnWebhookService = 'keptn-webhook-service',
+  KeptnDynatraceService = 'dynatrace-service'
+}
+
 class KeyValuePair {
   key!: string;
   value!: string;
@@ -9,6 +15,7 @@ export class Secret {
   data: KeyValuePair[];
 
   constructor() {
+    this.scope = Scopes.KeptnDefault;
     this.data = [];
   }
 
