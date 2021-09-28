@@ -964,7 +964,7 @@ spec:
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
-          image: {{ dict "space" .Values.webhookService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.webhookService.image.repository }}:{{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -997,7 +997,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ include "keptn.distributor.imageName" . }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
