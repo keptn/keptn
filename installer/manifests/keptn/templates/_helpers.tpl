@@ -79,7 +79,7 @@ Return the proper image name
 {{- define "keptn.images.image" -}}
 {{- $global := .context.Values.global -}}
 {{- $registryName := .imageRoot.registry -}}
-{{- $repositoryName := .imageRoot.repository -}}
+{{- $repositoryName := .imageRoot.repositoryImageName -}}
 {{- $tag := default .context.Chart.AppVersion .imageRoot.tag | toString -}}
 {{- if $global }}
     {{- if $global.imageRegistry }}

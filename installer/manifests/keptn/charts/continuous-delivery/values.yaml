@@ -9,5 +9,5 @@ ingressConfig:
 
 distributor:
   image:
-    repository: docker.io/keptn/distributor
+    repositoryImageName: docker.io/keptn/distributor
     tag: ""

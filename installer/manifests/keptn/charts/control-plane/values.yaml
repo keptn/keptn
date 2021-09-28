@@ -22,19 +22,19 @@ apiGatewayNginx:
   nodePort: 31090
   image:
     registry: docker.io
-    repository: nginxinc/nginx-unprivileged
+    repositoryImageName: nginxinc/nginx-unprivileged
     tag: 1.19.4-alpine
 
 remediationService:
   image:
     registry: docker.io
-    repository: keptn/remediation-service
+    repositoryImageName: keptn/remediation-service
     tag: ''
 
 apiService:
   image:
     registry: docker.io
-    repository: keptn/api
+    repositoryImageName: keptn/api
     tag: ''
   config:
     maxAuthRequestsPerSecond: '1.0'
@@ -43,7 +43,7 @@ apiService:
 bridge:
   image:
     registry: docker.io
-    repository: keptn/bridge2
+    repositoryImageName: keptn/bridge2
     tag: ''
   cliDownloadLink:
   integrationsPageLink:
@@ -67,13 +67,13 @@ distributor:
     namespace:
   image:
     registry: docker.io
-    repository: keptn/distributor
+    repositoryImageName: keptn/distributor
     tag: ''
 
 shipyardController:
   image:
     registry: docker.io
-    repository: keptn/shipyard-controller
+    repositoryImageName: keptn/shipyard-controller
     tag: ''
   config:
     taskStartedWaitDuration: "10m"
@@ -82,13 +82,13 @@ shipyardController:
 secretService:
   image:
     registry: docker.io
-    repository: keptn/secret-service
+    repositoryImageName: keptn/secret-service
     tag: ''
 
 configurationService:
   image:
     registry: docker.io
-    repository: keptn/configuration-service
+    repositoryImageName: keptn/configuration-service
     tag: ''
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
@@ -97,37 +97,37 @@ configurationService:
 mongodbDatastore:
   image:
     registry: docker.io
-    repository: keptn/mongodb-datastore
+    repositoryImageName: keptn/mongodb-datastore
     tag: ''
 
 lighthouseService:
   image:
     registry: docker.io
-    repository: keptn/lighthouse-service
+    repositoryImageName: keptn/lighthouse-service
     tag: ''
 
 statisticsService:
   image:
     registry: docker.io
-    repository: keptn/statistics-service
+    repositoryImageName: keptn/statistics-service
     tag: ''
 
 approvalService:
   image:
     registry: docker.io
-    repository: keptn/approval-service
+    repositoryImageName: keptn/approval-service
     tag: ''
 
 webhookService:
   image:
     registry: docker.io
-    repository: keptn/webhook-service
+    repositoryImageName: keptn/webhook-service
     tag: ''
 
 alpine:
   image:
     registry: docker.io
-    repository: alpine
+    repositoryImageName: alpine
     tag: '3.13'
 
 ingress:
