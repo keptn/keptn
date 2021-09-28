@@ -3,6 +3,8 @@ import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/bar
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { Overlay, OverlayPositionBuilder, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { NavigationStart, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 export interface SelectTreeNode {
   name: string;
@@ -45,7 +47,11 @@ export class KtbTreeListSelectDirective implements OnInit {
     });
   }
 
-  constructor(private overlay: Overlay, private overlayPositionBuilder: OverlayPositionBuilder, private elementRef: ElementRef) {
+  constructor(private overlay: Overlay, private overlayPositionBuilder: OverlayPositionBuilder, private elementRef: ElementRef, private router: Router) {
+    // Close when navigation happens - to keep the overlay on the UI
+    this.router.events.pipe(filter(event => event instanceof NavigationStart)).subscribe(() => {
+      this.close();
+    });
   }
 
   public ngOnInit(): void {
