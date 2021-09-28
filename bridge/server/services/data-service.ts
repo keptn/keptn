@@ -488,8 +488,8 @@ export class DataService {
       const response = await this.apiService.getUniformSubscription(integrationId, subscriptionId);
       const subscription = response.data;
       const projectName = subscription.filter.projects?.[0];
-      if (projectName && subscription.filter.stages?.length) {
-        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages, subscription.filter.services?.length ? subscription.filter.services : [undefined]);
+      if (projectName) {
+        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages?.length ? subscription.filter.stages : [undefined], subscription.filter.services?.length ? subscription.filter.services : [undefined]);
       }
     }
     await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
@@ -505,7 +505,7 @@ export class DataService {
     return secrets.filter(secret => secret.scope === scope);
   }
 
-  private async removeWebhooks(eventType: string, projectName: string, stages: string[], services: string[] | [undefined]): Promise<void> {
+  private async removeWebhooks(eventType: string, projectName: string, stages: string[] | [undefined], services: string[] | [undefined]): Promise<void> {
     for (const stage of stages) {
       for (const service of services) {
         await this.removeWebhook(eventType, projectName, stage, service);
