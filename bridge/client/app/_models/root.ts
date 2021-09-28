@@ -1,5 +1,5 @@
-import {Trace} from './trace';
-import {EventTypes} from '../../../shared/interfaces/event-types';
+import { Trace } from './trace';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 
 export class Root extends Trace {
   traces: Trace[] = [];
@@ -13,19 +13,18 @@ export class Root extends Trace {
     let result = false;
     const stages = stageName ? [stageName] : this.getStages();
     if (stages.length > 0) {
-      stages.forEach(stage => {
+      stages.forEach((stage) => {
         result ||= this.areTracesFaulty(stage);
       });
-    }
-    else {
+    } else {
       result = this.areTracesFaulty();
     }
     return result;
   }
 
   private areTracesFaulty(stageName?: string): boolean {
-    const stageTraces = stageName ? this.traces.filter(t => t.stage === stageName) : this.traces;
-    return stageTraces.some(t => t.isFaulty()) && !stageTraces.some(t => t.isSuccessful());
+    const stageTraces = stageName ? this.traces.filter((t) => t.stage === stageName) : this.traces;
+    return stageTraces.some((t) => t.isFaulty()) && !stageTraces.some((t) => t.isSuccessful());
   }
 
   isStarted(): boolean {
@@ -33,9 +32,9 @@ export class Root extends Trace {
   }
 
   hasFailedEvaluation(): string | undefined {
-    let result: string | undefined ;
+    let result: string | undefined;
     if (this.traces) {
-      const failedEvaluation = this.findTrace(t => !!(t.isEvaluation() && t.isFailedEvaluation()));
+      const failedEvaluation = this.findTrace((t) => !!(t.isEvaluation() && t.isFailedEvaluation()));
       if (failedEvaluation) {
         result = failedEvaluation.stage;
       }
@@ -44,11 +43,14 @@ export class Root extends Trace {
   }
 
   getDeploymentTrace(stage: string): Trace | undefined {
-    return this.findTrace(trace => trace.isDeployment() === stage);
+    return this.findTrace((trace) => trace.isDeployment() === stage);
   }
 
   isDeployment(): string | undefined {
-    return this.traces.reduce((result: string | undefined, trace: Trace) => result ? result : trace.isDeployment(), undefined);
+    return this.traces.reduce(
+      (result: string | undefined, trace: Trace) => (result ? result : trace.isDeployment()),
+      undefined
+    );
   }
 
   isWarning(stageName?: string): boolean {
@@ -59,8 +61,7 @@ export class Root extends Trace {
     return this.traces.reduce((result: boolean, trace: Trace) => {
       if (result) {
         return !trace.isFaulty(stageName);
-      }
-      else {
+      } else {
         return trace.isSuccessful(stageName);
       }
     }, false);
@@ -79,11 +80,13 @@ export class Root extends Trace {
   }
 
   getPendingApproval(stageName?: string): Trace | undefined {
-    return this.findTrace(trace => !!trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.stage === stageName));
+    return this.findTrace(
+      (trace) => !!trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.stage === stageName)
+    );
   }
 
   getTracesOfStage(stage: string): Trace[] {
-    return this.traces?.filter(trace => trace.data.stage === stage) ?? [];
+    return this.traces?.filter((trace) => trace.data.stage === stage) ?? [];
   }
 
   getFirstTraceOfStage(stage: string): Trace {
@@ -114,27 +117,31 @@ export class Root extends Trace {
 
   getProject(): string | undefined {
     if (!this.data.project) {
-      this.data.project = this.findTrace(trace => !!trace.data.project)?.data.project;
+      this.data.project = this.findTrace((trace) => !!trace.data.project)?.data.project;
     }
     return this.data.project;
   }
 
   getService(): string | undefined {
     if (!this.data.service) {
-      this.data.service = this.findTrace(trace => !!trace.data.project)?.data.service;
+      this.data.service = this.findTrace((trace) => !!trace.data.project)?.data.service;
     }
     return this.data.service;
   }
 
   getEvaluation(stageName: string): Trace | undefined {
-    return this.findLastTrace(trace =>
-      trace.type === EventTypes.EVALUATION_TRIGGERED
-      && trace.data.stage === stageName
-      && trace.traces.some(t => t.type === EventTypes.EVALUATION_STARTED));
+    return this.findLastTrace(
+      (trace) =>
+        trace.type === EventTypes.EVALUATION_TRIGGERED &&
+        trace.data.stage === stageName &&
+        trace.traces.some((t) => t.type === EventTypes.EVALUATION_STARTED)
+    );
   }
 
   getDeploymentDetails(stage: string): Trace | undefined {
-    return this.findTrace(t => t.type === EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage === stage)?.getFinishedEvent();
+    return this.findTrace(
+      (t) => t.type === EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage === stage
+    )?.getFinishedEvent();
   }
 
   getRemediationActions(): Trace[] {
@@ -143,7 +150,7 @@ export class Root extends Trace {
   }
 
   isFinished() {
-    return this.traces.every(t => t.isFinished());
+    return this.traces.every((t) => t.isFinished());
   }
 
   getSequenceName() {
@@ -153,17 +160,13 @@ export class Root extends Trace {
   getStatus() {
     if (this.isProblem() && this.isProblemResolvedOrClosed()) {
       return 'resolved';
-    }
-    else if (this.isProblem()) {
+    } else if (this.isProblem()) {
       return 'opened';
-    }
-    else if (this.isFinished() && this.isFaulty()) {
+    } else if (this.isFinished() && this.isFaulty()) {
       return 'failed';
-    }
-    else if (this.isFinished()) {
+    } else if (this.isFinished()) {
       return 'succeeded';
-    }
-    else {
+    } else {
       return 'active';
     }
   }
@@ -173,8 +176,7 @@ export class Root extends Trace {
     if (status === 'active') {
       if (this.getPendingApproval() != null) {
         status = 'waiting for approval';
-      }
-      else {
+      } else {
         status = 'started';
       }
     }

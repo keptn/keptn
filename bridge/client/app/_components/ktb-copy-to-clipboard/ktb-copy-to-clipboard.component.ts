@@ -1,11 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  ViewEncapsulation
-} from '@angular/core';
-import {Platform} from '@angular/cdk/platform';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewEncapsulation } from '@angular/core';
+import { Platform } from '@angular/cdk/platform';
 
 @Component({
   selector: 'ktb-copy-to-clipboard[value][label]',
@@ -27,5 +21,4 @@ export class KtbCopyToClipboardComponent {
   public visible = false;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public platform: Platform) {}
-
 }

@@ -8,10 +8,7 @@ describe('ApiService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     });
     apiService = TestBed.inject(ApiService);
   });

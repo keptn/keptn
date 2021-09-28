@@ -10,24 +10,20 @@ describe('KtbConfirmationDialogComponent', () => {
   const dialogData = {
     sequence: {
       shkeptncontext: 'f6a38eb6-e99d-4d14-ab4c-3e94ed288b45',
-      name: 'delivery'
+      name: 'delivery',
     },
-    confirmCallback: (params: any) => { }
+    confirmCallback: (params: any) => {},
   };
   const dialogRefMock = {
-    close: () => { }
+    close: () => {},
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        MatDialogModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, MatDialogModule, HttpClientTestingModule],
       providers: [
-        {provide: MAT_DIALOG_DATA, useValue: dialogData},
-        {provide: MatDialogRef, useValue: dialogRefMock}
+        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+        { provide: MatDialogRef, useValue: dialogRefMock },
       ],
     }).compileComponents();
 

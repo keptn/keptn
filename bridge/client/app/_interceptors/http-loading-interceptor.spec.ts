@@ -5,12 +5,9 @@ import { HttpLoadingInterceptor } from './http-loading-interceptor';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('HttpErrorInterceptorService', () => {
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-      ],
+      imports: [HttpClientTestingModule],
       providers: [
         Overlay,
         {

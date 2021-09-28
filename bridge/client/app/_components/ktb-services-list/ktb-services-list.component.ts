@@ -51,8 +51,11 @@ export class KtbServicesListComponent {
     return DEFAULT_PAGE_SIZE;
   }
 
-  constructor(public dataService: DataService, public dateUtil: DateUtil, private _changeDetectorRef: ChangeDetectorRef) {
-  }
+  constructor(
+    public dataService: DataService,
+    public dateUtil: DateUtil,
+    private _changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   updateDataSource() {
     this.services.sort(this.compare());

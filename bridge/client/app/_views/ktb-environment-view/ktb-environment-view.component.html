@@ -1,6 +1,11 @@
 <div fxFlexFill *ngIf="project$ | async as project">
   <div fxFlex="70" fxLayout="column">
-    <ktb-stage-overview fxFlex fxLayout="column" (selectedStageChange)="stageDetails.selectStage($event)" (filterChange)="stageDetails.filteredServices = $event"></ktb-stage-overview>
+    <ktb-stage-overview
+      fxFlex
+      fxLayout="column"
+      (selectedStageChange)="stageDetails.selectStage($event)"
+      (filterChange)="stageDetails.filteredServices = $event"
+    ></ktb-stage-overview>
   </div>
   <div fxFlex="30" fxLayout="column">
     <ktb-stage-details fxFlex fxLayout="column" #stageDetails [project]="project"></ktb-stage-details>

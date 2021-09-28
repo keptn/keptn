@@ -13,7 +13,7 @@ enum Column {
   PASS_CRITERIA = 4,
   WARNING_CRITERIA = 5,
   RESULT = 6,
-  SCORE = 7
+  SCORE = 7,
 }
 
 describe('KtbEvaluationDetailsComponent', () => {
@@ -22,10 +22,7 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSliBreakdownComponent);
@@ -89,8 +86,19 @@ describe('KtbEvaluationDetailsComponent', () => {
 
     // then
     const cells = firstRow.querySelectorAll('dt-cell');
-    validateIndicatorResult(cells, true, '370.2', '334.5', '1', '+35.65',
-      '+10.65%', '<=+10% and <600', '<=800', 'passed', '100');
+    validateIndicatorResult(
+      cells,
+      true,
+      '370.2',
+      '334.5',
+      '1',
+      '+35.65',
+      '+10.65%',
+      '<=+10% and <600',
+      '<=800',
+      'passed',
+      '100'
+    );
 
     expect(firstRow.querySelector('.error, .error-line')).toBeFalsy();
   });
@@ -107,8 +115,19 @@ describe('KtbEvaluationDetailsComponent', () => {
 
     // then
     const cells = firstRow.querySelectorAll('dt-cell');
-    validateIndicatorResult(cells, false, '370.2', '1082', '0', '-712.42',
-      '-65.805%', '<=+10% and <600', '<=800', 'failed', '0');
+    validateIndicatorResult(
+      cells,
+      false,
+      '370.2',
+      '1082',
+      '0',
+      '-712.42',
+      '-65.805%',
+      '<=+10% and <600',
+      '<=800',
+      'failed',
+      '0'
+    );
 
     expect(cells[Column.PASS_CRITERIA].querySelectorAll('.error.error-line').length).toBe(2);
     expect(cells[Column.WARNING_CRITERIA].querySelectorAll('.error.error-line').length).toBe(1);
@@ -157,7 +176,9 @@ describe('KtbEvaluationDetailsComponent', () => {
     const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row > dt-cell:nth-child(${Column.NAME + 1})`);
     for (let i = 0; i < indices.length; ++i) {
       // @ts-ignore
-      expect(indicatorNames[i].textContent).toEqual(selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric);
+      expect(indicatorNames[i].textContent).toEqual(
+        selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric
+      );
     }
   }
 
@@ -169,13 +190,28 @@ describe('KtbEvaluationDetailsComponent', () => {
     // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
     // @ts-ignore
-    component.comparedIndicatorResults = comparedEvaluationIndex === -1 ? [] : Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults;
+    component.comparedIndicatorResults =
+      comparedEvaluationIndex === -1
+        ? []
+        : Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults;
   }
 
-  function validateIndicatorResult(cells: HTMLElement[], isSuccess: boolean, firstValue: string, secondValue: string, weight: string,
-                                   comparedValueAbsolute: string, comparedValueRelative: string, passCriteria: string,
-                                   warningCriteria: string, result: string, score: string) {
-    const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(`span.${isSuccess ? 'success' : 'error'}`);
+  function validateIndicatorResult(
+    cells: HTMLElement[],
+    isSuccess: boolean,
+    firstValue: string,
+    secondValue: string,
+    weight: string,
+    comparedValueAbsolute: string,
+    comparedValueRelative: string,
+    passCriteria: string,
+    warningCriteria: string,
+    result: string,
+    score: string
+  ) {
+    const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(
+      `span.${isSuccess ? 'success' : 'error'}`
+    );
 
     expect(calculatedValues.length).toBe(2);
     expect(cells[Column.VALUE].textContent).toContain(firstValue);

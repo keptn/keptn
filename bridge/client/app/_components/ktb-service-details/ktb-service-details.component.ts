@@ -1,28 +1,29 @@
-import {Location} from '@angular/common';
+import { Location } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, Input,
+  Component,
+  Input,
   OnDestroy,
   TemplateRef,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { Deployment, DeploymentSelection } from '../../_models/deployment';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import {takeUntil} from 'rxjs/operators';
+import { DataService } from '../../_services/data.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntil } from 'rxjs/operators';
 import { forkJoin, Observable, Subject } from 'rxjs';
-import {Trace} from '../../_models/trace';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
-import {ClipboardService} from '../../_services/clipboard.service';
+import { Trace } from '../../_models/trace';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ClipboardService } from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-service-details',
   templateUrl: './ktb-service-details.component.html',
   styleUrls: ['./ktb-service-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbServiceDetailsComponent implements OnDestroy{
+export class KtbServiceDetailsComponent implements OnDestroy {
   private _deploymentInfo?: DeploymentSelection;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   @ViewChild('remediationDialog')
@@ -57,11 +58,16 @@ export class KtbServiceDetailsComponent implements OnDestroy{
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute,
-              private router: Router, private location: Location, private dialog: MatDialog, private clipboard: ClipboardService) {
-    this.route.params.pipe(
-      takeUntil(this.unsubscribe$)
-    ).subscribe(params => {
+  constructor(
+    private _changeDetectorRef: ChangeDetectorRef,
+    private dataService: DataService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private location: Location,
+    private dialog: MatDialog,
+    private clipboard: ClipboardService
+  ) {
+    this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
       this.projectName = params.projectName;
       this._changeDetectorRef.markForCheck();
     });
@@ -69,17 +75,16 @@ export class KtbServiceDetailsComponent implements OnDestroy{
 
   private loadSequence(info: DeploymentSelection) {
     if (this.projectName) {
-      this.dataService.getRoot(this.projectName, info.deployment.shkeptncontext).subscribe(sequence => {
+      this.dataService.getRoot(this.projectName, info.deployment.shkeptncontext).subscribe((sequence) => {
         info.deployment.sequence = sequence;
         const evaluations$: Observable<Trace | undefined>[] = this.fetchEvaluations(info.deployment);
         if (evaluations$.length !== 0) {
-          forkJoin(evaluations$)
-            .subscribe((evaluations: (Trace | undefined)[]) => {
-              for (const evaluation of evaluations) {
-                info.deployment.setEvaluation(evaluation);
-              }
-              this.deploymentInfo = info;
-            });
+          forkJoin(evaluations$).subscribe((evaluations: (Trace | undefined)[]) => {
+            for (const evaluation of evaluations) {
+              info.deployment.setEvaluation(evaluation);
+            }
+            this.deploymentInfo = info;
+          });
         } else {
           this.deploymentInfo = info;
         }
@@ -88,9 +93,18 @@ export class KtbServiceDetailsComponent implements OnDestroy{
   }
 
   private validateStage(info: DeploymentSelection): void {
-    if (!info.deployment.sequence?.getStages().includes(info.stage)){
+    if (!info.deployment.sequence?.getStages().includes(info.stage)) {
       info.stage = info.deployment.stages[info.deployment.stages.length - 1].stageName;
-      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', info.deployment.service, 'context', info.deployment.shkeptncontext, 'stage', info.stage]);
+      const routeUrl = this.router.createUrlTree([
+        '/project',
+        this.projectName,
+        'service',
+        info.deployment.service,
+        'context',
+        info.deployment.shkeptncontext,
+        'stage',
+        info.stage,
+      ]);
       this.location.go(routeUrl.toString());
     }
   }
@@ -108,8 +122,16 @@ export class KtbServiceDetailsComponent implements OnDestroy{
   public selectStage(stageName: string) {
     if (this.deploymentInfo) {
       this.deploymentInfo.stage = stageName;
-      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', this.deploymentInfo.deployment.service, 'context',
-        this.deploymentInfo.deployment.shkeptncontext, 'stage', stageName]);
+      const routeUrl = this.router.createUrlTree([
+        '/project',
+        this.projectName,
+        'service',
+        this.deploymentInfo.deployment.service,
+        'context',
+        this.deploymentInfo.deployment.shkeptncontext,
+        'stage',
+        stageName,
+      ]);
       this.location.go(routeUrl.toString());
       this._changeDetectorRef.markForCheck();
     }
@@ -127,7 +149,9 @@ export class KtbServiceDetailsComponent implements OnDestroy{
 
   public showRemediationConfigDialog(): void {
     if (this.remediationDialog && this.deploymentInfo) {
-      this.remediationDialogRef = this.dialog.open(this.remediationDialog, {data: this.deploymentInfo.deployment.getStage(this.deploymentInfo.stage)?.config});
+      this.remediationDialogRef = this.dialog.open(this.remediationDialog, {
+        data: this.deploymentInfo.deployment.getStage(this.deploymentInfo.stage)?.config,
+      });
     }
   }
 

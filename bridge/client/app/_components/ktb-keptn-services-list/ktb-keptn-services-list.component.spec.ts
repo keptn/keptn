@@ -16,18 +16,17 @@ describe('KtbKeptnServicesListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
-            paramMap: of(convertToParamMap({
-              projectName: 'sockshop',
-            })),
+            paramMap: of(
+              convertToParamMap({
+                projectName: 'sockshop',
+              })
+            ),
           },
         },
       ],

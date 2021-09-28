@@ -17,25 +17,25 @@ describe('KtbSequenceStateInfoComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
           provide: DataService,
           useClass: DataServiceMock,
-        }
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceStateInfoComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
-    project = await dataService.getProject(projectName).pipe(
-      filter((p: Project | undefined): p is Project => !!p),
-      take(1)
-    ).toPromise();
+    project = await dataService
+      .getProject(projectName)
+      .pipe(
+        filter((p: Project | undefined): p is Project => !!p),
+        take(1)
+      )
+      .toPromise();
 
     fixture.detectChanges();
   });
@@ -67,7 +67,9 @@ describe('KtbSequenceStateInfoComponent', () => {
     fixture.detectChanges();
 
     // then
-    const stageDetails = fixture.nativeElement.querySelectorAll('[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge');
+    const stageDetails = fixture.nativeElement.querySelectorAll(
+      '[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge'
+    );
     expect(stageDetails.length).toEqual(3);
 
     const firstStage = stageDetails[0].querySelector('dt-tag');
@@ -86,20 +88,24 @@ describe('KtbSequenceStateInfoComponent', () => {
     fixture.detectChanges();
 
     // then
-    const stageDetails = fixture.nativeElement.querySelectorAll('[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge');
+    const stageDetails = fixture.nativeElement.querySelectorAll(
+      '[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge'
+    );
     expect(stageDetails.length).toEqual(0);
   });
 
   it('should trigger click callback on stage', () => {
     // given
     dataService.loadSequences(project);
-    const sequence = project.sequences[11]
+    const sequence = project.sequences[11];
     component.sequence = sequence;
     const spy = jest.spyOn(component, 'stageClick');
     fixture.detectChanges();
 
     // when
-    const stageDetails = fixture.nativeElement.querySelectorAll('[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge');
+    const stageDetails = fixture.nativeElement.querySelectorAll(
+      '[uitestid=keptn-sequence-info-stageDetails] ktb-stage-badge'
+    );
     stageDetails[0].click();
 
     // then

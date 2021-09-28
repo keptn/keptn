@@ -1,10 +1,10 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Deployment} from '../../_models/deployment';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Deployment } from '../../_models/deployment';
 
 @Component({
   selector: 'ktb-deployment-timeline[deployment]',
   templateUrl: './ktb-deployment-stage-timeline.component.html',
-  styleUrls: ['./ktb-deployment-stage-timeline.component.scss']
+  styleUrls: ['./ktb-deployment-stage-timeline.component.scss'],
 })
 export class KtbDeploymentStageTimelineComponent {
   @Input() deployment?: Deployment;
@@ -17,5 +17,4 @@ export class KtbDeploymentStageTimelineComponent {
       this.selectedStageChange.emit(this.selectedStage);
     }
   }
-
 }

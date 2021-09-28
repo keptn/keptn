@@ -9,9 +9,7 @@ describe('KtbDeleteConfirmationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule
-      ],
+      imports: [AppModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbDeleteConfirmationComponent);
     component = fixture.componentInstance;
@@ -32,13 +30,17 @@ describe('KtbDeleteConfirmationComponent', () => {
 
     // when
     const spyEmit = jest.spyOn(component.confirmClicked, 'emit');
-    const deleteButton: HTMLElement | null = document.querySelector('dt-confirmation-dialog-state[name=confirm] button[uitestid=dialogDeleteButton]');
+    const deleteButton: HTMLElement | null = document.querySelector(
+      'dt-confirmation-dialog-state[name=confirm] button[uitestid=dialogDeleteButton]'
+    );
     deleteButton?.click();
     TestUtils.updateDialog(fixture);
 
     // then
     expect(component.dialogState).toEqual('deleting');
-    expect(document.querySelector('dt-confirmation-dialog-state[name=deleting]')?.textContent?.trim()).toEqual(`Deleting ${type} ...`);
+    expect(document.querySelector('dt-confirmation-dialog-state[name=deleting]')?.textContent?.trim()).toEqual(
+      `Deleting ${type} ...`
+    );
     expect(spyEmit).toHaveBeenCalled();
     flush();
   }));
@@ -51,7 +53,9 @@ describe('KtbDeleteConfirmationComponent', () => {
     // when
     component.dialogState = 'success';
     TestUtils.updateDialog(fixture);
-    expect(document.querySelector('dt-confirmation-dialog-state[name=success]')?.textContent?.trim()).toEqual('Subscription deleted successfully!');
+    expect(document.querySelector('dt-confirmation-dialog-state[name=success]')?.textContent?.trim()).toEqual(
+      'Subscription deleted successfully!'
+    );
     tick(2010);
     TestUtils.updateDialog(fixture);
 
@@ -84,7 +88,9 @@ describe('KtbDeleteConfirmationComponent', () => {
     component.dialogState = 'confirm';
     TestUtils.updateDialog(fixture);
     // when
-    const cancelButton: HTMLElement | null = document.querySelector('dt-confirmation-dialog-state[name=confirm] button[uitestid=dialogCancelButton]');
+    const cancelButton: HTMLElement | null = document.querySelector(
+      'dt-confirmation-dialog-state[name=confirm] button[uitestid=dialogCancelButton]'
+    );
     cancelButton?.click();
 
     // then

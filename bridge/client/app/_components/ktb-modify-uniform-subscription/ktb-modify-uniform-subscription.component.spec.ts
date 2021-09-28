@@ -19,19 +19,19 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   let paramMap: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
-    paramMap = new BehaviorSubject<ParamMap>(convertToParamMap({
-      projectName: 'sockshop',
-      integrationId: UniformRegistrationsMock[0].id,
-    }));
+    paramMap = new BehaviorSubject<ParamMap>(
+      convertToParamMap({
+        projectName: 'sockshop',
+        integrationId: UniformRegistrationsMock[0].id,
+      })
+    );
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
-          provide: ActivatedRoute, useValue: {
+          provide: ActivatedRoute,
+          useValue: {
             paramMap: paramMap.asObservable(),
           },
         },
@@ -200,7 +200,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // @ts-ignore
     expect(component.taskSuffixControl.value).toEqual('triggered');
 
-    const filterPairs: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container'));
+    const filterPairs: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container')
+    );
     expect(filterPairs.length).toEqual(0);
     assertIsUpdateButtonEnabled(true);
   });
@@ -218,10 +220,20 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // @ts-ignore
     expect(component.taskSuffixControl.value).toEqual('triggered');
 
-    const filterPairs: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container'));
-    expect(subscription.filter.stages?.every(stage => filterPairs.some(pair => pair.textContent === `Stage${stage}`))).toEqual(true);
-    expect(subscription.filter.services?.every(service => filterPairs.some(pair => pair.textContent === `Service${service}`))).toEqual(true);
-    expect(filterPairs.length).toEqual((subscription.filter.stages?.length ?? 0) + (subscription.filter.services?.length ?? 0));
+    const filterPairs: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container')
+    );
+    expect(
+      subscription.filter.stages?.every((stage) => filterPairs.some((pair) => pair.textContent === `Stage${stage}`))
+    ).toEqual(true);
+    expect(
+      subscription.filter.services?.every((service) =>
+        filterPairs.some((pair) => pair.textContent === `Service${service}`)
+      )
+    ).toEqual(true);
+    expect(filterPairs.length).toEqual(
+      (subscription.filter.stages?.length ?? 0) + (subscription.filter.services?.length ?? 0)
+    );
     assertIsUpdateButtonEnabled(true);
   });
 
@@ -229,7 +241,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     const subscription = setSubscription(2, 0);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual('Update subscription');
+    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual(
+      'Update subscription'
+    );
     const dataService = TestBed.inject(DataService);
     const updateSpy = jest.spyOn(dataService, 'updateUniformSubscription');
     // when
@@ -252,7 +266,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     webhookConfig.method = 'POST';
     webhookConfig.url = 'https://keptn.sh';
     webhookConfig.payload = '{}';
-    webhookConfig.header = [{name: 'Content-Type', value: 'application/json'}];
+    webhookConfig.header = [{ name: 'Content-Type', value: 'application/json' }];
 
     // when
     component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
@@ -273,7 +287,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     const subscription = setSubscription(2, 0);
     const dataService = TestBed.inject(DataService);
-    dataService.updateUniformSubscription = jest.fn().mockReturnValue(throwError(new HttpErrorResponse({error: ''})));
+    dataService.updateUniformSubscription = jest.fn().mockReturnValue(throwError(new HttpErrorResponse({ error: '' })));
     fixture.detectChanges();
 
     // when
@@ -303,8 +317,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[1].id, Object.assign(subscription,
-      {
+    expect(updateSpy).toHaveBeenCalledWith(
+      UniformRegistrationsMock[1].id,
+      Object.assign(subscription, {
         event: 'sh.keptn.event.deployment.triggered',
         _filter: [],
         filter: {
@@ -312,9 +327,19 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
           services: [],
           stages: [],
         },
-      }));
-    expect(routerSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'uniform', 'services', UniformRegistrationsMock[1].id]);
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual('Create subscription');
+      })
+    );
+    expect(routerSpy).toHaveBeenCalledWith([
+      '/',
+      'project',
+      'sockshop',
+      'uniform',
+      'services',
+      UniformRegistrationsMock[1].id,
+    ]);
+    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual(
+      'Create subscription'
+    );
   });
 
   it('should only have triggered suffix', () => {
@@ -322,7 +347,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     setSubscription(6, 0);
     fixture.detectChanges();
 
-    expect(component.suffixes).toEqual([{displayValue: 'triggered', value: 'triggered'}]);
+    expect(component.suffixes).toEqual([{ displayValue: 'triggered', value: 'triggered' }]);
   });
 
   it('should show all suffixes', () => {
@@ -346,7 +371,8 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       {
         value: 'finished',
         displayValue: 'finished',
-      }]);
+      },
+    ]);
   });
 
   it('should show webhook form', () => {
@@ -415,24 +441,33 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   });
 
   function assertIsUpdateButtonEnabled(isEnabled: boolean): void {
-    const element = expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled'));
+    const element = expect(
+      fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')
+    );
     (isEnabled ? element : element.not).toBeNull();
   }
 
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
     const dataService = TestBed.inject(DataService);
     const uniformRegistration = UniformRegistrationsMock[integrationIndex];
-    const subscription = subscriptionIndex !== undefined ? uniformRegistration.subscriptions[subscriptionIndex] : new UniformSubscription('sockshop');
+    const subscription =
+      subscriptionIndex !== undefined
+        ? uniformRegistration.subscriptions[subscriptionIndex]
+        : new UniformSubscription('sockshop');
     dataService.getUniformSubscription = jest.fn().mockReturnValue(of(subscription));
-    dataService.getUniformRegistrationInfo = jest.fn().mockReturnValue(of({
-      isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-      isWebhookService: uniformRegistration.isWebhookService,
-    } as UniformRegistrationInfo));
-    paramMap.next(convertToParamMap({
-      projectName: 'sockshop',
-      integrationId: uniformRegistration.id,
-      subscriptionId: subscription.id,
-    }));
+    dataService.getUniformRegistrationInfo = jest.fn().mockReturnValue(
+      of({
+        isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
+        isWebhookService: uniformRegistration.isWebhookService,
+      } as UniformRegistrationInfo)
+    );
+    paramMap.next(
+      convertToParamMap({
+        projectName: 'sockshop',
+        integrationId: uniformRegistration.id,
+        subscriptionId: subscription.id,
+      })
+    );
     // set it again because of paramMap change
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;

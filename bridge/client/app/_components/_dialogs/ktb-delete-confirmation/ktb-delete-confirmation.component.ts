@@ -5,7 +5,7 @@ export type DeleteDialogState = 'confirm' | 'deleting' | 'success' | null;
 @Component({
   selector: 'ktb-delete-confirmation[type][name]',
   templateUrl: './ktb-delete-confirmation.component.html',
-  styleUrls: ['./ktb-delete-confirmation.component.scss']
+  styleUrls: ['./ktb-delete-confirmation.component.scss'],
 })
 export class KtbDeleteConfirmationComponent {
   private closeConfirmationDialogTimeout?: ReturnType<typeof setTimeout>;

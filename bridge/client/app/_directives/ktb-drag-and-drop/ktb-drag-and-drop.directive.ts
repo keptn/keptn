@@ -40,7 +40,6 @@ export class KtbDragAndDropDirective {
 
   @HostListener('drop', ['$event'])
   public onDrop(evt: DragEvent) {
-
     evt.preventDefault();
     evt.stopPropagation();
 

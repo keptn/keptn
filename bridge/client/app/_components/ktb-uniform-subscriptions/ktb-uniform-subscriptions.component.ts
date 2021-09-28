@@ -9,7 +9,7 @@ import { UniformSubscription } from '../../_models/uniform-subscription';
   selector: 'ktb-uniform-subscriptions[uniformRegistration]',
   templateUrl: './ktb-uniform-subscriptions.component.html',
   styleUrls: ['./ktb-uniform-subscriptions.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbUniformSubscriptionsComponent {
   private _uniformRegistration?: UniformRegistration;
@@ -26,9 +26,7 @@ export class KtbUniformSubscriptionsComponent {
     return this._uniformRegistration;
   }
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: ActivatedRoute) {
-    this.projectName$ = this.router.paramMap.pipe(
-      map(params => params.get('projectName'))
-    );
+    this.projectName$ = this.router.paramMap.pipe(map((params) => params.get('projectName')));
   }
 
   public deleteSubscription(subscription: UniformSubscription): void {

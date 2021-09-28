@@ -12,7 +12,6 @@ import { KeptnInfo } from '../../_models/keptn-info';
   styleUrls: ['./ktb-project-tile.component.scss'],
 })
 export class KtbProjectTileComponent implements OnDestroy {
-
   public _project?: Project;
   public supportedShipyardVersion?: string;
   private unsubscribe$ = new Subject();
@@ -32,10 +31,11 @@ export class KtbProjectTileComponent implements OnDestroy {
     this.dataService.keptnInfo
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-      ).subscribe(keptnInfo => {
-      this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
-    });
+        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo)
+      )
+      .subscribe((keptnInfo) => {
+        this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
+      });
   }
 
   ngOnDestroy(): void {

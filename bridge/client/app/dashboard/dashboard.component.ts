@@ -18,14 +18,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public isQualityGatesOnly = false;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
 
-  constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
+  constructor(
+    private dataService: DataService,
+    private ngZone: NgZone,
+    private _dtOverlay: DtOverlay,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
+  ) {
     this.projects$ = this.dataService.projects;
   }
 
   public ngOnInit(): void {
-    this.dataService.isQualityGatesOnly.pipe(
-      takeUntil(this.unsubscribe$),
-    ).subscribe(isQualityGatesOnly => {
+    this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
 

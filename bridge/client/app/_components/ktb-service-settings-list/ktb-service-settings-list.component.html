@@ -1,27 +1,23 @@
 <dt-table [dataSource]="dataSource" class="settings-section">
   <ng-container dtColumnDef="serviceName" dtColumnAlign="text">
     <dt-header-cell *dtHeaderCellDef>Service name</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row">
-    </dt-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row"> </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="edit" dtColumnAlign="right" dtColumnProportion="0.01" dtColumnMinWidth="50px">
     <dt-header-cell *dtHeaderCellDef>Edit</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <button dt-icon-button variant="nested" title="Edit" [routerLink]="['/', 'project', projectName, 'settings', 'services', 'edit', row]">
+      <button
+        dt-icon-button
+        variant="nested"
+        title="Edit"
+        [routerLink]="['/', 'project', projectName, 'settings', 'services', 'edit', row]"
+      >
         <dt-icon name="edit1"></dt-icon>
       </button>
     </dt-cell>
   </ng-container>
 
-  <dt-header-row
-    *dtHeaderRowDef="['serviceName', 'edit']"
-  ></dt-header-row>
-  <dt-row
-    *dtRowDef="
-        let row;
-        columns: ['serviceName', 'edit']
-      "
-  >
-  </dt-row>
+  <dt-header-row *dtHeaderRowDef="['serviceName', 'edit']"></dt-header-row>
+  <dt-row *dtRowDef="let row; columns: ['serviceName', 'edit']"> </dt-row>
 </dt-table>

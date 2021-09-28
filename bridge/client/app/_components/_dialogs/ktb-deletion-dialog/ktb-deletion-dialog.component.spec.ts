@@ -6,15 +6,13 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-
 describe('KtbDeletionDialogComponent', () => {
   let component: KtbDeletionDialogComponent;
   let fixture: ComponentFixture<KtbDeletionDialogComponent>;
-  const dialogData = {name: 'sockshop', type: DeleteType.PROJECT};
+  const dialogData = { name: 'sockshop', type: DeleteType.PROJECT };
   let eventService: EventService;
   const dialogRefMock = {
-    close: () => {
-    },
+    close: () => {},
   };
 
   beforeEach(async () => {
@@ -22,8 +20,8 @@ describe('KtbDeletionDialogComponent', () => {
       imports: [AppModule, MatDialogModule, HttpClientTestingModule],
       providers: [
         EventService,
-        {provide: MAT_DIALOG_DATA, useValue: dialogData},
-        {provide: MatDialogRef, useValue: dialogRefMock},
+        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+        { provide: MatDialogRef, useValue: dialogRefMock },
       ],
     }).compileComponents();
 
@@ -65,7 +63,7 @@ describe('KtbDeletionDialogComponent', () => {
     const input = component.deletionConfirmationControl;
     const values = ['sock', '$ock', '1', 'Sockshop', 'sockshoP', 'sOckshop', ''];
 
-    values.forEach(val => {
+    values.forEach((val) => {
       input.setValue(val);
       component.deletionConfirmationForm.updateValueAndValidity();
       expect(component.deletionConfirmationForm.invalid).toBe(true);
@@ -146,7 +144,7 @@ describe('KtbDeletionDialogComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalledWith({...dialogData});
+    expect(spy).toHaveBeenCalledWith({ ...dialogData });
   });
 
   it('should close the dialog when deletionProgressEvent result is SUCCESS', () => {
@@ -155,7 +153,7 @@ describe('KtbDeletionDialogComponent', () => {
     const spy = jest.spyOn(component.dialogRef, 'close');
 
     // when
-    eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
+    eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
 
     // then
     expect(spy).toHaveBeenCalled();

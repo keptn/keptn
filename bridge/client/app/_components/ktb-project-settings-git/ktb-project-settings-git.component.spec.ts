@@ -175,7 +175,6 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(button.disabled).toBeFalsy();
   });
 
-
   it('should emit the changed git data when form is changed', () => {
     // given
     component.gitData = {
@@ -185,11 +184,16 @@ describe('KtbProjectSettingsGitComponent', () => {
 
     // when
     const spy = jest.spyOn(component.gitDataChanged, 'emit');
-    component.gitUrlControl.setValue('https://some-other-repo.git', {emitEvent: true});
+    component.gitUrlControl.setValue('https://some-other-repo.git', { emitEvent: true });
     component.onGitUpstreamFormChange();
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalledWith({gitToken: '', gitFormValid: false, remoteURI: 'https://some-other-repo.git', gitUser: 'username'});
+    expect(spy).toHaveBeenCalledWith({
+      gitToken: '',
+      gitFormValid: false,
+      remoteURI: 'https://some-other-repo.git',
+      gitUser: 'username',
+    });
   });
 });

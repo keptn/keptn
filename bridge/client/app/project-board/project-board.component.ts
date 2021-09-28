@@ -23,54 +23,58 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public isCreateMode$: Observable<boolean>;
   public hasUnreadLogs$: Observable<boolean>;
 
-  constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private dataService: DataService,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
+  ) {
     const projectName$ = this.route.paramMap.pipe(
-      map(params => params.get('projectName')),
-      filter((projectName: string | null): projectName is string => !!projectName),
+      map((params) => params.get('projectName')),
+      filter((projectName: string | null): projectName is string => !!projectName)
     );
 
     const timer$ = projectName$.pipe(
       takeUntil(this.unsubscribe$),
-      switchMap((projectName) => AppUtils.createTimer(0, initialDelayMillis).pipe(
-        map(() => projectName)),
-      ),
-      takeUntil(this.unsubscribe$),
+      switchMap((projectName) => AppUtils.createTimer(0, initialDelayMillis).pipe(map(() => projectName))),
+      takeUntil(this.unsubscribe$)
     );
     this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
 
-    timer$.subscribe(projectName => {
+    timer$.subscribe((projectName) => {
       // this is on project-board level because we need the project in environment, service, sequence and settings screen
       // sequence screen because there is a check for the latest deployment context (lastEventTypes)
       this.dataService.loadProject(projectName);
       this.dataService.loadUnreadUniformRegistrationLogs();
     });
 
-    this.hasProject$ = projectName$.pipe(
-      switchMap(projectName => this.dataService.projectExists(projectName)),
+    this.hasProject$ = projectName$.pipe(switchMap((projectName) => this.dataService.projectExists(projectName)));
+
+    this.isCreateMode$ = this.route.url.pipe(
+      map((urlSegment) => {
+        return urlSegment[0].path === 'create';
+      })
     );
-
-    this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
-      return urlSegment[0].path === 'create';
-    }));
-
   }
 
   ngOnInit() {
-    this.hasProject$.pipe(
-      filter((hasProject) => hasProject !== undefined),
-      tap(hasProject => {
-        if (hasProject) {
-          this._errorSubject.next(undefined);
-        } else {
-          this._errorSubject.next('project');
-        }
-      }),
-      catchError(() => {
-        this._errorSubject.next('projects');
-        return of(false);
-      }),
-      takeUntil(this.unsubscribe$),
-    ).subscribe();
+    this.hasProject$
+      .pipe(
+        filter((hasProject) => hasProject !== undefined),
+        tap((hasProject) => {
+          if (hasProject) {
+            this._errorSubject.next(undefined);
+          } else {
+            this._errorSubject.next('project');
+          }
+        }),
+        catchError(() => {
+          this._errorSubject.next('projects');
+          return of(false);
+        }),
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe();
 
     if (this.route.snapshot.url[0].path === 'trace') {
       const shkeptncontext$ = this.route.paramMap.pipe(map((params: ParamMap) => params.get('shkeptncontext')));
@@ -83,15 +87,14 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           }
         }),
         switchMap(() => this.dataService.traces),
-        filter(traces => !!traces),
+        filter((traces) => !!traces)
       );
 
       combineLatest([traces$, eventselector$])
-        .pipe(
-          takeUntil(this.unsubscribe$),
-        ).subscribe(([traces, eventselector]: [Trace[] | undefined, string | null]) => {
-        this.navigateToTrace(traces, eventselector);
-      });
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(([traces, eventselector]: [Trace[] | undefined, string | null]) => {
+          this.navigateToTrace(traces, eventselector);
+        });
     }
   }
 
@@ -140,5 +143,4 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
-
 }

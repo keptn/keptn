@@ -8,8 +8,8 @@ export interface KeptnVersions {
   bridge: VersionInfo;
   keptn: {
     stable: {
-      version: string,
-      upgradableVersions: string[]
-    }[]
+      version: string;
+      upgradableVersions: string[];
+    }[];
   };
 }

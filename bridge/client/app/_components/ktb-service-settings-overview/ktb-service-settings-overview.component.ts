@@ -11,9 +11,6 @@ export class KtbServiceSettingsOverviewComponent {
   public projectName$: Observable<string | null>;
 
   constructor(route: ActivatedRoute) {
-    this.projectName$ = route.paramMap.pipe(
-      map(params => params.get('projectName')),
-    );
+    this.projectName$ = route.paramMap.pipe(map((params) => params.get('projectName')));
   }
-
 }

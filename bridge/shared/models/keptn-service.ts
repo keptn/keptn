@@ -1,3 +1,3 @@
 export enum KeptnService {
-  WEBHOOK_SERVICE = 'webhook-service'
+  WEBHOOK_SERVICE = 'webhook-service',
 }

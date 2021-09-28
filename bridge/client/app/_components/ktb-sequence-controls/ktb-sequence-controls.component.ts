@@ -9,11 +9,10 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
   selector: 'ktb-sequence-controls',
   templateUrl: './ktb-sequence-controls.component.html',
   host: {
-    class: 'ktb-sequence-controls'
-  }
+    class: 'ktb-sequence-controls',
+  },
 })
 export class KtbSequenceControlsComponent {
-
   private _sequence?: Sequence;
   private _smallButtons = false;
   public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
@@ -38,8 +37,11 @@ export class KtbSequenceControlsComponent {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, public dialog: MatDialog) {
-  }
+  constructor(
+    private _changeDetectorRef: ChangeDetectorRef,
+    private dataService: DataService,
+    public dialog: MatDialog
+  ) {}
 
   triggerResumeSequence(sequence: Sequence): void {
     this.dataService.sendSequenceControl(sequence, SequenceStateControl.RESUME);
@@ -54,7 +56,7 @@ export class KtbSequenceControlsComponent {
       sequence,
       confirmCallback: (params: any) => {
         this.abortSequence(params.sequence);
-      }
+      },
     };
     this.confirmationDialogRef = this.dialog.open(KtbConfirmationDialogComponent, {
       data,

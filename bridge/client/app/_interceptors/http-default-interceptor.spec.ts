@@ -9,10 +9,7 @@ describe(`HttpDefaultInterceptor`, () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
 
     service = TestBed.inject(ApiService);
@@ -20,7 +17,7 @@ describe(`HttpDefaultInterceptor`, () => {
   });
 
   it('should add Content-Type header', () => {
-    service.getProjects().subscribe(response => {
+    service.getProjects().subscribe((response) => {
       expect(response).toBeTruthy();
     });
     const httpRequest = httpMock.expectOne(`${service.baseUrl}/controlPlane/v1/project?disableUpstreamSync=true`);

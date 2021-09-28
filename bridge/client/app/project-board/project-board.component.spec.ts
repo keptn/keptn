@@ -22,22 +22,19 @@ describe('ProjectBoardComponent', () => {
   }
 
   beforeEach(async () => {
-    paramsSubject = new BehaviorSubject(convertToParamMap({projectName: 'sockshop'}));
+    paramsSubject = new BehaviorSubject(convertToParamMap({ projectName: 'sockshop' }));
 
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
-        {provide: POLLING_INTERVAL_MILLIS, useValue: 0},
+        { provide: DataService, useClass: DataServiceMock },
+        { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
         {
           provide: ActivatedRoute,
           useValue: {
             paramMap: paramsSubject.asObservable(),
-            snapshot: {url: [{path: 'project'}, {path: 'sockshop'}]},
+            snapshot: { url: [{ path: 'project' }, { path: 'sockshop' }] },
             url: of([new UrlSegment('project', {}), new UrlSegment('sockshop', {})]),
           },
         },
@@ -54,11 +51,11 @@ describe('ProjectBoardComponent', () => {
     const projectName = 'wrong-project';
 
     // when
-    paramsSubject.next(convertToParamMap({projectName}));
+    paramsSubject.next(convertToParamMap({ projectName }));
     fixture.detectChanges();
 
     // then
-    component.error$.subscribe(err => {
+    component.error$.subscribe((err) => {
       expect(err).toEqual('project');
       done();
     });
@@ -66,13 +63,13 @@ describe('ProjectBoardComponent', () => {
 
   it('should have a "trace" error when a trace can not be found with wrong shkeptncontext', (done) => {
     // given
-    setupTraceTest(convertToParamMap({shkeptncontext: 'asdf123asdf456789'}));
+    setupTraceTest(convertToParamMap({ shkeptncontext: 'asdf123asdf456789' }));
 
     // when
     fixture.detectChanges();
 
     // then
-    component.error$.subscribe(err => {
+    component.error$.subscribe((err) => {
       expect(err).toEqual('trace');
       done();
     });
@@ -80,34 +77,39 @@ describe('ProjectBoardComponent', () => {
 
   it('should have a "trace" error when a trace can not be found with right shkeptncontext but wrong eventselector', (done) => {
     // given
-    setupTraceTest(convertToParamMap({shkeptncontext: '0bbaaa6b-fd89-4def-ad2c-975beda970cf', eventselector: 'some-wrong-selector'}));
+    setupTraceTest(
+      convertToParamMap({
+        shkeptncontext: '0bbaaa6b-fd89-4def-ad2c-975beda970cf',
+        eventselector: 'some-wrong-selector',
+      })
+    );
 
     // when
     fixture.detectChanges();
 
     // then
-    component.error$.subscribe(err => {
+    component.error$.subscribe((err) => {
       expect(err).toEqual('trace');
       done();
     });
   });
 
-  it('should show a project doesn\'t exists message when error is project', () => {
+  it("should show a project doesn't exists message when error is project", () => {
     // given
     const projectName = 'wrong-project';
 
     // when
-    paramsSubject.next(convertToParamMap({projectName}));
+    paramsSubject.next(convertToParamMap({ projectName }));
     fixture.detectChanges();
 
     // then
     const elem = fixture.nativeElement.querySelector('dt-empty-state-item-title');
-    expect(elem.textContent).toEqual('Project doesn\'t exist');
+    expect(elem.textContent).toEqual("Project doesn't exist");
   });
 
   it('should show a trace not found message when error is trace', () => {
     // given
-    setupTraceTest(convertToParamMap({shkeptncontext: 'asdf123asdf456789'}));
+    setupTraceTest(convertToParamMap({ shkeptncontext: 'asdf123asdf456789' }));
 
     // when
     fixture.detectChanges();
@@ -122,7 +124,7 @@ describe('ProjectBoardComponent', () => {
     fixture.detectChanges();
 
     // then
-    component.error$.subscribe(err => {
+    component.error$.subscribe((err) => {
       expect(err).toBeUndefined();
       done();
     });
@@ -133,7 +135,7 @@ describe('ProjectBoardComponent', () => {
     fixture.detectChanges();
 
     // then
-    component.hasProject$.subscribe(hasProject => {
+    component.hasProject$.subscribe((hasProject) => {
       expect(hasProject).toBe(true);
       done();
     });
@@ -144,11 +146,11 @@ describe('ProjectBoardComponent', () => {
     const projectName = 'wrong-project';
 
     // when
-    paramsSubject.next(convertToParamMap({projectName}));
+    paramsSubject.next(convertToParamMap({ projectName }));
     fixture.detectChanges();
 
     // then
-    component.hasProject$.subscribe(hasProject => {
+    component.hasProject$.subscribe((hasProject) => {
       expect(hasProject).toBe(false);
       done();
     });
@@ -174,5 +176,3 @@ describe('ProjectBoardComponent', () => {
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
   });
 });
-
-

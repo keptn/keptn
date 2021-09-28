@@ -8,11 +8,14 @@ $fonts-dir: '^./assets/fonts';
 
 @import 'barista';
 
-pre, code {
+pre,
+code {
   font-family: monospace;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: inherit;
 }
 
@@ -97,7 +100,7 @@ span.error-line {
 
 p.italic,
 span.italic {
-  font-style: italic;;
+  font-style: italic;
 }
 
 ul.list-style-none {
@@ -183,43 +186,43 @@ button.dt-button-secondary.error-button:not([disabled]) {
 }
 
 .m-1 {
-  margin: .3em !important;
+  margin: 0.3em !important;
 }
 
 .mr-1 {
-  margin-right: .3em !important;
+  margin-right: 0.3em !important;
 }
 
 .ml-1 {
-  margin-left: .3em !important;
+  margin-left: 0.3em !important;
 }
 
 .mt-1 {
-  margin-top: .3em !important;
+  margin-top: 0.3em !important;
 }
 
 .mb-1 {
-  margin-bottom: .3em !important;
+  margin-bottom: 0.3em !important;
 }
 
 .m-2 {
-  margin: .6em !important;
+  margin: 0.6em !important;
 }
 
 .mr-2 {
-  margin-right: .6em !important;
+  margin-right: 0.6em !important;
 }
 
 .ml-2 {
-  margin-left: .6em !important;
+  margin-left: 0.6em !important;
 }
 
 .mt-2 {
-  margin-top: .6em !important;
+  margin-top: 0.6em !important;
 }
 
 .mb-2 {
-  margin-bottom: .6em !important;
+  margin-bottom: 0.6em !important;
 }
 
 .mr-3 {
@@ -242,17 +245,16 @@ button.dt-button-secondary.error-button:not([disabled]) {
   margin-right: -15px;
 }
 
-
 .p-0 {
   padding: 0 !important;
 }
 
 .p-1 {
-  padding: .3em !important;
+  padding: 0.3em !important;
 }
 
 .p-2 {
-  padding: .6em !important;
+  padding: 0.6em !important;
 }
 
 .p-3 {
@@ -264,35 +266,35 @@ button.dt-button-secondary.error-button:not([disabled]) {
 }
 
 .pr-1 {
-  padding-right: .3em !important;
+  padding-right: 0.3em !important;
 }
 
 .pl-1 {
-  padding-left: .3em !important;
+  padding-left: 0.3em !important;
 }
 
 .pt-1 {
-  padding-top: .3em !important;
+  padding-top: 0.3em !important;
 }
 
 .pb-1 {
-  padding-bottom: .3em !important;
+  padding-bottom: 0.3em !important;
 }
 
 .pr-2 {
-  padding-right: .6em !important;
+  padding-right: 0.6em !important;
 }
 
 .pl-2 {
-  padding-left: .6em !important;
+  padding-left: 0.6em !important;
 }
 
 .pt-2 {
-  padding-top: .6em !important;
+  padding-top: 0.6em !important;
 }
 
 .pb-2 {
-  padding-bottom: .6em !important;
+  padding-bottom: 0.6em !important;
 }
 
 .pr-3 {
@@ -426,10 +428,12 @@ pre.code {
 }
 
 @keyframes slideDown {
-  0%, 10% {
+  0%,
+  10% {
     transform: translateY(-100%);
   }
-  10%, 100% {
+  10%,
+  100% {
     transform: translateY(0px);
   }
 }

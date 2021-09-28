@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 export interface RetryParams {
   maxAttempts: number;
   scalingDuration: number;
-  shouldRetry: ({status}: { status: number }) => boolean;
+  shouldRetry: ({ status }: { status: number }) => boolean;
 }
 
 /**
@@ -20,18 +20,18 @@ const retryFor = [500, 502, 503, 504];
 const defaultParams: RetryParams = {
   maxAttempts: 3,
   scalingDuration: 1000,
-  shouldRetry: ({status}) => (retryFor.includes(status)),
+  shouldRetry: ({ status }) => retryFor.includes(status),
 };
 
-export const genericRetryStrategy = (params?: RetryParams) => (attempts: Observable<HttpErrorResponse>) => attempts.pipe(
-  mergeMap((error, i) => {
-    const {maxAttempts, scalingDuration, shouldRetry} = {...defaultParams, ...params};
-    const retryAttempt = i + 1;
+export const genericRetryStrategy = (params?: RetryParams) => (attempts: Observable<HttpErrorResponse>) =>
+  attempts.pipe(
+    mergeMap((error, i) => {
+      const { maxAttempts, scalingDuration, shouldRetry } = { ...defaultParams, ...params };
+      const retryAttempt = i + 1;
 
-    if (retryAttempt > maxAttempts || !shouldRetry(error)) {
-      return throwError(error);
-    }
-    return timer(retryAttempt * scalingDuration);
-  }),
-);
-
+      if (retryAttempt > maxAttempts || !shouldRetry(error)) {
+        return throwError(error);
+      }
+      return timer(retryAttempt * scalingDuration);
+    })
+  );

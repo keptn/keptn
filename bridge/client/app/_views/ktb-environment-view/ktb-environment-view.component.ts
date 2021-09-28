@@ -10,18 +10,17 @@ import { DataService } from '../../_services/data.service';
   templateUrl: './ktb-environment-view.component.html',
   styleUrls: ['./ktb-environment-view.component.scss'],
   host: {
-    class: 'ktb-environment-view'
+    class: 'ktb-environment-view',
   },
-  preserveWhitespaces: false
+  preserveWhitespaces: false,
 })
 export class KtbEnvironmentViewComponent {
   public project$: Observable<Project | undefined>;
 
   constructor(private dataService: DataService, private route: ActivatedRoute) {
-    this.project$ = this.route.params
-      .pipe(
-        map(params => params.projectName),
-        switchMap(projectName => this.dataService.getProject(projectName))
-      );
+    this.project$ = this.route.params.pipe(
+      map((params) => params.projectName),
+      switchMap((projectName) => this.dataService.getProject(projectName))
+    );
   }
 }

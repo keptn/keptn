@@ -5,6 +5,6 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   moduleNameMapper: {
-    '^lodash-es$': 'lodash'
-  }
+    '^lodash-es$': 'lodash',
+  },
 };

@@ -1,12 +1,12 @@
-import {ChangeDetectorRef, Component, Input, Output, EventEmitter} from '@angular/core';
-import {Sequence} from '../../_models/sequence';
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter } from '@angular/core';
+import { Sequence } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-timeline',
   templateUrl: './ktb-sequence-timeline.component.html',
-  styleUrls: ['./ktb-sequence-timeline.component.scss']
+  styleUrls: ['./ktb-sequence-timeline.component.scss'],
 })
-export class KtbSequenceTimelineComponent{
+export class KtbSequenceTimelineComponent {
   private _currentSequence?: Sequence;
   public _selectedStage?: string;
 
@@ -44,6 +44,5 @@ export class KtbSequenceTimelineComponent{
     this.selectedStageChange.emit(stageName);
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) {
-  }
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 }

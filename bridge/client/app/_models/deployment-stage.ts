@@ -1,5 +1,5 @@
-import {Sequence} from './sequence';
-import {Trace} from './trace';
+import { Sequence } from './sequence';
+import { Trace } from './trace';
 
 export class DeploymentStage {
   public stageName: string;

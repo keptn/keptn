@@ -1,7 +1,10 @@
 import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { GitData, KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
+import {
+  GitData,
+  KtbProjectSettingsGitComponent,
+} from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -44,18 +47,17 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     projectName: this.projectNameControl,
   });
 
-  constructor(private route: ActivatedRoute,
-              private dataService: DataService,
-              private toast: DtToast,
-              private router: Router,
-              private notificationsService: NotificationsService,
-              private eventService: EventService) {
-  }
+  constructor(
+    private route: ActivatedRoute,
+    private dataService: DataService,
+    private toast: DtToast,
+    private router: Router,
+    private notificationsService: NotificationsService,
+    private eventService: EventService
+  ) {}
 
   ngOnInit(): void {
-    this.route.data.pipe(
-      takeUntil(this.unsubscribe$),
-    ).subscribe((data) => {
+    this.route.data.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data) {
         this.isCreateMode = data.isCreateMode;
       }
@@ -65,57 +67,64 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.unsubscribe$),
         filter((projects: Project[] | undefined): projects is Project[] => !!projects),
-        map((projects: Project[]) => projects.map(project => project.projectName)),
-      ).subscribe((projectNames) => {
-      if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
-        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {queryParams: {created: true}});
-      }
-      this.projectNameControl.setValidators([
-        Validators.required,
-        FormUtils.nameExistsValidator(projectNames),
-        Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-      ]);
-    });
+        map((projects: Project[]) => projects.map((project) => project.projectName))
+      )
+      .subscribe((projectNames) => {
+        if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
+          this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
+            queryParams: { created: true },
+          });
+        }
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.nameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+        ]);
+      });
 
-    this.route.params.pipe(
-      map(params => params.projectName),
-      switchMap(projectName => this.dataService.getProject(projectName)),
-      takeUntil(this.unsubscribe$),
-      filter((project: Project | undefined): project is Project => !!project),
-    ).subscribe(project => {
-      if (project.projectName !== this.projectName) {
-        this.unsavedDialogState = null;
-        this.projectName = project.projectName;
+    this.route.params
+      .pipe(
+        map((params) => params.projectName),
+        switchMap((projectName) => this.dataService.getProject(projectName)),
+        takeUntil(this.unsubscribe$),
+        filter((project: Project | undefined): project is Project => !!project)
+      )
+      .subscribe((project) => {
+        if (project.projectName !== this.projectName) {
+          this.unsavedDialogState = null;
+          this.projectName = project.projectName;
 
-        this.gitData = {
-          remoteURI: project.gitRemoteURI,
-          gitUser: project.gitUser,
-        };
+          this.gitData = {
+            remoteURI: project.gitRemoteURI,
+            gitUser: project.gitUser,
+          };
 
-        this.projectDeletionData = {
-          type: DeleteType.PROJECT,
-          name: this.projectName,
-        };
-      }
-    });
+          this.projectDeletionData = {
+            type: DeleteType.PROJECT,
+            name: this.projectName,
+          };
+        }
+      });
 
-    this.route.queryParams.pipe(
-      takeUntil(this.unsubscribe$),
-    ).subscribe((queryParams) => {
+    this.route.queryParams.pipe(takeUntil(this.unsubscribe$)).subscribe((queryParams) => {
       if (queryParams.created) {
         this.unsavedDialogState = null;
-        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {
-          projectName: this.projectName,
-          routerLink: `/project/${this.projectName}/settings/services/create`,
-        });
+        this.notificationsService.addNotification(
+          NotificationType.Success,
+          TemplateRenderedNotifications.CREATE_PROJECT,
+          undefined,
+          true,
+          {
+            projectName: this.projectName,
+            routerLink: `/project/${this.projectName}/settings/services/create`,
+          }
+        );
         // Remove query param for not showing notification on reload
         this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
       }
     });
 
-    this.eventService.deletionTriggeredEvent.pipe(
-      takeUntil(this.unsubscribe$),
-    ).subscribe(data => {
+    this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.PROJECT) {
         this.deleteProject(data.name);
       }
@@ -148,66 +157,93 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     if (this.projectName && this.gitData.remoteURI && this.gitData.gitUser && this.gitData.gitToken) {
       this.isGitUpstreamInProgress = true;
       this.unsavedDialogState = null;
-      this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
+      this.dataService
+        .setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(() => {
-          this.isGitUpstreamInProgress = false;
-          this.gitData.gitToken = '';
-          this.gitData = {...this.gitData};
-          this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
-        }, (err) => {
-          this.isGitUpstreamInProgress = false;
-          this.notificationsService.addNotification(NotificationType.Error, `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`);
-        });
+        .subscribe(
+          () => {
+            this.isGitUpstreamInProgress = false;
+            this.gitData.gitToken = '';
+            this.gitData = { ...this.gitData };
+            this.notificationsService.addNotification(
+              NotificationType.Success,
+              'The Git upstream was changed successfully.',
+              5000
+            );
+          },
+          (err) => {
+            this.isGitUpstreamInProgress = false;
+            this.notificationsService.addNotification(
+              NotificationType.Error,
+              `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`
+            );
+          }
+        );
     }
   }
 
   public createProject(): void {
     if (this.shipyardFile) {
       this.isCreatingProjectInProgress = true;
-      FormUtils.readFileContent(this.shipyardFile).then(fileContent => {
+      FormUtils.readFileContent(this.shipyardFile).then((fileContent) => {
         if (fileContent) {
           const shipyardBase64 = btoa(fileContent);
           const projectName = this.projectNameControl.value;
-          this.dataService.createProject(
-            projectName, shipyardBase64, this.gitData.remoteURI, this.gitData.gitToken, this.gitData.gitUser,
-          ).subscribe(() => {
-              this.projectName = projectName;
-              this.dataService.loadProjects();
-              this.isCreatingProjectInProgress = false;
-            },
-            () => {
-              this.notificationsService.addNotification(NotificationType.Error, 'The project could not be created.', 5000);
-              this.isCreatingProjectInProgress = false;
-            });
+          this.dataService
+            .createProject(
+              projectName,
+              shipyardBase64,
+              this.gitData.remoteURI,
+              this.gitData.gitToken,
+              this.gitData.gitUser
+            )
+            .subscribe(
+              () => {
+                this.projectName = projectName;
+                this.dataService.loadProjects();
+                this.isCreatingProjectInProgress = false;
+              },
+              () => {
+                this.notificationsService.addNotification(
+                  NotificationType.Error,
+                  'The project could not be created.',
+                  5000
+                );
+                this.isCreatingProjectInProgress = false;
+              }
+            );
         }
       });
     }
   }
 
   public deleteProject(projectName: string): void {
-    this.eventService.deletionProgressEvent.next({isInProgress: true});
+    this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
-    this.dataService.projectExists(projectName)
+    this.dataService
+      .projectExists(projectName)
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter(status => status === false),
-      ).subscribe(() => {
-      this.router.navigate(['/', 'dashboard']);
-    });
-
-    this.dataService.deleteProject(projectName)
+        filter((status) => status === false)
+      )
       .subscribe(() => {
+        this.router.navigate(['/', 'dashboard']);
+      });
+
+    this.dataService.deleteProject(projectName).subscribe(
+      () => {
         this.dataService.loadProjects();
-        this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
-      }, (err) => {
+        this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
+      },
+      (err) => {
         const deletionError = 'Project could not be deleted: ' + err.message;
         this.eventService.deletionProgressEvent.next({
           error: deletionError,
           isInProgress: false,
           result: DeleteResult.ERROR,
         });
-      });
+      }
+    );
   }
 
   public reset(): void {

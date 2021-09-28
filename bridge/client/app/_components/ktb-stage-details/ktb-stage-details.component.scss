@@ -1,9 +1,7 @@
 @import '~@dynatrace/barista-components/style/main';
 
 .dt-toggle-button-group {
-
   .dt-toggle-button-item {
-
     &:not([disabled]):focus {
       outline: none;
     }

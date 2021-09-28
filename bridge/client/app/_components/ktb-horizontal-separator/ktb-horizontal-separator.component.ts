@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Directive, ViewEncapsulation} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Directive, ViewEncapsulation } from '@angular/core';
 
 @Directive({
   selector: `ktb-horizontal-separator-title, [ktb-horizontal-separator-title], [ktbHorizontalSeparatorTitle]`,

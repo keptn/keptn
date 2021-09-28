@@ -9,11 +9,7 @@ describe('ClipboardService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-        DtToastModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule, DtToastModule],
       providers: [DtToast],
     });
     service = TestBed.inject(ClipboardService);
@@ -22,7 +18,7 @@ describe('ClipboardService', () => {
   it('should return beautified JSON strings', () => {
     expect(service.stringify(1)).toEqual('1');
     expect(service.stringify('foobar')).toEqual('foobar');
-    expect(service.stringify({foo: 'bar'})).toEqual('{\n  "foo": "bar"\n}');
-    expect(service.stringify([{foo: 'bar'}])).toEqual('[\n  {\n    "foo": "bar"\n  }\n]');
+    expect(service.stringify({ foo: 'bar' })).toEqual('{\n  "foo": "bar"\n}');
+    expect(service.stringify([{ foo: 'bar' }])).toEqual('[\n  {\n    "foo": "bar"\n  }\n]');
   });
 });

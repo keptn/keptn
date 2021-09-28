@@ -15,15 +15,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '852ab5f7-c9c1-4ef9-93b1-3394219b8009',
-          time: '2021-08-02T08:03:29.173Z'
+          time: '2021-08-02T08:03:29.173Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '852ab5f7-c9c1-4ef9-93b1-3394219b8009',
-          time: '2021-08-02T08:03:29.173Z'
-        }
-      }
-    ]
+          time: '2021-08-02T08:03:29.173Z',
+        },
+      },
+    ],
   },
   {
     name: 'remediation',
@@ -38,15 +38,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.production.remediation.finished',
           id: '64e1e73c-974d-43e9-91d1-82d916a9be1a',
-          time: '2021-07-31T00:09:17.950Z'
+          time: '2021-07-31T00:09:17.950Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.production.remediation.finished',
           id: '64e1e73c-974d-43e9-91d1-82d916a9be1a',
-          time: '2021-07-31T00:09:17.950Z'
-        }
-      }
-    ]
+          time: '2021-07-31T00:09:17.950Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -62,15 +62,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'c742ee26-0a90-40ae-9f72-7707366e2922',
-          time: '2021-07-28T11:46:09.450Z'
+          time: '2021-07-28T11:46:09.450Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'c742ee26-0a90-40ae-9f72-7707366e2922',
-          time: '2021-07-28T11:46:09.450Z'
-        }
-      }
-    ]
+          time: '2021-07-28T11:46:09.450Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -86,15 +86,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'b0679db1-9830-481e-bd99-90f09dfcba89',
-          time: '2021-07-28T11:41:09.547Z'
+          time: '2021-07-28T11:41:09.547Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'b0679db1-9830-481e-bd99-90f09dfcba89',
-          time: '2021-07-28T11:41:09.547Z'
-        }
-      }
-    ]
+          time: '2021-07-28T11:41:09.547Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -108,15 +108,15 @@ let SequencesData = [
         name: 'dev',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.evaluation.finished',
           id: '83516013-cf51-468d-a46d-51ecdbbbcadf',
-          time: '2021-07-28T06:51:41.945Z'
-        }
-      }
-    ]
+          time: '2021-07-28T06:51:41.945Z',
+        },
+      },
+    ],
   },
   {
     name: 'remediation',
@@ -131,10 +131,10 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.dev.remediation.triggered',
           id: '744763a9-697d-4ebe-afd4-2fb0c518b9d2',
-          time: '2021-07-15T19:23:15.121Z'
-        }
-      }
-    ]
+          time: '2021-07-15T19:23:15.121Z',
+        },
+      },
+    ],
   },
   {
     name: 'remediation',
@@ -149,10 +149,10 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.events.problem',
           id: '8f446a88-0012-4fad-a483-c4d4c736a8c6',
-          time: '2021-07-15T19:26:15.640Z'
-        }
-      }
-    ]
+          time: '2021-07-15T19:26:15.640Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -167,13 +167,13 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.2',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '4a6d31f2-a6fd-41c4-b673-430c834c6442',
-          time: '2021-07-15T15:20:57.191Z'
-        }
+          time: '2021-07-15T15:20:57.191Z',
+        },
       },
       {
         name: 'staging',
@@ -181,15 +181,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'b05b8f69-4854-46cd-82d7-69ce3ee73652',
-          time: '2021-07-15T15:27:14.208Z'
+          time: '2021-07-15T15:27:14.208Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'b05b8f69-4854-46cd-82d7-69ce3ee73652',
-          time: '2021-07-15T15:27:14.208Z'
-        }
-      }
-    ]
+          time: '2021-07-15T15:27:14.208Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -204,13 +204,13 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'b066e786-53a2-4eea-95af-dfba709f8a27',
-          time: '2021-07-15T15:15:17.187Z'
-        }
+          time: '2021-07-15T15:15:17.187Z',
+        },
       },
       {
         name: 'staging',
@@ -218,15 +218,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '0e990b0a-97f1-4d31-9249-97d721603d33',
-          time: '2021-07-15T15:21:36.128Z'
+          time: '2021-07-15T15:21:36.128Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '0e990b0a-97f1-4d31-9249-97d721603d33',
-          time: '2021-07-15T15:21:36.128Z'
-        }
-      }
-    ]
+          time: '2021-07-15T15:21:36.128Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -241,13 +241,13 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'ce06258d-070e-46b8-99f2-d5206c7c4fff',
-          time: '2021-07-15T12:24:10.497Z'
-        }
+          time: '2021-07-15T12:24:10.497Z',
+        },
       },
       {
         name: 'staging',
@@ -255,15 +255,15 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'eb1e88c7-50f6-4e05-971e-4436e2faf82c',
-          time: '2021-07-15T12:30:22.034Z'
+          time: '2021-07-15T12:30:22.034Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'eb1e88c7-50f6-4e05-971e-4436e2faf82c',
-          time: '2021-07-15T12:30:22.034Z'
-        }
-      }
-    ]
+          time: '2021-07-15T12:30:22.034Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -278,33 +278,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '0838ff2c-f736-41f1-9d7e-5e420f07830d',
-          time: '2021-07-15T12:02:45.561Z'
-        }
+          time: '2021-07-15T12:02:45.561Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '5d16ec19-e0ef-453d-b312-03e5988a0905',
-          time: '2021-07-15T12:13:40.942Z'
+          time: '2021-07-15T12:13:40.942Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '5d16ec19-e0ef-453d-b312-03e5988a0905',
-          time: '2021-07-15T12:13:40.942Z'
-        }
-      }
-    ]
+          time: '2021-07-15T12:13:40.942Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -319,26 +319,26 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '1089b1cb-ca34-4203-8a72-ae2a52961689',
-          time: '2021-07-13T11:32:47.062Z'
-        }
+          time: '2021-07-13T11:32:47.062Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: 'b2de8b58-c717-4c6f-be6c-6375a602713d',
-          time: '2021-07-13T11:39:00.165Z'
-        }
+          time: '2021-07-13T11:39:00.165Z',
+        },
       },
       {
         name: 'production',
@@ -346,10 +346,10 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.production.delivery.finished',
           id: 'd91c4870-b95c-4ef0-944e-19ccafd4b23d',
-          time: '2021-07-13T11:41:58.250Z'
-        }
-      }
-    ]
+          time: '2021-07-13T11:41:58.250Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery-direct',
@@ -365,8 +365,8 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery-direct.finished',
           id: 'c28f8ed8-4b13-47bd-98d5-c0e43eb5df1a',
-          time: '2021-07-13T06:56:20.174Z'
-        }
+          time: '2021-07-13T06:56:20.174Z',
+        },
       },
       {
         name: 'staging',
@@ -374,8 +374,8 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.staging.delivery-direct.finished',
           id: '867ded48-14a8-4848-8a52-d9655973a94a',
-          time: '2021-07-13T06:56:30.369Z'
-        }
+          time: '2021-07-13T06:56:30.369Z',
+        },
       },
       {
         name: 'production',
@@ -383,10 +383,10 @@ let SequencesData = [
         latestEvent: {
           type: 'sh.keptn.event.production.delivery-direct.finished',
           id: '3d06b4f7-a5e7-43b2-83b3-b3ec68ad6aea',
-          time: '2021-07-13T06:56:40.267Z'
-        }
-      }
-    ]
+          time: '2021-07-13T06:56:40.267Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -401,33 +401,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'a42319cc-c1ff-48c1-8582-d2978a3048f3',
-          time: '2021-07-12T11:43:53.484Z'
-        }
+          time: '2021-07-12T11:43:53.484Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'e8b00713-8e2e-439e-9150-bdcbf1dc6131',
-          time: '2021-07-12T11:48:46.208Z'
+          time: '2021-07-12T11:48:46.208Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: 'a8ee31d1-629e-4f3c-8211-0d42e32aa6e2',
-          time: '2021-07-12T11:48:35.575Z'
-        }
-      }
-    ]
+          time: '2021-07-12T11:48:35.575Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -442,33 +442,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.2',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'fb1fec26-0b0b-4ddd-83e7-0c6a74838f13',
-          time: '2021-07-12T11:20:50.481Z'
-        }
+          time: '2021-07-12T11:20:50.481Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.2',
         latestEvaluation: {
           result: 'fail',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'e6d53765-4e00-42e0-b428-dc39b8bff019',
-          time: '2021-07-12T11:31:35.387Z'
+          time: '2021-07-12T11:31:35.387Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '85581bab-2f86-4d8f-b1bf-3bcefa9be5c6',
-          time: '2021-07-12T11:31:24.658Z'
-        }
-      }
-    ]
+          time: '2021-07-12T11:31:24.658Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -483,33 +483,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '76b3c992-3c67-493e-883b-95041a7e7dd8',
-          time: '2021-07-12T11:08:51.261Z'
-        }
+          time: '2021-07-12T11:08:51.261Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '838c152d-8d3c-4726-a1f8-3227e7e8a724',
-          time: '2021-07-12T11:13:44.653Z'
+          time: '2021-07-12T11:13:44.653Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '1872fa32-0295-45cd-b79e-f3f7e17427bb',
-          time: '2021-07-12T11:13:34.253Z'
-        }
-      }
-    ]
+          time: '2021-07-12T11:13:34.253Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -524,33 +524,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '07f71278-1d98-4abe-aafa-026819d65d69',
-          time: '2021-07-12T10:56:31.864Z'
-        }
+          time: '2021-07-12T10:56:31.864Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '1e445c95-f6c6-4713-9ac8-0389e4abd0c6',
-          time: '2021-07-12T11:02:13.051Z'
+          time: '2021-07-12T11:02:13.051Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '3d2d3f1b-752e-4513-a185-f01afe3355d3',
-          time: '2021-07-12T11:02:00.354Z'
-        }
-      }
-    ]
+          time: '2021-07-12T11:02:00.354Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -564,15 +564,15 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'pass',
-          score: 100
+          score: 100,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '4953c64b-314d-45a0-ab5e-a74d9b47b24e',
-          time: '2021-07-06T09:25:20.242Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:25:20.242Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -586,20 +586,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '99b80add-8f24-4259-b52e-e3a0eac74fd3',
-          time: '2021-07-06T09:24:51.353Z'
+          time: '2021-07-06T09:24:51.353Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '99b80add-8f24-4259-b52e-e3a0eac74fd3',
-          time: '2021-07-06T09:24:51.353Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:24:51.353Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -613,20 +613,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '118d424d-33ac-4d15-88c4-2ae77fcc8ad1',
-          time: '2021-07-06T09:23:09.238Z'
+          time: '2021-07-06T09:23:09.238Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '118d424d-33ac-4d15-88c4-2ae77fcc8ad1',
-          time: '2021-07-06T09:23:09.238Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:23:09.238Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -640,20 +640,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '16614663-aea7-4420-bafe-41f480b572d8',
-          time: '2021-07-06T09:21:53.145Z'
+          time: '2021-07-06T09:21:53.145Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '16614663-aea7-4420-bafe-41f480b572d8',
-          time: '2021-07-06T09:21:53.145Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:21:53.145Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -667,20 +667,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '10643917-00cc-46da-873b-5254626663cd',
-          time: '2021-07-06T09:13:13.942Z'
+          time: '2021-07-06T09:13:13.942Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '10643917-00cc-46da-873b-5254626663cd',
-          time: '2021-07-06T09:13:13.942Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:13:13.942Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -694,20 +694,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: 'e5cf45e4-b8f0-48a9-8cdb-ec0ee3ea0219',
-          time: '2021-07-06T09:10:55.248Z'
+          time: '2021-07-06T09:10:55.248Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: 'e5cf45e4-b8f0-48a9-8cdb-ec0ee3ea0219',
-          time: '2021-07-06T09:10:55.248Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:10:55.248Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -721,15 +721,15 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'pass',
-          score: 100
+          score: 100,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: 'ec195981-f095-4f7b-9568-be9ca0fe18c5',
-          time: '2021-07-06T09:02:26.842Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:02:26.842Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -743,15 +743,15 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'pass',
-          score: 100
+          score: 100,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '4a3bd7d7-a786-4e36-a781-a1b22e06b556',
-          time: '2021-07-06T09:02:23.043Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:02:23.043Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -765,20 +765,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '46fc0a0d-739e-4101-b043-bad09399bf70',
-          time: '2021-07-06T09:01:50.662Z'
+          time: '2021-07-06T09:01:50.662Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '46fc0a0d-739e-4101-b043-bad09399bf70',
-          time: '2021-07-06T09:01:50.662Z'
-        }
-      }
-    ]
+          time: '2021-07-06T09:01:50.662Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -792,15 +792,15 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'pass',
-          score: 100
+          score: 100,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '31d7a31f-acb7-4f2b-820f-ee387d4f187d',
-          time: '2021-07-06T08:59:14.340Z'
-        }
-      }
-    ]
+          time: '2021-07-06T08:59:14.340Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -814,20 +814,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '993ec5e5-c3e2-4515-8bf0-f9be93f77125',
-          time: '2021-07-06T08:58:45.965Z'
+          time: '2021-07-06T08:58:45.965Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '993ec5e5-c3e2-4515-8bf0-f9be93f77125',
-          time: '2021-07-06T08:58:45.965Z'
-        }
-      }
-    ]
+          time: '2021-07-06T08:58:45.965Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -841,20 +841,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: 'a6222bca-2619-48ea-933e-d4f2fbf97937',
-          time: '2021-07-06T08:57:48.047Z'
+          time: '2021-07-06T08:57:48.047Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: 'a6222bca-2619-48ea-933e-d4f2fbf97937',
-          time: '2021-07-06T08:57:48.047Z'
-        }
-      }
-    ]
+          time: '2021-07-06T08:57:48.047Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -869,33 +869,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: '92207803-7d49-4081-ad0a-897e3f4229d2',
-          time: '2021-07-06T08:17:42.285Z'
-        }
+          time: '2021-07-06T08:17:42.285Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'd23e5ed6-0025-4273-bc7f-09ff94eab160',
-          time: '2021-07-06T08:22:47.310Z'
+          time: '2021-07-06T08:22:47.310Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '26d927cd-274e-406d-bb40-d7a47a553632',
-          time: '2021-07-06T08:22:36.842Z'
-        }
-      }
-    ]
+          time: '2021-07-06T08:22:36.842Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -910,33 +910,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'a3ba36e1-2edb-419f-8a24-d624e2100d43',
-          time: '2021-07-06T08:07:55.662Z'
-        }
+          time: '2021-07-06T08:07:55.662Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '9892abf9-0528-4108-834c-47f98dc6caa2',
-          time: '2021-07-06T08:12:57.479Z'
+          time: '2021-07-06T08:12:57.479Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '9693825e-b6d7-43a3-97ee-d136ed3f03c3',
-          time: '2021-07-06T08:12:47.145Z'
-        }
-      }
-    ]
+          time: '2021-07-06T08:12:47.145Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -951,33 +951,33 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'fbb56094-9ef7-45df-bc4e-525202e4c302',
-          time: '2021-07-06T07:54:21.353Z'
-        }
+          time: '2021-07-06T07:54:21.353Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: 'c5f88cd1-7efb-4f24-b0b3-eb5998a9d00d',
-          time: '2021-07-06T07:59:12.673Z'
+          time: '2021-07-06T07:59:12.673Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '40dc9d08-f87a-4785-a037-7d76a9745a0c',
-          time: '2021-07-06T07:58:58.241Z'
-        }
-      }
-    ]
+          time: '2021-07-06T07:58:58.241Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -991,15 +991,15 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'pass',
-          score: 100
+          score: 100,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '4b7e9733-46d2-44a5-aadc-709e881d6403',
-          time: '2021-07-05T14:12:25.169Z'
-        }
-      }
-    ]
+          time: '2021-07-05T14:12:25.169Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -1013,15 +1013,15 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'pass',
-          score: 100
+          score: 100,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: 'bbed850c-8c43-431e-86b0-0cffbc0f938f',
-          time: '2021-07-05T13:47:32.749Z'
-        }
-      }
-    ]
+          time: '2021-07-05T13:47:32.749Z',
+        },
+      },
+    ],
   },
   {
     name: 'evaluation',
@@ -1035,20 +1035,20 @@ let SequencesData = [
         name: 'staging',
         latestEvaluation: {
           result: 'fail',
-          score: 66.66666666666666
+          score: 66.66666666666666,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '074fe4e5-af9d-41fb-ac7e-92e7e8c4e0a3',
-          time: '2021-07-05T13:35:45.947Z'
+          time: '2021-07-05T13:35:45.947Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.evaluation.finished',
           id: '074fe4e5-af9d-41fb-ac7e-92e7e8c4e0a3',
-          time: '2021-07-05T13:35:45.947Z'
-        }
-      }
-    ]
+          time: '2021-07-05T13:35:45.947Z',
+        },
+      },
+    ],
   },
   {
     name: 'delivery',
@@ -1063,34 +1063,34 @@ let SequencesData = [
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'pass',
-          score: 0
+          score: 0,
         },
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
           id: 'cac88040-0b0a-478f-a75e-57e17f6a1171',
-          time: '2021-07-05T13:14:26.464Z'
-        }
+          time: '2021-07-05T13:14:26.464Z',
+        },
       },
       {
         name: 'staging',
         image: 'docker.io/keptnexamples/carts:0.12.3',
         latestEvaluation: {
           result: 'fail',
-          score: 33.33333333333333
+          score: 33.33333333333333,
         },
         latestEvent: {
           type: 'sh.keptn.event.staging.rollback.finished',
           id: '88cd8f8c-def5-4868-aefd-8174ed94738a',
-          time: '2021-07-05T13:19:59.459Z'
+          time: '2021-07-05T13:19:59.459Z',
         },
         latestFailedEvent: {
           type: 'sh.keptn.event.staging.delivery.finished',
           id: '4374b25b-03f6-449b-b9aa-a488d7ed7c4e',
-          time: '2021-07-05T13:19:48.958Z'
-        }
-      }
-    ]
-  }
+          time: '2021-07-05T13:19:48.958Z',
+        },
+      },
+    ],
+  },
 ] as Sequence[];
-SequencesData = SequencesData.map(sequence => Sequence.fromJSON(sequence));
-export {SequencesData};
+SequencesData = SequencesData.map((sequence) => Sequence.fromJSON(sequence));
+export { SequencesData };

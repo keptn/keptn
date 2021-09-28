@@ -11,16 +11,17 @@ export class UniformRegistration extends ur {
 
   public static fromJSON(data: UniformRegistrationResult): UniformRegistration {
     const uniformRegistration = Object.assign(new this(), data);
-    uniformRegistration.subscriptions = uniformRegistration.subscriptions?.map(subscription => UniformSubscription.fromJSON(subscription)) ?? [];
+    uniformRegistration.subscriptions =
+      uniformRegistration.subscriptions?.map((subscription) => UniformSubscription.fromJSON(subscription)) ?? [];
     return uniformRegistration;
   }
 
   public getSubscriptions(projectName: string): UniformSubscription[] {
-    return this.subscriptions.filter(subscription => subscription.hasProject(projectName, true));
+    return this.subscriptions.filter((subscription) => subscription.hasProject(projectName, true));
   }
 
   public hasSubscriptions(projectName: string): boolean {
-    return this.subscriptions.some(subscription => subscription.hasProject(projectName, true));
+    return this.subscriptions.some((subscription) => subscription.hasProject(projectName, true));
   }
 
   public canEditSubscriptions(): boolean {

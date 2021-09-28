@@ -25,7 +25,7 @@ describe('EventService', () => {
 
   it('should deletionTriggeredEvent have been called with next value', () => {
     // given
-    const data = {name: 'sockshop', type: DeleteType.PROJECT};
+    const data = { name: 'sockshop', type: DeleteType.PROJECT };
     const spy = jest.spyOn(service.deletionTriggeredEvent, 'next');
 
     // when
@@ -38,7 +38,7 @@ describe('EventService', () => {
 
   it('should deletionProgressEvent have been called with next value', () => {
     // given
-    const data = {isInProgress: false, result: DeleteResult.ERROR, error: 'Error'};
+    const data = { isInProgress: false, result: DeleteResult.ERROR, error: 'Error' };
     const spy = jest.spyOn(service.deletionProgressEvent, 'next');
 
     // when

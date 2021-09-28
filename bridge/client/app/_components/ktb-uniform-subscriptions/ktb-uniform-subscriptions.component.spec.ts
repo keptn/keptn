@@ -16,19 +16,21 @@ describe('KtbUniformSubscriptionsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
             params: of({}),
-            paramMap: of(convertToParamMap({
-              projectName: 'sockshop'
-            })),
-            queryParams: of({})
-          }
-        }
-      ]
+            paramMap: of(
+              convertToParamMap({
+                projectName: 'sockshop',
+              })
+            ),
+            queryParams: of({}),
+          },
+        },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbUniformSubscriptionsComponent);
     component = fixture.componentInstance;
@@ -45,7 +47,9 @@ describe('KtbUniformSubscriptionsComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('disabled')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('disabled')
+    ).not.toBeNull();
   });
 
   it('should enable "Add subscription"', () => {
@@ -54,7 +58,9 @@ describe('KtbUniformSubscriptionsComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('disabled')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('disabled')
+    ).toBeNull();
   });
 
   it('should delete subscription', () => {

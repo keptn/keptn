@@ -6,24 +6,23 @@ import { DeleteData } from '../../_interfaces/delete';
 @Component({
   selector: 'ktb-danger-zone',
   templateUrl: './ktb-danger-zone.component.html',
-  styleUrls: ['./ktb-danger-zone.component.scss']
+  styleUrls: ['./ktb-danger-zone.component.scss'],
 })
 export class KtbDangerZoneComponent {
   @Input() data?: DeleteData;
 
   public deletionDialogRef?: MatDialogRef<KtbDeletionDialogComponent>;
 
-  constructor(public dialog: MatDialog) {
-  }
+  constructor(public dialog: MatDialog) {}
 
   public openDeletionDialog() {
     if (this.data) {
       const data = {
         type: this.data.type,
-        name: this.data.name
+        name: this.data.name,
       };
       this.deletionDialogRef = this.dialog.open(KtbDeletionDialogComponent, {
-        data
+        data,
       });
     }
   }

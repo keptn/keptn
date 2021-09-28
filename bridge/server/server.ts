@@ -19,8 +19,7 @@ if (typeof PORT === 'number') {
       process.exit(1);
     }
   })();
-}
-else {
+} else {
   console.log(`Error while starting the application. Invalid port`);
   process.exit(1);
 }

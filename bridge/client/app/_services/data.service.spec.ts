@@ -9,10 +9,7 @@ describe('DataService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     });
     dataService = TestBed.inject(DataService);
   });

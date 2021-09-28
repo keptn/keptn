@@ -6,7 +6,6 @@ import { Notification, NotificationType } from '../_models/notification';
   providedIn: 'root',
 })
 export class NotificationsService {
-
   private _notifications = new BehaviorSubject<Notification[]>([]);
 
   get notifications(): Observable<Notification[]> {
@@ -26,7 +25,9 @@ export class NotificationsService {
     }
 
     // Check if the notification to add already exists
-    const duplicateNotifications = this._notifications.getValue().filter(n => n.type === notification.type && n.message === notification.message);
+    const duplicateNotifications = this._notifications
+      .getValue()
+      .filter((n) => n.type === notification.type && n.message === notification.message);
 
     // Only show notification if it is not shown yet to prevent duplicates (issue #3896 - https://github.com/keptn/keptn/issues/3896)
     if (duplicateNotifications.length === 0) {
@@ -35,7 +36,7 @@ export class NotificationsService {
   }
 
   removeNotification(notification: Notification) {
-    this._notifications.next(this._notifications.getValue().filter(n => n !== notification));
+    this._notifications.next(this._notifications.getValue().filter((n) => n !== notification));
   }
 
   public clearNotifications(): void {

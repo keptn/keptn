@@ -7,16 +7,15 @@ import { ResultTypes } from '../../../../shared/models/result-types';
 @Component({
   selector: 'ktb-sli-breakdown',
   templateUrl: './ktb-sli-breakdown.component.html',
-  styleUrls: ['./ktb-sli-breakdown.component.scss']
+  styleUrls: ['./ktb-sli-breakdown.component.scss'],
 })
 export class KtbSliBreakdownComponent implements OnInit {
-
   @ViewChild('sortable', { read: DtSort, static: true }) sortable?: DtSort;
 
   public evaluationState: Map<ResultTypes, string> = new Map<ResultTypes, string>([
     [ResultTypes.PASSED, 'passed'],
     [ResultTypes.WARNING, 'warning'],
-    [ResultTypes.FAILED, 'failed']
+    [ResultTypes.FAILED, 'failed'],
   ]);
   public ResultTypes: typeof ResultTypes = ResultTypes;
   private _indicatorResults?: IndicatorResult[];
@@ -36,10 +35,15 @@ export class KtbSliBreakdownComponent implements OnInit {
   set indicatorResults(indicatorResults: IndicatorResult[]) {
     if (this._indicatorResults !== indicatorResults) {
       this._indicatorResults = indicatorResults;
-      this._indicatorResultsFail = indicatorResults.filter(i => i.status === ResultTypes.FAILED).sort(this.sortIndicatorResult);
-      this._indicatorResultsWarning = indicatorResults.filter(i => i.status === ResultTypes.WARNING).sort(this.sortIndicatorResult);
-      this._indicatorResultsPass = indicatorResults.filter(i => i.status !== ResultTypes.FAILED && i.status !== ResultTypes.WARNING)
-                                  .sort(this.sortIndicatorResult);
+      this._indicatorResultsFail = indicatorResults
+        .filter((i) => i.status === ResultTypes.FAILED)
+        .sort(this.sortIndicatorResult);
+      this._indicatorResultsWarning = indicatorResults
+        .filter((i) => i.status === ResultTypes.WARNING)
+        .sort(this.sortIndicatorResult);
+      this._indicatorResultsPass = indicatorResults
+        .filter((i) => i.status !== ResultTypes.FAILED && i.status !== ResultTypes.WARNING)
+        .sort(this.sortIndicatorResult);
       this.updateDataSource();
       this._changeDetectorRef.markForCheck();
     }
@@ -65,8 +69,7 @@ export class KtbSliBreakdownComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) {
-  }
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     if (this.sortable) {
@@ -95,40 +98,23 @@ export class KtbSliBreakdownComponent implements OnInit {
   }
 
   private assembleTablesEntries(indicatorResults: IndicatorResult[]): SliResult[] {
-    const totalscore  = indicatorResults.reduce((acc, result) => acc + result.score, 0);
-    const isOld = indicatorResults.some(result => !!result.targets);
+    const totalscore = indicatorResults.reduce((acc, result) => acc + result.score, 0);
+    const isOld = indicatorResults.some((result) => !!result.targets);
     if (isOld) {
-      this.columnNames = [
-        'details',
-        'name',
-        'value',
-        'weight',
-        'targets',
-        'result',
-        'score'
-      ];
+      this.columnNames = ['details', 'name', 'value', 'weight', 'targets', 'result', 'score'];
     } else {
-      this.columnNames = [
-        'details',
-        'name',
-        'value',
-        'weight',
-        'passTargets',
-        'warningTargets',
-        'result',
-        'score'
-      ];
+      this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
     }
-    return indicatorResults.map(indicatorResult =>  {
-      const comparedValue = this.comparedIndicatorResults
-                            ?.find(result => result.value.metric === indicatorResult.value.metric)
-                            ?.value.value;
+    return indicatorResults.map((indicatorResult) => {
+      const comparedValue = this.comparedIndicatorResults?.find(
+        (result) => result.value.metric === indicatorResult.value.metric
+      )?.value.value;
       const compared: Partial<SliResult> = {};
       if (comparedValue) {
         compared.comparedValue = this.formatNumber(comparedValue);
         compared.calculatedChanges = {
           absolute: this.formatNumber(comparedValue - indicatorResult.value.value),
-          relative: this.formatNumber(comparedValue / (indicatorResult.value.value || 1) * 100 - 100)
+          relative: this.formatNumber((comparedValue / (indicatorResult.value.value || 1)) * 100 - 100),
         };
       }
 
@@ -136,7 +122,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         name: indicatorResult.displayName || indicatorResult.value.metric,
         value: indicatorResult.value.message || this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
-        score: totalscore === 0 ? 0 : this.round(indicatorResult.score / totalscore * this.score, 2),
+        score: totalscore === 0 ? 0 : this.round((indicatorResult.score / totalscore) * this.score, 2),
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,
@@ -154,7 +140,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   }
 
   private round(value: number, places: number): number {
-    return +(Math.round(Number(`${value}e+${places}`))  + `e-${places}`);
+    return +(Math.round(Number(`${value}e+${places}`)) + `e-${places}`);
   }
 
   public setExpanded(result: SliResult): void {
@@ -162,5 +148,4 @@ export class KtbSliBreakdownComponent implements OnInit {
       result.expanded = !result.expanded;
     }
   }
-
 }

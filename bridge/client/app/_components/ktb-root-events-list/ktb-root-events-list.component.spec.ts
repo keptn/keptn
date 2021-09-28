@@ -20,10 +20,7 @@ describe('KtbEventsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
           provide: DataService,
@@ -33,7 +30,7 @@ describe('KtbEventsListComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
-            params: of({projectName}),
+            params: of({ projectName }),
             queryParams: of({}),
           },
         },
@@ -129,7 +126,7 @@ describe('KtbEventsListComponent', () => {
 
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
-    const eventData = {sequence: project.sequences[selectedSequenceIndex], stage: undefined};
+    const eventData = { sequence: project.sequences[selectedSequenceIndex], stage: undefined };
     targetSequence.click();
     fixture.detectChanges();
 
@@ -158,7 +155,7 @@ describe('KtbEventsListComponent', () => {
     // then
     expect(stageBadges.length).toEqual(2);
     expect(targetSequence.getAttribute('class')).toContain('ktb-tile-selected');
-    expect(changeEvent).toHaveBeenCalledWith({sequence: project.sequences[selectedSequenceIndex], stage: stageName});
+    expect(changeEvent).toHaveBeenCalledWith({ sequence: project.sequences[selectedSequenceIndex], stage: stageName });
   });
 
   it('should have a no specific class when a sequence is running', () => {
@@ -212,7 +209,9 @@ describe('KtbEventsListComponent', () => {
 
   // tslint:disable-next-line:no-any
   function getSequenceTile(index: number): any {
-    return fixture.nativeElement.querySelector(`ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`);
+    return fixture.nativeElement.querySelector(
+      `ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`
+    );
   }
 
   function prepareSequenceElement(isFinished: boolean, isFaulty: boolean, hasPendingApproval: boolean): void {

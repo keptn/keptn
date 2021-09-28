@@ -7,10 +7,9 @@ import { Secret } from '../../_models/secret';
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
-  styleUrls: ['./ktb-create-secret-form.component.scss']
+  styleUrls: ['./ktb-create-secret-form.component.scss'],
 })
 export class KtbCreateSecretFormComponent {
-
   public isLoading = false;
 
   private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
@@ -21,20 +20,24 @@ export class KtbCreateSecretFormComponent {
     data: this.fb.array([
       this.fb.group({
         key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
-        value: ['', [Validators.required]]
-      })
-    ])
+        value: ['', [Validators.required]],
+      }),
+    ]),
   });
 
-  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private fb: FormBuilder) {
-  }
+  constructor(
+    private dataService: DataService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private fb: FormBuilder
+  ) {}
 
   get data(): FormArray | null {
     return this.createSecretForm.get('data') as FormArray;
   }
 
   get dataControls(): FormGroup[] {
-    return this.data?.controls as FormGroup[] || [];
+    return (this.data?.controls as FormGroup[]) || [];
   }
 
   public createSecret(): void {
@@ -47,21 +50,25 @@ export class KtbCreateSecretFormComponent {
         secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
       }
 
-      this.dataService.addSecret(secret)
-        .subscribe((result) => {
+      this.dataService.addSecret(secret).subscribe(
+        (result) => {
           this.isLoading = false;
-          this.router.navigate(['../'], {relativeTo: this.route});
-        }, (err) => {
+          this.router.navigate(['../'], { relativeTo: this.route });
+        },
+        (err) => {
           this.isLoading = false;
-        });
+        }
+      );
     }
   }
 
   public addPair(): void {
-    this.data?.push(this.fb.group({
-      key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
-      value: ['', [Validators.required]]
-    }));
+    this.data?.push(
+      this.fb.group({
+        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
+        value: ['', [Validators.required]],
+      })
+    );
   }
 
   public removePair(index: number): void {
@@ -71,5 +78,4 @@ export class KtbCreateSecretFormComponent {
   public getFormControl(controlName: string): AbstractControl | null {
     return this.createSecretForm.get(controlName);
   }
-
 }

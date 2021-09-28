@@ -3,7 +3,7 @@ kind: Config
 build:
   artifacts:
     - image: keptn/bridge2
-      docker:    # 	beta describes an artifact built from a Dockerfile.
+      docker: # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
 deploy:
   kubectl:

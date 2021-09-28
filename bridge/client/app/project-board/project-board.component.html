@@ -2,22 +2,32 @@
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
-        <img alt="Keptn logo" class="mt-2" [src]="logoInvertedUrl"/>
+        <img alt="Keptn logo" class="mt-2" [src]="logoInvertedUrl" />
       </dt-empty-state-item-img>
       <ng-container [ngSwitch]="error">
         <ng-container *ngSwitchCase="'project'">
           <dt-empty-state-item-title class="mt-2" aria-level="2">Project doesn't exist</dt-empty-state-item-title>
-          <p>Sorry, the project could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a
-            [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <p>
+            Sorry, the project could not be loaded. Check out the
+            <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a>
+            instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go
+            back to <a [routerLink]="['/dashboard']">your dashboard</a>.
+          </p>
           <button dt-button (click)="loadProjects()">
             <dt-icon name="refresh"></dt-icon>
             Retry
           </button>
         </ng-container>
         <ng-container *ngSwitchCase="'trace'">
-          <dt-empty-state-item-title class="mt-2" aria-level="2">Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title>
-          <p>Sorry, traces with this shkeptncontext could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go
-            back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <dt-empty-state-item-title class="mt-2" aria-level="2"
+            >Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title
+          >
+          <p>
+            Sorry, traces with this shkeptncontext could not be loaded. Check out the
+            <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a>
+            instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go
+            back to <a [routerLink]="['/dashboard']">your dashboard</a>.
+          </p>
           <button dt-button (click)="loadProjects()">
             <dt-icon name="refresh"></dt-icon>
             Retry
@@ -25,8 +35,12 @@
         </ng-container>
         <ng-container *ngSwitchDefault>
           <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occurred</dt-empty-state-item-title>
-          <p>Sorry, some error occurred. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a
-            [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <p>
+            Sorry, some error occurred. Check out the
+            <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a>
+            instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go
+            back to <a [routerLink]="['/dashboard']">your dashboard</a>.
+          </p>
           <button dt-button (click)="loadProjects()">
             <dt-icon name="refresh"></dt-icon>
             Retry
@@ -45,45 +59,118 @@
 <div class="project-board" fxLayout="row" *ngIf="(hasProject$ | async) || (isCreateMode$ | async)">
   <ng-container
     [ngTemplateOutlet]="keptnMenu"
-    [ngTemplateOutletContext]="{isCreateMode: (isCreateMode$ | async)}"></ng-container>
+    [ngTemplateOutletContext]="{ isCreateMode: (isCreateMode$ | async) }"
+  ></ng-container>
   <div fxFlex="calc(100%-50px)">
     <router-outlet></router-outlet>
   </div>
 </div>
 
-
 <ng-template #keptnMenu let-isCreateMode="isCreateMode">
   <dt-menu aria-label="Keptn Menu" class="main-nav" fxFlex="0 0 50px">
     <dt-menu-group>
-      <ng-template #overlay let-data><span>{{data.text}}</span></ng-template>
+      <ng-template #overlay let-data
+        ><span>{{ data.text }}</span></ng-template
+      >
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" routerLinkActive="active" routerLink="./" [routerLinkActiveOptions]="{exact: true}">
+      <button
+        dt-icon-button
+        dtMenuItem
+        variant="nested"
+        aria-label="Open environment view"
+        [disabled]="isCreateMode"
+        [dtOverlay]="overlay"
+        [dtOverlayConfig]="{ data: { text: 'Environment' } }"
+        routerLinkActive="active"
+        routerLink="./"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
         <dt-icon name="environment"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" routerLinkActive="active" routerLink="service">
+      <button
+        dt-icon-button
+        dtMenuItem
+        variant="nested"
+        aria-label="Open services view"
+        [disabled]="isCreateMode"
+        [dtOverlay]="overlay"
+        [dtOverlayConfig]="{ data: { text: 'Services' } }"
+        routerLinkActive="active"
+        routerLink="service"
+      >
         <dt-icon name="services"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
+      <button
+        dt-icon-button
+        dtMenuItem
+        variant="nested"
+        aria-label="Open sequences view"
+        [disabled]="isCreateMode"
+        [dtOverlay]="overlay"
+        [dtOverlayConfig]="{ data: { text: 'Sequences' } }"
+        routerLinkActive="active"
+        routerLink="sequence"
+      >
         <dt-icon name="hops"></dt-icon>
       </button>
       <div class="relative">
         <div *ngIf="hasUnreadLogs$ | async" class="notification-indicator notification-indicator-absolute"></div>
-        <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
+        <button
+          dt-icon-button
+          dtMenuItem
+          variant="nested"
+          aria-label="Open uniform view"
+          [disabled]="isCreateMode"
+          [dtOverlay]="overlay"
+          [dtOverlayConfig]="{ data: { text: 'Uniform' } }"
+          routerLinkActive="active"
+          routerLink="uniform"
+        >
           <dt-icon name="infrastructure"></dt-icon>
         </button>
       </div>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
+      <button
+        dt-icon-button
+        dtMenuItem
+        variant="nested"
+        aria-label="Open integration view"
+        [disabled]="isCreateMode"
+        [dtOverlay]="overlay"
+        [dtOverlayConfig]="{ data: { text: 'Integration' } }"
+        routerLinkActive="active"
+        routerLink="integration"
+      >
         <dt-icon name="plugin-connection"></dt-icon>
       </button>
     </dt-menu-group>
     <dt-menu-group class="bottom-menu">
-      <button *ngIf="!isCreateMode" dt-icon-button dtMenuItem variant="nested" aria-label="Open settings view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Settings'}}" routerLinkActive="active" routerLink="settings">
+      <button
+        *ngIf="!isCreateMode"
+        dt-icon-button
+        dtMenuItem
+        variant="nested"
+        aria-label="Open settings view"
+        [dtOverlay]="overlay"
+        [dtOverlayConfig]="{ data: { text: 'Settings' } }"
+        routerLinkActive="active"
+        routerLink="settings"
+      >
         <dt-icon name="options-menu"></dt-icon>
       </button>
-      <button *ngIf="isCreateMode" dt-icon-button dtMenuItem variant="nested" aria-label="Open create project view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Create project'}}" routerLinkActive="active" routerLink="/create/project">
+      <button
+        *ngIf="isCreateMode"
+        dt-icon-button
+        dtMenuItem
+        variant="nested"
+        aria-label="Open create project view"
+        [dtOverlay]="overlay"
+        [dtOverlayConfig]="{ data: { text: 'Create project' } }"
+        routerLinkActive="active"
+        routerLink="/create/project"
+      >
         <dt-icon name="options-menu"></dt-icon>
       </button>
     </dt-menu-group>

@@ -1,4 +1,4 @@
-import {ResultTypes} from '../models/result-types';
+import { ResultTypes } from '../models/result-types';
 
 export interface EvaluationResult {
   result: ResultTypes;

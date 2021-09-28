@@ -4,10 +4,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 @Component({
   selector: 'ktb-project-settings-git',
   templateUrl: './ktb-project-settings-git.component.html',
-  styleUrls: ['./ktb-project-settings-git.component.scss']
+  styleUrls: ['./ktb-project-settings-git.component.scss'],
 })
 export class KtbProjectSettingsGitComponent implements OnInit {
-
   private originalGitData: GitData | undefined;
 
   @Input()
@@ -21,7 +20,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     if (!this.originalGitData && gitData.remoteURI && gitData.gitUser) {
       this.originalGitData = {
         remoteURI: gitData.remoteURI,
-        gitUser: gitData.gitUser
+        gitUser: gitData.gitUser,
       };
     }
 
@@ -40,7 +39,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   public gitUpstreamForm = new FormGroup({
     gitUrl: this.gitUrlControl,
     gitUser: this.gitUserControl,
-    gitToken: this.gitTokenControl
+    gitToken: this.gitTokenControl,
   });
 
   ngOnInit(): void {
@@ -55,7 +54,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     this.gitUpstreamSubmit.emit({
       remoteURI: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
-      gitToken: this.gitTokenControl.value
+      gitToken: this.gitTokenControl.value,
     });
   }
 
@@ -64,7 +63,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
       remoteURI: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
       gitToken: this.gitTokenControl.value,
-      gitFormValid: !this.isButtonDisabled()
+      gitFormValid: !this.isButtonDisabled(),
     });
   }
 
@@ -87,7 +86,6 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     this.gitTokenControl.markAsUntouched();
     this.gitTokenControl.markAsPristine();
   }
-
 }
 
 export interface GitData {

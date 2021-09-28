@@ -36,10 +36,14 @@ export class DataService {
 
   public async getProjects(): Promise<Project[]> {
     const response = await this.apiService.getProjects();
-    return response.data.projects.map(project => Project.fromJSON(project));
+    return response.data.projects.map((project) => Project.fromJSON(project));
   }
 
-  public async getProject(projectName: string, includeRemediation: boolean, includeApproval: boolean): Promise<Project> {
+  public async getProject(
+    projectName: string,
+    includeRemediation: boolean,
+    includeApproval: boolean
+  ): Promise<Project> {
     const response = await this.apiService.getProject(projectName);
     const project = Project.fromJSON(response.data);
     let remediations: Remediation[] = [];
@@ -53,7 +57,15 @@ export class DataService {
         const keptnContext = service.getLatestSequence(stage.stageName);
         if (keptnContext) {
           try {
-            const latestSequence = await this.fetchServiceDetails(service, stage.stageName, keptnContext, projectName, includeApproval, remediations, lastSequences[service.serviceName]);
+            const latestSequence = await this.fetchServiceDetails(
+              service,
+              stage.stageName,
+              keptnContext,
+              projectName,
+              includeApproval,
+              remediations,
+              lastSequences[service.serviceName]
+            );
             if (latestSequence) {
               lastSequences[service.serviceName] = latestSequence;
             }
@@ -66,13 +78,27 @@ export class DataService {
     return project;
   }
 
-  private async fetchServiceDetails(service: Service, stageName: string, keptnContext: string, projectName: string, includeApproval: boolean, remediations: Remediation[], sequenceBefore: Sequence | undefined): Promise<Sequence | undefined> {
-    const latestSequence = sequenceBefore?.shkeptncontext === keptnContext ? sequenceBefore : await this.getSequence(projectName, stageName, keptnContext, true);
+  private async fetchServiceDetails(
+    service: Service,
+    stageName: string,
+    keptnContext: string,
+    projectName: string,
+    includeApproval: boolean,
+    remediations: Remediation[],
+    sequenceBefore: Sequence | undefined
+  ): Promise<Sequence | undefined> {
+    const latestSequence =
+      sequenceBefore?.shkeptncontext === keptnContext
+        ? sequenceBefore
+        : await this.getSequence(projectName, stageName, keptnContext, true);
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(stageName);
     service.deploymentInformation = await this.getDeploymentInformation(service, projectName, stageName);
 
-    const serviceRemediations = remediations.filter(remediation => remediation.service === service.serviceName && remediation.stages.some(s => s.name === stageName));
+    const serviceRemediations = remediations.filter(
+      (remediation) =>
+        remediation.service === service.serviceName && remediation.stages.some((s) => s.name === stageName)
+    );
     for (const remediation of serviceRemediations) {
       remediation.reduceToStage(stageName);
     }
@@ -84,15 +110,36 @@ export class DataService {
     return latestSequence;
   }
 
-  public async getSequence(projectName: string, stageName?: string, keptnContext?: string, includeEvaluationTrace = false): Promise<Sequence | undefined> {
-    const response = await this.apiService.getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext);
+  public async getSequence(
+    projectName: string,
+    stageName?: string,
+    keptnContext?: string,
+    includeEvaluationTrace = false
+  ): Promise<Sequence | undefined> {
+    const response = await this.apiService.getSequences(
+      projectName,
+      1,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      keptnContext
+    );
     let sequence = response.data.states[0];
     if (sequence) {
       sequence = Sequence.fromJSON(sequence);
-      if (includeEvaluationTrace && stageName) { // we just need the result of a stage
-        const stage = sequence.stages.find(s => s.name === stageName);
-        if (stage) { // get latest evaluation
-          const evaluationTraces = await this.getEvaluationResults(projectName, sequence.service, stageName, 1, sequence.shkeptncontext);
+      if (includeEvaluationTrace && stageName) {
+        // we just need the result of a stage
+        const stage = sequence.stages.find((s) => s.name === stageName);
+        if (stage) {
+          // get latest evaluation
+          const evaluationTraces = await this.getEvaluationResults(
+            projectName,
+            sequence.service,
+            stageName,
+            1,
+            sequence.shkeptncontext
+          );
           if (evaluationTraces) {
             stage.latestEvaluationTrace = evaluationTraces.shift();
           }
@@ -102,8 +149,19 @@ export class DataService {
     return sequence;
   }
 
-  public async getDeploymentInformation(service: Service, projectName: string, stageName: string): Promise<DeploymentInformation | undefined> {
-    const result = await this.apiService.getTracesWithResult(EventTypes.DEPLOYMENT_FINISHED, 1, projectName, stageName, service.serviceName, ResultTypes.PASSED);
+  public async getDeploymentInformation(
+    service: Service,
+    projectName: string,
+    stageName: string
+  ): Promise<DeploymentInformation | undefined> {
+    const result = await this.apiService.getTracesWithResult(
+      EventTypes.DEPLOYMENT_FINISHED,
+      1,
+      projectName,
+      stageName,
+      service.serviceName,
+      ResultTypes.PASSED
+    );
     const traceData = result.data.events[0];
     let deploymentInformation: DeploymentInformation | undefined;
     if (traceData) {
@@ -116,25 +174,58 @@ export class DataService {
     return deploymentInformation;
   }
 
-  private async getEvaluationResults(projectName: string, serviceName: string, stageName: string, pageSize: number, keptnContext?: string): Promise<Trace[]> {
-    const response = await this.apiService.getEvaluationResults(projectName, serviceName, stageName, pageSize, keptnContext);
-    return response.data.events.map(trace => Trace.fromJSON(trace));
+  private async getEvaluationResults(
+    projectName: string,
+    serviceName: string,
+    stageName: string,
+    pageSize: number,
+    keptnContext?: string
+  ): Promise<Trace[]> {
+    const response = await this.apiService.getEvaluationResults(
+      projectName,
+      serviceName,
+      stageName,
+      pageSize,
+      keptnContext
+    );
+    return response.data.events.map((trace) => Trace.fromJSON(trace));
   }
 
-  public async getSequences(projectName: string, sequenceName: string, stageName?: string, keptnContext?: string): Promise<Sequence[]> {
-    const response = await this.apiService.getSequences(projectName, this.MAX_SEQUENCE_PAGE_SIZE, sequenceName, undefined, undefined, undefined, keptnContext);
+  public async getSequences(
+    projectName: string,
+    sequenceName: string,
+    stageName?: string,
+    keptnContext?: string
+  ): Promise<Sequence[]> {
+    const response = await this.apiService.getSequences(
+      projectName,
+      this.MAX_SEQUENCE_PAGE_SIZE,
+      sequenceName,
+      undefined,
+      undefined,
+      undefined,
+      keptnContext
+    );
     const sequences = response.data.states;
     for (const sequence of sequences) {
-      if (stageName) { // we just need the result of a stage
-        if (sequence.name === SequenceTypes.REMEDIATION) { // if the sequence is a remediation also return the problemTitle
-          const traceResponse = await this.apiService.getTraces(this.buildRemediationEvent(stageName), 1, projectName, stageName, sequence.service);
+      if (stageName) {
+        // we just need the result of a stage
+        if (sequence.name === SequenceTypes.REMEDIATION) {
+          // if the sequence is a remediation also return the problemTitle
+          const traceResponse = await this.apiService.getTraces(
+            this.buildRemediationEvent(stageName),
+            1,
+            projectName,
+            stageName,
+            sequence.service
+          );
           const trace = traceResponse.data.events[0];
           sequence.problemTitle = trace?.data.problem?.ProblemTitle;
         }
-        sequence.stages = sequence.stages.filter(stage => stage.name === stageName);
+        sequence.stages = sequence.stages.filter((stage) => stage.name === stageName);
       }
     }
-    return sequences.map(sequence => Sequence.fromJSON(sequence));
+    return sequences.map((sequence) => Sequence.fromJSON(sequence));
   }
 
   public async getRemediations(projectName: string): Promise<Remediation[]> {
@@ -144,10 +235,16 @@ export class DataService {
       const stageName = sequence.stages[0]?.name;
       // there could be invalid sequences that don't have a stage because the triggered sequence was not present in the shipyard file
       if (stageName) {
-        const response = await this.apiService.getTraces(this.buildRemediationEvent(stageName), this.MAX_TRACE_PAGE_SIZE, projectName, stageName, sequence.service);
+        const response = await this.apiService.getTraces(
+          this.buildRemediationEvent(stageName),
+          this.MAX_TRACE_PAGE_SIZE,
+          projectName,
+          stageName,
+          sequence.service
+        );
         const traces = response.data.events;
-        const stage = {...sequence.stages[0], actions: []};
-        const remediation: Remediation = Remediation.fromJSON({...sequence, stages: [stage]});
+        const stage = { ...sequence.stages[0], actions: [] };
+        const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
         const actions = this.getRemediationActions(traces);
 
         remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
@@ -162,8 +259,8 @@ export class DataService {
     const actions: IRemediationAction[] = [];
     for (const trace of traces) {
       if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
-        const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
-        const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
+        const finishedAction = traces.find((t) => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
+        const startedAction = traces.find((t) => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
         let state: EventState;
         if (finishedAction) {
           state = EventState.FINISHED;
@@ -173,13 +270,19 @@ export class DataService {
           state = EventState.TRIGGERED;
         }
 
-        actions.push({...trace.data.action, state, result: finishedAction?.data.result});
+        actions.push({ ...trace.data.action, state, result: finishedAction?.data.result });
       }
     }
     return actions;
   }
 
-  private async getTrace(keptnContext: string, projectName: string, stageName: string, serviceName: string, eventType: EventTypes): Promise<Trace | undefined> {
+  private async getTrace(
+    keptnContext: string,
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    eventType: EventTypes
+  ): Promise<Trace | undefined> {
     const response = await this.apiService.getTraces(eventType, 1, projectName, stageName, serviceName, keptnContext);
     return response.data.events.shift();
   }
@@ -187,15 +290,27 @@ export class DataService {
   public async getApprovals(projectName: string, stageName: string, serviceName: string): Promise<Approval[]> {
     let tracesTriggered: Trace[];
     try {
-      const response = await this.apiService.getOpenTriggeredEvents(projectName, stageName, serviceName, EventTypes.APPROVAL_TRIGGERED);
+      const response = await this.apiService.getOpenTriggeredEvents(
+        projectName,
+        stageName,
+        serviceName,
+        EventTypes.APPROVAL_TRIGGERED
+      );
       tracesTriggered = response.data.events ?? [];
-    } catch { // status 500 if no events are found
+    } catch {
+      // status 500 if no events are found
       tracesTriggered = [];
     }
     const approvals: Approval[] = [];
     // for each approval the latest evaluation trace (before this event) is needed
     for (const trace of tracesTriggered) {
-      const evaluationTrace = await this.getTrace(trace.shkeptncontext, projectName, stageName, serviceName, EventTypes.EVALUATION_FINISHED);
+      const evaluationTrace = await this.getTrace(
+        trace.shkeptncontext,
+        projectName,
+        stageName,
+        serviceName,
+        EventTypes.EVALUATION_FINISHED
+      );
       approvals.push({
         evaluationTrace,
         trace,
@@ -210,7 +325,11 @@ export class DataService {
     let status = false;
     for (let i = 0; i < registrations.length && !status; ++i) {
       const registration = registrations[i];
-      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id], 1);
+      const logResponse = await this.apiService.getUniformRegistrationLogs(
+        registration.id,
+        uniformDates[registration.id],
+        1
+      );
       if (logResponse.data.logs.length !== 0) {
         status = true;
       }
@@ -222,7 +341,10 @@ export class DataService {
     const response = await this.apiService.getUniformRegistrations();
     const registrations = await this.getValidRegistrations(response.data);
     for (const registration of registrations) {
-      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
+      const logResponse = await this.apiService.getUniformRegistrationLogs(
+        registration.id,
+        uniformDates[registration.id]
+      );
       registration.unreadEventsCount = logResponse.data.logs.length;
     }
     return registrations;
@@ -267,12 +389,30 @@ export class DataService {
     return tasks;
   }
 
-  public async getRoots(projectName: string | undefined, pageSize: string | undefined, serviceName: string | undefined, fromTime?: string | undefined, beforeTime?: string | undefined, keptnContext?: string | undefined): Promise<EventResult> {
-    const response = await this.apiService.getRoots(projectName, pageSize, serviceName, fromTime, beforeTime, keptnContext);
+  public async getRoots(
+    projectName: string | undefined,
+    pageSize: string | undefined,
+    serviceName: string | undefined,
+    fromTime?: string | undefined,
+    beforeTime?: string | undefined,
+    keptnContext?: string | undefined
+  ): Promise<EventResult> {
+    const response = await this.apiService.getRoots(
+      projectName,
+      pageSize,
+      serviceName,
+      fromTime,
+      beforeTime,
+      keptnContext
+    );
     return response.data;
   }
 
-  public async getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined): Promise<EventResult> {
+  public async getTracesByContext(
+    keptnContext: string | undefined,
+    projectName?: string | undefined,
+    fromTime?: string | undefined
+  ): Promise<EventResult> {
     let result: EventResult = {
       events: [],
       pageSize: 0,
@@ -281,7 +421,12 @@ export class DataService {
     };
     let nextPage = 0;
     do {
-      const response = await this.apiService.getTracesByContext(keptnContext, projectName, fromTime, nextPage.toString());
+      const response = await this.apiService.getTracesByContext(
+        keptnContext,
+        projectName,
+        fromTime,
+        nextPage.toString()
+      );
       nextPage = response.data.nextPageKey || 0;
       result = {
         events: [...result?.events, ...response.data.events],
@@ -309,7 +454,12 @@ export class DataService {
       };
 
       do {
-        const resourceRes = await this.apiService.getServiceResource(projectName, stage.stageName, serviceName, nextPage || undefined);
+        const resourceRes = await this.apiService.getServiceResource(
+          projectName,
+          stage.stageName,
+          serviceName,
+          nextPage || undefined
+        );
         nextPage = resourceRes.data.nextPageKey;
         resourceResponses = [...resourceResponses, ...resourceRes.data.resources];
       } while (parseInt(nextPage, 10) !== 0);
@@ -327,7 +477,11 @@ export class DataService {
     return Yaml.parse(shipyard);
   }
 
-  private async getWebhookConfigYaml(projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfigYaml> {
+  private async getWebhookConfigYaml(
+    projectName: string,
+    stageName?: string,
+    serviceName?: string
+  ): Promise<WebhookConfigYaml> {
     const response = await this.apiService.getWebhookConfig(projectName, stageName, serviceName);
 
     try {
@@ -338,7 +492,12 @@ export class DataService {
     }
   }
 
-  public async getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
+  public async getWebhookConfig(
+    eventType: string,
+    projectName: string,
+    stageName?: string,
+    serviceName?: string
+  ): Promise<WebhookConfig> {
     const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stageName, serviceName);
 
     const webhookConfig = webhookConfigYaml.parsedRequest(eventType);
@@ -361,7 +520,11 @@ export class DataService {
     for (const project of currentConfig.projects) {
       for (const stage of currentConfig.stages) {
         for (const service of currentConfig.services) {
-          const previousWebhookConfig: WebhookConfigYaml = await this.getOrCreateWebhookConfigYaml(project, stage, service);
+          const previousWebhookConfig: WebhookConfigYaml = await this.getOrCreateWebhookConfigYaml(
+            project,
+            stage,
+            service
+          );
           previousWebhookConfig.addWebhook(webhookConfig.type, curl);
           await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
         }
@@ -371,14 +534,20 @@ export class DataService {
     return true;
   }
 
-  private async getOrCreateWebhookConfigYaml(project: string, stage?: string, service?: string): Promise<WebhookConfigYaml> {
+  private async getOrCreateWebhookConfigYaml(
+    project: string,
+    stage?: string,
+    service?: string
+  ): Promise<WebhookConfigYaml> {
     let previousWebhookConfig: WebhookConfigYaml;
-    try { // fetch existing one
+    try {
+      // fetch existing one
       previousWebhookConfig = await this.getWebhookConfigYaml(project, stage, service);
     } catch (e: unknown) {
       if (!axios.isAxiosError(e) || e.response?.status !== 404) {
         throw e;
-      } else { // if it does not exist, create one
+      } else {
+        // if it does not exist, create one
         previousWebhookConfig = new WebhookConfigYaml();
       }
     }
@@ -397,7 +566,9 @@ export class DataService {
 
   private async getPreviousWebhookConfig(webhookConfig: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
     return {
-      projects: webhookConfig.projects?.length ? webhookConfig.projects : (await this.getProjects()).map(project => project.projectName),
+      projects: webhookConfig.projects?.length
+        ? webhookConfig.projects
+        : (await this.getProjects()).map((project) => project.projectName),
       stages: webhookConfig.stages?.length ? webhookConfig.stages : [],
       services: webhookConfig.services?.length ? webhookConfig.services : [undefined],
     };
@@ -421,26 +592,40 @@ export class DataService {
       try {
         stringify = JSON.stringify(JSON.parse(webhookConfig.payload));
       } catch {
-        stringify = stringify.replace((/\r\n|\n|\r/gm), '');
+        stringify = stringify.replace(/\r\n|\n|\r/gm, '');
       }
       params += `--data '${stringify}' `;
     }
     return `curl ${params}${webhookConfig.url}`;
   }
 
-  public async deleteSubscription(integrationId: string, subscriptionId: string, deleteWebhook: boolean): Promise<void> {
+  public async deleteSubscription(
+    integrationId: string,
+    subscriptionId: string,
+    deleteWebhook: boolean
+  ): Promise<void> {
     if (deleteWebhook) {
       const response = await this.apiService.getUniformSubscription(integrationId, subscriptionId);
       const subscription = response.data;
       const projectName = subscription.filter.projects?.[0];
       if (projectName && subscription.filter.stages?.length) {
-        await this.removeWebhooks(subscription.event, projectName, subscription.filter.stages, subscription.filter.services?.length ? subscription.filter.services : [undefined]);
+        await this.removeWebhooks(
+          subscription.event,
+          projectName,
+          subscription.filter.stages,
+          subscription.filter.services?.length ? subscription.filter.services : [undefined]
+        );
       }
     }
     await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
   }
 
-  private async removeWebhooks(eventType: string, projectName: string, stages: string[], services: string[] | [undefined]): Promise<void> {
+  private async removeWebhooks(
+    eventType: string,
+    projectName: string,
+    stages: string[],
+    services: string[] | [undefined]
+  ): Promise<void> {
     for (const stage of stages) {
       for (const service of services) {
         await this.removeWebhook(eventType, projectName, stage, service);
@@ -467,10 +652,10 @@ export class DataService {
   }
 
   private _getResourceFileTree(resources: Resource[]): TreeEntry[] {
-    const directory: TreeDirectory = {_: []};
+    const directory: TreeDirectory = { _: [] };
 
     for (const res of resources) {
-      const parts = res.resourceURI.split('/').filter(item => !!item);
+      const parts = res.resourceURI.split('/').filter((item) => !!item);
       this._addToTreeDirectory(directory, parts);
     }
 
@@ -482,7 +667,7 @@ export class DataService {
     for (; index < parts.length - 1; ++index) {
       const part = parts[index];
       // @ts-ignore
-      currentDirectory[part] ??= {_: []};
+      currentDirectory[part] ??= { _: [] };
       // @ts-ignore
       currentDirectory = currentDirectory[part];
     }
@@ -490,17 +675,19 @@ export class DataService {
   }
 
   private _buildTree(currentDirectory: TreeDirectory, fileName: string): TreeEntry {
-    const tree: TreeEntry = {fileName, children: [] as TreeEntry[]};
-    const dict: { [key: string]: boolean } = {_: true};
+    const tree: TreeEntry = { fileName, children: [] as TreeEntry[] };
+    const dict: { [key: string]: boolean } = { _: true };
     const folders: TreeEntry[] = [];
     const files: TreeEntry[] = [];
     for (const key in currentDirectory) {
       if (dict[key]) {
-        files.push(...currentDirectory._.map(item => {
-          return {
-            fileName: item,
-          } as TreeEntry;
-        }));
+        files.push(
+          ...currentDirectory._.map((item) => {
+            return {
+              fileName: item,
+            } as TreeEntry;
+          })
+        );
       } else {
         // @ts-ignore
         folders.push(this._buildTree(currentDirectory[key] as TreeDirectory, key));

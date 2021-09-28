@@ -7,7 +7,6 @@ import { Project } from '../../_models/project';
   styleUrls: ['./ktb-project-list.component.scss'],
 })
 export class KtbProjectListComponent {
-
   public _projects: Project[] = [];
 
   @Input()

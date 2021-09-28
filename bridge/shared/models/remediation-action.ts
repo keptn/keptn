@@ -5,8 +5,8 @@ export type IRemediationAction = {
   action: string;
   description: string;
   name: string;
-  state: EventState,
-  result?: ResultTypes
+  state: EventState;
+  result?: ResultTypes;
 };
 
 export class RemediationAction implements IRemediationAction {

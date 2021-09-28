@@ -1,13 +1,13 @@
 <span class="ml-1" *ngFor="let target of targets; let isLast = last">
-  <ng-container *ngIf="target.violated && !isInformative, then violated, else normal"></ng-container>
+  <ng-container *ngIf="target.violated && !isInformative; then violated; else normal"></ng-container>
   <ng-template #violated>
-    <span class="error-line error" [dtOverlay]="overlay">{{target.criteria}}</span>
+    <span class="error-line error" [dtOverlay]="overlay">{{ target.criteria }}</span>
     <ng-template #overlay>
       <span class="small" [textContent]="target.targetValue"></span>
     </ng-template>
   </ng-template>
   <ng-template #normal>
-    <span>{{target.criteria}}</span>
+    <span>{{ target.criteria }}</span>
   </ng-template>
-  {{ (!isLast ? ' and' : '')}}
+  {{ !isLast ? ' and' : '' }}
 </span>

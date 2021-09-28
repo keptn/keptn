@@ -4,18 +4,18 @@ export class FormUtils {
   public static nameExistsValidator(names: string[]): ValidatorFn {
     return (control: AbstractControl): { duplicate: { value: boolean } } | null => {
       const name = names.includes(control.value);
-      return name ? {duplicate: {value: name}} : null;
+      return name ? { duplicate: { value: name } } : null;
     };
   }
 
-  public static urlValidator(control: AbstractControl): { url: { pattern?: boolean, special?: boolean } } | null {
-    let result: { url: { pattern?: boolean, special?: boolean } } | null = null;
+  public static urlValidator(control: AbstractControl): { url: { pattern?: boolean; special?: boolean } } | null {
+    let result: { url: { pattern?: boolean; special?: boolean } } | null = null;
     const value = control.value?.toString();
     if (value) {
       if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]*$/)) {
-        result = {url: {special: true}};
+        result = { url: { special: true } };
       } else if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;=]+$/)) {
-        result = {url: {pattern: true}};
+        result = { url: { pattern: true } };
       }
     }
     return result;
@@ -24,9 +24,9 @@ export class FormUtils {
   public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {
     if (allowedExtensions && allowedExtensions.length > 0) {
       const allowedFiles = [];
-      allowedExtensions.forEach(extension => {
+      allowedExtensions.forEach((extension) => {
         const fileArray: File[] = Array.from(files);
-        fileArray.forEach(file => {
+        fileArray.forEach((file) => {
           if (file.name.endsWith(extension)) {
             allowedFiles.push(file);
           }

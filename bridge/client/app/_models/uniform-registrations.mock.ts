@@ -2,7 +2,6 @@ import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-re
 import { UniformRegistration } from './uniform-registration';
 import { UniformRegistrationLocations } from '../../../shared/interfaces/uniform-registration-locations';
 
-
 const services: UniformRegistrationResult[] = [
   {
     id: 'keptn-uniform-ansible-service-f01334c8312486183460649bab6cd4a7',
@@ -21,15 +20,16 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'ansible-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: [],
           stages: [],
         },
         event: 'sh.keptn.test.triggered',
-      }],
+      },
+    ],
     unreadEventsCount: 10,
   },
   {
@@ -49,8 +49,8 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'ansible-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: [],
@@ -58,7 +58,8 @@ const services: UniformRegistrationResult[] = [
         },
         event: 'sh.keptn.event.deployment.triggered',
         id: 'myHelmSubscriptionId',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
@@ -77,8 +78,8 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'jmeter-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: ['sockshop'],
           services: ['carts'],
@@ -86,7 +87,8 @@ const services: UniformRegistrationResult[] = [
         },
         event: 'sh.keptn.event.test.triggered',
         id: 'myJmeterSubscriptionId',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-lighthouse-service-8feec7146c19fa08bd65664b8d47f153',
@@ -105,8 +107,8 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'lighthouse-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: ['carts'],
@@ -114,7 +116,8 @@ const services: UniformRegistrationResult[] = [
         },
         event: 'sh.keptn.event.evaluation.triggered',
         id: 'subscriptionId',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-approval-service-bcd13872eb35b0f1f5a730c4c4832af8',
@@ -133,15 +136,16 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'lighthouse-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: [],
           stages: [],
         },
         event: 'sh.keptn.event.deployment.triggered',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-remediation-service-10fedadd2e37e75383df1405f9e55d05',
@@ -160,33 +164,32 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'remediation-service',
-    subscriptions:
-      [
-        {
-          filter: {
-            projects: [],
-            services: [],
-            stages: [],
-          },
-          event: 'sh.keptn.event.test.triggered',
+    subscriptions: [
+      {
+        filter: {
+          projects: [],
+          services: [],
+          stages: [],
         },
-        {
-          filter: {
-            projects: [],
-            services: [],
-            stages: [],
-          },
-          event: 'sh.keptn.event.evaluation.triggered',
+        event: 'sh.keptn.event.test.triggered',
+      },
+      {
+        filter: {
+          projects: [],
+          services: [],
+          stages: [],
         },
-        {
-          filter: {
-            projects: [],
-            services: [],
-            stages: [],
-          },
-          event: 'sh.keptn.event.deployment.triggered',
+        event: 'sh.keptn.event.evaluation.triggered',
+      },
+      {
+        filter: {
+          projects: [],
+          services: [],
+          stages: [],
         },
-      ],
+        event: 'sh.keptn.event.deployment.triggered',
+      },
+    ],
   },
   {
     id: 'keptn-uniform-jenkins-service-9d93d3deeb00f19131e6b56c247d7293',
@@ -205,15 +208,16 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'jenkins-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: [],
           stages: [],
         },
         event: 'sh.keptn.event.deployment.triggered',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-dynatrace-sli-service-1fc1cf9407a50e8505ef7684e27c7416',
@@ -232,15 +236,16 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'dynatrace-sli-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: [],
           stages: [],
         },
         event: 'sh.keptn.event.evaluation.triggered',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-dynatrace-service-c578c5d7254641d061b5bbb5fb8dd224',
@@ -259,15 +264,16 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'dynatrace-service',
-    subscriptions:
-      [{
+    subscriptions: [
+      {
         filter: {
           projects: [],
           services: [],
           stages: [],
         },
         event: 'sh.keptn.event.evaluation.triggered',
-      }],
+      },
+    ],
   },
   {
     id: 'keptn-uniform-servicenow-service-55875464c5b6d3e313e58b99d2ed7e09',
@@ -286,17 +292,16 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'servicenow-service',
-    subscriptions:
-      [
-        {
-          filter: {
-            projects: [],
-            services: [],
-            stages: [],
-          },
-          event: 'sh.keptn.event.deployment.triggered',
+    subscriptions: [
+      {
+        filter: {
+          projects: [],
+          services: [],
+          stages: [],
         },
-      ],
+        event: 'sh.keptn.event.deployment.triggered',
+      },
+    ],
   },
   {
     id: 'keptn-uniform-webhook-service-55875464c5b6d3e313e58b99d2ed7e09',
@@ -315,20 +320,19 @@ const services: UniformRegistrationResult[] = [
       lastseen: '2021-08-19T08:37:54.691Z',
     },
     name: 'webhook-service',
-    subscriptions:
-      [
-        {
-          filter: {
-            projects: ['sockshop'],
-            services: [],
-            stages: [],
-          },
-          event: 'sh.keptn.event.deployment.triggered',
-          id: 'subscriptionId',
+    subscriptions: [
+      {
+        filter: {
+          projects: ['sockshop'],
+          services: [],
+          stages: [],
         },
-      ],
+        event: 'sh.keptn.event.deployment.triggered',
+        id: 'subscriptionId',
+      },
+    ],
   },
 ];
 
-const UniformRegistrationsMock: UniformRegistration[] = services.map(registration => UniformRegistration.fromJSON(registration));
+const UniformRegistrationsMock: UniformRegistration[] = services.map((registration) => UniformRegistration.fromJSON(registration));
 export { UniformRegistrationsMock };

@@ -4,7 +4,7 @@ import {
   Component,
   Directive,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 type alignmentType = 'right' | 'left';
 @Directive({
@@ -35,7 +35,6 @@ export class KtbExpandableTileHeader {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbExpandableTileComponent {
-
   private _error = false;
   private _success = false;
   private _expanded = false;
@@ -119,10 +118,9 @@ export class KtbExpandableTileComponent {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 
   toggle() {
     this.expanded = !this.expanded;
   }
-
 }

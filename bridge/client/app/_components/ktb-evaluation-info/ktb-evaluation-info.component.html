@@ -1,24 +1,31 @@
 <dt-tag-list aria-label="evaluation-info" *ngIf="evaluation && evaluation.isFinished()">
-  <dt-tag class="m-0 justify-content-center"
-          [dtOverlay]="overlay"
-          [dtOverlayConfig]="overlayConfig"
-          [disabled]="overlayDisabled"
-          [class.error]="evaluation.isFaulty()"
-          [class.warning]="evaluation.isWarning()"
-          [class.success]="evaluation.isSuccessful()"
-          [class.border]="fill === false"
-          [textContent]="evaluation.getFinishedEvent()?.data?.evaluation?.score | number:'1.0-0'"></dt-tag>
+  <dt-tag
+    class="m-0 justify-content-center"
+    [dtOverlay]="overlay"
+    [dtOverlayConfig]="overlayConfig"
+    [disabled]="overlayDisabled"
+    [class.error]="evaluation.isFaulty()"
+    [class.warning]="evaluation.isWarning()"
+    [class.success]="evaluation.isSuccessful()"
+    [class.border]="fill === false"
+    [textContent]="evaluation.getFinishedEvent()?.data?.evaluation?.score | number: '1.0-0'"
+  ></dt-tag>
   <ng-template #overlay>
-    <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
+    <ktb-evaluation-details
+      [evaluationData]="evaluation.getFinishedEvent()"
+      [showChart]="false"
+    ></ktb-evaluation-details>
   </ng-template>
 </dt-tag-list>
 <dt-tag-list aria-label="evaluation-info" *ngIf="evaluationResult">
-  <dt-tag class="m-0 justify-content-center"
-          [class.error]="isError"
-          [class.warning]="isWarning"
-          [class.success]="isSuccess"
-          [class.border]="fill === false"
-          [textContent]="evaluationResult.score | number:'1.0-0'"></dt-tag>
+  <dt-tag
+    class="m-0 justify-content-center"
+    [class.error]="isError"
+    [class.warning]="isWarning"
+    [class.success]="isSuccess"
+    [class.border]="fill === false"
+    [textContent]="evaluationResult.score | number: '1.0-0'"
+  ></dt-tag>
 </dt-tag-list>
 <dt-tag-list *ngIf="!evaluation?.isFinished() && !evaluationResult">
   <dt-tag class="m-0 justify-content-center" [class.fill]="fill" [textContent]="'-'"></dt-tag>

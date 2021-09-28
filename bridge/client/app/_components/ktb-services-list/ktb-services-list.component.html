@@ -1,22 +1,40 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <ng-container *ngIf="services && services.length > 0; else noService">
     <dt-table [dataSource]="dataSource">
-
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType : ServiceClass as service">
-            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="service.latestSequence as currentSequence">
-              <dt-icon *ngIf="!currentSequence.isLoading(service.stage) || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
-                       [name]="currentSequence.getIcon()"
-                       [class.error]="currentSequence.isFaulty(service.stage)"
-                       [class.success]="currentSequence.isSuccessful(service.stage)"
-                       [class.highlight]="currentSequence.hasPendingApproval(service.stage)"></dt-icon>
+          <ng-container *ngIf="row | toType: ServiceClass as service">
+            <div
+              fxLayout="row"
+              fxLayoutAlign="start center"
+              fxLayoutGap="5px"
+              *ngIf="service.latestSequence as currentSequence"
+            >
+              <dt-icon
+                *ngIf="
+                  !currentSequence.isLoading(service.stage) || currentSequence.hasPendingApproval(service.stage);
+                  else showLoading
+                "
+                class="event-icon"
+                [name]="currentSequence.getIcon()"
+                [class.error]="currentSequence.isFaulty(service.stage)"
+                [class.success]="currentSequence.isSuccessful(service.stage)"
+                [class.highlight]="currentSequence.hasPendingApproval(service.stage)"
+              ></dt-icon>
               <ng-template #showLoading>
                 <button class="m-0 p-0" dt-button disabled variant="nested">
                   <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
                 </button>
               </ng-template>
-              <a class="m-0" [routerLink]="getSequenceLink(currentSequence, service)" [class.error]="currentSequence.isRemediation() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" uitestid="keptn-services-list-jumpToSequence" [textContent]="currentSequence.name"></a>
+              <a
+                class="m-0"
+                [routerLink]="getSequenceLink(currentSequence, service)"
+                [class.error]="
+                  currentSequence.isRemediation() && currentSequence.isFaulty() && !currentSequence.isSuccessful()
+                "
+                uitestid="keptn-services-list-jumpToSequence"
+                [textContent]="currentSequence.name"
+              ></a>
             </div>
             <p class="m-0" *ngIf="!service.latestSequence">-</p>
           </ng-container>
@@ -25,14 +43,27 @@
 
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType : ServiceClass as service">
-            <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.openRemediations.length > 0" class="m-0 overflow-ellipsis">
-              <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext, else serviceContent">
+          <ng-container *ngIf="row | toType: ServiceClass as service">
+            <p
+              [class.highlight]="service.getOpenApprovals().length > 0"
+              [class.error]="service.openRemediations.length > 0"
+              class="m-0 overflow-ellipsis"
+            >
+              <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext; else serviceContent">
                 <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
               </a>
               <ng-template #serviceContent>
-                <span [textContent]="service.serviceName" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: service.serviceName}}"></span><br/>
-                <span [textContent]="getImageText(service)" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: getImageText(service)}}"></span>
+                <span
+                  [textContent]="service.serviceName"
+                  [dtOverlay]="overlay"
+                  [dtOverlayConfig]="{ data: { text: service.serviceName } }"
+                ></span
+                ><br />
+                <span
+                  [textContent]="getImageText(service)"
+                  [dtOverlay]="overlay"
+                  [dtOverlayConfig]="{ data: { text: getImageText(service) } }"
+                ></span>
               </ng-template>
               <ng-template #overlay let-data><span [textContent]="data.text"></span></ng-template>
             </p>
@@ -42,9 +73,11 @@
 
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType : ServiceClass as service">
+          <ng-container *ngIf="row | toType: ServiceClass as service">
             <div *ngIf="service.latestSequence">
-              <ktb-evaluation-info [evaluation]="service.latestSequence.getEvaluationTrace(service.stage)"></ktb-evaluation-info>
+              <ktb-evaluation-info
+                [evaluation]="service.latestSequence.getEvaluationTrace(service.stage)"
+              ></ktb-evaluation-info>
             </div>
             <p class="m-0" *ngIf="!service.latestSequence">-</p>
           </ng-container>
@@ -53,7 +86,15 @@
 
       <dt-row *dtRowDef="let row; columns: ['recentSequence', 'serviceName', 'recentEvaluation']"></dt-row>
     </dt-table>
-    <button *ngIf="services.length > DEFAULT_PAGE_SIZE" uitestid="keptn-services-list-showMoreServices" dt-show-more [showLess]="pageSize > DEFAULT_PAGE_SIZE" (click)="toggleAllServices()">Show all <span [textContent]="services.length"></span> services</button>
+    <button
+      *ngIf="services.length > DEFAULT_PAGE_SIZE"
+      uitestid="keptn-services-list-showMoreServices"
+      dt-show-more
+      [showLess]="pageSize > DEFAULT_PAGE_SIZE"
+      (click)="toggleAllServices()"
+    >
+      Show all <span [textContent]="services.length"></span> services
+    </button>
   </ng-container>
 </div>
 

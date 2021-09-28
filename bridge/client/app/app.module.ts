@@ -43,14 +43,23 @@ import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
 import { MomentModule } from 'ngx-moment';
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
-import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
-import { KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
+import {
+  KtbExpandableTileComponent,
+  KtbExpandableTileHeader,
+} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
+import {
+  KtbHorizontalSeparatorComponent,
+  KtbHorizontalSeparatorTitle,
+} from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
-import { KtbSelectableTileComponent, KtbSelectableTileHeaderDirective } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
+import {
+  KtbSelectableTileComponent,
+  KtbSelectableTileHeaderDirective,
+} from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
 import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
@@ -263,10 +272,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtAlertModule,
     DtTreeTableModule,
   ],
-  entryComponents: [
-    KtbDeletionDialogComponent,
-    KtbConfirmationDialogComponent,
-  ],
+  entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [
     EventService,
     AppInitService,
@@ -306,5 +312,4 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

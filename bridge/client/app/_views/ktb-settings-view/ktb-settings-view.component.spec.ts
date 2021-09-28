@@ -3,7 +3,6 @@ import { KtbSettingsViewComponent } from './ktb-settings-view.component';
 import { AppModule } from '../../app.module';
 import { By } from '@angular/platform-browser';
 
-
 describe('KtbSettingsViewComponent', () => {
   let component: KtbSettingsViewComponent;
   let fixture: ComponentFixture<KtbSettingsViewComponent>;
@@ -33,5 +32,3 @@ describe('KtbSettingsViewComponent', () => {
     expect(menuItems[1].nativeElement.textContent.trim()).toEqual('Services');
   });
 });
-
-

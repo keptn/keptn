@@ -4,8 +4,8 @@ import https from 'https';
 const ax = axios.create({
   // accepts self-signed ssl certificate
   httpsAgent: new https.Agent({
-    rejectUnauthorized: false
-  })
+    rejectUnauthorized: false,
+  }),
 });
 
-export {ax as axios};
+export { ax as axios };

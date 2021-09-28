@@ -1,13 +1,13 @@
 import { ResultTypes } from '../models/result-types';
 
-export type Target = {criteria: string, targetValue: number, violated: boolean};
+export type Target = { criteria: string; targetValue: number; violated: boolean };
 
 export interface IndicatorResult {
   value: {
-    value: number,
-    metric: string,
-    success: boolean,
-    message?: string
+    value: number;
+    metric: string;
+    success: boolean;
+    message?: string;
   };
   score: number;
   displayName?: string;

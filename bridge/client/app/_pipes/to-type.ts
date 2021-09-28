@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'toType'
+  name: 'toType',
 })
 export class ToType implements PipeTransform {
   // clss argument is unused, but is serving the main goal: the type gets inferred from the constructor.

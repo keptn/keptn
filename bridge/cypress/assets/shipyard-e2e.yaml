@@ -1,96 +1,96 @@
-apiVersion: "spec.keptn.sh/0.2.2"
-kind: "Shipyard"
+apiVersion: 'spec.keptn.sh/0.2.2'
+kind: 'Shipyard'
 metadata:
-  name: "shipyard-sockshop"
+  name: 'shipyard-sockshop'
 spec:
   stages:
-    - name: "dev"
+    - name: 'dev'
       sequences:
-        - name: "delivery"
+        - name: 'delivery'
           tasks:
-            - name: "deployment"
+            - name: 'deployment'
               properties:
-                deploymentstrategy: "direct"
-            - name: "test"
+                deploymentstrategy: 'direct'
+            - name: 'test'
               properties:
-                teststrategy: "functional"
-            - name: "evaluation"
-            - name: "release"
-        - name: "delivery-direct"
+                teststrategy: 'functional'
+            - name: 'evaluation'
+            - name: 'release'
+        - name: 'delivery-direct'
           tasks:
-            - name: "deployment"
+            - name: 'deployment'
               properties:
-                deploymentstrategy: "direct"
-            - name: "release"
+                deploymentstrategy: 'direct'
+            - name: 'release'
 
-    - name: "staging"
+    - name: 'staging'
       sequences:
-        - name: "delivery"
+        - name: 'delivery'
           triggeredOn:
-            - event: "dev.delivery.finished"
+            - event: 'dev.delivery.finished'
           tasks:
-            - name: "deployment"
+            - name: 'deployment'
               properties:
-                deploymentstrategy: "blue_green_service"
-            - name: "test"
+                deploymentstrategy: 'blue_green_service'
+            - name: 'test'
               properties:
-                teststrategy: "performance"
-            - name: "evaluation"
-            - name: "release"
-        - name: "rollback"
+                teststrategy: 'performance'
+            - name: 'evaluation'
+            - name: 'release'
+        - name: 'rollback'
           triggeredOn:
-            - event: "staging.delivery.finished"
+            - event: 'staging.delivery.finished'
               selector:
                 match:
-                  result: "fail"
+                  result: 'fail'
           tasks:
-            - name: "rollback"
-        - name: "delivery-direct"
+            - name: 'rollback'
+        - name: 'delivery-direct'
           triggeredOn:
-            - event: "dev.delivery-direct.finished"
+            - event: 'dev.delivery-direct.finished'
           tasks:
-            - name: "deployment"
+            - name: 'deployment'
               properties:
-                deploymentstrategy: "direct"
-            - name: "release"
+                deploymentstrategy: 'direct'
+            - name: 'release'
 
-    - name: "production"
+    - name: 'production'
       sequences:
-        - name: "delivery"
+        - name: 'delivery'
           triggeredOn:
-            - event: "staging.delivery.finished"
+            - event: 'staging.delivery.finished'
           tasks:
-            - name: "deployment"
+            - name: 'deployment'
               properties:
-                deploymentstrategy: "blue_green_service"
-            - name: "release"
-        - name: "rollback"
+                deploymentstrategy: 'blue_green_service'
+            - name: 'release'
+        - name: 'rollback'
           triggeredOn:
-            - event: "production.delivery.finished"
+            - event: 'production.delivery.finished'
               selector:
                 match:
-                  result: "fail"
+                  result: 'fail'
           tasks:
-            - name: "rollback"
-        - name: "delivery-direct"
+            - name: 'rollback'
+        - name: 'delivery-direct'
           triggeredOn:
-            - event: "staging.delivery-direct.finished"
+            - event: 'staging.delivery-direct.finished'
           tasks:
-            - name: "deployment"
+            - name: 'deployment'
               properties:
-                deploymentstrategy: "direct"
-            - name: "release"
+                deploymentstrategy: 'direct'
+            - name: 'release'
 
-        - name: "remediation"
+        - name: 'remediation'
           triggeredOn:
-            - event: "production.remediation.finished"
+            - event: 'production.remediation.finished'
               selector:
                 match:
-                  evaluation.result: "fail"
+                  evaluation.result: 'fail'
           tasks:
-            - name: "get-action"
-            - name: "action"
-            - name: "evaluation"
-              triggeredAfter: "15m"
+            - name: 'get-action'
+            - name: 'action'
+            - name: 'evaluation'
+              triggeredAfter: '15m'
               properties:
-                timeframe: "15m"
+                timeframe: '15m'

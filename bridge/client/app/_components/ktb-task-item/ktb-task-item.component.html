@@ -1,50 +1,111 @@
-<ktb-expandable-tile [disabled]="task.traces.length == 0" [expanded]="isExpanded" [error]="task.isFaulty()" [warning]="task.isWarning()" [success]="task.isSuccessful()" [highlight]="!!task.isApproval()" *ngIf="task && (project$ | async) as project">
+<ktb-expandable-tile
+  [disabled]="task.traces.length == 0"
+  [expanded]="isExpanded"
+  [error]="task.isFaulty()"
+  [warning]="task.isWarning()"
+  [success]="task.isSuccessful()"
+  [highlight]="!!task.isApproval()"
+  *ngIf="task && (project$ | async) as project"
+>
   <ktb-expandable-tile-header>
     <div fxLayout="row">
       <div fxFlex>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-          <p class="m-0 mt-1 mb-1 mr-2" *ngIf="task.time" [textContent]="task.time | amDateFormat:dateUtil.getTimeFormat()"></p>
-          <button *ngIf="task.isLoading() && !task.isApproval() && !task.getLastTrace().isApproval()" class="m-0 p-0" dt-button disabled variant="nested">
+          <p
+            class="m-0 mt-1 mb-1 mr-2"
+            *ngIf="task.time"
+            [textContent]="task.time | amDateFormat: dateUtil.getTimeFormat()"
+          ></p>
+          <button
+            *ngIf="task.isLoading() && !task.isApproval() && !task.getLastTrace().isApproval()"
+            class="m-0 p-0"
+            dt-button
+            disabled
+            variant="nested"
+          >
             <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
           </button>
-          <dt-icon *ngIf="!task.isLoading() || task.isApproval() || task.getLastTrace().isApproval()" class="event-icon"
-                   [class.error]="task.isFaulty()" [class.success]="task.isSuccessful()" [class.highlight]="task.isApproval() || task.getLastTrace().isApproval()"
-                   [name]="task.isFinished() ? task.getIcon() : task.getLastTrace().getIcon()"></dt-icon>
+          <dt-icon
+            *ngIf="!task.isLoading() || task.isApproval() || task.getLastTrace().isApproval()"
+            class="event-icon"
+            [class.error]="task.isFaulty()"
+            [class.success]="task.isSuccessful()"
+            [class.highlight]="task.isApproval() || task.getLastTrace().isApproval()"
+            [name]="task.isFinished() ? task.getIcon() : task.getLastTrace().getIcon()"
+          ></dt-icon>
           <h4 class="m-0 mt-1 mb-1" [class.error]="task.isFaulty()" [textContent]="task.getLabel()"></h4>
-          <ktb-evaluation-info class="ml-1" *ngIf="task.isEvaluation() && task.isFinished()" [evaluation]="task" [overlayDisabled]="true"></ktb-evaluation-info>
+          <ktb-evaluation-info
+            class="ml-1"
+            *ngIf="task.isEvaluation() && task.isFinished()"
+            [evaluation]="task"
+            [overlayDisabled]="true"
+          ></ktb-evaluation-info>
         </div>
         <div *ngIf="task.data.canary">
-          <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="task.data.canary.action"></span> <span [textContent]="task.data.canary.value"></span></p>
+          <p class="m-0 nobreak">
+            <span class="bold">Action: </span><span [textContent]="task.data.canary.action"></span>
+            <span [textContent]="task.data.canary.value"></span>
+          </p>
         </div>
         <div *ngIf="task.data.teststrategy">
-          <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="task.data.teststrategy"></span></p>
+          <p class="m-0 nobreak">
+            <span class="bold">Test strategy: </span><span [textContent]="task.data.teststrategy"></span>
+          </p>
         </div>
         <div *ngIf="task.isProblem() || task.isRemediation()">
-          <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="task.getProblemDetails()"></span></p>
+          <p class="m-0 nobreak">
+            <span class="bold">Problem: </span><span [textContent]="task.getProblemDetails()"></span>
+          </p>
         </div>
         <div *ngIf="task.isRemediationAction()">
-          <p class="m-0 nobreak" *ngIf="task.getRemediationActionName() as actionName"><span class="bold">Action: </span><span [textContent]="actionName"></span></p>
-          <p class="m-0 nobreak" *ngIf="task.getRemediationActionDescription() as actionDetails"><span class="bold">Description: </span><span [textContent]="actionDetails"></span></p>
+          <p class="m-0 nobreak" *ngIf="task.getRemediationActionName() as actionName">
+            <span class="bold">Action: </span><span [textContent]="actionName"></span>
+          </p>
+          <p class="m-0 nobreak" *ngIf="task.getRemediationActionDescription() as actionDetails">
+            <span class="bold">Description: </span><span [textContent]="actionDetails"></span>
+          </p>
         </div>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
         <div class="task-buttons" fxLayout="row" fxLayoutAlign="start start">
           <ng-container *ngIf="task.isDeployment() && task.isFinished() && task.getFinishedEvent() as finishedEvent">
-            <a *ngFor="let deploymentURIPublic of finishedEvent.data?.deployment?.deploymentURIsPublic" [href]="deploymentURIPublic" target="_blank">
-              <button dt-icon-button variant="nested" [title]="'View ' + task.service + ' in ' + task.stage"><dt-icon name="externallink"></dt-icon></button>
+            <a
+              *ngFor="let deploymentURIPublic of finishedEvent.data?.deployment?.deploymentURIsPublic"
+              [href]="deploymentURIPublic"
+              target="_blank"
+            >
+              <button dt-icon-button variant="nested" [title]="'View ' + task.service + ' in ' + task.stage">
+                <dt-icon name="externallink"></dt-icon>
+              </button>
             </a>
           </ng-container>
-          <button dt-icon-button variant="nested" title="Evaluation board" [routerLink]="['/evaluation', task.shkeptncontext, task.stage]" *ngIf="task.isEvaluation() && task.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
-          <button dt-icon-button variant="nested" title="Event payload" (click)="showEventPayloadDialog($event, task)"><dt-icon name="coding"></dt-icon></button>
+          <button
+            dt-icon-button
+            variant="nested"
+            title="Evaluation board"
+            [routerLink]="['/evaluation', task.shkeptncontext, task.stage]"
+            *ngIf="task.isEvaluation() && task.isFinished()"
+          >
+            <dt-icon name="chart-bar"></dt-icon>
+          </button>
+          <button dt-icon-button variant="nested" title="Event payload" (click)="showEventPayloadDialog($event, task)">
+            <dt-icon name="coding"></dt-icon>
+          </button>
         </div>
       </div>
     </div>
     <div *ngIf="task.isProblem() || task.isRemediation()">
-      <div fxLayout="row" fxLayoutAlign="start start" *ngIf="task.data?.problem?.ProblemDetails?.tagsOfAffectedEntities as entities">
-        <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
-        <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
+      <div
+        fxLayout="row"
+        fxLayoutAlign="start start"
+        *ngIf="task.data?.problem?.ProblemDetails?.tagsOfAffectedEntities as entities"
+      >
+        <p class="bold nobreak m-0 mt-1 mb-1">Labels:</p>
+        <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation()">
           <dt-tag *ngFor="let tag of entities">
-            <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
+            <p *ngIf="!isUrl(tag.value)">
+              <span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span>
+            </p>
             <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
           </dt-tag>
         </dt-tag-list>
@@ -52,10 +113,12 @@
     </div>
     <div *ngIf="task.hasLabels()">
       <div fxLayout="row" fxLayoutAlign="start center">
-        <p class="bold">Labels: </p>
+        <p class="bold">Labels:</p>
         <dt-tag-list aria-label="evaluation-labels">
           <dt-tag *ngFor="let label of task.labels | keyvalue">
-            <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+            <p *ngIf="!isUrl(label.value)">
+              <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>
+            </p>
             <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
           </dt-tag>
         </dt-tag-list>
@@ -63,20 +126,39 @@
     </div>
   </ktb-expandable-tile-header>
   <div class="sub-task-item pt-2 pb-2" *ngFor="let subTask of task.traces">
-    <ktb-task-item *ngIf="subTask.isTriggered(); else taskLine" [task]="subTask" (itemClicked)="onClick($event)" (click)="$event.stopPropagation();onClick(subTask)"></ktb-task-item>
+    <ktb-task-item
+      *ngIf="subTask.isTriggered(); else taskLine"
+      [task]="subTask"
+      (itemClicked)="onClick($event)"
+      (click)="$event.stopPropagation(); onClick(subTask)"
+    ></ktb-task-item>
     <ng-template #taskLine>
       <div fxLayout="row">
         <div class="overflow-auto" fxFlex>
           <p class="m-0">
-            <span class="mr-2" *ngIf="subTask.time" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span>
+            <span
+              class="mr-2"
+              *ngIf="subTask.time"
+              [textContent]="subTask.time | amDateFormat: dateUtil.getTimeFormat()"
+            ></span>
+            <span class="italic" [textContent]="subTask.source"></span>
             <ng-container *ngIf="!subTask.isFinished() && !subTask.isChanged()"> started</ng-container>
             <ng-container *ngIf="subTask.isChanged()"> changed</ng-container>
-            <ng-container *ngIf="subTask.isFinished()"> finished with result <span class="italic" [textContent]="subTask.data.result"></span></ng-container>
+            <ng-container *ngIf="subTask.isFinished()">
+              finished with result <span class="italic" [textContent]="subTask.data.result"></span
+            ></ng-container>
           </p>
           <pre class="m-0 small overflow-auto" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></pre>
         </div>
         <div fxLayout="column" fxLayoutAlign="start end">
-          <button dt-icon-button variant="nested" title="Event payload" (click)="showEventPayloadDialog($event, subTask)"><dt-icon name="coding"></dt-icon></button>
+          <button
+            dt-icon-button
+            variant="nested"
+            title="Event payload"
+            (click)="showEventPayloadDialog($event, subTask)"
+          >
+            <dt-icon name="coding"></dt-icon>
+          </button>
         </div>
       </div>
     </ng-template>
@@ -84,15 +166,29 @@
   <ng-content
     select="ktb-task-item-detail,
         [ktb-task-item-detail],
-        [ktbEventItemDetail]"></ng-content>
+        [ktbEventItemDetail]"
+  ></ng-content>
   <div *ngIf="task.isApproval() && task.isApprovalPending()">
     <table>
       <tr>
-        <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0"  *ngIf="task.data.stage && task.data.service" [textContent]="project.getLatestDeploymentTraceOfSequence(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        <td><p class="m-0">Currently deployed artifact:</p></td>
+        <td>
+          <p
+            class="m-0"
+            *ngIf="task.data.stage && task.data.service"
+            [textContent]="
+              project
+                .getLatestDeploymentTraceOfSequence(
+                  project.getService(task.data.service),
+                  project.getStage(task.data.stage)
+                )
+                ?.getShortImageName() || 'N/A'
+            "
+          ></p>
+        </td>
       </tr>
       <tr>
-        <td><p class="m-0">Deployable artifact: </p></td>
+        <td><p class="m-0">Deployable artifact:</p></td>
         <td><ktb-approval-item [event]="task"></ktb-approval-item></td>
       </tr>
     </table>

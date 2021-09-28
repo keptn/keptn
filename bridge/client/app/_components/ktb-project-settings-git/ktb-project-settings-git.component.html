@@ -1,26 +1,31 @@
 <h2>Git upstream repository</h2>
 <p class="mt-0 mb-3">
-  It is recommended to set a Git upstream repository.
-  Please specify the Git remote url, the user and the token.
-  <br/>Instructions, how to set your Git provider can be found in the
+  It is recommended to set a Git upstream repository. Please specify the Git remote url, the user and the token.
+  <br />Instructions, how to set your Git provider can be found in the
   <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>
 </p>
-<form [formGroup]="gitUpstreamForm" (input)="onGitUpstreamFormChange()" id="git-upstream-form" fxLayout="row" fxLayoutAlign=" end">
-  <div fxLayout="column" [ngClass]="{'full-width': isCreateMode}">
+<form
+  [formGroup]="gitUpstreamForm"
+  (input)="onGitUpstreamFormChange()"
+  id="git-upstream-form"
+  fxLayout="row"
+  fxLayoutAlign=" end"
+>
+  <div fxLayout="column" [ngClass]="{ 'full-width': isCreateMode }">
     <dt-form-field>
       <dt-label>Git remote URL</dt-label>
-      <input formControlName="gitUrl" type="text" dtInput placeholder="https://git-repo.com/repo.git"/>
+      <input formControlName="gitUrl" type="text" dtInput placeholder="https://git-repo.com/repo.git" />
       <dt-error>Must not be empty</dt-error>
     </dt-form-field>
     <div class="mt-2" fxLayout="row" fxLayoutAlign="start end">
       <dt-form-field class="mr-3">
         <dt-label>Git user</dt-label>
-        <input formControlName="gitUser" type="text" dtInput placeholder="Username"/>
+        <input formControlName="gitUser" type="text" dtInput placeholder="Username" />
         <dt-error>Must not be empty</dt-error>
       </dt-form-field>
       <dt-form-field>
         <dt-label>Token</dt-label>
-        <input formControlName="gitToken" type="password" dtInput placeholder="Token"/>
+        <input formControlName="gitToken" type="password" dtInput placeholder="Token" />
         <dt-error>Must not be empty</dt-error>
       </dt-form-field>
     </div>

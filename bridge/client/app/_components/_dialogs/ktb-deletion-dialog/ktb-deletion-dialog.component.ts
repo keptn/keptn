@@ -13,22 +13,25 @@ import { Subject } from 'rxjs';
 })
 export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject();
-  public isDeleteProjectInProgress$ = this.eventService.deletionProgressEvent.asObservable().pipe(map(evt => evt.isInProgress));
-  public deletionError$ = this.eventService.deletionProgressEvent.asObservable().pipe(map(evt => evt.error));
+  public isDeleteProjectInProgress$ = this.eventService.deletionProgressEvent
+    .asObservable()
+    .pipe(map((evt) => evt.isInProgress));
+  public deletionError$ = this.eventService.deletionProgressEvent.asObservable().pipe(map((evt) => evt.error));
   public deletionConfirmationControl = new FormControl('');
   public deletionConfirmationForm = new FormGroup({
     deletionConfirmation: this.deletionConfirmationControl,
   });
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: DeleteData, public dialogRef: MatDialogRef<KtbDeletionDialogComponent>, private eventService: EventService) {
-  }
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: DeleteData,
+    public dialogRef: MatDialogRef<KtbDeletionDialogComponent>,
+    private eventService: EventService
+  ) {}
 
   ngOnInit(): void {
     this.deletionConfirmationControl.setValidators([Validators.required, Validators.pattern(this.data.name)]);
 
-    this.eventService.deletionProgressEvent.pipe(
-      takeUntil(this.unsubscribe$),
-    ).subscribe(data => {
+    this.eventService.deletionProgressEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.result === DeleteResult.SUCCESS) {
         this.dialogRef.close();
       }
@@ -41,6 +44,6 @@ export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   }
 
   public deleteConfirm(): void {
-    this.eventService.deletionTriggeredEvent.next({type: this.data.type, name: this.data.name});
+    this.eventService.deletionTriggeredEvent.next({ type: this.data.type, name: this.data.name });
   }
 }

@@ -23,7 +23,7 @@ describe('HttpErrorInterceptorService', () => {
           useClass: HttpErrorInterceptor,
           multi: true,
         },
-        {provide: RETRY_ON_HTTP_ERROR, useValue: false},
+        { provide: RETRY_ON_HTTP_ERROR, useValue: false },
       ],
     });
 
@@ -43,8 +43,8 @@ describe('HttpErrorInterceptorService', () => {
     await apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', {error: {}});
-    testRequest.error(errorEvent, {status: 404});
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 404 });
 
     // then
     expect(spy).toHaveBeenCalled();
@@ -54,12 +54,11 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-
     await apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', {error: {}});
-    testRequest.error(errorEvent, {status: 401});
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 401 });
 
     // then
     expect(spy).toHaveBeenCalled();
@@ -72,10 +71,10 @@ describe('HttpErrorInterceptorService', () => {
     await apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', {error: {}});
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     // @ts-ignore
-    const headers = new HttpHeaders({'keptn-auth-type': 'OAUTH'});
-    testRequest.error(errorEvent, {headers, status: 401});
+    const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
+    testRequest.error(errorEvent, { headers, status: 401 });
 
     // then
     expect(spy).toHaveBeenCalledWith('Login required. Redirecting to login.');
@@ -88,12 +87,15 @@ describe('HttpErrorInterceptorService', () => {
     await apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', {error: {}});
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     // @ts-ignore
-    const headers = new HttpHeaders({'keptn-auth-type': 'BASIC'});
-    testRequest.error(errorEvent, {headers, status: 401});
+    const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
+    testRequest.error(errorEvent, { headers, status: 401 });
 
     // then
-    expect(spy).toHaveBeenCalledWith('error', 'Login credentials invalid. Please check your provided username and password.');
+    expect(spy).toHaveBeenCalledWith(
+      'error',
+      'Login credentials invalid. Please check your provided username and password.'
+    );
   });
 });

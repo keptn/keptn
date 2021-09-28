@@ -28,7 +28,13 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private taskControl = new FormControl('', [Validators.required]);
   private taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<{ taskNames: string[], subscription: UniformSubscription, project: Project, integrationId: string, webhook?: WebhookConfig }>;
+  public data$: Observable<{
+    taskNames: string[];
+    subscription: UniformSubscription;
+    project: Project;
+    integrationId: string;
+    webhook?: WebhookConfig;
+  }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -41,7 +47,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   public uniformRegistration?: UniformRegistration;
   public isWebhookFormValid = true;
   public isWebhookService = false;
-  public suffixes: { value: string, displayValue: string }[] = [
+  public suffixes: { value: string; displayValue: string }[] = [
     {
       value: '>',
       displayValue: '*',
@@ -57,19 +63,28 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     {
       value: 'finished',
       displayValue: 'finished',
-    }];
+    },
+  ];
 
-  constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router, private notificationsService: NotificationsService) {
+  constructor(
+    private route: ActivatedRoute,
+    private dataService: DataService,
+    private router: Router,
+    private notificationsService: NotificationsService
+  ) {
     const subscription$ = this.route.paramMap.pipe(
-      map(paramMap => {
+      map((paramMap) => {
         return {
           integrationId: paramMap.get('integrationId'),
           subscriptionId: paramMap.get('subscriptionId'),
           projectName: paramMap.get('projectName'),
         };
       }),
-      filter((params): params is  { integrationId: string, subscriptionId: string | null, projectName: string } => !!(params.integrationId && params.projectName)),
-      switchMap(params => {
+      filter(
+        (params): params is { integrationId: string; subscriptionId: string | null; projectName: string } =>
+          !!(params.integrationId && params.projectName)
+      ),
+      switchMap((params) => {
         this.editMode = !!params.subscriptionId;
         if (params.subscriptionId) {
           return this.dataService.getUniformSubscription(params.integrationId, params.subscriptionId);
@@ -77,7 +92,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
           return of(new UniformSubscription(params.projectName));
         }
       }),
-      tap(subscription => {
+      tap((subscription) => {
         if (this.editMode) {
           this._previousFilter = {
             filter: AppUtils.copyObject(subscription.filter),
@@ -90,23 +105,22 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
         this.updateIsGlobalCheckbox(subscription);
       }),
-      take(1),
+      take(1)
     );
 
-    const integrationId$ = this.route.paramMap
-      .pipe(
-        map(paramMap => paramMap.get('integrationId')),
-        filter((integrationId: string | null): integrationId is string => !!integrationId),
-        take(1),
-      );
+    const integrationId$ = this.route.paramMap.pipe(
+      map((paramMap) => paramMap.get('integrationId')),
+      filter((integrationId: string | null): integrationId is string => !!integrationId),
+      take(1)
+    );
 
     const integrationInfo$ = integrationId$.pipe(
-      switchMap(integrationId => this.dataService.getUniformRegistrationInfo(integrationId)),
+      switchMap((integrationId) => this.dataService.getUniformRegistrationInfo(integrationId)),
       take(1),
-      takeUntil(this.unsubscribe$),
+      takeUntil(this.unsubscribe$)
     );
 
-    integrationInfo$.subscribe(info => {
+    integrationInfo$.subscribe((info) => {
       if (!info.isControlPlane) {
         this.suffixes = [
           {
@@ -118,42 +132,45 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       this.isWebhookService = info.isWebhookService;
     });
 
-    const projectName$ = this.route.paramMap
-      .pipe(
-        map(paramMap => paramMap.get('projectName')),
-        filter((projectName: string | null): projectName is string => !!projectName),
-        take(1),
-      );
+    const projectName$ = this.route.paramMap.pipe(
+      map((paramMap) => paramMap.get('projectName')),
+      filter((projectName: string | null): projectName is string => !!projectName),
+      take(1)
+    );
 
-    const taskNames$ = projectName$
-      .pipe(
-        switchMap(projectName => this.dataService.getTaskNames(projectName)),
-        take(1),
-      );
-    const project$ = projectName$
-      .pipe(
-        switchMap(projectName => this.dataService.getProject(projectName)),
-        filter((project?: Project): project is Project => !!project),
-        tap(project => this.updateDataSource(project)),
-        take(1),
-      );
+    const taskNames$ = projectName$.pipe(
+      switchMap((projectName) => this.dataService.getTaskNames(projectName)),
+      take(1)
+    );
+    const project$ = projectName$.pipe(
+      switchMap((projectName) => this.dataService.getProject(projectName)),
+      filter((project?: Project): project is Project => !!project),
+      tap((project) => this.updateDataSource(project)),
+      take(1)
+    );
     const webhook$ = forkJoin({
       subscription: subscription$,
       projectName: projectName$,
       integrationInfo: integrationInfo$,
     }).pipe(
-      switchMap((data: { subscription: UniformSubscription, projectName: string, integrationInfo: UniformRegistrationInfo }) => {
-        let webhook: Observable<WebhookConfig | undefined>;
-        if (data.integrationInfo.isWebhookService && this.editMode) {
-          const stage: string | undefined = data.subscription.filter?.stages?.[0];
-          const services: string | undefined = data.subscription.filter?.services?.[0];
-          webhook = this.dataService.getWebhookConfig(data.subscription.event, data.projectName, stage, services);
-        } else {
-          webhook = of(undefined);
+      switchMap(
+        (data: {
+          subscription: UniformSubscription;
+          projectName: string;
+          integrationInfo: UniformRegistrationInfo;
+        }) => {
+          let webhook: Observable<WebhookConfig | undefined>;
+          if (data.integrationInfo.isWebhookService && this.editMode) {
+            const stage: string | undefined = data.subscription.filter?.stages?.[0];
+            const services: string | undefined = data.subscription.filter?.services?.[0];
+            webhook = this.dataService.getWebhookConfig(data.subscription.event, data.projectName, stage, services);
+          } else {
+            webhook = of(undefined);
+          }
+          return webhook;
         }
-        return webhook;
-      }),
-      take(1),
+      ),
+      take(1)
     );
 
     this.data$ = forkJoin({
@@ -170,7 +187,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       autocomplete: [
         {
           name: 'Stage',
-          autocomplete: project.stages.map(stage => {
+          autocomplete: project.stages.map((stage) => {
             return {
               name: stage.stageName,
             };
@@ -178,7 +195,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         },
         {
           name: 'Service',
-          autocomplete: project.getServices().map(service => {
+          autocomplete: project.getServices().map((service) => {
             return {
               name: service.serviceName,
             };
@@ -188,7 +205,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     } as DtFilterFieldDefaultDataSourceAutocomplete;
   }
 
-  public updateSubscription(projectName: string, integrationId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): void {
+  public updateSubscription(
+    projectName: string,
+    integrationId: string,
+    subscription: UniformSubscription,
+    webhookConfig?: WebhookConfig
+  ): void {
     this.updating = true;
     const updates = [];
     subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
@@ -207,27 +229,37 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       updates.push(this.dataService.saveWebhookConfig(webhookConfig));
     }
 
-    forkJoin(
-      updates,
-    ).subscribe(() => {
-      this.updating = false;
-      this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
-    }, () => {
-      this.notificationsService.addNotification(NotificationType.Error, 'The subscription could not be updated', 5_000);
-      this.updating = false;
-    });
+    forkJoin(updates).subscribe(
+      () => {
+        this.updating = false;
+        this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
+      },
+      () => {
+        this.notificationsService.addNotification(
+          NotificationType.Error,
+          'The subscription could not be updated',
+          5_000
+        );
+        this.updating = false;
+      }
+    );
   }
 
   public isFormValid(subscription: UniformSubscription): boolean {
-    return this.subscriptionForm.valid && (!!subscription.filter.stages?.length || !subscription.filter.services?.length) && this.isWebhookFormValid && !this.updating;
+    return (
+      this.subscriptionForm.valid &&
+      (!!subscription.filter.stages?.length || !subscription.filter.services?.length) &&
+      this.isWebhookFormValid &&
+      !this.updating
+    );
   }
 
   public updateIsGlobalCheckbox(subscription: UniformSubscription): void {
     if (subscription.hasFilter()) {
-      this.isGlobalControl.disable({onlySelf: true, emitEvent: false});
+      this.isGlobalControl.disable({ onlySelf: true, emitEvent: false });
       this.isGlobalControl.setValue(false);
     } else {
-      this.isGlobalControl.enable({onlySelf: true, emitEvent: false});
+      this.isGlobalControl.enable({ onlySelf: true, emitEvent: false });
     }
   }
 

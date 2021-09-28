@@ -1,24 +1,24 @@
-import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DtToggleButtonChange, DtToggleButtonItem } from '@dynatrace/barista-components/toggle-button-group';
-import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
-import {Project} from '../../_models/project';
-import {Stage} from '../../_models/stage';
-import {Service} from '../../_models/service';
-import {DataService} from '../../_services/data.service';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
+import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
+import { Project } from '../../_models/project';
+import { Stage } from '../../_models/stage';
+import { Service } from '../../_models/service';
+import { DataService } from '../../_services/data.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'ktb-stage-details',
   templateUrl: './ktb-stage-details.component.html',
-  styleUrls: ['./ktb-stage-details.component.scss']
+  styleUrls: ['./ktb-stage-details.component.scss'],
 })
 export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   public _project?: Project;
   public selectedStage?: Stage;
   public filterEventType?: string;
   public overlayConfig: DtOverlayConfig = {
-    pinnable: true
+    pinnable: true,
   };
   public isQualityGatesOnly = false;
   private _filteredServices: string[] = [];
@@ -51,18 +51,15 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
-  constructor(private dataService: DataService, private _changeDetectorRef: ChangeDetectorRef) {
-  }
+  constructor(private dataService: DataService, private _changeDetectorRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.dataService.isQualityGatesOnly.pipe(
-      takeUntil(this.unsubscribe$)
-    ).subscribe(isQualityGatesOnly => {
+    this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
   }
 
-  selectStage($event: {stage: Stage, filterType?: string}) {
+  selectStage($event: { stage: Stage; filterType?: string }) {
     this.selectedStage = $event.stage;
     if (this.filterEventType !== $event.filterType) {
       this.resetFilter($event.filterType);
@@ -88,12 +85,13 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   }
 
   public filterServices(services: Service[]): Service[] {
-    return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
+    return this.filteredServices.length === 0
+      ? services
+      : services.filter((service) => this.filteredServices.includes(service.serviceName));
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
-
 }

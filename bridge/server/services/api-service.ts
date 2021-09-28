@@ -36,106 +36,164 @@ export class ApiService {
     return this.axios.get<Project>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`);
   }
 
-  public getSequences(projectName: string, pageSize: number, sequenceName?: string, state?: string,
-                      fromTime?: string, beforeTime?: string, keptnContext?: string): Promise<AxiosResponse<SequenceResult>> {
+  public getSequences(
+    projectName: string,
+    pageSize: number,
+    sequenceName?: string,
+    state?: string,
+    fromTime?: string,
+    beforeTime?: string,
+    keptnContext?: string
+  ): Promise<AxiosResponse<SequenceResult>> {
     const params = {
       pageSize: pageSize.toString(),
-      ...(sequenceName && {name: sequenceName}),
-      ...(state && {state}),
-      ...(fromTime && {fromTime}),
-      ...(beforeTime && {beforeTime}),
-      ...(keptnContext && {keptnContext}),
+      ...(sequenceName && { name: sequenceName }),
+      ...(state && { state }),
+      ...(fromTime && { fromTime }),
+      ...(beforeTime && { beforeTime }),
+      ...(keptnContext && { keptnContext }),
     };
 
-    return this.axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, {params});
+    return this.axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, { params });
   }
 
-  public getTraces(eventType: string, pageSize: number, projectName: string, stageName: string, serviceName: string, keptnContext?: string, fromTime?: string): Promise<AxiosResponse<EventResult>> {
+  public getTraces(
+    eventType: string,
+    pageSize: number,
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    keptnContext?: string,
+    fromTime?: string
+  ): Promise<AxiosResponse<EventResult>> {
     const params = {
       project: projectName,
       service: serviceName,
       stage: stageName,
       type: eventType,
       limit: pageSize.toString(),
-      ...keptnContext && {keptnContext},
+      ...(keptnContext && { keptnContext }),
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, { params });
   }
 
-  public getTracesByContext(keptnContext: string | undefined, projectName?: string | undefined, fromTime?: string | undefined, nextPageKey?: string | undefined): Promise<AxiosResponse<EventResult>> {
+  public getTracesByContext(
+    keptnContext: string | undefined,
+    projectName?: string | undefined,
+    fromTime?: string | undefined,
+    nextPageKey?: string | undefined
+  ): Promise<AxiosResponse<EventResult>> {
     const params = {
       keptnContext,
       pageSize: '100',
-      ...nextPageKey && {nextPageKey},
-      ...projectName && {project: projectName},
-      ...fromTime && {fromTime},
+      ...(nextPageKey && { nextPageKey }),
+      ...(projectName && { project: projectName }),
+      ...(fromTime && { fromTime }),
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, { params });
   }
 
-  public getRoots(projectName: string | undefined, pageSize: string | undefined, serviceName: string | undefined, fromTime?: string | undefined, beforeTime?: string | undefined, keptnContext?: string | undefined): Promise<AxiosResponse<EventResult>> {
+  public getRoots(
+    projectName: string | undefined,
+    pageSize: string | undefined,
+    serviceName: string | undefined,
+    fromTime?: string | undefined,
+    beforeTime?: string | undefined,
+    keptnContext?: string | undefined
+  ): Promise<AxiosResponse<EventResult>> {
     const params = {
       root: 'true',
       project: projectName,
       limit: pageSize,
-      ...(serviceName && {serviceName}),
-      ...(fromTime && {fromTime}),
-      ...(beforeTime && {beforeTime}),
-      ...(keptnContext && {keptnContext}),
+      ...(serviceName && { serviceName }),
+      ...(fromTime && { fromTime }),
+      ...(beforeTime && { beforeTime }),
+      ...(keptnContext && { keptnContext }),
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, { params });
   }
 
-  public getTracesWithResult(eventType: EventTypes, pageSize: number, projectName: string, stageName: string, serviceName: string, resultType: ResultTypes): Promise<AxiosResponse<EventResult>> {
+  public getTracesWithResult(
+    eventType: EventTypes,
+    pageSize: number,
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    resultType: ResultTypes
+  ): Promise<AxiosResponse<EventResult>> {
     const params = {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName} AND data.result:${resultType}`,
       excludeInvalidated: 'true',
       limit: pageSize.toString(),
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {params});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, { params });
   }
 
-  public getEvaluationResults(projectName: string, serviceName: string, stageName: string, pageSize: number, keptnContext?: string): Promise<AxiosResponse<EventResult>> {
+  public getEvaluationResults(
+    projectName: string,
+    serviceName: string,
+    stageName: string,
+    pageSize: number,
+    keptnContext?: string
+  ): Promise<AxiosResponse<EventResult>> {
     const contextString = keptnContext ? ` AND shkeptncontext:${keptnContext}` : '';
     const params = {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}${contextString}`,
       excludeInvalidated: 'true',
       limit: pageSize.toString(),
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {params});
+    return this.axios.get<EventResult>(
+      `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`,
+      { params }
+    );
   }
 
-  public getOpenTriggeredEvents(projectName: string, stageName: string, serviceName: string, eventType: EventTypes): Promise<AxiosResponse<EventResult>> {
+  public getOpenTriggeredEvents(
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    eventType: EventTypes
+  ): Promise<AxiosResponse<EventResult>> {
     const params = {
       project: projectName,
       stage: stageName,
       service: serviceName,
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, {params});
+    return this.axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, { params });
   }
 
   public getUniformRegistrations(integrationId?: string): Promise<AxiosResponse<UniformRegistration[]>> {
     return this.axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`, {
       params: {
-        ...integrationId && {id: integrationId},
+        ...(integrationId && { id: integrationId }),
       },
     });
   }
 
-  public getUniformRegistrationLogs(integrationId: string, fromTime?: string, pageSize = 100): Promise<AxiosResponse<UniformRegistrationLogResponse>> {
+  public getUniformRegistrationLogs(
+    integrationId: string,
+    fromTime?: string,
+    pageSize = 100
+  ): Promise<AxiosResponse<UniformRegistrationLogResponse>> {
     const params = {
       integrationId,
-      ...fromTime && {fromTime: new Date(new Date(fromTime).getTime() + 1).toISOString()}, // > fromTime instead of >= fromTime
+      ...(fromTime && { fromTime: new Date(new Date(fromTime).getTime() + 1).toISOString() }), // > fromTime instead of >= fromTime
       pageSize: pageSize.toString(),
     };
-    return this.axios.get<UniformRegistrationLogResponse>(`${this.baseUrl}/controlPlane/v1/log`, {params});
+    return this.axios.get<UniformRegistrationLogResponse>(`${this.baseUrl}/controlPlane/v1/log`, { params });
   }
 
   public getShipyard(projectName: string): Promise<AxiosResponse<Resource>> {
-    return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
+    return this.axios.get<Resource>(
+      `${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`
+    );
   }
 
-  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+  public getWebhookConfig(
+    projectName: string,
+    stageName?: string,
+    serviceName?: string
+  ): Promise<AxiosResponse<Resource>> {
     let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
@@ -148,7 +206,11 @@ export class ApiService {
     return this.axios.get<Resource>(url);
   }
 
-  public deleteWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+  public deleteWebhookConfig(
+    projectName: string,
+    stageName?: string,
+    serviceName?: string
+  ): Promise<AxiosResponse<Resource>> {
     let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
@@ -161,7 +223,12 @@ export class ApiService {
     return this.axios.delete<Resource>(url);
   }
 
-  public saveWebhookConfig(content: string, projectName: string, stageName: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+  public saveWebhookConfig(
+    content: string,
+    projectName: string,
+    stageName: string,
+    serviceName?: string
+  ): Promise<AxiosResponse<Resource>> {
     let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}`;
     if (serviceName) {
       url += `/service/${serviceName}`;
@@ -179,14 +246,26 @@ export class ApiService {
   }
 
   public deleteUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<object>> {
-    return this.axios.delete(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
+    return this.axios.delete(
+      `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`
+    );
   }
 
-  public getUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<UniformSubscription>> {
-    return this.axios.get<UniformSubscription>(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`);
+  public getUniformSubscription(
+    integrationId: string,
+    subscriptionId: string
+  ): Promise<AxiosResponse<UniformSubscription>> {
+    return this.axios.get<UniformSubscription>(
+      `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`
+    );
   }
 
-  public getServiceResource(projectName: string, stageName: string, serviceName: string, nextPageKey?: string): Promise<AxiosResponse<ResourceResponse>> {
+  public getServiceResource(
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    nextPageKey?: string
+  ): Promise<AxiosResponse<ResourceResponse>> {
     const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource`;
     const params: { [key: string]: string } = {};
     if (nextPageKey) {

@@ -1,22 +1,15 @@
 import marked, { Renderer } from 'marked';
 import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  SimpleChange,
-  ViewEncapsulation
-} from '@angular/core';
-import {SafeHtml} from '@angular/platform-browser';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
+import { SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'ktb-markdown',
   templateUrl: './ktb-markdown.component.html',
   styleUrls: ['./ktb-markdown.component.scss'],
   host: {
-    class: 'ktb-markdown'
+    class: 'ktb-markdown',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,

@@ -35,31 +35,34 @@ class Trace extends tc {
     const trace: Trace = Object.assign(new this(), data, { plainEvent });
 
     if (trace.data?.evaluationHistory?.length) {
-      trace.data.evaluationHistory = trace.data.evaluationHistory.map(t => Trace.fromJSON(t));
+      trace.data.evaluationHistory = trace.data.evaluationHistory.map((t) => Trace.fromJSON(t));
     }
 
     return trace;
   }
 
   static traceMapper(traces: Trace[]) {
-    traces = traces
-      .map(trace => Trace.fromJSON(trace))
-      .sort(DateUtil.compareTraceTimesDesc);
+    traces = traces.map((trace) => Trace.fromJSON(trace)).sort(DateUtil.compareTraceTimesDesc);
 
     return traces.reduce((seq: Trace[], trace: Trace) => {
       let trigger: Trace | undefined;
       if (trace.triggeredid) {
-        trigger = traces.reduce((acc: Trace | undefined, r: Trace) =>
-          acc
-          || r.findTrace((t) => t.id === trace.triggeredid), undefined);
+        trigger = traces.reduce(
+          (acc: Trace | undefined, r: Trace) => acc || r.findTrace((t) => t.id === trace.triggeredid),
+          undefined
+        );
       } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-        trigger = traces.reduce((acc: Trace | undefined, r: Trace) =>
-          acc
-          || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()), undefined);
+        trigger = traces.reduce(
+          (acc: Trace | undefined, r: Trace) =>
+            acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()),
+          undefined
+        );
       } else if (trace.isFinished()) {
-        trigger = traces.reduce((acc: Trace | undefined, r: Trace) =>
-          acc
-          || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)), undefined);
+        trigger = traces.reduce(
+          (acc: Trace | undefined, r: Trace) =>
+            acc || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)),
+          undefined
+        );
       }
 
       if (trigger) {
@@ -67,9 +70,11 @@ class Trace extends tc {
       } else if (trace.isSequence()) {
         seq.push(trace);
       } else if (seq.length > 0) {
-        seq.reduce((lastSeq: Trace | undefined, s: Trace) => {
-          return s.stage === trace.stage ? s : lastSeq;
-        }, undefined)?.traces.push(trace);
+        seq
+          .reduce((lastSeq: Trace | undefined, s: Trace) => {
+            return s.stage === trace.stage ? s : lastSeq;
+          }, undefined)
+          ?.traces.push(trace);
       } else {
         seq.push(trace);
       }
@@ -107,10 +112,12 @@ class Trace extends tc {
   isFaulty(stageName?: string): boolean {
     let result = false;
     if (this.data) {
-      if (this.isFailed() ||
+      if (
+        this.isFailed() ||
         (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
         (this.isRemediation() && !this.isSuccessfulRemediation()) ||
-        this.traces.some(t => t.isFaulty())) {
+        this.traces.some((t) => t.isFaulty())
+      ) {
         result = stageName ? this.data.stage === stageName : true;
       }
     }
@@ -137,20 +144,21 @@ class Trace extends tc {
 
   isSuccessful(stageName?: string): boolean {
     let result = false;
-    if (this.isFinished()
-        && this.getFinishedEvent()?.data.result === ResultTypes.PASSED
-      || this.isApprovalFinished()
-        && this.isApproved()
-      || this.isProblem()
-        && this.isProblemResolvedOrClosed()
-      || this.isSuccessfulRemediation()) {
+    if (
+      (this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED) ||
+      (this.isApprovalFinished() && this.isApproved()) ||
+      (this.isProblem() && this.isProblemResolvedOrClosed()) ||
+      this.isSuccessfulRemediation()
+    ) {
       result = stageName ? this.data.stage === stageName : true;
     }
     return !this.isFaulty() && result;
   }
 
   public isFailed(): boolean {
-    return this.getFinishedEvent()?.data.result === ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
+    return (
+      this.getFinishedEvent()?.data.result === ResultTypes.FAILED || (this.isApprovalFinished() && this.isDeclined())
+    );
   }
 
   public isProblem(): boolean {
@@ -176,23 +184,23 @@ class Trace extends tc {
   public isProblemResolvedOrClosed(): boolean {
     if (!this.traces || this.traces.length === 0) {
       return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
-    }
-    else {
-      return this.traces.some(t => t.isProblem() && t.isProblemResolvedOrClosed());
+    } else {
+      return this.traces.some((t) => t.isProblem() && t.isProblemResolvedOrClosed());
     }
   }
 
   public isSuccessfulRemediation(): boolean {
     if (!this.traces || this.traces.length === 0) {
       return this.type.endsWith(EventTypes.REMEDIATION_FINISHED_SUFFIX) && this.data.result !== ResultTypes.FAILED;
-    }
-    else {
-      return this.traces.some(t => t.isSuccessfulRemediation());
+    } else {
+      return this.traces.some((t) => t.isSuccessfulRemediation());
     }
   }
 
   public isApproval(): string | undefined {
-    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED ? this.data.stage : undefined;
+    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED
+      ? this.data.stage
+      : undefined;
   }
 
   public isApprovalPending(): boolean {
@@ -226,7 +234,9 @@ class Trace extends tc {
   }
 
   public isEvaluation(): string | undefined {
-    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) && !this.isSequence() ? this.data.stage : undefined;
+    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) && !this.isSequence()
+      ? this.data.stage
+      : undefined;
   }
 
   public isEvaluationInvalidation(): boolean {
@@ -253,11 +263,9 @@ class Trace extends tc {
     const parts = this.type.split('.');
     if (parts.length === 6) {
       return parts[4];
-    }
-    else if (parts.length === 5) {
+    } else if (parts.length === 5) {
       return parts[3];
-    }
-    else {
+    } else {
       return this.type;
     }
   }
@@ -286,7 +294,7 @@ class Trace extends tc {
 
   isStarted() {
     if (!this.started && this.traces) {
-      this.started = this.traces.some(t => t.type.endsWith('.started') || t.isStarted());
+      this.started = this.traces.some((t) => t.type.endsWith('.started') || t.isStarted());
     }
 
     return this.started;
@@ -303,8 +311,8 @@ class Trace extends tc {
       } else if (this.isProblem()) {
         this.finished = this.isProblemResolvedOrClosed();
       } else {
-        const countStarted = this.traces.filter(t => t.type.endsWith('.started')).length;
-        const countFinished = this.traces.filter(t => t.type.endsWith('.finished')).length;
+        const countStarted = this.traces.filter((t) => t.type.endsWith('.started')).length;
+        const countFinished = this.traces.filter((t) => t.type.endsWith('.finished')).length;
         this.finished = countFinished >= countStarted && countFinished !== 0;
       }
     }
@@ -321,19 +329,19 @@ class Trace extends tc {
   }
 
   isInvalidated() {
-    return !!this.traces.find(e => e.isEvaluationInvalidation() && e.triggeredid === this.id);
+    return !!this.traces.find((e) => e.isEvaluationInvalidation() && e.triggeredid === this.id);
   }
 
   getFinishedEvent() {
-    return this.type.endsWith('.finished') ? this : this.traces.find(t => t.type.endsWith('.finished'));
+    return this.type.endsWith('.finished') ? this : this.traces.find((t) => t.type.endsWith('.finished'));
   }
 
   getRemediationAction() {
-    return this.findTrace(t => t.isRemediationAction());
+    return this.findTrace((t) => t.isRemediationAction());
   }
 
   getEvaluation(stageName: string): Trace | undefined {
-    return this.findTrace(t => !!t.isEvaluation() && t.stage === stageName);
+    return this.findTrace((t) => !!t.isEvaluation() && t.stage === stageName);
   }
 
   getDeploymentUrl() {
@@ -343,17 +351,18 @@ class Trace extends tc {
   findTrace(comp: (args: Trace) => boolean): Trace | undefined {
     if (comp(this)) {
       return this;
-    }
-    else {
-      return this.traces.reduce((result: Trace | undefined, trace: Trace) => result || trace.findTrace(comp), undefined);
+    } else {
+      return this.traces.reduce(
+        (result: Trace | undefined, trace: Trace) => result || trace.findTrace(comp),
+        undefined
+      );
     }
   }
 
   findLastTrace(comp: (args: Trace) => boolean) {
     if (comp(this)) {
       return this;
-    }
-    else {
+    } else {
       return this.traces.reduce((result: Trace | undefined, trace) => trace.findTrace(comp) || result, undefined);
     }
   }
@@ -371,4 +380,4 @@ class Trace extends tc {
   }
 }
 
-export {Trace};
+export { Trace };

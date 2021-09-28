@@ -1,18 +1,18 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Trace} from '../../_models/trace';
-import {DateUtil} from '../../_utils/date.utils';
-import {Sequence} from '../../_models/sequence';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
-import {ResultTypes} from '../../../../shared/models/result-types';
-import {DataService} from '../../_services/data.service';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { DtTableDataSource } from '@dynatrace/barista-components/table';
+import { Trace } from '../../_models/trace';
+import { DateUtil } from '../../_utils/date.utils';
+import { Sequence } from '../../_models/sequence';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { ResultTypes } from '../../../../shared/models/result-types';
+import { DataService } from '../../_services/data.service';
 
 @Component({
   selector: 'ktb-sequence-list',
   templateUrl: './ktb-sequence-list.component.html',
-  styleUrls: []
+  styleUrls: [],
 })
 export class KtbSequenceListComponent implements OnInit, OnDestroy {
   public dataSource: DtTableDataSource<Trace | Sequence> = new DtTableDataSource();
@@ -44,19 +44,20 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
       this.updateDataSource();
     }
   }
-  constructor(public dateUtil: DateUtil, private route: ActivatedRoute, private dataService: DataService) { }
+  constructor(public dateUtil: DateUtil, private route: ActivatedRoute, private dataService: DataService) {}
 
   ngOnInit(): void {
     this.dataService.changedDeployments.pipe(takeUntil(this.unsubscribe$)).subscribe((deployments) => {
-      if (this.stage && deployments.some(d => d.shkeptncontext === this.shkeptncontext && d.hasStage(this.stage as string))) {
+      if (
+        this.stage &&
+        deployments.some((d) => d.shkeptncontext === this.shkeptncontext && d.hasStage(this.stage as string))
+      ) {
         this.updateDataSource();
       }
     });
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.projectName = params.projectName;
-      });
+    this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
+      this.projectName = params.projectName;
+    });
   }
 
   private updateDataSource(): void {
@@ -77,7 +78,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
     if (finishedEvent?.data.message) {
       message = finishedEvent.data.message;
     } else {
-      const failedEvent = trace.findTrace(t => t.data.result === ResultTypes.FAILED);
+      const failedEvent = trace.findTrace((t) => t.data.result === ResultTypes.FAILED);
       let eventState;
 
       if (failedEvent) {
@@ -104,12 +105,13 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   }
 
   public getSequenceLink(trace: Trace): string[] {
-    return this.projectName ? ['/', 'project', this.projectName, 'sequence', trace.shkeptncontext, 'event', trace.id] : [];
+    return this.projectName
+      ? ['/', 'project', this.projectName, 'sequence', trace.shkeptncontext, 'event', trace.id]
+      : [];
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
-
 }

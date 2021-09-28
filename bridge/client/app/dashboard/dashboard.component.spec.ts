@@ -10,13 +10,8 @@ describe('DashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
-      providers: [
-        {provide: POLLING_INTERVAL_MILLIS, value: 0},
-      ],
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: POLLING_INTERVAL_MILLIS, value: 0 }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);

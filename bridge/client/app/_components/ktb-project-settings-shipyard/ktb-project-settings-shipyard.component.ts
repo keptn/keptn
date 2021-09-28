@@ -1,10 +1,10 @@
-import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
-import {FormUtils} from '../../_utils/form.utils';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { FormUtils } from '../../_utils/form.utils';
 
 @Component({
   selector: 'ktb-project-settings-shipyard',
   templateUrl: './ktb-project-settings-shipyard.component.html',
-  styleUrls: ['./ktb-project-settings-shipyard.component.scss']
+  styleUrls: ['./ktb-project-settings-shipyard.component.scss'],
 })
 export class KtbProjectSettingsShipyardComponent {
   public readonly allowedExtensions = ['yaml', 'yml'];

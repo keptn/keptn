@@ -1,11 +1,24 @@
 <div fxLayout="column" fxLayoutGap="15px">
-  <div #eventRef fxLayout="column" fxLayoutGap="15px" *ngFor="let event of events; let i = index; trackBy: identifyEvent">
-    <ktb-horizontal-separator *ngIf="i>0 && event.stage != events[i-1].stage">
+  <div
+    #eventRef
+    fxLayout="column"
+    fxLayoutGap="15px"
+    *ngFor="let event of events; let i = index; trackBy: identifyEvent"
+  >
+    <ktb-horizontal-separator *ngIf="i > 0 && event.stage != events[i - 1].stage">
       <ktb-horizontal-separator-title [textContent]="event.stage"></ktb-horizontal-separator-title>
     </ktb-horizontal-separator>
-    <ktb-event-item [event]="event" [class.focused]="event.id == focusedEventId && scrollIntoView(eventRef)" (click)="focusEvent(event)">
+    <ktb-event-item
+      [event]="event"
+      [class.focused]="event.id == focusedEventId && scrollIntoView(eventRef)"
+      (click)="focusEvent(event)"
+    >
       <ktb-event-item-detail>
-        <ktb-evaluation-details *ngIf="event.isEvaluation() && event.isFinished()" [evaluationData]="event.getFinishedEvent()" [isInvalidated]="isInvalidated(event)">
+        <ktb-evaluation-details
+          *ngIf="event.isEvaluation() && event.isFinished()"
+          [evaluationData]="event.getFinishedEvent()"
+          [isInvalidated]="isInvalidated(event)"
+        >
         </ktb-evaluation-details>
       </ktb-event-item-detail>
     </ktb-event-item>

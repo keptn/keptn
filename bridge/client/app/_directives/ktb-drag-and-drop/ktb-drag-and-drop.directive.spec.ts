@@ -15,7 +15,10 @@ describe('KtbDragAndDropDirective', () => {
   it('should allow only one file when multiple is false', () => {
     // given
     directive.multiple = false;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml', {type: 'some'}), new File(['test'], 'test2.yaml', {type: 'some'})]);
+    const event = TestUtils.createNewDropEventWithFiles([
+      new File(['test'], 'test1.yaml', { type: 'some' }),
+      new File(['test'], 'test2.yaml', { type: 'some' }),
+    ]);
 
     // when
     const emitSpy = jest.spyOn(directive.dropError, 'emit');
@@ -29,7 +32,10 @@ describe('KtbDragAndDropDirective', () => {
   it('should allow more than one file when multiple is true', () => {
     // given
     directive.multiple = true;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml', {type: 'some'}), new File(['test'], 'test2.yaml', {type: 'some'})]);
+    const event = TestUtils.createNewDropEventWithFiles([
+      new File(['test'], 'test1.yaml', { type: 'some' }),
+      new File(['test'], 'test2.yaml', { type: 'some' }),
+    ]);
 
     // when
     const emitSpy = jest.spyOn(directive.dropped, 'emit');
@@ -42,7 +48,7 @@ describe('KtbDragAndDropDirective', () => {
 
   it('should allow only files and not directories', () => {
     // given
-    const file = new File(['test'], 'test-folder', {type: ''});
+    const file = new File(['test'], 'test-folder', { type: '' });
     Object.defineProperty(file.constructor.prototype, 'size', {
       value: 4096,
     });
@@ -61,7 +67,7 @@ describe('KtbDragAndDropDirective', () => {
     // given
     const allowedExtensions = ['yaml', 'yml'];
     directive.allowedExtensions = allowedExtensions;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.png', {type: 'image/png'})]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.png', { type: 'image/png' })]);
 
     // when
     const emitSpy = jest.spyOn(directive.dropError, 'emit');
@@ -77,7 +83,10 @@ describe('KtbDragAndDropDirective', () => {
     const allowedExtensions = ['yaml', 'yml'];
     directive.allowedExtensions = allowedExtensions;
     directive.multiple = true;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.pdf', {type: 'document/pdf'}), new File(['test'], 'test2.png', {type: 'image/png'})]);
+    const event = TestUtils.createNewDropEventWithFiles([
+      new File(['test'], 'test1.pdf', { type: 'document/pdf' }),
+      new File(['test'], 'test2.png', { type: 'image/png' }),
+    ]);
 
     // when
     const emitSpy = jest.spyOn(directive.dropError, 'emit');
@@ -90,7 +99,7 @@ describe('KtbDragAndDropDirective', () => {
 
   it('should allow all file extensions when not set', () => {
     // given
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.jpeg', {type: 'image/jpeg'})]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.jpeg', { type: 'image/jpeg' })]);
 
     // when
     const emitSpy = jest.spyOn(directive.dropped, 'emit');

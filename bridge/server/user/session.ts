@@ -17,7 +17,7 @@ const SESSION_TIME = 1_200_000; // max age is 20 minutes
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
-const SESSION_SECRET = random({length: 200});
+const SESSION_SECRET = random({ length: 200 });
 
 /**
  * Uses a session cookie backed by in-memory cookies store.
@@ -36,11 +36,11 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   genid: () => {
-    return random({length: COOKIE_LENGTH, type: 'url-safe'});
+    return random({ length: COOKIE_LENGTH, type: 'url-safe' });
   },
   store: new memoryStore({
     checkPeriod: CHECK_PERIOD,
-    ttl: SESSION_TIME
+    ttl: SESSION_TIME,
   }),
 };
 
@@ -63,7 +63,6 @@ function isAuthenticated(req: Request) {
  * logout supported from OAuth service.
  */
 function authenticateSession(req: Request, principal: string, logoutHint: string, callback: () => void) {
-
   if (!principal) {
     throw Error('Invalid session initialisation. Principal is mandatory.');
   }
@@ -106,7 +105,7 @@ function removeSession(req: Request) {
   req.session.destroy(console.error);
 }
 
-function sessionRouter(app: Express)  {
+function sessionRouter(app: Express) {
   console.log('Enabling sessions for bridge.');
 
   if (process.env.SECURE_COOKIE === 'true') {

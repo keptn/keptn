@@ -16,7 +16,7 @@ export class KtbApprovalItemComponent {
   public approvalResult?: boolean;
 
   public overlayConfig: DtOverlayConfig = {
-    pinnable: true
+    pinnable: true,
   };
 
   @Input()
@@ -34,8 +34,7 @@ export class KtbApprovalItemComponent {
     }
   }
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {
-  }
+  constructor(private changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {}
 
   public handleApproval(approval: Trace, result: boolean) {
     this.dataService.sendApprovalEvent(approval, result);

@@ -6,60 +6,83 @@
       No integrations available.
     </div>
 
-    <dt-table uitestid="keptn-uniform-integrations-table" [dataSource]="uniformRegistrations" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0">
+    <dt-table
+      uitestid="keptn-uniform-integrations-table"
+      [dataSource]="uniformRegistrations"
+      dtSort
+      (dtSortChange)="sortData($event)"
+      interactiveRows
+      *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0"
+    >
       <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType : UniformRegistrationClass as registration">
+          <ng-container *ngIf="row | toType: UniformRegistrationClass as registration">
             <span [textContent]="registration.name || 'n/a'"></span>
-            <div *ngIf="registration.unreadEventsCount" class="notification-indicator ml-2" [textContent]="registration.unreadEventsCount"></div>
+            <div
+              *ngIf="registration.unreadEventsCount"
+              class="notification-indicator ml-2"
+              [textContent]="registration.unreadEventsCount"
+            ></div>
           </ng-container>
         </dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="version" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell *dtHeaderCellDef>Version</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).metadata.integrationversion || 'n/a'"></dt-cell>
+        <dt-cell
+          *dtCellDef="let row"
+          [textContent]="(row | toType: UniformRegistrationClass).metadata.integrationversion || 'n/a'"
+        ></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="host" dtColumnAlign="text" dtColumnProportion="3">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).metadata.hostname || 'n/a'"></dt-cell>
+        <dt-cell
+          *dtCellDef="let row"
+          [textContent]="(row | toType: UniformRegistrationClass).metadata.hostname || 'n/a'"
+        ></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="namespace" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Namespace</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).metadata.kubernetesmetadata.namespace || 'n/a'"></dt-cell>
+        <dt-cell
+          *dtCellDef="let row"
+          [textContent]="(row | toType: UniformRegistrationClass).metadata.kubernetesmetadata.namespace || 'n/a'"
+        ></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="location" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Location</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).metadata.location || 'n/a'"></dt-cell>
+        <dt-cell
+          *dtCellDef="let row"
+          [textContent]="(row | toType: UniformRegistrationClass).metadata.location || 'n/a'"
+        ></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
         <dt-header-cell *dtHeaderCellDef>Active subscriptions</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [innerHtml]="formatSubscriptions(row | toType : UniformRegistrationClass, projectName) || 'n/a'"></dt-cell>
+        <dt-cell
+          *dtCellDef="let row"
+          [innerHtml]="formatSubscriptions(row | toType: UniformRegistrationClass, projectName) || 'n/a'"
+        ></dt-cell>
       </ng-container>
 
       <dt-header-row
         *dtHeaderRowDef="['name', 'version', 'host', 'namespace', 'location', 'subscription']"
       ></dt-header-row>
       <dt-row
-        *dtRowDef="
-          let row;
-          columns: ['name', 'version', 'host', 'namespace', 'location', 'subscription']
-        "
+        *dtRowDef="let row; columns: ['name', 'version', 'host', 'namespace', 'location', 'subscription']"
         class="pointer"
         [class.active]="selectedUniformRegistration === row"
-        [attr.disabled]="!(row | toType : UniformRegistrationClass).hasSubscriptions(projectName)"
+        [attr.disabled]="!(row | toType: UniformRegistrationClass).hasSubscriptions(projectName)"
         [dtOverlay]="getOverlay(row, projectName, noRegistration)"
         (click)="setSelectedUniformRegistration(row)"
       >
         <ng-template #noRegistration>
-          <span>{{(row | toType : UniformRegistrationClass).name}} is not active for this project.</span>
-          <br/>
-          <span>Add subscription to activate it for {{projectName}}.</span>
+          <span>{{ (row | toType: UniformRegistrationClass).name }} is not active for this project.</span>
+          <br />
+          <span>Add subscription to activate it for {{ projectName }}.</span>
         </ng-template>
       </dt-row>
     </dt-table>
@@ -73,7 +96,12 @@
     <ng-container *ngIf="selectedUniformRegistration">
       <h3 class="mt-3 mb-3"><span class="mr-1 bold" [textContent]="selectedUniformRegistration.name"></span></h3>
 
-      <ktb-expandable-tile [alignment]="'left'" class="mb-2" [expanded]="true" *ngIf="selectedUniformRegistration.isChangeable()">
+      <ktb-expandable-tile
+        [alignment]="'left'"
+        class="mb-2"
+        [expanded]="true"
+        *ngIf="selectedUniformRegistration.isChangeable()"
+      >
         <ktb-expandable-tile-header>
           <h3 class="mt-0 mb-0">Subscriptions</h3>
         </ktb-expandable-tile-header>
@@ -89,10 +117,12 @@
           <dt-loading-spinner *ngIf="isLoadingLogs"></dt-loading-spinner>
 
           <div fxLayout="column" *ngIf="!isLoadingLogs">
-            <ktb-uniform-registration-logs *ngIf="uniformRegistrationLogs$ | async as logs"
-                                           [projectName]="projectName"
-                                           [lastSeen]="lastSeen"
-                                           [logs]="logs"></ktb-uniform-registration-logs>
+            <ktb-uniform-registration-logs
+              *ngIf="uniformRegistrationLogs$ | async as logs"
+              [projectName]="projectName"
+              [lastSeen]="lastSeen"
+              [logs]="logs"
+            ></ktb-uniform-registration-logs>
           </div>
         </ktb-expandable-tile>
       </div>

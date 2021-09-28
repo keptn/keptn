@@ -14,13 +14,13 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   apiVersion: 'webhookconfig.keptn.sh/v1alpha1';
   kind: 'WebhookConfig';
   metadata: {
-    name: 'webhook-configuration'
+    name: 'webhook-configuration';
   };
   spec: {
     webhooks: {
-      type: string, // type === event
-      requests: string[]
-    } []
+      type: string; // type === event
+      requests: string[];
+    }[];
   };
 
   constructor(type?: string, request?: string) {
@@ -49,7 +49,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @returns true if the webhooks have been changed
    */
   public removeWebhook(eventType: string): boolean {
-    const index = this.spec.webhooks.findIndex(webhook => webhook.type === eventType);
+    const index = this.spec.webhooks.findIndex((webhook) => webhook.type === eventType);
     const changed = index !== -1;
     if (changed) {
       this.spec.webhooks[index].requests.splice(0, 1);
@@ -66,21 +66,22 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
 
   /**
    * Either adds a webhook or overwrites it if there is already one for the given eventType
+   *
    * @params eventType
    * @params curl
    */
   public addWebhook(eventType: string, curl: string): void {
-    const webhook = this.spec.webhooks.find(w => w.type === eventType);
+    const webhook = this.spec.webhooks.find((w) => w.type === eventType);
     if (!webhook) {
-      this.spec.webhooks.push({type: eventType, requests: [curl]});
-    } else { // overwrite
+      this.spec.webhooks.push({ type: eventType, requests: [curl] });
+    } else {
+      // overwrite
       webhook.requests[0] = curl;
     }
-
   }
 
   public parsedRequest(eventType: string): WebhookConfig | undefined {
-    const curl = this.spec.webhooks.find(w => w.type === eventType)?.requests[0];
+    const curl = this.spec.webhooks.find((w) => w.type === eventType)?.requests[0];
     return curl ? this.parseConfig(curl) : undefined;
   }
 
@@ -91,7 +92,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     config.payload = this.formatJSON(result.data?.[0] ?? '');
     config.proxy = result.proxy?.[0] ?? '';
     config.method = (result.request?.[0] ?? '') as WebhookConfigMethod;
-    const headers: { name: string, value: string }[] = [];
+    const headers: { name: string; value: string }[] = [];
     if (result.header) {
       for (const header of result.header) {
         const headerInfo = header.split(':');
@@ -144,13 +145,13 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     return index;
   }
 
-  private getNextCommandData(curl: string, i: number): { data: string, index: number } {
+  private getNextCommandData(curl: string, i: number): { data: string; index: number } {
     const startsWith = curl[i];
     let data = '';
     const startIndex = i;
-    if (startsWith === '\'' || startsWith === '\"') {
+    if (startsWith === "'" || startsWith === '"') {
       ++i;
-      while (i < curl.length && (curl[i] !== startsWith || curl[i] === startsWith && curl[i - 1] === '\\')) {
+      while (i < curl.length && (curl[i] !== startsWith || (curl[i] === startsWith && curl[i - 1] === '\\'))) {
         ++i;
       }
       data = curl.substring(startIndex + 1, i);
@@ -167,7 +168,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     };
   }
 
-  private getNextCommand(curl: string, i: number): { data: string, index: number } {
+  private getNextCommand(curl: string, i: number): { data: string; index: number } {
     let startCommandIndex = i + 1;
     if (curl[i + 1] === '-') {
       ++startCommandIndex;
@@ -182,8 +183,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   private formatJSON(data: string): string {
     try {
       data = JSON.stringify(JSON.parse(data), null, 2);
-    } catch {
-    }
+    } catch {}
     return data;
   }
 

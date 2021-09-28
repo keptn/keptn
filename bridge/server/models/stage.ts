@@ -6,7 +6,7 @@ export class Stage extends sg {
 
   public static fromJSON(data: unknown) {
     const stage = Object.assign(new this(), data);
-    stage.services = stage.services.map(s => {
+    stage.services = stage.services.map((s) => {
       return Service.fromJSON(s);
     });
     return stage;

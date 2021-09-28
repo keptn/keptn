@@ -1,7 +1,7 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {KtbSequenceControlsComponent} from './ktb-sequence-controls.component';
-import {AppModule} from '../../app.module';
+import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
+import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -18,10 +18,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
           provide: DataService,
@@ -31,7 +28,7 @@ describe('KtbSequenceControlsComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
-            params: of({projectName}),
+            params: of({ projectName }),
             queryParams: of({}),
           },
         },

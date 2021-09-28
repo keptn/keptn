@@ -5,17 +5,17 @@ export class TestUtils {
     const dataTransfer: DataTransfer = MockDataTransfer(files);
     const event = new DragEvent('drop');
     Object.defineProperty(event.constructor.prototype, 'dataTransfer', {
-      value: dataTransfer
+      value: dataTransfer,
     });
     Object.defineProperty(event.constructor.prototype, 'preventDefault', {
       value: () => {
         return;
-      }
+      },
     });
     Object.defineProperty(event.constructor.prototype, 'stopPropagation', {
       value: () => {
         return;
-      }
+      },
     });
     return event;
   }
@@ -23,7 +23,7 @@ export class TestUtils {
   public static mockWindowMatchMedia() {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
-      value: jest.fn().mockImplementation(query => ({
+      value: jest.fn().mockImplementation((query) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -59,6 +59,6 @@ function MockDataTransfer(files: File[]): DataTransfer {
       return files;
     },
     // @ts-ignore
-    files: [...files]
+    files: [...files],
   };
 }

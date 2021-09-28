@@ -1,6 +1,6 @@
 export enum HttpProgressState {
   start,
-  end
+  end,
 }
 
 export interface HttpState {

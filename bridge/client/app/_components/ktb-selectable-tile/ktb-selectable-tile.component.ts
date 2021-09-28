@@ -4,7 +4,7 @@ import {
   Component,
   Directive,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 
 @Directive({
@@ -37,7 +37,6 @@ export class KtbSelectableTileHeaderDirective {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSelectableTileComponent {
-
   private _selected = false;
   private _disabled = false;
   private _error = false;

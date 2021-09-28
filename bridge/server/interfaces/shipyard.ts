@@ -13,10 +13,9 @@ export interface Shipyard {
             name: string;
             triggeredOn?: [
               {
-                event: string,
+                event: string;
                 selector?: {
-                  match: {
-                  };
+                  match: {};
                 };
               }
             ];
@@ -24,8 +23,8 @@ export interface Shipyard {
               {
                 name: string;
                 properties: {
-                  deploymentstrategy?: 'direct' | 'blue_green_service',
-                  teststrategy?: 'performance' | 'functional'
+                  deploymentstrategy?: 'direct' | 'blue_green_service';
+                  teststrategy?: 'performance' | 'functional';
                 };
               }
             ];

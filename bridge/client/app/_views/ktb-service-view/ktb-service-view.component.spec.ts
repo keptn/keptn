@@ -9,9 +9,7 @@ describe('KtbEventsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServiceViewComponent);

@@ -20,14 +20,8 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-        RouterTestingModule.withRoutes(routes),
-      ],
-      providers: [
-        {provide: DataService, useClass: DataServiceMock},
-      ],
+      imports: [AppModule, HttpClientTestingModule, RouterTestingModule.withRoutes(routes)],
+      providers: [{ provide: DataService, useClass: DataServiceMock }],
     }).compileComponents();
 
     router = TestBed.inject(Router);
@@ -79,23 +73,33 @@ describe('AppComponent', () => {
 
     // base = 'http://localhost:8000/bridge/'
     expect(getBridgeBaseHref('http://localhost:8000', '/bridge/dashboard')).toEqual('http://localhost:8000/bridge/');
-    expect(getBridgeBaseHref('http://localhost:8000', '/bridge/project/sockshop')).toEqual('http://localhost:8000/bridge/');
+    expect(getBridgeBaseHref('http://localhost:8000', '/bridge/project/sockshop')).toEqual(
+      'http://localhost:8000/bridge/'
+    );
 
     // base 'http://0.0.0.1.xip.io/bridge/'
     expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/dashboard')).toEqual('http://0.0.0.1.xip.io/bridge/');
-    expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/project/sockshop')).toEqual('http://0.0.0.1.xip.io/bridge/');
+    expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/project/sockshop')).toEqual(
+      'http://0.0.0.1.xip.io/bridge/'
+    );
 
     // base = 'https://demo.keptn.sh/bridge/'
     expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/dashboard')).toEqual('https://demo.keptn.sh/bridge/');
-    expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/project/sockshop')).toEqual('https://demo.keptn.sh/bridge/');
+    expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/project/sockshop')).toEqual(
+      'https://demo.keptn.sh/bridge/'
+    );
 
     // base = 'https://demo.io/keptn/bridge/'
     expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/dashboard')).toEqual('https://demo.io/keptn/bridge/');
-    expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/project/sockshop')).toEqual('https://demo.io/keptn/bridge/');
+    expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/project/sockshop')).toEqual(
+      'https://demo.io/keptn/bridge/'
+    );
 
     // base = 'https://bridge.demo.keptn.sh'
     expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/dashboard')).toEqual('https://bridge.demo.keptn.sh');
-    expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/project/sockshop')).toEqual('https://bridge.demo.keptn.sh');
+    expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/project/sockshop')).toEqual(
+      'https://bridge.demo.keptn.sh'
+    );
   });
 
   it('should render project board for "sockshop"', fakeAsync(() => {
@@ -186,12 +190,23 @@ describe('AppComponent', () => {
   }));
 
   xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'service', 'carts', 'context', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'stage', 'staging']);
+    router.navigate([
+      'project',
+      'sockshop',
+      'service',
+      'carts',
+      'context',
+      '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432',
+      'stage',
+      'staging',
+    ]);
 
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toEqual('/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
+    expect(location.path()).toEqual(
+      '/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging'
+    );
 
     assertMenuItems(MENU_ITEM.SERVICES);
 
@@ -258,12 +273,21 @@ describe('AppComponent', () => {
   }));
 
   xit('deepLink project/:projectName/sequence/:shkeptncontext/event/:eventId', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'sequence', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'event', 'e8f12220-b0f7-4e2f-898a-b6b7e699f12a']);
+    router.navigate([
+      'project',
+      'sockshop',
+      'sequence',
+      '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432',
+      'event',
+      'e8f12220-b0f7-4e2f-898a-b6b7e699f12a',
+    ]);
 
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/e8f12220-b0f7-4e2f-898a-b6b7e699f12a');
+    expect(location.path()).toEqual(
+      '/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/e8f12220-b0f7-4e2f-898a-b6b7e699f12a'
+    );
 
     assertMenuItems(MENU_ITEM.SEQUENCES);
 
@@ -332,7 +356,9 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/7c105021-3a50-47c7-aaa9-2e6286b17d89');
+    expect(location.path()).toEqual(
+      '/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/7c105021-3a50-47c7-aaa9-2e6286b17d89'
+    );
 
     assertMenuItems(MENU_ITEM.SEQUENCES);
 
@@ -391,6 +417,6 @@ describe('AppComponent', () => {
     SEQUENCES,
     INTEGRATIONS,
     UNIFORM,
-    SETTINGS
+    SETTINGS,
   }
 });

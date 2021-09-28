@@ -36,7 +36,7 @@ export class DataServiceMock extends DataService {
   }
 
   public loadProjects(): void {
-    this._projects.next(Projects.map(project => Project.fromJSON(project)));
+    this._projects.next(Projects.map((project) => Project.fromJSON(project)));
   }
 
   public loadProject(projectName: string): void {
@@ -47,7 +47,10 @@ export class DataServiceMock extends DataService {
     let totalCount;
     let sequences;
     if (beforeTime) {
-      sequences = SequencesData.slice(project.sequences.length, project.sequences.length + this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE);
+      sequences = SequencesData.slice(
+        project.sequences.length,
+        project.sequences.length + this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE
+      );
       totalCount = sequences.length;
     } else {
       totalCount = SequencesData.length;
@@ -58,7 +61,7 @@ export class DataServiceMock extends DataService {
     if (this.allSequencesLoaded(project.sequences.length, totalCount, fromTime, beforeTime)) {
       project.allSequencesLoaded = true;
     }
-    project.stages.forEach(stage => {
+    project.stages.forEach((stage) => {
       this.stageSequenceMapper(stage, project);
     });
     this._sequencesUpdated.next();
@@ -69,9 +72,10 @@ export class DataServiceMock extends DataService {
       this.loadProjects();
     }
     return this._projects.pipe(
-      map(projects => {
-        return projects?.find(project => project.projectName === projectName);
-      }));
+      map((projects) => {
+        return projects?.find((project) => project.projectName === projectName);
+      })
+    );
   }
 
   public deleteProject(projectName: string): Observable<object> {
@@ -79,12 +83,12 @@ export class DataServiceMock extends DataService {
   }
 
   public loadTraces(sequence: Sequence): void {
-    sequence.traces = [...Traces || [], ...sequence.traces || []];
+    sequence.traces = [...(Traces || []), ...(sequence.traces || [])];
     this._sequencesUpdated.next();
   }
 
   public loadTracesByContext(shkeptncontext: string): void {
-    this._traces.next(Traces.filter(t => t.shkeptncontext === shkeptncontext));
+    this._traces.next(Traces.filter((t) => t.shkeptncontext === shkeptncontext));
   }
 
   public loadEvaluationResults(event: Trace): void {
@@ -95,14 +99,19 @@ export class DataServiceMock extends DataService {
     });
   }
 
-  public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<boolean> {
+  public setGitUpstreamUrl(
+    projectName: string,
+    gitUrl: string,
+    gitUser: string,
+    gitToken: string
+  ): Observable<boolean> {
     this.loadProjects();
     return of(true);
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
     const copyUniform = AppUtils.copyObject(UniformRegistrationsMock);
-    return of(copyUniform.map(registration => UniformRegistration.fromJSON(registration)));
+    return of(copyUniform.map((registration) => UniformRegistration.fromJSON(registration)));
   }
 
   public getUniformRegistrationLogs(): Observable<UniformRegistrationLog[]> {
@@ -142,10 +151,10 @@ export class DataServiceMock extends DataService {
   }
 
   public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
-    const registration = UniformRegistrationsMock.find(r => r.id === integrationId);
+    const registration = UniformRegistrationsMock.find((r) => r.id === integrationId);
     return of({
       isWebhookService: registration?.isWebhookService ?? false,
-      isControlPlane: registration?.metadata.location === 'control-plane' ?? false
+      isControlPlane: registration?.metadata.location === 'control-plane' ?? false,
     });
   }
 }

@@ -18,19 +18,23 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   public currentTime: string = this.getCurrentTime();
   public keptnInfo?: KeptnInfo;
   public integrationsExternalDetails?: string;
-  public useCaseExamples: { cli: { label: string, code: string }[], api: { label: string, code: string }[] } = {
+  public useCaseExamples: { cli: { label: string; code: string }[]; api: { label: string; code: string }[] } = {
     cli: [],
     api: [],
   };
 
-  constructor(private dataService: DataService, private clipboard: ClipboardService, private apiService: ApiService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
-  }
+  constructor(
+    private dataService: DataService,
+    private clipboard: ClipboardService,
+    private apiService: ApiService,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
+  ) {}
 
   ngOnInit(): void {
     this.dataService.keptnInfo
       .pipe(filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo))
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
+      .subscribe((keptnInfo) => {
         this.keptnInfo = keptnInfo;
         if (this.keptnInfo.bridgeInfo.keptnInstallationType) {
           if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('CONTINUOUS_DELIVERY')) {
@@ -54,10 +58,14 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   }
 
   updateIntegrations() {
-    if (this.keptnInfo && this.keptnInfo.bridgeInfo.keptnInstallationType && this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')) {
+    if (
+      this.keptnInfo &&
+      this.keptnInfo.bridgeInfo.keptnInstallationType &&
+      this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')
+    ) {
       this.currentTime = this.getCurrentTime();
-      const cliItem = this.useCaseExamples.cli.find(e => e.label === 'Trigger a quality gate evaluation');
-      const apiItem = this.useCaseExamples.api.find(e => e.label === 'Trigger a quality gate evaluation');
+      const cliItem = this.useCaseExamples.cli.find((e) => e.label === 'Trigger a quality gate evaluation');
+      const apiItem = this.useCaseExamples.api.find((e) => e.label === 'Trigger a quality gate evaluation');
       if (cliItem) {
         cliItem.code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
       }
@@ -115,13 +123,18 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
 
   loadIntegrations() {
     this.integrationsExternalDetails = '<p>Loading ...</p>';
-    this.apiService.getIntegrationsPage()
+    this.apiService
+      .getIntegrationsPage()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((result: string) => {
-        this.integrationsExternalDetails = result;
-      }, () => {
-        this.integrationsExternalDetails = '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
-      });
+      .subscribe(
+        (result: string) => {
+          this.integrationsExternalDetails = result;
+        },
+        () => {
+          this.integrationsExternalDetails =
+            '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
+        }
+      );
   }
 
   copyApiToken() {
@@ -131,5 +144,4 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
   }
-
 }

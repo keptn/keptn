@@ -1,8 +1,8 @@
-import {Root} from './root';
-import {DeploymentStage} from './deployment-stage';
+import { Root } from './root';
+import { DeploymentStage } from './deployment-stage';
 import { Trace } from './trace';
 
-export type DeploymentSelection = { deployment: Deployment, stage: string };
+export type DeploymentSelection = { deployment: Deployment; stage: string };
 
 export class Deployment {
   public version?: string;
@@ -38,15 +38,17 @@ export class Deployment {
   }
 
   public getStage(stage: string): DeploymentStage | undefined {
-    return this.stages.find(s => s.stageName === stage);
+    return this.stages.find((s) => s.stageName === stage);
   }
 
   public hasStage(stage: string): boolean {
-    return this.stages.some(s => s.stageName === stage);
+    return this.stages.some((s) => s.stageName === stage);
   }
 
   public hasRemediation(stageName?: string): boolean {
-    return stageName ? !!this.getStage(stageName)?.remediations.length : this.stages.some(s => s.remediations.length !== 0);
+    return stageName
+      ? !!this.getStage(stageName)?.remediations.length
+      : this.stages.some((s) => s.remediations.length !== 0);
   }
 
   public setEvaluation(evaluation: Trace | undefined) {

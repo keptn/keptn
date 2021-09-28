@@ -40,8 +40,8 @@ export interface TraceData {
   };
   configurationChange?: {
     values: {
-      image: unknown
-    }
+      image: unknown;
+    };
   };
 
   evaluation?: {
@@ -70,7 +70,7 @@ export interface TraceData {
       tagsOfAffectedEntities: {
         key: string;
         value: string;
-      }[]
+      }[];
     };
   };
 
@@ -101,11 +101,9 @@ export class Trace {
     let image;
     if (this.data.image && this.data.tag) {
       image = [this.data.image.split('/').pop(), this.data.tag].join(':');
-    }
-    else if (this.data.image) {
+    } else if (this.data.image) {
       image = this.data.image.split('/').pop();
-    }
-    else if (this.data.configurationChange?.values) {
+    } else if (this.data.configurationChange?.values) {
       image = this.getConfigurationChangeImage();
     }
     return image;

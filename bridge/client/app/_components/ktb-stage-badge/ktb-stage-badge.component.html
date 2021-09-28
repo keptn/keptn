@@ -1,14 +1,24 @@
-<div class="ktb-stage-badge"
-     [class.ktb-stage-badge-error]="error"
-     [class.ktb-stage-badge-warning]="warning"
-     [class.ktb-stage-badge-success]="success"
-     [class.ktb-stage-badge-highlight]="highlight"
-     fxLayout="row" fxLayoutAlign="start center">
+<div
+  class="ktb-stage-badge"
+  [class.ktb-stage-badge-error]="error"
+  [class.ktb-stage-badge-warning]="warning"
+  [class.ktb-stage-badge-success]="success"
+  [class.ktb-stage-badge-highlight]="highlight"
+  fxLayout="row"
+  fxLayoutAlign="start center"
+>
   <dt-tag-list>
-    <dt-tag class="m-0 justify-content-center"
-            [class.timeline-item]="isSelected !== undefined"
-            [class.focused]="isSelected"
-            [textContent]="stage"></dt-tag>
+    <dt-tag
+      class="m-0 justify-content-center"
+      [class.timeline-item]="isSelected !== undefined"
+      [class.focused]="isSelected"
+      [textContent]="stage"
+    ></dt-tag>
   </dt-tag-list>
-  <ktb-evaluation-info [evaluationResult]="evaluationResult" [evaluation]="evaluation" [fill]="fill" [overlayDisabled]="true"></ktb-evaluation-info>
+  <ktb-evaluation-info
+    [evaluationResult]="evaluationResult"
+    [evaluation]="evaluation"
+    [fill]="fill"
+    [overlayDisabled]="true"
+  ></ktb-evaluation-info>
 </div>

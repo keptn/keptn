@@ -8,25 +8,47 @@
       <dt-info-group-title>
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
           <div fxLayout="row" fxLayoutAlign="start center">
-            <button dt-icon-button disabled variant="nested" *ngIf="root.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
+            <button dt-icon-button disabled variant="nested" *ngIf="root.isFaulty()">
+              <dt-icon name="criticalevent"></dt-icon>
+            </button>
             <p [textContent]="root.getShortImageName() || root.service"></p>
           </div>
         </div>
       </dt-info-group-title>
-      <p class="m-0" *ngIf="root.data.configurationChange?.values"><span class="bold">Artifact: </span><span [textContent]="root.getConfigurationChangeImage()"></span></p>
+      <p class="m-0" *ngIf="root.data.configurationChange?.values">
+        <span class="bold">Artifact: </span><span [textContent]="root.getConfigurationChangeImage()"></span>
+      </p>
       <p class="m-0 mb-3"><span class="bold">Context: </span><span [textContent]="root.shkeptncontext"></span></p>
     </dt-info-group>
-    <div *ngFor="let evaluation of evaluations;">
-      <p><span class="bold">Stage: </span>
+    <div *ngFor="let evaluation of evaluations">
+      <p>
+        <span class="bold">Stage: </span>
         <span [textContent]="evaluation.data.stage"></span>
       </p>
       <div class="mb-2">
-        <button *ngIf="evaluation.data.stage && getDeployment(evaluation.data.stage)?.shkeptncontext as shkeptncontext" dt-button variant="secondary" [routerLink]="getServiceDetailsLink(shkeptncontext, evaluation.data.stage)">View service details</button>
-        <button class="ml-3" dt-button variant="secondary" [routerLink]="['/project', root.project, 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]">View sequence details</button>
+        <button
+          *ngIf="evaluation.data.stage && getDeployment(evaluation.data.stage)?.shkeptncontext as shkeptncontext"
+          dt-button
+          variant="secondary"
+          [routerLink]="getServiceDetailsLink(shkeptncontext, evaluation.data.stage)"
+        >
+          View service details
+        </button>
+        <button
+          class="ml-3"
+          dt-button
+          variant="secondary"
+          [routerLink]="['/project', root.project, 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]"
+        >
+          View sequence details
+        </button>
       </div>
       <ktb-event-item [event]="evaluation">
         <ktb-event-item-detail>
-          <ktb-evaluation-details *ngIf="evaluation.data.evaluation" [evaluationData]="evaluation"></ktb-evaluation-details>
+          <ktb-evaluation-details
+            *ngIf="evaluation.data.evaluation"
+            [evaluationData]="evaluation"
+          ></ktb-evaluation-details>
         </ktb-event-item-detail>
       </ktb-event-item>
     </div>
@@ -40,12 +62,24 @@
       </dt-empty-state-item-img>
       <ng-container [ngSwitch]="error">
         <ng-container *ngSwitchCase="'contextError'">
-          <dt-empty-state-item-title class="mt-2" aria-level="2">Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title>
-          <p>Sorry, traces with this shkeptncontext could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <dt-empty-state-item-title class="mt-2" aria-level="2"
+            >Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title
+          >
+          <p>
+            Sorry, traces with this shkeptncontext could not be loaded. Check out the
+            <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to
+            <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to
+            <a [routerLink]="['/dashboard']">your dashboard</a>.
+          </p>
         </ng-container>
         <ng-container *ngSwitchDefault>
           <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occurred</dt-empty-state-item-title>
-          <p>Sorry, some error occurred. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <p>
+            Sorry, some error occurred. Check out the
+            <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to
+            <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to
+            <a [routerLink]="['/dashboard']">your dashboard</a>.
+          </p>
         </ng-container>
       </ng-container>
     </dt-empty-state-item>

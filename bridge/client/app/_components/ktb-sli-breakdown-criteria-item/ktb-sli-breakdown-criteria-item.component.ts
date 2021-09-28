@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { Target } from '../../../../shared/interfaces/indicator-result';
 
 @Component({
   selector: 'ktb-sli-breakdown-criteria-item',
   templateUrl: './ktb-sli-breakdown-criteria-item.component.html',
   styleUrls: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSliBreakdownCriteriaItemComponent {
   private _targets: Target[] = [];

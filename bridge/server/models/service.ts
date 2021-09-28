@@ -4,7 +4,7 @@ import { Service as sv } from '../../shared/models/service';
 import { Remediation } from './remediation';
 
 type ServiceEvent = { eventId: string; keptnContext: string; time: number };
-export type DeploymentInformation = { deploymentUrl?: string, image?: string };
+export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service extends sv {
   lastEventTypes: { [p: string]: ServiceEvent } = {};
@@ -37,5 +37,4 @@ export class Service extends sv {
   private isSequence(eventType: string, stageName: string): boolean {
     return eventType.split('.').length === 6 && eventType.includes(stageName);
   }
-
 }
