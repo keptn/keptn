@@ -12,7 +12,7 @@
         "registry": {
           "$ref": "#/definitions/hostname"
         },
-        "repository": {
+        "repositoryImageName": {
           "pattern": "^([a-z0-9][a-z0-9-.]{2,63})(:[0-9]+)?([a-z0-9-./]{1,128})$"
         },
         "pullPolicy": {
