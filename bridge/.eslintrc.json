@@ -36,7 +36,14 @@
         "@typescript-eslint/no-explicit-any": "error",
         "arrow-parens": ["off", "always"],
         "no-underscore-dangle": "off",
-        "@typescript-eslint/member-ordering": "off"
+        "@typescript-eslint/member-ordering": "off",
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "selector": "enumMember",
+            "format": ["UPPER_CASE"]
+          }
+        ]
       }
     },
     {
