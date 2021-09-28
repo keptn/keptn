@@ -59,6 +59,7 @@ spec:
         - "curl http://kubernetes.default.svc.cluster.local:443/v1"
     - type: "sh.keptn.event.mytask.triggered"
       subscriptionID: ${mytask-sub-id}
+      sendFinished: true
       envFrom: 
         - name: "secretKey"
           secretRef:

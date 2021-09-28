@@ -25,6 +25,7 @@ func main() {
 	kubeAPIPort := os.Getenv("KUBERNETES_SERVICE_PORT")
 
 	curlExecutor := lib.NewCmdCurlExecutor(
+		&lib.OSCmdExecutor{},
 		lib.WithUnAllowedURLs(
 			[]string{
 				kubeAPIHostIP + ":" + kubeAPIPort,

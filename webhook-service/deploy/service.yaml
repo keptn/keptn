@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
-          image: keptn/webhook-service:latest
+          image: keptn/webhook-service:0.9.3-dev
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -45,7 +45,7 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
         - name: distributor
-          image: keptn/distributor:0.8.8-dev
+          image: keptn/distributor:0.9.3-dev
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -73,6 +73,16 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
 ---
 apiVersion: v1
 kind: Service

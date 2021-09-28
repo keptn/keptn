@@ -2,7 +2,7 @@ package lib
 
 import (
 	"errors"
-	"os/exec"
+	"fmt"
 	"strings"
 )
 
@@ -51,7 +51,10 @@ type ICurlExecutor interface {
 }
 
 type CmdCurlExecutor struct {
-	unAllowedURLs []string
+	unAllowedURLs       []string
+	unAllowedCharacters []string
+	unAllowedOptions    []string
+	commandExecutor     ICommandExecutor
 }
 
 type CmdCurlExecutorOption func(executor *CmdCurlExecutor)
@@ -62,8 +65,12 @@ func WithUnAllowedURLs(urls []string) CmdCurlExecutorOption {
 	}
 }
 
-func NewCmdCurlExecutor(opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
-	executor := &CmdCurlExecutor{}
+func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
+	executor := &CmdCurlExecutor{
+		unAllowedCharacters: []string{"$", "|", ";", ">", "$(", " &", "&&", "`"},
+		unAllowedOptions:    []string{"-o", "--output"},
+		commandExecutor:     cmdExecutor,
+	}
 	for _, o := range opts {
 		o(executor)
 	}
@@ -72,22 +79,104 @@ func NewCmdCurlExecutor(opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
 
 func (ce *CmdCurlExecutor) Curl(curlCmd string) (string, error) {
 	cmdArr := strings.Split(curlCmd, " ")
-	if len(cmdArr) == 0 {
+	if len(cmdArr) == 0 || len(cmdArr) == 1 && cmdArr[0] == "" {
 		return "", &CurlError{err: errors.New("no command provided"), reason: NoCommandError}
 	}
+
+	for _, unallowedCharacter := range ce.unAllowedCharacters {
+		if strings.Contains(curlCmd, unallowedCharacter) {
+			return "", &CurlError{err: fmt.Errorf("curl command contains unallowed character '%s'", unallowedCharacter), reason: InvalidCommandError}
+		}
+	}
+
+	args, err := parseCommandLine(curlCmd)
+	if err != nil {
+		return "", &CurlError{err: errors.New("could not parse curl command"), reason: InvalidCommandError}
+	}
+
 	if cmdArr[0] != "curl" {
 		return "", &CurlError{err: errors.New("only curl commands are allowed to be executed"), reason: InvalidCommandError}
+	}
+
+	for _, arg := range args {
+		for _, o := range ce.unAllowedOptions {
+			if strings.HasPrefix(arg, o) {
+				return "", &CurlError{err: fmt.Errorf("curl command contains invalid option '%s'", o), reason: InvalidCommandError}
+			}
+		}
 	}
 
 	// check if the curl command contains any of the disallowed URLs
 	for _, url := range ce.unAllowedURLs {
 		if strings.Contains(curlCmd, url) {
-			return "", &CurlError{err: errors.New("only curl commands are allowed to be executed"), reason: UnallowedURLError}
+			return "", &CurlError{err: fmt.Errorf("curl command contains invalid URL %s", url), reason: UnallowedURLError}
 		}
 	}
 
-	cmd := exec.Command("/bin/sh", "-c", curlCmd)
+	return ce.commandExecutor.ExecuteCommand("curl", args[1:]...)
+}
 
-	output, err := cmd.Output()
-	return string(output), err
+func parseCommandLine(command string) ([]string, error) {
+	var args []string
+	state := "start"
+	current := ""
+	quote := "\""
+	escapeNext := true
+	for i := 0; i < len(command); i++ {
+		c := command[i]
+
+		if state == "quotes" {
+			if string(c) != quote {
+				current += string(c)
+			} else {
+				args = append(args, current)
+				current = ""
+				state = "start"
+			}
+			continue
+		}
+
+		if escapeNext {
+			current += string(c)
+			escapeNext = false
+			continue
+		}
+
+		if c == '\\' {
+			escapeNext = true
+			continue
+		}
+
+		if c == '"' || c == '\'' {
+			state = "quotes"
+			quote = string(c)
+			continue
+		}
+
+		if state == "arg" {
+			if c == ' ' || c == '\t' {
+				args = append(args, current)
+				current = ""
+				state = "start"
+			} else {
+				current += string(c)
+			}
+			continue
+		}
+
+		if c != ' ' && c != '\t' {
+			state = "arg"
+			current += string(c)
+		}
+	}
+
+	if state == "quotes" {
+		return []string{}, errors.New("unclosed quote in command")
+	}
+
+	if current != "" {
+		args = append(args, current)
+	}
+
+	return args, nil
 }
