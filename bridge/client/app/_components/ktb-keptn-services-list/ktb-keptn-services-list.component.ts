@@ -107,7 +107,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     this.unsubscribe$.complete();
   }
 
-  public setSelectedUniformRegistration(uniformRegistration: UniformRegistration) {
+  public setSelectedUniformRegistration(uniformRegistration: UniformRegistration): void {
     if (this.selectedUniformRegistration !== uniformRegistration) {
       this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
       if (this.selectedUniformRegistration) {
@@ -122,7 +122,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     }
   }
 
-  public sortData(sortEvent: DtSortEvent) {
+  public sortData(sortEvent: DtSortEvent): void {
     if (this.uniformRegistrations.data) {
       const isAscending = sortEvent.direction === 'asc';
       const data: UniformRegistration[] = this.uniformRegistrations.data.slice();

@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { filter, switchMap, takeUntil } from 'rxjs/operators';
 import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
@@ -15,7 +15,7 @@ import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
 
 @Component({
-  selector: 'app-header',
+  selector: 'ktb-header',
   templateUrl: './app-header.component.html',
   styleUrls: ['./app-header.component.scss'],
 })
@@ -41,7 +41,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.projects = this.dataService.projects;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.titleService.setTitle(this.appTitle);
     this.setAppFavicon(this.logoInvertedUrl);
 
@@ -108,7 +108,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     cliVersion: string,
     availableBridgeVersions: VersionInfo,
     availableCliVersions: VersionInfo
-  ) {
+  ): void {
     if (semver.valid(bridgeVersion) && semver.valid(cliVersion)) {
       const latestVersion = availableCliVersions.stable[availableCliVersions.stable.length - 1];
       const bridgeVersionsString = this.buildVersionString(
@@ -129,12 +129,12 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
                             https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(
           latestVersion
         )}.x/operate/upgrade/</a>`;
-        this.notificationsService.addNotification(NotificationType.Info, versionMessage);
+        this.notificationsService.addNotification(NotificationType.INFO, versionMessage);
       }
     }
   }
 
-  private buildVersionString(versions: VersionInfo) {
+  private buildVersionString(versions: VersionInfo): null | string {
     if (versions.stable.length > 0) {
       return versions.stable.join(', ');
     } else if (versions.prerelease.length > 0) {
@@ -187,7 +187,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     return [...(latestMinor ? [latestMinor] : []), ...(latestMajor ? [latestMajor] : [])];
   }
 
-  showVersionCheckInfoDialog() {
+  showVersionCheckInfoDialog(): void {
     if (this.keptnInfo?.bridgeInfo.enableVersionCheckFeature) {
       this.versionCheckDialogState = 'info';
     }
@@ -207,12 +207,11 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     );
   }
 
-  // tslint:disable-next-line:no-any
-  versionCheckClicked(event: DtSwitchChange<any>) {
+  versionCheckClicked(event: DtSwitchChange<unknown>): void {
     this.dataService.setVersionCheck(event.checked);
   }
 
-  setAppFavicon(path: string) {
+  setAppFavicon(path: string): void {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 

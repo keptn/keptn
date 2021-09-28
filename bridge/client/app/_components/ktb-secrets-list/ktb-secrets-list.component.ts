@@ -33,12 +33,12 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
     });
   }
 
-  public triggerDeleteSecret(secret: Secret) {
+  public triggerDeleteSecret(secret: Secret): void {
     this.currentSecret = secret;
     this.deleteState = 'confirm';
   }
 
-  public deleteSecret(secret?: Secret) {
+  public deleteSecret(secret?: Secret): void {
     if (secret) {
       this.dataService.deleteSecret(secret.name, secret.scope).subscribe((result) => {
         this.deleteState = 'success';

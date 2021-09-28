@@ -27,7 +27,7 @@ export class DateUtil {
     return result * direction;
   }
 
-  public getDurationFormatted(start: string | Date, end?: string | Date) {
+  public getDurationFormatted(start: string | Date, end?: string | Date): string {
     const diff = moment(end).diff(moment(start));
     const duration = moment.duration(diff);
     const days = Math.floor(duration.asDays());
@@ -49,7 +49,14 @@ export class DateUtil {
     return result;
   }
 
-  public getCalendarFormats(showSeconds?: boolean) {
+  public getCalendarFormats(showSeconds?: boolean): {
+    lastDay: string;
+    sameDay: string;
+    nextDay: string;
+    lastWeek: string;
+    nextWeek: string;
+    sameElse: string;
+  } {
     if (showSeconds) {
       return {
         lastDay: '[yesterday at] HH:mm:ss',

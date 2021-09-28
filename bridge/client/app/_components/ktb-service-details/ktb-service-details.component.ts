@@ -27,9 +27,9 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   private _deploymentInfo?: DeploymentSelection;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   @ViewChild('remediationDialog')
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public remediationDialog?: TemplateRef<any>;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public remediationDialogRef?: MatDialogRef<any, any>;
   public projectName?: string;
   public isLoading = false;
@@ -73,7 +73,7 @@ export class KtbServiceDetailsComponent implements OnDestroy {
     });
   }
 
-  private loadSequence(info: DeploymentSelection) {
+  private loadSequence(info: DeploymentSelection): void {
     if (this.projectName) {
       this.dataService.getRoot(this.projectName, info.deployment.shkeptncontext).subscribe((sequence) => {
         info.deployment.sequence = sequence;
@@ -109,7 +109,7 @@ export class KtbServiceDetailsComponent implements OnDestroy {
     }
   }
 
-  private fetchEvaluations(deployment: Deployment) {
+  private fetchEvaluations(deployment: Deployment): Observable<Trace | undefined>[] {
     const evaluations$: Observable<Trace | undefined>[] = [];
     for (const stage of deployment.stages) {
       if (!stage.evaluation && stage.evaluationContext) {
@@ -119,7 +119,7 @@ export class KtbServiceDetailsComponent implements OnDestroy {
     return evaluations$;
   }
 
-  public selectStage(stageName: string) {
+  public selectStage(stageName: string): void {
     if (this.deploymentInfo) {
       this.deploymentInfo.stage = stageName;
       const routeUrl = this.router.createUrlTree([

@@ -20,13 +20,13 @@ export class KtbProjectSettingsShipyardComponent {
 
   public shipyardFile?: File;
 
-  public handleDragAndDropError(error: string) {
+  public handleDragAndDropError(error: string): void {
     if (this.dropError) {
       this.dropError.nativeElement.innerText = error;
     }
   }
 
-  public updateFile(files?: FileList) {
+  public updateFile(files?: FileList): void {
     if (files) {
       this.shipyardFile = files[0];
     } else {
@@ -35,7 +35,7 @@ export class KtbProjectSettingsShipyardComponent {
     this.shipyardFileChanged.emit(this.shipyardFile);
   }
 
-  public validateAndUpdateFile(files: FileList | null) {
+  public validateAndUpdateFile(files: FileList | null): void {
     if (files?.length && this.dropError) {
       if (!FormUtils.isFile(files[0])) {
         this.dropError.nativeElement.innerText = 'Please select only files';

@@ -2,7 +2,8 @@ import { Project } from '../../_models/project';
 import { Service } from '../../_models/service';
 import { Stage } from '../../_models/stage';
 
-// tslint:disable-next-line:no-any
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const projectsData: any = [
   {
     creationDate: '1614603785739925270',
@@ -1178,7 +1179,7 @@ const projectsData: any = [
   },
 ];
 
-const Projects: Project[] = projectsData.map((project: Project) => {
+const projects: Project[] = projectsData.map((project: Project) => {
   project.stages = project.stages.map((stage) => {
     stage.services = stage.services.map((service) => Service.fromJSON(service));
     return Stage.fromJSON(stage);
@@ -1186,4 +1187,4 @@ const Projects: Project[] = projectsData.map((project: Project) => {
   return Project.fromJSON(project);
 });
 
-export { Projects };
+export { projects as Projects };

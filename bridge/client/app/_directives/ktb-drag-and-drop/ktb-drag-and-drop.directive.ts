@@ -1,4 +1,4 @@
-import { Directive, Output, EventEmitter, HostListener, HostBinding, Input } from '@angular/core';
+import { Directive, EventEmitter, HostBinding, HostListener, Input, Output } from '@angular/core';
 import { FormUtils } from '../../_utils/form.utils';
 
 @Directive({
@@ -23,7 +23,7 @@ export class KtbDragAndDropDirective {
   private styleClass = this.BASE_STYLE_CLASS;
 
   @HostListener('dragover', ['$event'])
-  public onDragOver(evt: DragEvent) {
+  public onDragOver(evt: DragEvent): void {
     evt.preventDefault();
     evt.stopPropagation();
 
@@ -31,7 +31,7 @@ export class KtbDragAndDropDirective {
   }
 
   @HostListener('dragleave', ['$event'])
-  public onDragOut(evt: DragEvent) {
+  public onDragOut(evt: DragEvent): void {
     evt.preventDefault();
     evt.stopPropagation();
 
@@ -39,7 +39,7 @@ export class KtbDragAndDropDirective {
   }
 
   @HostListener('drop', ['$event'])
-  public onDrop(evt: DragEvent) {
+  public onDrop(evt: DragEvent): void {
     evt.preventDefault();
     evt.stopPropagation();
 

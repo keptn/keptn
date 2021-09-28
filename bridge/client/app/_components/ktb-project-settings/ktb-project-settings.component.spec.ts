@@ -36,7 +36,8 @@ describe('KtbProjectSettingsComponent', () => {
 
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
     if (notifications.length > 0) {
-      // tslint:disable-next-line:prefer-for-of
+
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < notifications.length; i++) {
         notifications[i].remove();
       }

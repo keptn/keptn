@@ -11,17 +11,17 @@ import { HttpStateService } from '../_services/http-state.service';
 export class HttpLoadingInterceptor implements HttpInterceptor {
   constructor(private httpStateService: HttpStateService) {}
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     this.httpStateService.state.next({
       url: request.url,
-      state: HttpProgressState.start,
+      state: HttpProgressState.START,
     });
 
     return next.handle(request).pipe(
       finalize(() => {
         this.httpStateService.state.next({
           url: request.url,
-          state: HttpProgressState.end,
+          state: HttpProgressState.END,
         });
       })
     );

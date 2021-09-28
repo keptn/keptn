@@ -15,7 +15,7 @@ export interface Shipyard {
               {
                 event: string;
                 selector?: {
-                  match: {};
+                  match: unknown;
                 };
               }
             ];

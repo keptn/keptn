@@ -13,7 +13,7 @@ export class Secret {
     this.data = [];
   }
 
-  static fromJSON(data: unknown) {
+  static fromJSON(data: unknown): Secret {
     return Object.assign(new this(), data);
   }
 

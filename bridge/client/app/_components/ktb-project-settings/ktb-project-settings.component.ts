@@ -110,7 +110,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
       if (queryParams.created) {
         this.unsavedDialogState = null;
         this.notificationsService.addNotification(
-          NotificationType.Success,
+          NotificationType.SUCCESS,
           TemplateRenderedNotifications.CREATE_PROJECT,
           undefined,
           true,
@@ -166,7 +166,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
             this.gitData.gitToken = '';
             this.gitData = { ...this.gitData };
             this.notificationsService.addNotification(
-              NotificationType.Success,
+              NotificationType.SUCCESS,
               'The Git upstream was changed successfully.',
               5000
             );
@@ -174,7 +174,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
           (err) => {
             this.isGitUpstreamInProgress = false;
             this.notificationsService.addNotification(
-              NotificationType.Error,
+              NotificationType.ERROR,
               `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`
             );
           }
@@ -205,7 +205,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
               },
               () => {
                 this.notificationsService.addNotification(
-                  NotificationType.Error,
+                  NotificationType.ERROR,
                   'The project could not be created.',
                   5000
                 );

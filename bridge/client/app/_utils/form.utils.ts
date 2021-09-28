@@ -50,7 +50,7 @@ export class FormUtils {
       }
 
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = (): void => {
         try {
           const text = reader.result?.toString();
           resolve(text);

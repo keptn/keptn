@@ -70,7 +70,7 @@ export class KtbEditServiceComponent implements OnDestroy {
           this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
           this.dataService.loadProject(projectName);
           await this.router.navigate(['../../'], { relativeTo: this.route });
-          this.notificationsService.addNotification(NotificationType.Success, 'Service deleted', 5_000);
+          this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service deleted', 5_000);
         },
         (error: HttpErrorResponse) => {
           this.eventService.deletionProgressEvent.next({

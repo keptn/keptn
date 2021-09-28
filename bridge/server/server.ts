@@ -4,7 +4,7 @@ const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
 
 if (typeof PORT === 'number') {
-  (async () => {
+  (async (): Promise<void> => {
     try {
       const app = await initApp();
       app.set('port', PORT);

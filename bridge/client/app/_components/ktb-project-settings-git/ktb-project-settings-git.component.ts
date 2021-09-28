@@ -50,7 +50,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     }
   }
 
-  public setGitUpstream() {
+  public setGitUpstream(): void {
     this.gitUpstreamSubmit.emit({
       remoteURI: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
@@ -58,7 +58,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     });
   }
 
-  public onGitUpstreamFormChange() {
+  public onGitUpstreamFormChange(): void {
     this.gitDataChanged.emit({
       remoteURI: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
@@ -71,7 +71,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     return this.gitUpstreamForm.invalid || !this.gitUpstreamForm.dirty || this.isGitUpstreamInProgress;
   }
 
-  public reset() {
+  public reset(): void {
     this.resetForm(this.originalGitData);
   }
 

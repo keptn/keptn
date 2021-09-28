@@ -59,7 +59,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectStage($event: { stage: Stage; filterType?: string }) {
+  selectStage($event: { stage: Stage; filterType?: string }): void {
     this.selectedStage = $event.stage;
     if (this.filterEventType !== $event.filterType) {
       this.resetFilter($event.filterType);
@@ -73,15 +73,15 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     this.filterEventType = eventType;
   }
 
-  // tslint:disable-next-line:no-any
-  selectFilterEvent($event: DtToggleButtonChange<any>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectFilterEvent($event: DtToggleButtonChange<any>): void {
     if ($event.isUserInput) {
       this.filterEventType = $event.source.selected ? $event.value : null;
     }
   }
 
-  getServiceLink(service: Service) {
-    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
+  getServiceLink(service: Service): string[] {
+    return ['service', service.serviceName, 'context', service.deploymentContext ?? '', 'stage', service.stage];
   }
 
   public filterServices(services: Service[]): Service[] {

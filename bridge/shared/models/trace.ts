@@ -52,11 +52,17 @@ export interface TraceData {
     sloFileContent: string;
     timeEnd: Date;
     timeStart: Date;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     score_pass: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     score_warning: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     compare_with: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     include_result_with_score: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     number_of_comparison_results: number;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     number_of_missing_comparison_results: number;
     sloFileContentParsed: string;
   };
@@ -64,8 +70,11 @@ export interface TraceData {
   evaluationHistory?: Trace[];
 
   problem?: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ProblemTitle: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ImpactedEntity: string;
+
     ProblemDetails: {
       tagsOfAffectedEntities: {
         key: string;
@@ -84,8 +93,9 @@ export interface TraceData {
     description: string;
     name: string;
   };
-
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tags?: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   State?: string;
 }
 
@@ -115,7 +125,7 @@ export class Trace {
       : undefined;
   }
 
-  public getDeploymentUrl() {
+  public getDeploymentUrl(): string | undefined {
     return this.data.deployment?.deploymentURIsPublic?.find(() => true);
   }
 }

@@ -1,21 +1,27 @@
 import marked, { Renderer } from 'marked';
 import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  Input,
+  OnChanges,
+  SimpleChange,
+  ViewEncapsulation,
+} from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'ktb-markdown',
   templateUrl: './ktb-markdown.component.html',
   styleUrls: ['./ktb-markdown.component.scss'],
-  host: {
-    class: 'ktb-markdown',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbMarkdownComponent implements OnChanges {
+  @HostBinding('class') cls = 'ktb-markdown';
   @Input() markdown?: string;
   @Input() html?: string;
   public safeHtml?: SafeHtml;
@@ -31,7 +37,7 @@ export class KtbMarkdownComponent implements OnChanges {
     return `<code class="hljs ${language}">${result}</code>`;
   }
 
-  static addTargetAndNoopener(node: Element) {
+  static addTargetAndNoopener(node: Element): void {
     // set all elements owning href to target=_blank and rel=noopener
     if (node instanceof HTMLLinkElement) {
       node.setAttribute('target', '_blank');
@@ -55,7 +61,7 @@ export class KtbMarkdownComponent implements OnChanges {
     return DOMPurify.sanitize(value);
   }
 
-  ngOnChanges(changes: { [propKey: string]: SimpleChange }) {
+  ngOnChanges(changes: { [propKey: string]: SimpleChange }): void {
     for (const propName in changes) {
       if (propName === 'markdown') {
         const value = changes[propName].currentValue;

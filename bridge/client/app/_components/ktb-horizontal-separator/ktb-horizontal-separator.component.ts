@@ -1,13 +1,12 @@
-import { ChangeDetectionStrategy, Component, Directive, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Directive, HostBinding, ViewEncapsulation } from '@angular/core';
 
 @Directive({
   selector: `ktb-horizontal-separator-title, [ktb-horizontal-separator-title], [ktbHorizontalSeparatorTitle]`,
   exportAs: 'ktbHorizontalSeparatorTitle',
-  host: {
-    class: 'ktb-horizontal-separator-title',
-  },
 })
-export class KtbHorizontalSeparatorTitle {}
+export class KtbHorizontalSeparatorTitleDirective {
+  @HostBinding('class') cls = 'ktb-horizontal-separator-title';
+}
 
 @Component({
   selector: 'ktb-horizontal-separator',

@@ -12,7 +12,7 @@ import admZip from 'adm-zip';
 import { apiRouter } from './api';
 import { execSync } from 'child_process';
 
-// tslint:disable-next-line:variable-name whitespace
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const apiUrl: string | undefined = process.env.API_URL;
@@ -166,7 +166,7 @@ async function init(): Promise<Express> {
   });
 
   // error handler
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

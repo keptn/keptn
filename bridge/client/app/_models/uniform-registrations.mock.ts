@@ -334,5 +334,7 @@ const services: UniformRegistrationResult[] = [
   },
 ];
 
-const UniformRegistrationsMock: UniformRegistration[] = services.map((registration) => UniformRegistration.fromJSON(registration));
-export { UniformRegistrationsMock };
+const uniformRegistrationsMock: UniformRegistration[] = services.map((registration) =>
+  UniformRegistration.fromJSON(registration)
+);
+export { uniformRegistrationsMock as UniformRegistrationsMock };

@@ -102,7 +102,7 @@ export class Project extends pj {
     return evaluation?.evaluationTrace;
   }
 
-  private setDeployments() {
+  private setDeployments(): void {
     for (const service of this.getServices()) {
       service.deployments = this.getDeploymentsOfService(service.serviceName);
     }

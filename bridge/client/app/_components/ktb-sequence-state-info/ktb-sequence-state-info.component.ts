@@ -1,16 +1,14 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, HostBinding, Input, Output, ViewEncapsulation } from '@angular/core';
 import { Sequence } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-state-info',
   templateUrl: './ktb-sequence-state-info.component.html',
   styleUrls: ['./ktb-sequence-state-info.component.scss'],
-  host: {
-    class: 'ktb-sequence-state-info',
-  },
   encapsulation: ViewEncapsulation.None,
 })
 export class KtbSequenceStateInfoComponent {
+  @HostBinding('class') cls = 'ktb-sequence-state-info';
   private _sequence?: Sequence;
   private _showStages = true;
 

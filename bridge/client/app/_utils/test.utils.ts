@@ -8,11 +8,13 @@ export class TestUtils {
       value: dataTransfer,
     });
     Object.defineProperty(event.constructor.prototype, 'preventDefault', {
+      // eslint-disable-next-line arrow-body-style
       value: () => {
         return;
       },
     });
     Object.defineProperty(event.constructor.prototype, 'stopPropagation', {
+      // eslint-disable-next-line arrow-body-style
       value: () => {
         return;
       },
@@ -20,7 +22,7 @@ export class TestUtils {
     return event;
   }
 
-  public static mockWindowMatchMedia() {
+  public static mockWindowMatchMedia(): void {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation((query) => ({
@@ -39,7 +41,7 @@ export class TestUtils {
   /**
    * dt-confirmation-dialog has a really strange behavior. This function is used to update the dialog according to its state
    */
-  public static updateDialog(fixture: ComponentFixture<unknown>) {
+  public static updateDialog(fixture: ComponentFixture<unknown>): void {
     fixture.detectChanges();
     tick();
     fixture.detectChanges();
@@ -55,7 +57,7 @@ function MockDataTransfer(files: File[]): DataTransfer {
     items: [],
     types: ['Files'],
     // @ts-ignore
-    getData() {
+    getData(): File[] {
       return files;
     },
     // @ts-ignore

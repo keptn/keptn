@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { WindowConfig } from '../../environments/environment.dynamic';
 
-// tslint:disable-next-line:no-any
-declare let window: any;
+declare global {
+  interface Window {
+    config: WindowConfig;
+  }
+}
 
 @Injectable()
 export class AppInitService {
-  public init() {
+  public init(): Promise<null | string> {
     return new Promise((resolve) => {
       fetch(environment.appConfigUrl)
         .then((response) => response.text())

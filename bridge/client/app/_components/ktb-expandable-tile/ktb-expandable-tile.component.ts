@@ -3,38 +3,38 @@ import {
   ChangeDetectorRef,
   Component,
   Directive,
+  HostBinding,
   Input,
   ViewEncapsulation,
 } from '@angular/core';
+
 type alignmentType = 'right' | 'left';
 @Directive({
   selector: `ktb-expandable-tile-header, [ktb-expandable-tile-header], [ktbExpandableTileHeader]`,
   exportAs: 'ktbExpandableTileHeader',
 })
-export class KtbExpandableTileHeader {}
+export class KtbExpandableTileHeaderDirective {}
 
 @Component({
   selector: 'ktb-expandable-tile',
   templateUrl: './ktb-expandable-tile.component.html',
   styleUrls: ['./ktb-expandable-tile.component.scss'],
-  host: {
-    class: 'ktb-expandable-tile',
-    '[attr.aria-error]': 'error',
-    '[class.ktb-tile-error]': 'error',
-    '[attr.aria-success]': 'success',
-    '[class.ktb-tile-success]': 'success',
-    '[attr.aria-disabled]': 'disabled',
-    '[class.ktb-tile-disabled]': 'disabled',
-    '[attr.aria-warning]': 'warning',
-    '[class.ktb-tile-warning]': 'warning',
-    '[attr.aria-highlight]': 'highlight',
-    '[class.ktb-tile-highlight]': 'highlight',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbExpandableTileComponent {
+  @HostBinding('class') cls = 'ktb-expandable-tile';
+  @HostBinding('attr.aria-error') ariaError = this.error;
+  @HostBinding('class.ktb-tile-error') tileError = this.error;
+  @HostBinding('attr.aria-success') ariaSuccess = this.success;
+  @HostBinding('class.ktb-tile-success') tileSuccess = this.success;
+  @HostBinding('attr.aria-disabled') ariaDisabled = this.disabled;
+  @HostBinding('class.ktb-tile-disabled') tileDisabled = this.disabled;
+  @HostBinding('attr.aria-warning') ariaWarning = this.warning;
+  @HostBinding('class.ktb-tile-warning') tileWarning = this.warning;
+  @HostBinding('attr.aria-highlight') ariaHighlight = this.highlight;
+  @HostBinding('class.ktb-tile-highlight') tileHighlight = this.highlight;
   private _error = false;
   private _success = false;
   private _expanded = false;
@@ -120,7 +120,7 @@ export class KtbExpandableTileComponent {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 
-  toggle() {
+  toggle(): void {
     this.expanded = !this.expanded;
   }
 }

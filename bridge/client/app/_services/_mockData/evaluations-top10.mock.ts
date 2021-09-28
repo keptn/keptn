@@ -6521,4 +6521,5 @@ const evaluationData = {
   type: 'sh.keptn.event.evaluation.finished',
 };
 
-export const EvaluationsTop10: Trace = Trace.fromJSON(evaluationData);
+const evaluationsTop10: Trace = Trace.fromJSON(evaluationData);
+export { evaluationsTop10 as EvaluationsTop10 };

@@ -106,5 +106,5 @@ const fileTree = [
   },
 ];
 
-const FileTreeMock = JSON.parse(JSON.stringify(fileTree));
-export { FileTreeMock };
+const fileTreeMock = JSON.parse(JSON.stringify(fileTree));
+export { fileTreeMock as FileTreeMock };

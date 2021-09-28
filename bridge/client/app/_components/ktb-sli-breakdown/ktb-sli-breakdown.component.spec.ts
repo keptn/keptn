@@ -159,7 +159,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     validateOrder(0, Column.SCORE, false, 0, 2, 1);
   });
 
-  function validateOrder(selectedEvaluationIndex: number, column: Column, isAsc: boolean, ...indices: number[]) {
+  function validateOrder(selectedEvaluationIndex: number, column: Column, isAsc: boolean, ...indices: number[]): void {
     // given
     initEvaluation(selectedEvaluationIndex);
     fixture.detectChanges();
@@ -175,24 +175,25 @@ describe('KtbEvaluationDetailsComponent', () => {
     // @ts-ignore
     const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row > dt-cell:nth-child(${Column.NAME + 1})`);
     for (let i = 0; i < indices.length; ++i) {
-      // @ts-ignore
       expect(indicatorNames[i].textContent).toEqual(
+        // @ts-ignore
         selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric
       );
     }
   }
 
-  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex: number = -1) {
+  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex: number = -1): void {
     // @ts-ignore
     const selectedEvaluation = Evaluations.data.evaluationHistory[selectedEvaluationIndex];
     // @ts-ignore
     component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
     // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
-    // @ts-ignore
+
     component.comparedIndicatorResults =
       comparedEvaluationIndex === -1
         ? []
+        // @ts-ignore
         : Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults;
   }
 
@@ -208,7 +209,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     warningCriteria: string,
     result: string,
     score: string
-  ) {
+  ): void {
     const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(
       `span.${isSuccess ? 'success' : 'error'}`
     );

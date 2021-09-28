@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { filter, take } from 'rxjs/operators';
 import { DataService } from './_services/data.service';
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/naming-convention
 declare let dT_: any;
 
 @Component({

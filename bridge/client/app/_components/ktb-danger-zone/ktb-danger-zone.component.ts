@@ -15,7 +15,7 @@ export class KtbDangerZoneComponent {
 
   constructor(public dialog: MatDialog) {}
 
-  public openDeletionDialog() {
+  public openDeletionDialog(): void {
     if (this.data) {
       const data = {
         type: this.data.type,

@@ -109,7 +109,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     }
   }
 
-  public selectStage(deployment: Deployment, stageName: string, $event: MouseEvent) {
+  public selectStage(deployment: Deployment, stageName: string, $event: MouseEvent): void {
     $event.stopPropagation();
     this.selectDeployment(deployment, stageName);
     this._changeDetectorRef.markForCheck();

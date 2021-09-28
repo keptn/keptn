@@ -8,11 +8,12 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class KtbConfirmationDialogComponent {
   constructor(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<KtbConfirmationDialogComponent>
   ) {}
 
-  public confirm() {
+  public confirm(): void {
     this.data.confirmCallback(this.data);
     this.dialogRef.close();
   }

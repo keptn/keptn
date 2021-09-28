@@ -7,13 +7,13 @@ import { WebhookConfig } from '../../shared/interfaces/webhook-config';
 
 const router = Router();
 
-function apiRouter(params: {
+const apiRouter = (params: {
   apiUrl: string;
   apiToken: string;
   cliDownloadLink: string;
   integrationsPageLink: string;
   authType: string;
-}): Router {
+}): Router => {
   // fetch parameters for bridgeInfo endpoint
   const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
@@ -256,6 +256,6 @@ function apiRouter(params: {
   });
 
   return router;
-}
+};
 
 export { apiRouter };

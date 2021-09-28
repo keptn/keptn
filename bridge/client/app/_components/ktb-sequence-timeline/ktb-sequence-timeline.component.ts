@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { Sequence } from '../../_models/sequence';
 
 @Component({
@@ -32,13 +32,13 @@ export class KtbSequenceTimelineComponent {
     }
   }
 
-  selectStage(stage: string) {
+  selectStage(stage: string): void {
     if (this.selectedStage !== stage) {
       this.stageChanged(stage);
     }
   }
 
-  stageChanged(stageName: string) {
+  stageChanged(stageName: string): void {
     this.selectedStage = stageName;
     this._changeDetectorRef.markForCheck();
     this.selectedStageChange.emit(stageName);

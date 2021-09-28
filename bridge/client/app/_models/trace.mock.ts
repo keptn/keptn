@@ -1,4 +1,4 @@
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rootTraces: any = [
   {
     contenttype: 'application/json',
@@ -1346,7 +1346,8 @@ const rootTraces: any = [
               value: 4,
             },
             {
-              message: 'Dynatrace API returned status code 403: The query involves 1794 metrics, but the limit for REST queries is 10. Consider splitting your query into multiple smaller queries.',
+              message:
+                'Dynatrace API returned status code 403: The query involves 1794 metrics, but the limit for REST queries is 10. Consider splitting your query into multiple smaller queries.',
               metric: 'cpu_usage',
               success: false,
               value: 0,
@@ -1401,7 +1402,8 @@ const rootTraces: any = [
                 status: 'info',
                 targets: null,
                 value: {
-                  message: 'Dynatrace API returned status code 403: The query involves 1794 metrics, but the limit for REST queries is 10. Consider splitting your query into multiple smaller queries.',
+                  message:
+                    'Dynatrace API returned status code 403: The query involves 1794 metrics, but the limit for REST queries is 10. Consider splitting your query into multiple smaller queries.',
                   metric: 'cpu_usage',
                   success: false,
                   value: 0,
@@ -1998,7 +2000,7 @@ const rootTraces: any = [
   },
 ];
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const evaluationTraces: any = [
   {
     contenttype: 'application/json',
@@ -2288,7 +2290,8 @@ const evaluationTraces: any = [
             status: 'info',
             targets: null,
             value: {
-              message: 'Dynatrace API returned status code 403: The query involves 1794 metrics, but the limit for REST queries is 10. Consider splitting your query into multiple smaller queries.',
+              message:
+                'Dynatrace API returned status code 403: The query involves 1794 metrics, but the limit for REST queries is 10. Consider splitting your query into multiple smaller queries.',
               metric: 'cpu_usage',
               success: false,
               value: 0,
@@ -2318,8 +2321,8 @@ const evaluationTraces: any = [
   },
 ];
 
-// tslint:disable-next-line:no-any
-const RootTracesMock: any = rootTraces;
-// tslint:disable-next-line:no-any
-const EvaluationTracesMock: any = evaluationTraces;
-export { RootTracesMock, EvaluationTracesMock };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rootTracesMock: any = rootTraces;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const evaluationTracesMock: any = evaluationTraces;
+export { rootTracesMock as RootTracesMock, evaluationTracesMock as EvaluationTracesMock };

@@ -40,14 +40,14 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
     this.dataService.setProjectName(''); // else in the app-header the latest projectName will be shown until the traces are loaded
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.params
       .pipe(
         takeUntil(this.unsubscribe$),
-        // tslint:disable-next-line:no-any
         filter(
-          (params: any): params is { shkeptncontext: string; eventselector: string | undefined } =>
-            !!params.shkeptncontext
+          (params: {
+            [key: string]: string | undefined;
+          }): params is { shkeptncontext: string; eventselector: string | undefined } => !!params.shkeptncontext
         )
       )
       .subscribe((params) => {
@@ -101,7 +101,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
       });
   }
 
-  public getDeployment(stage: string) {
+  public getDeployment(stage: string): Deployment | undefined {
     return this.deployments.find((deployment) => deployment.stages.find((s) => s.stageName === stage));
   }
 

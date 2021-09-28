@@ -25,21 +25,22 @@ import { HeatmapData, HeatmapSeriesOptions } from '../../_models/heatmap-series-
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 
-// tslint:disable-next-line:no-any
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
-const Boost = require('highcharts/modules/boost');
-const noData = require('highcharts/modules/no-data-to-display');
-const More = require('highcharts/highcharts-more');
-const Heatmap = require('highcharts/modules/heatmap');
-const Treemap = require('highcharts/modules/treemap');
+const _boost = require('highcharts/modules/boost');
+const _noData = require('highcharts/modules/no-data-to-display');
+const _more = require('highcharts/highcharts-more');
+const _heatmap = require('highcharts/modules/heatmap');
+const _treemap = require('highcharts/modules/treemap');
 type SeriesPoint = PointClickEventObject & { series: EvaluationChartItem; point: { evaluationData: Trace } };
 
-Boost(Highcharts);
-noData(Highcharts);
-More(Highcharts);
-noData(Highcharts);
-Heatmap(Highcharts);
-Treemap(Highcharts);
+_boost(Highcharts);
+_noData(Highcharts);
+_more(Highcharts);
+_noData(Highcharts);
+_heatmap(Highcharts);
+_treemap(Highcharts);
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -53,15 +54,15 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   @Input() public isInvalidated = false;
 
   @ViewChild('sloDialog')
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public sloDialog?: TemplateRef<any>;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public sloDialogRef?: MatDialogRef<any, any>;
 
   @ViewChild('invalidateEvaluationDialog')
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public invalidateEvaluationDialog?: TemplateRef<any>;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public invalidateEvaluationDialogRef?: MatDialogRef<any, any>;
 
   public isHeatmapExtendable = false;
@@ -130,7 +131,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         minPointLength: 2,
         point: {
           events: {
-            click: (event: PointClickEventObject) => {
+            click: (event: PointClickEventObject): boolean => {
               this._chartSeriesClicked(event as PointClickEventObject & { point: { evaluationData: Trace } });
               return true;
             },
@@ -193,7 +194,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       heatmap: {
         point: {
           events: {
-            click: (event) => {
+            click: (event): boolean => {
               this._heatmapTileClicked(event);
               return true;
             },
@@ -429,8 +430,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
             .find((series) => series.name === 'Score')
             ?.data.filter((s) => s.evaluationData)
             .map((s) => {
-              // tslint:disable:no-non-null-assertion
               const index = this._metrics.indexOf('Score');
+              /* eslint-disable @typescript-eslint/no-non-null-assertion */
               const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData!.getHeatmapLabel());
               const dataPoint = {
                 x,
@@ -439,11 +440,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                 evaluation: s.evaluationData,
                 color: this._evaluationColor[s.evaluationData!.data.result ?? 'info'],
               };
+              /* eslint-enable @typescript-eslint/no-non-null-assertion */
               const reducedDataPoint = { ...dataPoint };
               reducedDataPoint.y = 9;
               this._heatmapSeriesReduced[0].data.push(reducedDataPoint);
               return dataPoint;
-              // tslint:enable:no-non-null-assertion
             }) ?? [],
       },
       {
@@ -456,11 +457,12 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
             ...d.data
               .filter((s) => s.indicatorResult)
               .map((s) => {
-                // tslint:disable:no-non-null-assertion
+                /* eslint-disable @typescript-eslint/no-non-null-assertion */
                 const index = this._metrics.indexOf(s.indicatorResult!.value.metric);
                 const x = s.evaluationData
                   ? this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel())
                   : -1;
+
                 return {
                   x,
                   y: index,
@@ -469,7 +471,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                     ? this._evaluationColor[s.indicatorResult!.status]
                     : this._evaluationColor.info,
                 };
-                // tslint:enable:no-non-null-assertion
+                /* eslint-enable @typescript-eslint/no-non-null-assertion */
               }),
           ],
           [] as HeatmapData[]

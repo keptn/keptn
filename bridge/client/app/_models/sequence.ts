@@ -7,11 +7,13 @@ import { RemediationAction } from '../../../shared/models/remediation-action';
 import { Sequence as sq, SequenceStage, SequenceState } from '../../../shared/models/sequence';
 import { DtIconType } from '@dynatrace/barista-icons';
 
+type SeqStage = SequenceStage & {
+  latestEvaluationTrace?: Trace;
+  actions?: RemediationAction[];
+};
+
 export class Sequence extends sq {
-  stages!: (SequenceStage & {
-    latestEvaluationTrace?: Trace;
-    actions?: RemediationAction[];
-  })[];
+  stages!: SeqStage[];
   problemTitle?: string;
   traces: Trace[] = [];
 
@@ -37,7 +39,7 @@ export class Sequence extends sq {
     }
   }
 
-  public getStage(stageName: string) {
+  public getStage(stageName: string): SeqStage | undefined {
     return this.stages.find((stage) => stage.name === stageName);
   }
 

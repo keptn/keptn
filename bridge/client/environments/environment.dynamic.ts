@@ -1,8 +1,18 @@
-// tslint:disable-next-line:no-any
-declare let window: any;
+export interface WindowConfig {
+  appTitle: string;
+  logoUrl: string;
+  logoInvertedUrl: string;
+  stylesheetUrl?: string;
+}
+
+declare global {
+  interface Window {
+    config: WindowConfig;
+  }
+}
 
 export class DynamicEnvironment {
-  public get config() {
+  public get config(): WindowConfig {
     return (
       window.config || {
         appTitle: 'keptn',

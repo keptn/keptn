@@ -86,7 +86,7 @@ export class UniformSubscription implements us {
     return this._filter;
   }
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public filterChanged(event: DtFilterFieldChangeEvent<any>, projectName: string): void {
     // can't set another type because of "is not assignable to..."
     const eventCasted = event as DtFilterFieldChangeEvent<DtAutoComplete>;

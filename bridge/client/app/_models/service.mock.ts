@@ -47,6 +47,6 @@ const service = {
   serviceName: 'carts-db',
 };
 
-// tslint:disable-next-line:no-any
-const ServiceMock: any = service;
-export { ServiceMock };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const serviceMock: any = service;
+export { serviceMock as ServiceMock };

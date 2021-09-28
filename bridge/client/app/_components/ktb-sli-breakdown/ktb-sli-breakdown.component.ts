@@ -24,7 +24,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   private _indicatorResultsPass: IndicatorResult[] = [];
   private _score = 0;
   public columnNames: string[] = [];
-  public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
+  public tableEntries: DtTableDataSource<SliResult> = new DtTableDataSource();
   public readonly SliResultClass = SliResult;
   private _comparedIndicatorResults: IndicatorResult[] = [];
 
@@ -78,11 +78,11 @@ export class KtbSliBreakdownComponent implements OnInit {
     }
   }
 
-  private updateDataSource() {
+  private updateDataSource(): void {
     this.tableEntries.data = this.assembleTablesEntries(this.indicatorResults);
   }
 
-  private formatNumber(value: number) {
+  private formatNumber(value: number): number {
     let n = value;
     if (n < 1) {
       n = Math.floor(n * 1000) / 1000;
@@ -135,7 +135,7 @@ export class KtbSliBreakdownComponent implements OnInit {
     });
   }
 
-  private sortIndicatorResult(resultA: IndicatorResult, resultB: IndicatorResult) {
+  private sortIndicatorResult(resultA: IndicatorResult, resultB: IndicatorResult): number {
     return (resultA.displayName || resultA.value.metric).localeCompare(resultB.displayName || resultB.value.metric);
   }
 

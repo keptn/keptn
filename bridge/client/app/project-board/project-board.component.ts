@@ -55,7 +55,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.hasProject$
       .pipe(
         filter((hasProject) => hasProject !== undefined),

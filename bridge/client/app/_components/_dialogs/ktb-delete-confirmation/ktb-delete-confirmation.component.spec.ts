@@ -100,7 +100,7 @@ describe('KtbDeleteConfirmationComponent', () => {
     flush();
   }));
 
-  function isDialogClosed() {
+  function isDialogClosed(): void {
     for (const state of Array.from(document.querySelectorAll('dt-confirmation-dialog-state'))) {
       expect(state.textContent).toEqual('');
     }

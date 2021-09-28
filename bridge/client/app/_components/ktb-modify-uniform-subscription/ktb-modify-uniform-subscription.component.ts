@@ -230,7 +230,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       },
       () => {
         this.notificationsService.addNotification(
-          NotificationType.Error,
+          NotificationType.ERROR,
           'The subscription could not be updated',
           5_000
         );

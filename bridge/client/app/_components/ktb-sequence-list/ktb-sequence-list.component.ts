@@ -35,7 +35,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
     }
   }
   @Input()
-  get remediations() {
+  get remediations(): Sequence[] {
     return this._remediations;
   }
   set remediations(remediations: Sequence[]) {

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostBinding,
+  Input,
+  ViewEncapsulation,
+} from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Service } from '../../_models/service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -11,14 +18,12 @@ const DEFAULT_PAGE_SIZE = 3;
   selector: 'ktb-services-list',
   templateUrl: './ktb-services-list.component.html',
   styleUrls: ['./ktb-services-list.component.scss'],
-  host: {
-    class: 'ktb-services-list',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbServicesListComponent {
+  @HostBinding('class') cls = 'ktb-services-list';
   public ServiceClass = Service;
   public _services: Service[] = [];
   public _pageSize: number = DEFAULT_PAGE_SIZE;
@@ -57,14 +62,14 @@ export class KtbServicesListComponent {
     private _changeDetectorRef: ChangeDetectorRef
   ) {}
 
-  updateDataSource() {
+  updateDataSource(): void {
     this.services.sort(this.compare());
     this.dataSource = new DtTableDataSource(this.services.slice(0, this.pageSize));
     this._changeDetectorRef.markForCheck();
   }
 
   private compare() {
-    return (a: Service, b: Service) => {
+    return (a: Service, b: Service): number=> {
       if (!a.latestSequence) {
         return 1;
       } else if (!b.latestSequence) {
@@ -75,7 +80,7 @@ export class KtbServicesListComponent {
     };
   }
 
-  toggleAllServices() {
+  toggleAllServices(): void {
     if (this.services.length > this.pageSize) {
       this.pageSize = this.services.length;
     } else if (this.pageSize > DEFAULT_PAGE_SIZE) {
@@ -83,15 +88,15 @@ export class KtbServicesListComponent {
     }
   }
 
-  getServiceLink(service: Service) {
-    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
+  getServiceLink(service: Service): string[] {
+    return ['service', service.serviceName, 'context', service.deploymentContext ?? '', 'stage', service.stage];
   }
 
-  getSequenceLink(sequence: Sequence, service: Service) {
+  getSequenceLink(sequence: Sequence, service: Service): string[] {
     return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 
-  getImageText(service: Service) {
+  getImageText(service: Service): string {
     if (!service.deployedImage) {
       return '';
     }
@@ -100,6 +105,6 @@ export class KtbServicesListComponent {
     if (service.getImageVersion()) {
       text += ':' + service.getImageVersion();
     }
-    return text;
+    return text ?? '';
   }
 }

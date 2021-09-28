@@ -12,7 +12,7 @@ describe('KtbDeletionDialogComponent', () => {
   const dialogData = { name: 'sockshop', type: DeleteType.PROJECT };
   let eventService: EventService;
   const dialogRefMock = {
-    close: () => {},
+    close: (): void => {},
   };
 
   beforeEach(async () => {

@@ -31480,11 +31480,12 @@ const rootsData = [
   },
 ];
 
-const RootEvents = rootsData.map((root) => {
+const rootEvents = rootsData.map((root: unknown) => {
   tracesMapper(root);
   return Root.fromJSON(root);
 
-  function tracesMapper(trace: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function tracesMapper(trace: any): void {
     trace.traces.forEach((t: Trace) => {
       tracesMapper(t);
     });
@@ -31492,4 +31493,4 @@ const RootEvents = rootsData.map((root) => {
   }
 });
 
-export { RootEvents };
+export { rootEvents as RootEvents };

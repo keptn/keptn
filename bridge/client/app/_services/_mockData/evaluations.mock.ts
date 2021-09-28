@@ -1435,4 +1435,5 @@ const evaluationData = {
   label: 'evaluation',
 };
 
-export const Evaluations: Trace = Trace.fromJSON(evaluationData);
+const evaluations: Trace = Trace.fromJSON(evaluationData);
+export { evaluations as Evaluations }

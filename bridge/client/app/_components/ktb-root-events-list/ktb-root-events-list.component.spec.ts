@@ -207,8 +207,8 @@ describe('KtbEventsListComponent', () => {
     expect(sequence.classes['ktb-tile-highlight']).toBe(true);
   });
 
-  // tslint:disable-next-line:no-any
-  function getSequenceTile(index: number): any {
+
+  function getSequenceTile(index: number): HTMLElement {
     return fixture.nativeElement.querySelector(
       `ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`
     );

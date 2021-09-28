@@ -1,6 +1,6 @@
 import { KeptnInfo as ki } from '../../_models/keptn-info';
 
-export const KeptnInfo = {
+const keptnInfo = {
   availableVersions: {
     cli: {
       stable: ['0.7.0', '0.7.1', '0.7.2', '0.7.3', '0.8.0', '0.8.1'],
@@ -55,3 +55,5 @@ export const KeptnInfo = {
   keptnVersionInvalid: false,
   bridgeVersionInvalid: true,
 } as ki;
+
+export { keptnInfo as KeptnInfo };

@@ -2,13 +2,13 @@ import {
   ChangeDetectorRef,
   Component,
   Directive,
+  EventEmitter,
   Input,
+  OnDestroy,
+  OnInit,
+  Output,
   TemplateRef,
   ViewChild,
-  OnInit,
-  OnDestroy,
-  Output,
-  EventEmitter,
 } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable, of, Subject } from 'rxjs';
@@ -24,7 +24,7 @@ import { ActivatedRoute } from '@angular/router';
   selector: `ktb-task-item-detail, [ktb-task-item-detail], [ktbTaskItemDetail]`,
   exportAs: 'ktbTaskItemDetail',
 })
-export class KtbTaskItemDetail {}
+export class KtbTaskItemDetailDirective {}
 
 @Component({
   selector: 'ktb-task-item[task]',
@@ -38,9 +38,9 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   @Input() public isExpanded = false;
 
   @ViewChild('taskPayloadDialog')
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public taskPayloadDialog?: TemplateRef<any>;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public taskPayloadDialogRef?: MatDialogRef<any, any>;
 
   @Output() itemClicked: EventEmitter<Trace> = new EventEmitter();
@@ -66,14 +66,14 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute
   ) {}
 
-  showEventPayloadDialog(event: MouseEvent, task: Trace) {
+  showEventPayloadDialog(event: MouseEvent, task: Trace): void {
     event.stopPropagation();
     if (this.taskPayloadDialog) {
       this.taskPayloadDialogRef = this.dialog.open(this.taskPayloadDialog, { data: task.plainEvent });
     }
   }
 
-  closeEventPayloadDialog() {
+  closeEventPayloadDialog(): void {
     if (this.taskPayloadDialogRef) {
       this.taskPayloadDialogRef.close();
     }
@@ -93,11 +93,11 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  onClick(item: Trace) {
+  onClick(item: Trace): void {
     this.itemClicked.emit(item);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (this.task?.project) {
       this.project$ = this.dataService.getProject(this.task?.project);
     }
@@ -108,7 +108,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

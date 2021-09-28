@@ -12,10 +12,11 @@ describe('KtbConfirmationDialogComponent', () => {
       shkeptncontext: 'f6a38eb6-e99d-4d14-ab4c-3e94ed288b45',
       name: 'delivery',
     },
-    confirmCallback: (params: any) => {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    confirmCallback: (params: any): void => {},
   };
   const dialogRefMock = {
-    close: () => {},
+    close: (): void => {},
   };
 
   beforeEach(async () => {

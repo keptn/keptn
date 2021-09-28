@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostBinding,
   Inject,
   OnDestroy,
   OnInit,
@@ -28,14 +29,12 @@ import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
   selector: 'ktb-sequence-view',
   templateUrl: './ktb-sequence-view.component.html',
   styleUrls: ['./ktb-sequence-view.component.scss'],
-  host: {
-    class: 'ktb-sequence-view',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSequenceViewComponent implements OnInit, OnDestroy {
+  @HostBinding('class') cls = 'ktb-sequence-view';
   private readonly unsubscribe$ = new Subject<void>();
   /** configuration for the quick filter */
   private filterFieldData = {
@@ -82,7 +81,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public currentSequence?: Sequence;
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public _seqFilters: any[] = [];
 
   constructor(
@@ -217,7 +216,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: [] }): void {
     this._seqFilters = event.filters;
     this.sequenceFilters = this._seqFilters.reduce((filters, currentFilter) => {

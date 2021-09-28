@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
 import { SequenceStateControl } from '../../../../shared/models/sequence';
@@ -8,11 +8,9 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'ktb-sequence-controls',
   templateUrl: './ktb-sequence-controls.component.html',
-  host: {
-    class: 'ktb-sequence-controls',
-  },
 })
 export class KtbSequenceControlsComponent {
+  @HostBinding('class') cls = 'ktb-sequence-controls';
   private _sequence?: Sequence;
   private _smallButtons = false;
   public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
@@ -54,7 +52,8 @@ export class KtbSequenceControlsComponent {
   triggerAbortSequence(sequence: Sequence): void {
     const data = {
       sequence,
-      confirmCallback: (params: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      confirmCallback: (params: any): void => {
         this.abortSequence(params.sequence);
       },
     };

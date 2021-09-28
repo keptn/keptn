@@ -1,6 +1,6 @@
 import { Sequence } from '../../_models/sequence';
 
-let SequencesData = [
+let sequencesData = [
   {
     name: 'delivery',
     service: 'carts',
@@ -1092,5 +1092,5 @@ let SequencesData = [
     ],
   },
 ] as Sequence[];
-SequencesData = SequencesData.map((sequence) => Sequence.fromJSON(sequence));
-export { SequencesData };
+sequencesData = sequencesData.map((sequence) => Sequence.fromJSON(sequence));
+export { sequencesData as SequencesData };

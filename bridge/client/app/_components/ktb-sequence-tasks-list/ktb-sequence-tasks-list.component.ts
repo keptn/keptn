@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostBinding,
   Input,
   OnDestroy,
   OnInit,
@@ -18,14 +19,12 @@ import { Subject } from 'rxjs';
   selector: 'ktb-sequence-tasks-list[tasks][stage]',
   templateUrl: './ktb-sequence-tasks-list.component.html',
   styleUrls: ['./ktb-sequence-tasks-list.component.scss'],
-  host: {
-    class: 'ktb-sequence-tasks-list',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
+  @HostBinding('class') cls = 'ktb-sequence-tasks-list';
   public _tasks: Trace[] = [];
   public _stage?: string;
   public _focusedEventId?: string;
@@ -75,7 +74,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
       if (params.eventId) {
         this.focusedEventId = params.eventId;
@@ -85,11 +84,11 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     });
   }
 
-  identifyEvent(index: number, item: Trace) {
+  identifyEvent(index: number, item: Trace): Date | undefined | null {
     return item ? item.time : null;
   }
 
-  scrollIntoView(element: HTMLDivElement) {
+  scrollIntoView(element: HTMLDivElement): boolean {
     if (element !== this.currentScrollElement) {
       this.currentScrollElement = element;
       setTimeout(() => {
@@ -99,7 +98,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  focusEvent(event: Trace) {
+  focusEvent(event: Trace): void {
     if (event.project) {
       const routeUrl = this.router.createUrlTree([
         '/project',
@@ -113,7 +112,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     }
   }
 
-  focusLastSequence() {
+  focusLastSequence(): void {
     if (
       this.stage &&
       !this.getTasksByStage(this.tasks, this.stage).some(
@@ -127,11 +126,11 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     }
   }
 
-  getTasksByStage(tasks: Trace[], stage: string) {
+  getTasksByStage(tasks: Trace[], stage: string): Trace[] {
     return tasks.filter((t) => t.data?.stage === stage);
   }
 
-  isInvalidated(event: Trace) {
+  isInvalidated(event: Trace): boolean {
     return !!this.tasks.find((e) => e.isEvaluationInvalidation() && e.triggeredid === event.id);
   }
 
@@ -141,5 +140,6 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }

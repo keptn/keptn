@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   OnDestroy,
   OnInit,
@@ -21,14 +22,12 @@ import { Sequence } from '../../_models/sequence';
   selector: 'ktb-root-events-list',
   templateUrl: './ktb-root-events-list.component.html',
   styleUrls: ['./ktb-root-events-list.component.scss'],
-  host: {
-    class: 'ktb-root-events-list',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbRootEventsListComponent implements OnInit, OnDestroy {
+  @HostBinding('class') cls = 'ktb-root-events-list';
   private readonly unsubscribe$ = new Subject<void>();
   public project?: Project;
   public _events: Sequence[] = [];

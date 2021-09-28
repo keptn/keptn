@@ -6,7 +6,7 @@ import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynat
 import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
-import { map, switchMap, filter, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 
@@ -61,8 +61,8 @@ export class KtbStageOverviewComponent implements OnDestroy {
     this.globalFilter = this.apiService.environmentFilter;
     if (this.project) {
       const services = this.globalFilter[this.project.projectName]?.services || [];
-      // tslint:disable-next-line:no-non-null-assertion
       this.filteredServices = services.filter((service) =>
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.project!.getServices().some((pService) => pService.serviceName === service)
       );
     } else {
@@ -80,8 +80,8 @@ export class KtbStageOverviewComponent implements OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
-  // tslint:disable-next-line:no-any
-  public filterChanged(event: DtFilterFieldChangeEvent<any>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public filterChanged(event: DtFilterFieldChangeEvent<any>): void {
     // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
     if (this.project) {
@@ -110,7 +110,7 @@ export class KtbStageOverviewComponent implements OnDestroy {
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, stage: Stage, filterType?: string) {
+  public selectStage($event: MouseEvent, stage: Stage, filterType?: string): void {
     this.selectedStage = stage;
     $event.stopPropagation();
     this.selectedStageChange.emit({ stage, filterType });

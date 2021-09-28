@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  public loadProjects() {
+  public loadProjects(): void {
     this.dataService.loadProjects();
   }
 

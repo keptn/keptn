@@ -57,7 +57,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  updateIntegrations() {
+  updateIntegrations(): void {
     if (
       this.keptnInfo &&
       this.keptnInfo.bridgeInfo.keptnInstallationType &&
@@ -83,7 +83,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     return moment.utc().startOf('minute').format('YYYY-MM-DDTHH:mm:ss');
   }
 
-  addEvaluationUseCaseToIntegrations() {
+  addEvaluationUseCaseToIntegrations(): void {
     this.useCaseExamples.cli.push({
       label: 'Trigger a quality gate evaluation',
       code: '',
@@ -94,7 +94,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  addDeploymentUseCaseToIntegrations() {
+  addDeploymentUseCaseToIntegrations(): void {
     this.useCaseExamples.cli.push({
       label: 'Trigger deployment with a new artifact',
       code: `keptn trigger delivery --project=\${PROJECT} --service=\${SERVICE} --image=\${IMAGE} --tag=\${TAG} --sequence=\${SEQUENCE}`,
@@ -107,7 +107,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  addRemediationUseCaseToIntegrations() {
+  addRemediationUseCaseToIntegrations(): void {
     this.useCaseExamples.cli.push({
       label: 'Trigger remediation with a dummy problem event (Note: Linux/mac OS only)',
       code: `echo '{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}' > dummy_problem.json \\
@@ -121,7 +121,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadIntegrations() {
+  loadIntegrations(): void {
     this.integrationsExternalDetails = '<p>Loading ...</p>';
     this.apiService
       .getIntegrationsPage()
@@ -137,7 +137,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
       );
   }
 
-  copyApiToken() {
+  copyApiToken(): void {
     this.clipboard.copy(this.keptnInfo?.bridgeInfo.apiToken, 'API token');
   }
 

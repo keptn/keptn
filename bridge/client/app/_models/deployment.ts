@@ -51,7 +51,7 @@ export class Deployment {
       : this.stages.some((s) => s.remediations.length !== 0);
   }
 
-  public setEvaluation(evaluation: Trace | undefined) {
+  public setEvaluation(evaluation: Trace | undefined): void {
     if (evaluation?.stage) {
       const stage = this.getStage(evaluation.stage);
       if (stage) {

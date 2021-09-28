@@ -26,7 +26,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const params: RetryParams | undefined = this.hasRetry
       ? undefined
-      : { maxAttempts: 3, scalingDuration: 0, shouldRetry: () => false };
+      : { maxAttempts: 3, scalingDuration: 0, shouldRetry: (): boolean => false };
     return next.handle(request).pipe(
       retryWhen(genericRetryStrategy(params)),
       catchError((error: HttpErrorResponse) => {
@@ -56,7 +56,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     } else if (authType === 'BASIC' && !this.isAuthorizedErrorShown) {
       this.isAuthorizedErrorShown = true;
       this.notificationService.addNotification(
-        NotificationType.Error,
+        NotificationType.ERROR,
         'Login credentials invalid. Please check your provided username and password.'
       );
     } else if (!this.isAuthorizedErrorShown) {
@@ -67,7 +67,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         errorInfo = 'Could not authorize. ' + error.error;
       }
       this.isAuthorizedErrorShown = true;
-      this.notificationService.addNotification(NotificationType.Error, ' ' + errorInfo);
+      this.notificationService.addNotification(NotificationType.ERROR, ' ' + errorInfo);
     }
   }
 }

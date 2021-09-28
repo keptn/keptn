@@ -17,9 +17,9 @@ export class KtbShowHttpLoadingDirective implements OnInit, OnDestroy {
     this.filterBy = filterBy;
   }
 
-  // tslint:disable-next-line:no-any
   constructor(
     private httpStateService: HttpStateService,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private templateRef: TemplateRef<any>,
     private viewContainer: ViewContainerRef
   ) {}
@@ -28,7 +28,7 @@ export class KtbShowHttpLoadingDirective implements OnInit, OnDestroy {
     this.httpStateService.state.pipe(takeUntil(this.unsubscribe$)).subscribe((progress: HttpState) => {
       if (progress && progress.url) {
         if (!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
-          if (progress.state === HttpProgressState.start) {
+          if (progress.state === HttpProgressState.START) {
             this.showElement();
           } else {
             this.hideElement();
@@ -38,14 +38,14 @@ export class KtbShowHttpLoadingDirective implements OnInit, OnDestroy {
     });
   }
 
-  showElement() {
+  showElement(): void {
     if (this.hideTimer) {
       clearTimeout(this.hideTimer);
     }
     this.viewContainer.createEmbeddedView(this.templateRef);
   }
 
-  hideElement() {
+  hideElement(): void {
     this.hideTimer = setTimeout(() => {
       this.viewContainer.clear();
     }, 500);

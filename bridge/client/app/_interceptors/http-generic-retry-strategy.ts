@@ -23,15 +23,17 @@ const defaultParams: RetryParams = {
   shouldRetry: ({ status }) => retryFor.includes(status),
 };
 
-export const genericRetryStrategy = (params?: RetryParams) => (attempts: Observable<HttpErrorResponse>) =>
-  attempts.pipe(
-    mergeMap((error, i) => {
-      const { maxAttempts, scalingDuration, shouldRetry } = { ...defaultParams, ...params };
-      const retryAttempt = i + 1;
+export const genericRetryStrategy =
+  (params?: RetryParams) =>
+  (attempts: Observable<HttpErrorResponse>): Observable<number> =>
+    attempts.pipe(
+      mergeMap((error, i) => {
+        const { maxAttempts, scalingDuration, shouldRetry } = { ...defaultParams, ...params };
+        const retryAttempt = i + 1;
 
-      if (retryAttempt > maxAttempts || !shouldRetry(error)) {
-        return throwError(error);
-      }
-      return timer(retryAttempt * scalingDuration);
-    })
-  );
+        if (retryAttempt > maxAttempts || !shouldRetry(error)) {
+          return throwError(error);
+        }
+        return timer(retryAttempt * scalingDuration);
+      })
+    );

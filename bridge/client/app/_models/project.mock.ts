@@ -2,7 +2,7 @@ import { Project } from './project';
 import { Stage } from './stage';
 import { Service } from './service';
 
-export const ProjectMock = {
+const projectMock = {
   projectName: 'sockshop',
   stages: [
     {
@@ -24,3 +24,5 @@ export const ProjectMock = {
     } as Service,
   ],
 } as Project;
+
+export { projectMock as ProjectMock };

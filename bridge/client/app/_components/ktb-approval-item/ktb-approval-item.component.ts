@@ -36,7 +36,7 @@ export class KtbApprovalItemComponent {
 
   constructor(private changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {}
 
-  public handleApproval(approval: Trace, result: boolean) {
+  public handleApproval(approval: Trace, result: boolean): void {
     this.dataService.sendApprovalEvent(approval, result);
     this.approvalResult = result;
   }

@@ -12,8 +12,13 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  // tslint:disable-next-line:no-any
-  addNotification(type: NotificationType, message: string, time?: number, isTemplateRendered = false, data?: any) {
+  addNotification(
+    type: NotificationType,
+    message: string,
+    time?: number,
+    isTemplateRendered = false,
+    data?: unknown
+  ): void {
     const notification = new Notification(type, message);
     notification.isTemplateRendered = isTemplateRendered;
     notification.data = data || null;
@@ -35,7 +40,7 @@ export class NotificationsService {
     }
   }
 
-  removeNotification(notification: Notification) {
+  removeNotification(notification: Notification): void {
     this._notifications.next(this._notifications.getValue().filter((n) => n !== notification));
   }
 

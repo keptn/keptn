@@ -1,4 +1,4 @@
-import { Component, Inject, Input, NgZone, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, HostBinding, Inject, Input, NgZone, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
 import { DataService } from '../../_services/data.service';
@@ -12,13 +12,11 @@ import { Router } from '@angular/router';
   selector: 'ktb-sequence-state-list',
   templateUrl: './ktb-sequence-state-list.component.html',
   styleUrls: ['./ktb-sequence-state-list.component.scss'],
-  host: {
-    class: 'ktb-sequence-state-list',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
 })
 export class KtbSequenceStateListComponent implements OnDestroy {
+  @HostBinding('class') cls = 'ktb-sequence-state-list';
   private _project?: Project;
   private _sequenceStates: Sequence[] = [];
   private _timer: Subscription = Subscription.EMPTY;

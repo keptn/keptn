@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostBinding,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -18,14 +19,12 @@ import { Location } from '@angular/common';
   selector: 'ktb-service-view',
   templateUrl: './ktb-service-view.component.html',
   styleUrls: ['./ktb-service-view.component.scss'],
-  host: {
-    class: 'ktb-service-view',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbServiceViewComponent implements OnInit, OnDestroy {
+  @HostBinding('class') cls = 'ktb-service-view';
   private readonly unsubscribe$ = new Subject<void>();
   public project?: Project;
   public serviceName?: string;
@@ -40,7 +39,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     public location: Location
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
@@ -127,7 +126,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     return selectedDeployment;
   }
 
-  private setDeploymentInfo(projectName: string, selectedDeployment?: Deployment, paramStage?: string) {
+  private setDeploymentInfo(projectName: string, selectedDeployment?: Deployment, paramStage?: string): void {
     if (selectedDeployment) {
       let stage;
       if (paramStage) {

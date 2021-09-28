@@ -41,7 +41,7 @@ class Trace extends tc {
     return trace;
   }
 
-  static traceMapper(traces: Trace[]) {
+  static traceMapper(traces: Trace[]): Trace[] {
     traces = traces.map((trace) => Trace.fromJSON(trace)).sort(DateUtil.compareTraceTimesDesc);
 
     return traces.reduce((seq: Trace[], trace: Trace) => {
@@ -286,23 +286,23 @@ class Trace extends tc {
     return this.heatmapLabel;
   }
 
-  setHeatmapLabel(label: string) {
+  setHeatmapLabel(label: string): void {
     this.heatmapLabel = label;
   }
 
-  isStarted() {
+  isStarted(): boolean {
     if (!this.started && this.traces) {
       this.started = this.traces.some((t) => t.type.endsWith('.started') || t.isStarted());
     }
 
-    return this.started;
+    return !!this.started;
   }
 
-  isChanged() {
+  isChanged(): boolean {
     return this.type.endsWith('.changed');
   }
 
-  isFinished() {
+  isFinished(): boolean {
     if (!this.finished) {
       if (!this.traces || this.traces.length === 0) {
         this.finished = this.type.endsWith('.finished');
@@ -318,23 +318,23 @@ class Trace extends tc {
     return this.finished;
   }
 
-  isTriggered() {
+  isTriggered(): boolean {
     return this.type.endsWith('.triggered');
   }
 
-  isLoading() {
+  isLoading(): boolean {
     return this.isStarted() && !this.isFinished();
   }
 
-  isInvalidated() {
+  isInvalidated(): boolean {
     return !!this.traces.find((e) => e.isEvaluationInvalidation() && e.triggeredid === this.id);
   }
 
-  getFinishedEvent() {
+  getFinishedEvent(): Trace | undefined {
     return this.type.endsWith('.finished') ? this : this.traces.find((t) => t.type.endsWith('.finished'));
   }
 
-  getRemediationAction() {
+  getRemediationAction(): Trace | undefined {
     return this.findTrace((t) => t.isRemediationAction());
   }
 
@@ -342,7 +342,7 @@ class Trace extends tc {
     return this.findTrace((t) => !!t.isEvaluation() && t.stage === stageName);
   }
 
-  getDeploymentUrl() {
+  getDeploymentUrl(): string | undefined {
     return this.data.deployment?.deploymentURIsPublic?.find(() => true);
   }
 
@@ -357,7 +357,7 @@ class Trace extends tc {
     }
   }
 
-  findLastTrace(comp: (args: Trace) => boolean) {
+  findLastTrace(comp: (args: Trace) => boolean): Trace | undefined {
     if (comp(this)) {
       return this;
     } else {
@@ -373,7 +373,7 @@ class Trace extends tc {
     return this.type.split('.').length === 6 && !!this.stage && this.type.includes(this.stage);
   }
 
-  getProblemDetails() {
+  getProblemDetails(): string | undefined {
     return this.data.problem?.ImpactedEntity || this.data.problem?.ProblemTitle;
   }
 }

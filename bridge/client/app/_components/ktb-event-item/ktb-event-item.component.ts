@@ -11,7 +11,7 @@ import { DateUtil } from '../../_utils/date.utils';
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
   exportAs: 'ktbEventItemDetail',
 })
-export class KtbEventItemDetail {}
+export class KtbEventItemDetailDirective {}
 
 @Component({
   selector: 'ktb-event-item',
@@ -23,9 +23,9 @@ export class KtbEventItemComponent {
   public _event?: Trace;
 
   @ViewChild('eventPayloadDialog')
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public eventPayloadDialog?: TemplateRef<any>;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public eventPayloadDialogRef?: MatDialogRef<any, any>;
 
   @Input() public showChartLink = false;
@@ -55,13 +55,13 @@ export class KtbEventItemComponent {
     public dateUtil: DateUtil
   ) {}
 
-  showEventPayloadDialog() {
+  showEventPayloadDialog(): void {
     if (this.eventPayloadDialog && this._event) {
       this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog, { data: this._event.plainEvent });
     }
   }
 
-  closeEventPayloadDialog() {
+  closeEventPayloadDialog(): void {
     if (this.eventPayloadDialogRef) {
       this.eventPayloadDialogRef.close();
     }

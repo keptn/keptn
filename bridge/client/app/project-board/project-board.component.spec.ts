@@ -13,7 +13,7 @@ describe('ProjectBoardComponent', () => {
   let fixture: ComponentFixture<ProjectBoardComponent>;
   let paramsSubject: BehaviorSubject<ParamMap>;
 
-  function setupTraceTest(paramMap: ParamMap) {
+  function setupTraceTest(paramMap: ParamMap): void {
     const route = TestBed.inject(ActivatedRoute);
     route.snapshot.url[0].path = 'trace';
     paramsSubject.next(paramMap);

@@ -7,7 +7,7 @@ import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
 export class ForwarderGuard implements CanActivate {
   constructor(private router: Router) {}
 
-  canActivate(route: ActivatedRouteSnapshot) {
+  canActivate(route: ActivatedRouteSnapshot): boolean {
     // => project/:projectName/service/:serviceName
     // => project/:projectName/sequence/:shkeptncontext/event/:eventId
     if (route.params.eventId) {

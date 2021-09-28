@@ -35,7 +35,7 @@ const sessionConfig = {
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  genid: () => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
+  genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
   store: new memoryStore({
     checkPeriod: CHECK_PERIOD,
     ttl: SESSION_TIME,
@@ -45,7 +45,7 @@ const sessionConfig = {
 /**
  * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
  */
-function isAuthenticated(req: Request) {
+function isAuthenticated(req: Request): boolean {
   if (req.session.authenticated) {
     return true;
   }
@@ -60,7 +60,7 @@ function isAuthenticated(req: Request) {
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function authenticateSession(req: Request, principal: string, logoutHint: string, callback: () => void) {
+function authenticateSession(req: Request, principal: string, logoutHint: string, callback: () => void): void {
   if (!principal) {
     throw Error('Invalid session initialisation. Principal is mandatory.');
   }
@@ -99,11 +99,11 @@ function getLogoutHint(req: Request): string | undefined {
 /**
  * Destroy the session comes with this request
  */
-function removeSession(req: Request) {
+function removeSession(req: Request): void {
   req.session.destroy(console.error);
 }
 
-function sessionRouter(app: Express) {
+function sessionRouter(app: Express): Router {
   console.log('Enabling sessions for bridge.');
 
   if (process.env.SECURE_COOKIE === 'true') {

@@ -35,10 +35,10 @@ describe('KtbNotificationBarComponent', () => {
     let notifications = fixture.debugElement.queryAll(By.css('.page-note'));
     expect(notifications.length).toBe(0);
 
-    service.addNotification(NotificationType.Info, 'Information');
-    service.addNotification(NotificationType.Success, 'Success');
-    service.addNotification(NotificationType.Warning, 'Warning');
-    service.addNotification(NotificationType.Error, 'Error');
+    service.addNotification(NotificationType.INFO, 'Information');
+    service.addNotification(NotificationType.SUCCESS, 'Success');
+    service.addNotification(NotificationType.WARNING, 'Warning');
+    service.addNotification(NotificationType.ERROR, 'Error');
     fixture.detectChanges();
 
     notifications = fixture.debugElement.queryAll(By.css('.page-note'));

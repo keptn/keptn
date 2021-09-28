@@ -45,11 +45,11 @@ import { MomentModule } from 'ngx-moment';
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import {
   KtbExpandableTileComponent,
-  KtbExpandableTileHeader,
+  KtbExpandableTileHeaderDirective,
 } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import {
   KtbHorizontalSeparatorComponent,
-  KtbHorizontalSeparatorTitle,
+  KtbHorizontalSeparatorTitleDirective,
 } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
@@ -68,8 +68,11 @@ import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
 import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/ktb-evaluation-info.component';
-import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
-import { KtbTaskItemComponent, KtbTaskItemDetail } from './_components/ktb-task-item/ktb-task-item.component';
+import {
+  KtbEventItemComponent,
+  KtbEventItemDetailDirective
+} from './_components/ktb-event-item/ktb-event-item.component';
+import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
@@ -138,7 +141,7 @@ import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService): () => Promise<unknown> {
-  return () => appLoadService.init();
+  return (): Promise<string | null> => appLoadService.init();
 }
 
 @NgModule({
@@ -154,20 +157,20 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
     KtbExpandableTileComponent,
-    KtbExpandableTileHeader,
+    KtbExpandableTileHeaderDirective,
     KtbSelectableTileComponent,
     KtbSelectableTileHeaderDirective,
     KtbHorizontalSeparatorComponent,
-    KtbHorizontalSeparatorTitle,
+    KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
     KtbEventsListComponent,
     KtbEventItemComponent,
-    KtbEventItemDetail,
+    KtbEventItemDetailDirective,
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
-    KtbTaskItemDetail,
+    KtbTaskItemDetailDirective,
     KtbEvaluationDetailsComponent,
     KtbEvaluationInfoComponent,
     KtbStageBadgeComponent,

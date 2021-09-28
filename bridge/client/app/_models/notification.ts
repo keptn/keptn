@@ -1,8 +1,8 @@
 enum NotificationType {
-  Info = 'info',
-  Success = 'success',
-  Warning = 'warning',
-  Error = 'error',
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error',
 }
 
 enum TemplateRenderedNotifications {
@@ -11,7 +11,7 @@ enum TemplateRenderedNotifications {
 
 class Notification {
   isTemplateRendered?: boolean;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
 
   constructor(public type: NotificationType, public message: string) {}

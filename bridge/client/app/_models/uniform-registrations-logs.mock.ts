@@ -64,5 +64,5 @@ const logs = [
     time: '2021-05-10T11:04:05.000Z',
   },
 ];
-const UniformRegistrationLogsMock: UniformRegistrationLog[] = JSON.parse(JSON.stringify(logs));
-export { UniformRegistrationLogsMock };
+const uniformRegistrationLogsMock: UniformRegistrationLog[] = JSON.parse(JSON.stringify(logs));
+export { uniformRegistrationLogsMock as UniformRegistrationLogsMock };

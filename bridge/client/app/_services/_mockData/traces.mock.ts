@@ -2020,12 +2020,12 @@ export const traceData = [
   },
 ];
 
-const Traces = traceData.map((data) => {
+const traces = traceData.map((data: unknown): Trace => {
   tracesMapper(data);
   return Trace.fromJSON(data);
 
-  // tslint:disable-next-line:no-any
-  function tracesMapper(trace: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function tracesMapper(trace: any): void {
     trace.traces.forEach((t: Trace) => {
       tracesMapper(t);
     });
@@ -2033,4 +2033,4 @@ const Traces = traceData.map((data) => {
   }
 });
 
-export { Traces };
+export { traces as Traces };

@@ -1,6 +1,9 @@
 import { Trace } from './trace';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 
+type RootStatusReduced = 'resolved' | 'opened' | 'failed' | 'succeeded' | 'active';
+type RootStatus = RootStatusReduced | 'waiting for approval' | 'started';
+
 export class Root extends Trace {
   traces: Trace[] = [];
 
@@ -149,15 +152,15 @@ export class Root extends Trace {
     return this.traces;
   }
 
-  isFinished() {
+  isFinished(): boolean {
     return this.traces.every((t) => t.isFinished());
   }
 
-  getSequenceName() {
+  getSequenceName(): string {
     return this.type;
   }
 
-  getStatus() {
+  getStatus(): RootStatusReduced {
     if (this.isProblem() && this.isProblemResolvedOrClosed()) {
       return 'resolved';
     } else if (this.isProblem()) {
@@ -171,8 +174,8 @@ export class Root extends Trace {
     }
   }
 
-  getStatusLabel() {
-    let status = this.getStatus();
+  getStatusLabel(): RootStatus {
+    let status: RootStatus = this.getStatus();
     if (status === 'active') {
       if (this.getPendingApproval() != null) {
         status = 'waiting for approval';

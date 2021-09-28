@@ -19,7 +19,7 @@ const prefixPath = process.env.PREFIX_PATH;
  *
  * Redirection to / will be either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
  */
-function getRootLocation() {
+function getRootLocation(): string {
   if (prefixPath !== undefined) {
     return `${prefixPath}/bridge`;
   }
@@ -27,7 +27,7 @@ function getRootLocation() {
   return '/';
 }
 
-async function oauthRouter() {
+async function oauthRouter(): Promise<Router> {
   console.log('Enabling OAuth for bridge.');
 
   const discoveryEndpoint = process.env.OAUTH_DISCOVERY;
