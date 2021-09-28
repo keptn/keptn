@@ -345,8 +345,8 @@ export class DataService {
       await this.removePreviousWebhooks(previousFilter, webhookConfig.prevConfiguration.type);
     }
 
-    const secrets = await this.parseWebhookSecret(webhookConfig);
-    const curl = this.generateWebhookConfigCurl(webhookConfig, secrets);
+    const secrets = await this.parseAndReplaceWebhookSecret(webhookConfig);
+    const curl = this.generateWebhookConfigCurl(webhookConfig);
 
     for (const project of currentFilters.projects) {
       for (const stage of currentFilters.stages) {
@@ -361,29 +361,32 @@ export class DataService {
     return true;
   }
 
-  private async parseWebhookSecret(webhookConfig: WebhookConfig): Promise<WebhookSecret[]> {
+  private async parseAndReplaceWebhookSecret(webhookConfig: WebhookConfig): Promise<WebhookSecret[]> {
     const webhookScopeSecrets = await this.getSecretsForScope(SecretScope.WEBHOOK);
     const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
 
     const secrets: WebhookSecret[] = [];
-    this.addWebhookSecretsFromString(webhookConfig.url, flatSecret, secrets);
-    this.addWebhookSecretsFromString(webhookConfig.payload, flatSecret, secrets);
+    webhookConfig.url = this.addWebhookSecretsFromString(webhookConfig.url, flatSecret, secrets);
+    webhookConfig.payload = this.addWebhookSecretsFromString(webhookConfig.payload, flatSecret, secrets);
 
     for (const head of webhookConfig.header) {
-      this.addWebhookSecretsFromString(head.value, flatSecret, secrets);
+      head.value = this.addWebhookSecretsFromString(head.value, flatSecret, secrets);
     }
 
     return secrets;
   }
 
-  private addWebhookSecretsFromString(parseString: string, allSecretPaths: string[], existingSecrets: WebhookSecret[]): void {
+  private addWebhookSecretsFromString(parseString: string, allSecretPaths: string[], existingSecrets: WebhookSecret[]): string {
     const foundSecrets = allSecretPaths.filter(path => parseString.includes(path));
+    let replacedString = parseString;
     for (const found of foundSecrets) {
-      const idx = existingSecrets.findIndex(secret => secret.name === found);
+      const foundReplaced = found.replace('.', '-');
+      const idx = existingSecrets.findIndex(secret => secret.name === foundReplaced);
+      replacedString = replacedString.replace(found, 'env.' + foundReplaced);
       if (idx === -1) {
         const split = found.split('.');
         const secret: WebhookSecret = {
-          name: found.replace('.', '-'),
+          name: foundReplaced,
           secretRef: {
             name: split[0],
             key: split[1],
@@ -392,6 +395,7 @@ export class DataService {
         existingSecrets.push(secret);
       }
     }
+    return replacedString;
   }
 
   private getSecretPathFlat(secrets: Secret[]): string[] {
@@ -442,8 +446,7 @@ export class DataService {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
   }
 
-  private generateWebhookConfigCurl(webhookConfig: WebhookConfig, secrets: WebhookSecret[]): string {
-    // TODO replace secrets in string with .env.secretname from secrets
+  private generateWebhookConfigCurl(webhookConfig: WebhookConfig): string {
     let params = '';
     for (const header of webhookConfig?.header || []) {
       params += `--header '${header.name}: ${header.value}' `;
