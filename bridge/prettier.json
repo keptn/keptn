@@ -1,6 +1,6 @@
 {
-  "endOfLine": "auto",
-  "printWidth": 300,
+  "endOfLine": "lf",
+  "printWidth": 120,
   "tabWidth": 2,
   "proseWrap": "preserve",
   "quoteProps": "as-needed",

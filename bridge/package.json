@@ -10,8 +10,10 @@
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "jest --config=jest.config.ts",
-    "lint": "ng lint",
-    "prettier": "npx prettier --write .",
+    "lint:check": "eslint ./",
+    "lint:fix": "eslint --fix ./",
+    "prettier:check": "prettier --check ./**/*.{js,ts,html,json}",
+    "prettier:fix": "prettier --write ./**/*.{js,ts,html,json}",
     "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
