@@ -43,7 +43,9 @@
             "selector": "enumMember",
             "format": ["UPPER_CASE"]
           }
-        ]
+        ],
+        "@typescript-eslint/explicit-function-return-type": "error",
+        "prefer-arrow/prefer-arrow-functions": "off"
       }
     },
     {
