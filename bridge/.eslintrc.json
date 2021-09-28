@@ -1,14 +1,18 @@
 {
   "root": true,
-  "ignorePatterns": ["client/app/_models/*.mock.ts"],
+  "ignorePatterns": [],
   "overrides": [
     {
-      "files": ["*.ts"],
-      "parserOptions": {
-        "project": ["tsconfig.app.json", "tsconfig.spec.json", "cypress/tsconfig.json", "server/tsconfig.json"],
-        "createDefaultProgram": true
-      },
-      "extends": ["plugin:@angular-eslint/ng-cli-compat", "plugin:@angular-eslint/ng-cli-compat--formatting-add-on", "plugin:@angular-eslint/template/process-inline-templates", "plugin:prettier/recommended"],
+      "files": [
+        "*.ts"
+      ],
+      "extends": [
+        "plugin:@angular-eslint/ng-cli-compat",
+        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
+        "plugin:@angular-eslint/template/process-inline-templates",
+        "plugin:@angular-eslint/recommended",
+        "prettier"
+      ],
       "rules": {
         "@angular-eslint/component-selector": [
           "error",
@@ -34,7 +38,10 @@
           }
         ],
         "@typescript-eslint/no-explicit-any": "error",
-        "arrow-parens": ["off", "always"],
+        "arrow-parens": [
+          "off",
+          "always"
+        ],
         "no-underscore-dangle": "off",
         "@typescript-eslint/member-ordering": "off",
         "@typescript-eslint/naming-convention": [
@@ -49,22 +56,25 @@
       }
     },
     {
-      "files": ["*.html"],
-      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "files": [
+        "*.html"
+      ],
+      "extends": [
+        "plugin:@angular-eslint/template/recommended",
+        "prettier"
+      ],
       "rules": {}
     },
     {
-      "files": ["*.html"],
-      "excludedFiles": ["*inline-template-*.component.html"],
-      "extends": ["plugin:prettier/recommended"],
-      "rules": {
-        "prettier/prettier": [
-          "error",
-          {
-            "parser": "angular"
-          }
-        ]
-      }
+      "files": [
+        "*.html"
+      ],
+      "excludedFiles": [
+        "*inline-template-*.component.html"
+      ],
+      "extends": [
+        "prettier"
+      ]
     }
   ]
 }
