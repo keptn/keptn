@@ -31,6 +31,13 @@ type TaskHandler struct {
 	secretReader   lib.ISecretReader
 }
 
+type webhookExecution struct {
+	webhook  lib.Webhook
+	onStart  func() error
+	onFinish func() error
+	onError  func(err error) error
+}
+
 func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader) *TaskHandler {
 	return &TaskHandler{
 		templateEngine: templateEngine,
@@ -51,24 +58,77 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 
 	responses := []string{}
 
-	secretEnvVars, sdkErr := th.gatherSecretEnvVars(*webhook)
-	if sdkErr != nil {
-		return nil, sdkErr
-	}
-	nedc.Add("env", secretEnvVars)
-	responses, sdkErr = th.performWebhookRequests(*webhook, nedc, responses)
-	if sdkErr != nil {
-		return nil, sdkErr
+	whExec := webhookExecution{
+		webhook: *webhook,
+		onStart: func() error {
+			// check if 'sendFinished' is set to true
+			if webhook.SendFinished {
+				// if sendFinished is set, we only need to send one started event
+				// the webhook service will then send a correlating .finished event with the aggregated response payloads
+				if err := keptnHandler.SendStartedEvent(event); err != nil {
+					return fmt.Errorf("could not send .started event: %s", err.Error())
+				}
+			} else {
+				// if sendFinished is set to false, we need to send a .started event for each webhook request to be executed
+				for range webhook.Requests {
+					if err := keptnHandler.SendStartedEvent(event); err != nil {
+						return fmt.Errorf("could not send .started event: %s", err.Error())
+					}
+				}
+			}
+			return nil
+		},
+		onFinish: nil,
+		onError: func(err error) error {
+			whe, ok := err.(*lib.WebhookExecutionError)
+
+			result := map[string]interface{}{
+				"project": nedc.Project(),
+				"stage":   nedc.Stage(),
+				"service": nedc.Service(),
+				"labels":  nedc.Labels(),
+				"result":  keptnv2.ResultFailed,
+				"status":  keptnv2.StatusErrored,
+			}
+
+			if ok && whe.PreExecutionError {
+				if webhook.SendFinished {
+					// if sendFinished is set, we only need to send one started event
+					// the webhook service will then send a correlating .finished event with the aggregated response payloads
+					if err := keptnHandler.SendFinishedEvent(event, result); err != nil {
+						return fmt.Errorf("could not send .started event: %s", err.Error())
+					}
+				} else {
+					// if sendFinished is set to false, we need to send a .started event for each webhook request to be executed
+					for range webhook.Requests {
+						if err := keptnHandler.SendFinishedEvent(event, result); err != nil {
+							return fmt.Errorf("could not send .started event: %s", err.Error())
+						}
+					}
+				}
+			}
+			return nil
+		},
 	}
 
-	// check if the incoming event was a task.triggered event
+	secretEnvVars, err := th.gatherSecretEnvVars(*webhook)
+	if err != nil {
+		return nil, sdkError(err.Error(), err)
+	}
+	nedc.Add("env", secretEnvVars)
+	responses, err = th.performWebhookRequests(*webhook, nedc, responses)
+	if err != nil {
+		return nil, sdkError(err.Error(), err)
+	}
+
+	// check if the incoming event was a task.triggered event, and if the 'sendFinished'  property of the webhook was set to true
 	// only in this case, the result should be sent back to Keptn in the form of a .finished event
-	if keptnv2.IsTaskEventType(*event.Type) {
+	if keptnv2.IsTaskEventType(*event.Type) && webhook.SendFinished {
 		taskName, _, err := keptnv2.ParseTaskEventType(*event.Type)
 		if err != nil {
 			return nil, sdkError(fmt.Sprintf("could not derive task name from event type %s", *event.Type), err)
 		}
-		return map[string]interface{}{
+		result := map[string]interface{}{
 			"project": nedc.Project(),
 			"stage":   nedc.Stage(),
 			"service": nedc.Service(),
@@ -76,18 +136,24 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 			taskName: map[string]interface{}{
 				"responses": responses,
 			},
-		}, nil
+		}
+		err = keptnHandler.SendFinishedEvent(event, result)
+		if err != nil {
+			return nil, sdkError(fmt.Sprintf("could not send finished event: %s", err.Error()), err)
+		}
+		return result, nil
 	}
 
 	return nil, nil
 }
 
-func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, nedc *lib.EventDataModifier, responses []string) ([]string, *sdk.Error) {
+func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, nedc *lib.EventDataModifier, responses []string) ([]string, error) {
+	// TODO pass error callback and keep track of how many requests have been executed - for the remaining ones, send finished events
 	for _, req := range webhook.Requests {
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(nedc.Get(), req)
 		if err != nil {
-			return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s'", req))
 		}
 		// perform the request
 		response, err := th.curlExecutor.Curl(parsedCurlCommand)
@@ -99,12 +165,12 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, nedc *lib.Eve
 	return responses, nil
 }
 
-func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]string, *sdk.Error) {
+func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]string, error) {
 	secretEnvVars := map[string]string{}
 	for _, secretRef := range webhook.EnvFrom {
 		secretValue, err := th.secretReader.ReadSecret(secretRef.SecretRef.Name, secretRef.SecretRef.Key)
 		if err != nil {
-			return nil, sdkError(fmt.Sprintf("could not read secret %s.%s", secretRef.SecretRef.Name, secretRef.SecretRef.Key), err)
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not read secret %s.%s", secretRef.SecretRef.Name, secretRef.SecretRef.Key))
 		}
 		secretEnvVars[secretRef.Name] = secretValue
 	}

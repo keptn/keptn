@@ -43,6 +43,7 @@ func main() {
 			eventTypeWildcard,
 			taskHandler,
 		),
+		sdk.WithAutomaticResponse(false),
 	).Start())
 }
 
