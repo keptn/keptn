@@ -140,7 +140,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         take(1),
       );
 
-    // FIXME edit mode not working
     const webhook$ = forkJoin({
       subscription: subscription$,
       projectName: projectName$,

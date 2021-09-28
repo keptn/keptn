@@ -3,10 +3,8 @@ import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '
 import { FormUtils } from '../../_utils/form.utils';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
-import { combineLatest } from 'rxjs';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
-import { startWith } from 'rxjs/operators';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
@@ -17,7 +15,7 @@ type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
   styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
 export class KtbWebhookSettingsComponent implements OnInit {
-  private _webhook?: WebhookConfig;
+  private _webhook: WebhookConfig = new WebhookConfig();
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
     url: new FormControl('', [Validators.required, FormUtils.isUrlValidatorWithVariable, FormUtils.urlSpecialCharsWithVariablesValidator]),
@@ -69,27 +67,25 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this.webhookConfigForm.statusChanges.subscribe((status: 'INVALID' | 'VALID') => {
       this.validityChanged.next(status === 'VALID');
     });
-    combineLatest([
-      this.getFormControl('method').valueChanges.pipe(startWith('')),
-      this.getFormControl('url').valueChanges.pipe(startWith('')),
-      this.getFormControl('payload').valueChanges.pipe(startWith('')),
-      this.getFormControl('proxy').valueChanges.pipe(startWith('')),
-      this.getFormControl('header').valueChanges.pipe(startWith([])),
-    ]).subscribe(([method, url, payload, proxy, header]) => {
-      if (!this._webhook) {
-        this._webhook = new WebhookConfig();
-      }
-      this._webhook.method = method;
-      this._webhook.url = url;
-      this._webhook.payload = payload;
-      this._webhook.proxy = proxy;
-      this._webhook.header = header;
-      this.webhookChange.emit(this._webhook);
-    });
   }
 
   public ngOnInit(): void {
     this.validityChanged.next(this.webhookConfigForm.valid);
+  }
+
+  public onWebhookFormChange(): void {
+    const method = this.getFormControl('method').value;
+    const url = this.getFormControl('url').value;
+    const payload = this.getFormControl('payload').value;
+    const proxy = this.getFormControl('proxy').value;
+    const header = this.getFormControl('header').value;
+
+    this._webhook.method = method;
+    this._webhook.url = url;
+    this._webhook.payload = payload;
+    this._webhook.proxy = proxy;
+    this._webhook.header = header;
+    this.webhookChange.emit(this._webhook);
   }
 
   public addHeader(name?: string, value?: string): void {
