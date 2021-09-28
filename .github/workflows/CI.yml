@@ -345,6 +345,35 @@ jobs:
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
         run: bash <(curl -s https://codecov.io/bash) -c -F bridge
 
+  bridge-code-style:
+    name: Bridge Code Style
+    needs: prepare_ci_run
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@v2.4.0
+        with:
+          node-version: 14
+      - name: Checkout Code
+        uses: actions/checkout@v2.3.4
+      - uses: actions/cache@v2.1.6
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Prepare test setup
+        run: |
+          npm install -g libnpx@10.2.0
+          npm ci
+      - name: ESLint
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
+        run: |
+          npm run prettier:check
+          npm run lint:check
+        working-directory: ./bridge
+
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
