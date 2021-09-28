@@ -327,6 +327,21 @@ export class DataService {
     }
   }
 
+  private async replaceWithBridgeSecrets(webhookConfig: WebhookConfig): Promise<void> {
+    const webhookScopeSecrets = await this.getSecretsForScope(SecretScope.WEBHOOK);
+    const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
+
+    for (const secret of flatSecret) {
+      const webhookSecret = secret.replace('.', '-');
+      webhookConfig.url = webhookConfig.url.replace('env.' + webhookSecret, secret);
+      webhookConfig.payload = webhookConfig.payload.replace('env.' + webhookSecret, secret);
+
+      for (const header of webhookConfig.header) {
+        header.value = header.value.replace('env.' + webhookSecret, secret);
+      }
+    }
+  }
+
   public async getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
     const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stageName, serviceName);
 
@@ -334,6 +349,7 @@ export class DataService {
     if (!webhookConfig) {
       throw Error('Could not parse curl command');
     }
+    await this.replaceWithBridgeSecrets(webhookConfig);
     return webhookConfig;
   }
 
