@@ -364,15 +364,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Prepare test setup
+        working-directory: ./bridge
         run: |
           npm install -g libnpx@10.2.0
           npm ci
       - name: ESLint
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
+        working-directory: ./bridge
         run: |
           npm run prettier:check
           npm run lint:check
-        working-directory: ./bridge
 
 
   unit-tests-cli:
