@@ -67,4 +67,38 @@ describe('KtbCreateSecretFormComponent', () => {
     // then
     expect(spy).toHaveBeenCalledWith(secret);
   });
+
+  it('remove key/value pair should be disabled', () => {
+    // given
+    fixture.detectChanges();
+    const removePairButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-remove-pair-button]');
+
+    // then
+    expect(removePairButton.disabled).toBe(true);
+  });
+
+  it('should add key/value pair', () => {
+    // given
+    const addPairButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-add-pair-button]');
+
+    // when
+    addPairButton.click();
+
+    // then
+    expect(component.dataControls.length).toBe(2);
+  });
+
+  it('should remove key/value pair', () => {
+    // given
+    const addPairButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-add-pair-button]');
+
+    // when
+    addPairButton.click();
+    fixture.detectChanges();
+    const removePairButtons: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('[uitestid=keptn-secret-remove-pair-button]'));
+    removePairButtons[0].click();
+
+    // then
+    expect(component.dataControls.length).toBe(1);
+  });
 });
