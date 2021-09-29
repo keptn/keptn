@@ -1,0 +1,11 @@
+{
+  "type": "sh.keptn.event.webhook.triggered",
+  "specversion": "1.0",
+  "source": "test",
+  "contenttype": "application/json",
+  "data": {
+    "project": "myproject",
+    "service": "myservice",
+    "stage": "mystage"
+  }
+}

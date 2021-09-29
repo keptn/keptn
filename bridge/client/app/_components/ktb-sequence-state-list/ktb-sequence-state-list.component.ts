@@ -6,6 +6,7 @@ import { Sequence } from '../../_models/sequence';
 import { Subscription } from 'rxjs';
 import { Project } from '../../_models/project';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -52,10 +53,10 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  constructor(public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
+  constructor(public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number, private router: Router) {
   }
 
-  loadLatestSequences() {
+  loadLatestSequences(): void {
     if (this.project) {
       this.dataService.loadLatestSequences(this.project, this.PAGE_SIZE)
         .subscribe((sequences: Sequence[]) => {
@@ -64,16 +65,14 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  updateDataSource() {
+  updateDataSource(): void {
     this.dataSource = new DtTableDataSource(this.sequenceStates.slice(0, this.PAGE_SIZE) || []);
   }
 
-  getServiceLink(sequence: Sequence) {
-    return ['/project', sequence.project, 'service', sequence.service, 'context', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
-  }
-
-  getSequenceLink(sequence: Sequence) {
-    return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
+  selectSequence(event: { sequence: Sequence, stage?: string }): void {
+    const stage = event.stage || event.sequence.getStages().pop();
+    this.router.navigate(['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext,
+      ...(stage ? ['stage', stage] : [])]);
   }
 
   ngOnDestroy(): void {

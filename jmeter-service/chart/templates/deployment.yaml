@@ -19,7 +19,10 @@ spec:
       labels:
         {{- include "jmeter-service.labels" . | nindent 8 }}
     spec:
-      {{- list .Values.jmeterservice .Values.distributor | dict "context" . "indent" 6 "bases" | include "jmeter-service.image.pullSecrets" }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "jmeter-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -30,7 +33,7 @@ spec:
           {{- if .Values.image }}
           image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
           {{- else }}
-          image: {{ dict "space" .Values.jmeterservice "context" . | include "jmeter-service.image.name" }}
+          image: "{{ .Values.jmeterservice.image.repository }}:{{ .Values.jmeterservice.image.tag | default .Chart.AppVersion }}"
           {{- end }}
           imagePullPolicy: {{ .Values.jmeterservice.image.pullPolicy }}
           ports:
@@ -54,7 +57,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
-          image: {{ dict "space" .Values.distributor "context" . | include "jmeter-service.image.name" }}
+          image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
           livenessProbe:
             httpGet:
               path: /health

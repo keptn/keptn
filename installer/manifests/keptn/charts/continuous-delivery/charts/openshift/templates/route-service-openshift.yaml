@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    helm.sh/chart: {{ include "openshift.chart" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}   
 rules:
   - apiGroups:
       - ""
@@ -45,7 +45,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    helm.sh/chart: {{ include "openshift.chart" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}   
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -66,7 +66,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "openshift.chart" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}     
 spec:
   selector:
     matchLabels:
@@ -82,12 +82,11 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "openshift.name" . }}
         app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "openshift.chart" . }}
+        helm.sh/chart: {{ include "openshift.chart" . }}        
     spec:
-      {{- list .Values.openshiftRouteService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       containers:
       - name: openshift-route-service
-        image: {{ dict "space" .Values.openshiftRouteService "context" . | include "keptn.image.name" }}
+        image: {{ .Values.openshiftRouteService.image.repository }}:{{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -99,7 +98,7 @@ spec:
             memory: "128Mi"
             cpu: "200m"
       - name: distributor
-        image: {{ include "keptn.distributor.imageName" . }}
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 8080
@@ -124,7 +123,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    helm.sh/chart: {{ include "openshift.chart" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}       
 spec:
   ports:
   - port: 8080

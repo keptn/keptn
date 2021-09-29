@@ -9,7 +9,7 @@ ARTIFACT=${2:-go-utils}
 echo "$ARTIFACT Target Commit/Branch/Tag: ${TARGET}"
 
 # update go modules in all directories that contain a go.mod which contains utils
-for file in ./**/*; do
+for file in ./{**/,}*; do
   if [[ -f "$file/go.mod" ]]; then
     echo "Checking if $file/go.mod contains $ARTIFACT"
     if grep "github.com/keptn/$ARTIFACT" "$file/go.mod"; then

@@ -17,6 +17,9 @@ func NewEventDataModifier(event sdk.KeptnEvent) (*EventDataModifier, error) {
 		return nil, fmt.Errorf("could not decode incoming event payload: %w", err)
 	}
 
+	if eventData.Project == "" || eventData.Stage == "" || eventData.Service == "" {
+		return nil, fmt.Errorf("project, stage and service must be present in the event data")
+	}
 	eventDataMap := map[string]interface{}{}
 	if err := keptnv2.Decode(event, &eventDataMap); err != nil {
 		return nil, fmt.Errorf("could not apply attributes from incoming event: %w", err)
