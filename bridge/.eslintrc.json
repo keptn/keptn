@@ -86,7 +86,7 @@
       "extends": ["plugin:@angular-eslint/template/process-inline-templates"]
     },
     {
-      "files": ["*.component.ts"],
+      "files": ["*.component.html"],
       "excludedFiles": [
         "*inline-template-*.component.html"
       ],
