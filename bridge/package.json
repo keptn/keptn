@@ -12,8 +12,8 @@
     "test": "jest --config=jest.config.ts",
     "lint:check": "eslint ./",
     "lint:fix": "eslint --fix ./",
-    "prettier:check": "prettier --check ./",
-    "prettier:fix": "prettier --write ./",
+    "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
+    "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
     "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
