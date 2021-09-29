@@ -49,6 +49,24 @@ spec:
         - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
         - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
 
+const webHookContentWithMultipleRequestsAndDisabledFinished = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      sendFinished: false
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+
 const webHookContentWithMissingTemplateData = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
@@ -167,7 +185,7 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 2)
 	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
@@ -180,6 +198,101 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
 	assert.Equal(t, keptnv2.ResultPass, eventData.Result)
+}
+
+func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinished(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "success", nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := fakekeptn.NewFakeKeptn(
+		"test-webhook-svc",
+		sdk.WithHandler(
+			"*",
+			taskHandler,
+		),
+		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequestsAndDisabledFinished}),
+		fakekeptn.WithAutomaticResponse(false),
+	)
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	require.Len(t, curlExecutorMock.CurlCalls(), 4)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[3].CurlCmd)
+
+	//verify sent events
+	require.Equal(t, 4, len(fakeKeptn.GetEventSender().SentEvents))
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[1].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[2].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[3].Type())
+}
+
+func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinishedOneRequestFails(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		// make the second request fail
+		if len(curlExecutorMock.CurlCalls()) == 2 {
+			return "", errors.New("oops")
+		}
+		return "success", nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := fakekeptn.NewFakeKeptn(
+		"test-webhook-svc",
+		sdk.WithHandler(
+			"*",
+			taskHandler,
+		),
+		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequestsAndDisabledFinished}),
+		fakekeptn.WithAutomaticResponse(false),
+	)
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	require.Len(t, curlExecutorMock.CurlCalls(), 2)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
+
+	//verify sent events
+	require.Equal(t, 7, len(fakeKeptn.GetEventSender().SentEvents))
+	// each request should have a .started event
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[1].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[2].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[3].Type())
+	// apart from the first request which has been successful, every request should have a failed .finished event
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[4].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[5].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[6].Type())
 }
 
 func Test_HandleIncomingTriggeredEvent_NoMatchingWebhookFound(t *testing.T) {
