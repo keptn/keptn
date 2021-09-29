@@ -70,7 +70,7 @@ import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-deta
 import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import {
   KtbEventItemComponent,
-  KtbEventItemDetailDirective
+  KtbEventItemDetailDirective,
 } from './_components/ktb-event-item/ktb-event-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';

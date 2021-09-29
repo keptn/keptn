@@ -666,8 +666,10 @@ export class DataService {
     let index = 0;
     for (; index < parts.length - 1; ++index) {
       const part = parts[index];
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       currentDirectory[part] ??= { _: [] };
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       currentDirectory = currentDirectory[part];
     }
@@ -682,11 +684,15 @@ export class DataService {
     for (const key in currentDirectory) {
       if (dict[key]) {
         files.push(
-          ...currentDirectory._.map((item) => ({
-              fileName: item,
-            } as TreeEntry))
+          ...currentDirectory._.map(
+            (item) =>
+              ({
+                fileName: item,
+              } as TreeEntry)
+          )
         );
       } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         folders.push(this._buildTree(currentDirectory[key] as TreeDirectory, key));
       }

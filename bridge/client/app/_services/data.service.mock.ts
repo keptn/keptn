@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@angular/core';
 import { DataService } from './data.service';
-import { ApiService } from './api.service';
 import { Project } from '../_models/project';
 import { KeptnInfo } from './_mockData/keptnInfo.mock';
 import { Projects } from './_mockData/projects.mock';
@@ -27,10 +27,6 @@ import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-regi
   providedIn: 'root',
 })
 export class DataServiceMock extends DataService {
-  constructor(apiService: ApiService) {
-    super(apiService);
-  }
-
   public loadKeptnInfo(): void {
     this._keptnInfo.next(KeptnInfo);
   }
@@ -71,12 +67,10 @@ export class DataServiceMock extends DataService {
     if (!this._projects.getValue()?.length) {
       this.loadProjects();
     }
-    return this._projects.pipe(
-      map((projects) => projects?.find((project) => project.projectName === projectName))
-    );
+    return this._projects.pipe(map((projects) => projects?.find((project) => project.projectName === projectName)));
   }
 
-  public deleteProject(projectName: string): Observable<object> {
+  public deleteProject(projectName: string): Observable<Record<string, unknown>> {
     return of({});
   }
 
@@ -116,7 +110,7 @@ export class DataServiceMock extends DataService {
     return of(UniformRegistrationLogsMock);
   }
 
-  public deleteSubscription(integrationId: string, subscriptionId: string): Observable<object> {
+  public deleteSubscription(integrationId: string, subscriptionId: string): Observable<Record<string, unknown>> {
     return of({});
   }
 
@@ -124,19 +118,25 @@ export class DataServiceMock extends DataService {
     return of(['approval', 'deployment', 'test']);
   }
 
-  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+  public updateUniformSubscription(
+    integrationId: string,
+    subscription: UniformSubscription
+  ): Observable<Record<string, unknown>> {
     return of({});
   }
 
-  public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+  public createUniformSubscription(
+    integrationId: string,
+    subscription: UniformSubscription
+  ): Observable<Record<string, unknown>> {
     return of({});
   }
 
-  public createService(projectName: string, serviceName: string): Observable<object> {
+  public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
     return of({});
   }
 
-  public deleteService(projectName: string, serviceName: string): Observable<object> {
+  public deleteService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
     return of({});
   }
 
@@ -156,3 +156,4 @@ export class DataServiceMock extends DataService {
     });
   }
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */

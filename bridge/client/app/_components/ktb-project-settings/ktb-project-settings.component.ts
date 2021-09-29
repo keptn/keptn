@@ -182,38 +182,37 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  public createProject(): void {
+  public async createProject(): Promise<void> {
     if (this.shipyardFile) {
       this.isCreatingProjectInProgress = true;
-      FormUtils.readFileContent(this.shipyardFile).then((fileContent) => {
-        if (fileContent) {
-          const shipyardBase64 = btoa(fileContent);
-          const projectName = this.projectNameControl.value;
-          this.dataService
-            .createProject(
-              projectName,
-              shipyardBase64,
-              this.gitData.remoteURI,
-              this.gitData.gitToken,
-              this.gitData.gitUser
-            )
-            .subscribe(
-              () => {
-                this.projectName = projectName;
-                this.dataService.loadProjects();
-                this.isCreatingProjectInProgress = false;
-              },
-              () => {
-                this.notificationsService.addNotification(
-                  NotificationType.ERROR,
-                  'The project could not be created.',
-                  5000
-                );
-                this.isCreatingProjectInProgress = false;
-              }
-            );
-        }
-      });
+      const fileContent = await FormUtils.readFileContent(this.shipyardFile);
+      if (fileContent) {
+        const shipyardBase64 = btoa(fileContent);
+        const projectName = this.projectNameControl.value;
+        this.dataService
+          .createProject(
+            projectName,
+            shipyardBase64,
+            this.gitData.remoteURI,
+            this.gitData.gitToken,
+            this.gitData.gitUser
+          )
+          .subscribe(
+            () => {
+              this.projectName = projectName;
+              this.dataService.loadProjects();
+              this.isCreatingProjectInProgress = false;
+            },
+            () => {
+              this.notificationsService.addNotification(
+                NotificationType.ERROR,
+                'The project could not be created.',
+                5000
+              );
+              this.isCreatingProjectInProgress = false;
+            }
+          );
+      }
     }
   }
 

@@ -5,7 +5,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class ToType implements PipeTransform {
   // cls argument is unused, but is serving the main goal: the type gets inferred from the constructor.
-  transform<T>(value: unknown, _cls: new (...args: unknown[]) => T): T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+  transform<T>(value: unknown, _cls: new (...args: any[]) => T): T {
     return value as T;
   }
 }

@@ -40,7 +40,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
 
   public deleteSecret(secret?: Secret): void {
     if (secret) {
-      this.dataService.deleteSecret(secret.name, secret.scope).subscribe((result) => {
+      this.dataService.deleteSecret(secret.name, secret.scope).subscribe(() => {
         this.deleteState = 'success';
         const data: Secret[] = this.tableEntries.data;
         data.splice(

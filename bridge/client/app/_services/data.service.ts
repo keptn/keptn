@@ -126,11 +126,11 @@ export class DataService {
     return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
   }
 
-  public createService(projectName: string, serviceName: string): Observable<object> {
+  public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
     return this.apiService.createService(projectName, serviceName);
   }
 
-  public deleteService(projectName: string, serviceName: string): Observable<object> {
+  public deleteService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
     return this.apiService.deleteService(projectName, serviceName);
   }
 
@@ -154,11 +154,17 @@ export class DataService {
       .pipe(map((uniformSubscription) => UniformSubscription.fromJSON(uniformSubscription)));
   }
 
-  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+  public updateUniformSubscription(
+    integrationId: string,
+    subscription: UniformSubscription
+  ): Observable<Record<string, unknown>> {
     return this.apiService.updateUniformSubscription(integrationId, subscription.reduced);
   }
 
-  public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+  public createUniformSubscription(
+    integrationId: string,
+    subscription: UniformSubscription
+  ): Observable<Record<string, unknown>> {
     return this.apiService.createUniformSubscription(integrationId, subscription.reduced);
   }
 
@@ -184,7 +190,7 @@ export class DataService {
     );
   }
 
-  public addSecret(secret: Secret): Observable<object> {
+  public addSecret(secret: Secret): Observable<Record<string, unknown>> {
     return this.apiService.addSecret(
       Object.assign({}, secret, {
         data: secret.data.reduce((result, item) => Object.assign(result, { [item.key]: item.value }), {}),
@@ -192,11 +198,15 @@ export class DataService {
     );
   }
 
-  public deleteSecret(name: string, scope: string): Observable<object> {
+  public deleteSecret(name: string, scope: string): Observable<Record<string, unknown>> {
     return this.apiService.deleteSecret(name, scope);
   }
 
-  public deleteSubscription(integrationId: string, id: string, isWebhookService: boolean): Observable<object> {
+  public deleteSubscription(
+    integrationId: string,
+    id: string,
+    isWebhookService: boolean
+  ): Observable<Record<string, unknown>> {
     return this.apiService.deleteSubscription(integrationId, id, isWebhookService);
   }
 
@@ -265,7 +275,7 @@ export class DataService {
     this.loadKeptnInfo();
   }
 
-  public deleteProject(projectName: string): Observable<object> {
+  public deleteProject(projectName: string): Observable<Record<string, unknown>> {
     return this.apiService.deleteProject(projectName);
   }
 
@@ -685,7 +695,8 @@ export class DataService {
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {
     return from(sequences).pipe(
-      mergeMap((sequence) => this.apiService.getTraces(sequence.shkeptncontext, sequence.project).pipe(
+      mergeMap((sequence) =>
+        this.apiService.getTraces(sequence.shkeptncontext, sequence.project).pipe(
           map((response) => {
             this.updateTracesUpdated(response, sequence.shkeptncontext);
             return response.body;
@@ -696,7 +707,8 @@ export class DataService {
             sequence.traces = traces;
             return sequence;
           })
-        )),
+        )
+      ),
       toArray()
     );
   }
@@ -711,11 +723,13 @@ export class DataService {
 
   private rootMapper(roots: Trace[]): Observable<Root[]> {
     return from(roots).pipe(
-      mergeMap((root) => this.apiService.getTraces(root.shkeptncontext, root.data.project).pipe(
+      mergeMap((root) =>
+        this.apiService.getTraces(root.shkeptncontext, root.data.project).pipe(
           map((result) => result.body?.events || []),
           map(Trace.traceMapper),
           map((traces) => ({ ...root, traces }))
-        )),
+        )
+      ),
       toArray(),
       map((rs) => rs.map((root) => Root.fromJSON(root)))
     );

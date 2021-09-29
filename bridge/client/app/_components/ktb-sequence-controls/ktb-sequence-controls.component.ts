@@ -2,7 +2,10 @@ import { ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core'
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
 import { SequenceStateControl } from '../../../../shared/models/sequence';
-import { KtbConfirmationDialogComponent } from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
+import {
+  KtbConfirmationDialogComponent,
+  SequenceConfirmDialogData,
+} from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
@@ -50,10 +53,9 @@ export class KtbSequenceControlsComponent {
   }
 
   triggerAbortSequence(sequence: Sequence): void {
-    const data = {
+    const data: SequenceConfirmDialogData = {
       sequence,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      confirmCallback: (params: any): void => {
+      confirmCallback: (params: SequenceConfirmDialogData): void => {
         this.abortSequence(params.sequence);
       },
     };

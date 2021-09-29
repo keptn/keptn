@@ -74,10 +74,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   ) {
     const subscription$ = this.route.paramMap.pipe(
       map((paramMap) => ({
-          integrationId: paramMap.get('integrationId'),
-          subscriptionId: paramMap.get('subscriptionId'),
-          projectName: paramMap.get('projectName'),
-        })),
+        integrationId: paramMap.get('integrationId'),
+        subscriptionId: paramMap.get('subscriptionId'),
+        projectName: paramMap.get('projectName'),
+      })),
       filter(
         (params): params is { integrationId: string; subscriptionId: string | null; projectName: string } =>
           !!(params.integrationId && params.projectName)
@@ -186,14 +186,14 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         {
           name: 'Stage',
           autocomplete: project.stages.map((stage) => ({
-              name: stage.stageName,
-            })),
+            name: stage.stageName,
+          })),
         },
         {
           name: 'Service',
           autocomplete: project.getServices().map((service) => ({
-              name: service.serviceName,
-            })),
+            name: service.serviceName,
+          })),
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;

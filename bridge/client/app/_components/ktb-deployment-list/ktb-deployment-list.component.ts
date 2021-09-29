@@ -78,7 +78,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     );
 
-    combineLatest([params$, project$]).subscribe(([params, project]) => {
+    combineLatest([project$, params$]).subscribe(([project]) => {
       this.projectName = project?.projectName;
       this.updateDataSource();
     });

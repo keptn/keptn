@@ -69,7 +69,7 @@ export class KtbServicesListComponent {
   }
 
   private compare() {
-    return (a: Service, b: Service): number=> {
+    return (a: Service, b: Service): number => {
       if (!a.latestSequence) {
         return 1;
       } else if (!b.latestSequence) {

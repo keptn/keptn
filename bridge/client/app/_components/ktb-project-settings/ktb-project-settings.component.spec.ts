@@ -36,7 +36,6 @@ describe('KtbProjectSettingsComponent', () => {
 
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
     if (notifications.length > 0) {
-
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < notifications.length; i++) {
         notifications[i].remove();
@@ -162,8 +161,11 @@ describe('KtbProjectSettingsComponent', () => {
     const routeSpy = jest.spyOn(router, 'navigate');
 
     dataService.loadProjects = jest.fn().mockImplementation(() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       dataService._projects.next(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         dataService._projects.getValue().filter((project) => project.projectName !== 'sockshop')
       );
     });

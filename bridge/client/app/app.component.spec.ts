@@ -14,8 +14,15 @@ describe('AppComponent', () => {
   let router: Router;
   let location: Location;
   let comp: AppComponent;
-  let mockDataService: DataServiceMock;
   let fixture: ComponentFixture<AppComponent>;
+  enum MENU_ITEM {
+    ENVIRONMENT,
+    SERVICES,
+    SEQUENCES,
+    INTEGRATIONS,
+    UNIFORM,
+    SETTINGS,
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -27,7 +34,6 @@ describe('AppComponent', () => {
     router = TestBed.inject(Router);
     location = TestBed.inject(Location);
     fixture = TestBed.createComponent(AppComponent);
-    mockDataService = TestBed.inject(DataServiceMock);
     comp = fixture.componentInstance;
 
     router.initialNavigation();
@@ -409,14 +415,5 @@ describe('AppComponent', () => {
     } else {
       expect(menuItems[5].nativeElement.getAttribute('class')).not.toContain('active');
     }
-  }
-
-  enum MENU_ITEM {
-    ENVIRONMENT,
-    SERVICES,
-    SEQUENCES,
-    INTEGRATIONS,
-    UNIFORM,
-    SETTINGS,
   }
 });

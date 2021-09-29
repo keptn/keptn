@@ -1,5 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Sequence } from '../../../_models/sequence';
+
+export type SequenceConfirmDialogData = {
+  sequence: Sequence;
+  confirmCallback: (params: SequenceConfirmDialogData) => void;
+};
 
 @Component({
   selector: 'ktb-deletion-dialog',
@@ -8,8 +14,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class KtbConfirmationDialogComponent {
   constructor(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(MAT_DIALOG_DATA) public data: SequenceConfirmDialogData,
     public dialogRef: MatDialogRef<KtbConfirmationDialogComponent>
   ) {}
 

@@ -27,10 +27,10 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   private _deploymentInfo?: DeploymentSelection;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   @ViewChild('remediationDialog')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   public remediationDialog?: TemplateRef<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public remediationDialogRef?: MatDialogRef<any, any>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
   public projectName?: string;
   public isLoading = false;
 

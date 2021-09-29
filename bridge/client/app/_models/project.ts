@@ -35,7 +35,8 @@ export class Project extends pj {
         let services: Service[] = [];
         for (const currentStage of this.stages) {
           services = services.concat(
-            currentStage.services.filter((s) => !services.some((ss) => ss.serviceName === s.serviceName))
+            // eslint-disable-next-line @typescript-eslint/no-loop-func
+            currentStage.services.filter((s: Service) => !services.some((ss) => ss.serviceName === s.serviceName))
           );
         }
         this.services = services;

@@ -151,7 +151,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         takeUntil(this.unsubscribe$),
         takeWhile(([params]) => !this.currentSequence && params.shkeptncontext)
       )
-      .subscribe(([params, _]: [Params, void]) => {
+      .subscribe(([params]: [Params, void]) => {
         if (params.shkeptncontext && this.project?.sequences) {
           const sequence = this.project.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
           const stage = params.eventId ? sequence?.traces.find((t) => t.id === params.eventId)?.stage : params.stage;

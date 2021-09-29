@@ -50,9 +50,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
     this.hasProject$ = projectName$.pipe(switchMap((projectName) => this.dataService.projectExists(projectName)));
 
-    this.isCreateMode$ = this.route.url.pipe(
-      map((urlSegment) => urlSegment[0].path === 'create')
-    );
+    this.isCreateMode$ = this.route.url.pipe(map((urlSegment) => urlSegment[0].path === 'create'));
   }
 
   ngOnInit(): void {

@@ -49,7 +49,7 @@ try {
   process.exit(1);
 }
 if (lookAndFeelUrl) {
-  let file: WriteStream;
+  let fl: WriteStream | undefined;
 
   try {
     console.log('Downloading custom Look-and-Feel file from', lookAndFeelUrl);
@@ -61,7 +61,8 @@ if (lookAndFeelUrl) {
       mkdirSync(destDir, { recursive: true });
     }
 
-    file = createWriteStream(destFile);
+    fl = createWriteStream(destFile);
+    const file: WriteStream = fl;
     const parsedUrl = new URL(lookAndFeelUrl);
     const lib = parsedUrl.protocol === 'https:' ? https : http;
 
@@ -95,8 +96,7 @@ if (lookAndFeelUrl) {
         console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
       });
   } catch (err) {
-    // @ts-ignore
-    file?.end();
+    fl?.end();
     console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
@@ -166,7 +166,7 @@ async function init(): Promise<Express> {
   });
 
   // error handler
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

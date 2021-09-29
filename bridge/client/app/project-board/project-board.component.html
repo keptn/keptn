@@ -50,7 +50,10 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<div class="container" *ngIf="!(isCreateMode$ | async) && !(error$ | async) && (hasProject$ | async) === undefined">
+<div
+  class="container"
+  *ngIf="(isCreateMode$ | async) === false && (error$ | async) === undefined && (hasProject$ | async) === undefined"
+>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>

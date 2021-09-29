@@ -12,6 +12,7 @@ import { UniformRegistrationLocations } from '../../../../shared/interfaces/unif
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractControl } from '@angular/forms';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -57,8 +58,8 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   it('should have disabled button if first control is valid and second control is invalid', async () => {
     // given
     fixture.detectChanges();
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
     fixture.detectChanges();
     // then
     assertIsUpdateButtonEnabled(false);
@@ -67,10 +68,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   it('should have disabled button if first control is invalid and second control is valid', async () => {
     // given
     fixture.detectChanges();
-    // @ts-ignore
-    component.taskControl.setValue('');
-    // @ts-ignore
-    component.taskSuffixControl.setValue('triggered');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('');
+    const taskSuffixControl = getTaskSuffix();
+    taskSuffixControl.setValue('triggered');
     fixture.detectChanges();
     // then
     assertIsUpdateButtonEnabled(false);
@@ -82,8 +83,8 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
     data.subscription.filter = {
       projects: ['sockshop'],
       stages: [],
@@ -98,10 +99,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     fixture.detectChanges();
     // when
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
-    // @ts-ignore
-    component.taskSuffixControl.setValue('triggered');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
+    const taskSuffixControl = getTaskSuffix();
+    taskSuffixControl.setValue('triggered');
     component.updating = true;
     fixture.detectChanges();
 
@@ -112,10 +113,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   it('should have enabled button if task is valid', () => {
     // given
     fixture.detectChanges();
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
-    // @ts-ignore
-    component.taskSuffixControl.setValue('triggered');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
+    const taskSuffixControl = getTaskSuffix();
+    taskSuffixControl.setValue('triggered');
     fixture.detectChanges();
 
     // then
@@ -127,10 +128,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const data = await component.data$.toPromise();
     fixture.detectChanges();
     // when
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
-    // @ts-ignore
-    component.taskSuffixControl.setValue('triggered');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
+    const taskSuffixControl = getTaskSuffix();
+    taskSuffixControl.setValue('triggered');
 
     data.subscription.filter = {
       projects: ['sockshop'],
@@ -148,10 +149,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const data = await component.data$.toPromise();
     fixture.detectChanges();
     // when
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
-    // @ts-ignore
-    component.taskSuffixControl.setValue('triggered');
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
+    const taskSuffixControl = getTaskSuffix();
+    taskSuffixControl.setValue('triggered');
 
     // when
     data.subscription.filter = {
@@ -193,12 +194,12 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    // @ts-ignore
-    expect(component.isGlobalControl.value).toEqual(true);
-    // @ts-ignore
-    expect(component.taskControl.value).toEqual('deployment');
-    // @ts-ignore
-    expect(component.taskSuffixControl.value).toEqual('triggered');
+    const isGlobalControl = getIsGlobalControl();
+    expect(isGlobalControl.value).toEqual(true);
+    const taskControl = getTaskPrefix();
+    expect(taskControl.value).toEqual('deployment');
+    const taskSuffixControl = getTaskSuffix();
+    expect(taskSuffixControl.value).toEqual('triggered');
 
     const filterPairs: HTMLElement[] = Array.from(
       fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container')
@@ -213,12 +214,12 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    // @ts-ignore
-    expect(component.isGlobalControl.value).toEqual(false);
-    // @ts-ignore
-    expect(component.taskControl.value).toEqual('test');
-    // @ts-ignore
-    expect(component.taskSuffixControl.value).toEqual('triggered');
+    const isGlobalControl = getIsGlobalControl();
+    expect(isGlobalControl.value).toEqual(false);
+    const taskControl = getTaskPrefix();
+    expect(taskControl.value).toEqual('test');
+    const taskSuffixControl = getTaskSuffix();
+    expect(taskSuffixControl.value).toEqual('triggered');
 
     const filterPairs: HTMLElement[] = Array.from(
       fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container')
@@ -306,12 +307,12 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const updateSpy = jest.spyOn(dataService, 'createUniformSubscription');
     const routerSpy = jest.spyOn(route, 'navigate');
     // when
-    // @ts-ignore
-    component.taskControl.setValue('deployment');
-    // @ts-ignore
-    component.taskSuffixControl.setValue('triggered');
-    // @ts-ignore
-    component.isGlobalControl.setValue(true);
+    const taskControl = getTaskPrefix();
+    taskControl.setValue('deployment');
+    const taskSuffixControl = getTaskSuffix();
+    taskSuffixControl.setValue('triggered');
+    const isGlobalControl = getIsGlobalControl();
+    isGlobalControl.setValue(true);
     fixture.detectChanges();
     fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').click();
     fixture.detectChanges();
@@ -424,8 +425,8 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.nativeElement.querySelector('.dt-filter-field-clear-all-button').click();
     fixture.detectChanges();
     // then
-    // @ts-ignore
-    expect(component.isGlobalControl.enabled).toEqual(true);
+    const isGlobalControl = getIsGlobalControl();
+    expect(isGlobalControl.enabled).toEqual(true);
   });
 
   it('it should disable "use for all projects" checkbox and set to false if filter is set', () => {
@@ -434,10 +435,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    // @ts-ignore
-    expect(component.isGlobalControl.disabled).toEqual(true);
-    // @ts-ignore
-    expect(component.isGlobalControl.value).toEqual(false);
+    const isGlobalControl = getIsGlobalControl();
+    expect(isGlobalControl.disabled).toEqual(true);
+    expect(isGlobalControl.value).toEqual(false);
   });
 
   function assertIsUpdateButtonEnabled(isEnabled: boolean): void {
@@ -472,5 +472,17 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;
     return subscription;
+  }
+
+  function getTaskPrefix(): AbstractControl {
+    return component.subscriptionForm.get('taskPrefix') as AbstractControl;
+  }
+
+  function getTaskSuffix(): AbstractControl {
+    return component.subscriptionForm.get('taskSuffix') as AbstractControl;
+  }
+
+  function getIsGlobalControl(): AbstractControl {
+    return component.subscriptionForm.get('isGlobal') as AbstractControl;
   }
 });

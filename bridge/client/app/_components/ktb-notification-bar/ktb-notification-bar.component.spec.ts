@@ -9,7 +9,6 @@ import { AppModule } from '../../app.module';
 
 describe('KtbNotificationBarComponent', () => {
   let service: NotificationsService;
-  let component: KtbNotificationBarComponent;
   let fixture: ComponentFixture<KtbNotificationBarComponent>;
 
   beforeEach(async () => {
@@ -26,7 +25,6 @@ describe('KtbNotificationBarComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbNotificationBarComponent);
-    component = fixture.componentInstance;
     service = TestBed.inject(NotificationsService);
     fixture.detectChanges();
   });

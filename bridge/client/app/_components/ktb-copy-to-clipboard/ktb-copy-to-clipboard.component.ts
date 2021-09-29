@@ -17,10 +17,10 @@ import { Platform } from '@angular/cdk/platform';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbCopyToClipboardComponent {
+  @HostBinding('attr.aria-visible')
+  @HostBinding('class.ktb-copy-input-visible')
   public visible = false;
   @HostBinding('class') cls = 'ktb-copy-to-clipboard';
-  @HostBinding('attr.aria-visible') ariaVisible = this.visible;
-  @HostBinding('class.ktb-copy-input-visible') inputVisible = this.visible;
   @Input() public value = '';
   @Input() public label = '';
 

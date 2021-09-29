@@ -72,7 +72,6 @@ describe('HttpErrorInterceptorService', () => {
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    // @ts-ignore
     const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
     testRequest.error(errorEvent, { headers, status: 401 });
 
@@ -88,7 +87,6 @@ describe('HttpErrorInterceptorService', () => {
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    // @ts-ignore
     const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
     testRequest.error(errorEvent, { headers, status: 401 });
 

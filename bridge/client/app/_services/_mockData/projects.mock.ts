@@ -2,7 +2,6 @@ import { Project } from '../../_models/project';
 import { Service } from '../../_models/service';
 import { Stage } from '../../_models/stage';
 
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const projectsData: any = [
   {

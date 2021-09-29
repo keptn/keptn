@@ -27,8 +27,7 @@ describe('KtbWebhookSettingsComponent', () => {
   });
 
   it('should be invalid URL', () => {
-    // @ts-ignore
-    const urlControl: AbstractControl = component.webhookConfigForm.get('url');
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
     const urls = ['', '://keptn.sh', 'keptnsh', 'keptn@sh.sh', 'keptn:sh'];
 
     for (const url of urls) {
@@ -38,8 +37,7 @@ describe('KtbWebhookSettingsComponent', () => {
   });
 
   it('should be valid URL', () => {
-    // @ts-ignore
-    const urlControl: AbstractControl = component.webhookConfigForm.get('url');
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
     const urls = [
       'https://keptn.sh',
       'http://keptn.sh',
@@ -165,7 +163,6 @@ describe('KtbWebhookSettingsComponent', () => {
     // given
     const urlControl = component.getFormControl('url');
     const methodControl = component.getFormControl('method');
-    const payload = component.getFormControl('payload');
     const proxyControl = component.getFormControl('proxy');
 
     // when

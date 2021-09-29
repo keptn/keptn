@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSliBreakdownComponent } from './ktb-sli-breakdown.component';
-import { KtbEvaluationDetailsComponent } from '../ktb-evaluation-details/ktb-evaluation-details.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { Evaluations } from '../../_services/_mockData/evaluations.mock';
+import { Trace } from '../../_models/trace';
+import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 
 enum Column {
   DETAILS = 0,
@@ -16,7 +17,7 @@ enum Column {
   SCORE = 7,
 }
 
-describe('KtbEvaluationDetailsComponent', () => {
+describe('KtbSliBreakdownComponent', () => {
   let component: KtbSliBreakdownComponent;
   let fixture: ComponentFixture<KtbSliBreakdownComponent>;
 
@@ -170,31 +171,25 @@ describe('KtbEvaluationDetailsComponent', () => {
       fixture.detectChanges();
     }
     // then
-    // @ts-ignore
-    const selectedEvaluation = Evaluations.data.evaluationHistory[selectedEvaluationIndex];
-    // @ts-ignore
+    const selectedEvaluation = Evaluations.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row > dt-cell:nth-child(${Column.NAME + 1})`);
     for (let i = 0; i < indices.length; ++i) {
       expect(indicatorNames[i].textContent).toEqual(
-        // @ts-ignore
-        selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric
+        selectedEvaluation.data.evaluation?.indicatorResults[indices[i]].value.metric
       );
     }
   }
 
-  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex: number = -1): void {
-    // @ts-ignore
-    const selectedEvaluation = Evaluations.data.evaluationHistory[selectedEvaluationIndex];
-    // @ts-ignore
-    component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
-    // @ts-ignore
-    component.score = selectedEvaluation.data.evaluation.score;
+  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex = -1): void {
+    const selectedEvaluation = Evaluations.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
+    component.indicatorResults = selectedEvaluation.data.evaluation?.indicatorResults as IndicatorResult[];
+    component.score = selectedEvaluation.data.evaluation?.score as number;
 
     component.comparedIndicatorResults =
       comparedEvaluationIndex === -1
         ? []
-        // @ts-ignore
-        : Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults;
+        : (Evaluations.data.evaluationHistory?.[comparedEvaluationIndex].data.evaluation
+            ?.indicatorResults as IndicatorResult[]);
   }
 
   function validateIndicatorResult(

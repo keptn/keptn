@@ -32,9 +32,9 @@ export class KtbEditServiceComponent implements OnDestroy {
   ) {
     const params$ = this.route.paramMap.pipe(
       map((params) => ({
-          serviceName: params.get('serviceName'),
-          projectName: params.get('projectName'),
-        })),
+        serviceName: params.get('serviceName'),
+        projectName: params.get('projectName'),
+      })),
       filter(
         (params): params is { serviceName: string; projectName: string } => !!params.serviceName && !!params.projectName
       )

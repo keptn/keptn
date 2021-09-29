@@ -25,14 +25,15 @@ import { HeatmapData, HeatmapSeriesOptions } from '../../_models/heatmap-series-
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
+/* eslint-disable @typescript-eslint/no-var-requires */
 const _boost = require('highcharts/modules/boost');
 const _noData = require('highcharts/modules/no-data-to-display');
 const _more = require('highcharts/highcharts-more');
 const _heatmap = require('highcharts/modules/heatmap');
 const _treemap = require('highcharts/modules/treemap');
+/* eslint-enable @typescript-eslint/no-var-requires */
 type SeriesPoint = PointClickEventObject & { series: EvaluationChartItem; point: { evaluationData: Trace } };
 
 _boost(Highcharts);
@@ -54,16 +55,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   @Input() public isInvalidated = false;
 
   @ViewChild('sloDialog')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   public sloDialog?: TemplateRef<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public sloDialogRef?: MatDialogRef<any, any>;
 
   @ViewChild('invalidateEvaluationDialog')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public invalidateEvaluationDialog?: TemplateRef<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public invalidateEvaluationDialogRef?: MatDialogRef<any, any>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   public isHeatmapExtendable = false;
   public isHeatmapExtended = false;
@@ -194,7 +193,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       heatmap: {
         point: {
           events: {
-            click: (event): boolean => {
+            click: (event: PointClickEventObject): boolean => {
               this._heatmapTileClicked(event);
               return true;
             },
@@ -240,7 +239,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   get heatmapSeries(): DtChartSeries[] {
     // type 'heatmap' does not exist in barista components but in highcharts
-    // @ts-ignore
     return this._heatmapSeries as DtChartSeries[];
   }
 
@@ -339,8 +337,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this.sortChartSeries(chartSeries);
       this.updateHeatmapOptions(chartSeries);
 
-      // @ts-ignore
-      this._chartOptions.xAxis.categories = this._heatmapOptions.xAxis[0].categories;
+      if (this._chartOptions.xAxis && !(this._chartOptions.xAxis instanceof Array)) {
+        this._chartOptions.xAxis.categories = this._heatmapOptions.xAxis[0].categories;
+      }
       this.setHeatmapData(chartSeries);
 
       if (this._heatmapSeriesFull[1].data.length > 0) {
@@ -618,6 +617,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     return DateUtil.compareTraceTimesDesc(a.evaluationData, b.evaluationData);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
     // NOOP
   }
@@ -683,6 +683,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     secondaryHighlightIndices: number[],
     plotBands: NavigatorXAxisPlotBandsOptions[]
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
     const index = secondaryHighlightIndices.find((idx) => idx >= 0) ?? -1;
     this.comparedIndicatorResults =
@@ -695,11 +696,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           to: secondaryHighlightIndex + 0.5,
           zIndex: 100,
           events: {
+            // eslint-disable-next-line @typescript-eslint/no-loop-func
             click(): void {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               const idx = this.options.from + 0.5;
+              const evaluation = _this._heatmapSeries[0]?.data[idx]?.evaluation;
               setTimeout(() => {
-                _this.selectEvaluationData(_this._heatmapSeries[0]?.data[idx]?.evaluation);
+                _this.selectEvaluationData(evaluation);
               });
             },
           },

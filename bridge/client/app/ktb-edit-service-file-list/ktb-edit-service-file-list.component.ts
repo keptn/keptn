@@ -3,6 +3,18 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { TreeEntry } from '../../../shared/interfaces/resourceFileTree';
 
+export class TreeFlatEntry {
+  fileName: string;
+  level: number;
+  expandable: boolean;
+
+  constructor() {
+    this.fileName = '';
+    this.level = -1;
+    this.expandable = false;
+  }
+}
+
 @Component({
   selector: 'ktb-edit-service-file-list',
   templateUrl: './ktb-edit-service-file-list.component.html',
@@ -78,17 +90,5 @@ export class KtbEditServiceFileListComponent {
     flatNode.expandable = !!node.children;
 
     return flatNode;
-  }
-}
-
-export class TreeFlatEntry {
-  fileName: string;
-  level: number;
-  expandable: boolean;
-
-  constructor() {
-    this.fileName = '';
-    this.level = -1;
-    this.expandable = false;
   }
 }

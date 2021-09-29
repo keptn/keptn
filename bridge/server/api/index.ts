@@ -50,9 +50,8 @@ const apiRouter = (params: {
 
   router.get('/integrationsPage', async (req, res, next) => {
     try {
-      // @ts-ignore
       const result = await axios({
-        method: req.method,
+        method: req.method as Method,
         url: `${integrationsPageLink}`,
       });
       return res.send(result.data);

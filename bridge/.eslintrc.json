@@ -3,26 +3,23 @@
   "ignorePatterns": [],
   "overrides": [
     {
-      "files": [
-        "*.ts",
-        "*.js"
-      ],
+      "files": ["*.ts", "*.js"],
       "extends": [
         "plugin:@angular-eslint/recommended",
         "plugin:@angular-eslint/template/process-inline-templates",
-        "airbnb-typescript/base",                 // eslint-config-airbnb-typescript
-        "plugin:@typescript-eslint/recommended",  // @typescript-eslint/eslint-plugin
-        "plugin:eslint-comments/recommended",     // eslint-plugin-eslint-comments
-        "plugin:promise/recommended",             // eslint-plugin-promise
-        "plugin:prettier/recommended",            // eslint-plugin-prettier
-        "prettier"                                // eslint-config-prettier
+        "airbnb-typescript/base", // eslint-config-airbnb-typescript
+        "plugin:@typescript-eslint/recommended", // @typescript-eslint/eslint-plugin
+        "plugin:eslint-comments/recommended", // eslint-plugin-eslint-comments
+        "plugin:promise/recommended", // eslint-plugin-promise
+        "plugin:prettier/recommended", // eslint-plugin-prettier
+        "prettier" // eslint-config-prettier
       ],
       "plugins": [
-        "@typescript-eslint",                     // @typescript-eslint/eslint-plugin
+        "@typescript-eslint", // @typescript-eslint/eslint-plugin
         "import",
-        "eslint-comments",                        // eslint-plugin-eslint-comments
-        "promise",                                // eslint-plugin-promise
-        "prettier"                                // eslint-plugin-prettier
+        "eslint-comments", // eslint-plugin-eslint-comments
+        "promise", // eslint-plugin-promise
+        "prettier" // eslint-plugin-prettier
       ],
       "rules": {
         "@angular-eslint/component-selector": [
@@ -49,10 +46,7 @@
           }
         ],
         "@typescript-eslint/no-explicit-any": "error",
-        "arrow-parens": [
-          "off",
-          "always"
-        ],
+        "arrow-parens": ["off", "always"],
         "no-underscore-dangle": "off",
         "@typescript-eslint/member-ordering": "off",
         "@typescript-eslint/naming-convention": [

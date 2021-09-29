@@ -8,6 +8,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
@@ -40,11 +41,8 @@ describe('KtbSequenceControlsComponent', () => {
 
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
-    // @ts-ignore
-    dataService.getProject(projectName).subscribe((pr: Project) => {
-      project = pr;
-      fixture.detectChanges();
-    });
+    project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
+    fixture.detectChanges();
   });
 
   it('should create', () => {

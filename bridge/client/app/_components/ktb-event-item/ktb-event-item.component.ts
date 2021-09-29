@@ -23,10 +23,10 @@ export class KtbEventItemComponent {
   public _event?: Trace;
 
   @ViewChild('eventPayloadDialog')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   public eventPayloadDialog?: TemplateRef<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public eventPayloadDialogRef?: MatDialogRef<any, any>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   @Input() public showChartLink = false;
   @Input() public showTime = true;

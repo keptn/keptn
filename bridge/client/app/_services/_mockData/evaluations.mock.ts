@@ -1436,4 +1436,4 @@ const evaluationData = {
 };
 
 const evaluations: Trace = Trace.fromJSON(evaluationData);
-export { evaluations as Evaluations }
+export { evaluations as Evaluations };

@@ -51,11 +51,11 @@ export class KtbCreateSecretFormComponent {
       }
 
       this.dataService.addSecret(secret).subscribe(
-        (result) => {
+        () => {
           this.isLoading = false;
           this.router.navigate(['../'], { relativeTo: this.route });
         },
-        (err) => {
+        () => {
           this.isLoading = false;
         }
       );

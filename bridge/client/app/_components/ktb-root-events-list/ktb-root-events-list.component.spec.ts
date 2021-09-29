@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
-import { KtbEventsListComponent } from '../ktb-events-list/ktb-events-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
@@ -9,8 +8,9 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Project } from '../../_models/project';
 import { By } from '@angular/platform-browser';
+import { take } from 'rxjs/operators';
 
-describe('KtbEventsListComponent', () => {
+describe('KtbRootEventsListComponent', () => {
   let component: KtbRootEventsListComponent;
   let fixture: ComponentFixture<KtbRootEventsListComponent>;
   let dataService: DataService;
@@ -41,11 +41,8 @@ describe('KtbEventsListComponent', () => {
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
-    // @ts-ignore
-    dataService.getProject(projectName).subscribe((pr: Project) => {
-      project = pr;
-      fixture.detectChanges();
-    });
+    project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
+    fixture.detectChanges();
   });
 
   it('should create root-events-list component', () => {
@@ -147,8 +144,8 @@ describe('KtbEventsListComponent', () => {
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
     const stageBadges = targetSequence.querySelectorAll('ktb-stage-badge');
-    const targetStage = stageBadges[0];
-    const stageName = targetStage.querySelector('dt-tag').textContent;
+    const targetStage = stageBadges[0] as HTMLElement;
+    const stageName = targetStage.querySelector('dt-tag')?.textContent;
     targetStage.click();
     fixture.detectChanges();
 
@@ -206,7 +203,6 @@ describe('KtbEventsListComponent', () => {
     // then
     expect(sequence.classes['ktb-tile-highlight']).toBe(true);
   });
-
 
   function getSequenceTile(index: number): HTMLElement {
     return fixture.nativeElement.querySelector(

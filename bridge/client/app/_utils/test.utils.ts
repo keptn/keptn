@@ -8,16 +8,10 @@ export class TestUtils {
       value: dataTransfer,
     });
     Object.defineProperty(event.constructor.prototype, 'preventDefault', {
-      // eslint-disable-next-line arrow-body-style
-      value: () => {
-        return;
-      },
+      value: () => {},
     });
     Object.defineProperty(event.constructor.prototype, 'stopPropagation', {
-      // eslint-disable-next-line arrow-body-style
-      value: () => {
-        return;
-      },
+      value: () => {},
     });
     return event;
   }
@@ -49,9 +43,9 @@ export class TestUtils {
 }
 
 function MockDataTransfer(files: File[]): DataTransfer {
+  /* eslint-disable @typescript-eslint/ban-ts-comment */
   return {
-    // @ts-ignore
-    dropEffect: 'all',
+    dropEffect: 'none',
     effectAllowed: 'all',
     // @ts-ignore
     items: [],
@@ -63,4 +57,5 @@ function MockDataTransfer(files: File[]): DataTransfer {
     // @ts-ignore
     files: [...files],
   };
+  /* eslint-enable @typescript-eslint/ban-ts-comment */
 }

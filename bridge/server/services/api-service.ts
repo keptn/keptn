@@ -63,8 +63,7 @@ export class ApiService {
     projectName: string,
     stageName: string,
     serviceName: string,
-    keptnContext?: string,
-    fromTime?: string
+    keptnContext?: string
   ): Promise<AxiosResponse<EventResult>> {
     const params = {
       project: projectName,
@@ -245,7 +244,10 @@ export class ApiService {
     });
   }
 
-  public deleteUniformSubscription(integrationId: string, subscriptionId: string): Promise<AxiosResponse<object>> {
+  public deleteUniformSubscription(
+    integrationId: string,
+    subscriptionId: string
+  ): Promise<AxiosResponse<Record<string, unknown>>> {
     return this.axios.delete(
       `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`
     );

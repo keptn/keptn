@@ -8,7 +8,6 @@ import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../_models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Metadata } from '../_models/metadata';
-import { Deployment } from '../_models/deployment';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
@@ -98,9 +97,9 @@ export class ApiService {
     }
   }
 
-  public deleteProject(projectName: string): Observable<object> {
+  public deleteProject(projectName: string): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
-    return this.http.delete<object>(url);
+    return this.http.delete<Record<string, unknown>>(url);
   }
 
   /**
@@ -130,16 +129,16 @@ export class ApiService {
     });
   }
 
-  public createService(projectName: string, serviceName: string): Observable<object> {
+  public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/service`;
-    return this.http.post<object>(url, {
+    return this.http.post<Record<string, unknown>>(url, {
       serviceName,
     });
   }
 
-  public deleteService(projectName: string, serviceName: string): Observable<object> {
+  public deleteService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/service/${serviceName}`;
-    return this.http.delete<object>(url);
+    return this.http.delete<Record<string, unknown>>(url);
   }
 
   public getProject(projectName: string): Observable<Project> {
@@ -178,22 +177,22 @@ export class ApiService {
   public updateUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>
-  ): Observable<object> {
+  ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscription.id}`;
-    return this.http.put(url, subscription);
+    return this.http.put<Record<string, unknown>>(url, subscription);
   }
 
   public createUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>
-  ): Observable<object> {
+  ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`;
-    return this.http.post(url, subscription);
+    return this.http.post<Record<string, unknown>>(url, subscription);
   }
 
   public getUniformRegistrationLogs(
     uniformRegistrationId: string,
-    pageSize: number = 100
+    pageSize = 100
   ): Observable<UniformRegistrationLogResponse> {
     const url = `${this._baseUrl}/controlPlane/v1/log?integrationId=${uniformRegistrationId}&pageSize=${pageSize}`;
     return this.http.get<UniformRegistrationLogResponse>(url);
@@ -209,27 +208,27 @@ export class ApiService {
     return this.http.get<{ Secrets: Secret[] }>(url);
   }
 
-  public addSecret(secret: Secret): Observable<object> {
+  public addSecret(secret: Secret): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
-    return this.http.post(url, secret);
+    return this.http.post<Record<string, unknown>>(url, secret);
   }
 
-  public deleteSecret(name: string, scope: string): Observable<object> {
+  public deleteSecret(name: string, scope: string): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
     const params = {
       name,
       scope,
     };
-    return this.http.delete(url, { params });
+    return this.http.delete<Record<string, unknown>>(url, { params });
   }
 
   public deleteSubscription(
     integrationId: string,
     subscriptionId: string,
     isWebhookService: boolean
-  ): Observable<object> {
+  ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
-    return this.http.delete(url, {
+    return this.http.delete<Record<string, unknown>>(url, {
       params: {
         isWebhookService: String(isWebhookService),
       },
@@ -339,10 +338,6 @@ export class ApiService {
     };
 
     return this.http.get<EventResult>(url, { params, observe: 'response' });
-  }
-
-  public getDeploymentsOfService(projectName: string, serviceName: string): Observable<Deployment[]> {
-    return of([]);
   }
 
   public getEvaluationResults(
