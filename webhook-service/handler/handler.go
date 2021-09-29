@@ -45,7 +45,12 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	if err != nil {
 		return nil, sdkError("could not parse incoming event", err)
 	}
-	webhook, err := th.getWebHookConfig(keptnHandler, nedc)
+	subscriptionID, err := th.extractSubscriptionID(nedc)
+	if err != nil {
+		logger.Infof("will not handle event: %s", err.Error())
+		return nil, nil
+	}
+	webhook, err := th.getWebHookConfig(keptnHandler, nedc, subscriptionID)
 	if err != nil {
 		return th.onPreExecutionError(keptnHandler, event, nedc, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
 	}
@@ -94,6 +99,19 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	}
 
 	return nil, nil
+}
+
+func (th *TaskHandler) extractSubscriptionID(nedc *lib.EventDataModifier) (string, error) {
+	// Try to extract the subscription ID - if no ID is set, ignore the event
+	tmpData := &TemporaryData{}
+	if err := keptnv2.Decode(nedc.Get()["data"], tmpData); err != nil {
+		return "", errors.New("event does not contain subscription ID")
+	}
+
+	if tmpData.TemporaryData.Distributor.SubscriptionID == "" {
+		return "", errors.New("event does not contain subscription ID")
+	}
+	return tmpData.TemporaryData.Distributor.SubscriptionID, nil
 }
 
 func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, nedc *lib.EventDataModifier, err error) (interface{}, *sdk.Error) {
@@ -212,16 +230,7 @@ func sdkError(msg string, err error) *sdk.Error {
 	}
 }
 
-func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.EventDataModifier) (*lib.Webhook, error) {
-	tmpData := &TemporaryData{}
-	if err := keptnv2.Decode(nedc.Get()["data"], tmpData); err != nil {
-		return nil, fmt.Errorf("could not decode temporary data of incoming event: %s", err)
-	}
-
-	if tmpData.TemporaryData.Distributor.SubscriptionID == "" {
-		return nil, errors.New("incoming event does not contain a subscription ID")
-	}
-	subscriptionID := tmpData.TemporaryData.Distributor.SubscriptionID
+func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.EventDataModifier, subscriptionID string) (*lib.Webhook, error) {
 	// first try to retrieve the webhook config at the service level
 	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(nedc.Project(), nedc.Stage(), nedc.Service(), webhookConfigFileName)
 	if err == nil && resource != nil {

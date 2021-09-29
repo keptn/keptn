@@ -394,18 +394,9 @@ func TestTaskHandler_Execute_NoSubscriptionIDInEvent(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-no-subscription-id.json"))
 
 	//verify sent events
-	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
-	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
-	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+	require.Equal(t, 0, len(fakeKeptn.GetEventSender().SentEvents))
 
 	require.Empty(t, curlExecutorMock.CurlCalls())
-
-	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
-	eventData := &keptnv2.EventData{}
-	keptnv2.EventDataAs(finishedEvent, eventData)
-	require.Nil(t, err)
-	assert.Equal(t, keptnv2.StatusErrored, eventData.Status)
-	assert.Equal(t, keptnv2.ResultFailed, eventData.Result)
 }
 
 func TestTaskHandler_Execute_InvalidEvent(t *testing.T) {
