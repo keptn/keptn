@@ -1,6 +1,7 @@
 package lib_test
 
 import (
+	"errors"
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/assert"
@@ -131,6 +132,138 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 				require.Equal(t, tt.wantPassedArgs, fakeCommandExecutor.ExecuteCommandCalls()[0].Args)
 			}
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestIsNoCommandError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "no command error",
+			args: args{
+				err: lib.NewCurlError(errors.New("oops"), lib.NoCommandError),
+			},
+			want: true,
+		},
+		{
+			name: "any error",
+			args: args{
+				err: errors.New("oops"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lib.IsNoCommandError(tt.args.err); got != tt.want {
+				t.Errorf("IsNoCommandError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsInvalidCommandError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "invalid command error",
+			args: args{
+				err: lib.NewCurlError(errors.New("oops"), lib.InvalidCommandError),
+			},
+			want: true,
+		},
+		{
+			name: "any error",
+			args: args{
+				err: errors.New("oops"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lib.IsInvalidCommandError(tt.args.err); got != tt.want {
+				t.Errorf("IsInvalidCommandError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsUnallowedURLError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "unallowed URL error",
+			args: args{
+				err: lib.NewCurlError(errors.New("oops"), lib.UnallowedURLError),
+			},
+			want: true,
+		},
+		{
+			name: "any error",
+			args: args{
+				err: errors.New("oops"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lib.IsUnallowedURLError(tt.args.err); got != tt.want {
+				t.Errorf("IsUnallowedURLError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsRequestError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "request execution error",
+			args: args{
+				err: lib.NewCurlError(errors.New("oops"), lib.RequestError),
+			},
+			want: true,
+		},
+		{
+			name: "any error",
+			args: args{
+				err: errors.New("oops"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lib.IsRequestError(tt.args.err); got != tt.want {
+				t.Errorf("IsRequestError() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

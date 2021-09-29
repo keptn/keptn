@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
 	logger "github.com/sirupsen/logrus"
+	"time"
 )
 
 const webhookConfigFileName = "webhook/webhook.yaml"
@@ -26,18 +27,32 @@ type SecretEnv struct {
 	Env map[string]string
 }
 
-type TaskHandler struct {
-	templateEngine lib.ITemplateEngine
-	curlExecutor   lib.ICurlExecutor
-	secretReader   lib.ISecretReader
+type TaskHandlerOption func(handler *TaskHandler)
+
+func WithArtificialDelay(delay time.Duration) TaskHandlerOption {
+	return func(handler *TaskHandler) {
+		handler.artificialDelay = delay
+	}
 }
 
-func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader) *TaskHandler {
-	return &TaskHandler{
+type TaskHandler struct {
+	templateEngine  lib.ITemplateEngine
+	curlExecutor    lib.ICurlExecutor
+	secretReader    lib.ISecretReader
+	artificialDelay time.Duration
+}
+
+func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader, opts ...TaskHandlerOption) *TaskHandler {
+	th := &TaskHandler{
 		templateEngine: templateEngine,
 		curlExecutor:   curlExecutor,
 		secretReader:   secretReader,
 	}
+
+	for _, opt := range opts {
+		opt(th)
+	}
+	return th
 }
 
 func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
@@ -60,6 +75,9 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	if sdkErr := th.onStartedWebhookExecution(keptnHandler, event, webhook); sdkErr != nil {
 		return nil, sdkErr
 	}
+
+	// workaround: add artificial delay to
+	<-time.After(th.artificialDelay)
 
 	onError := th.getErrorCallbackForWebhookConfig(keptnHandler, event, nedc, webhook)
 

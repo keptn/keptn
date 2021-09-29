@@ -24,6 +24,13 @@ func (c *CurlError) Error() string {
 	return c.err.Error()
 }
 
+func NewCurlError(err error, reason errType) *CurlError {
+	return &CurlError{
+		err:    err,
+		reason: reason,
+	}
+}
+
 func IsNoCommandError(err error) bool {
 	if curlErr, ok := err.(*CurlError); ok {
 		return curlErr.reason == NoCommandError
@@ -41,6 +48,13 @@ func IsInvalidCommandError(err error) bool {
 func IsUnallowedURLError(err error) bool {
 	if curlErr, ok := err.(*CurlError); ok {
 		return curlErr.reason == UnallowedURLError
+	}
+	return false
+}
+
+func IsRequestError(err error) bool {
+	if curlErr, ok := err.(*CurlError); ok {
+		return curlErr.reason == RequestError
 	}
 	return false
 }
@@ -113,7 +127,11 @@ func (ce *CmdCurlExecutor) Curl(curlCmd string) (string, error) {
 		}
 	}
 
-	return ce.commandExecutor.ExecuteCommand("curl", args[1:]...)
+	resp, err := ce.commandExecutor.ExecuteCommand("curl", args[1:]...)
+	if err != nil {
+		return "", &CurlError{err: fmt.Errorf("error during curl request execution"), reason: RequestError}
+	}
+	return resp, nil
 }
 
 func parseCommandLine(command string) ([]string, error) {
