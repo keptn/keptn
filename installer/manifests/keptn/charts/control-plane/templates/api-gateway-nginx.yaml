@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}         
 data:
   nginx.conf: |
     worker_processes  3;
@@ -277,7 +277,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}   
 spec:
   selector:
     matchLabels:
@@ -297,12 +297,11 @@ spec:
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      {{- list .Values.apiGatewayNginx | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 101
       containers:
         - name: api-gateway-nginx
-          image: {{ dict "space" .Values.apiGatewayNginx "context" . | include "keptn.image.name" }}
+          image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -363,7 +362,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}       
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:

@@ -73,12 +73,11 @@ spec:
         app.kubernetes.io/version: {{ .Values.apiService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.apiService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       containers:
         - name: api-service
-          image: {{ dict "space" .Values.apiService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -129,7 +128,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ include "keptn.distributor.imageName" . }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -198,12 +197,11 @@ spec:
         app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.bridge | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       containers:
         - name: bridge
-          image: {{ dict "space" .Values.bridge "context" . | include "keptn.image.name" }}
+          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: IfNotPresent
           env:
             - name: API_URL
@@ -320,13 +318,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.shipyardController .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
-          image: {{ dict "space" .Values.shipyardController "context" . | include "keptn.image.name" }}
+          image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -382,7 +379,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ include "keptn.distributor.imageName" . }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -489,13 +486,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.secretService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.secretService | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-secret-service
       containers:
         - name: secret-service
-          image: {{ dict "space" .Values.secretService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.secretService.image.repository }}:{{ .Values.secretService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -611,12 +607,11 @@ spec:
         app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.configurationService | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       initContainers:
       - name: change-user-init
-        image: {{ dict "space" .Values.alpine "context" . | include "keptn.image.name" }}
+        image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
         securityContext:
           runAsUser: 0
         volumeMounts:
@@ -628,7 +623,7 @@ spec:
           - chown -R 65532 /data/config
       containers:
         - name: configuration-service
-          image: {{ dict "space" .Values.configurationService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -731,13 +726,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.statisticsService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
-          image: {{ dict "space" .Values.statisticsService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -783,7 +777,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ include "keptn.distributor.imageName" . }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -856,13 +850,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{- list .Values.approvalService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
-          image: {{ dict "space" .Values.approvalService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -896,7 +889,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ include "keptn.distributor.imageName" . }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -975,7 +968,7 @@ spec:
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
-          image: {{ dict "space" .Values.webhookService "context" . | include "keptn.image.name" }}
+          image: {{ .Values.webhookService.image.repository }}:{{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -1008,7 +1001,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ include "keptn.distributor.imageName" . }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
