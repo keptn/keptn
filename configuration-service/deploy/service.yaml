@@ -32,6 +32,16 @@ spec:
       containers:
       - name: configuration-service
         image: keptn/configuration-service:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
         env:
           - name: PREFIX_PATH
             value: ""

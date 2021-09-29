@@ -37,12 +37,13 @@ spec:
           image: {{ dict "space" .Values.lighthouseService "context" . | include "keptn.image.name" }}
           livenessProbe:
             httpGet:
-              path: /health
-              port: 10998
+              path: /health/live
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health/ready
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5

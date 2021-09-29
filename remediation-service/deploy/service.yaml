@@ -29,6 +29,18 @@ spec:
       containers:
       - name: remediation-service
         image: keptn/remediation-service:latest
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+              path: /health/ready
+              port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

@@ -17,7 +17,6 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/api/handlers"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
@@ -145,10 +144,13 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
+			return
+		}
+		if strings.Index(r.URL.Path, "/health") == 0 {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 

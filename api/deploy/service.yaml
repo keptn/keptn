@@ -28,6 +28,18 @@ spec:
       containers:
         - name: api-service
           image: keptn/api:latest
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
           ports:
             - containerPort: 8080
           resources:
