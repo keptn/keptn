@@ -143,15 +143,17 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 }
 
 func (n *NATSEventReceiver) getSubscriptionFromReceivedMessage(m *nats.Msg, event cloudevents.Event) *models.EventSubscription {
+	var subscriptionForTopic models.EventSubscription
 	for _, subscription := range n.currentSubscriptions {
 		if subscription.Event == m.Sub.Subject { // need to check against the name of the subscription because this can be a wildcard as well
 			matcher := NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(event) {
-				return &subscription
+				subscriptionForTopic = subscription
+				break
 			}
 		}
 	}
-	return nil
+	return &subscriptionForTopic
 }
 
 func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscription *models.EventSubscription) error {
