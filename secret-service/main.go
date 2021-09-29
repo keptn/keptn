@@ -54,8 +54,6 @@ func main() {
 
 	apiHealth.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
-	//go keptnapi.RunHealthEndpoint("10998")
-
 	engine.Static("/swagger-ui", "./swagger-ui")
 	err := engine.Run()
 	if err != nil {

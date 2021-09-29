@@ -5,6 +5,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"log"
+	"net/http"
 )
 
 type envConfig struct {
@@ -19,7 +20,7 @@ func NewHTTPClientFromEnv() cloudevents.Client {
 		log.Fatalf("failed to process env var: %s", err)
 	}
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPort(env.Port), cloudevents.WithPath(env.Path))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPort(env.Port), cloudevents.WithPath(env.Path), cloudevents.WithGetHandlerFunc(healthEndpointHandler))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
@@ -30,6 +31,15 @@ func NewHTTPClientFromEnv() cloudevents.Client {
 	return c
 }
 
+func healthEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/health/live" {
+		w.WriteHeader(http.StatusOK)
+	} else if r.URL.Path == "/health/ready" {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
 func NewResourceHandlerFromEnv() *api.ResourceHandler {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
