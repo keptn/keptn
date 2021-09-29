@@ -62,7 +62,14 @@
           }
         ],
         "@typescript-eslint/explicit-function-return-type": "error",
-        "prefer-arrow/prefer-arrow-functions": "off"
+        "prefer-arrow/prefer-arrow-functions": "off",
+        "@typescript-eslint/lines-between-class-members": "off",
+        "@typescript-eslint/no-use-before-define": [
+          "error",
+          {
+            "functions": false
+          }
+        ]
       }
     },
     {
@@ -72,6 +79,25 @@
     {
       "files": ["*.component.ts"],
       "extends": ["plugin:@angular-eslint/template/process-inline-templates"]
+    },
+    {
+      "files": [
+        "*.html"
+      ],
+      "excludedFiles": [
+        "*inline-template-*.component.html"
+      ],
+      "extends": [
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "prettier/prettier": [
+          "error",
+          {
+            "parser": "angular"
+          }
+        ]
+      }
     }
   ]
 }
