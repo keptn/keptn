@@ -497,11 +497,7 @@ export class DataService {
 
   public async getSecretsForScope(scope: string): Promise<Secret[]> {
     const response = await this.apiService.getSecrets();
-    const secrets = response.data.Secrets.map(secret => {
-      // FIXME remove mock
-      secret.scope = SecretScope.WEBHOOK;
-      return Secret.fromJSON(secret);
-    });
+    const secrets = response.data.Secrets.map(secret => Secret.fromJSON(secret));
     return secrets.filter(secret => secret.scope === scope);
   }
 
