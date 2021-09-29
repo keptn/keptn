@@ -22,15 +22,25 @@ class SettingsPage{
         return this
     }
 
-    waitUntilGitTokenIsSet(){
-        cy.get('dt-loading-spinner', { timeout: 3000 }).should('be.visible')
-        cy.get('dt-loading-spinner', { timeout: 10000 }).should('not.be.visible')
-        return this
-    }
-
     getErrorMessageText(){
         return cy.get('.small')
     }
+
+    clickDeleteProjectButton(){
+        cy.get('span.dt-button-label').contains('Delete this project').click()
+        return this
+    }
+
+    typeProjectNameToDelete(projectName){
+        const projectInputLoc = 'input[placeholder=proj_pattern]'
+        cy.get(projectInputLoc.replace("proj_pattern", projectName)).click().type(projectName)
+        return this
+    }
+
+    submitDelete(){
+        cy.get('span.dt-button-label').contains('I understand the consequences, delete this project').click()
+    }
+
 
 }
 

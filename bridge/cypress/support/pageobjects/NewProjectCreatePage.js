@@ -21,6 +21,10 @@ class NewProjectCreatePage{
         return this
     }
 
+    clickCreateProject(){
+        cy.get('span.dt-button-label').contains('Create project').click()
+    }
+
     
 }
 

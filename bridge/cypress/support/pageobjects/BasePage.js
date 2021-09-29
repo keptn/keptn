@@ -2,14 +2,17 @@
 
 import SettingsPage from "./SettingsPage"
 import NewProjectCreatePage from "./NewProjectCreatePage"
+import EnvironmentPage from "./EnvironmentPage"
 
 class BasePage {
 
     
     constructor(){
         const NAVIGATION_MENU_LOCATOR = "button[aria-label='Open page_pattern view']"
+        const PROJECT_TILE_LOCATOR = "dt-tile[id='proj_patten']"
    //     let NAVIGATION_MENU_LOCATOR = "//button[@aria-label='Open page_pattern view']"
         this.NAVIGATION_MENU_LOCATOR = NAVIGATION_MENU_LOCATOR
+        this.PROJECT_TILE_LOCATOR = PROJECT_TILE_LOCATOR
 
     }
 
@@ -41,14 +44,20 @@ class BasePage {
     }
 
     selectProject(projectName){
-        cy.get('dt-top-bar-navigation-item[uitestid="keptn-nav-projectMenu"]').click()
-        .get('dt-tile-title[uitestid="keptn-project-tile-title"]').should('contain.text', 'dynatrace')
+        cy
+        .get('dt-tile-title[uitestid="keptn-project-tile-title"]').should('contain.text', projectName)
         .get('#projectSelect').click()
         .get('dt-option').contains(projectName).click()
     }
 
+    clickProjectTile(projectName){
+        cy.get(this.PROJECT_TILE_LOCATOR.replace("proj_patten", projectName)).click()
+        return new EnvironmentPage()
+    }
+
     declineAutomaticUpdate(){
         cy.get('.dt-button-secondary > span.dt-button-label').contains('Decline').click()
+        return this
     }
 
     clickCreatNewProjectButton(){
@@ -59,6 +68,7 @@ class BasePage {
     clickMainHeaderKeptn(){
         cy.get('.brand > p').contains('keptn').click()
     }
+
 
 
 
