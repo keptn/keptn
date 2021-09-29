@@ -350,14 +350,6 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 		require.NotEmpty(t, string(keptnv2.ResultFailed), decodedEvent["message"])
 	}
 
-	t.Log("verified desired state, aborting sequence")
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.AbortSequence,
-		Stage: "",
-	})
-	require.Nil(t, err)
-	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
-
 	// Now, trigger another sequence that tries to execute a webhook with a call to the kubernetes API - this one should fail as well
 	sequencename = "unallowedsequence"
 
@@ -366,7 +358,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	<-time.After(5 * time.Second)
 	// verify that we have received one .finished events with the status set to fail
 	require.Eventually(t, func() bool {
-		taskFinishedEvents, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("othertask"))
+		taskFinishedEvents, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("unallowedtask"))
 		if err != nil || taskFinishedEvents == nil || len(taskFinishedEvents) != 1 {
 			return false
 		}

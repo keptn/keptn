@@ -32,13 +32,6 @@ type TaskHandler struct {
 	secretReader   lib.ISecretReader
 }
 
-type webhookExecution struct {
-	webhook  lib.Webhook
-	onStart  func() error
-	onFinish func() error
-	onError  func(err error) error
-}
-
 func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader) *TaskHandler {
 	return &TaskHandler{
 		templateEngine: templateEngine,
