@@ -9,7 +9,6 @@ import (
 	"k8s.io/client-go/rest"
 	"log"
 	"os"
-	"time"
 )
 
 const eventTypeWildcard = "*"
@@ -36,7 +35,7 @@ func main() {
 			},
 		),
 	)
-	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, secretReader, handler.WithArtificialDelay(5*time.Second))
+	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, secretReader)
 
 	go api.RunHealthEndpoint("10998")
 	log.Fatal(sdk.NewKeptn(
