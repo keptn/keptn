@@ -54,7 +54,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	}
 	webhook, err := th.getWebHookConfig(keptnHandler, nedc)
 	if err != nil {
-		return th.onWebhookRetrievalError(keptnHandler, event, nedc, err)
+		return th.onPreExecutionError(keptnHandler, event, nedc, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
 	}
 
 	responses := []string{}
@@ -103,7 +103,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	return nil, nil
 }
 
-func (th *TaskHandler) onWebhookRetrievalError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, nedc *lib.EventDataModifier, err error) (interface{}, *sdk.Error) {
+func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, nedc *lib.EventDataModifier, err error) (interface{}, *sdk.Error) {
 	// in this case, send .started and .finished event immediately
 	if err := keptnHandler.SendStartedEvent(event); err != nil {
 		// logthe error but continue - we need to try to send the .finished event nevertheless
@@ -119,7 +119,7 @@ func (th *TaskHandler) onWebhookRetrievalError(keptnHandler sdk.IKeptn, event sd
 		"message": err.Error(),
 	}
 	th.sendFinishedEvent(keptnHandler, event, result)
-	return nil, sdkError(fmt.Sprintf("could not retrieve Webhook config: %s", err.Error()), err)
+	return nil, sdkError(err.Error(), err)
 }
 
 func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, nedc *lib.EventDataModifier, webhook *lib.Webhook) func(err error) {
@@ -155,7 +155,7 @@ func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn,
 
 func (th *TaskHandler) sendFinishedEvent(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, result map[string]interface{}) {
 	if err := keptnHandler.SendFinishedEvent(event, result); err != nil {
-		logger.WithError(err).Error("could not send .finished event: %s", err.Error())
+		logger.WithError(err).Error("could not send .finished event")
 	}
 }
 
@@ -180,6 +180,7 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 
 func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, nedc *lib.EventDataModifier, responses []string) ([]string, error) {
 	executedRequests := 0
+	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(nedc.Get(), req)

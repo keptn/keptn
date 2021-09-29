@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -138,7 +139,7 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 
 	for _, s := range fetchedIntegration.Subscriptions {
 		// check if the subscription for the event already exists - if yes, fine
-		if s.Event == subscription.Event {
+		if s.Event == subscription.Event && reflect.DeepEqual(s.Filter, subscription.Filter) {
 			return s.ID, nil
 		}
 	}
@@ -316,6 +317,21 @@ func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*
 	}
 	if len(events.Events) > 0 {
 		return events.Events[0], nil
+	}
+	return nil, nil
+}
+
+func GetEventsOfType(keptnContext, projectName, stage, eventType string) ([]*models.KeptnContextExtendedCE, error) {
+	resp, err := ApiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + keptnContext + "&stage=" + stage + "&type=" + eventType)
+	if err != nil {
+		return nil, err
+	}
+	events := &models.Events{}
+	if err := resp.ToJSON(events); err != nil {
+		return nil, err
+	}
+	if len(events.Events) > 0 {
+		return events.Events, nil
 	}
 	return nil, nil
 }

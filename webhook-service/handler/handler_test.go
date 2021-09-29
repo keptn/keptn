@@ -26,6 +26,7 @@ spec:
   webhooks:
     - type: "sh.keptn.event.webhook.triggered"
       subscriptionID: "my-subscription-id"
+      sendFinished: true
       envFrom:
         - secretRef:
           name: mysecret
@@ -40,6 +41,7 @@ spec:
   webhooks:
     - type: "sh.keptn.event.webhook.triggered"
       subscriptionID: "my-subscription-id"
+      sendFinished: true
       envFrom:
         - secretRef:
           name: mysecret
@@ -55,6 +57,7 @@ spec:
   webhooks:
     - type: "sh.keptn.event.webhook.triggered"
       subscriptionID: "my-subscription-id"
+      sendFinished: true
       envFrom:
         - secretRef:
           name: mysecret
@@ -111,6 +114,7 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 			taskHandler,
 		),
 		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}),
+		fakekeptn.WithAutomaticResponse(false),
 	)
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -156,6 +160,7 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 			taskHandler,
 		),
 		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequests}),
+		fakekeptn.WithAutomaticResponse(false),
 	)
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -202,6 +207,7 @@ func Test_HandleIncomingTriggeredEvent_NoMatchingWebhookFound(t *testing.T) {
 			taskHandler,
 		),
 		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithNoMatchingSubscriptionID}),
+		fakekeptn.WithAutomaticResponse(false),
 	)
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -235,6 +241,7 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 			taskHandler,
 		),
 		fakekeptn.WithResourceHandler(fakekeptn.FailingResourceHandler{}),
+		fakekeptn.WithAutomaticResponse(false),
 	)
 
 	fakeKeptn.Start()
@@ -267,6 +274,7 @@ func TestTaskHandler_Execute_NoSubscriptionIDInEvent(t *testing.T) {
 			taskHandler,
 		),
 		fakekeptn.WithResourceHandler(fakekeptn.FailingResourceHandler{}),
+		fakekeptn.WithAutomaticResponse(false),
 	)
 
 	fakeKeptn.Start()
@@ -301,24 +309,16 @@ func TestTaskHandler_Execute_InvalidEvent(t *testing.T) {
 			taskHandler,
 		),
 		fakekeptn.WithResourceHandler(fakekeptn.FailingResourceHandler{}),
+		fakekeptn.WithAutomaticResponse(false),
 	)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/invalid-event.json"))
 
 	//verify sent events
-	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
-	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
-	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
 
 	require.Empty(t, curlExecutorMock.CurlCalls())
-
-	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
-	eventData := &keptnv2.EventData{}
-	keptnv2.EventDataAs(finishedEvent, eventData)
-	require.Nil(t, err)
-	assert.Equal(t, keptnv2.StatusErrored, eventData.Status)
-	assert.Equal(t, keptnv2.ResultFailed, eventData.Result)
 }
 
 func TestTaskHandler_CannotReadSecret(t *testing.T) {
@@ -336,7 +336,9 @@ func TestTaskHandler_CannotReadSecret(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}))
+		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}),
+		fakekeptn.WithAutomaticResponse(false),
+	)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -372,7 +374,9 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMissingTemplateData}))
+		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMissingTemplateData}),
+		fakekeptn.WithAutomaticResponse(false),
+	)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -414,7 +418,9 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}))
+		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}),
+		fakekeptn.WithAutomaticResponse(false),
+	)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
