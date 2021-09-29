@@ -81,7 +81,7 @@
     "codelyzer": "^6.0.0",
     "cypress": "^8.4.0",
     "cypress-xpath": "^1.6.2",
-    "jest": "^27.0.6",
+    "jest": "^27.2.3",
     "jest-fetch-mock": "^3.0.3",
     "jest-preset-angular": "^9.0.7",
     "minimist": "1.2.5",
