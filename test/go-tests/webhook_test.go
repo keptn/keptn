@@ -353,7 +353,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	// Now, trigger another sequence that tries to execute a webhook with a call to the kubernetes API - this one should fail as well
 	sequencename = "unallowedsequence"
 
-	triggerSequenceAndVerifyStartedEvents(sequencename, "unallowedtask", 2)
+	keptnContextID = triggerSequenceAndVerifyStartedEvents(sequencename, "unallowedtask", 2)
 
 	<-time.After(5 * time.Second)
 	// verify that we have received one .finished events with the status set to fail
