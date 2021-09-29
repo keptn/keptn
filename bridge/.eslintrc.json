@@ -59,6 +59,11 @@
           {
             "selector": "enumMember",
             "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "variable",
+            "leadingUnderscore": "allow",
+            "format": ["camelCase", "UPPER_CASE"]
           }
         ],
         "@typescript-eslint/explicit-function-return-type": "error",
