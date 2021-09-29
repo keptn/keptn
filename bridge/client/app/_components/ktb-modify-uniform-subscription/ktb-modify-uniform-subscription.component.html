@@ -4,7 +4,7 @@
     <h2>{{editMode ? 'Edit' : 'Create'}} subscription</h2>
     <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
       <div fxLayout="column" fxLayoutGap="10px">
-        <dt-form-field *ngIf="!isWebhookService">
+        <dt-form-field *ngIf="!isWebhookService" uitestid="edit-subscription-field-isGlobal">
           <ng-container [ngTemplateOutlet]="data.subscription.hasFilter() ? showOverlay : isGlobalCheckbox">
           </ng-container>
 
@@ -22,13 +22,13 @@
 
         </dt-form-field>
         <div fxLayout="row" fxLayoutGap="5px">
-          <dt-form-field>
+          <dt-form-field uitestid="edit-subscription-field-task">
             <dt-label class="required">Task</dt-label>
             <dt-select formControlName="taskPrefix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
               <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
             </dt-select>
           </dt-form-field>
-          <dt-form-field>
+          <dt-form-field uitestid="edit-subscription-field-suffix">
             <dt-label class="required">Task suffix</dt-label>
             <dt-select formControlName="taskSuffix" class="mr-2 item" placeholder="Choose your task suffix" aria-label="Choose your task suffix">
               <dt-option *ngFor="let suffix of suffixes" [value]="suffix.value" [textContent]="suffix.displayValue"></dt-option>
@@ -44,6 +44,7 @@
             class="mb-2"
             aria-label="Filter by stage and service"
             clearAllLabel="Clear all"
+            uitestid="edit-subscription-field-filterStageService"
           ></dt-filter-field>
           <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length">If you add a service you must add a stage</dt-error>
         </div>

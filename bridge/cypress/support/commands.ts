@@ -3,11 +3,21 @@
 // with Intellisense and code completion in your
 // IDE or Text Editor.
 // ***********************************************
-// declare namespace Cypress {
-//   interface Chainable<Subject = any> {
-//     customCommand(param: any): typeof customCommand;
-//   }
-// }
+// tslint:disable-next-line:no-namespace
+declare namespace Cypress {
+  // tslint:disable-next-line:no-any
+  interface Chainable<Subject = any> {
+    byTestId<E extends Node = HTMLElement>(id: string):
+      Cypress.Chainable<JQuery<E>>;
+  }
+}
+
+// Actual function
+const byTestId = (testId: string) =>
+  cy.get(`[uitestid="${testId}"]`);
+
+// Hooking into Cypress
+Cypress.Commands.add('byTestId', byTestId);
 //
 // function customCommand(param: any): void {
 //   console.warn(param);

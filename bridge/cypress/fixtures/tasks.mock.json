@@ -1,0 +1,11 @@
+[
+  "service.delete",
+  "service.create",
+  "evaluation",
+  "deployment",
+  "test",
+  "release",
+  "rollback",
+  "get-action",
+  "action"
+]

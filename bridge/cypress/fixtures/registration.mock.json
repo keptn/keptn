@@ -1,0 +1,365 @@
+[
+  {
+    "id": "0f2d35875bbaa72b972157260a7bd4af4f2826df",
+    "name": "webhook-service",
+    "metadata": {
+      "hostname": "keptn-node",
+      "integrationversion": "",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "",
+        "deploymentname": "webhook-service"
+      },
+      "lastseen": "2021-09-29T10:24:41.602Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "edf51bcd-3eb1-4fc9-82b8-dbecce2c0b5e",
+        "event": "sh.keptn.event.>",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "355311a7bec3f35bf3abc2484ab09bcba8e2b297",
+    "name": "jmeter-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "jmeter-service-7c79ccc656-tghd6",
+        "deploymentname": "jmeter-service"
+      },
+      "lastseen": "2021-09-29T10:24:35.364Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "0e021b71-1533-4cfe-875a-b756aa6107ba",
+        "event": "sh.keptn.event.test.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "4d57b2af3cdd66bce06625daafa9c5cbb474a6b8",
+    "name": "approval-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "approval-service-d66d4bdd6-xg269",
+        "deploymentname": "approval-service"
+      },
+      "lastseen": "2021-09-29T10:24:39.181Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "ce6bc79c-8e07-4b8b-839b-0effc8e1dc69",
+        "event": "sh.keptn.event.approval.>",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "461a384052dec77f292da5571ce523e5cbf3f25d",
+    "name": "lighthouse-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "lighthouse-service-7c6898dd8d-rm2cx",
+        "deploymentname": "lighthouse-service"
+      },
+      "lastseen": "2021-09-29T10:24:40.003Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "a2a7a10c-8ac2-4a7e-8983-99bd5384fcf8",
+        "event": "sh.keptn.event.evaluation.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "907aa237-d70f-4e94-a5dd-b0755e7235fc",
+        "event": "sh.keptn.event.get-sli.finished",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "90a659f2-336c-480d-a06c-27f0d66cbd66",
+        "event": "sh.keptn.event.monitoring.configure",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "d7373a17701386179401a72babade9762227e8e2",
+    "name": "helm-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "helm-service-79fb9db85d-hsm7g",
+        "deploymentname": "helm-service"
+      },
+      "lastseen": "2021-09-29T10:24:37.845Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "89bdb385-d5ee-4c90-aacc-a0b6cb5da36e",
+        "event": "sh.keptn.event.service.create.finished",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "63a60509-2f7e-4f99-83f1-9a3587fbc2aa",
+        "event": "sh.keptn.event.deployment.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "9c317430-127a-4059-b6bc-ed42945f5cd5",
+        "event": "sh.keptn.event.rollback.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "38bbddce-4482-4e5a-ab4e-314914b75657",
+        "event": "sh.keptn.event.release.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "3062eb1f-e203-4ec5-b08d-b96aa9898b15",
+        "event": "sh.keptn.event.action.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      },
+      {
+        "id": "748fc09d-7101-467c-b701-e97785cac03d",
+        "event": "sh.keptn.event.service.delete.finished",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "3d09824e26b38d196911e52bb0422c23157208ba",
+    "name": "remediation-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "remediation-service-68654bfdbb-pnbvp",
+        "deploymentname": "remediation-service"
+      },
+      "lastseen": "2021-09-29T10:24:41.644Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "b76efd85-8d8f-4d37-b094-99ab91c11e8b",
+        "event": "sh.keptn.event.get-action.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "b370e5ce9dd8e900116ded1112f341c428a58c0c",
+    "name": "dynatrace-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.15.0",
+      "distributorversion": "",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "dynatrace-service-647d58d875-pcggd",
+        "deploymentname": "dynatrace-service"
+      },
+      "lastseen": "2021-09-29T10:24:43.3Z"
+    },
+    "subscription": {
+      "topics": [
+        "sh.keptn.>"
+      ],
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "",
+        "event": "sh.keptn.>",
+        "filter": {
+          "projects": null,
+          "stages": null,
+          "services": null
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "27609f2fcd102abead8f1c68a880ba0fbb811270",
+    "name": "dynatrace-sli-service",
+    "metadata": {
+      "hostname": "gke-keptn-elisabeth-a-default-pool-de0cbdde-rsm5",
+      "integrationversion": "0.12.0",
+      "distributorversion": "",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "keptn",
+        "podname": "dynatrace-sli-service-6fc87c548-f8pnp",
+        "deploymentname": "dynatrace-sli-service"
+      },
+      "lastseen": "2021-09-29T10:24:43.474Z"
+    },
+    "subscription": {
+      "topics": [
+        "sh.keptn.event.get-sli.triggered"
+      ],
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "",
+        "event": "sh.keptn.event.get-sli.triggered",
+        "filter": {
+          "projects": null,
+          "stages": null,
+          "services": null
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  }
+]

@@ -1,0 +1,694 @@
+{
+  "stages": [
+    {
+      "services": [
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.deployment.finished": {
+              "eventId": "01b2665e-b5b1-4d89-a862-8b3a798f634e",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412691647399498"
+            },
+            "sh.keptn.event.deployment.started": {
+              "eventId": "2b309150-d323-49ae-904b-51452631ac05",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412586444082520"
+            },
+            "sh.keptn.event.deployment.triggered": {
+              "eventId": "7ca18584-6231-4e10-9726-c028d1d80841",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412586250552995"
+            },
+            "sh.keptn.event.dev.delivery.finished": {
+              "eventId": "a766ccaf-c2d7-4684-b1a9-6eac342c67db",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412904945219782"
+            },
+            "sh.keptn.event.dev.delivery.triggered": {
+              "eventId": "eb39e4ef-06ec-488c-ab52-33090b0992c7",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412318022063379"
+            },
+            "sh.keptn.event.evaluation.finished": {
+              "eventId": "dfc49f43-097f-462a-8b98-1b59a7b775e0",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412902468998516"
+            },
+            "sh.keptn.event.evaluation.started": {
+              "eventId": "e201a53c-626c-442b-b168-e53bbbaa7d81",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412765842634961"
+            },
+            "sh.keptn.event.evaluation.triggered": {
+              "eventId": "72619f05-788d-4eef-be25-d7cf9ab14c1f",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412765747141054"
+            },
+            "sh.keptn.event.get-sli.finished": {
+              "eventId": "aa412cce-4707-4b06-806f-a1d187b28553",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412898568442072"
+            },
+            "sh.keptn.event.get-sli.started": {
+              "eventId": "b0f77f77-b7e4-45e7-a9b0-8203bc6fc374",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412773545742243"
+            },
+            "sh.keptn.event.get-sli.triggered": {
+              "eventId": "57c8eb56-35b5-42a0-8399-dd5fd098ef63",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412773508712055"
+            },
+            "sh.keptn.event.release.finished": {
+              "eventId": "f8325d4b-0eef-4ab4-bd58-5da3c59eb888",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412902849431853"
+            },
+            "sh.keptn.event.release.started": {
+              "eventId": "6ebdc6ca-7e1a-402e-945d-eff09927ba66",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412902648037205"
+            },
+            "sh.keptn.event.release.triggered": {
+              "eventId": "c9c3cb36-afdb-4003-85a8-d873b10e1236",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412902566208418"
+            },
+            "sh.keptn.event.test.finished": {
+              "eventId": "a8eb666a-00f8-48b5-9a32-bb23c5ad29b6",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412765551745554"
+            },
+            "sh.keptn.event.test.started": {
+              "eventId": "fa139294-41eb-435a-b6bb-6fa056ed8f7f",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412691957716288"
+            },
+            "sh.keptn.event.test.triggered": {
+              "eventId": "d7ca0685-cbf6-4681-9be2-2b4eb02806fc",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412691947987901"
+            },
+            "sh.keptn.events.problem": {
+              "eventId": "277b0ad6-4907-48c9-8189-35930da2cee0",
+              "keptnContext": "34373931-3632-4734-b238-303231383235",
+              "time": "1632368517614731419"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1631871037137298801",
+          "deployedImage": "docker.io/keptnexamples/carts:0.12.3",
+          "serviceName": "carts",
+          "latestSequence": {
+            "name": "delivery",
+            "service": "carts",
+            "project": "sockshop",
+            "time": "2021-09-23T15:52:06.763Z",
+            "shkeptncontext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+            "state": "finished",
+            "stages": [
+              {
+                "name": "dev",
+                "image": "docker.io/keptnexamples/carts:0.12.3",
+                "state": "finished",
+                "latestEvaluation": {
+                  "result": "pass",
+                  "score": 0
+                },
+                "latestEvent": {
+                  "type": "sh.keptn.event.dev.delivery.finished",
+                  "id": "a766ccaf-c2d7-4684-b1a9-6eac342c67db",
+                  "time": "2021-09-23T16:01:44.855Z"
+                },
+                "latestEvaluationTrace": {
+                  "data": {
+                    "evaluation": {
+                      "gitCommit": "",
+                      "indicatorResults": null,
+                      "result": "pass",
+                      "score": 0,
+                      "sloFileContent": "",
+                      "timeEnd": "2021-09-23T15:59:25Z",
+                      "timeStart": "2021-09-23T15:58:11Z"
+                    },
+                    "labels": {
+                      "DtCreds": "dynatrace"
+                    },
+                    "message": "no evaluation performed by lighthouse because no SLO file configured for project sockshop",
+                    "project": "sockshop",
+                    "result": "pass",
+                    "service": "carts",
+                    "stage": "dev",
+                    "status": "succeeded"
+                  },
+                  "id": "dfc49f43-097f-462a-8b98-1b59a7b775e0",
+                  "source": "lighthouse-service",
+                  "specversion": "1.0",
+                  "time": "2021-09-23T16:01:42.455Z",
+                  "type": "sh.keptn.event.evaluation.finished",
+                  "shkeptncontext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "shkeptnspecversion": "0.2.3",
+                  "triggeredid": "72619f05-788d-4eef-be25-d7cf9ab14c1f"
+                }
+              }
+            ]
+          },
+          "deploymentInformation": {
+            "deploymentUrl": "http://carts.sockshop-dev.35.188.183.151.nip.io:80"
+          }
+        },
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.deployment.finished": {
+              "eventId": "0af88fa3-9f0f-4a35-bd69-194e5b5466c3",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871171451900176"
+            },
+            "sh.keptn.event.deployment.started": {
+              "eventId": "da783643-785b-4745-beb6-895829f33b37",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871125625931740"
+            },
+            "sh.keptn.event.deployment.triggered": {
+              "eventId": "01c36777-a5b2-4e1e-a3f0-bb11327d1008",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871125542832558"
+            },
+            "sh.keptn.event.dev.delivery-direct.finished": {
+              "eventId": "9ef2ea16-fa7e-489b-8463-49411bdae055",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871173826702128"
+            },
+            "sh.keptn.event.dev.delivery-direct.triggered": {
+              "eventId": "98ceb2c9-317e-4c66-9a64-030b0ab5de6b",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871124225400501"
+            },
+            "sh.keptn.event.release.finished": {
+              "eventId": "ce577ab0-7cfd-4d2a-a456-2d4750946b51",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871171831665990"
+            },
+            "sh.keptn.event.release.started": {
+              "eventId": "af6c5694-ad36-43c5-b4fa-77a05ea783bb",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871171926180646"
+            },
+            "sh.keptn.event.release.triggered": {
+              "eventId": "24c3bb40-c508-425c-ba57-fe31f4d1ba26",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871171727027810"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1631871078194383243",
+          "deployedImage": "docker.io/mongo:4.2.2",
+          "serviceName": "carts-db",
+          "latestSequence": {
+            "name": "delivery-direct",
+            "service": "carts-db",
+            "project": "sockshop",
+            "time": "2021-09-17T09:32:05.363Z",
+            "shkeptncontext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+            "state": "finished",
+            "stages": [
+              {
+                "name": "dev",
+                "image": "docker.io/mongo:4.2.2",
+                "state": "finished",
+                "latestEvent": {
+                  "type": "sh.keptn.event.dev.delivery-direct.finished",
+                  "id": "9ef2ea16-fa7e-489b-8463-49411bdae055",
+                  "time": "2021-09-17T09:32:53.751Z"
+                }
+              }
+            ]
+          },
+          "deploymentInformation": {
+            "deploymentUrl": "http://carts-db.sockshop-dev.35.188.183.151.nip.io:80"
+          }
+        }
+      ],
+      "stageName": "dev"
+    },
+    {
+      "services": [
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.deployment.finished": {
+              "eventId": "9a811a15-765a-43cb-bd28-abe9009d63f4",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413115350342826"
+            },
+            "sh.keptn.event.deployment.started": {
+              "eventId": "8ca892a3-eb41-409f-9033-87bbaa799a99",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413006544410467"
+            },
+            "sh.keptn.event.deployment.triggered": {
+              "eventId": "46446537-269f-4c82-8ec1-4f608799e558",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413006452116517"
+            },
+            "sh.keptn.event.evaluation.finished": {
+              "eventId": "6831581e-27b9-4e13-8ffc-5a505e93e433",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413334665718336"
+            },
+            "sh.keptn.event.evaluation.started": {
+              "eventId": "97b40582-81ee-4242-b548-27e1b63244ec",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413253247026483"
+            },
+            "sh.keptn.event.evaluation.triggered": {
+              "eventId": "8fbd8331-6392-4be2-986c-d9e05a8e479a",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413253156729386"
+            },
+            "sh.keptn.event.get-sli.finished": {
+              "eventId": "6e30aa6c-829d-480e-a06c-046cbf3bbb72",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413329227045950"
+            },
+            "sh.keptn.event.get-sli.started": {
+              "eventId": "07501f40-4282-4696-84d3-dc3a6e723dc0",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413258745571700"
+            },
+            "sh.keptn.event.get-sli.triggered": {
+              "eventId": "5b70109d-1d40-4e53-86fd-6c4a7ef784c7",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413258673952778"
+            },
+            "sh.keptn.event.release.finished": {
+              "eventId": "e2cbf7b6-4c6a-48ff-b3ca-c05a4da3e43b",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413463060533570"
+            },
+            "sh.keptn.event.release.started": {
+              "eventId": "3db27df8-b4b3-4d97-a550-d3312d94f914",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413334947988180"
+            },
+            "sh.keptn.event.release.triggered": {
+              "eventId": "0d1ed426-d28b-4eba-81cf-71d5e7278071",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413334944570939"
+            },
+            "sh.keptn.event.rollback.finished": {
+              "eventId": "9a081499-c530-4bc1-9878-e7980bb3f16a",
+              "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+              "time": "1632413500860560339"
+            },
+            "sh.keptn.event.rollback.started": {
+              "eventId": "85c8c551-5493-41ad-ac87-ad33e71d7cbc",
+              "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+              "time": "1632413466347459682"
+            },
+            "sh.keptn.event.rollback.triggered": {
+              "eventId": "aebc13ab-5a11-433e-9868-4c7596a96e3c",
+              "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+              "time": "1632413466343724677"
+            },
+            "sh.keptn.event.staging.delivery.finished": {
+              "eventId": "3d829419-2869-4a5e-83cd-1a9b3a6890c0",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413463346488673"
+            },
+            "sh.keptn.event.staging.delivery.triggered": {
+              "eventId": "fd566cde-1367-45eb-85d8-9f88b583ff90",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632412904950879091"
+            },
+            "sh.keptn.event.staging.rollback.finished": {
+              "eventId": "b5e9ced4-6726-4124-87bb-2437738e23a3",
+              "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+              "time": "1632413501059881480"
+            },
+            "sh.keptn.event.staging.rollback.triggered": {
+              "eventId": "87e6e95f-2809-451b-a809-fc3e2aa79bd3",
+              "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+              "time": "1632413005243299302"
+            },
+            "sh.keptn.event.test.finished": {
+              "eventId": "64b4a6a0-b6c7-41ff-a844-6e7fa6f18fd6",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413253070942812"
+            },
+            "sh.keptn.event.test.started": {
+              "eventId": "432b0c38-779c-4401-b1ad-530019c948f1",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413115644960322"
+            },
+            "sh.keptn.event.test.triggered": {
+              "eventId": "55090cff-910b-4704-8e3a-e447ee0e05c9",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413115544149756"
+            },
+            "sh.keptn.events.problem": {
+              "eventId": "ebaf40c5-7aa0-4b77-b7ba-41a1be124115",
+              "keptnContext": "2d383237-3734-4234-b732-363939343939",
+              "time": "1632368515361514225"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1631871040782610326",
+          "deployedImage": "docker.io/keptnexamples/carts:0.12.3",
+          "serviceName": "carts",
+          "latestSequence": {
+            "name": "delivery",
+            "service": "carts",
+            "project": "sockshop",
+            "time": "2021-09-23T15:51:51.360Z",
+            "shkeptncontext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+            "state": "finished",
+            "stages": [
+              {
+                "name": "staging",
+                "image": "docker.io/keptnexamples/carts:0.12.3",
+                "state": "finished",
+                "latestEvaluation": {
+                  "result": "fail",
+                  "score": 50
+                },
+                "latestEvent": {
+                  "type": "sh.keptn.event.staging.rollback.finished",
+                  "id": "b5e9ced4-6726-4124-87bb-2437738e23a3",
+                  "time": "2021-09-23T16:11:41.044Z"
+                },
+                "latestFailedEvent": {
+                  "type": "sh.keptn.event.staging.delivery.finished",
+                  "id": "25744cc7-50da-4dc5-8baa-53b63d482d5e",
+                  "time": "2021-09-23T16:03:25.048Z"
+                },
+                "latestEvaluationTrace": {
+                  "data": {
+                    "evaluation": {
+                      "comparedEvents": [
+                        "d5cab700-068d-41f2-99b1-35fa867816d6"
+                      ],
+                      "gitCommit": "",
+                      "indicatorResults": [
+                        {
+                          "displayName": "Response time P95",
+                          "keySli": false,
+                          "passTargets": [
+                            {
+                              "criteria": "<=+10%",
+                              "targetValue": 356.64880252792614,
+                              "violated": true
+                            },
+                            {
+                              "criteria": "<600",
+                              "targetValue": 600,
+                              "violated": false
+                            }
+                          ],
+                          "score": 0.5,
+                          "status": "warning",
+                          "value": {
+                            "metric": "response_time_p95",
+                            "success": true,
+                            "value": 358.6862598237452
+                          },
+                          "warningTargets": [
+                            {
+                              "criteria": "<=800",
+                              "targetValue": 800,
+                              "violated": false
+                            }
+                          ]
+                        }
+                      ],
+                      "result": "fail",
+                      "score": 50,
+                      "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICIxLjAiDQpjb21wYXJpc29uOg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciDQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxDQpmaWx0ZXI6DQpvYmplY3RpdmVzOg0KICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1Ig0KICAgIGRpc3BsYXlOYW1lOiAiUmVzcG9uc2UgdGltZSBQOTUiDQogICAga2V5X3NsaTogZmFsc2UNCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpDQogICAgICAtIGNyaXRlcmlhOg0KICAgICAgICAgIC0gIjw9KzEwJSIgICMgcmVsYXRpdmUgdmFsdWVzIHJlcXVpcmUgYSBwcmVmaXhlZCBzaWduIChwbHVzIG9yIG1pbnVzKQ0KICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3INCiAgICB3YXJuaW5nOiAgICAgICAgICAjIGlmIHRoZSByZXNwb25zZSB0aW1lIGlzIGJlbG93IDgwMG1zLCB0aGUgcmVzdWx0IHNob3VsZCBiZSBhIHdhcm5pbmcNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD04MDAiDQogICAgd2VpZ2h0OiAxDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
+                      "timeEnd": "2021-09-23T16:02:06Z",
+                      "timeStart": "2021-09-23T15:58:46Z"
+                    },
+                    "labels": {
+                      "DtCreds": "dynatrace"
+                    },
+                    "project": "sockshop",
+                    "result": "fail",
+                    "service": "carts",
+                    "stage": "staging",
+                    "status": "succeeded"
+                  },
+                  "id": "17c311d9-ebf4-4d4d-9639-70da481c2771",
+                  "source": "lighthouse-service",
+                  "specversion": "1.0",
+                  "time": "2021-09-23T16:03:24.961Z",
+                  "type": "sh.keptn.event.evaluation.finished",
+                  "shkeptncontext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+                  "shkeptnspecversion": "0.2.3",
+                  "triggeredid": "103a3b68-aa89-4bea-8ec5-aecb38fdc255"
+                }
+              }
+            ]
+          },
+          "deploymentInformation": {
+            "deploymentUrl": "http://carts.sockshop-staging.35.188.183.151.nip.io:80"
+          }
+        },
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.deployment.finished": {
+              "eventId": "a6492f90-f68a-408c-8816-085f09c1e033",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871210252470552"
+            },
+            "sh.keptn.event.deployment.started": {
+              "eventId": "f5718728-cb8f-4de8-b4a3-8810140d1f15",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871175526165668"
+            },
+            "sh.keptn.event.deployment.triggered": {
+              "eventId": "db3c509f-a58a-49a9-a751-5ac7eadb97dd",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871175345372892"
+            },
+            "sh.keptn.event.release.finished": {
+              "eventId": "7bac0188-ec19-4879-a622-541f43ae32ee",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871210524748841"
+            },
+            "sh.keptn.event.release.started": {
+              "eventId": "10100041-811c-4f60-9c34-ec8d525d70c1",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871210626135926"
+            },
+            "sh.keptn.event.release.triggered": {
+              "eventId": "5316f237-4f1b-48d8-a694-9b9ee3fc032b",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871210425341526"
+            },
+            "sh.keptn.event.staging.delivery-direct.finished": {
+              "eventId": "c465f8ee-c29f-4d9f-bd96-e9e1fbfd2e75",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871212533608787"
+            },
+            "sh.keptn.event.staging.delivery-direct.triggered": {
+              "eventId": "8a7c9754-4c3c-410b-ad01-4a2a8f6a5f72",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871173926851394"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1631871081704592529",
+          "deployedImage": "docker.io/mongo:4.2.2",
+          "serviceName": "carts-db",
+          "latestSequence": {
+            "name": "delivery-direct",
+            "service": "carts-db",
+            "project": "sockshop",
+            "time": "2021-09-17T09:32:05.363Z",
+            "shkeptncontext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+            "state": "finished",
+            "stages": [
+              {
+                "name": "staging",
+                "image": "docker.io/mongo:4.2.2",
+                "state": "finished",
+                "latestEvent": {
+                  "type": "sh.keptn.event.staging.delivery-direct.finished",
+                  "id": "c465f8ee-c29f-4d9f-bd96-e9e1fbfd2e75",
+                  "time": "2021-09-17T09:33:32.524Z"
+                }
+              }
+            ]
+          },
+          "deploymentInformation": {
+            "deploymentUrl": "http://carts-db.sockshop-staging.35.188.183.151.nip.io:80"
+          }
+        }
+      ],
+      "stageName": "staging",
+      "parentStages": [
+        "dev"
+      ]
+    },
+    {
+      "services": [
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.deployment.finished": {
+              "eventId": "717a6fb0-8e8d-46ad-909c-6d219bd8e7f3",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413574151690370"
+            },
+            "sh.keptn.event.deployment.started": {
+              "eventId": "5a1a638d-aa39-4f3e-a379-3a376469a3e5",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413466746202699"
+            },
+            "sh.keptn.event.deployment.triggered": {
+              "eventId": "a6f6cae7-b854-4cd6-aafb-36b35326248f",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413466742486554"
+            },
+            "sh.keptn.event.production.delivery.finished": {
+              "eventId": "3a814dc1-0908-4e89-9ef9-ad3025fed821",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413691846986469"
+            },
+            "sh.keptn.event.production.delivery.triggered": {
+              "eventId": "9e8eb14e-2c5a-4d97-bfae-4c20afc9585b",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413463444649627"
+            },
+            "sh.keptn.event.release.finished": {
+              "eventId": "1ef7d79f-e6ea-4a1e-a1d9-cebf787142f4",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413691549614671"
+            },
+            "sh.keptn.event.release.started": {
+              "eventId": "3212ba34-81a0-4242-a84c-40b7ffb2973c",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413574346684570"
+            },
+            "sh.keptn.event.release.triggered": {
+              "eventId": "cd110698-41de-46e5-a417-ecf95771b82f",
+              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "time": "1632413574342735236"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1631871045325595808",
+          "deployedImage": "docker.io/keptnexamples/carts:0.12.3",
+          "serviceName": "carts",
+          "latestSequence": {
+            "name": "delivery",
+            "service": "carts",
+            "project": "sockshop",
+            "time": "2021-09-23T15:52:06.763Z",
+            "shkeptncontext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+            "state": "finished",
+            "stages": [
+              {
+                "name": "production",
+                "image": "docker.io/keptnexamples/carts:0.12.3",
+                "state": "finished",
+                "latestEvent": {
+                  "type": "sh.keptn.event.production.delivery.finished",
+                  "id": "3a814dc1-0908-4e89-9ef9-ad3025fed821",
+                  "time": "2021-09-23T16:14:51.750Z"
+                }
+              }
+            ]
+          },
+          "deploymentInformation": {
+            "deploymentUrl": "http://carts.sockshop-production.35.188.183.151.nip.io:80"
+          }
+        },
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.deployment.finished": {
+              "eventId": "91a6f4e5-2b50-43e7-b080-f7ba64e75822",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871257436351332"
+            },
+            "sh.keptn.event.deployment.started": {
+              "eventId": "756112be-1e98-4697-b598-cbed4b56d40c",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871214226891368"
+            },
+            "sh.keptn.event.deployment.triggered": {
+              "eventId": "5cc112df-1efa-481c-9f88-7b79a9ab80ae",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871214229922556"
+            },
+            "sh.keptn.event.production.delivery-direct.finished": {
+              "eventId": "483795ab-b4de-4330-a92d-45870d458e83",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871259832069754"
+            },
+            "sh.keptn.event.production.delivery-direct.triggered": {
+              "eventId": "25f2ee91-60f2-41f1-8095-6e33b1e6f258",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871212625961435"
+            },
+            "sh.keptn.event.release.finished": {
+              "eventId": "b93252b5-4094-417f-b5d4-96d6b422c61f",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871257729443496"
+            },
+            "sh.keptn.event.release.started": {
+              "eventId": "29d4a407-8d9a-49cd-8da0-7fca0feca5ab",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871257732327623"
+            },
+            "sh.keptn.event.release.triggered": {
+              "eventId": "037438b1-6fd5-4c89-ad4d-cffab32832c3",
+              "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+              "time": "1631871257725498444"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1631871085384755454",
+          "deployedImage": "docker.io/mongo:4.2.2",
+          "serviceName": "carts-db",
+          "latestSequence": {
+            "name": "delivery-direct",
+            "service": "carts-db",
+            "project": "sockshop",
+            "time": "2021-09-17T09:32:05.363Z",
+            "shkeptncontext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+            "state": "finished",
+            "stages": [
+              {
+                "name": "production",
+                "image": "docker.io/mongo:4.2.2",
+                "state": "finished",
+                "latestEvent": {
+                  "type": "sh.keptn.event.production.delivery-direct.finished",
+                  "id": "483795ab-b4de-4330-a92d-45870d458e83",
+                  "time": "2021-09-17T09:34:19.742Z"
+                }
+              }
+            ]
+          },
+          "deploymentInformation": {
+            "deploymentUrl": "http://carts-db.sockshop-production.35.188.183.151.nip.io:80"
+          }
+        }
+      ],
+      "stageName": "production",
+      "parentStages": [
+        "staging"
+      ]
+    }
+  ],
+  "creationDate": "1631870924824247750",
+  "gitRemoteURI": "https://github.com/laneli/sockshop",
+  "gitUser": "laneli",
+  "projectName": "sockshop",
+  "shipyard": "apiVersion: spec.keptn.sh/0.2.2\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 15m\n                  properties:\n                    timeframe: 15m\n",
+  "shipyardVersion": "spec.keptn.sh/0.2.2"
+}

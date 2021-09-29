@@ -17,6 +17,8 @@
 // import './commands';
 
 import 'cypress-xpath';
+import './commands';
+import './intercept';
 
 Cypress.on('window:before:load', (window) => {
   cy.spy(window.console, 'error');

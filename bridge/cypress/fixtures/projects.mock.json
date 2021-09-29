@@ -2,455 +2,156 @@
   "nextPageKey": "0",
   "projects": [
     {
-      "creationDate": "1620032162124941532",
-      "gitRemoteURI": "https://github.com/keptn-public-demo/litmus.git",
-      "gitUser": "jetzlstorfer",
-      "projectName": "litmus",
-      "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n    name: shipyard-litmus-chaos\nspec:\n    stages:\n        - name: chaos\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n",
-      "shipyardVersion": "spec.keptn.sh/0.2.0",
-      "stages": [
-        {
-          "services": [
-            {
-              "creationDate": "1620032183477858051",
-              "deployedImage": "jetzlstorfer/hello-server:v0.1.1",
-              "lastEventTypes": {
-                "sh.keptn.event.chaos.delivery.finished": {
-                  "eventId": "ee03e61e-b194-4811-8630-b16580ed15f3",
-                  "keptnContext": "dbb68541-1409-4bc0-a408-7fb4793d8fcd",
-                  "time": "1630659795964208277"
-                },
-                "sh.keptn.event.chaos.delivery.triggered": {
-                  "eventId": "d74e437d-548b-4159-8d9e-124ca2ec6dd1",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178003178294986"
-                },
-                "sh.keptn.event.deployment.finished": {
-                  "eventId": "8e4bc43f-cfdf-48ca-a2e8-6a305dbff3de",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178028391271631"
-                },
-                "sh.keptn.event.deployment.started": {
-                  "eventId": "5cc1fc32-3cc0-4006-ab3a-2a4cf0a1c606",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178010064732661"
-                },
-                "sh.keptn.event.deployment.triggered": {
-                  "eventId": "51393cfa-d217-4361-b72c-9d37beff69ed",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178010058964035"
-                },
-                "sh.keptn.event.evaluation.finished": {
-                  "eventId": "872a0496-f2fa-4007-b293-f19841883973",
-                  "keptnContext": "dbb68541-1409-4bc0-a408-7fb4793d8fcd",
-                  "time": "1630659795778960112"
-                },
-                "sh.keptn.event.evaluation.invalidated": {
-                  "eventId": "02695cbd-83ca-4ca8-870e-63787ef48ea8",
-                  "keptnContext": "074d05b7-9df7-4380-92f8-1e2111876639",
-                  "time": "1626962386903974001"
-                },
-                "sh.keptn.event.evaluation.started": {
-                  "eventId": "5c9bb8f3-9463-484e-8f2d-b76786f9968d",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178147659885371"
-                },
-                "sh.keptn.event.evaluation.triggered": {
-                  "eventId": "da93bb0c-d02f-42a9-ab60-829be12ccffe",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178147662847166"
-                },
-                "sh.keptn.event.get-sli.finished": {
-                  "eventId": "ac75ee6a-6689-4053-8e83-a2d5ab08a593",
-                  "keptnContext": "dbb68541-1409-4bc0-a408-7fb4793d8fcd",
-                  "time": "1630659794465693681"
-                },
-                "sh.keptn.event.get-sli.started": {
-                  "eventId": "9054f00a-9251-45b6-b549-5a32089abbc4",
-                  "keptnContext": "dbb68541-1409-4bc0-a408-7fb4793d8fcd",
-                  "time": "1630659791162316632"
-                },
-                "sh.keptn.event.get-sli.triggered": {
-                  "eventId": "c00ac1c6-8e5c-4997-bd5f-e470e03ed5fb",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178153182540914"
-                },
-                "sh.keptn.event.test.finished": {
-                  "eventId": "4c42b9f9-b66a-41d0-8dc1-bc7a7e532634",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178147375278222"
-                },
-                "sh.keptn.event.test.started": {
-                  "eventId": "d0598759-7d96-4847-8294-d68b4d055a7d",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178028754629047"
-                },
-                "sh.keptn.event.test.triggered": {
-                  "eventId": "67ce93da-b8af-46a9-a581-3b9f8ddd82ef",
-                  "keptnContext": "a79ff58d-b56e-45c9-8d28-6f082510cb7d",
-                  "time": "1631178028660511275"
-                }
-              },
-              "openRemediations": null,
-              "serviceName": "helloservice"
-            }
-          ],
-          "stageName": "chaos"
-        }
-      ]
-    },
-    {
-      "creationDate": "1619784903266644139",
-      "gitRemoteURI": "https://github.com/keptn-public-demo/podtatohead.git",
-      "gitUser": "jetzlstorfer",
-      "projectName": "podtatohead",
-      "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: hardening\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: hardening.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n",
-      "shipyardVersion": "spec.keptn.sh/0.2.0",
-      "stages": [
-        {
-          "services": [
-            {
-              "creationDate": "1619784963910502504",
-              "deployedImage": "gabrieltanner/hello-server:v0.1.2",
-              "lastEventTypes": {
-                "sh.keptn.event.deployment.finished": {
-                  "eventId": "b3264342-bf48-4877-8cb9-0a69c92aba07",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181659240871472"
-                },
-                "sh.keptn.event.deployment.started": {
-                  "eventId": "e0f5e142-3675-4fd1-a854-6bfd359f2c32",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181618161356720"
-                },
-                "sh.keptn.event.deployment.triggered": {
-                  "eventId": "0a8d988f-642d-4042-a4a6-bef66beeedf3",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181618157353841"
-                },
-                "sh.keptn.event.evaluation.finished": {
-                  "eventId": "e71a2933-a5f9-478d-ba50-949b87cddeb1",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587662212299859"
-                },
-                "sh.keptn.event.evaluation.started": {
-                  "eventId": "1e0ce92d-3c50-4cb8-8d2b-f8c7a13c95c7",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181737560452629"
-                },
-                "sh.keptn.event.evaluation.triggered": {
-                  "eventId": "da63160f-236b-4293-bb00-8a147add510f",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181737265387773"
-                },
-                "sh.keptn.event.get-sli.finished": {
-                  "eventId": "1a6e8c01-869e-4b85-a5b9-f23e1b9958ce",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587659200291611"
-                },
-                "sh.keptn.event.get-sli.started": {
-                  "eventId": "6a10d34e-0c28-4038-ba11-f860aa819a66",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587655099218046"
-                },
-                "sh.keptn.event.get-sli.triggered": {
-                  "eventId": "2ae9fa3a-9969-42aa-b8d0-522e282f58cc",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181742370974521"
-                },
-                "sh.keptn.event.hardening.delivery.finished": {
-                  "eventId": "12003bf8-3cd3-42f3-8d7a-edcf88573f76",
-                  "keptnContext": "0bd79ea7-90e2-440c-b308-33c7d78de186",
-                  "time": "1631171041158448325"
-                },
-                "sh.keptn.event.hardening.delivery.triggered": {
-                  "eventId": "53ed713d-fc8f-4562-a492-f5313b9a5b5b",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181615222395551"
-                },
-                "sh.keptn.event.release.finished": {
-                  "eventId": "a52958ce-3d6e-45b6-a7ff-0de38fa865fb",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587693024488364"
-                },
-                "sh.keptn.event.release.started": {
-                  "eventId": "5e326204-a006-4d0c-a8a3-5acf7a938766",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587662500327886"
-                },
-                "sh.keptn.event.release.triggered": {
-                  "eventId": "fcde7fa0-c37c-4c0f-9dfe-cd2d79e976a3",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587662487916903"
-                },
-                "sh.keptn.event.test.finished": {
-                  "eventId": "5461e2e2-0db1-4ebf-a354-66593ec8e927",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181736997009990"
-                },
-                "sh.keptn.event.test.started": {
-                  "eventId": "c5ff0630-3e95-4571-ab1c-8b7424473402",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181659566467947"
-                },
-                "sh.keptn.event.test.triggered": {
-                  "eventId": "93f2b3a2-656e-45a6-ab7c-daa757ac74c6",
-                  "keptnContext": "29f6d5cd-5ca5-4077-953e-6bb158e6940e",
-                  "time": "1631181659563249323"
-                }
-              },
-              "openRemediations": null,
-              "serviceName": "helloservice"
-            }
-          ],
-          "stageName": "hardening"
-        },
-        {
-          "services": [
-            {
-              "creationDate": "1619784966553880594",
-              "deployedImage": "gabrieltanner/hello-server:v0.1.1",
-              "lastEventTypes": {
-                "sh.keptn.event.deployment.finished": {
-                  "eventId": "6ba057e3-a8d9-49fe-91b6-b6130c300d8c",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587714695505899"
-                },
-                "sh.keptn.event.deployment.started": {
-                  "eventId": "9f425402-1a49-45d8-aa19-cad54eeaa213",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587693294835496"
-                },
-                "sh.keptn.event.deployment.triggered": {
-                  "eventId": "6cca47ec-ed97-4c2d-9c70-7c3353028b37",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587693288368075"
-                },
-                "sh.keptn.event.production.delivery.finished": {
-                  "eventId": "56d5f9c1-ecf6-439c-91af-0dd5d4851f27",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587746794990707"
-                },
-                "sh.keptn.event.production.delivery.triggered": {
-                  "eventId": "b3034a3b-c72d-47a0-a2a4-7dc1cffc40e1",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587693193907868"
-                },
-                "sh.keptn.event.release.finished": {
-                  "eventId": "6e1fbbd2-b63f-41b1-9195-4f9f0091f549",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587746703361351"
-                },
-                "sh.keptn.event.release.started": {
-                  "eventId": "4534d41a-00d3-453b-ac2c-8cb991e3a286",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587714887571331"
-                },
-                "sh.keptn.event.release.triggered": {
-                  "eventId": "6db504b4-42ed-475e-b1a0-1efd76a170fe",
-                  "keptnContext": "b88fd628-8bc2-412a-a8d7-e3f68e5bcd1b",
-                  "time": "1630587714801752482"
-                }
-              },
-              "openRemediations": null,
-              "serviceName": "helloservice"
-            }
-          ],
-          "stageName": "production",
-          "parentStages": [
-            "hardening"
-          ]
-        }
-      ]
-    },
-    {
-      "gitRemoteURI": "https://github.com/keptn-public-demo/sockshop.git",
-      "gitUser": "jetzlstorfer",
+      "creationDate": "1631870924824247750",
+      "gitRemoteURI": "https://github.com/laneli/sockshop",
+      "gitUser": "laneli",
       "projectName": "sockshop",
-      "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: \"\"\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n",
-      "shipyardVersion": "spec.keptn.sh/0.2.0",
+      "shipyard": "apiVersion: spec.keptn.sh/0.2.2\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 15m\n                  properties:\n                    timeframe: 15m\n",
+      "shipyardVersion": "spec.keptn.sh/0.2.2",
       "stages": [
         {
           "services": [
             {
-              "deployedImage": "docker.io/keptnexamples/carts:0.12.1",
+              "creationDate": "1631871037137298801",
+              "deployedImage": "docker.io/keptnexamples/carts:0.12.3",
               "lastEventTypes": {
-                "sh.keptn.event.approval.finished": {
-                  "eventId": "d7bca479-6286-47ed-9dfa-0ee7c5769331",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615363448251350247"
-                },
-                "sh.keptn.event.approval.started": {
-                  "eventId": "4d66d30d-e009-415f-8c75-49e0d9d4f4d3",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615363448240293018"
-                },
-                "sh.keptn.event.approval.triggered": {
-                  "eventId": "d54a4207-e0bb-4ca2-9a7e-01376ab42723",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615363448204057221"
-                },
-                "sh.keptn.event.configuration.change": {
-                  "eventId": "825299d3-251b-4073-ac2f-d3c54fa19efe",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201417037340407"
-                },
                 "sh.keptn.event.deployment.finished": {
-                  "eventId": "b9234c4d-ad34-4936-a781-ba000128702b",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174503735028520"
+                  "eventId": "01b2665e-b5b1-4d89-a862-8b3a798f634e",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412691647399498"
                 },
                 "sh.keptn.event.deployment.started": {
-                  "eventId": "6dc378f6-8997-47de-aca4-d55c9f0e2584",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174418460324819"
+                  "eventId": "2b309150-d323-49ae-904b-51452631ac05",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412586444082520"
                 },
                 "sh.keptn.event.deployment.triggered": {
-                  "eventId": "d604347f-9283-407a-bd02-4c5362f21399",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174418360889198"
+                  "eventId": "7ca18584-6231-4e10-9726-c028d1d80841",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412586250552995"
                 },
                 "sh.keptn.event.dev.delivery.finished": {
-                  "eventId": "10278bd3-0d1a-4b1f-b113-12424493e23b",
-                  "keptnContext": "0708290a-285f-483e-8ee6-46a05ad27bad",
-                  "time": "1631171037460526510"
+                  "eventId": "a766ccaf-c2d7-4684-b1a9-6eac342c67db",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412904945219782"
                 },
                 "sh.keptn.event.dev.delivery.triggered": {
-                  "eventId": "1624241e-3bb2-4288-bdfb-8e45188da2cc",
-                  "keptnContext": "1d55559a-d088-4d41-bf2f-654fa7681b36",
-                  "time": "1631185209581400467"
-                },
-                "sh.keptn.event.dev.remediation.triggered": {
-                  "eventId": "91659910-bc8b-4245-9949-336198140dd5",
-                  "keptnContext": "32353033-3738-4532-b234-363131383336",
-                  "time": "1629071429039788710"
+                  "eventId": "eb39e4ef-06ec-488c-ab52-33090b0992c7",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412318022063379"
                 },
                 "sh.keptn.event.evaluation.finished": {
-                  "eventId": "26e6682a-6a5d-4493-9aa3-a9c957bc284f",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656246535165304"
+                  "eventId": "dfc49f43-097f-462a-8b98-1b59a7b775e0",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412902468998516"
                 },
                 "sh.keptn.event.evaluation.started": {
-                  "eventId": "955474c7-deb2-48e2-b48c-3c87f338c667",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174563763435998"
+                  "eventId": "e201a53c-626c-442b-b168-e53bbbaa7d81",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412765842634961"
                 },
                 "sh.keptn.event.evaluation.triggered": {
-                  "eventId": "51482d0e-de8f-4957-a64f-52f5a3188b60",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174563669703959"
+                  "eventId": "72619f05-788d-4eef-be25-d7cf9ab14c1f",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412765747141054"
                 },
                 "sh.keptn.event.get-sli.finished": {
-                  "eventId": "024fb43e-67b6-453f-9b10-0a58fb342f15",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656245889207818"
+                  "eventId": "aa412cce-4707-4b06-806f-a1d187b28553",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412898568442072"
                 },
                 "sh.keptn.event.get-sli.started": {
-                  "eventId": "7199af76-6bfc-4d56-84b4-5a794f2b573a",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656118307297988"
+                  "eventId": "b0f77f77-b7e4-45e7-a9b0-8203bc6fc374",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412773545742243"
                 },
                 "sh.keptn.event.get-sli.triggered": {
-                  "eventId": "2453349a-a0c5-4fc6-8cf2-43dfe1d464fb",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174567684245298"
-                },
-                "sh.keptn.event.problem.open": {
-                  "eventId": "c415da56-139e-4ead-b211-3322f012ccc1",
-                  "keptnContext": "32323632-3835-4034-b334-343136363138",
-                  "time": "1615476203817105541"
+                  "eventId": "57c8eb56-35b5-42a0-8399-dd5fd098ef63",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412773508712055"
                 },
                 "sh.keptn.event.release.finished": {
-                  "eventId": "44f57ea5-2552-42f2-b351-05ecb129ee65",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656246802427800"
+                  "eventId": "f8325d4b-0eef-4ab4-bd58-5da3c59eb888",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412902849431853"
                 },
                 "sh.keptn.event.release.started": {
-                  "eventId": "96ff8535-64c8-4a8b-8fc8-89b3bda82bb6",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656246711431033"
+                  "eventId": "6ebdc6ca-7e1a-402e-945d-eff09927ba66",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412902648037205"
                 },
                 "sh.keptn.event.release.triggered": {
-                  "eventId": "f4c1022c-ca53-4522-b352-e4ad6dba6dcb",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656246621730011"
-                },
-                "sh.keptn.event.remediation.finished": {
-                  "eventId": "8307f334-325b-4a6f-85e9-cd2585f1793d",
-                  "keptnContext": "32323632-3835-4034-b334-343136363138",
-                  "time": "1615476204583022366"
+                  "eventId": "c9c3cb36-afdb-4003-85a8-d873b10e1236",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412902566208418"
                 },
                 "sh.keptn.event.test.finished": {
-                  "eventId": "343a8838-7082-4f9b-81e5-7cb48c89a65f",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174563064691627"
+                  "eventId": "a8eb666a-00f8-48b5-9a32-bb23c5ad29b6",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412765551745554"
                 },
                 "sh.keptn.event.test.started": {
-                  "eventId": "38f001e3-6d8b-4990-b38d-4c6840226c06",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174504458132609"
+                  "eventId": "fa139294-41eb-435a-b6bb-6fa056ed8f7f",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412691957716288"
                 },
                 "sh.keptn.event.test.triggered": {
-                  "eventId": "d6229029-03b3-4985-b99c-1fa34a524018",
-                  "keptnContext": "65f56af4-68a0-466b-9383-c625f95f0f77",
-                  "time": "1631174504360897885"
-                },
-                "sh.keptn.events.deployment-finished": {
-                  "eventId": "7d824a94-7a38-4f59-8a93-a2de7e01440a",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201280767848818"
-                },
-                "sh.keptn.events.evaluation-done": {
-                  "eventId": "3b7da0f6-4f73-420a-95bf-65573e8e5fc8",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201415745337985"
+                  "eventId": "d7ca0685-cbf6-4681-9be2-2b4eb02806fc",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412691947987901"
                 },
                 "sh.keptn.events.problem": {
-                  "eventId": "810598d6-79a0-447d-9589-65f3ef5fe639",
-                  "keptnContext": "32353033-3738-4532-b234-363131383336",
-                  "time": "1629071648692468176"
-                },
-                "sh.keptn.events.tests-finished": {
-                  "eventId": "c32ff7a0-5c52-4808-a24e-a8e1b8b2076e",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201291096961808"
-                },
-                "sh.keptn.internal.event.get-sli": {
-                  "eventId": "5ac566ff-400e-42c4-8927-20f5891fc51d",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201292858220443"
-                },
-                "sh.keptn.internal.event.get-sli.done": {
-                  "eventId": "412218b8-d742-4960-a407-919dc4df69e7",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201415366197157"
+                  "eventId": "277b0ad6-4907-48c9-8189-35930da2cee0",
+                  "keptnContext": "34373931-3632-4734-b238-303231383235",
+                  "time": "1632368517614731419"
                 }
               },
               "openRemediations": null,
               "serviceName": "carts"
             },
             {
+              "creationDate": "1631871078194383243",
               "deployedImage": "docker.io/mongo:4.2.2",
               "lastEventTypes": {
-                "sh.keptn.event.configuration.change": {
-                  "eventId": "4db57ccc-24bd-4c43-9835-aa26d33f446a",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935627249564564"
+                "sh.keptn.event.deployment.finished": {
+                  "eventId": "0af88fa3-9f0f-4a35-bd69-194e5b5466c3",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871171451900176"
                 },
-                "sh.keptn.events.deployment-finished": {
-                  "eventId": "23da634d-b3f1-4b55-a423-738413401d13",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935622120192543"
+                "sh.keptn.event.deployment.started": {
+                  "eventId": "da783643-785b-4745-beb6-895829f33b37",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871125625931740"
                 },
-                "sh.keptn.events.evaluation-done": {
-                  "eventId": "3c0ee192-864d-4f4d-8633-c73b5ae0648e",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935626097814736"
+                "sh.keptn.event.deployment.triggered": {
+                  "eventId": "01c36777-a5b2-4e1e-a3f0-bb11327d1008",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871125542832558"
                 },
-                "sh.keptn.events.tests-finished": {
-                  "eventId": "c026306f-dbda-4b53-96fb-8a348111f7a8",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935625370356958"
+                "sh.keptn.event.dev.delivery-direct.finished": {
+                  "eventId": "9ef2ea16-fa7e-489b-8463-49411bdae055",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871173826702128"
+                },
+                "sh.keptn.event.dev.delivery-direct.triggered": {
+                  "eventId": "98ceb2c9-317e-4c66-9a64-030b0ab5de6b",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871124225400501"
+                },
+                "sh.keptn.event.release.finished": {
+                  "eventId": "ce577ab0-7cfd-4d2a-a456-2d4750946b51",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871171831665990"
+                },
+                "sh.keptn.event.release.started": {
+                  "eventId": "af6c5694-ad36-43c5-b4fa-77a05ea783bb",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871171926180646"
+                },
+                "sh.keptn.event.release.triggered": {
+                  "eventId": "24c3bb40-c508-425c-ba57-fe31f4d1ba26",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871171727027810"
                 }
               },
               "openRemediations": null,
@@ -462,219 +163,171 @@
         {
           "services": [
             {
-              "deployedImage": "docker.io/keptnexamples/carts:0.12.1",
+              "creationDate": "1631871040782610326",
+              "deployedImage": "docker.io/keptnexamples/carts:0.12.3",
               "lastEventTypes": {
-                "sh.keptn.event.approval.finished": {
-                  "eventId": "5355385a-372a-4b22-8c24-7802ce84bfb7",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615363786774557119"
-                },
-                "sh.keptn.event.approval.started": {
-                  "eventId": "8b9d0edb-5822-4e42-9e5a-7c93cc778cb0",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615363786761648511"
-                },
-                "sh.keptn.event.approval.triggered": {
-                  "eventId": "0842b624-65e6-4e44-86f7-602d730af899",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615363786733475602"
-                },
-                "sh.keptn.event.configuration.change": {
-                  "eventId": "6adc378b-886e-45d0-9eab-73377b51f891",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615202032921428547"
-                },
                 "sh.keptn.event.deployment.finished": {
-                  "eventId": "390d44a8-5ee2-4367-98f5-b978591a6174",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656357842516724"
+                  "eventId": "9a811a15-765a-43cb-bd28-abe9009d63f4",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413115350342826"
                 },
                 "sh.keptn.event.deployment.started": {
-                  "eventId": "1e222255-79fe-4fb0-816c-99d26b9129bd",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656248922044960"
+                  "eventId": "8ca892a3-eb41-409f-9033-87bbaa799a99",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413006544410467"
                 },
                 "sh.keptn.event.deployment.triggered": {
-                  "eventId": "320b0340-7cce-403b-92ff-da694e893447",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656248912311513"
+                  "eventId": "46446537-269f-4c82-8ec1-4f608799e558",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413006452116517"
                 },
                 "sh.keptn.event.evaluation.finished": {
-                  "eventId": "16bbe5da-f692-461a-a02a-bd0730226fe6",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656602700145749"
-                },
-                "sh.keptn.event.evaluation.invalidated": {
-                  "eventId": "ea03357b-b33e-4857-97bd-271d9581ccdf",
-                  "keptnContext": "6d2341db-b05c-4af1-a535-2c2426c7b4ab",
-                  "time": "1622139488703939464"
+                  "eventId": "6831581e-27b9-4e13-8ffc-5a505e93e433",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413334665718336"
                 },
                 "sh.keptn.event.evaluation.started": {
-                  "eventId": "ee89bb9b-09ac-4f36-a986-8281ea3f2bcb",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656471827197048"
+                  "eventId": "97b40582-81ee-4242-b548-27e1b63244ec",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413253247026483"
                 },
                 "sh.keptn.event.evaluation.triggered": {
-                  "eventId": "f593beb2-dd8a-4f2b-80e5-af235d54bc08",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656471817572815"
+                  "eventId": "8fbd8331-6392-4be2-986c-d9e05a8e479a",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413253156729386"
                 },
                 "sh.keptn.event.get-sli.finished": {
-                  "eventId": "493f19e1-7798-46fc-9888-c70ef20c2090",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656599831899294"
+                  "eventId": "6e30aa6c-829d-480e-a06c-046cbf3bbb72",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413329227045950"
                 },
                 "sh.keptn.event.get-sli.started": {
-                  "eventId": "879fb695-6e7c-4a95-85f0-a937f545307d",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656473033778300"
+                  "eventId": "07501f40-4282-4696-84d3-dc3a6e723dc0",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413258745571700"
                 },
                 "sh.keptn.event.get-sli.triggered": {
-                  "eventId": "612c31bc-57a2-4949-9b5b-705b7c4bb347",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656473027402202"
-                },
-                "sh.keptn.event.problem.open": {
-                  "eventId": "e01aa93b-6f0a-4513-b7ca-84564a08ccee",
-                  "keptnContext": "2d373435-3039-4330-b331-343437393734",
-                  "time": "1619654545517545316"
+                  "eventId": "5b70109d-1d40-4e53-86fd-6c4a7ef784c7",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413258673952778"
                 },
                 "sh.keptn.event.release.finished": {
-                  "eventId": "26e9e932-c0be-40f6-b9c2-545365cc70b6",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656719448441708"
+                  "eventId": "e2cbf7b6-4c6a-48ff-b3ca-c05a4da3e43b",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413463060533570"
                 },
                 "sh.keptn.event.release.started": {
-                  "eventId": "73c8e84a-de37-48a7-83e5-fb2801c6658f",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656602987136570"
+                  "eventId": "3db27df8-b4b3-4d97-a550-d3312d94f914",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413334947988180"
                 },
                 "sh.keptn.event.release.triggered": {
-                  "eventId": "be0f637a-914e-4a1b-8a73-5dab970a5c46",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656602906029230"
-                },
-                "sh.keptn.event.remediation.finished": {
-                  "eventId": "9875d00c-22f1-49a0-be4b-0d6daa9bb5fe",
-                  "keptnContext": "2d373435-3039-4330-b331-343437393734",
-                  "time": "1619654545962598815"
+                  "eventId": "0d1ed426-d28b-4eba-81cf-71d5e7278071",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413334944570939"
                 },
                 "sh.keptn.event.rollback.finished": {
-                  "eventId": "ae8351aa-3a25-4755-9821-00ade30b6d6a",
-                  "keptnContext": "faca394a-2690-439e-97dc-17c5185004e6",
-                  "time": "1630581305480506631"
+                  "eventId": "9a081499-c530-4bc1-9878-e7980bb3f16a",
+                  "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+                  "time": "1632413500860560339"
                 },
                 "sh.keptn.event.rollback.started": {
-                  "eventId": "8b26f9dd-e5e8-44f9-ba46-5cf68c6f6590",
-                  "keptnContext": "faca394a-2690-439e-97dc-17c5185004e6",
-                  "time": "1630581286189010233"
+                  "eventId": "85c8c551-5493-41ad-ac87-ad33e71d7cbc",
+                  "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+                  "time": "1632413466347459682"
                 },
                 "sh.keptn.event.rollback.triggered": {
-                  "eventId": "0bfc619c-2365-4353-9e13-32fb593f1618",
-                  "keptnContext": "faca394a-2690-439e-97dc-17c5185004e6",
-                  "time": "1630581286005522213"
+                  "eventId": "aebc13ab-5a11-433e-9868-4c7596a96e3c",
+                  "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+                  "time": "1632413466343724677"
                 },
                 "sh.keptn.event.staging.delivery.finished": {
-                  "eventId": "ca833d06-dbf5-40dd-83be-a634ee812490",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656719581263760"
+                  "eventId": "3d829419-2869-4a5e-83cd-1a9b3a6890c0",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413463346488673"
                 },
                 "sh.keptn.event.staging.delivery.triggered": {
-                  "eventId": "e0caa5bc-f0fc-4602-b192-f96b090c4269",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656248821028916"
+                  "eventId": "fd566cde-1367-45eb-85d8-9f88b583ff90",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632412904950879091"
                 },
                 "sh.keptn.event.staging.rollback.finished": {
-                  "eventId": "a36cc70c-5b5f-45fc-8da4-9cd95688bbb2",
-                  "keptnContext": "faca394a-2690-439e-97dc-17c5185004e6",
-                  "time": "1630581305597033412"
+                  "eventId": "b5e9ced4-6726-4124-87bb-2437738e23a3",
+                  "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+                  "time": "1632413501059881480"
                 },
                 "sh.keptn.event.staging.rollback.triggered": {
-                  "eventId": "4b863948-2a10-4573-b5d1-dacfc1c3c173",
-                  "keptnContext": "faca394a-2690-439e-97dc-17c5185004e6",
-                  "time": "1630581285989929448"
-                },
-                "sh.keptn.event.start-evaluation": {
-                  "eventId": "d7b33309-472d-44c7-899b-683db0d97341",
-                  "keptnContext": "768b0a54-7440-4650-b677-0732401baaac",
-                  "time": "1603457562028650213"
+                  "eventId": "87e6e95f-2809-451b-a809-fc3e2aa79bd3",
+                  "keptnContext": "306b470a-5d98-4ae4-b305-a2ea0173cf99",
+                  "time": "1632413005243299302"
                 },
                 "sh.keptn.event.test.finished": {
-                  "eventId": "0d1c820d-95f8-4227-9567-0ce3f687cac3",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656471753104689"
+                  "eventId": "64b4a6a0-b6c7-41ff-a844-6e7fa6f18fd6",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413253070942812"
                 },
                 "sh.keptn.event.test.started": {
-                  "eventId": "3a152df0-ae35-479e-8521-34da856b900b",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656357998879366"
+                  "eventId": "432b0c38-779c-4401-b1ad-530019c948f1",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413115644960322"
                 },
                 "sh.keptn.event.test.triggered": {
-                  "eventId": "36e44fb9-cc76-410e-8d8b-7a5c2627c5e2",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656357916730607"
-                },
-                "sh.keptn.events.deployment-finished": {
-                  "eventId": "8ee4b5ba-d8af-40dc-b12b-9e88ea5d3044",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615201502134573543"
-                },
-                "sh.keptn.events.evaluation-done": {
-                  "eventId": "244ba4be-2bab-47ed-8b00-3c3dc0f09fce",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615202031556652133"
-                },
-                "sh.keptn.events.evaluation.invalidated": {
-                  "eventId": "3124990f-d92f-4f77-8c31-2eaeab348928",
-                  "keptnContext": "bc907a99-2e90-4961-b767-e458d2f1641d",
-                  "time": "1607695636341828889"
+                  "eventId": "55090cff-910b-4704-8e3a-e447ee0e05c9",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413115544149756"
                 },
                 "sh.keptn.events.problem": {
-                  "eventId": "5bddff0c-b618-44fa-9ffc-9c953663ba28",
-                  "keptnContext": "2d373435-3039-4330-b331-343437393734",
-                  "time": "1619654645673257315"
-                },
-                "sh.keptn.events.tests-finished": {
-                  "eventId": "c42aff45-5f39-46ce-8762-d1089620c706",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615202025134183267"
-                },
-                "sh.keptn.internal.event.get-sli": {
-                  "eventId": "b7b25b7e-3315-49ca-a7e1-9038c200a85f",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615202025877590430"
-                },
-                "sh.keptn.internal.event.get-sli.done": {
-                  "eventId": "804c3f5a-48d4-4b5f-9c76-2536e3e117e7",
-                  "keptnContext": "6b198490-a75c-48a5-9a0d-0d7c2ad2889c",
-                  "time": "1615202028734137971"
+                  "eventId": "ebaf40c5-7aa0-4b77-b7ba-41a1be124115",
+                  "keptnContext": "2d383237-3734-4234-b732-363939343939",
+                  "time": "1632368515361514225"
                 }
               },
               "openRemediations": null,
               "serviceName": "carts"
             },
             {
+              "creationDate": "1631871081704592529",
               "deployedImage": "docker.io/mongo:4.2.2",
               "lastEventTypes": {
-                "sh.keptn.event.configuration.change": {
-                  "eventId": "e054ab8a-da82-4e8f-a145-cb8dec8401f0",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935687479009225"
+                "sh.keptn.event.deployment.finished": {
+                  "eventId": "a6492f90-f68a-408c-8816-085f09c1e033",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871210252470552"
                 },
-                "sh.keptn.events.deployment-finished": {
-                  "eventId": "515f5bbb-ac53-4695-93a9-24b98c9f36ed",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935681680405471"
+                "sh.keptn.event.deployment.started": {
+                  "eventId": "f5718728-cb8f-4de8-b4a3-8810140d1f15",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871175526165668"
                 },
-                "sh.keptn.events.evaluation-done": {
-                  "eventId": "10e4e4f0-4d1b-40ff-a0a7-a7a74acf0141",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935686302042701"
+                "sh.keptn.event.deployment.triggered": {
+                  "eventId": "db3c509f-a58a-49a9-a751-5ac7eadb97dd",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871175345372892"
                 },
-                "sh.keptn.events.tests-finished": {
-                  "eventId": "52bcfc2a-1fdd-48be-b671-03a1bdad2a1a",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935685558352031"
+                "sh.keptn.event.release.finished": {
+                  "eventId": "7bac0188-ec19-4879-a622-541f43ae32ee",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871210524748841"
+                },
+                "sh.keptn.event.release.started": {
+                  "eventId": "10100041-811c-4f60-9c34-ec8d525d70c1",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871210626135926"
+                },
+                "sh.keptn.event.release.triggered": {
+                  "eventId": "5316f237-4f1b-48d8-a694-9b9ee3fc032b",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871210425341526"
+                },
+                "sh.keptn.event.staging.delivery-direct.finished": {
+                  "eventId": "c465f8ee-c29f-4d9f-bd96-e9e1fbfd2e75",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871212533608787"
+                },
+                "sh.keptn.event.staging.delivery-direct.triggered": {
+                  "eventId": "8a7c9754-4c3c-410b-ad01-4a2a8f6a5f72",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871173926851394"
                 }
               },
               "openRemediations": null,
@@ -689,244 +342,96 @@
         {
           "services": [
             {
-              "deployedImage": "docker.io/keptnexamples/carts:0.12.1",
+              "creationDate": "1631871045325595808",
+              "deployedImage": "docker.io/keptnexamples/carts:0.12.3",
               "lastEventTypes": {
-                "sh.keptn.event.action.finished": {
-                  "eventId": "c13df68f-e2a4-4d02-be34-b24ef939681f",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557378298136721"
-                },
-                "sh.keptn.event.action.started": {
-                  "eventId": "13df4313-953e-4ce3-8599-65e59cad1472",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557378228908496"
-                },
-                "sh.keptn.event.action.triggered": {
-                  "eventId": "dcecbc9f-ace1-4665-8a61-4728bef69141",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557378212050252"
-                },
-                "sh.keptn.event.approval.finished": {
-                  "eventId": "925e7a66-9330-499a-924a-de59a01adebe",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615364119035877155"
-                },
-                "sh.keptn.event.approval.started": {
-                  "eventId": "46f6ded3-5aeb-466c-a073-13fc78388aa6",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615364118993681372"
-                },
-                "sh.keptn.event.approval.triggered": {
-                  "eventId": "c83c00f7-b250-4566-85c5-f1c2d4c59450",
-                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
-                  "time": "1615364118968699341"
-                },
-                "sh.keptn.event.configuration.change": {
-                  "eventId": "22c29d85-7a34-414a-8e7b-aefd93574020",
-                  "keptnContext": "cf20e84a-4d2f-4d9c-bb84-202ea023c035",
-                  "time": "1615191023114026967"
-                },
                 "sh.keptn.event.deployment.finished": {
-                  "eventId": "63a148c1-f15c-448c-a7d3-f2efa65df896",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656808230662107"
+                  "eventId": "717a6fb0-8e8d-46ad-909c-6d219bd8e7f3",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413574151690370"
                 },
                 "sh.keptn.event.deployment.started": {
-                  "eventId": "cdbc891e-c5ff-4bc2-966b-fa9dcb32d587",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656719784120874"
+                  "eventId": "5a1a638d-aa39-4f3e-a379-3a376469a3e5",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413466746202699"
                 },
                 "sh.keptn.event.deployment.triggered": {
-                  "eventId": "b860ef08-a895-4f3d-aec2-1a4771864e5e",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656719693194871"
-                },
-                "sh.keptn.event.evaluation.finished": {
-                  "eventId": "e78e0c53-f7af-4a68-8bb1-b2af902b2354",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656947188902060"
-                },
-                "sh.keptn.event.evaluation.invalidated": {
-                  "eventId": "d726a54a-5f1e-4f65-8cb3-43da8c9db5ad",
-                  "keptnContext": "6024614c-ab53-4be2-8b43-39fc2d1fcfc1",
-                  "time": "1619778872962345568"
-                },
-                "sh.keptn.event.evaluation.started": {
-                  "eventId": "0781d4d4-bf10-4744-b5d5-695c80c386b9",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656816682384664"
-                },
-                "sh.keptn.event.evaluation.triggered": {
-                  "eventId": "b341d8b7-44f4-42c0-b491-216ea3f23d1e",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656816605444858"
-                },
-                "sh.keptn.event.get-sli.finished": {
-                  "eventId": "ecd7d0d1-5a74-4611-9bfa-a29f7211362a",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656945003961600"
-                },
-                "sh.keptn.event.get-sli.started": {
-                  "eventId": "eed765c2-f675-4318-891a-fe7ce4eb8943",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656817909019297"
-                },
-                "sh.keptn.event.get-sli.triggered": {
-                  "eventId": "5b808303-6582-4268-9ba7-abc89dcaffb5",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656817896860595"
-                },
-                "sh.keptn.event.problem.open": {
-                  "eventId": "6daccf92-4d0a-483c-a003-459b0499a3f2",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557377377953699"
+                  "eventId": "a6f6cae7-b854-4cd6-aafb-36b35326248f",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413466742486554"
                 },
                 "sh.keptn.event.production.delivery.finished": {
-                  "eventId": "4b54b32a-8dc9-49f4-b88b-e16714ae9468",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656968299896315"
+                  "eventId": "3a814dc1-0908-4e89-9ef9-ad3025fed821",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413691846986469"
                 },
                 "sh.keptn.event.production.delivery.triggered": {
-                  "eventId": "771ce9a5-98ee-4d0d-a979-fbab53f42b8b",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656719682260940"
-                },
-                "sh.keptn.event.production.remediation.triggered": {
-                  "eventId": "c6665e3e-9c56-4ca9-8a52-3983c17f019b",
-                  "keptnContext": "2d343437-3134-4235-b932-313432303737",
-                  "time": "1630022235640082280"
-                },
-                "sh.keptn.event.production.rollback.finished": {
-                  "eventId": "2d9d3f45-dfde-4012-826a-d4b6f6f9b744",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656984794200182"
-                },
-                "sh.keptn.event.production.rollback.triggered": {
-                  "eventId": "5dbde521-cb8a-47cc-847b-4339bd9698da",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656968383282898"
+                  "eventId": "9e8eb14e-2c5a-4d97-bfae-4c20afc9585b",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413463444649627"
                 },
                 "sh.keptn.event.release.finished": {
-                  "eventId": "8ca6d87c-e4c6-4feb-bdfc-cafa080558e0",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656968196830226"
+                  "eventId": "1ef7d79f-e6ea-4a1e-a1d9-cebf787142f4",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413691549614671"
                 },
                 "sh.keptn.event.release.started": {
-                  "eventId": "4361e716-caee-42ac-9f71-5b9cd9e09de1",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656947475676952"
+                  "eventId": "3212ba34-81a0-4242-a84c-40b7ffb2973c",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413574346684570"
                 },
                 "sh.keptn.event.release.triggered": {
-                  "eventId": "61513aba-2df5-42b3-9210-e6c37a381057",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656947400863525"
-                },
-                "sh.keptn.event.remediation.finished": {
-                  "eventId": "35ae6959-f42d-402c-b7b2-0e88dedc8462",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557983705213221"
-                },
-                "sh.keptn.event.remediation.status.changed": {
-                  "eventId": "dcefedd5-01e7-4399-94cf-e1f75fdcc66c",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557378207359030"
-                },
-                "sh.keptn.event.remediation.triggered": {
-                  "eventId": "efb63547-91ef-43d0-878a-5cd2e0e322d0",
-                  "keptnContext": "31393236-3532-4337-b236-363530333030",
-                  "time": "1615557378199201841"
-                },
-                "sh.keptn.event.rollback.finished": {
-                  "eventId": "00e1e488-c802-4f1d-a7a7-a7a4bf8a6508",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656984716568422"
-                },
-                "sh.keptn.event.rollback.started": {
-                  "eventId": "ba7692ad-e523-4743-9be0-4d8cd77282d0",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656968575451067"
-                },
-                "sh.keptn.event.rollback.triggered": {
-                  "eventId": "f5e5810e-863d-4d19-b5bf-02bdefca2197",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656968487211204"
-                },
-                "sh.keptn.event.start-evaluation": {
-                  "eventId": "258fecbb-3fb3-4322-8e4b-42064741c1c4",
-                  "keptnContext": "32393934-3237-4233-b439-303333303734",
-                  "time": "1603458805945530421"
-                },
-                "sh.keptn.event.test.finished": {
-                  "eventId": "a05e99d1-703d-4059-adf7-867a4f555619",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656816567857588"
-                },
-                "sh.keptn.event.test.started": {
-                  "eventId": "12b59541-81cb-4f7d-951f-470ffdfc7495",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656808377901445"
-                },
-                "sh.keptn.event.test.triggered": {
-                  "eventId": "67aa2fe2-3f88-4bc7-8067-bb4ed8637a4b",
-                  "keptnContext": "42003b9d-d9d7-4287-9723-7b9b98585620",
-                  "time": "1630656808300266208"
-                },
-                "sh.keptn.events.deployment-finished": {
-                  "eventId": "d3ce6f0a-35f1-4c48-ae10-eba4359474c4",
-                  "keptnContext": "cf20e84a-4d2f-4d9c-bb84-202ea023c035",
-                  "time": "1615191019293183857"
-                },
-                "sh.keptn.events.evaluation-done": {
-                  "eventId": "c39f6e6f-44f4-46e0-a00a-096d3fbbab60",
-                  "keptnContext": "cf20e84a-4d2f-4d9c-bb84-202ea023c035",
-                  "time": "1615191021903161900"
-                },
-                "sh.keptn.events.problem": {
-                  "eventId": "b91e91c0-6b27-46a6-ad03-834f03ac3f67",
-                  "keptnContext": "2d343437-3134-4235-b932-313432303737",
-                  "time": "1630022590553974406"
-                },
-                "sh.keptn.events.tests-finished": {
-                  "eventId": "9da23d85-7551-4948-a5e0-bf4a8eee1a67",
-                  "keptnContext": "cf20e84a-4d2f-4d9c-bb84-202ea023c035",
-                  "time": "1615191021521996036"
-                },
-                "sh.keptn.internal.event.get-sli": {
-                  "eventId": "866ba963-4557-4424-9d41-2e94a08bae78",
-                  "keptnContext": "32393934-3237-4233-b439-303333303734",
-                  "time": "1603458806350511730"
-                },
-                "sh.keptn.internal.event.get-sli.done": {
-                  "eventId": "10291b56-4168-4c72-b521-47dc540734e4",
-                  "keptnContext": "32393934-3237-4233-b439-303333303734",
-                  "time": "1603458808626290983"
+                  "eventId": "cd110698-41de-46e5-a417-ecf95771b82f",
+                  "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "time": "1632413574342735236"
                 }
               },
               "openRemediations": null,
               "serviceName": "carts"
             },
             {
+              "creationDate": "1631871085384755454",
               "deployedImage": "docker.io/mongo:4.2.2",
               "lastEventTypes": {
-                "sh.keptn.event.configuration.change": {
-                  "eventId": "9cc0e0ee-6261-4c29-9b8c-f649fdc36b9b",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935744277802363"
+                "sh.keptn.event.deployment.finished": {
+                  "eventId": "91a6f4e5-2b50-43e7-b080-f7ba64e75822",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871257436351332"
                 },
-                "sh.keptn.events.deployment-finished": {
-                  "eventId": "79bde408-8157-46ff-a425-1a8477a19f65",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935740088446099"
+                "sh.keptn.event.deployment.started": {
+                  "eventId": "756112be-1e98-4697-b598-cbed4b56d40c",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871214226891368"
                 },
-                "sh.keptn.events.evaluation-done": {
-                  "eventId": "5818c9d6-4b8d-462c-82de-c0eacad381e4",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935743019176578"
+                "sh.keptn.event.deployment.triggered": {
+                  "eventId": "5cc112df-1efa-481c-9f88-7b79a9ab80ae",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871214229922556"
                 },
-                "sh.keptn.events.tests-finished": {
-                  "eventId": "60ea6941-cc4b-408b-a332-8ac297a9aca1",
-                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
-                  "time": "1595935742661035628"
+                "sh.keptn.event.production.delivery-direct.finished": {
+                  "eventId": "483795ab-b4de-4330-a92d-45870d458e83",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871259832069754"
+                },
+                "sh.keptn.event.production.delivery-direct.triggered": {
+                  "eventId": "25f2ee91-60f2-41f1-8095-6e33b1e6f258",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871212625961435"
+                },
+                "sh.keptn.event.release.finished": {
+                  "eventId": "b93252b5-4094-417f-b5d4-96d6b422c61f",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871257729443496"
+                },
+                "sh.keptn.event.release.started": {
+                  "eventId": "29d4a407-8d9a-49cd-8da0-7fca0feca5ab",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871257732327623"
+                },
+                "sh.keptn.event.release.triggered": {
+                  "eventId": "037438b1-6fd5-4c89-ad4d-cffab32832c3",
+                  "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
+                  "time": "1631871257725498444"
                 }
               },
               "openRemediations": null,
@@ -939,118 +444,7 @@
           ]
         }
       ]
-    },
-    {
-      "creationDate": "1615306533409865550",
-      "gitRemoteURI": "https://github.com/keptn-public-demo/unleash.git",
-      "gitUser": "jetzlstorfer",
-      "projectName": "unleash",
-      "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n  name: shipyard-unleash-server\nspec:\n  stages:\n  - name: production\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n",
-      "shipyardVersion": "spec.keptn.sh/0.2.0",
-      "stages": [
-        {
-          "services": [
-            {
-              "creationDate": "1615306544567046138",
-              "deployedImage": "postgres:10.4",
-              "lastEventTypes": {
-                "sh.keptn.event.deployment.finished": {
-                  "eventId": "805aebba-4ada-4729-a2b8-f6afa71e494a",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306770724070763"
-                },
-                "sh.keptn.event.deployment.started": {
-                  "eventId": "163d51a1-bbce-4164-88e4-bd5b5ff202d4",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306727585820633"
-                },
-                "sh.keptn.event.deployment.triggered": {
-                  "eventId": "b5f87cac-c47d-4407-bbe2-20b9f6982a00",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306727567454747"
-                },
-                "sh.keptn.event.production.delivery.finished": {
-                  "eventId": "3e11f2dd-f91a-43a1-8d6a-0f88958b6b78",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306773901158388"
-                },
-                "sh.keptn.event.production.delivery.triggered": {
-                  "eventId": "51dd3c77-a661-44c4-82e8-3e09bc6b7d86",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306726771310412"
-                },
-                "sh.keptn.event.release.finished": {
-                  "eventId": "9ef588bf-fc02-4d12-ab19-11f92c92f7e1",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306771522455807"
-                },
-                "sh.keptn.event.release.started": {
-                  "eventId": "1945e9f6-5716-4286-8ccb-a7fb6fc6a585",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306771518189477"
-                },
-                "sh.keptn.event.release.triggered": {
-                  "eventId": "fe432f75-a3f0-4b4d-85f8-c3b435cbee4d",
-                  "keptnContext": "8cbd98bb-e781-4b05-9fdd-caf54ebb1300",
-                  "time": "1615306771511900197"
-                }
-              },
-              "openRemediations": null,
-              "serviceName": "unleash-db"
-            },
-            {
-              "creationDate": "1615306549363207728",
-              "deployedImage": "docker.io/keptnexamples/unleash:1.0.0",
-              "lastEventTypes": {
-                "sh.keptn.event.deployment.finished": {
-                  "eventId": "aa149113-a81a-4e59-9459-5ec122297b14",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306757389491219"
-                },
-                "sh.keptn.event.deployment.started": {
-                  "eventId": "4b6a0e83-4413-48a9-b9ff-36718fe62034",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306732039811940"
-                },
-                "sh.keptn.event.deployment.triggered": {
-                  "eventId": "aa25303d-a528-42a9-b6b2-e39473ae4bb2",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306732034075432"
-                },
-                "sh.keptn.event.production.delivery.finished": {
-                  "eventId": "9f2f6c6a-b670-4167-abc1-7d308cb257ee",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306762912837183"
-                },
-                "sh.keptn.event.production.delivery.triggered": {
-                  "eventId": "ec9105ef-c07b-420d-93a1-c60ad1c051ff",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306731611161284"
-                },
-                "sh.keptn.event.release.finished": {
-                  "eventId": "7903a0f0-6b62-46ff-87f8-23decb05a6a5",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306758554736516"
-                },
-                "sh.keptn.event.release.started": {
-                  "eventId": "4861090f-609f-42b8-bf4b-793ba7f4f643",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306758557586019"
-                },
-                "sh.keptn.event.release.triggered": {
-                  "eventId": "9d353ad5-6434-4e34-ad0c-d0508f9e1e78",
-                  "keptnContext": "ad7f4d31-156c-478f-bc17-6894ed57122a",
-                  "time": "1615306758548671712"
-                }
-              },
-              "openRemediations": null,
-              "serviceName": "unleash"
-            }
-          ],
-          "stageName": "production"
-        }
-      ]
     }
   ],
-  "totalCount": 4
+  "totalCount": 1
 }

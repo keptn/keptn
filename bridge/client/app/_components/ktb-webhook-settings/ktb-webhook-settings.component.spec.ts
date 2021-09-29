@@ -71,14 +71,16 @@ describe('KtbWebhookSettingsComponent', () => {
     fixture.detectChanges();
 
     // when
-    let removeButtons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form button');
-    const lengthBefore = removeButtons.length;
-    removeButtons[0].click();
+    let headerRows = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form');
+    const lengthBefore = headerRows.length;
+    const buttons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form button');
+
+    buttons[1].click();
     fixture.detectChanges();
 
     // then
-    removeButtons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form button');
-    expect(lengthBefore - 1).toEqual(removeButtons.length);
+    headerRows = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form');
+    expect(lengthBefore - 1).toEqual(headerRows.length);
   });
 
   it('should fill form fields with provided data', () => {
@@ -159,7 +161,6 @@ describe('KtbWebhookSettingsComponent', () => {
     // given
     const urlControl = component.getFormControl('url');
     const methodControl = component.getFormControl('method');
-    const payload = component.getFormControl('payload');
     const proxyControl = component.getFormControl('proxy');
 
     // when
