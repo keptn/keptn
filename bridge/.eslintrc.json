@@ -4,14 +4,24 @@
   "overrides": [
     {
       "files": [
-        "*.ts"
+        "*.ts",
+        "*.js"
       ],
       "extends": [
-        "plugin:@angular-eslint/ng-cli-compat",
-        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
-        "plugin:@angular-eslint/template/process-inline-templates",
         "plugin:@angular-eslint/recommended",
-        "prettier"
+        "airbnb-typescript/base",                 // eslint-config-airbnb-typescript
+        "plugin:@typescript-eslint/recommended",  // @typescript-eslint/eslint-plugin
+        "plugin:eslint-comments/recommended",     // eslint-plugin-eslint-comments
+        "plugin:promise/recommended",             // eslint-plugin-promise
+        "plugin:prettier/recommended",            // eslint-plugin-prettier
+        "prettier"                                // eslint-config-prettier
+      ],
+      "plugins": [
+        "@typescript-eslint",                     // @typescript-eslint/eslint-plugin
+        "import",
+        "eslint-comments",                        // eslint-plugin-eslint-comments
+        "promise",                                // eslint-plugin-promise
+        "prettier"                                // eslint-plugin-prettier
       ],
       "rules": {
         "@angular-eslint/component-selector": [
@@ -56,25 +66,12 @@
       }
     },
     {
-      "files": [
-        "*.html"
-      ],
-      "extends": [
-        "plugin:@angular-eslint/template/recommended",
-        "prettier"
-      ],
-      "rules": {}
+      "files": ["*.component.html"],
+      "extends": ["plugin:@angular-eslint/template/recommended"]
     },
     {
-      "files": [
-        "*.html"
-      ],
-      "excludedFiles": [
-        "*inline-template-*.component.html"
-      ],
-      "extends": [
-        "prettier"
-      ]
+      "files": ["*.component.ts"],
+      "extends": ["plugin:@angular-eslint/template/process-inline-templates"]
     }
   ]
 }
