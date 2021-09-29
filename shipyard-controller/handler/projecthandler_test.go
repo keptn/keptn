@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -353,17 +354,17 @@ func TestUpdateProject(t *testing.T) {
 	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 
 	tests := []struct {
-		name             string
-		fields           fields
-		jsonPayload      string
-		expectHttpStatus int
+		name               string
+		fields             fields
+		jsonPayload        string
+		expectedHTTPStatus int
 	}{
 		{
 			name: "Update project updating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
-						return errors.New("whoops"), func() error { return nil }
+						return &common.ConfigurationStoreError{Err: fmt.Errorf("whops"), Reason: common.InvalidTokenError}, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -372,8 +373,8 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
-			jsonPayload:      examplePayload,
-			expectHttpStatus: http.StatusInternalServerError,
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusFailedDependency,
 		},
 		{
 			name: "Update project with invalid payload",
@@ -389,8 +390,8 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
-			jsonPayload:      examplePayloadInvalid,
-			expectHttpStatus: http.StatusBadRequest,
+			jsonPayload:        examplePayloadInvalid,
+			expectedHTTPStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Update non-existing project",
@@ -406,8 +407,8 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
-			jsonPayload:      examplePayload,
-			expectHttpStatus: http.StatusNotFound,
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusNotFound,
 		},
 		{
 			name: "Update project",
@@ -423,8 +424,8 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
-			jsonPayload:      examplePayload,
-			expectHttpStatus: http.StatusOK,
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusOK,
 		},
 	}
 
@@ -437,7 +438,7 @@ func TestUpdateProject(t *testing.T) {
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
-			assert.Equal(t, tt.expectHttpStatus, w.Code)
+			assert.Equal(t, tt.expectedHTTPStatus, w.Code)
 
 		})
 	}

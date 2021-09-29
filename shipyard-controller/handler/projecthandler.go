@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -196,14 +197,18 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
+		fmt.Println("error" + err.Error())
+		if common.IsInvalidTokenError(err) {
+			SetFailedDependencyErrorResponse(err, c, err.Error())
+			return
+		}
 		if err == ErrProjectNotFound {
 			SetNotFoundErrorResponse(err, c)
-		} else {
-			SetInternalServerErrorResponse(err, c)
+			return
 		}
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
-
 	c.Status(http.StatusCreated)
 }
 
