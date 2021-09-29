@@ -915,7 +915,7 @@ jobs:
 
       - name: Create issue if tests failed
         if: always() && github.event_name == 'schedule' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
-        uses: JasonEtco/create-an-issue@v2.5.0
+        uses: JasonEtco/create-an-issue@v2.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -986,7 +986,7 @@ jobs:
           echo "</details>" >> release-notes.txt
 
       - name: Abort if (published) release already exists
-        uses: actions/github-script@v4.1
+        uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -994,7 +994,7 @@ jobs:
             console.log(`Trying to fetch release by tag '${tag}'...`);
 
             try {
-              release = await github.repos.getReleaseByTag({
+              release = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 tag: tag
@@ -1010,7 +1010,7 @@ jobs:
             }
 
       - name: Delete draft release if it already exists
-        uses: actions/github-script@v4.1
+        uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -1019,7 +1019,7 @@ jobs:
 
             try {
               // get all releases (including drafts)
-              let releases = await github.repos.listReleases({
+              let releases = await github.rest.repos.listReleases({
                 owner: context.repo.owner,
                 repo: context.repo.repo
               });
@@ -1039,7 +1039,7 @@ jobs:
                   return 1;
                   // ToDo: Commented out as there seems to be a problem with deleting releases
 
-                  /*github.repos.deleteRelease({
+                  /*github.rest.repos.deleteRelease({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     release_id: release.id
