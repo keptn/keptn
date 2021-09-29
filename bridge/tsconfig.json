@@ -25,7 +25,11 @@
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "cypress/**/*.spec.ts"
+  ],
+  "include": [
+    "client/**/*.spec.ts"
   ],
   "angularCompilerOptions": {
     "strictTemplates": true,

@@ -1,12 +1,19 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["**/*.ts"],
+  "include": [
+    "**/*.ts"
+  ],
   "compilerOptions": {
     "sourceMap": false,
     "outDir": "../out-tsc/e2e",
     "module": "commonjs",
     "target": "ES2018",
-    "types": ["cypress"],
-    "lib": ["es2018", "dom"]
+    "types": [
+      "cypress"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ]
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, ComponentRef, Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { Overlay, OverlayPositionBuilder, OverlayRef } from '@angular/cdk/overlay';
@@ -24,6 +24,7 @@ export class SelectTreeFlatNode implements SelectTreeNode {
 })
 export class KtbTreeListSelectDirective implements OnInit {
   private overlayRef?: OverlayRef;
+  private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
 
   @Input() data: SelectTreeNode[] = [];
   @Output() secret: EventEmitter<string> = new EventEmitter<string>();
@@ -34,17 +35,18 @@ export class KtbTreeListSelectDirective implements OnInit {
     // Disable origin to prevent 'Host has already a portal attached' error
     this.elementRef.nativeElement.disabled = true;
 
-    // @ts-ignore
-    const contentRef = this.overlayRef.attach(tooltipPortal);
-    contentRef.instance.data = this.data;
-    contentRef.instance.closeDialog.subscribe(() => {
-      this.close();
-    });
+    this.contentRef = this.overlayRef?.attach(tooltipPortal);
+    if (this.contentRef) {
+      this.contentRef.instance.data = this.data;
+      this.contentRef.instance.closeDialog.subscribe(() => {
+        this.close();
+      });
 
-    contentRef.instance.selectedSecret.subscribe(secret => {
-      this.secret.emit(secret);
-      this.close();
-    });
+      this.contentRef.instance.selectedSecret.subscribe(secret => {
+        this.secret.emit(secret);
+        this.close();
+      });
+    }
   }
 
   constructor(private overlay: Overlay, private overlayPositionBuilder: OverlayPositionBuilder, private elementRef: ElementRef, private router: Router) {
