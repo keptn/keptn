@@ -12,13 +12,12 @@
     "test": "jest --config=jest.config.ts",
     "lint:check": "eslint ./",
     "lint:fix": "eslint --fix ./",
-    "prettier:check": "prettier --check ./**/*.{js,ts,html,json}",
-    "prettier:fix": "prettier --write ./**/*.{js,ts,html,json}",
+    "prettier:check": "prettier --check ./",
+    "prettier:fix": "prettier --write ./",
     "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },
-  "prettier": "./prettier.json",
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
   "repository": {
