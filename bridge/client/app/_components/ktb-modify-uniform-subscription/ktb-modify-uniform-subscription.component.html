@@ -70,6 +70,7 @@
             >If you add a service you must add a stage</dt-error
           >
         </div>
+        <ktb-payload-viewer [eventType]=""></ktb-payload-viewer>
         <ktb-webhook-settings
           *ngIf="isWebhookService"
           [(webhook)]="data.webhook"

@@ -1,0 +1,11 @@
+<button dt-button variant="secondary" (click)="showEventPayloadDialog()"><dt-icon name="services"></dt-icon> <span [textContent]="buttonTitle"></span></button>
+
+<ng-template #eventPayloadDialog let-data>
+  <h1 mat-dialog-title>SLO</h1>
+  <div mat-dialog-content>
+    <pre [textContent]="data"></pre>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button (click)="closeDialog()">Close</button>
+  </div>
+</ng-template>
