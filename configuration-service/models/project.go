@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -49,7 +50,6 @@ func (m *Project) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Project) validateStages(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Stages) { // not required
 		return nil
 	}
@@ -61,6 +61,38 @@ func (m *Project) validateStages(formats strfmt.Registry) error {
 
 		if m.Stages[i] != nil {
 			if err := m.Stages[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("stages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this project based on the context it is used
+func (m *Project) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Project) contextValidateStages(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Stages); i++ {
+
+		if m.Stages[i] != nil {
+			if err := m.Stages[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("stages" + "." + strconv.Itoa(i))
 				}

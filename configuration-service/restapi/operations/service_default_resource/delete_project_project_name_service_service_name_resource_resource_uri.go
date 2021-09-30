@@ -29,7 +29,7 @@ func NewDeleteProjectProjectNameServiceServiceNameResourceResourceURI(ctx *middl
 	return &DeleteProjectProjectNameServiceServiceNameResourceResourceURI{Context: ctx, Handler: handler}
 }
 
-/*DeleteProjectProjectNameServiceServiceNameResourceResourceURI swagger:route DELETE /project/{projectName}/service/{serviceName}/resource/{resourceURI} Service Default Resource deleteProjectProjectNameServiceServiceNameResourceResourceUri
+/* DeleteProjectProjectNameServiceServiceNameResourceResourceURI swagger:route DELETE /project/{projectName}/service/{serviceName}/resource/{resourceURI} Service Default Resource deleteProjectProjectNameServiceServiceNameResourceResourceUri
 
 Delete the specified default resource for the service
 
@@ -42,17 +42,15 @@ type DeleteProjectProjectNameServiceServiceNameResourceResourceURI struct {
 func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -29,7 +29,7 @@ func NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResource
 	return &DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI{Context: ctx, Handler: handler}
 }
 
-/*DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI swagger:route DELETE /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} Service Resource deleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceUri
+/* DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI swagger:route DELETE /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} Service Resource deleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceUri
 
 Delete the specified resource
 
@@ -42,17 +42,15 @@ type DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

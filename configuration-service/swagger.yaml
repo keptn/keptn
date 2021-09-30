@@ -773,6 +773,7 @@ paths:
       tags:
         - Service Default Resource 
       summary: Create list of default resources for the service used in all stages
+      deprecated: true
       parameters:
         - $ref: '#/parameters/resources' 
       responses:
@@ -838,6 +839,7 @@ paths:
       tags:
         - Service Default Resource
       summary: Get the specified default resource for the service
+      deprecated: true
       parameters:
         - $ref: '#/parameters/disableUpstreamSync'
       responses:

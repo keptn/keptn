@@ -81,7 +81,6 @@ func (o *GetProjectProjectNameResourceResourceURIParams) BindRequest(r *http.Req
 	if err := o.bindResourceURI(rResourceURI, rhkResourceURI, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -97,6 +96,7 @@ func (o *GetProjectProjectNameResourceResourceURIParams) bindDisableUpstreamSync
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetProjectProjectNameResourceResourceURIParams()
 		return nil
@@ -120,7 +120,6 @@ func (o *GetProjectProjectNameResourceResourceURIParams) bindProjectName(rawData
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil
@@ -135,7 +134,6 @@ func (o *GetProjectProjectNameResourceResourceURIParams) bindResourceURI(rawData
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ResourceURI = raw
 
 	return nil

@@ -29,7 +29,7 @@ func NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	return &PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI{Context: ctx, Handler: handler}
 }
 
-/*PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI swagger:route PUT /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} Service Resource putProjectProjectNameStageStageNameServiceServiceNameResourceResourceUri
+/* PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI swagger:route PUT /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} Service Resource putProjectProjectNameStageStageNameServiceServiceNameResourceResourceUri
 
 Update the specified resource
 
@@ -42,17 +42,15 @@ type PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI st
 func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

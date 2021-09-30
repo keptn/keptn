@@ -29,7 +29,7 @@ func NewDeleteProjectProjectName(ctx *middleware.Context, handler DeleteProjectP
 	return &DeleteProjectProjectName{Context: ctx, Handler: handler}
 }
 
-/*DeleteProjectProjectName swagger:route DELETE /project/{projectName} Project deleteProjectProjectName
+/* DeleteProjectProjectName swagger:route DELETE /project/{projectName} Project deleteProjectProjectName
 
 INTERNAL Endpoint: Delete the specified project
 
@@ -42,17 +42,15 @@ type DeleteProjectProjectName struct {
 func (o *DeleteProjectProjectName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewDeleteProjectProjectNameParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
