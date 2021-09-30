@@ -16,7 +16,7 @@ export class KtbCreateSecretFormComponent {
   private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
   private secretKeyPattern = '[-._a-zA-Z0-9]+';
 
-  public scopes = Object.values(Scopes);
+  public scopes: string[] = Object.values(Scopes);
 
   public createSecretForm = this.fb.group({
     name: ['', [Validators.required, Validators.pattern(this.secretNamePattern)]],
