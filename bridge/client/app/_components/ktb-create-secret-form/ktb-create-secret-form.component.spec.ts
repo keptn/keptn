@@ -42,6 +42,11 @@ describe('KtbCreateSecretFormComponent', () => {
     component.getFormControl('name')?.setValue(secret.name);
     component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
     component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    component.createSecretForm.updateValueAndValidity();
+    fixture.detectChanges();
+
+    expect(component.createSecretForm.errors).toBeNull();
+    expect(createButton.disabled).toBe(false);
     createButton.click();
 
     // then
@@ -62,6 +67,11 @@ describe('KtbCreateSecretFormComponent', () => {
     component.getFormControl('scope')?.setValue(secret.scope);
     component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
     component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    component.createSecretForm.updateValueAndValidity();
+    fixture.detectChanges();
+
+    expect(component.createSecretForm.errors).toBeNull();
+    expect(createButton.disabled).toBe(false);
     createButton.click();
 
     // then
