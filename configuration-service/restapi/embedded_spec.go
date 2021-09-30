@@ -331,6 +331,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Get list of default resources for the service used in all stages",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/pageSize"
@@ -368,6 +369,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Update list of service default resources",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/resources"
@@ -440,6 +442,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Get the specified default resource for the service",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/disableUpstreamSync"
@@ -471,6 +474,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Update the specified default resource for the service",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/resource"
@@ -502,6 +506,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Delete the specified default resource for the service",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Service default resource has been deleted.",
@@ -1781,6 +1786,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Get list of default resources for the service used in all stages",
+        "deprecated": true,
         "parameters": [
           {
             "maximum": 50,
@@ -1831,6 +1837,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Update list of service default resources",
+        "deprecated": true,
         "parameters": [
           {
             "description": "List of resources",
@@ -1935,6 +1942,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Get the specified default resource for the service",
+        "deprecated": true,
         "parameters": [
           {
             "type": "boolean",
@@ -1970,6 +1978,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Update the specified default resource for the service",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Resource",
@@ -2006,6 +2015,7 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Delete the specified default resource for the service",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Service default resource has been deleted.",

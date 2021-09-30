@@ -29,7 +29,7 @@ func NewPostProjectProjectNameStage(ctx *middleware.Context, handler PostProject
 	return &PostProjectProjectNameStage{Context: ctx, Handler: handler}
 }
 
-/*PostProjectProjectNameStage swagger:route POST /project/{projectName}/stage Stage postProjectProjectNameStage
+/* PostProjectProjectNameStage swagger:route POST /project/{projectName}/stage Stage postProjectProjectNameStage
 
 INTERNAL Endpoint: Create a new stage by stage name
 
@@ -42,17 +42,15 @@ type PostProjectProjectNameStage struct {
 func (o *PostProjectProjectNameStage) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewPostProjectProjectNameStageParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

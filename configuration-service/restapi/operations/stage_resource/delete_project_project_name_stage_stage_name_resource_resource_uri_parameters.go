@@ -14,7 +14,8 @@ import (
 )
 
 // NewDeleteProjectProjectNameStageStageNameResourceResourceURIParams creates a new DeleteProjectProjectNameStageStageNameResourceResourceURIParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteProjectProjectNameStageStageNameResourceResourceURIParams() DeleteProjectProjectNameStageStageNameResourceResourceURIParams {
 
 	return DeleteProjectProjectNameStageStageNameResourceResourceURIParams{}
@@ -69,7 +70,6 @@ func (o *DeleteProjectProjectNameStageStageNameResourceResourceURIParams) BindRe
 	if err := o.bindStageName(rStageName, rhkStageName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,7 +85,6 @@ func (o *DeleteProjectProjectNameStageStageNameResourceResourceURIParams) bindPr
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil
@@ -100,7 +99,6 @@ func (o *DeleteProjectProjectNameStageStageNameResourceResourceURIParams) bindRe
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ResourceURI = raw
 
 	return nil
@@ -115,7 +113,6 @@ func (o *DeleteProjectProjectNameStageStageNameResourceResourceURIParams) bindSt
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.StageName = raw
 
 	return nil

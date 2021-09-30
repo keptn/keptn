@@ -97,7 +97,6 @@ func (o *GetProjectProjectNameResourceParams) BindRequest(r *http.Request, route
 	if err := o.bindProjectName(rProjectName, rhkProjectName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -113,6 +112,7 @@ func (o *GetProjectProjectNameResourceParams) bindDisableUpstreamSync(rawData []
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetProjectProjectNameResourceParams()
 		return nil
@@ -136,10 +136,10 @@ func (o *GetProjectProjectNameResourceParams) bindNextPageKey(rawData []string, 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.NextPageKey = &raw
 
 	return nil
@@ -154,6 +154,7 @@ func (o *GetProjectProjectNameResourceParams) bindPageSize(rawData []string, has
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetProjectProjectNameResourceParams()
 		return nil
@@ -175,11 +176,11 @@ func (o *GetProjectProjectNameResourceParams) bindPageSize(rawData []string, has
 // validatePageSize carries on validations for parameter PageSize
 func (o *GetProjectProjectNameResourceParams) validatePageSize(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("pageSize", "query", int64(*o.PageSize), 1, false); err != nil {
+	if err := validate.MinimumInt("pageSize", "query", *o.PageSize, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("pageSize", "query", int64(*o.PageSize), 50, false); err != nil {
+	if err := validate.MaximumInt("pageSize", "query", *o.PageSize, 50, false); err != nil {
 		return err
 	}
 
@@ -195,7 +196,6 @@ func (o *GetProjectProjectNameResourceParams) bindProjectName(rawData []string, 
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil

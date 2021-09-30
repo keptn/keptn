@@ -6,16 +6,19 @@ package service_default_resource
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 )
 
 // NewPostProjectProjectNameServiceServiceNameResourceParams creates a new PostProjectProjectNameServiceServiceNameResourceParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostProjectProjectNameServiceServiceNameResourceParams() PostProjectProjectNameServiceServiceNameResourceParams {
 
 	return PostProjectProjectNameServiceServiceNameResourceParams{}
@@ -71,16 +74,21 @@ func (o *PostProjectProjectNameServiceServiceNameResourceParams) BindRequest(r *
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Resources = body
 			}
 		}
 	}
+
 	rServiceName, rhkServiceName, _ := route.Params.GetOK("serviceName")
 	if err := o.bindServiceName(rServiceName, rhkServiceName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -96,7 +104,6 @@ func (o *PostProjectProjectNameServiceServiceNameResourceParams) bindProjectName
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil
@@ -111,7 +118,6 @@ func (o *PostProjectProjectNameServiceServiceNameResourceParams) bindServiceName
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ServiceName = raw
 
 	return nil

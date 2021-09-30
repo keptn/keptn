@@ -91,7 +91,6 @@ func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIParams) BindR
 	if err := o.bindServiceName(rServiceName, rhkServiceName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -107,6 +106,7 @@ func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIParams) bindD
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetProjectProjectNameServiceServiceNameResourceResourceURIParams()
 		return nil
@@ -130,7 +130,6 @@ func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIParams) bindP
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil
@@ -145,7 +144,6 @@ func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIParams) bindR
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ResourceURI = raw
 
 	return nil
@@ -160,7 +158,6 @@ func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIParams) bindS
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ServiceName = raw
 
 	return nil
