@@ -32,28 +32,32 @@ func NewCurlError(err error, reason errType) *CurlError {
 }
 
 func IsNoCommandError(err error) bool {
-	if curlErr, ok := err.(*CurlError); ok {
+	var curlErr *CurlError
+	if errors.As(err, &curlErr) {
 		return curlErr.reason == NoCommandError
 	}
 	return false
 }
 
 func IsInvalidCommandError(err error) bool {
-	if curlErr, ok := err.(*CurlError); ok {
+	var curlErr *CurlError
+	if errors.As(err, &curlErr) {
 		return curlErr.reason == InvalidCommandError
 	}
 	return false
 }
 
 func IsUnallowedURLError(err error) bool {
-	if curlErr, ok := err.(*CurlError); ok {
+	var curlErr *CurlError
+	if errors.As(err, &curlErr) {
 		return curlErr.reason == UnallowedURLError
 	}
 	return false
 }
 
 func IsRequestError(err error) bool {
-	if curlErr, ok := err.(*CurlError); ok {
+	var curlErr *CurlError
+	if errors.As(err, &curlErr) {
 		return curlErr.reason == RequestError
 	}
 	return false
