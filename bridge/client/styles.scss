@@ -407,6 +407,15 @@ pre.code {
   }
 }
 
+.settings-section {
+  width: 50%;
+  transition: padding-bottom 0.2s ease;
+
+  &.notification-open {
+    padding-bottom: 100px;
+  }
+}
+
 [fxFLex] {
   min-height: 0;
 }
