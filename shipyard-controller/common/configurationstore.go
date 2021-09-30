@@ -2,7 +2,6 @@ package common
 
 import (
 	"errors"
-	"fmt"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"net/http"
@@ -14,17 +13,23 @@ const (
 	InvalidTokenError configStoreErrType = iota
 )
 
+// ConfigurationStoreError is the a error type which will eventually
+// be returned by methods of implementations of the ConfigurationStore
 type ConfigurationStoreError struct {
+	// Message is the message of the error for further information
 	Message string
-	Reason  configStoreErrType
+	// Reason is the type of error which happened
+	Reason configStoreErrType
 }
 
+// Error returns the error message
 func (e *ConfigurationStoreError) Error() string {
 	return e.Message
 }
 
+// IsInvalidTokenError checks whether a given error is of type
+// ConfigurationStoreError with a reason of InvalidTokenError
 func IsInvalidTokenError(err error) bool {
-	fmt.Println("Ccheck error")
 	var e *ConfigurationStoreError
 	if errors.As(err, &e) {
 		return e.Reason == InvalidTokenError

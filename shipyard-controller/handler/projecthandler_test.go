@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -364,7 +363,7 @@ func TestUpdateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
-						return &common.ConfigurationStoreError{Err: fmt.Errorf("whops"), Reason: common.InvalidTokenError}, func() error { return nil }
+						return &common.ConfigurationStoreError{"whops", common.InvalidTokenError}, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
