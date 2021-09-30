@@ -577,7 +577,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	common.LockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
 	defer common.UnlockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
 
-	// TODO: lock this region (e.g. taskFinisherMutex)
 	startedEvents, err := sc.retrieveStartedEventsForTriggeredID(eventScope)
 
 	if err != nil {
@@ -596,7 +595,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		log.Error("Could not store .finished event: " + err.Error())
 	}
 
-	// TODO: delete one of the started events (not considering the source)
 	err = sc.eventRepo.DeleteEvent(eventScope.Project, startedEvents[0].ID, common.StartedEvent)
 	if err != nil {
 		msg := "could not delete '.started' event with ID " + startedEvents[0].ID + ": " + err.Error()
