@@ -601,16 +601,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		log.Error(msg)
 		return errors.New(msg)
 	}
-	//for _, startedEvent := range startedEvents {
-	//	if *event.Source == *startedEvent.Source {
-	//		err = sc.eventRepo.DeleteEvent(eventScope.Project, startedEvent.ID, common.StartedEvent)
-	//		if err != nil {
-	//			msg := "could not delete '.started' event with ID " + startedEvent.ID + ": " + err.Error()
-	//			log.Error(msg)
-	//			return errors.New(msg)
-	//		}
-	//	}
-	//}
+
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
 		triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
