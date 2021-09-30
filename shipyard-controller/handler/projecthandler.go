@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -176,7 +175,9 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Produce  json
 // @Param   project     body    operations.UpdateProjectParams     true        "Project"
 // @Success 200 {object} operations.UpdateProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 400 {object} models.Error "Bad Request"
+// @Failure 424 {object} models.Error "Failed Dependency"
+// @Failure 403 {object} models.Error "Not Found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
@@ -197,7 +198,6 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
-		fmt.Println("error" + err.Error())
 		if common.IsInvalidTokenError(err) {
 			SetFailedDependencyErrorResponse(err, c, err.Error())
 			return
