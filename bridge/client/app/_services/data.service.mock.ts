@@ -22,6 +22,8 @@ import { WebhookConfigMock } from './_mockData/webhook-config.mock';
 import { FileTreeMock } from '../_models/fileTree.mock';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
+import { SecretScope } from '../../../shared/interfaces/secret';
+import { Secret } from '../_models/secret';
 
 @Injectable({
   providedIn: 'root',
@@ -145,7 +147,17 @@ export class DataServiceMock extends DataService {
     const registration = UniformRegistrationsMock.find(r => r.id === integrationId);
     return of({
       isWebhookService: registration?.isWebhookService ?? false,
-      isControlPlane: registration?.metadata.location === 'control-plane' ?? false
+      isControlPlane: registration?.metadata.location === 'control-plane' ?? false,
     });
+  }
+
+  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+    const secrets = [new Secret(), new Secret()];
+    secrets[0].name = 'SecretA';
+    secrets[0].keys = ['key1', 'key2', 'key3'];
+    secrets[1].name = 'SecretB';
+    secrets[1].keys = ['key1', 'key2', 'key3'];
+
+    return of(secrets);
   }
 }
