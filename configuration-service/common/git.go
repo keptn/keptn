@@ -166,7 +166,7 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 		}
 		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
 			removeRemoteOrigin(project)
-			return fmt.Errorf("failed to set upstream: %v\nKeptn requires an uninitialized repo", err)
+			return fmt.Errorf("failed to set upstream: %v", err)
 		}
 	}
 	return nil

@@ -18,6 +18,14 @@ type IEventSender interface {
 
 const invalidRequestFormatMsg = "Invalid request format"
 
+func SetFailedDependencyErrorResponse(err error, c *gin.Context, message ...string) {
+	msg := errMsg(err, message)
+	c.JSON(http.StatusFailedDependency, models.Error{
+		Code:    http.StatusFailedDependency,
+		Message: &msg,
+	})
+}
+
 func SetNotFoundErrorResponse(err error, c *gin.Context, message ...string) {
 	msg := errMsg(err, message)
 	c.JSON(http.StatusNotFound, models.Error{
