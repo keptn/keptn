@@ -9,6 +9,7 @@
       ],
       "extends": [
         "plugin:@angular-eslint/recommended",
+        "plugin:@angular-eslint/template/process-inline-templates",
         "airbnb-typescript/base",                 // eslint-config-airbnb-typescript
         "plugin:@typescript-eslint/recommended",  // @typescript-eslint/eslint-plugin
         "plugin:eslint-comments/recommended",     // eslint-plugin-eslint-comments
@@ -78,15 +79,11 @@
       }
     },
     {
-      "files": ["*.component.html"],
+      "files": ["*.html"],
       "extends": ["plugin:@angular-eslint/template/recommended"]
     },
     {
-      "files": ["*.component.ts"],
-      "extends": ["plugin:@angular-eslint/template/process-inline-templates"]
-    },
-    {
-      "files": ["*.component.html"],
+      "files": ["*.html"],
       "excludedFiles": [
         "*inline-template-*.component.html"
       ],
