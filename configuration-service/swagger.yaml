@@ -773,7 +773,6 @@ paths:
       tags:
         - Service Default Resource 
       summary: Create list of default resources for the service used in all stages
-      deprecated: true
       parameters:
         - $ref: '#/parameters/resources' 
       responses:
@@ -797,6 +796,7 @@ paths:
         - $ref: '#/parameters/nextPageKey'
         - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of default resources for the service used in all stages
+      deprecated: true
       responses:
         '200':
           description: Success
@@ -816,6 +816,7 @@ paths:
       parameters:
         - $ref: '#/parameters/resources'
       summary: Update list of service default resources
+      deprecated: true
       responses:
         '201':
           description: Success. Service default resources have been updated. The version of the new configuration is returned.
@@ -859,6 +860,7 @@ paths:
       tags:
         - Service Default Resource
       summary: Update the specified default resource for the service
+      deprecated: true
       parameters:
         - $ref: '#/parameters/resource'
       responses:
@@ -878,6 +880,7 @@ paths:
       tags:
         - Service Default Resource
       summary: Delete the specified default resource for the service
+      deprecated: true
       responses:
         '204':
           description: Success. Service default resource has been deleted.
