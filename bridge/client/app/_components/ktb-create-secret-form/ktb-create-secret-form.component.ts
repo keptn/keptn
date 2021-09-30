@@ -7,7 +7,7 @@ import { Scopes, Secret } from '../../_models/secret';
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
-  styleUrls: ['./ktb-create-secret-form.component.scss']
+  styleUrls: []
 })
 export class KtbCreateSecretFormComponent {
 
