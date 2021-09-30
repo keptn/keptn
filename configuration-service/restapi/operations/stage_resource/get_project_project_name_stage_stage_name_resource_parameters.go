@@ -107,7 +107,6 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) BindRequest(r *http.
 	if err := o.bindStageName(rStageName, rhkStageName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -123,6 +122,7 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) bindDisableUpstreamS
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetProjectProjectNameStageStageNameResourceParams()
 		return nil
@@ -146,10 +146,10 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) bindNextPageKey(rawD
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.NextPageKey = &raw
 
 	return nil
@@ -164,6 +164,7 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) bindPageSize(rawData
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetProjectProjectNameStageStageNameResourceParams()
 		return nil
@@ -185,11 +186,11 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) bindPageSize(rawData
 // validatePageSize carries on validations for parameter PageSize
 func (o *GetProjectProjectNameStageStageNameResourceParams) validatePageSize(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("pageSize", "query", int64(*o.PageSize), 1, false); err != nil {
+	if err := validate.MinimumInt("pageSize", "query", *o.PageSize, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("pageSize", "query", int64(*o.PageSize), 50, false); err != nil {
+	if err := validate.MaximumInt("pageSize", "query", *o.PageSize, 50, false); err != nil {
 		return err
 	}
 
@@ -205,7 +206,6 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) bindProjectName(rawD
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil
@@ -220,7 +220,6 @@ func (o *GetProjectProjectNameStageStageNameResourceParams) bindStageName(rawDat
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.StageName = raw
 
 	return nil

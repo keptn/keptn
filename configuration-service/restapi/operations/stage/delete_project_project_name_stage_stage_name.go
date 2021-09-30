@@ -29,7 +29,7 @@ func NewDeleteProjectProjectNameStageStageName(ctx *middleware.Context, handler 
 	return &DeleteProjectProjectNameStageStageName{Context: ctx, Handler: handler}
 }
 
-/*DeleteProjectProjectNameStageStageName swagger:route DELETE /project/{projectName}/stage/{stageName} Stage deleteProjectProjectNameStageStageName
+/* DeleteProjectProjectNameStageStageName swagger:route DELETE /project/{projectName}/stage/{stageName} Stage deleteProjectProjectNameStageStageName
 
 INTERNAL Endpoint: Delete the specified stage
 
@@ -42,17 +42,15 @@ type DeleteProjectProjectNameStageStageName struct {
 func (o *DeleteProjectProjectNameStageStageName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewDeleteProjectProjectNameStageStageNameParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
