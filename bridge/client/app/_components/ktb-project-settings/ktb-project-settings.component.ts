@@ -17,7 +17,7 @@ import { NotificationType, TemplateRenderedNotifications } from '../../_models/n
 @Component({
   selector: 'ktb-project-settings',
   templateUrl: './ktb-project-settings.component.html',
-  styleUrls: ['./ktb-project-settings.component.scss'],
+  styleUrls: [],
   providers: [NotificationsService],
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
