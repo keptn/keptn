@@ -340,8 +340,10 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 			return false
 		} else if taskFinishedEvents == nil {
 			t.Log("did not receive any .finished events")
+			return false
 		} else if len(taskFinishedEvents) != 2 {
 			t.Logf("received %d .finished events, but expected 2", len(taskFinishedEvents))
+			return false
 		}
 		return true
 	}, 30*time.Second, 2*time.Second)
@@ -369,8 +371,10 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 			return false
 		} else if taskFinishedEvents == nil {
 			t.Log("did not receive any .finished events")
-		} else if len(taskFinishedEvents) != 2 {
-			t.Logf("received %d .finished events, but expected 2", len(taskFinishedEvents))
+			return false
+		} else if len(taskFinishedEvents) != 1 {
+			t.Logf("received %d .finished events, but expected 1", len(taskFinishedEvents))
+			return false
 		}
 		return true
 	}, 10*time.Second, 2*time.Second)
