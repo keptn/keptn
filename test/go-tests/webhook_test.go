@@ -335,11 +335,16 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	var taskFinishedEvents []*models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		taskFinishedEvents, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("othertask"))
-		if err != nil || taskFinishedEvents == nil || len(taskFinishedEvents) != 2 {
+		if err != nil {
+			t.Logf("got error: %s. will try again in a few seconds", err.Error())
 			return false
+		} else if taskFinishedEvents == nil {
+			t.Log("did not receive any .finished events")
+		} else if len(taskFinishedEvents) != 2 {
+			t.Logf("received %d .finished events, but expected 2", len(taskFinishedEvents))
 		}
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 30*time.Second, 2*time.Second)
 
 	for _, event := range taskFinishedEvents {
 		decodedEvent := map[string]interface{}{}
@@ -359,8 +364,13 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	// verify that we have received one .finished events with the status set to fail
 	require.Eventually(t, func() bool {
 		taskFinishedEvents, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("unallowedtask"))
-		if err != nil || taskFinishedEvents == nil || len(taskFinishedEvents) != 1 {
+		if err != nil {
+			t.Logf("got error: %s. will try again in a few seconds", err.Error())
 			return false
+		} else if taskFinishedEvents == nil {
+			t.Log("did not receive any .finished events")
+		} else if len(taskFinishedEvents) != 2 {
+			t.Logf("received %d .finished events, but expected 2", len(taskFinishedEvents))
 		}
 		return true
 	}, 10*time.Second, 2*time.Second)
