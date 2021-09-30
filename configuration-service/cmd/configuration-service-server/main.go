@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
+
 	"github.com/keptn/keptn/configuration-service/restapi"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 )

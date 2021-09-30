@@ -29,7 +29,7 @@ func NewPostProject(ctx *middleware.Context, handler PostProjectHandler) *PostPr
 	return &PostProject{Context: ctx, Handler: handler}
 }
 
-/*PostProject swagger:route POST /project Project postProject
+/* PostProject swagger:route POST /project Project postProject
 
 INTERNAL Endpoint: Create a new project by project name
 
@@ -42,17 +42,15 @@ type PostProject struct {
 func (o *PostProject) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewPostProjectParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
