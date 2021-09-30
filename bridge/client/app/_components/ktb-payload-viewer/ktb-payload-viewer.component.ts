@@ -1,6 +1,7 @@
 import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { DataService } from '../../_services/data.service';
+import { Trace } from '../../_models/trace';
+import { ApiService } from '../../_services/api.service';
 
 @Component({
   selector: 'ktb-payload-viewer',
@@ -13,22 +14,36 @@ export class KtbPayloadViewerComponent {
   public buttonTitle = 'Show event';
 
   @Input()
-  public eventType;
+  public type: string | undefined;
 
-  @Input
+  @Input()
+  public stage: string | undefined;
+
+  @Input()
+  public service: string | undefined;
+
+  @Input()
+  public project: string | undefined;
 
   @ViewChild('eventPayloadDialog')
   public eventPayloadDialog?: TemplateRef<ViewChild>;
   public eventPayloadDialogRef?: MatDialogRef<ViewChild>;
 
-  constructor(private dataService: DataService, private dialog: MatDialog) {
+  public event: Trace | undefined;
+
+  constructor(private apiService: ApiService, private dialog: MatDialog) {
   }
 
   showEventPayloadDialog(): void {
-    if(this.eventPayloadDialog) {
-      this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog, {
-        data: JSON.stringify({}, null, 2)
-      });
+    if (this.eventPayloadDialog) {
+      this.event = undefined;
+      this.apiService.getEvent(this.type, this.project, this.stage, this.service)
+        .subscribe(eventResult => {
+          this.event = eventResult.body?.events[0];
+        }, err => {
+          this.event = undefined;
+        });
+      this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog);
     }
   }
 

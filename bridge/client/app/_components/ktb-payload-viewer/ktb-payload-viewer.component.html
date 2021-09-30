@@ -1,10 +1,22 @@
-<button dt-button variant="secondary" (click)="showEventPayloadDialog()"><dt-icon name="services"></dt-icon> <span [textContent]="buttonTitle"></span></button>
+<button dt-button variant="secondary" variant="nested" (click)="showEventPayloadDialog()" [disabled]="!type">
+  <dt-icon name="coding"></dt-icon>
+  <span [textContent]="buttonTitle"></span></button>
 
 <ng-template #eventPayloadDialog let-data>
-  <h1 mat-dialog-title>SLO</h1>
-  <div mat-dialog-content>
-    <pre [textContent]="data"></pre>
+  <h1 mat-dialog-title>Payload viewer</h1>
+  <div *ngIf="event; else loadingEvent">
+    <p>
+      This is the latest <span class="bold" [textContent]="type"></span> event
+      <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
+      <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
+    </p>
+    <div mat-dialog-content>
+      <pre [textContent]="event | json"></pre>
+    </div>
   </div>
+  <ng-template #loadingEvent>
+    <dt-loading-spinner></dt-loading-spinner>
+  </ng-template>
   <div mat-dialog-actions>
     <button dt-button (click)="closeDialog()">Close</button>
   </div>

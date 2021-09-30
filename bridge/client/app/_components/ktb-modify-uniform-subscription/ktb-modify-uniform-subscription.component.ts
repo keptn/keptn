@@ -270,6 +270,27 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
   }
 
+  public getSelectedTask(): string | undefined {
+    let type: string | undefined;
+    if (this.taskControl.value) {
+      if (this.taskSuffixControl.value && this.taskSuffixControl.value != this.suffixes[0].value) {
+        type = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
+      } else {
+        type = `${EventTypes.PREFIX}${this.taskControl.value}.${this.suffixes[1].value}`;
+      }
+    }
+
+    return type;
+  }
+
+  public getSelectedStage(subscription: UniformSubscription): string | undefined {
+    return subscription.filter.stages?.find(s => true);
+  }
+
+  public getSelectedService(subscription: UniformSubscription): string | undefined {
+    return subscription.filter.services?.find(s => true);
+  }
+
   public ngOnDestroy(): void {
     this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
