@@ -76,7 +76,10 @@ export class KtbTreeListSelectDirective implements OnInit {
       }]);
 
 
-    this.overlayRef = this.overlay.create({positionStrategy, width: '400px', height: '200px'});
+    this.overlayRef = this.overlay.create({positionStrategy, width: '400px', height: '200px', hasBackdrop: true, backdropClass: 'cdk-overlay-transparent-backdrop'});
+    this.overlayRef.backdropClick().subscribe(() => {
+      this.close();
+    });
   }
 
   public close(): void {
