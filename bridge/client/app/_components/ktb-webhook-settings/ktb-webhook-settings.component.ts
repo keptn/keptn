@@ -75,17 +75,11 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   public onWebhookFormChange(): void {
-    const method = this.getFormControl('method').value;
-    const url = this.getFormControl('url').value;
-    const payload = this.getFormControl('payload').value;
-    const proxy = this.getFormControl('proxy').value;
-    const header = this.getFormControl('header').value;
-
-    this._webhook.method = method;
-    this._webhook.url = url;
-    this._webhook.payload = payload;
-    this._webhook.proxy = proxy;
-    this._webhook.header = header;
+    this._webhook.method = this.getFormControl('method').value;
+    this._webhook.url = this.getFormControl('url').value;
+    this._webhook.payload = this.getFormControl('payload').value;
+    this._webhook.proxy = this.getFormControl('proxy').value;
+    this._webhook.header = this.getFormControl('header').value;
     this.webhookChange.emit(this._webhook);
   }
 
