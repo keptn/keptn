@@ -11,12 +11,12 @@
 
     <dt-form-field fxFlex="calc(100% - 175px)" uitestid="edit-webhook-field-url">
       <dt-label class="required">URL</dt-label>
-      <input formControlName="url" dtInput placeholder="URL"/>
+      <input #urlInput formControlName="url" dtInput placeholder="URL"/>
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special">URL contains a special character causing it to be invalid. Please remove the special character.</dt-error>
       <div dtSuffix>
-        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: '', controlName: 'url'}"></ng-container>
+        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: undefined, controlName: 'url', selectionStart: urlInput.selectionStart}"></ng-container>
       </div>
     </dt-form-field>
   </div>
@@ -38,10 +38,10 @@
           </dt-form-field>
           <dt-form-field uitestid="edit-webhook-field-headerValue">
             <dt-label class="required">Value</dt-label>
-            <input formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
+            <input #headerInput formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
             <div dtSuffix>
-              <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: '', controlName: 'header', index: i}"></ng-container>
+              <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: '', controlName: 'header', index: i, selectionStart: headerInput.selectionStart}"></ng-container>
             </div>
           </dt-form-field>
           <button type="button" dt-icon-button variant="nested" aria-label="Remove Header" title="Remove Header" (click)="removeHeader(i)">
@@ -54,10 +54,10 @@
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field class="text-area" uitestid="edit-webhook-field-payload">
       <dt-label>Custom payload</dt-label>
-      <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
+      <textarea #payloadInput class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
       <div dtSuffix>
-        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: undefined, controlName: 'payload'}"></ng-container>
+        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: undefined, controlName: 'payload', selectionStart: payloadInput.selectionStart}"></ng-container>
       </div>
     </dt-form-field>
   </div>
@@ -71,8 +71,8 @@
   </div>
 </form>
 
-<ng-template #secretButton let-controlName="controlName" let-index="index">
-  <button dt-icon-button variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" [options]="secretOptions" (selected)="setSecret($event, controlName, index)">
+<ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
+  <button dt-icon-button variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" [options]="secretOptions" (selected)="setSecret($event, controlName, selectionStart, index)">
     <dt-icon name="resetpassword"></dt-icon>
   </button>
 </ng-template>

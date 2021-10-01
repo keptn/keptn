@@ -104,7 +104,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     return this.webhookConfigForm.get(controlName) as AbstractControl;
   }
 
-  public setSecret(secret: string, controlName: ControlType, controlIndex?: number): void {
+  public setSecret(secret: string, controlName: ControlType, selectionStart: number, controlIndex?: number): void {
     let control: AbstractControl;
     if (controlName === 'header' && controlIndex !== undefined) {
       const group = this.header.at(controlIndex) as FormGroup;
@@ -112,8 +112,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
     } else {
       control = this.getFormControl(controlName);
     }
+
     const secretVar = `{{.${secret}}}`;
-    control.setValue(control.value + secretVar);
+    const firstPart = control.value.slice(0, selectionStart);
+    const secondPart = control.value.slice(selectionStart, control.value.length);
+    const finalString = firstPart + secretVar + secondPart;
+
+    control.setValue(finalString);
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {
