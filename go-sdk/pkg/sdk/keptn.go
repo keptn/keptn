@@ -10,15 +10,47 @@ import (
 	"strings"
 )
 
+const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
 const KeptnContextCEExtension = "shkeptncontext"
 const TriggeredIDCEExtension = "triggeredid"
 const ConfigurationServiceURL = "configuration-service:8080"
 
-//go:generate moq  -pkg fake -out ./fake/resource_handler_mock.go . ResourceHandler
+//go:generate moq  -out ./resourcehhandler_mock.go . ResourceHandler
 type ResourceHandler interface {
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
 	GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error)
 	GetProjectResource(project string, resourceURI string) (*models.Resource, error)
+}
+
+//go:generate moq  -out ./eventsender_mock.go . EventSender
+type EventSender interface {
+	SendEvent(event cloudevents.Event) error
+}
+
+type EventReceiver interface {
+	StartReceiver(ctx context.Context, fn interface{}) error
+}
+
+type IKeptn interface {
+	// Start starts the internal event handling logic and needs to be called by the user
+	// after creating value of IKeptn
+	Start() error
+	// GetResourceHandler returns a handler to fetch data from the configuration service
+	GetResourceHandler() ResourceHandler
+	// SendStartedEvent sends a started event for the given input event to the Keptn API
+	SendStartedEvent(event KeptnEvent) error
+	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
+	SendFinishedEvent(event KeptnEvent, result interface{}) error
+}
+
+//go:generate moq -out ./taskhandler_mock.go . TaskHandler
+type TaskHandler interface {
+	// Execute is called whenever the actual business-logic of the service shall be executed.
+	// Thus, the core logic of the service shall be triggered/implemented in this method.
+	//
+	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
+	// or nil, if there was no error during execution.
+	Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
 }
 
 type KeptnEvent models.KeptnContextExtendedCE
@@ -30,57 +62,31 @@ type Error struct {
 	Err        error
 }
 
-//go:generate moq  -pkg fake -out ./fake/task_handler_mock.go . TaskHandler
-type TaskHandler interface {
-	// Execute is called whenever the actual business-logic of the service shall be executed.
-	// Thus, the core logic of the service shall be triggered/implemented in this method.
-	//
-	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
-	// or nil, if there was no error during execution.
-	Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
-}
-
-type KeptnOption func(IKeptn)
+type KeptnOption func(*Keptn)
 
 // WithHandler registers a handler which is responsible for processing a .triggered event
 func WithHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
-	return func(k IKeptn) {
-		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
+	return func(k *Keptn) {
+		k.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 	}
 }
 
 func WithAutomaticResponse(autoResponse bool) KeptnOption {
-	return func(k IKeptn) {
-		k.SetAutomaticResponse(autoResponse)
+	return func(k *Keptn) {
+		k.automaticEventResponse = autoResponse
 	}
-}
-
-type IKeptn interface {
-	// Start starts the internal event handling logic and needs to be called by the user
-	// after creating value of IKeptn
-	Start() error
-	// GetResourceHandler returns a handler to fetch data from the configuration service
-	GetResourceHandler() ResourceHandler
-	// GetTaskRegistry provides access to the internal data structure used for organizing task executors
-	GetTaskRegistry() *TaskRegistry
-	// SendStartedEvent sends a started event for the given input event to the Keptn API
-	SendStartedEvent(event KeptnEvent) error
-	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
-	SendFinishedEvent(event KeptnEvent, result interface{}) error
-	// SetAutomaticResponse tells the handler if it should automatically response with .started/.finished events
-	SetAutomaticResponse(bool)
 }
 
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
-	EventSender            EventSender
-	EventReceiver          EventReceiver
-	ResourceHandler        ResourceHandler
-	Source                 string
-	TaskRegistry           *TaskRegistry
-	SyncProcessing         bool
-	AutomaticEventResponse bool
-	ReceivingEvent         interface{}
+	eventSender            EventSender
+	eventReceiver          EventReceiver
+	resourceHandler        ResourceHandler
+	source                 string
+	taskRegistry           *TaskRegistry
+	syncProcessing         bool
+	automaticEventResponse bool
+	recievingEvent         interface{}
 }
 
 // NewKeptn creates a new Keptn
@@ -89,13 +95,13 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 	resourceHandler := NewResourceHandlerFromEnv()
 	taskRegistry := NewTasksMap()
 	keptn := &Keptn{
-		EventSender:            &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: client},
-		EventReceiver:          client,
-		Source:                 source,
-		TaskRegistry:           taskRegistry,
-		ResourceHandler:        resourceHandler,
-		AutomaticEventResponse: true,
-		SyncProcessing:         false,
+		eventSender:            &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: client},
+		eventReceiver:          client,
+		source:                 source,
+		taskRegistry:           taskRegistry,
+		resourceHandler:        resourceHandler,
+		automaticEventResponse: true,
+		syncProcessing:         false,
 	}
 	for _, opt := range opts {
 		opt(keptn)
@@ -106,15 +112,15 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 func (k *Keptn) Start() error {
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
-	return k.EventReceiver.StartReceiver(ctx, k.gotEvent)
+	return k.eventReceiver.StartReceiver(ctx, k.gotEvent)
 }
 
 func (k *Keptn) GetResourceHandler() ResourceHandler {
-	return k.ResourceHandler
+	return k.resourceHandler
 }
 
 func (k *Keptn) GetTaskRegistry() *TaskRegistry {
-	return k.TaskRegistry
+	return k.taskRegistry
 }
 
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
@@ -136,7 +142,7 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 }
 
 func (k *Keptn) SetAutomaticResponse(autoResponse bool) {
-	k.AutomaticEventResponse = autoResponse
+	k.automaticEventResponse = autoResponse
 }
 
 func (k *Keptn) gotEvent(event cloudevents.Event) {
@@ -147,7 +153,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 
 	k.runEventTaskAction(func() {
 		{
-			if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
+			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
 					// no started event sent yet, so it only makes sense to Send an error log event at this point
@@ -167,7 +173,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				}
 
 				// only respond with .started event if the incoming event is a task.triggered event
-				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.AutomaticEventResponse {
+				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
 					if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
 						log.Errorf("unable to Send .started event: %v", err)
 						return
@@ -177,7 +183,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				result, err := handler.TaskHandler.Execute(k, *keptnEvent)
 				if err != nil {
 					log.Errorf("error during task execution %v", err.Err)
-					if k.AutomaticEventResponse {
+					if k.automaticEventResponse {
 						if err := k.send(k.createErrorEvent(event, result, err)); err != nil {
 							log.Errorf("unable to Send .finished event: %v", err)
 							return
@@ -187,7 +193,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				}
 				if result == nil {
 					log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
-				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.AutomaticEventResponse {
+				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
 					if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
 						log.Errorf("unable to Send .finished event: %v", err)
 					}
@@ -198,7 +204,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 }
 
 func (k *Keptn) runEventTaskAction(fn func()) {
-	if k.SyncProcessing {
+	if k.syncProcessing {
 		fn()
 	} else {
 		go fn()
@@ -207,7 +213,7 @@ func (k *Keptn) runEventTaskAction(fn func()) {
 
 func (k *Keptn) send(event cloudevents.Event) error {
 	log.Infof("Sending %s event", event.Type())
-	if err := k.EventSender.SendEvent(event); err != nil {
+	if err := k.eventSender.SendEvent(event); err != nil {
 		log.Println("Error sending .started event")
 	}
 	return nil
@@ -224,7 +230,7 @@ func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.E
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
 	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
-	c.SetSource(k.Source)
+	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, eventData)
 	return c
 }
@@ -248,7 +254,7 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
 	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
-	c.SetSource(k.Source)
+	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, genericEvent)
 	return c
 }
@@ -282,7 +288,7 @@ func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent cloudevents.
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
 	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
-	c.SetSource(k.Source)
+	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, errorEventData)
 	return c
 }
@@ -305,7 +311,7 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
 	c.SetExtension(TriggeredIDCEExtension, event.ID())
-	c.SetSource(k.Source)
+	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, commonEventData)
 	return c
 }

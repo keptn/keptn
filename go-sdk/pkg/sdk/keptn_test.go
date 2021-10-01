@@ -1,44 +1,43 @@
-package sdk_test
+package sdk
 
 import (
+	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk/fake"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
-	taskHandler := &fake.TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
 		return FakeTaskData{}, nil
 	}
 
-	taskEntry := sdk.TaskEntry{
+	taskEntry := TaskEntry{
 		TaskHandler: taskHandler,
 	}
 
-	taskEntries := map[string]sdk.TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
+	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
 
-	eventReceiver := &fake.TestReceiver{}
-	eventSender := &fake.EventSenderMock{}
+	eventReceiver := &TestReceiver{}
+	eventSender := &EventSenderMock{}
 
 	eventSender.SendEventFunc = func(eventMoqParam event.Event) error {
 		return nil
 	}
 
-	taskRegistry := &sdk.TaskRegistry{
+	taskRegistry := &TaskRegistry{
 		Entries: taskEntries,
 	}
 
-	keptn := sdk.Keptn{
-		EventSender:            eventSender,
-		EventReceiver:          eventReceiver,
-		TaskRegistry:           taskRegistry,
-		AutomaticEventResponse: true,
+	keptn := Keptn{
+		eventSender:            eventSender,
+		eventReceiver:          eventReceiver,
+		taskRegistry:           taskRegistry,
+		automaticEventResponse: true,
 	}
 
 	keptn.Start()
@@ -58,13 +57,53 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 
 }
 
+func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
+		return FakeTaskData{}, nil
+	}
+
+	taskEntry := TaskEntry{
+		TaskHandler: taskHandler,
+	}
+
+	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
+
+	eventReceiver := &TestReceiver{}
+	eventSender := &EventSenderMock{}
+
+	eventSender.SendEventFunc = func(eventMoqParam event.Event) error {
+		return nil
+	}
+
+	taskRegistry := &TaskRegistry{
+		Entries: taskEntries,
+	}
+
+	keptn := Keptn{
+		eventSender:            eventSender,
+		eventReceiver:          eventReceiver,
+		taskRegistry:           taskRegistry,
+		automaticEventResponse: false,
+	}
+
+	keptn.Start()
+	eventReceiver.NewEvent(newTestTaskTriggeredEvent())
+
+	require.Eventuallyf(t, func() bool {
+		fmt.Println(len(eventSender.SendEventCalls()))
+		return len(eventSender.SendEventCalls()) == 0
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+
+}
+
 func newTestTaskTriggeredEvent() cloudevents.Event {
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType("sh.keptn.event.faketask.triggered")
 	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(sdk.KeptnContextCEExtension, "keptncontext")
-	c.SetExtension(sdk.TriggeredIDCEExtension, "ID")
+	c.SetExtension(KeptnContextCEExtension, "keptncontext")
+	c.SetExtension(TriggeredIDCEExtension, "ID")
 	c.SetSource("unittest")
 	c.SetData(cloudevents.ApplicationJSON, FakeTaskData{})
 	return c
