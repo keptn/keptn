@@ -49,10 +49,10 @@ describe('KtbTreeListSelectComponent', () => {
   it('should emit the selected secret', () => {
     // given, when
     const spy = jest.spyOn(component.selected, 'emit');
-    component.selectValue(testSecretPath);
+    component.handleClick({name: 'key1', path: testSecretPath, expandable: false, level: 1});
 
     // then
-    expect(spy).toHaveBeenCalledWith(testSecret);
+    expect(spy).toHaveBeenCalledWith(testSecretPath);
   });
 
   it('should emit the secret from the directive when a secret is selected', () => {
