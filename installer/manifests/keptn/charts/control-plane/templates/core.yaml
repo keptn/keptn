@@ -230,6 +230,9 @@ spec:
               value: "{{ .Values.bridge.oauth.discovery }}"
             - name: SECURE_COOKIE
               value: "{{ .Values.bridge.oauth.secureCookie }}"
+            # Session cookie timeout in milliseconds
+            - name: SESSION_TIMEOUT_MS
+              value: "{{ .Values.bridge.oauth.sessionTimeoutMS}}"
             # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
               value: "{{ .Values.bridge.oauth.trustProxy }}"
