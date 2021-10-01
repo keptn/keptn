@@ -41,18 +41,18 @@ func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlEx
 }
 
 func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
-	nedc, err := lib.NewEventDataModifier(event)
+	eventAdapter, err := lib.NewEventDataAdapter(event)
 	if err != nil {
 		return nil, sdkError("could not parse incoming event", err)
 	}
-	subscriptionID, err := th.extractSubscriptionID(nedc)
+	subscriptionID, err := th.extractSubscriptionID(eventAdapter)
 	if err != nil {
 		logger.Infof("will not handle event: %s", err.Error())
 		return nil, nil
 	}
-	webhook, err := th.getWebHookConfig(keptnHandler, nedc, subscriptionID)
+	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID)
 	if err != nil {
-		return th.onPreExecutionError(keptnHandler, event, nedc, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
+		return th.onPreExecutionError(keptnHandler, event, eventAdapter, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
 	}
 
 	responses := []string{}
@@ -61,15 +61,15 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkErr
 	}
 
-	onError := th.getErrorCallbackForWebhookConfig(keptnHandler, event, nedc, webhook)
+	onError := th.getErrorCallbackForWebhookConfig(keptnHandler, event, eventAdapter, webhook)
 
 	secretEnvVars, err := th.gatherSecretEnvVars(*webhook)
 	if err != nil {
 		onError(err)
 		return nil, sdkError(err.Error(), err)
 	}
-	nedc.Add("env", secretEnvVars)
-	responses, err = th.performWebhookRequests(*webhook, nedc, responses)
+	eventAdapter.Add("env", secretEnvVars)
+	responses, err = th.performWebhookRequests(*webhook, eventAdapter, responses)
 	if err != nil {
 		onError(err)
 		return nil, sdkError(err.Error(), err)
@@ -83,10 +83,10 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 			return nil, sdkError(fmt.Sprintf("could not derive task name from event type %s", *event.Type), err)
 		}
 		result := map[string]interface{}{
-			"project": nedc.Project(),
-			"stage":   nedc.Stage(),
-			"service": nedc.Service(),
-			"labels":  nedc.Labels(),
+			"project": eventAdapter.Project(),
+			"stage":   eventAdapter.Stage(),
+			"service": eventAdapter.Service(),
+			"labels":  eventAdapter.Labels(),
 			taskName: map[string]interface{}{
 				"responses": responses,
 			},
@@ -101,10 +101,10 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	return nil, nil
 }
 
-func (th *TaskHandler) extractSubscriptionID(nedc *lib.EventDataModifier) (string, error) {
+func (th *TaskHandler) extractSubscriptionID(eventAdapter *lib.EventDataAdapter) (string, error) {
 	// Try to extract the subscription ID - if no ID is set, ignore the event
 	tmpData := &TemporaryData{}
-	if err := keptnv2.Decode(nedc.Get()["data"], tmpData); err != nil {
+	if err := keptnv2.Decode(eventAdapter.Get()["data"], tmpData); err != nil {
 		return "", errors.New("event does not contain subscription ID")
 	}
 
@@ -114,17 +114,17 @@ func (th *TaskHandler) extractSubscriptionID(nedc *lib.EventDataModifier) (strin
 	return tmpData.TemporaryData.Distributor.SubscriptionID, nil
 }
 
-func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, nedc *lib.EventDataModifier, err error) (interface{}, *sdk.Error) {
+func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, err error) (interface{}, *sdk.Error) {
 	// in this case, send .started and .finished event immediately
 	if err := keptnHandler.SendStartedEvent(event); err != nil {
 		// logthe error but continue - we need to try to send the .finished event nevertheless
 		logger.WithError(err).Error("could not send .started event")
 	}
 	result := map[string]interface{}{
-		"project": nedc.Project(),
-		"stage":   nedc.Stage(),
-		"service": nedc.Service(),
-		"labels":  nedc.Labels(),
+		"project": eventAdapter.Project(),
+		"stage":   eventAdapter.Stage(),
+		"service": eventAdapter.Service(),
+		"labels":  eventAdapter.Labels(),
 		"result":  keptnv2.ResultFailed,
 		"status":  keptnv2.StatusErrored,
 		"message": err.Error(),
@@ -133,16 +133,16 @@ func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.Ke
 	return nil, sdkError(err.Error(), err)
 }
 
-func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, nedc *lib.EventDataModifier, webhook *lib.Webhook) func(err error) {
+func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, webhook *lib.Webhook) func(err error) {
 	return func(err error) {
 		logger.WithError(err).Error("error during webhook execution")
 		whe, ok := err.(*lib.WebhookExecutionError)
 
 		result := map[string]interface{}{
-			"project": nedc.Project(),
-			"stage":   nedc.Stage(),
-			"service": nedc.Service(),
-			"labels":  nedc.Labels(),
+			"project": eventAdapter.Project(),
+			"stage":   eventAdapter.Stage(),
+			"service": eventAdapter.Service(),
+			"labels":  eventAdapter.Labels(),
 			"result":  keptnv2.ResultFailed,
 			"status":  keptnv2.StatusErrored,
 			"message": err.Error(),
@@ -189,12 +189,12 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 	return nil
 }
 
-func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, nedc *lib.EventDataModifier, responses []string) ([]string, error) {
+func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter, responses []string) ([]string, error) {
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
 		// parse the data from the event, together with the secret env vars
-		parsedCurlCommand, err := th.templateEngine.ParseTemplate(nedc.Get(), req)
+		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), req)
 		if err != nil {
 			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s'", req), lib.WithNrOfExecutedRequests(executedRequests))
 		}
@@ -230,9 +230,9 @@ func sdkError(msg string, err error) *sdk.Error {
 	}
 }
 
-func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.EventDataModifier, subscriptionID string) (*lib.Webhook, error) {
+func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *lib.EventDataAdapter, subscriptionID string) (*lib.Webhook, error) {
 	// first try to retrieve the webhook config at the service level
-	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(nedc.Project(), nedc.Stage(), nedc.Service(), webhookConfigFileName)
+	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(eventAdapter.Project(), eventAdapter.Stage(), eventAdapter.Service(), webhookConfigFileName)
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -240,7 +240,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.Event
 	}
 
 	// if we didn't find a config in the service directory, look at the stage
-	resource, err = keptnHandler.GetResourceHandler().GetStageResource(nedc.Project(), nedc.Stage(), webhookConfigFileName)
+	resource, err = keptnHandler.GetResourceHandler().GetStageResource(eventAdapter.Project(), eventAdapter.Stage(), webhookConfigFileName)
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -248,7 +248,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, nedc *lib.Event
 	}
 
 	// finally, look at project level
-	resource, err = keptnHandler.GetResourceHandler().GetProjectResource(nedc.Project(), webhookConfigFileName)
+	resource, err = keptnHandler.GetResourceHandler().GetProjectResource(eventAdapter.Project(), webhookConfigFileName)
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
