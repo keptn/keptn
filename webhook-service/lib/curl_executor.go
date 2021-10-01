@@ -96,39 +96,9 @@ func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOpt
 }
 
 func (ce *CmdCurlExecutor) Curl(curlCmd string) (string, error) {
-	cmdArr := strings.Split(curlCmd, " ")
-	if len(cmdArr) == 0 || len(cmdArr) == 1 && cmdArr[0] == "" {
-		return "", &CurlError{err: errors.New("no command provided"), reason: NoCommandError}
-	}
-
-	for _, unallowedCharacter := range ce.unAllowedCharacters {
-		if strings.Contains(curlCmd, unallowedCharacter) {
-			return "", &CurlError{err: fmt.Errorf("curl command contains unallowed character '%s'", unallowedCharacter), reason: InvalidCommandError}
-		}
-	}
-
-	args, err := parseCommandLine(curlCmd)
+	args, err := ce.parseArgs(curlCmd)
 	if err != nil {
-		return "", &CurlError{err: errors.New("could not parse curl command"), reason: InvalidCommandError}
-	}
-
-	if cmdArr[0] != "curl" {
-		return "", &CurlError{err: errors.New("only curl commands are allowed to be executed"), reason: InvalidCommandError}
-	}
-
-	for _, arg := range args {
-		for _, o := range ce.unAllowedOptions {
-			if strings.HasPrefix(arg, o) {
-				return "", &CurlError{err: fmt.Errorf("curl command contains invalid option '%s'", o), reason: InvalidCommandError}
-			}
-		}
-	}
-
-	// check if the curl command contains any of the disallowed URLs
-	for _, url := range ce.unAllowedURLs {
-		if strings.Contains(curlCmd, url) {
-			return "", &CurlError{err: fmt.Errorf("curl command contains invalid URL %s", url), reason: UnallowedURLError}
-		}
+		return "", err
 	}
 
 	resp, err := ce.commandExecutor.ExecuteCommand("curl", args[1:]...)
@@ -136,6 +106,59 @@ func (ce *CmdCurlExecutor) Curl(curlCmd string) (string, error) {
 		return "", &CurlError{err: fmt.Errorf("error during curl request execution"), reason: RequestError}
 	}
 	return resp, nil
+}
+
+func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
+	cmdArr := strings.Split(curlCmd, " ")
+	if len(cmdArr) == 0 || len(cmdArr) == 1 && cmdArr[0] == "" {
+		return nil, &CurlError{err: errors.New("no command provided"), reason: NoCommandError}
+	}
+
+	for _, unallowedCharacter := range ce.unAllowedCharacters {
+		if strings.Contains(curlCmd, unallowedCharacter) {
+			return nil, &CurlError{err: fmt.Errorf("curl command contains unallowed character '%s'", unallowedCharacter), reason: InvalidCommandError}
+		}
+	}
+
+	args, err := parseCommandLine(curlCmd)
+	if err != nil {
+		return nil, &CurlError{err: errors.New("could not parse curl command"), reason: InvalidCommandError}
+	}
+
+	if cmdArr[0] != "curl" {
+		return nil, &CurlError{err: errors.New("only curl commands are allowed to be executed"), reason: InvalidCommandError}
+	}
+
+	if err := ce.validateCurlOptions(args); err != nil {
+		return nil, &CurlError{err: err, reason: InvalidCommandError}
+	}
+
+	// check if the curl command contains any of the disallowed URLs
+	if err := ce.validateURL(curlCmd); err != nil {
+		return nil, &CurlError{err: err, reason: UnallowedURLError}
+	}
+
+	return args, nil
+}
+
+func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
+	for _, url := range ce.unAllowedURLs {
+		if strings.Contains(curlCmd, url) {
+			return fmt.Errorf("curl command contains invalid URL %s", url)
+		}
+	}
+	return nil
+}
+
+func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
+	for _, arg := range args {
+		for _, o := range ce.unAllowedOptions {
+			if strings.HasPrefix(arg, o) {
+				return fmt.Errorf("curl command contains invalid option '%s'", o)
+			}
+		}
+	}
+	return nil
 }
 
 func parseCommandLine(command string) ([]string, error) {
