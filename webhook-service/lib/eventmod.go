@@ -1,11 +1,22 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 )
+
+type DistributorData struct {
+	SubscriptionID string `json:"subscriptionID"`
+}
+
+type TemporaryData struct {
+	TemporaryData struct {
+		Distributor DistributorData `json:"distributor"`
+	} `json:"temporaryData"`
+}
 
 type EventDataAdapter struct {
 	event        keptnmodels.KeptnContextExtendedCE
@@ -48,6 +59,17 @@ func (e *EventDataAdapter) Stage() string {
 
 func (e *EventDataAdapter) Service() string {
 	return e.eventData.Service
+}
+
+func (e *EventDataAdapter) SubscriptionID() (string, error) {
+	distributorData := &DistributorData{}
+	if err := e.event.GetTemporaryData("distributor", distributorData); err != nil {
+		return "", err
+	}
+	if distributorData.SubscriptionID == "" {
+		return "", errors.New("no subscription ID found in event")
+	}
+	return distributorData.SubscriptionID, nil
 }
 
 func (e *EventDataAdapter) Labels() interface{} {

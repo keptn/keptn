@@ -12,16 +12,6 @@ import (
 
 const webhookConfigFileName = "webhook/webhook.yaml"
 
-type DistributorData struct {
-	SubscriptionID string `json:"subscriptionID"`
-}
-
-type TemporaryData struct {
-	TemporaryData struct {
-		Distributor DistributorData `json:"distributor"`
-	} `json:"temporaryData"`
-}
-
 type SecretEnv struct {
 	Env map[string]string
 }
@@ -45,7 +35,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	if err != nil {
 		return nil, sdkError("could not parse incoming event", err)
 	}
-	subscriptionID, err := th.extractSubscriptionID(eventAdapter)
+	subscriptionID, err := eventAdapter.SubscriptionID()
 	if err != nil {
 		logger.Infof("will not handle event: %s", err.Error())
 		return nil, nil
@@ -99,19 +89,6 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	}
 
 	return nil, nil
-}
-
-func (th *TaskHandler) extractSubscriptionID(eventAdapter *lib.EventDataAdapter) (string, error) {
-	// Try to extract the subscription ID - if no ID is set, ignore the event
-	tmpData := &TemporaryData{}
-	if err := keptnv2.Decode(eventAdapter.Get()["data"], tmpData); err != nil {
-		return "", errors.New("event does not contain subscription ID")
-	}
-
-	if tmpData.TemporaryData.Distributor.SubscriptionID == "" {
-		return "", errors.New("event does not contain subscription ID")
-	}
-	return tmpData.TemporaryData.Distributor.SubscriptionID, nil
 }
 
 func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, err error) (interface{}, *sdk.Error) {
