@@ -1,7 +1,11 @@
 <div *ngIf="evaluationData">
   <div class="mt-1 mb-1" *ngIf="showChart && !isInvalidated">
     <div fxLayout="row" class="pr-2">
-      <div fxFlex></div>
+      <div fxFlex>
+        <button dt-button variant="secondary" color="warning" *ngIf="updateResults" (click)="refreshEvaluationBoard(updateResults)">
+          ... Refresh
+        </button>
+      </div>
       <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-contextButtons">
         <dt-button-group [(value)]="_comparisonView">
           <dt-button-group-item [value]="'heatmap'" uitestid="keptn-evaluation-details-contextButtons-heatmap" (click)="_comparisonView = 'heatmap'">Heatmap</dt-button-group-item>
