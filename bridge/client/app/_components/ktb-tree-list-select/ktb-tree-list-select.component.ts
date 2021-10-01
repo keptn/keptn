@@ -130,7 +130,11 @@ export class KtbTreeListSelectComponent {
     return flatNode;
   }
 
-  public selectValue(path: string): void {
-    this.selected.emit(path);
+  public handleClick(row: SelectTreeFlatNode): void {
+    if (row.expandable) {
+      this.treeControl.expand(row);
+    } else {
+      this.selected.emit(row.path);
+    }
   }
 }
