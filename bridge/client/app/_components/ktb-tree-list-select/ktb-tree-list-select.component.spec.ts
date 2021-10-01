@@ -48,8 +48,8 @@ describe('KtbTreeListSelectComponent', () => {
 
   it('should emit the selected secret', () => {
     // given, when
-    const spy = jest.spyOn(component.selectedSecret, 'emit');
-    component.selectSecret(testSecretPath);
+    const spy = jest.spyOn(component.selected, 'emit');
+    component.selectValue(testSecretPath);
 
     // then
     expect(spy).toHaveBeenCalledWith(testSecret);
@@ -57,12 +57,12 @@ describe('KtbTreeListSelectComponent', () => {
 
   it('should emit the secret from the directive when a secret is selected', () => {
     // given, when
-    const spy = jest.spyOn(directive.secret, 'emit');
+    const spy = jest.spyOn(directive.selected, 'emit');
     directive.show();
 
     // when
     // @ts-ignore // Ignore private property
-    directive.contentRef?.instance.selectSecret(testSecretPath);
+    directive.contentRef?.instance.selectValue(testSecretPath);
 
     // then
     expect(spy).toHaveBeenCalledWith(testSecret);
@@ -75,7 +75,7 @@ describe('KtbTreeListSelectComponent', () => {
 
     // when
     // @ts-ignore // Ignore private property
-    directive.contentRef?.instance.selectSecret(testSecretPath);
+    directive.contentRef?.instance.selectValue(testSecretPath);
 
     // then
     expect(spy).toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe('KtbTreeListSelectComponent', () => {
     const comp = directive.contentRef?.instance;
 
     // then
-    expect(comp?.secretDataSource.data).toEqual([{name: 'SecretA', keys: [{name: 'key1'}], path: testSecretPath}]);
+    expect(comp?.dataSource.data).toEqual([{name: 'SecretA', keys: [{name: 'key1'}], path: testSecretPath}]);
   });
 
   it('should close the dialog when the components emits a close event', () => {

@@ -1,15 +1,18 @@
 <div class="select-overlay-header pl-3" fxLayout="row" fxLayoutAlign="space-between center">
-  <div>Select a secret</div>
+  <div>{{options.headerText}}</div>
   <button dt-icon-button variant="primary" (click)="closeDialog.emit()">
     <dt-icon name="abort"></dt-icon>
   </button>
 </div>
-<dt-tree-table [dataSource]="secretDataSource" [treeControl]="secretTreeControl">
+<dt-tree-table [dataSource]="dataSource" [treeControl]="treeControl" *ngIf="dataSource.data.length > 0">
   <ng-container dtColumnDef="name">
-    <dt-tree-table-toggle-cell *dtCellDef="let row" [ngClass]="{'secret-selectable' : !row.expandable}" (click)="!row.expandable ? selectSecret(row.path) : null">
+    <dt-tree-table-toggle-cell *dtCellDef="let row" [ngClass]="{'tree-entry-selectable' : !row.expandable}" (click)="!row.expandable ? selectValue(row.path) : null">
       {{row.name}}
     </dt-tree-table-toggle-cell>
   </ng-container>
 
   <dt-tree-table-row *dtRowDef="let row; columns: ['name']" [data]="row"></dt-tree-table-row>
 </dt-tree-table>
+
+<div class="container" *ngIf="dataSource.data.length === 0" [innerHTML]="options.emptyText">
+</div>

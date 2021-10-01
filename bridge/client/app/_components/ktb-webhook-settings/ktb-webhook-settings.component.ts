@@ -4,7 +4,7 @@ import { FormUtils } from '../../_utils/form.utils';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { Secret } from '../../_models/secret';
-import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
+import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
@@ -25,6 +25,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
+  public secretOptions: TreeListSelectOptions = {headerText: 'selectSecret', emptyText: 'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>'};
 
   @Input()
   set webhook(webhookConfig: WebhookConfig | undefined) {
@@ -111,7 +112,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
     } else {
       control = this.getFormControl(controlName);
     }
-    control.setValue(control.value + secret);
+    const secretVar = `{{.${secret}}}`;
+    control.setValue(control.value + secretVar);
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {

@@ -15,9 +15,9 @@
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special">URL contains a special character causing it to be invalid. Please remove the special character.</dt-error>
-      <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" (secret)="setSecret($event, 'url')">
-        <dt-icon name="resetpassword"></dt-icon>
-      </button>
+      <div dtSuffix>
+        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: '', controlName: 'url'}"></ng-container>
+      </div>
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -40,9 +40,9 @@
             <dt-label class="required">Value</dt-label>
             <input formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
-            <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" (secret)="setSecret($event, 'header', i)">
-              <dt-icon name="resetpassword"></dt-icon>
-            </button>
+            <div dtSuffix>
+              <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: '', controlName: 'header', index: i}"></ng-container>
+            </div>
           </dt-form-field>
           <button type="button" dt-icon-button variant="nested" aria-label="Remove Header" title="Remove Header" (click)="removeHeader(i)">
             <dt-icon name="removerow"></dt-icon>
@@ -56,9 +56,9 @@
       <dt-label>Custom payload</dt-label>
       <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
-      <button dt-icon-button dtSuffix variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" (secret)="setSecret($event, 'payload')">
-        <dt-icon name="resetpassword"></dt-icon>
-      </button>
+      <div dtSuffix>
+        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: undefined, controlName: 'payload'}"></ng-container>
+      </div>
     </dt-form-field>
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -70,3 +70,9 @@
     </dt-form-field>
   </div>
 </form>
+
+<ng-template #secretButton let-controlName="controlName" let-index="index">
+  <button dt-icon-button variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" [options]="secretOptions" (selected)="setSecret($event, controlName, index)">
+    <dt-icon name="resetpassword"></dt-icon>
+  </button>
+</ng-template>

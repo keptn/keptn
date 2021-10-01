@@ -23,4 +23,8 @@
       align-items: start;
     }
   }
+
+  .dt-suffix:last-child:not(.dt-button) {
+    margin-right: 0;
+  }
 }

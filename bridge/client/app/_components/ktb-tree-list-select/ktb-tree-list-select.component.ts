@@ -19,6 +19,11 @@ export class SelectTreeFlatNode implements SelectTreeNode {
   expandable!: boolean;
 }
 
+export type TreeListSelectOptions = {
+  headerText: string;
+  emptyText: string;
+};
+
 @Directive({
   selector: '[ktbTreeListSelect]',
 })
@@ -27,7 +32,8 @@ export class KtbTreeListSelectDirective implements OnInit {
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
 
   @Input() data: SelectTreeNode[] = [];
-  @Output() secret: EventEmitter<string> = new EventEmitter<string>();
+  @Input() options: TreeListSelectOptions = {headerText: '', emptyText: ''};
+  @Output() selected: EventEmitter<string> = new EventEmitter<string>();
 
   @HostListener('click')
   show(): void {
@@ -38,12 +44,13 @@ export class KtbTreeListSelectDirective implements OnInit {
     this.contentRef = this.overlayRef?.attach(tooltipPortal);
     if (this.contentRef) {
       this.contentRef.instance.data = this.data;
+      this.contentRef.instance.options = this.options;
       this.contentRef.instance.closeDialog.subscribe(() => {
         this.close();
       });
 
-      this.contentRef.instance.selectedSecret.subscribe(secret => {
-        this.secret.emit(secret);
+      this.contentRef.instance.selected.subscribe(selected => {
+        this.selected.emit(selected);
         this.close();
       });
     }
@@ -85,31 +92,33 @@ export class KtbTreeListSelectDirective implements OnInit {
   styleUrls: ['./ktb-tree-list-select.component.scss'],
 })
 export class KtbTreeListSelectComponent {
-  private secretTreeFlattener: DtTreeFlattener<SelectTreeNode, SelectTreeFlatNode> = new DtTreeFlattener(this.secretTreeTransformer, this.getSecretLevel, this.isSecretExpandable, this.getSecretChildren);
-  public secretTreeControl: FlatTreeControl<SelectTreeFlatNode> = new DtTreeControl<SelectTreeFlatNode>(this.getSecretLevel, this.isSecretExpandable);
-  public secretDataSource: DtTreeDataSource<SelectTreeNode, SelectTreeFlatNode> = new DtTreeDataSource(this.secretTreeControl, this.secretTreeFlattener);
+  private treeFlattener: DtTreeFlattener<SelectTreeNode, SelectTreeFlatNode> = new DtTreeFlattener(this.treeTransformer, this.getNodeLevel, this.isNodeExpandable, this.getNodeChildren);
+  public treeControl: FlatTreeControl<SelectTreeFlatNode> = new DtTreeControl<SelectTreeFlatNode>(this.getNodeLevel, this.isNodeExpandable);
+  public dataSource: DtTreeDataSource<SelectTreeNode, SelectTreeFlatNode> = new DtTreeDataSource(this.treeControl, this.treeFlattener);
 
   @Input()
   set data(data: SelectTreeNode[]) {
-    this.secretDataSource.data = data;
+    this.dataSource.data = data;
   }
 
-  @Output() closeDialog: EventEmitter<void> = new EventEmitter<void>();
-  @Output() selectedSecret: EventEmitter<string> = new EventEmitter<string>();
+  @Input() options: TreeListSelectOptions = {headerText: '', emptyText: ''};
 
-  private getSecretLevel(node: SelectTreeFlatNode): number {
+  @Output() closeDialog: EventEmitter<void> = new EventEmitter<void>();
+  @Output() selected: EventEmitter<string> = new EventEmitter<string>();
+
+  private getNodeLevel(node: SelectTreeFlatNode): number {
     return node.level;
   }
 
-  private isSecretExpandable(node: SelectTreeFlatNode): boolean {
+  private isNodeExpandable(node: SelectTreeFlatNode): boolean {
     return node.expandable;
   }
 
-  private getSecretChildren(node: SelectTreeNode): SelectTreeNode[] | undefined {
+  private getNodeChildren(node: SelectTreeNode): SelectTreeNode[] | undefined {
     return node.keys;
   }
 
-  private secretTreeTransformer(node: SelectTreeNode, level: number): SelectTreeFlatNode {
+  private treeTransformer(node: SelectTreeNode, level: number): SelectTreeFlatNode {
     const flatNode = new SelectTreeFlatNode();
     flatNode.name = node.name;
     flatNode.level = level;
@@ -118,8 +127,7 @@ export class KtbTreeListSelectComponent {
     return flatNode;
   }
 
-  public selectSecret(path: string): void {
-    const variable = `{{.${path}}}`;
-    this.selectedSecret.emit(variable);
+  public selectValue(path: string): void {
+    this.selected.emit(path);
   }
 }
