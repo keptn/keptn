@@ -23,6 +23,7 @@ export class WebhookConfig implements wc {
   public payload: string;
   public header: WebhookHeader[];
   public proxy?: string;
+  public secrets?: WebhookSecret[];
 
   constructor() {
     this.type = '';

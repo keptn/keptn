@@ -119,6 +119,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
     const finalString = firstPart + secretVar + secondPart;
 
     control.setValue(finalString);
+    // Input event detection is not working reliable for adding secrets, so we have to call it to work properly
+    this.onWebhookFormChange();
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {

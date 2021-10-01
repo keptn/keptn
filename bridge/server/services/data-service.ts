@@ -26,6 +26,7 @@ import { SecretScope } from '../../shared/interfaces/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
+type FlatSecret = { path: string, name: string, key: string, parsedPath: string };
 
 export class DataService {
   private apiService: ApiService;
@@ -341,16 +342,15 @@ export class DataService {
   }
 
   private async replaceWithBridgeSecrets(webhookConfig: WebhookConfig): Promise<void> {
-    const webhookScopeSecrets = await this.getSecretsForScope(SecretScope.WEBHOOK);
-    const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
+    if (webhookConfig.secrets) {
+      for (const webhookSecret of webhookConfig.secrets) {
+        const bridgeSecret = webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
+        webhookConfig.url = webhookConfig.url.replace('env.' + webhookSecret.name, bridgeSecret);
+        webhookConfig.payload = webhookConfig.payload.replace('env.' + webhookSecret.name, bridgeSecret);
 
-    for (const secret of flatSecret) {
-      const webhookSecret = secret.replace('.', '-');
-      webhookConfig.url = webhookConfig.url.replace('env.' + webhookSecret, secret);
-      webhookConfig.payload = webhookConfig.payload.replace('env.' + webhookSecret, secret);
-
-      for (const header of webhookConfig.header) {
-        header.value = header.value.replace('env.' + webhookSecret, secret);
+        for (const header of webhookConfig.header) {
+          header.value = header.value.replace('env.' + webhookSecret.name, bridgeSecret);
+        }
       }
     }
   }
@@ -405,34 +405,42 @@ export class DataService {
     return secrets;
   }
 
-  private addWebhookSecretsFromString(parseString: string, allSecretPaths: string[], existingSecrets: WebhookSecret[]): string {
-    const foundSecrets = allSecretPaths.filter(path => parseString.includes(path));
+  private addWebhookSecretsFromString(parseString: string, allSecretPaths: FlatSecret[], existingSecrets: WebhookSecret[]): string {
+    const foundSecrets = allSecretPaths.filter(scrt => parseString.includes(scrt.path));
     let replacedString = parseString;
     for (const found of foundSecrets) {
-      const foundReplaced = found.replace('.', '-');
-      const idx = existingSecrets.findIndex(secret => secret.name === foundReplaced);
-      replacedString = replacedString.replace(found, 'env.' + foundReplaced);
+      const idx = existingSecrets.findIndex(secret => secret.name === found.parsedPath);
       if (idx === -1) {
-        const split = found.split('.');
         const secret: WebhookSecret = {
-          name: foundReplaced,
+          name: found.parsedPath,
           secretRef: {
-            name: split[0],
-            key: split[1],
+            name: found.name,
+            key: found.key,
           },
         };
         existingSecrets.push(secret);
       }
+
+      replacedString = replacedString.replace(found.path, 'env.' + found.parsedPath);
     }
+
     return replacedString;
   }
 
-  private getSecretPathFlat(secrets: Secret[]): string[] {
-    const flatScopeSecrets: string[] = [];
+  private getSecretPathFlat(secrets: Secret[]): FlatSecret[] {
+    const flatScopeSecrets: FlatSecret[] = [];
     for (const secret of secrets) {
       if (secret.keys) {
         for (const key of secret.keys) {
-          flatScopeSecrets.push(secret.name + '.' + key);
+          const sanitizedName = secret.name.replace(/[^a-zA-Z0-9]/g, '');
+          const sanitizedKey = key.replace(/[^a-zA-Z0-9]/g, '');
+          const flat: FlatSecret = {
+            path: secret.name + '.' + key,
+            name: secret.name,
+            key,
+            parsedPath: 'secret_' + sanitizedName + '_' + sanitizedKey,
+          };
+          flatScopeSecrets.push(flat);
         }
       }
     }

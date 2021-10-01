@@ -84,12 +84,18 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
         webhook.envFrom = secrets;
       }
     }
-
   }
 
   public parsedRequest(eventType: string): WebhookConfig | undefined {
-    const curl = this.spec.webhooks.find(w => w.type === eventType)?.requests[0];
-    return curl ? this.parseConfig(curl) : undefined;
+    const webhook = this.spec.webhooks.find(w => w.type === eventType);
+    const curl = webhook?.requests[0];
+    const secrets = webhook?.envFrom;
+
+    const parsedConfig = curl ? this.parseConfig(curl) : undefined;
+    if (parsedConfig) {
+      parsedConfig.secrets = secrets;
+    }
+    return parsedConfig;
   }
 
   private parseConfig(curl: string): WebhookConfig {
