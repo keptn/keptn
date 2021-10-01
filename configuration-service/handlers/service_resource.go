@@ -168,13 +168,13 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+unescapedResourceName, true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
 		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
-	logger.Debug("Successfully updated resource: " + params.ResourceURI)
+	logger.Debugf("Successfully updated resource: %s", unescapedResourceName)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 	metadata.Branch = params.StageName
