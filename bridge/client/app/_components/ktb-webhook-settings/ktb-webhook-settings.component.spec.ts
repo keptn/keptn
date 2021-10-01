@@ -6,8 +6,11 @@ import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
+import { SecretScope } from '../../../../shared/interfaces/secret';
+import { Secret } from '../../_models/secret';
 
 describe('KtbWebhookSettingsComponent', () => {
+  const secretPath = 'SecretA.key1';
   let component: KtbWebhookSettingsComponent;
   let fixture: ComponentFixture<KtbWebhookSettingsComponent>;
 
@@ -188,7 +191,148 @@ describe('KtbWebhookSettingsComponent', () => {
     expect(component.webhookConfigForm.valid).toEqual(true);
   });
 
+  it('should insert the processed string as value to the payload form field', () => {
+    // given
+    component.getFormControl('url').setValue('');
+
+    // when
+    component.setSecret(secretPath, 'url', 0);
+
+    // then
+    expect(component.getFormControl('url').value).toEqual(`{{.${secretPath}}}`);
+  });
+
+  it('should insert the processed string as value to the url form field at the given position', () => {
+    // given
+    component.getFormControl('url').setValue('https://example.com?somestringtoinsert');
+
+    // when
+    component.setSecret(secretPath, 'url', 30);
+
+    // then
+    expect(component.getFormControl('url').value).toEqual(`https://example.com?somestring{{.${secretPath}}}toinsert`);
+  });
+
+  it('should insert the processed string as value to the url form field', () => {
+    // given
+    component.getFormControl('payload').setValue('');
+
+    // when
+    component.setSecret(secretPath, 'payload', 0);
+
+    // then
+    expect(component.getFormControl('payload').value).toEqual(`{{.${secretPath}}}`);
+  });
+
+  it('should insert the processed string as value to the payload form field at the given position', () => {
+    // given
+    component.getFormControl('payload').setValue('{id: , project: sockshop}');
+
+    // when
+    component.setSecret(secretPath, 'payload', 5);
+
+    // then
+    expect(component.getFormControl('payload').value).toEqual(`{id: {{.${secretPath}}}, project: sockshop}`);
+  });
+
+  it('should insert the processed string as value to the given header field in the form array', () => {
+    // given
+    component.addHeader('header1', 'value1');
+    component.addHeader('header2', '');
+
+    // when
+    component.setSecret(secretPath, 'header', 0, 1);
+
+    // then
+    expect(component.headerControls[1].get('value')?.value).toEqual(`{{.${secretPath}}}`);
+  });
+
+  it('should insert the processed string as value to the header form field at the given position', () => {
+    // given
+    component.addHeader('header1', 'value1');
+    component.addHeader('header2', 'value2');
+    // when
+    component.setSecret(secretPath, 'header', 5, 1);
+
+    // then
+    expect(component.headerControls[1].get('value')?.value).toEqual(`value{{.${secretPath}}}2`);
+  });
+
+  it('should map secrets to a tree when set', () => {
+    // given, when
+    const secrets = [new Secret(), new Secret()];
+    secrets[0].name = 'SecretA';
+    secrets[0].scope = SecretScope.WEBHOOK;
+    secrets[0].keys = ['key1', 'key2', 'key3'];
+    secrets[1].name = 'SecretB';
+    secrets[1].scope = SecretScope.WEBHOOK;
+    secrets[1].keys = ['key1', 'key2', 'key3'];
+
+    // when
+    component.secrets = secrets;
+
+    // then
+    expect(component.secretDataSource).toEqual(secretDataSource);
+  });
+
+  it('should emit the set values in the form', () => {
+    // given
+    const spy = jest.spyOn(component.webhookChange, 'emit');
+    component.getFormControl('method').setValue(component.webhookMethods[0]);
+    component.getFormControl('url').setValue('https://example.com');
+    component.addHeader();
+    component.headerControls[0].get('name')?.setValue('x-token');
+    component.headerControls[0].get('value')?.setValue('token-value');
+    component.getFormControl('payload').setValue('payload');
+    component.getFormControl('proxy').setValue('https://proxy.com');
+
+    // when
+    component.onWebhookFormChange();
+
+    // then
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith({header: [{name: 'x-token', value: 'token-value'}], method: 'GET', payload: 'payload', proxy: 'https://proxy.com', type: '', url: 'https://example.com'});
+  });
+
   function getAddHeaderButton(): HTMLElement {
     return fixture.nativeElement.querySelector('[uitestid="ktb-webhook-settings-add-header-button"]');
   }
 });
+
+
+const secretDataSource = [
+  {
+    name: 'SecretA',
+    keys: [
+      {
+        name: 'key1',
+        path: 'SecretA.key1',
+      },
+      {
+        name: 'key2',
+        path: 'SecretA.key2',
+      },
+      {
+        name: 'key3',
+        path: 'SecretA.key3',
+      },
+    ],
+  },
+  {
+    name: 'SecretB',
+    keys: [
+      {
+        name: 'key1',
+        path: 'SecretB.key1',
+      },
+      {
+        name: 'key2',
+        path: 'SecretB.key2',
+      },
+      {
+        name: 'key3',
+        path: 'SecretB.key3',
+      },
+    ],
+  },
+];
