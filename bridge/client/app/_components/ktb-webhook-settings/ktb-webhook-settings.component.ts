@@ -4,7 +4,6 @@ import { FormUtils } from '../../_utils/form.utils';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
-import { combineLatest } from 'rxjs';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
@@ -14,6 +13,7 @@ type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
   styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
 export class KtbWebhookSettingsComponent implements OnInit {
+  private _webhook: WebhookConfig = new WebhookConfig();
   public _projectName?: string;
   public _subscription?: UniformSubscription;
   public webhookConfigForm = new FormGroup({
@@ -25,45 +25,6 @@ export class KtbWebhookSettingsComponent implements OnInit {
   });
 
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
-  private _webhook?: WebhookConfig;
-
-  @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() webhookChange: EventEmitter<WebhookConfig> = new EventEmitter<WebhookConfig>();
-
-  get header(): FormArray {
-    return this.getFormControl('header') as FormArray;
-  }
-
-  get headerControls(): FormGroup[] {
-    return this.header.controls as FormGroup[];
-  }
-
-  constructor() {
-    this.webhookConfigForm.statusChanges.subscribe((status: 'INVALID' | 'VALID') => {
-      this.validityChanged.next(status === 'VALID');
-    });
-    combineLatest([
-      this.getFormControl('method').valueChanges,
-      this.getFormControl('url').valueChanges,
-      this.getFormControl('payload').valueChanges,
-      this.getFormControl('proxy').valueChanges,
-      this.getFormControl('header').valueChanges,
-    ]).subscribe(([method, url, payload, proxy, header]) => {
-      if (!this._webhook) {
-        this._webhook = new WebhookConfig();
-      }
-      this._webhook.method = method;
-      this._webhook.url = url;
-      this._webhook.payload = payload;
-      this._webhook.proxy = proxy;
-      this._webhook.header = header;
-      this.webhookChange.emit(this._webhook);
-    });
-  }
-
-  public ngOnInit(): void {
-    this.validityChanged.next(this.webhookConfigForm.valid);
-  }
 
   @Input()
   set webhook(webhookConfig: WebhookConfig | undefined) {
@@ -82,6 +43,36 @@ export class KtbWebhookSettingsComponent implements OnInit {
         this.webhookConfigForm.get(controlKey)?.markAsDirty();
       }
     }
+  }
+
+  @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() webhookChange: EventEmitter<WebhookConfig> = new EventEmitter<WebhookConfig>();
+
+  get header(): FormArray {
+    return this.getFormControl('header') as FormArray;
+  }
+
+  get headerControls(): FormGroup[] {
+    return this.header.controls as FormGroup[];
+  }
+
+  constructor() {
+    this.webhookConfigForm.statusChanges.subscribe((status: 'INVALID' | 'VALID') => {
+      this.validityChanged.next(status === 'VALID');
+    });
+  }
+
+  public ngOnInit(): void {
+    this.validityChanged.next(this.webhookConfigForm.valid);
+  }
+
+  public onWebhookFormChange(): void {
+    this._webhook.method = this.getFormControl('method').value;
+    this._webhook.url =  this.getFormControl('url').value;
+    this._webhook.payload = this.getFormControl('payload').value;
+    this._webhook.proxy = this.getFormControl('proxy').value;
+    this._webhook.header = this.getFormControl('header').value;
+    this.webhookChange.emit(this._webhook);
   }
 
   public addHeader(name?: string, value?: string): void {

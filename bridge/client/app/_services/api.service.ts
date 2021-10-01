@@ -176,14 +176,13 @@ export class ApiService {
     return this.http.get<UniformSubscription>(url);
   }
 
-  public updateUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>): Observable<object> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscription.id}`;
-    return this.http.put(url, subscription);
+  public updateUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>, webhookConfig?: WebhookConfig): Observable<object> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
+    return this.http.put(url, { subscription, webhookConfig });
   }
-
-  public createUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>): Observable<object> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`;
-    return this.http.post(url, subscription);
+  public createUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>, webhookConfig?: WebhookConfig): Observable<object> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription`;
+    return this.http.post(url, { subscription, webhookConfig });
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLogResponse> {
@@ -401,8 +400,8 @@ export class ApiService {
       });
   }
 
-  public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
-    const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${eventType}`;
+  public getWebhookConfig(subscriptionId: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${subscriptionId}`;
     const params = {
       projectName,
       ...stageName && {stageName},

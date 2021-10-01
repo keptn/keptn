@@ -148,12 +148,12 @@ export class DataService {
     );
   }
 
-  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
-    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced);
+  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): Observable<object> {
+    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
 
-  public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
-    return this.apiService.createUniformSubscription(integrationId, subscription.reduced);
+  public createUniformSubscription(integrationId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): Observable<object> {
+    return this.apiService.createUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {
@@ -585,12 +585,8 @@ export class DataService {
       );
   }
 
-  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
-    return this.apiService.saveWebhookConfig(config);
-  }
-
-  public getWebhookConfig(eventType: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
-    return this.apiService.getWebhookConfig(eventType, projectName, stageName, serviceName);
+  public getWebhookConfig(subscriptionId: string, projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    return this.apiService.getWebhookConfig(subscriptionId, projectName, stageName, serviceName);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {

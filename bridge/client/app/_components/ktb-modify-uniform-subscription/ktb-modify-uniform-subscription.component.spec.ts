@@ -237,7 +237,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[2].id, subscription);
+    expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[2].id, subscription, undefined);
     expect(subscription.filter.projects?.includes('sockshop')).toEqual(true);
   });
 
@@ -245,7 +245,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
     const subscription = setSubscription(10, 0);
     const dataService = TestBed.inject(DataService);
-    const updateSpy = jest.spyOn(dataService, 'saveWebhookConfig');
+    const updateSpy = jest.spyOn(dataService, 'updateUniformSubscription');
     const webhookConfig = new WebhookConfig();
     fixture.detectChanges();
 
@@ -266,7 +266,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     };
 
     // then
-    expect(updateSpy).toHaveBeenCalledWith(webhookConfig);
+    expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[10].id, subscription, webhookConfig);
   });
 
   it('should revert loading if request fails', () => {
@@ -312,7 +312,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
           services: [],
           stages: [],
         },
-      }));
+      }), undefined);
     expect(routerSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'uniform', 'services', UniformRegistrationsMock[1].id]);
     expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual('Create subscription');
   });

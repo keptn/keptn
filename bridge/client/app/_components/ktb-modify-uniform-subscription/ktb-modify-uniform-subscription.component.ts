@@ -144,10 +144,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }).pipe(
       switchMap((data: { subscription: UniformSubscription, projectName: string, integrationInfo: UniformRegistrationInfo }) => {
         let webhook: Observable<WebhookConfig | undefined>;
-        if (data.integrationInfo.isWebhookService && this.editMode) {
+        if (data.integrationInfo.isWebhookService && this.editMode && data.subscription.id) {
           const stage: string | undefined = data.subscription.filter?.stages?.[0];
           const services: string | undefined = data.subscription.filter?.services?.[0];
-          webhook = this.dataService.getWebhookConfig(data.subscription.event, data.projectName, stage, services);
+          webhook = this.dataService.getWebhookConfig(data.subscription.id, data.projectName, stage, services);
         } else {
           webhook = of(undefined);
         }
@@ -190,26 +190,23 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
   public updateSubscription(projectName: string, integrationId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): void {
     this.updating = true;
-    const updates = [];
+    let update;
     subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
     subscription.setIsGlobal(this.isGlobalControl.value, projectName);
-
-    if (this.editMode) {
-      updates.push(this.dataService.updateUniformSubscription(integrationId, subscription));
-    } else {
-      updates.push(this.dataService.createUniformSubscription(integrationId, subscription));
-    }
 
     if (webhookConfig) {
       webhookConfig.type = subscription.event;
       webhookConfig.filter = subscription.filter;
       webhookConfig.prevConfiguration = this._previousFilter;
-      updates.push(this.dataService.saveWebhookConfig(webhookConfig));
     }
 
-    forkJoin(
-      updates,
-    ).subscribe(() => {
+    if (this.editMode) {
+      update = this.dataService.updateUniformSubscription(integrationId, subscription, webhookConfig);
+    } else {
+      update = this.dataService.createUniformSubscription(integrationId, subscription, webhookConfig);
+    }
+
+    update.subscribe(() => {
       this.updating = false;
       this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
     }, () => {

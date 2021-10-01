@@ -135,6 +135,14 @@ export class ApiService {
     return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
   }
 
+  public createSubscription(integrationId: string, subscription: UniformSubscription): Promise<AxiosResponse<{ id: string }>> {
+    return this.axios.post(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`, subscription);
+  }
+
+  public updateSubscription(integrationId: string, subscriptionId: string, subscription: UniformSubscription): Promise<AxiosResponse<object>> {
+    return this.axios.put(`${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`, subscription);
+  }
+
   public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
     let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
     if (stageName) {
@@ -161,8 +169,11 @@ export class ApiService {
     return this.axios.delete<Resource>(url);
   }
 
-  public saveWebhookConfig(content: string, projectName: string, stageName: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}`;
+  public saveWebhookConfig(content: string, projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
     if (serviceName) {
       url += `/service/${serviceName}`;
     }
