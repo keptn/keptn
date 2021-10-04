@@ -31,17 +31,22 @@ export class KtbPayloadViewerComponent {
 
   public event: Trace | undefined;
 
+  public loading = false;
+
   constructor(private apiService: ApiService, private dialog: MatDialog) {
   }
 
   showEventPayloadDialog(): void {
     if (this.eventPayloadDialog) {
       this.event = undefined;
+      this.loading = true;
       this.apiService.getEvent(this.type, this.project, this.stage, this.service)
         .subscribe(eventResult => {
           this.event = eventResult.body?.events[0];
+          this.loading = false;
         }, err => {
           this.event = undefined;
+          this.loading = false;
         });
       this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog);
     }

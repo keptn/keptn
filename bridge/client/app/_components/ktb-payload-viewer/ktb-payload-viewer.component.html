@@ -4,15 +4,24 @@
 
 <ng-template #eventPayloadDialog let-data>
   <h1 mat-dialog-title>Payload viewer</h1>
-  <div *ngIf="event; else loadingEvent">
-    <p>
-      This is the latest <span class="bold" [textContent]="type"></span> event
-      <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
-      <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
-    </p>
-    <div mat-dialog-content>
-      <pre [textContent]="event | json"></pre>
+  <div *ngIf="!loading; else loadingEvent">
+    <div *ngIf="event; else noEvent">
+      <p>
+        This is the latest <span class="bold" [textContent]="type"></span> event
+        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
+        <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
+      </p>
+      <div mat-dialog-content>
+        <pre [textContent]="event | json"></pre>
+      </div>
     </div>
+    <ng-template #noEvent>
+      <p class="error">
+        Could not load any <span class="bold" [textContent]="type"></span> event
+        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
+        <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
+      </p>
+    </ng-template>
   </div>
   <ng-template #loadingEvent>
     <dt-loading-spinner></dt-loading-spinner>
