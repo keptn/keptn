@@ -4,7 +4,6 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ktbUserComponentTest', () => {
-
   let component: KtbUserComponent;
   let fixture: ComponentFixture<KtbUserComponent>;
 

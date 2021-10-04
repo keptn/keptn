@@ -25,7 +25,7 @@ describe('KtbDeletionComponent', () => {
 
   it('should open the deletion dialog', () => {
     // given
-    component.data = {name: 'sockshop', type: DeleteType.PROJECT};
+    component.data = { name: 'sockshop', type: DeleteType.PROJECT };
     fixture.detectChanges();
     const button = fixture.nativeElement.querySelector('.danger-button');
     const spy = jest.spyOn(component.dialog, 'open');
@@ -36,6 +36,6 @@ describe('KtbDeletionComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalledWith(KtbDeletionDialogComponent, {data: {name: 'sockshop', type: 'project'}});
+    expect(spy).toHaveBeenCalledWith(KtbDeletionDialogComponent, { data: { name: 'sockshop', type: 'project' } });
   });
 });

@@ -3,6 +3,18 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { TreeEntry } from '../../../shared/interfaces/resourceFileTree';
 
+export class TreeFlatEntry {
+  fileName: string;
+  level: number;
+  expandable: boolean;
+
+  constructor() {
+    this.fileName = '';
+    this.level = -1;
+    this.expandable = false;
+  }
+}
+
 @Component({
   selector: 'ktb-edit-service-file-list',
   templateUrl: './ktb-edit-service-file-list.component.html',
@@ -23,21 +35,10 @@ export class KtbEditServiceFileListComponent {
   }
 
   constructor() {
-    this.treeControl = new DtTreeControl<TreeFlatEntry>(
-      this.getLevel,
-      this.isExpandable,
-    );
+    this.treeControl = new DtTreeControl<TreeFlatEntry>(this.getLevel, this.isExpandable);
 
-    this.treeFlattener = new DtTreeFlattener(
-      this.treeTransformer,
-      this.getLevel,
-      this.isExpandable,
-      this.getChildren,
-    );
-    this.treeDataSource = new DtTreeDataSource(
-      this.treeControl,
-      this.treeFlattener,
-    );
+    this.treeFlattener = new DtTreeFlattener(this.treeTransformer, this.getLevel, this.isExpandable, this.getChildren);
+    this.treeDataSource = new DtTreeDataSource(this.treeControl, this.treeFlattener);
   }
 
   public getGitRepositoryLink(): string {
@@ -53,9 +54,16 @@ export class KtbEditServiceFileListComponent {
       }
       if (this.remoteUri.includes('git-codecommit.')) {
         const repoParts = this.remoteUri.split('/');
-        const region = repoParts.find(part => part.includes('git-codecommit.'))?.split('.')[1];
+        const region = repoParts.find((part) => part.includes('git-codecommit.'))?.split('.')[1];
         const repoName = repoParts[repoParts.length - 1];
-        return 'https://' + region + '.console.aws.amazon.com/codesuite/codecommit/repositories/' + repoName + '/browse/refs/heads/' + this.stageName;
+        return (
+          'https://' +
+          region +
+          '.console.aws.amazon.com/codesuite/codecommit/repositories/' +
+          repoName +
+          '/browse/refs/heads/' +
+          this.stageName
+        );
       }
 
       return this.remoteUri;
@@ -82,17 +90,5 @@ export class KtbEditServiceFileListComponent {
     flatNode.expandable = !!node.children;
 
     return flatNode;
-  }
-}
-
-export class TreeFlatEntry {
-  fileName: string;
-  level: number;
-  expandable: boolean;
-
-  constructor() {
-    this.fileName = '';
-    this.level = -1;
-    this.expandable = false;
   }
 }

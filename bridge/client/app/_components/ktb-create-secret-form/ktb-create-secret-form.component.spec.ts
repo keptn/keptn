@@ -17,10 +17,7 @@ describe('KtbCreateSecretFormComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbCreateSecretFormComponent);
@@ -40,7 +37,7 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[0];
-    secret.data.push({key: 'testKey', value: 'testValue'});
+    secret.data.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);
@@ -65,7 +62,7 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[1];
-    secret.data.push({key: 'testKey', value: 'testValue'});
+    secret.data.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);
@@ -85,8 +82,6 @@ describe('KtbCreateSecretFormComponent', () => {
     expect(component.isLoading).toBe(false);
   });
 
-
-
   it('should handle failed creating secret', async () => {
     // given
     const createButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-create-button]');
@@ -95,7 +90,7 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[1];
-    secret.data.push({key: 'testKey', value: 'testValue'});
+    secret.data.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);
@@ -142,7 +137,9 @@ describe('KtbCreateSecretFormComponent', () => {
     // when
     addPairButton.click();
     fixture.detectChanges();
-    const removePairButtons: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('[uitestid=keptn-secret-remove-pair-button]'));
+    const removePairButtons: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('[uitestid=keptn-secret-remove-pair-button]')
+    );
     removePairButtons[0].click();
 
     // then

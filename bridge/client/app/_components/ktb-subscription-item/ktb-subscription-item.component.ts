@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
@@ -37,24 +46,39 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router) {
-  }
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef,
+    private dataService: DataService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
-        map(params => params.get('projectName')),
+        map((params) => params.get('projectName')),
         filter((projectName: string | null): projectName is string => !!projectName),
-        switchMap(projectName => this.dataService.getProject(projectName)),
+        switchMap((projectName) => this.dataService.getProject(projectName)),
         filter((project: Project | undefined): project is Project => !!project),
-        takeUntil(this.unsubscribe$),
-      ).subscribe(project => {
-      this.project = project;
-    });
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe((project) => {
+        this.project = project;
+      });
   }
 
   public editSubscription(subscription: UniformSubscription): void {
-    this.router.navigate(['/', 'project', this.project?.projectName, 'uniform', 'services', this.integrationId, 'subscriptions', subscription.id, 'edit']);
+    this.router.navigate([
+      '/',
+      'project',
+      this.project?.projectName,
+      'uniform',
+      'services',
+      this.integrationId,
+      'subscriptions',
+      subscription.id,
+      'edit',
+    ]);
   }
 
   public triggerDeleteSubscription(subscription: UniformSubscription): void {
@@ -64,17 +88,17 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
 
   public deleteSubscription(): void {
     if (this.integrationId && this.subscription?.id) {
-      this.dataService.deleteSubscription(this.integrationId, this.subscription.id, this.isWebhookService).subscribe(() => {
-        this.deleteState = 'success';
-        this.subscriptionDeleted.emit(this.subscription);
-      });
+      this.dataService
+        .deleteSubscription(this.integrationId, this.subscription.id, this.isWebhookService)
+        .subscribe(() => {
+          this.deleteState = 'success';
+          this.subscriptionDeleted.emit(this.subscription);
+        });
     }
   }
-
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
-
 }

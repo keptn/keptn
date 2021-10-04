@@ -1,3 +1,3 @@
 export enum SequenceTypes {
-  REMEDIATION = 'remediation'
+  REMEDIATION = 'remediation',
 }

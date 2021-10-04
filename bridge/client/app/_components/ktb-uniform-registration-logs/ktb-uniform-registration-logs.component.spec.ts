@@ -39,9 +39,15 @@ describe('KtbUniformRegistrationLogsComponent', () => {
   it('should show first 2 rows as unread', () => {
     component.lastSeen = new Date('2021-05-10T09:04:05.000Z');
     fixture.detectChanges();
-    const firstUnreadRow = fixture.nativeElement.querySelectorAll('.uniform-registration-error-log>div:nth-of-type(1) .notification-indicator');
-    const secondUnreadRow = fixture.nativeElement.querySelectorAll('.uniform-registration-error-log>div:nth-of-type(2) .notification-indicator');
-    const allIndicators = fixture.nativeElement.querySelectorAll('.uniform-registration-error-log>div .notification-indicator');
+    const firstUnreadRow = fixture.nativeElement.querySelectorAll(
+      '.uniform-registration-error-log>div:nth-of-type(1) .notification-indicator'
+    );
+    const secondUnreadRow = fixture.nativeElement.querySelectorAll(
+      '.uniform-registration-error-log>div:nth-of-type(2) .notification-indicator'
+    );
+    const allIndicators = fixture.nativeElement.querySelectorAll(
+      '.uniform-registration-error-log>div .notification-indicator'
+    );
     expect(firstUnreadRow).toBeTruthy();
     expect(secondUnreadRow).toBeTruthy();
     expect(allIndicators.length).toEqual(2);
