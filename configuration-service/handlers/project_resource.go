@@ -274,12 +274,12 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources", true)
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources"+unescapedResourceName, true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not commit changes")})
 	}
-	logger.Debug("Successfully deleted resources")
+	logger.Debugf("Successfully deleted resource: %s", unescapedResourceName)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 
