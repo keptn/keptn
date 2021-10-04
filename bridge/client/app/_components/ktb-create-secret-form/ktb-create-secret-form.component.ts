@@ -3,11 +3,12 @@ import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Secret } from '../../_models/secret';
+import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
-  styleUrls: ['./ktb-create-secret-form.component.scss']
+  styleUrls: []
 })
 export class KtbCreateSecretFormComponent {
 
@@ -16,8 +17,11 @@ export class KtbCreateSecretFormComponent {
   private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
   private secretKeyPattern = '[-._a-zA-Z0-9]+';
 
+  public scopes: string[] = Object.values(SecretScope);
+
   public createSecretForm = this.fb.group({
     name: ['', [Validators.required, Validators.pattern(this.secretNamePattern)]],
+    scope: [this.scopes[0], [Validators.required]],
     data: this.fb.array([
       this.fb.group({
         key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
@@ -43,6 +47,7 @@ export class KtbCreateSecretFormComponent {
 
       const secret: Secret = new Secret();
       secret.setName(this.createSecretForm.get('name')?.value);
+      secret.setScope(this.createSecretForm.get('scope')?.value);
       for (const dataGroup of this.data?.controls || []) {
         secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
       }
