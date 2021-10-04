@@ -41,11 +41,12 @@ describe('sample mock test', () => {
       .inputGitUsername(GIT_USERNAME)
       .inputGitToken(GIT_TOKEN);
 
-    cy.fixture('shipyard.yaml').then((fileContent) => {
+    return cy.fixture('shipyard.yaml').then((fileContent) => {
       cy.get('input[id="shipyard-file-input"]').attachFile({
         fileContent: fileContent.toString(),
         fileName: 'shipyard.yaml',
       });
+      return null;
     });
 
     newProjectCreatePage.clickCreateProject();

@@ -1,11 +1,9 @@
 /// <reference types="cypress" />
 import BasePage from '../support/pageobjects/BasePage';
-import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 
 describe('Project delete test', () => {
   it('test', () => {
     const basePage = new BasePage();
-    const envPage = new EnvironmentPage();
 
     cy.fixture('get.project.json').as('initProjectJSON');
     cy.fixture('metadata.json').as('initmetadata');

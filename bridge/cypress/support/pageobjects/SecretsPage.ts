@@ -1,11 +1,12 @@
 /// <reference types="cypress" />
 
 class SecretsPage {
-  clickAddSecret() {
+  clickAddSecret(): void {
     cy.get('.dt-button > .dt-button-label').contains('Add secret').click();
+    return;
   }
 
-  addSecret(SECRET_NAME, SECRET_KEY, SECRET_VALUE) {
+  addSecret(SECRET_NAME: string, SECRET_KEY: string, SECRET_VALUE: string): void {
     this.clickAddSecret();
     cy.get('input[placeholder="Secret name"]')
       .type(SECRET_NAME)
@@ -16,11 +17,13 @@ class SecretsPage {
       .get('button > span')
       .contains('Add secret')
       .click();
+    return;
   }
 
-  deleteSecret(SECRET_NAME) {
+  deleteSecret(SECRET_NAME: string | number | RegExp): void {
     cy.get('dt-row.dt-row > dt-cell').contains(SECRET_NAME).next().children('button').click();
     cy.get('span.dt-button-label').contains('Delete').click();
+    return;
   }
 }
 
