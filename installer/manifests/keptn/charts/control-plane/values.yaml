@@ -10,10 +10,11 @@ prefixPath: ''
 keptnSpecVersion: latest
 
 nats:
-  nameOverride: nats-cluster
+  nameOverride: nats
+  fullnameOverride: keptn-nats
   cluster:
     replicas: 3
-    name: nats-cluster
+    name: nats
   nats:
     jetstream:
       enabled: true

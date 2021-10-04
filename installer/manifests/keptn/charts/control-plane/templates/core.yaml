@@ -137,7 +137,7 @@ spec:
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
@@ -390,7 +390,7 @@ spec:
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
@@ -779,7 +779,7 @@ spec:
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
@@ -891,7 +891,7 @@ spec:
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
@@ -1003,7 +1003,7 @@ spec:
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn'
             - name: PUBSUB_RECIPIENT

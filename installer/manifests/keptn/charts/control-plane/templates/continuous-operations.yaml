@@ -78,7 +78,7 @@ spec:
         {{- include "keptn.distributor.resources" . | nindent 8 }}
         env:
           - name: PUBSUB_URL
-            value: 'nats://keptn-nats-cluster'
+            value: 'nats://keptn-nats'
           - name: PUBSUB_TOPIC
             value: 'sh.keptn.event.get-action.triggered'
           - name: PUBSUB_RECIPIENT
