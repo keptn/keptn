@@ -627,13 +627,15 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
+            initialDelaySeconds: 10
+              periodSeconds: 5
           imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
@@ -856,14 +858,14 @@ spec:
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
-              path: /health
+              path: /health/live
               port: 10998
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
-              port: 8080
-
+            httpGet:
+              path: /health/ready
+              port: 10998
             initialDelaySeconds: 10
             periodSeconds: 5
           imagePullPolicy: IfNotPresent
