@@ -15,12 +15,15 @@ describe('KtbServiceSettingsListComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
-          provide: ActivatedRoute, useValue: {
-            paramMap: of(convertToParamMap({
-              projectName: 'sockshop',
-            })),
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: of(
+              convertToParamMap({
+                projectName: 'sockshop',
+              })
+            ),
           },
         },
       ],

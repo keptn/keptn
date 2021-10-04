@@ -1,4 +1,10 @@
-<div fxLayout="row" fxLayoutAlign="space-between" fxLayoutGap="5px" class="timeline" *ngIf="deployment && deployment.sequence as sequence">
+<div
+  fxLayout="row"
+  fxLayoutAlign="space-between"
+  fxLayoutGap="5px"
+  class="timeline"
+  *ngIf="deployment && deployment.sequence as sequence"
+>
   <ng-container *ngFor="let stage of sequence.getStages()">
     <div fxLayout="row" [attr.uitestid]="'keptn-deployment-timeline-stage-' + stage">
       <ktb-stage-badge
@@ -6,16 +12,34 @@
         [stage]="stage"
         [evaluation]="deployment.getEvaluation(stage)"
         [isSelected]="selectedStage === stage"
-        [success]="!sequence.hasPendingApproval(stage) &&  !sequence.isFaulty(stage)"
+        [success]="!sequence.hasPendingApproval(stage) && !sequence.isFaulty(stage)"
         [error]="sequence.isFaulty(stage)"
         [class.warning]="sequence.isWarning(stage)"
         [highlight]="sequence.hasPendingApproval(stage)"
         [fill]="deployment.hasStage(stage)"
-        (click)="$event.stopPropagation(); selectStage(stage)"></ktb-stage-badge>
+        (click)="$event.stopPropagation(); selectStage(stage)"
+      ></ktb-stage-badge>
 
-      <dt-icon *ngIf="deployment.getStage(stage)?.remediations?.length" name="criticalevent" class="event-icon error timeline-icon" ></dt-icon>
-      <a *ngIf="deployment.hasStage(stage) && sequence.getDeploymentTrace(stage)?.getFinishedEvent()?.getDeploymentUrl() as url" [href]="url" target="_blank" class="timeline-icon link-icon">
-        <button dt-icon-button variant="nested" class="timeline-icon" [title]="'View ' + deployment.service + ' in ' + stage">
+      <dt-icon
+        *ngIf="deployment.getStage(stage)?.remediations?.length"
+        name="criticalevent"
+        class="event-icon error timeline-icon"
+      ></dt-icon>
+      <a
+        *ngIf="
+          deployment.hasStage(stage) &&
+          sequence.getDeploymentTrace(stage)?.getFinishedEvent()?.getDeploymentUrl() as url
+        "
+        [href]="url"
+        target="_blank"
+        class="timeline-icon link-icon"
+      >
+        <button
+          dt-icon-button
+          variant="nested"
+          class="timeline-icon"
+          [title]="'View ' + deployment.service + ' in ' + stage"
+        >
           <dt-icon name="externallink"></dt-icon>
         </button>
       </a>

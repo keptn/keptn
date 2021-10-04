@@ -8,12 +8,7 @@ describe('hideHttpLoadingDirective', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        KtbHideHttpLoadingDirective,
-        TemplateRef,
-        ViewContainerRef,
-        HttpClientTestingModule
-      ],
+      providers: [KtbHideHttpLoadingDirective, TemplateRef, ViewContainerRef, HttpClientTestingModule],
     });
     directive = TestBed.inject(KtbHideHttpLoadingDirective);
   });

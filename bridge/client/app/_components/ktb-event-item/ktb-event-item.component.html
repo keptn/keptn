@@ -1,35 +1,88 @@
-<ktb-selectable-tile [error]="_event.isFaulty()" [warning]="_event.isWarning()" [success]="_event.isSuccessful()" [highlight]="!!_event.isApproval()" *ngIf="_event && (project$ | async) as project">
+<ktb-selectable-tile
+  [error]="_event.isFaulty()"
+  [warning]="_event.isWarning()"
+  [success]="_event.isSuccessful()"
+  [highlight]="!!_event.isApproval()"
+  *ngIf="_event && (project$ | async) as project"
+>
   <div fxLayout="row">
     <div fxFlex>
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-        <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [class.highlight]="_event.isApproval()" [name]="_event.getIcon()"></dt-icon>
+        <dt-icon
+          class="event-icon"
+          [class.error]="_event.isFaulty()"
+          [class.success]="_event.isSuccessful()"
+          [class.highlight]="_event.isApproval()"
+          [name]="_event.getIcon()"
+        ></dt-icon>
         <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
-        <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank" [title]="'View ' + _event.service + ' in ' + _event.stage"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+        <a
+          *ngIf="_event.data.deploymentURIPublic"
+          [href]="_event.data.deploymentURIPublic"
+          target="_blank"
+          [title]="'View ' + _event.service + ' in ' + _event.stage"
+          ><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button
+        ></a>
       </div>
       <div *ngIf="_event.data.canary">
-        <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
+        <p class="m-0 nobreak">
+          <span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span>
+          <span [textContent]="_event.data.canary.value"></span>
+        </p>
       </div>
       <div *ngIf="_event.data.teststrategy">
-        <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span></p>
+        <p class="m-0 nobreak">
+          <span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span>
+        </p>
       </div>
       <div *ngIf="_event.isProblem() || _event.isRemediation()">
-        <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.getProblemDetails()"></span></p>
+        <p class="m-0 nobreak">
+          <span class="bold">Problem: </span><span [textContent]="_event.getProblemDetails()"></span>
+        </p>
       </div>
     </div>
     <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-event-item-contextButtons">
       <div fxLayout="row" fxLayoutAlign="start start">
-        <p *ngIf="showTime && _event.time" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
-        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" title="Evaluation board" [routerLink]="['/evaluation', _event.shkeptncontext, _event.stage]" *ngIf="_event.isEvaluation() && _event.isFinished() || showChartLink"><dt-icon name="chart-bar"></dt-icon></button>
-        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-payload" title="Event payload" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+        <p
+          *ngIf="showTime && _event.time"
+          class="m-0 mt-1 mb-1"
+          [textContent]="_event.time | amDateFormat: dateUtil.getDateTimeFormat()"
+        ></p>
+        <button
+          dt-icon-button
+          variant="nested"
+          uitestid="keptn-event-item-contextButton-evaluation"
+          title="Evaluation board"
+          [routerLink]="['/evaluation', _event.shkeptncontext, _event.stage]"
+          *ngIf="(_event.isEvaluation() && _event.isFinished()) || showChartLink"
+        >
+          <dt-icon name="chart-bar"></dt-icon>
+        </button>
+        <button
+          dt-icon-button
+          variant="nested"
+          uitestid="keptn-event-item-contextButton-payload"
+          title="Event payload"
+          (click)="showEventPayloadDialog()"
+        >
+          <dt-icon name="coding"></dt-icon>
+        </button>
       </div>
     </div>
   </div>
   <div *ngIf="_event.data.problem?.ProblemDetails as problemDetails">
-    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="problemDetails.tagsOfAffectedEntities" uitestid="keptn-event-item-problemTags">
-      <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
-      <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
+    <div
+      fxLayout="row"
+      fxLayoutAlign="start start"
+      *ngIf="problemDetails.tagsOfAffectedEntities"
+      uitestid="keptn-event-item-problemTags"
+    >
+      <p class="bold nobreak m-0 mt-1 mb-1">Labels:</p>
+      <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation()">
         <dt-tag *ngFor="let tag of problemDetails.tagsOfAffectedEntities">
-          <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
+          <p *ngIf="!isUrl(tag.value)">
+            <span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span>
+          </p>
           <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
         </dt-tag>
       </dt-tag-list>
@@ -37,10 +90,12 @@
   </div>
   <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()" uitestid="keptn-event-item-evaluationTags">
     <div fxLayout="row" fxLayoutAlign="start center">
-      <p class="bold">Labels: </p>
+      <p class="bold">Labels:</p>
       <dt-tag-list aria-label="evaluation-labels">
         <dt-tag *ngFor="let label of _event.getFinishedEvent()?.labels | keyvalue">
-          <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+          <p *ngIf="!isUrl(label.value)">
+            <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>
+          </p>
           <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
         </dt-tag>
       </dt-tag-list>
@@ -49,11 +104,24 @@
   <div *ngIf="_event.isApproval() && _event.isApprovalPending()" uitestid="keptn-event-item-approval">
     <table>
       <tr>
-        <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="(_event.data.service && _event.data.stage && project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage))?.image) || 'N/A'"></p></td>
+        <td><p class="m-0">Currently deployed artifact:</p></td>
+        <td>
+          <p
+            class="m-0"
+            [textContent]="
+              (_event.data.service &&
+                _event.data.stage &&
+                project.getLatestDeployment(
+                  project.getService(_event.data.service),
+                  project.getStage(_event.data.stage)
+                )?.image) ||
+              'N/A'
+            "
+          ></p>
+        </td>
       </tr>
       <tr>
-        <td><p class="m-0">Deployable artifact: </p></td>
+        <td><p class="m-0">Deployable artifact:</p></td>
         <td><ktb-approval-item [event]="_event"></ktb-approval-item></td>
       </tr>
     </table>
@@ -61,7 +129,8 @@
   <ng-content
     select="ktb-event-item-detail,
         [ktb-event-item-detail],
-        [ktbEventItemDetail]"></ng-content>
+        [ktbEventItemDetail]"
+  ></ng-content>
 </ktb-selectable-tile>
 <ng-template #eventPayloadDialog let-data>
   <h1 mat-dialog-title>Event payload</h1>

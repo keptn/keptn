@@ -257,9 +257,7 @@
             }
           ],
           "stageName": "production",
-          "parentStages": [
-            "hardening"
-          ]
+          "parentStages": ["hardening"]
         }
       ]
     },
@@ -682,9 +680,7 @@
             }
           ],
           "stageName": "staging",
-          "parentStages": [
-            "dev"
-          ]
+          "parentStages": ["dev"]
         },
         {
           "services": [
@@ -934,9 +930,7 @@
             }
           ],
           "stageName": "production",
-          "parentStages": [
-            "staging"
-          ]
+          "parentStages": ["staging"]
         }
       ]
     },

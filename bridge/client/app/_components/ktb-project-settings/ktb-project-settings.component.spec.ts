@@ -12,17 +12,17 @@ describe('KtbProjectSettingsComponent', () => {
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
   const UNSAVED_DIALOG_STATE = 'unsaved';
   let dataService: DataService;
-  const routeDataSubject = new BehaviorSubject<{ isCreateMode: boolean }>({isCreateMode: false});
+  const routeDataSubject = new BehaviorSubject<{ isCreateMode: boolean }>({ isCreateMode: false });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
-            params: of({projectName: 'sockshop'}),
+            params: of({ projectName: 'sockshop' }),
             data: routeDataSubject.asObservable(),
             queryParams: of({}),
           },
@@ -36,7 +36,7 @@ describe('KtbProjectSettingsComponent', () => {
 
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
     if (notifications.length > 0) {
-      // tslint:disable-next-line:prefer-for-of
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < notifications.length; i++) {
         notifications[i].remove();
       }
@@ -49,10 +49,9 @@ describe('KtbProjectSettingsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-
   it('should have create mode enabled when routed to route data contains {isCreateMode: true}', () => {
     // given
-    routeDataSubject.next({isCreateMode: true});
+    routeDataSubject.next({ isCreateMode: true });
     fixture.detectChanges();
 
     // then
@@ -107,7 +106,7 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should have create mode disabled when routed to route data contains {isCreateMode: false}', () => {
     // given
-    routeDataSubject.next({isCreateMode: false});
+    routeDataSubject.next({ isCreateMode: false });
     fixture.detectChanges();
 
     expect(component.isCreateMode).toBe(false);
@@ -162,8 +161,13 @@ describe('KtbProjectSettingsComponent', () => {
     const routeSpy = jest.spyOn(router, 'navigate');
 
     dataService.loadProjects = jest.fn().mockImplementation(() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      dataService._projects.next(dataService._projects.getValue().filter(project => project.projectName !== 'sockshop'));
+      dataService._projects.next(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        dataService._projects.getValue().filter((project) => project.projectName !== 'sockshop')
+      );
     });
     component.deleteProject('sockshop');
 
@@ -205,7 +209,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.updateGitData({gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true});
+    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
     fixture.detectChanges();
 
     // then
@@ -218,7 +222,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.updateGitData({gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true});
+    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
     fixture.detectChanges();
 
     // then
@@ -231,21 +235,21 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.updateGitData({gitUser: 'someUser', remoteURI: 'someUri'});
+    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri' });
     fixture.detectChanges();
 
     // then
     expect(component.unsavedDialogState).toBeNull();
 
     // when
-    component.updateGitData({gitUser: 'someUser', gitToken: 'someToken'});
+    component.updateGitData({ gitUser: 'someUser', gitToken: 'someToken' });
     fixture.detectChanges();
 
     // then
     expect(component.unsavedDialogState).toBeNull();
 
     // when
-    component.updateGitData({remoteURI: 'someUri', gitToken: 'someToken'});
+    component.updateGitData({ remoteURI: 'someUri', gitToken: 'someToken' });
     fixture.detectChanges();
 
     // then

@@ -15,7 +15,7 @@ export interface EvaluationChartItem {
   metricName: string;
   name: string;
   type: 'column' | 'line';
-  data: EvaluationChartDataItem [];
+  data: EvaluationChartDataItem[];
   turboThreshold: number;
   visible?: boolean;
   yAxis?: number;

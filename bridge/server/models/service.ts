@@ -4,7 +4,7 @@ import { Service as sv } from '../../shared/models/service';
 import { Remediation } from './remediation';
 
 type ServiceEvent = { eventId: string; keptnContext: string; time: number };
-export type DeploymentInformation = { deploymentUrl?: string, image?: string };
+export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service extends sv {
   lastEventTypes: { [p: string]: ServiceEvent } = {};
@@ -20,7 +20,7 @@ export class Service extends sv {
   public getLatestSequence(): string | undefined {
     let latestSequence: ServiceEvent | undefined;
     for (const key of Object.keys(this.lastEventTypes)) {
-      if(!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
+      if (!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
         latestSequence = this.lastEventTypes[key];
       }
     }
