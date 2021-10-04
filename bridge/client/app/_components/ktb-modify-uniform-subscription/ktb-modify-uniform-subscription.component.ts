@@ -276,7 +276,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       if (this.taskSuffixControl.value && this.taskSuffixControl.value != this.suffixes[0].value) {
         type = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
       } else {
-        type = `${EventTypes.PREFIX}${this.taskControl.value}.${this.suffixes[1].value}`;
+        type = `${EventTypes.PREFIX}${this.taskControl.value}.triggered`;
       }
     }
 
