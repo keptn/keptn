@@ -7,7 +7,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
-	fakekeptn "github.com/keptn/keptn/go-sdk/pkg/sdk/fake"
 	"github.com/keptn/keptn/webhook-service/handler"
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/keptn/keptn/webhook-service/lib/fake"
@@ -125,15 +124,11 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContent})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
@@ -171,15 +166,12 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequests}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequests})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
@@ -218,15 +210,12 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinished(t *te
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequestsAndDisabledFinished}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequestsAndDisabledFinished})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
@@ -266,15 +255,12 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinishedOneReq
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequestsAndDisabledFinished}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithMultipleRequestsAndDisabledFinished})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
@@ -313,15 +299,12 @@ func Test_HandleIncomingTriggeredEvent_NoMatchingWebhookFound(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithNoMatchingSubscriptionID}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithNoMatchingSubscriptionID})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
@@ -347,15 +330,11 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.FailingResourceHandler{}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.FailingResourceHandler{})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -380,15 +359,11 @@ func TestTaskHandler_Execute_NoSubscriptionIDInEvent(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.FailingResourceHandler{}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.FailingResourceHandler{})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-no-subscription-id.json"))
@@ -406,15 +381,11 @@ func TestTaskHandler_Execute_InvalidEvent(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler,
-		),
-		fakekeptn.WithResourceHandler(fakekeptn.FailingResourceHandler{}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.FailingResourceHandler{})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/invalid-event.json"))
@@ -435,14 +406,11 @@ func TestTaskHandler_CannotReadSecret(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContent})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -473,14 +441,11 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContentWithMissingTemplateData}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithMissingTemplateData})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
@@ -517,14 +482,11 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 	}
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
 
-	fakeKeptn := fakekeptn.NewFakeKeptn(
-		"test-webhook-svc",
-		sdk.WithHandler(
-			"*",
-			taskHandler),
-		fakekeptn.WithResourceHandler(fakekeptn.StringResourceHandler{ResourceContent: webHookContent}),
-		fakekeptn.WithAutomaticResponse(false),
-	)
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContent})
+	fakeKeptn.AddHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
 
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
