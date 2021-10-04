@@ -38,13 +38,13 @@ spec:
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
-            path: /health/live
+            path: /health
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 5
         readinessProbe:
           httpGet:
-            path: /health/ready
+            path: /health
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 5

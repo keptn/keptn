@@ -81,13 +81,13 @@ spec:
           image: {{ dict "space" .Values.apiService "context" . | include "keptn.image.name" }}
           livenessProbe:
             httpGet:
-              path: /health/live
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -855,14 +855,14 @@ spec:
           image: {{ dict "space" .Values.approvalService "context" . | include "keptn.image.name" }}
           livenessProbe:
             httpGet:
-              path: /health/live
-              port: 10998
+              path: /health
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
             httpGet:
-              path: /health/ready
-              port: 10998
+              path: /health
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           imagePullPolicy: IfNotPresent

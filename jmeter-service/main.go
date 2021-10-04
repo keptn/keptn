@@ -351,12 +351,8 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 func healthEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/health/live" {
+	if r.URL.Path == "/health" {
 		w.WriteHeader(http.StatusOK)
-	} else if r.URL.Path == "/health/ready" {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusBadRequest)
 	}
 }
 
