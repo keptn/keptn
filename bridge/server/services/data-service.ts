@@ -327,15 +327,18 @@ export class DataService {
     return Yaml.parse(shipyard);
   }
 
-  public async createSubscription(integrationId: string, subscription: UniformSubscription, webhookConfig: WebhookConfig): Promise<void> {
+  public async createSubscription(integrationId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): Promise<void> {
     const response = await this.apiService.createSubscription(integrationId, subscription);
-    const subscriptionId = response.data.id;
-    await this.saveWebhookConfig(webhookConfig, subscriptionId);
+    if (webhookConfig) {
+      await this.saveWebhookConfig(webhookConfig, response.data.id);
+    }
   }
 
-  public async updateSubscription(integrationId: string, subscriptionId: string, subscription: UniformSubscription, webhookConfig: WebhookConfig): Promise<void> {
+  public async updateSubscription(integrationId: string, subscriptionId: string, subscription: UniformSubscription, webhookConfig?: WebhookConfig): Promise<void> {
     await this.apiService.updateSubscription(integrationId, subscriptionId, subscription);
-    await this.saveWebhookConfig(webhookConfig, subscriptionId);
+    if (webhookConfig) {
+      await this.saveWebhookConfig(webhookConfig, subscriptionId);
+    }
   }
 
   private async getWebhookConfigYaml(projectName: string, stageName?: string, serviceName?: string): Promise<WebhookConfigYaml> {
