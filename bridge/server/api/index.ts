@@ -245,7 +245,7 @@ const apiRouter = (params: {
           req.query.keptnContext?.toString()
         );
         return res.json(response);
-      } else if(req.query.keptnContext && !req.query.pageSize) {
+      } else if (req.query.keptnContext && !req.query.pageSize) {
         const response = await dataService.getTracesByContext(
           req.query.keptnContext?.toString(),
           req.query.project?.toString(),
@@ -253,7 +253,14 @@ const apiRouter = (params: {
         );
         return res.json(response);
       } else {
-        const response = await dataService.getTraces(req.query.keptnContext?.toString(), req.query.project?.toString(), req.query.stage?.toString(), req.query.service?.toString(), req.query.type?.toString(), req.query.pageSize ? parseInt(req.query.pageSize.toString(), 10) : undefined);
+        const response = await dataService.getTraces(
+          req.query.keptnContext?.toString(),
+          req.query.project?.toString(),
+          req.query.stage?.toString(),
+          req.query.service?.toString(),
+          req.query.type?.toString(),
+          req.query.pageSize ? parseInt(req.query.pageSize.toString(), 10) : undefined
+        );
         return res.json(response);
       }
     } catch (error) {

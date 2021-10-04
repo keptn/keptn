@@ -11,13 +11,8 @@ describe('KtbPayloadViewerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
-      providers: [
-        DataServiceMock,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [DataServiceMock],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbPayloadViewerComponent);

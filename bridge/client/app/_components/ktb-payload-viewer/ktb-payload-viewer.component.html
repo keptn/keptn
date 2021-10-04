@@ -1,6 +1,7 @@
 <button dt-button variant="secondary" variant="nested" (click)="showEventPayloadDialog()" [disabled]="!type">
   <dt-icon name="coding"></dt-icon>
-  <span [textContent]="buttonTitle"></span></button>
+  <span [textContent]="buttonTitle"></span>
+</button>
 
 <ng-template #eventPayloadDialog let-data>
   <h1 mat-dialog-title>Payload viewer</h1>

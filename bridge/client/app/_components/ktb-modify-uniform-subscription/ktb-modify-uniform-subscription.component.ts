@@ -284,11 +284,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   }
 
   public getSelectedStage(subscription: UniformSubscription): string | undefined {
-    return subscription.filter.stages?.find(s => true);
+    return subscription.filter.stages?.find((s) => true);
   }
 
   public getSelectedService(subscription: UniformSubscription): string | undefined {
-    return subscription.filter.services?.find(s => true);
+    return subscription.filter.services?.find((s) => true);
   }
 
   public ngOnDestroy(): void {

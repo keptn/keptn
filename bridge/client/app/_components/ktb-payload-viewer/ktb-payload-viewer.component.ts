@@ -9,7 +9,6 @@ import { ApiService } from '../../_services/api.service';
   styleUrls: ['./ktb-payload-viewer.component.scss'],
 })
 export class KtbPayloadViewerComponent {
-
   @Input()
   public buttonTitle = 'Show event';
 
@@ -33,21 +32,22 @@ export class KtbPayloadViewerComponent {
 
   public loading = false;
 
-  constructor(private apiService: ApiService, private dialog: MatDialog) {
-  }
+  constructor(private apiService: ApiService, private dialog: MatDialog) {}
 
   showEventPayloadDialog(): void {
     if (this.eventPayloadDialog) {
       this.event = undefined;
       this.loading = true;
-      this.apiService.getEvent(this.type, this.project, this.stage, this.service)
-        .subscribe(eventResult => {
+      this.apiService.getEvent(this.type, this.project, this.stage, this.service).subscribe(
+        (eventResult) => {
           this.event = eventResult.body?.events[0];
           this.loading = false;
-        }, err => {
+        },
+        (err) => {
           this.event = undefined;
           this.loading = false;
-        });
+        }
+      );
       this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog);
     }
   }

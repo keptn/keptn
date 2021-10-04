@@ -442,8 +442,22 @@ export class DataService {
     return result;
   }
 
-  public async getTraces(keptnContext?: string, projectName?: string, stageName?: string, serviceName?: string, eventType?: string, pageSize?: number): Promise<EventResult> {
-    const response = await this.apiService.getTraces(eventType, pageSize, projectName, stageName, serviceName, keptnContext);
+  public async getTraces(
+    keptnContext?: string,
+    projectName?: string,
+    stageName?: string,
+    serviceName?: string,
+    eventType?: string,
+    pageSize?: number
+  ): Promise<EventResult> {
+    const response = await this.apiService.getTraces(
+      eventType,
+      pageSize,
+      projectName,
+      stageName,
+      serviceName,
+      keptnContext
+    );
     return response.data;
   }
 
