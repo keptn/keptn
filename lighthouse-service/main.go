@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
@@ -32,7 +32,8 @@ func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(healthEndpointHandler))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(api.HealthEndpointHandler))
+
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
@@ -43,12 +44,6 @@ func _main(args []string, env envConfig) int {
 	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
-}
-
-func healthEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/health" {
-		w.WriteHeader(http.StatusOK)
-	}
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {

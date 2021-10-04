@@ -7,14 +7,13 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 	"net/url"
 
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"log"
 	"os"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
@@ -178,7 +177,7 @@ func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(healthEndpointHandler))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(api.HealthEndpointHandler))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
@@ -189,12 +188,6 @@ func _main(args []string, env envConfig) int {
 	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
-}
-
-func healthEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/health" {
-		w.WriteHeader(http.StatusOK)
-	}
 }
 
 // hasAdminRights checks if the current pod is assigned the Admin Role
