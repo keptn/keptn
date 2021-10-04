@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.9.1-0.20210921105323-c6aa0eaeb562
-	github.com/keptn/kubernetes-utils v0.9.1-0.20210922074106-4fb89e149fe6
+	github.com/keptn/kubernetes-utils v0.9.1-next.1.0.20211004100223-4105c28460aa
 	github.com/kinbiko/jsonassert v1.0.2
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
@@ -19,7 +19,7 @@ require (
 	k8s.io/cli-runtime v0.22.1
 	k8s.io/client-go v0.22.1
 	k8s.io/kubectl v0.22.1
-	sigs.k8s.io/yaml v1.2.0
+	sigs.k8s.io/yaml v1.3.0
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
