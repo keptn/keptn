@@ -14,7 +14,6 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
@@ -107,7 +106,6 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Serving ./swagger-ui/
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
@@ -119,6 +117,12 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir(pathToSwaggerUI))).ServeHTTP(w, r)
 			return
 		}
+
+		if strings.Index(r.URL.Path, "/health") == 0 {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		handler.ServeHTTP(w, r)
 	})
 }
