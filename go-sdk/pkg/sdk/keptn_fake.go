@@ -52,7 +52,7 @@ func (f *FakeKeptn) SetResourceHandler(handler ResourceHandler) {
 	f.Keptn.resourceHandler = handler
 }
 
-func (f *FakeKeptn) AddHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
+func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
 	f.Keptn.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 }
 
