@@ -25,6 +25,7 @@ func main() {
 	kubeAPIPort := os.Getenv("KUBERNETES_SERVICE_PORT")
 
 	curlExecutor := lib.NewCmdCurlExecutor(
+		&lib.OSCmdExecutor{},
 		lib.WithUnAllowedURLs(
 			[]string{
 				kubeAPIHostIP + ":" + kubeAPIPort,
@@ -39,10 +40,11 @@ func main() {
 	go api.RunHealthEndpoint("10998")
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
-		sdk.WithHandler(
+		sdk.WithTaskHandler(
 			eventTypeWildcard,
 			taskHandler,
 		),
+		sdk.WithAutomaticResponse(false),
 	).Start())
 }
 
