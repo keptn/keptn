@@ -4,9 +4,9 @@ go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.4.1
-	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.9.1-0.20210924100920-1014ff55c857
+	github.com/keptn/go-utils v0.9.1-0.20211004125600-a970f9d146ba
 	github.com/nats-io/nats-server/v2 v2.4.0
 	github.com/nats-io/nats.go v1.12.1
 	github.com/sirupsen/logrus v1.8.1
