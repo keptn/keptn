@@ -74,12 +74,17 @@
     },
     {
       "files": ["*.html"],
-      "extends": ["plugin:@angular-eslint/template/recommended"]
+      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "parser": "@angular-eslint/template-parser"
     },
     {
       "files": ["*.html"],
-      "excludedFiles": ["*inline-template-*.component.html"],
-      "extends": ["plugin:prettier/recommended"],
+      "excludedFiles": [
+        "*inline-template-*.component.html"
+      ],
+      "extends": [
+        "plugin:prettier/recommended"
+      ],
       "rules": {
         "prettier/prettier": [
           "error",

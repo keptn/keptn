@@ -80,7 +80,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   }
 
   private getCurrentTime(): string {
-    return moment.utc().startOf('minute').format('YYYY-MM-DDTHH:mm:ss');
+    return moment.utc().startOf('minute').toISOString();
   }
 
   addEvaluationUseCaseToIntegrations(): void {

@@ -54,7 +54,7 @@ export class DataService {
     const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
       for (const service of stage.services) {
-        const keptnContext = service.getLatestSequence(stage.stageName);
+        const keptnContext = service.getLatestSequence();
         if (keptnContext) {
           try {
             const latestSequence = await this.fetchServiceDetails(

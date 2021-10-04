@@ -17,26 +17,13 @@ export class Service extends sv {
     return Object.assign(new this(), data);
   }
 
-  public getLatestSequence(stageName: string): string | undefined {
-    const sequenceEvents = this.getSequenceEvents(stageName);
-    return sequenceEvents.reduce(
-      (latestSequence: ServiceEvent | undefined, currentSequence: ServiceEvent) =>
-        latestSequence && latestSequence.time > currentSequence.time ? latestSequence : currentSequence,
-      undefined
-    )?.keptnContext;
-  }
-
-  private getSequenceEvents(stageName: string): ServiceEvent[] {
-    const sequenceEvents: ServiceEvent[] = [];
+  public getLatestSequence(): string | undefined {
+    let latestSequence: ServiceEvent | undefined;
     for (const key of Object.keys(this.lastEventTypes)) {
-      if (this.isSequence(key, stageName)) {
-        sequenceEvents.push(this.lastEventTypes[key]);
+      if(!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
+        latestSequence = this.lastEventTypes[key];
       }
     }
-    return sequenceEvents;
-  }
-
-  private isSequence(eventType: string, stageName: string): boolean {
-    return eventType.split('.').length === 6 && eventType.includes(stageName);
+    return latestSequence?.keptnContext;
   }
 }

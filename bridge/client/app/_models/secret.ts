@@ -1,3 +1,5 @@
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
+
 class KeyValuePair {
   key!: string;
   value!: string;
@@ -9,7 +11,7 @@ export class Secret {
   data: KeyValuePair[];
 
   constructor() {
-    this.scope = 'keptn-default';
+    this.scope = SecretScope.DEFAULT;
     this.data = [];
   }
 
@@ -19,6 +21,10 @@ export class Secret {
 
   setName(name: string): void {
     this.name = name;
+  }
+
+  setScope(scope: string): void {
+    this.scope = scope;
   }
 
   addData(key: string, value: string): void {
