@@ -8,7 +8,7 @@ import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
-  styleUrls: []
+  styleUrls: [],
 })
 export class KtbCreateSecretFormComponent {
   public isLoading = false;

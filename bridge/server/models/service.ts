@@ -20,7 +20,7 @@ export class Service extends sv {
   public getLatestSequence(): string | undefined {
     let latestSequence: ServiceEvent | undefined;
     for (const key of Object.keys(this.lastEventTypes)) {
-      if(!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
+      if (!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
         latestSequence = this.lastEventTypes[key];
       }
     }

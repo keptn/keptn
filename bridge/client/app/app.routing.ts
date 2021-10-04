@@ -84,7 +84,7 @@ const routes: Routes = [
   { path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent },
   { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
   { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
-  { path: '**', redirectTo: ''},
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({
