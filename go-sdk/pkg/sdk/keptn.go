@@ -62,15 +62,22 @@ type Error struct {
 	Err        error
 }
 
+func (e Error) Error() string {
+	return e.Message
+}
+
+// KeptnOption can be used to configure the keptn sdk
 type KeptnOption func(*Keptn)
 
-// WithHandler registers a handler which is responsible for processing a .triggered event
-func WithHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
+// WithTaskHandler registers a handler which is responsible for processing a .triggered event
+func WithTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
 	return func(k *Keptn) {
 		k.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 	}
 }
 
+// WithAutomaticResponse sets the option to instruct the sdk to automatically send a .started and .finished event.
+// Per default this behavior is turned on and can be disabled with this function
 func WithAutomaticResponse(autoResponse bool) KeptnOption {
 	return func(k *Keptn) {
 		k.automaticEventResponse = autoResponse
@@ -119,10 +126,6 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 	return k.resourceHandler
 }
 
-func (k *Keptn) GetTaskRegistry() *TaskRegistry {
-	return k.taskRegistry
-}
-
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
 	inputCE := cloudevents.Event{}
 	err := keptnv2.Decode(event, &inputCE)
@@ -139,10 +142,6 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 		return err
 	}
 	return k.send(k.createFinishedEventForTriggeredEvent(inputCE, result))
-}
-
-func (k *Keptn) SetAutomaticResponse(autoResponse bool) {
-	k.automaticEventResponse = autoResponse
 }
 
 func (k *Keptn) gotEvent(event cloudevents.Event) {

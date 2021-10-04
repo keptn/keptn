@@ -15,19 +15,23 @@ type FakeKeptn struct {
 	Keptn               *Keptn
 }
 
+func (f *FakeKeptn) Start() error {
+	return f.Keptn.Start()
+}
+
+func (f *FakeKeptn) SendStartedEvent(event KeptnEvent) error {
+	return f.Keptn.SendStartedEvent(event)
+}
+
+func (f *FakeKeptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
+	return f.Keptn.SendFinishedEvent(event, result)
+}
+
 func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 	if f.TestResourceHandler == nil {
 		return &TestResourceHandler{}
 	}
 	return f.TestResourceHandler
-}
-
-func (f *FakeKeptn) GetTaskRegistry() *TaskRegistry {
-	return f.Keptn.GetTaskRegistry()
-}
-
-func (f *FakeKeptn) SetConfigurationServiceURL(configurationServiceURL string) {
-	panic("implement me")
 }
 
 func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
@@ -37,14 +41,6 @@ func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
 
 func (f *FakeKeptn) GetEventSender() *TestSender {
 	return f.Keptn.eventSender.(*TestSender)
-}
-
-func (f *FakeKeptn) SendStartedEvent(event KeptnEvent) error {
-	return f.Keptn.SendStartedEvent(event)
-}
-
-func (f *FakeKeptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	return f.Keptn.SendFinishedEvent(event, result)
 }
 
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
@@ -79,12 +75,6 @@ func NewFakeKeptn(source string) *FakeKeptn {
 	}
 	return fakeKeptn
 }
-
-func (f *FakeKeptn) Start() error {
-	return f.Keptn.Start()
-}
-
-//---
 
 // TestSender fakes the sending of CloudEvents
 type TestSender struct {
@@ -128,8 +118,6 @@ func (s *TestSender) AddReactor(eventTypeSelector string, reactor func(event clo
 	s.Reactors[eventTypeSelector] = reactor
 }
 
-// ---
-
 type TestReceiver struct {
 	receiverFn interface{}
 }
@@ -142,8 +130,6 @@ func (t *TestReceiver) StartReceiver(ctx context.Context, fn interface{}) error 
 func (t *TestReceiver) NewEvent(e cloudevents.Event) {
 	t.receiverFn.(func(event.Event))(e)
 }
-
-// ---
 
 type TestResourceHandler struct {
 	Resource models.Resource
@@ -181,7 +167,7 @@ type StringResourceHandler struct {
 func (s StringResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
 	return &models.Resource{
 		Metadata:        nil,
-		ResourceContent: string(s.ResourceContent),
+		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
@@ -189,7 +175,7 @@ func (s StringResourceHandler) GetServiceResource(project string, stage string, 
 func (s StringResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
 	return &models.Resource{
 		Metadata:        nil,
-		ResourceContent: string(s.ResourceContent),
+		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
@@ -197,7 +183,7 @@ func (s StringResourceHandler) GetStageResource(project string, stage string, re
 func (s StringResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
 	return &models.Resource{
 		Metadata:        nil,
-		ResourceContent: string(s.ResourceContent),
+		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
