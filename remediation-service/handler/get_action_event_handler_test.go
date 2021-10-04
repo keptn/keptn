@@ -8,7 +8,6 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk/fake"
 	"github.com/keptn/keptn/remediation-service/handler"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -29,8 +28,8 @@ func newGetActionTriggeredEvent(filename string) cloudevents.Event {
 }
 
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
-
-	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler()))
+	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))
@@ -64,7 +63,6 @@ func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testi
 	finishedEvent.DataAs(&getActionFinishedData)
 	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
 	require.Equal(t, keptnv2.ResultFailed, getActionFinishedData.Result)
-
 }
 
 func newRemediation(fileName string) *v0_1_4.Remediation {
@@ -85,7 +83,6 @@ func newProblemDetails(problemTitle, rootCause string) keptnv2.ProblemDetails {
 }
 
 func TestGetNextAction(t *testing.T) {
-
 	type args struct {
 		remediation    *v0_1_4.Remediation
 		problemDetails keptnv2.ProblemDetails
