@@ -2,8 +2,9 @@
   <div class="mt-1 mb-1" *ngIf="showChart && !isInvalidated">
     <div fxLayout="row" class="pr-2">
       <div fxFlex>
-        <button dt-button variant="secondary" color="warning" *ngIf="updateResults" (click)="refreshEvaluationBoard(updateResults)">
-          ... Refresh
+        <button dt-button (click)="refreshEvaluationBoard(updateResults)" *ngIf="updateResults">
+          <dt-icon name="refresh"></dt-icon>
+          Refresh
         </button>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-contextButtons">
