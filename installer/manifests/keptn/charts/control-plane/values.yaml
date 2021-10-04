@@ -1,9 +1,12 @@
 mongodb:
+  dbName: keptn
   enabled: true
   host: mongodb:27017
-  user: null
-  password: null
-  adminPassword: null
+  user:
+  password:
+  adminPassword:
+  external:
+    connectionString:
 
 prefixPath: ""
 
