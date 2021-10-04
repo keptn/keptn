@@ -1,19 +1,14 @@
 package handlers
 
 import (
-	"fmt"
-	"os"
-)
-
-var (
-	mongoDBHost       = os.Getenv("MONGODB_HOST")
-	mongoDBName       = os.Getenv("MONGODB_DATABASE")
-	mongoDBUser       = os.Getenv("MONGODB_USER")
-	mongoDBPassword   = os.Getenv("MONGODB_PASSWORD")
-	mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName)
+	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
 )
 
 const (
 	eventsCollectionName = "keptnUnmappedEvents"
 	serviceName          = "mongodb-datastore"
 )
+
+func GetMongoDBConnectionString() (string, string, error) {
+	return keptnmongoutils.GetMongoConnectionStringFromEnv()
+}
