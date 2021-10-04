@@ -38,7 +38,7 @@ func main() {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
-	go keptnapi.RunHealthEndpoint("10999")
+
 	os.Exit(_main(config.Global))
 }
 
@@ -80,6 +80,9 @@ func _main(env config.EnvConfig) int {
 		uniformWatch.RegisterListener(natsEventReceiver)
 		go natsEventReceiver.Start(executionContext)
 	}
+
+	go keptnapi.RunHealthEndpoint("10998")
+
 	executionContext.Wg.Wait()
 	return 0
 }

@@ -29,6 +29,18 @@ spec:
       containers:
       - name: distributor
         image: keptn/distributor:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10998
+          initialDelaySeconds: 20
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10998
+          initialDelaySeconds: 20
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         resources:
