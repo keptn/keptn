@@ -1,7 +1,7 @@
 {
-    "gitRemoteUrl":"https://git-repo.com",
-    "gitToken":"testtoken",
-    "gitUser":"carpe-github-username",
-    "name":"test-project-bycypress-001",
-    "shipyard":"YXBpVmVyc2lvbjogInNwZWMua2VwdG4uc2gvMC4yLjAiCmtpbmQ6ICJTaGlweWFyZCIKbWV0YWRhdGE6CiAgbmFtZTogInNoaXB5YXJkLXF1YWxpdHktZ2F0ZXMiCnNwZWM6CiAgc3RhZ2VzOgogICAgLSBuYW1lOiAicXVhbGl0eS1nYXRlLXRlc3Qi"
+  "gitRemoteUrl": "https://git-repo.com",
+  "gitToken": "testtoken",
+  "gitUser": "carpe-github-username",
+  "name": "test-project-bycypress-001",
+  "shipyard": "YXBpVmVyc2lvbjogInNwZWMua2VwdG4uc2gvMC4yLjAiCmtpbmQ6ICJTaGlweWFyZCIKbWV0YWRhdGE6CiAgbmFtZTogInNoaXB5YXJkLXF1YWxpdHktZ2F0ZXMiCnNwZWM6CiAgc3RhZ2VzOgogICAgLSBuYW1lOiAicXVhbGl0eS1nYXRlLXRlc3Qi"
 }

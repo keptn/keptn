@@ -1,7 +1,7 @@
 {
-    "bridgeversion": "docker.io/keptn/bridge2:0.8.5",
-    "keptnlabel": "keptn",
-    "keptnversion": "0.8.5",
-    "shipyardversion": "0.2.0",
-    "namespace": "keptn"
+  "bridgeversion": "docker.io/keptn/bridge2:0.8.5",
+  "keptnlabel": "keptn",
+  "keptnversion": "0.8.5",
+  "shipyardversion": "0.2.0",
+  "namespace": "keptn"
 }

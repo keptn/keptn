@@ -1,126 +1,126 @@
 {
-    "states": [
+  "states": [
+    {
+      "name": "evaluation",
+      "service": "items",
+      "project": "dynatrace",
+      "time": "2021-09-23T09:39:39.505Z",
+      "shkeptncontext": "31313e63-b4af-4cbc-8df8-39aff78b4c91",
+      "state": "finished",
+      "stages": [
         {
-            "name": "evaluation",
-            "service": "items",
-            "project": "dynatrace",
-            "time": "2021-09-23T09:39:39.505Z",
-            "shkeptncontext": "31313e63-b4af-4cbc-8df8-39aff78b4c91",
-            "state": "finished",
-            "stages": [
-                {
-                    "name": "quality-gate",
-                    "state": "finished",
-                    "latestEvaluation": {
-                        "result": "pass",
-                        "score": 100
-                    },
-                    "latestEvent": {
-                        "type": "sh.keptn.event.quality-gate.evaluation.finished",
-                        "id": "8670d6f1-aab0-4663-a1ba-e628ba6d2b17",
-                        "time": "2021-09-23T09:39:48.937Z"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "evaluation",
-            "service": "health",
-            "project": "dynatrace",
-            "time": "2021-09-23T09:29:34.708Z",
-            "shkeptncontext": "98510320-99e8-4b51-9e70-2168a66c0685",
-            "state": "finished",
-            "stages": [
-                {
-                    "name": "quality-gate",
-                    "state": "finished",
-                    "latestEvaluation": {
-                        "result": "pass",
-                        "score": 100
-                    },
-                    "latestEvent": {
-                        "type": "sh.keptn.event.quality-gate.evaluation.finished",
-                        "id": "e8753770-fbac-49c2-ae6a-ed846b04473d",
-                        "time": "2021-09-23T09:29:51.187Z"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "evaluation",
-            "service": "items",
-            "project": "dynatrace",
-            "time": "2021-09-23T09:22:05.009Z",
-            "shkeptncontext": "7ce9b7fb-2040-435e-a130-0b8b60439fcb",
-            "state": "finished",
-            "stages": [
-                {
-                    "name": "quality-gate",
-                    "state": "finished",
-                    "latestEvaluation": {
-                        "result": "pass",
-                        "score": 100
-                    },
-                    "latestEvent": {
-                        "type": "sh.keptn.event.quality-gate.evaluation.finished",
-                        "id": "2387459d-d36b-4394-9cfc-d052ae77aa3f",
-                        "time": "2021-09-23T09:22:25.040Z"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "evaluation",
-            "service": "items",
-            "project": "dynatrace",
-            "time": "2021-09-23T09:09:27.914Z",
-            "shkeptncontext": "d2a63e50-428b-4095-840f-83d105b34e1b",
-            "state": "finished",
-            "stages": [
-                {
-                    "name": "quality-gate",
-                    "state": "finished",
-                    "latestEvaluation": {
-                        "result": "pass",
-                        "score": 100
-                    },
-                    "latestEvent": {
-                        "type": "sh.keptn.event.quality-gate.evaluation.finished",
-                        "id": "7f15254f-1fb5-4a37-a4dd-00b704bae0e1",
-                        "time": "2021-09-23T09:09:38.788Z"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "evaluation",
-            "service": "items",
-            "project": "dynatrace",
-            "time": "2021-09-23T07:23:08.414Z",
-            "shkeptncontext": "f9d480d6-bc77-4c84-8ca7-ec86ad3eeed9",
-            "state": "finished",
-            "stages": [
-                {
-                    "name": "quality-gate",
-                    "state": "finished",
-                    "latestEvaluation": {
-                        "result": "fail",
-                        "score": 0
-                    },
-                    "latestEvent": {
-                        "type": "sh.keptn.event.quality-gate.evaluation.finished",
-                        "id": "383e8557-8b7b-43ea-a50b-1c70ae5b59ed",
-                        "time": "2021-09-23T07:23:18.310Z"
-                    },
-                    "latestFailedEvent": {
-                        "type": "sh.keptn.event.quality-gate.evaluation.finished",
-                        "id": "383e8557-8b7b-43ea-a50b-1c70ae5b59ed",
-                        "time": "2021-09-23T07:23:18.310Z"
-                    }
-                }
-            ]
+          "name": "quality-gate",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.quality-gate.evaluation.finished",
+            "id": "8670d6f1-aab0-4663-a1ba-e628ba6d2b17",
+            "time": "2021-09-23T09:39:48.937Z"
+          }
         }
-    ],
-    "nextPageKey": 5,
-    "totalCount": 597
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "health",
+      "project": "dynatrace",
+      "time": "2021-09-23T09:29:34.708Z",
+      "shkeptncontext": "98510320-99e8-4b51-9e70-2168a66c0685",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "quality-gate",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.quality-gate.evaluation.finished",
+            "id": "e8753770-fbac-49c2-ae6a-ed846b04473d",
+            "time": "2021-09-23T09:29:51.187Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "items",
+      "project": "dynatrace",
+      "time": "2021-09-23T09:22:05.009Z",
+      "shkeptncontext": "7ce9b7fb-2040-435e-a130-0b8b60439fcb",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "quality-gate",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.quality-gate.evaluation.finished",
+            "id": "2387459d-d36b-4394-9cfc-d052ae77aa3f",
+            "time": "2021-09-23T09:22:25.040Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "items",
+      "project": "dynatrace",
+      "time": "2021-09-23T09:09:27.914Z",
+      "shkeptncontext": "d2a63e50-428b-4095-840f-83d105b34e1b",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "quality-gate",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.quality-gate.evaluation.finished",
+            "id": "7f15254f-1fb5-4a37-a4dd-00b704bae0e1",
+            "time": "2021-09-23T09:09:38.788Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "items",
+      "project": "dynatrace",
+      "time": "2021-09-23T07:23:08.414Z",
+      "shkeptncontext": "f9d480d6-bc77-4c84-8ca7-ec86ad3eeed9",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "quality-gate",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.quality-gate.evaluation.finished",
+            "id": "383e8557-8b7b-43ea-a50b-1c70ae5b59ed",
+            "time": "2021-09-23T07:23:18.310Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.quality-gate.evaluation.finished",
+            "id": "383e8557-8b7b-43ea-a50b-1c70ae5b59ed",
+            "time": "2021-09-23T07:23:18.310Z"
+          }
+        }
+      ]
+    }
+  ],
+  "nextPageKey": 5,
+  "totalCount": 597
 }

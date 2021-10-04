@@ -1,6 +1,4 @@
 /// <reference types="cypress" />
 
-class EnvironmentPage{
-
-}
-export default EnvironmentPage
+class EnvironmentPage {}
+export default EnvironmentPage;
