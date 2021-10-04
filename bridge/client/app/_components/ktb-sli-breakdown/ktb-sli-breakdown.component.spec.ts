@@ -169,7 +169,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
     // @ts-ignore
-    component.comparedIndicatorResults = comparedEvaluationIndex === -1 ? [] : Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults;
+    component.comparedIndicatorResults = comparedEvaluationIndex === -1 ? [] : [Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults];
   }
 
   function validateIndicatorResult(cells: HTMLElement[], isSuccess: boolean, firstValue: string, secondValue: string, weight: string,
