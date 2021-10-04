@@ -15,7 +15,6 @@
     "lint:fix": "eslint --fix ./",
     "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
-    "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },
