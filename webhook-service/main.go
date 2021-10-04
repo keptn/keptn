@@ -40,7 +40,7 @@ func main() {
 	go api.RunHealthEndpoint("10998")
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
-		sdk.WithHandler(
+		sdk.WithTaskHandler(
 			eventTypeWildcard,
 			taskHandler,
 		),
