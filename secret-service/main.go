@@ -3,14 +3,14 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	_ "github.com/keptn/keptn/secret-service/docs"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/controller"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
-	_ "github.com/keptn/keptn/secret-service/docs"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"net/http"
 	"os"
 )
 
@@ -51,11 +51,10 @@ func main() {
 	secretController := controller.NewSecretController(handler.NewSecretHandler(secretsBackend))
 	secretController.Inject(apiV1)
 
-	go keptnapi.RunHealthEndpoint("10998")
-
 	engine.Static("/swagger-ui", "./swagger-ui")
 	err := engine.Run()
 	if err != nil {
 		log.Fatalf("Unable to start service: %s", err.Error())
 	}
+	engine.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 }

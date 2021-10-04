@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
@@ -25,7 +25,6 @@ func main() {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
 	os.Exit(_main(os.Args[1:], env))
 }
 
@@ -33,7 +32,7 @@ func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(healthEndpointHandler))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
@@ -44,6 +43,12 @@ func _main(args []string, env envConfig) int {
 	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
+}
+
+func healthEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/health" {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
