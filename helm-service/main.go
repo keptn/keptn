@@ -19,7 +19,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 

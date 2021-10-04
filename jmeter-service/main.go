@@ -346,17 +346,7 @@ func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	healthHandler := func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/health/live" {
-			w.WriteHeader(http.StatusOK)
-		} else if r.URL.Path == "/health/ready" {
-			w.WriteHeader(http.StatusOK)
-		} else {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	}
-
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(healthHandler))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(healthEndpointHandler))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
