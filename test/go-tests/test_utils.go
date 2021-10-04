@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"os"
 	"strings"
@@ -123,7 +124,7 @@ func GetIntegrationWithName(name string) (models.Integration, error) {
 	return models.Integration{}, fmt.Errorf("No Keptn Integration with name %s found", name)
 }
 
-func CreateSubscription(t *testing.T, serviceName string, subscription models.EventSubscription) error {
+func CreateSubscription(t *testing.T, serviceName string, subscription models.EventSubscription) (string, error) {
 	var fetchedIntegration models.Integration
 	var err error
 	require.Eventually(t, func() bool {
@@ -138,14 +139,21 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	for _, s := range fetchedIntegration.Subscriptions {
 		// check if the subscription for the event already exists - if yes, fine
 		if s.Event == subscription.Event {
-			return nil
+			return s.ID, nil
 		}
 	}
 
-	_, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription)
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription)
 	require.Nil(t, err)
 
-	return nil
+	subscriptionResponse := &scmodels.CreateSubscriptionResponse{}
+
+	err = resp.ToJSON(subscriptionResponse)
+	require.Nil(t, err)
+
+	require.NotEmpty(t, subscriptionResponse.ID)
+
+	return subscriptionResponse.ID, nil
 }
 
 func ApiDELETERequest(path string) (*req.Resp, error) {
@@ -288,6 +296,11 @@ func ExecuteCommand(cmd string) (string, error) {
 	return keptnkubeutils.ExecuteCommand(split[0], split[1:])
 }
 
+func ExecuteCommandf(cmd string, a ...interface{}) (string, error) {
+	cmdf := fmt.Sprintf(cmd, a...) //nolint:govet
+	return ExecuteCommand(cmdf)
+}
+
 func GetKeptnNameSpaceFromEnv() string {
 	return osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
 }
@@ -368,6 +381,12 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func KubeClient(t *testing.T) *kubernetes.Clientset {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	require.Nil(t, err)
+	return clientset
 }
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {

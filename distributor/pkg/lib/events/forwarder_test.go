@@ -63,13 +63,14 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	executionContext := NewExecutionContext(ctx, 1)
 	go f.Start(executionContext)
 
-	//TODO: remove waiting
 	time.Sleep(2 * time.Second)
-	eventFromService(taskStartedEvent)
-	eventFromService(taskFinishedEvent)
+	numEvents := 1000
+	for i := 0; i < numEvents; i++ {
+		eventFromService(taskFinishedEvent)
+	}
 
 	assert.Eventually(t, func() bool {
-		return expectedReceivedMessageCount == 2
+		return expectedReceivedMessageCount == numEvents
 	}, time.Second*time.Duration(10), time.Second)
 
 	cancel()

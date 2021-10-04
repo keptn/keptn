@@ -3,7 +3,7 @@
   <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
     <div>
       <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
-        <h2>Project name *</h2>
+        <h2 class="required">Project name</h2>
         <dt-form-field>
           <input type="text" formControlName="projectName" id="projectNameInput" (input)="unsavedDialogState = 'unsaved'"
                  required dtInput
@@ -44,7 +44,7 @@
           Create project
         </button>
         <div class="mt-2">
-          <span class="small">* fields are required</span>
+          <span class="small required-info">fields are required</span>
         </div>
       </div>
     </div>

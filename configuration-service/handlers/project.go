@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/google/martian/log"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
@@ -30,7 +32,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	// check if the project already exists
 	if common.ProjectExists(params.Project.ProjectName) {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project already exists")})
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Project already exists")})
 	}
 
 	common.LockProject(params.Project.ProjectName)
@@ -57,7 +59,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			rollbackFunc()
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not clone git repository")})
 		}
 
 	} else {
@@ -68,7 +70,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			logger.Error(fmt.Sprintf("Could make directory during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			rollbackFunc()
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not create project")})
 		}
 
 		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
@@ -76,7 +78,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			logger.Error(fmt.Sprintf("Could not initialize git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			rollbackFunc()
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
 		}
 	}
 	////////////////////////////////////////////////////
@@ -92,7 +94,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		logger.Error(fmt.Sprintf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
 		rollbackFunc()
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not store project metadata")})
 	}
 
 	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
@@ -100,7 +102,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
 		rollbackFunc()
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not commit changes")})
 	}
 	return project.NewPostProjectNoContent()
 }
@@ -120,12 +122,18 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 			log.Infof("Storing Git credentials for project %s", projectName)
 			if err := common.UpdateOrCreateOrigin(projectName); err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
-				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+				// TODO: use git library.
+				// until we do not use a propper git library it is hard/not possible to
+				// determine the correct error cases, so we need to rely on the output of the command
+				if strings.Contains(err.Error(), "Authentication failed") {
+					logger.Error("Authentication error detected")
+					return project.NewPostProjectDefault(http.StatusFailedDependency).WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(err.Error())})
+				}
+				return project.NewPostProjectDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 			}
-
 		}
 	} else {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
 	return project.NewPutProjectProjectNameNoContent()
 }
@@ -143,7 +151,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not delete directory during deleting project %s", params.ProjectName))
 		logger.Error(err.Error())
-		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete project")})
+		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not delete project")})
 	}
 
 	logger.Debug("Project " + params.ProjectName + " has been deleted")

@@ -21,6 +21,7 @@ import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
+import { IRemediationAction } from '../../shared/models/remediation-action';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 
@@ -49,7 +50,7 @@ export class DataService {
     const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
       for (const service of stage.services) {
-        const keptnContext = service.getLatestSequence(stage.stageName);
+        const keptnContext = service.getLatestSequence();
         if (keptnContext) {
           try {
             const latestSequence = await this.fetchServiceDetails(service, stage.stageName, keptnContext, projectName, includeApproval, remediations, lastSequences[service.serviceName]);
@@ -140,32 +141,42 @@ export class DataService {
     const sequences = await this.getSequences(projectName, SequenceTypes.REMEDIATION);
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
-      const stageName = sequence.stages[0].name;
-      const response = await this.apiService.getTraces(this.buildRemediationEvent(stageName), this.MAX_TRACE_PAGE_SIZE, projectName, stageName, sequence.service);
-      const traces = response.data.events;
-      const stage = {...sequence.stages[0], actions: []};
-      const remediation: Remediation = Remediation.fromJSON({...sequence, stages: [stage]});
+      const stageName = sequence.stages[0]?.name;
+      // there could be invalid sequences that don't have a stage because the triggered sequence was not present in the shipyard file
+      if (stageName) {
+        const response = await this.apiService.getTraces(this.buildRemediationEvent(stageName), this.MAX_TRACE_PAGE_SIZE, projectName, stageName, sequence.service);
+        const traces = response.data.events;
+        const stage = {...sequence.stages[0], actions: []};
+        const remediation: Remediation = Remediation.fromJSON({...sequence, stages: [stage]});
+        const actions = this.getRemediationActions(traces);
 
-      remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
-      for (const trace of traces) {
-        if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
-          const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
-          const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
-          let state: EventState;
-          if (finishedAction) {
-            state = EventState.FINISHED;
-          } else if (startedAction) {
-            state = EventState.STARTED;
-          } else {
-            state = EventState.TRIGGERED;
-          }
-
-          remediation.stages[0].actions.push({...trace.data.action, state, result: finishedAction?.data.result});
-        }
+        remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
+        remediation.stages[0].actions.push(...actions);
+        remediations.push(remediation);
       }
-      remediations.push(remediation);
     }
     return remediations;
+  }
+
+  private getRemediationActions(traces: Trace[]): IRemediationAction[] {
+    const actions: IRemediationAction[] = [];
+    for (const trace of traces) {
+      if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
+        const finishedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
+        const startedAction = traces.find(t => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
+        let state: EventState;
+        if (finishedAction) {
+          state = EventState.FINISHED;
+        } else if (startedAction) {
+          state = EventState.STARTED;
+        } else {
+          state = EventState.TRIGGERED;
+        }
+
+        actions.push({...trace.data.action, state, result: finishedAction?.data.result});
+      }
+    }
+    return actions;
   }
 
   private async getTrace(keptnContext: string, projectName: string, stageName: string, serviceName: string, eventType: EventTypes): Promise<Trace | undefined> {
@@ -243,10 +254,12 @@ export class DataService {
     const shipyard = await this.getShipyard(projectName);
     const tasks: string[] = ['service.delete', 'service.create', 'evaluation'];
     for (const stage of shipyard.spec.stages) {
-      for (const sequence of stage.sequences) {
-        for (const task of sequence.tasks) {
-          if (!tasks.includes(task.name)) {
-            tasks.push(task.name);
+      if (stage.sequences) {
+        for (const sequence of stage.sequences) {
+          for (const task of sequence.tasks) {
+            if (!tasks.includes(task.name)) {
+              tasks.push(task.name);
+            }
           }
         }
       }
@@ -264,7 +277,7 @@ export class DataService {
       events: [],
       pageSize: 0,
       nextPageKey: 0,
-      totalCount: 0
+      totalCount: 0,
     };
     let nextPage = 0;
     do {
@@ -274,7 +287,7 @@ export class DataService {
         events: [...result?.events, ...response.data.events],
         pageSize: result.pageSize + response.data.pageSize,
         nextPageKey: response.data.nextPageKey,
-        totalCount: response.data.totalCount
+        totalCount: response.data.totalCount,
       };
     } while (nextPage !== 0);
 

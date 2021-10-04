@@ -7,7 +7,7 @@
             <span class="bold" [textContent]="sequence?.getShortImageName() || deploymentInfo.deployment.service"></span>&nbsp;
             <dt-tag-list aria-label="deploymentInfo.deployment-labels" uitestid="keptn-service-details-deploymentInfo.deploymentTags">
               <dt-tag *ngFor="let label of (sequence?.getLastTrace()?.getFinishedEvent()?.labels || sequence?.labels) | keyvalue">
-                <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+                <p *ngIf="!isUrl(label.value)"><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
                 <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
               </dt-tag>
             </dt-tag-list>
@@ -38,7 +38,7 @@
       <div class="mt-3" fxLayout="column" fxLayoutGap="15px" *ngIf="deploymentInfo.deployment.getEvaluation(deploymentInfo.stage) as evaluationEvent">
         <ktb-event-item [showChartLink]="true" [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">
           <ktb-event-item-detail>
-            <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
+            <ktb-evaluation-details [evaluationInfo]="{evaluation: evaluationEvent.getFinishedEvent(), shouldSelect: !!sequence?.getEvaluation(deploymentInfo.stage)}" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
           </ktb-event-item-detail>
         </ktb-event-item>
       </div>

@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { authenticateSession, getLogoutHint, isAuthenticated, removeSession } from './session';
 
 const router = Router();
@@ -34,7 +34,7 @@ async function oauthRouter() {
 
   if (!discoveryEndpoint) {
     throw Error('OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-    ' Please check your environment variables.');
+      ' Please check your environment variables.');
   }
 
   const discoveryResp = await axios({
@@ -78,13 +78,14 @@ async function oauthRouter() {
         method: 'get',
         url: authorizationEndpoint,
       });
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError;
       console.log(`Error while handling the login request. Cause : ${err.message}`);
       return res.render('error',
         {
           title: 'Internal error',
           message: 'Error while handling the login request.',
-          location: getRootLocation()
+          location: getRootLocation(),
         });
     }
 
@@ -94,7 +95,7 @@ async function oauthRouter() {
         {
           title: 'Invalid state',
           message: 'Failure to obtain login details.',
-          location: getRootLocation()
+          location: getRootLocation(),
         });
     }
 
@@ -125,17 +126,18 @@ async function oauthRouter() {
         method: 'post',
         url: tokenDecisionEndpoint,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        data: tokensPayload
+        data: tokensPayload,
       });
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError;
       console.log(`Error while handling the redirect. Cause : ${err.message}`);
 
       if (err.response !== undefined && err.response.status === 403) {
         const response = {
           title: 'Permission denied',
-          message: ''
+          message: '',
         };
 
         if (err.response.data.hasOwnProperty('message')) {
@@ -150,7 +152,7 @@ async function oauthRouter() {
           {
             title: 'Internal error',
             message: 'Error while handling the redirect. Please retry and check whether the problem exists.',
-            location: getRootLocation()
+            location: getRootLocation(),
           });
       }
     }
@@ -183,13 +185,14 @@ async function oauthRouter() {
         method: 'post',
         url: logoutEndpoint,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         data: {
-          logout_hint: hint
-        }
+          logout_hint: hint,
+        },
       });
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError;
       console.log(`Error while handling the RP logout. Cause : ${err.message}`);
 
       return res.render('error',
@@ -197,8 +200,8 @@ async function oauthRouter() {
           title: 'Internal error',
           message: 'Logout was successfully handled.' +
             ' However, there was an error while redirecting you to the correct endpoint.',
-          location : getRootLocation(),
-          locationMessage: 'Home'
+          location: getRootLocation(),
+          locationMessage: 'Home',
         });
     }
 
@@ -209,8 +212,8 @@ async function oauthRouter() {
           title: 'Internal error',
           message: 'Logout was successfully handled.' +
             ' However, there was an error while redirecting you to the correct endpoint.',
-          location : getRootLocation(),
-          locationMessage: 'Home'
+          location: getRootLocation(),
+          locationMessage: 'Home',
         });
     }
 

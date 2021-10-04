@@ -1,0 +1,20 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.ktb-sequence-state-info {
+  overflow: hidden;
+
+  .stages-list {
+    overflow: auto;
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .stages-list::-webkit-scrollbar {
+    display: none;
+  }
+
+}

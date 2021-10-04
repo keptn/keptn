@@ -3,7 +3,6 @@ import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { ForwarderGuard } from './_forwarder/forwarder_guard';
 import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
@@ -74,9 +73,6 @@ const routes: Routes = [
   {path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent},
   {path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent},
   {path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent},
-  {path: 'project/:projectName/:serviceName', component: ProjectBoardComponent, canActivate: [ForwarderGuard]}, // deprecated
-  {path: 'project/:projectName/:serviceName/:contextId', component: ProjectBoardComponent, canActivate: [ForwarderGuard]}, // deprecated
-  {path: 'project/:projectName/:serviceName/:contextId/:eventId', component: ProjectBoardComponent, canActivate: [ForwarderGuard]}, // deprecated
   {path: '**', redirectTo: ''},
 ];
 
