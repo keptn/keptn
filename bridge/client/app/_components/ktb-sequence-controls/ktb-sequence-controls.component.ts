@@ -1,19 +1,19 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
 import { SequenceStateControl } from '../../../../shared/models/sequence';
-import { KtbConfirmationDialogComponent } from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
+import {
+  KtbConfirmationDialogComponent,
+  SequenceConfirmDialogData,
+} from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'ktb-sequence-controls',
   templateUrl: './ktb-sequence-controls.component.html',
-  host: {
-    class: 'ktb-sequence-controls'
-  }
 })
 export class KtbSequenceControlsComponent {
-
+  @HostBinding('class') cls = 'ktb-sequence-controls';
   private _sequence?: Sequence;
   private _smallButtons = false;
   public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
@@ -38,8 +38,11 @@ export class KtbSequenceControlsComponent {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, public dialog: MatDialog) {
-  }
+  constructor(
+    private _changeDetectorRef: ChangeDetectorRef,
+    private dataService: DataService,
+    public dialog: MatDialog
+  ) {}
 
   triggerResumeSequence(sequence: Sequence): void {
     this.dataService.sendSequenceControl(sequence, SequenceStateControl.RESUME);
@@ -50,11 +53,11 @@ export class KtbSequenceControlsComponent {
   }
 
   triggerAbortSequence(sequence: Sequence): void {
-    const data = {
+    const data: SequenceConfirmDialogData = {
       sequence,
-      confirmCallback: (params: any) => {
+      confirmCallback: (params: SequenceConfirmDialogData): void => {
         this.abortSequence(params.sequence);
-      }
+      },
     };
     this.confirmationDialogRef = this.dialog.open(KtbConfirmationDialogComponent, {
       data,

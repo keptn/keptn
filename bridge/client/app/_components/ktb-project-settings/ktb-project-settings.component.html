@@ -5,17 +5,24 @@
       <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
         <h2 class="required">Project name</h2>
         <dt-form-field>
-          <input type="text" formControlName="projectName" id="projectNameInput" (input)="unsavedDialogState = 'unsaved'"
-                 required dtInput
-                 placeholder="e.g. sockshop"/>
-          <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
+          <input
+            type="text"
+            formControlName="projectName"
+            id="projectNameInput"
+            (input)="unsavedDialogState = 'unsaved'"
+            required
+            dtInput
+            placeholder="e.g. sockshop"
+          />
+          <dt-hint
+            >Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
             hyphens.
           </dt-hint>
           <dt-error>
             <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
             <ng-container *ngIf="projectNameControl.hasError('duplicate')">Project name already exists</ng-container>
-            <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter.
-              Allowed characters: lower case letters, numbers and
+            <ng-container *ngIf="projectNameControl.hasError('pattern')"
+              >Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
               hyphens.
             </ng-container>
           </dt-error>
@@ -27,19 +34,21 @@
           [gitData]="gitData"
           [isGitUpstreamInProgress]="isGitUpstreamInProgress"
           (gitDataChanged)="updateGitData($event)"
-          (gitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
+          (gitUpstreamSubmit)="setGitUpstream()"
+        ></ktb-project-settings-git>
       </div>
       <div class="mb-3 settings-section" *ngIf="isCreateMode">
-
-        <ktb-project-settings-shipyard (shipyardFileChanged)="updateShipyardFile($event)"
-                                       [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>
-
+        <ktb-project-settings-shipyard
+          (shipyardFileChanged)="updateShipyardFile($event)"
+          [isCreateMode]="isCreateMode"
+        ></ktb-project-settings-shipyard>
       </div>
       <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
         <button
           [disabled]="!shipyardFile || projectNameForm.invalid || !gitData.gitFormValid || isCreatingProjectInProgress"
           (click)="createProject()"
-          dt-button>
+          dt-button
+        >
           <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
           Create project
         </button>
@@ -55,8 +64,11 @@
   </div>
 </div>
 
-<dt-confirmation-dialog [state]="unsavedDialogState" aria-label="Dialog for notifying about unsaved data"
-                        *ngIf="!isCreateMode">
+<dt-confirmation-dialog
+  [state]="unsavedDialogState"
+  aria-label="Dialog for notifying about unsaved data"
+  *ngIf="!isCreateMode"
+>
   <dt-confirmation-dialog-state name="unsaved">
     You have pending changes. Make sure to save your data before you continue.
     <dt-confirmation-dialog-actions>

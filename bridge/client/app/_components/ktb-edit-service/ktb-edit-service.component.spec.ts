@@ -13,10 +13,12 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FileTreeMock } from '../../_models/fileTree.mock';
 import { By } from '@angular/platform-browser';
 
-const paramMapSubject = new BehaviorSubject(convertToParamMap({
-  serviceName: 'carts',
-  projectName: 'sockshop',
-}));
+const paramMapSubject = new BehaviorSubject(
+  convertToParamMap({
+    serviceName: 'carts',
+    projectName: 'sockshop',
+  })
+);
 
 describe('KtbEditServiceComponent', () => {
   let component: KtbEditServiceComponent;
@@ -24,14 +26,12 @@ describe('KtbEditServiceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
-          provide: ActivatedRoute, useValue: {
+          provide: ActivatedRoute,
+          useValue: {
             paramMap: paramMapSubject.asObservable(),
             snapshot: {},
           },
@@ -53,12 +53,12 @@ describe('KtbEditServiceComponent', () => {
     const deleteProgressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
 
     // when
-    eventService.deletionTriggeredEvent.next({type: DeleteType.SERVICE, name: 'carts'});
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.SERVICE, name: 'carts' });
     fixture.detectChanges();
 
     // then
-    expect(deleteProgressSpy).toHaveBeenCalledWith({isInProgress: true});
-    expect(deleteProgressSpy).toHaveBeenCalledWith({isInProgress: false, result: DeleteResult.SUCCESS});
+    expect(deleteProgressSpy).toHaveBeenCalledWith({ isInProgress: true });
+    expect(deleteProgressSpy).toHaveBeenCalledWith({ isInProgress: false, result: DeleteResult.SUCCESS });
   });
 
   it('should show error', () => {
@@ -66,14 +66,20 @@ describe('KtbEditServiceComponent', () => {
     const eventService = TestBed.inject(EventService);
     const dataService = TestBed.inject(DataService);
     const deleteProgressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
-    dataService.deleteService = jest.fn().mockReturnValue(throwError(new HttpErrorResponse({error: 'service could not be deleted'})));
+    dataService.deleteService = jest
+      .fn()
+      .mockReturnValue(throwError(new HttpErrorResponse({ error: 'service could not be deleted' })));
 
     // when
-    eventService.deletionTriggeredEvent.next({type: DeleteType.SERVICE, name: 'carts'});
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.SERVICE, name: 'carts' });
     fixture.detectChanges();
 
     // then
-    expect(deleteProgressSpy).toHaveBeenCalledWith({isInProgress: false, result: DeleteResult.ERROR, error: 'service could not be deleted'});
+    expect(deleteProgressSpy).toHaveBeenCalledWith({
+      isInProgress: false,
+      result: DeleteResult.ERROR,
+      error: 'service could not be deleted',
+    });
   });
 
   it('should get the file tree of all stages for project sockshop and service carts', (done) => {
@@ -84,10 +90,12 @@ describe('KtbEditServiceComponent', () => {
     const spy = jest.spyOn(dataService, 'getFileTreeForService');
 
     // when
-    paramMapSubject.next(convertToParamMap({
-      serviceName: 'carts',
-      projectName: 'sockshop',
-    }));
+    paramMapSubject.next(
+      convertToParamMap({
+        serviceName: 'carts',
+        projectName: 'sockshop',
+      })
+    );
 
     // then
     expect(spy).toHaveBeenCalledWith('sockshop', 'carts');
@@ -104,10 +112,12 @@ describe('KtbEditServiceComponent', () => {
     jest.spyOn(dataService, 'getFileTreeForService').mockReturnValue(of([]));
 
     // when
-    paramMapSubject.next(convertToParamMap({
-      serviceName: 'carts',
-      projectName: 'sockshop',
-    }));
+    paramMapSubject.next(
+      convertToParamMap({
+        serviceName: 'carts',
+        projectName: 'sockshop',
+      })
+    );
 
     // then
     component.fileTree$.subscribe((fileTree) => {

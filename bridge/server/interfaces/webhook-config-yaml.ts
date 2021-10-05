@@ -14,7 +14,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   apiVersion: 'webhookconfig.keptn.sh/v1alpha1';
   kind: 'WebhookConfig';
   metadata: {
-    name: 'webhook-configuration'
+    name: 'webhook-configuration';
   };
   spec: {
     webhooks: Webhook[]
@@ -67,7 +67,6 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     } else { // overwrite
       webhook.requests[0] = curl;
     }
-
   }
 
   private getWebhook(subscriptionId: string): Webhook | undefined {
@@ -95,7 +94,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     config.payload = this.formatJSON(result.data?.[0] ?? '');
     config.proxy = result.proxy?.[0] ?? '';
     config.method = (result.request?.[0] ?? '') as WebhookConfigMethod;
-    const headers: { name: string, value: string }[] = [];
+    const headers: { name: string; value: string }[] = [];
     if (result.header) {
       for (const header of result.header) {
         const headerInfo = header.split(':');
@@ -148,13 +147,13 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     return index;
   }
 
-  private getNextCommandData(curl: string, i: number): { data: string, index: number } {
+  private getNextCommandData(curl: string, i: number): { data: string; index: number } {
     const startsWith = curl[i];
     let data = '';
     const startIndex = i;
-    if (startsWith === '\'' || startsWith === '\"') {
+    if (startsWith === "'" || startsWith === '"') {
       ++i;
-      while (i < curl.length && (curl[i] !== startsWith || curl[i] === startsWith && curl[i - 1] === '\\')) {
+      while (i < curl.length && (curl[i] !== startsWith || (curl[i] === startsWith && curl[i - 1] === '\\'))) {
         ++i;
       }
       data = curl.substring(startIndex + 1, i);
@@ -171,7 +170,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     };
   }
 
-  private getNextCommand(curl: string, i: number): { data: string, index: number } {
+  private getNextCommand(curl: string, i: number): { data: string; index: number } {
     let startCommandIndex = i + 1;
     if (curl[i + 1] === '-') {
       ++startCommandIndex;
@@ -186,16 +185,13 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   private formatJSON(data: string): string {
     try {
       data = JSON.stringify(JSON.parse(data), null, 2);
-    } catch {
-    }
+    } catch {}
     return data;
   }
 
   public toYAML(): string {
     return Yaml.stringify(this, {
-      sortMapEntries: (a, b) => {
-        return order[a.key] - order[b.key];
-      },
+      sortMapEntries: (a, b) => order[a.key] - order[b.key],
     });
   }
 }

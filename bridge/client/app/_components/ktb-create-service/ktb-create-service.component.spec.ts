@@ -16,21 +16,19 @@ describe('KtbCreateServiceComponent', () => {
   let queryParams: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
-    queryParams = new BehaviorSubject<ParamMap>(
-      convertToParamMap({}),
-    );
+    queryParams = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-      ],
+      imports: [AppModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
-            paramMap: of(convertToParamMap({
-              projectName,
-            })),
+            paramMap: of(
+              convertToParamMap({
+                projectName,
+              })
+            ),
             queryParamMap: queryParams.asObservable(),
             snapshot: {},
           },
@@ -96,7 +94,7 @@ describe('KtbCreateServiceComponent', () => {
 
     // then
     expect(loadProjectsSpy).toHaveBeenCalledWith(projectName);
-    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.Success, 'Service successfully created!', 5_000);
+    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.SUCCESS, 'Service successfully created!', 5_000);
   });
 
   it('should not create service', () => {
@@ -104,13 +102,15 @@ describe('KtbCreateServiceComponent', () => {
     const notificationService = TestBed.inject(NotificationsService);
     const notificationSpy = jest.spyOn(notificationService, 'addNotification');
     const dataService = TestBed.inject(DataService);
-    dataService.createService = jest.fn().mockReturnValue(throwError(new HttpErrorResponse({error: 'service already exists'})));
+    dataService.createService = jest
+      .fn()
+      .mockReturnValue(throwError(new HttpErrorResponse({ error: 'service already exists' })));
 
     // when
     component.createService(projectName);
 
     // then
-    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.Error, 'service already exists', 5_000);
+    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.ERROR, 'service already exists', 5_000);
   });
 
   it('should go back', () => {
@@ -141,7 +141,7 @@ describe('KtbCreateServiceComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(routerNavigateSpy).toHaveBeenCalledWith(['../'], {relativeTo: route});
+    expect(routerNavigateSpy).toHaveBeenCalledWith(['../'], { relativeTo: route });
   });
 
   function checkCreateButton(isEnabled: boolean): void {
@@ -158,7 +158,7 @@ describe('KtbCreateServiceComponent', () => {
   }
 
   function updateQueryParams(redirectTo: string): void {
-    queryParams.next(convertToParamMap({redirectTo}));
+    queryParams.next(convertToParamMap({ redirectTo }));
     fixture = TestBed.createComponent(KtbCreateServiceComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

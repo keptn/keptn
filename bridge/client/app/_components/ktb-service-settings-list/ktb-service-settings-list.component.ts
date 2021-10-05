@@ -16,20 +16,22 @@ export class KtbServiceSettingsListComponent implements OnDestroy {
 
   constructor(private router: ActivatedRoute, private dataService: DataService) {
     const projectName$ = this.router.paramMap.pipe(
-      map(params => params.get('projectName')),
-      filter((projectName): projectName is string => !!projectName),
+      map((params) => params.get('projectName')),
+      filter((projectName): projectName is string => !!projectName)
     );
 
-    projectName$.pipe(
-      switchMap(projectName => {
-        this.projectName = projectName;
-        return this.dataService.getProject(projectName);
-      }),
-      takeUntil(this.unsubscribe$),
-    ).subscribe(project => {
-      const services: string[] = project?.getServices()?.map(service => service.serviceName) ?? [];
-      this.dataSource = new DtTableDataSource<string>(services);
-    });
+    projectName$
+      .pipe(
+        switchMap((projectName) => {
+          this.projectName = projectName;
+          return this.dataService.getProject(projectName);
+        }),
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe((project) => {
+        const services: string[] = project?.getServices()?.map((service) => service.serviceName) ?? [];
+        this.dataSource = new DtTableDataSource<string>(services);
+      });
   }
 
   public ngOnDestroy(): void {

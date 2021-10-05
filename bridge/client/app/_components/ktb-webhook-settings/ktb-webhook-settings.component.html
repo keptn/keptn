@@ -10,34 +10,57 @@
     </dt-form-field>
     <dt-form-field fxFlex="calc(100% - 175px)">
       <dt-label class="required">URL</dt-label>
-      <input formControlName="url" dtInput placeholder="URL"/>
+      <input formControlName="url" dtInput placeholder="URL" />
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
-      <dt-error *ngIf="getFormControl('url').errors?.url?.special">URL contains a special character causing it to be invalid. Please remove the special character.</dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.url?.special"
+        >URL contains a special character causing it to be invalid. Please remove the special character.</dt-error
+      >
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <p>Custom headers</p>
-    <button type="button" dt-button variant="secondary" aria-label="Add key-value pair" title="Add Header" uitestid="ktb-webhook-settings-add-header-button" (click)="addHeader()">
+    <button
+      type="button"
+      dt-button
+      variant="secondary"
+      aria-label="Add key-value pair"
+      title="Add Header"
+      uitestid="ktb-webhook-settings-add-header-button"
+      (click)="addHeader()"
+    >
       <dt-icon name="addrowonbottom"></dt-icon>
       Add custom header
     </button>
   </div>
   <div formArrayName="header">
-    <ng-container *ngFor="let headerGroup of headerControls; let i = index;">
+    <ng-container *ngFor="let headerGroup of headerControls; let i = index">
       <form [formGroup]="headerGroup">
         <div class="mb-1" fxLayout="row" fxLayoutAlign="start end" fxLayoutGap="15px">
           <dt-form-field>
             <dt-label class="required">Name</dt-label>
-            <input formControlName="name" type="text" dtInput placeholder="e.g. Content-Type" autocomplete="false"/>
+            <input formControlName="name" type="text" dtInput placeholder="e.g. Content-Type" autocomplete="false" />
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
           <dt-form-field>
             <dt-label class="required">Value</dt-label>
-            <input formControlName="value" type="text" dtInput placeholder="e.g. application/json" autocomplete="false"/>
+            <input
+              formControlName="value"
+              type="text"
+              dtInput
+              placeholder="e.g. application/json"
+              autocomplete="false"
+            />
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
-          <button type="button" dt-icon-button variant="nested" aria-label="Remove Header" title="Remove Header" (click)="removeHeader(i)">
+          <button
+            type="button"
+            dt-icon-button
+            variant="nested"
+            aria-label="Remove Header"
+            title="Remove Header"
+            (click)="removeHeader(i)"
+          >
             <dt-icon name="removerow"></dt-icon>
           </button>
         </div>
@@ -54,9 +77,11 @@
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field>
       <dt-label>Proxy</dt-label>
-      <input formControlName="proxy" type="url" dtInput placeholder="Proxy"/>
+      <input formControlName="proxy" type="url" dtInput placeholder="Proxy" />
       <dt-error *ngIf="getFormControl('proxy').errors?.url?.pattern">Proxy must be a valid URL</dt-error>
-      <dt-error *ngIf="getFormControl('proxy').errors?.url?.special">Proxy contains a special character causing it to be invalid. Please remove the special character.</dt-error>
+      <dt-error *ngIf="getFormControl('proxy').errors?.url?.special"
+        >Proxy contains a special character causing it to be invalid. Please remove the special character.</dt-error
+      >
     </dt-form-field>
   </div>
 </form>

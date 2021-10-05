@@ -1,22 +1,20 @@
 enum NotificationType {
-  Info= 'info',
-  Success = 'success',
-  Warning = 'warning',
-  Error = 'error'
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error',
 }
 
 enum TemplateRenderedNotifications {
-  CREATE_PROJECT = 'message_create_project'
+  CREATE_PROJECT = 'message_create_project',
 }
 
 class Notification {
   isTemplateRendered?: boolean;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
 
-  constructor(public type: NotificationType, public message: string) {
-  }
+  constructor(public type: NotificationType, public message: string) {}
 }
 
-export {Notification, NotificationType, TemplateRenderedNotifications};
-
+export { Notification, NotificationType, TemplateRenderedNotifications };

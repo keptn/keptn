@@ -1,12 +1,11 @@
 import moment from 'moment';
-import {Trace} from '../_models/trace';
-import {Injectable} from '@angular/core';
+import { Trace } from '../_models/trace';
+import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DateUtil {
-
   public readonly DEFAULT_DATE_FORMAT = 'YYYY-MM-DD';
   public readonly DEFAULT_TIME_FORMAT = 'HH:mm';
 
@@ -18,20 +17,17 @@ export class DateUtil {
     let result;
     if (a?.time && b?.time) {
       result = new Date(a.time).getTime() - new Date(b.time).getTime();
-    }
-    else if (a?.time && !b?.time) {
+    } else if (a?.time && !b?.time) {
       result = 1;
-    }
-    else if (!a?.time && b?.time) {
+    } else if (!a?.time && b?.time) {
       result = -1;
-    }
-    else {
+    } else {
       result = 0;
     }
     return result * direction;
   }
 
-  public getDurationFormatted(start: string | Date, end?: string | Date) {
+  public getDurationFormatted(start: string | Date, end?: string | Date): string {
     const diff = moment(end).diff(moment(start));
     const duration = moment.duration(diff);
     const days = Math.floor(duration.asDays());
@@ -53,24 +49,31 @@ export class DateUtil {
     return result;
   }
 
-  public getCalendarFormats(showSeconds?: boolean) {
+  public getCalendarFormats(showSeconds?: boolean): {
+    lastDay: string;
+    sameDay: string;
+    nextDay: string;
+    lastWeek: string;
+    nextWeek: string;
+    sameElse: string;
+  } {
     if (showSeconds) {
       return {
-        lastDay : '[yesterday at] HH:mm:ss',
-        sameDay : '[today at] HH:mm:ss',
-        nextDay : '[tomorrow at] HH:mm:ss',
-        lastWeek : '[last] dddd [at] HH:mm:ss',
-        nextWeek : 'dddd [at] HH:mm:ss',
-        sameElse : 'YYYY-MM-DD HH:mm:ss'
+        lastDay: '[yesterday at] HH:mm:ss',
+        sameDay: '[today at] HH:mm:ss',
+        nextDay: '[tomorrow at] HH:mm:ss',
+        lastWeek: '[last] dddd [at] HH:mm:ss',
+        nextWeek: 'dddd [at] HH:mm:ss',
+        sameElse: 'YYYY-MM-DD HH:mm:ss',
       };
     }
     return {
-      lastDay : '[yesterday at] HH:mm',
-      sameDay : '[today at] HH:mm',
-      nextDay : '[tomorrow at] HH:mm',
-      lastWeek : '[last] dddd [at] HH:mm',
-      nextWeek : 'dddd [at] HH:mm',
-      sameElse : 'YYYY-MM-DD HH:mm'
+      lastDay: '[yesterday at] HH:mm',
+      sameDay: '[today at] HH:mm',
+      nextDay: '[tomorrow at] HH:mm',
+      lastWeek: '[last] dddd [at] HH:mm',
+      nextWeek: 'dddd [at] HH:mm',
+      sameElse: 'YYYY-MM-DD HH:mm',
     };
   }
 

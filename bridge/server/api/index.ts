@@ -6,11 +6,15 @@ import { DataService } from '../services/data-service';
 
 const router = Router();
 
-function apiRouter(params:
-                     { apiUrl: string, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string },
-): Router {
+const apiRouter = (params: {
+  apiUrl: string;
+  apiToken: string;
+  cliDownloadLink: string;
+  integrationsPageLink: string;
+  authType: string;
+}): Router => {
   // fetch parameters for bridgeInfo endpoint
-  const {apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType} = params;
+  const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
   const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
   const bridgeVersion = process.env.VERSION;
@@ -25,14 +29,15 @@ function apiRouter(params:
     const bridgeInfo = {
       bridgeVersion,
       keptnInstallationType,
-      apiUrl, ...showApiToken && {apiToken},
+      apiUrl,
+      ...(showApiToken && { apiToken }),
       cliDownloadLink,
       enableVersionCheckFeature,
       showApiToken,
       projectsPageSize,
       servicesPageSize,
       authType,
-      ...user && {user},
+      ...(user && { user }),
     };
 
     try {
@@ -44,9 +49,8 @@ function apiRouter(params:
 
   router.get('/integrationsPage', async (req, res, next) => {
     try {
-      // @ts-ignore
       const result = await axios({
-        method: req.method,
+        method: req.method as Method,
         url: `${integrationsPageLink}`,
       });
       return res.send(result.data);
@@ -89,7 +93,11 @@ function apiRouter(params:
   router.get('/project/:projectName', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectName = req.params.projectName;
-      const project = await dataService.getProject(projectName, req.query.remediation === 'true', req.query.approval === 'true');
+      const project = await dataService.getProject(
+        projectName,
+        req.query.remediation === 'true',
+        req.query.approval === 'true'
+      );
       return res.json(project);
     } catch (error) {
       return next(error);
@@ -116,46 +124,56 @@ function apiRouter(params:
     }
   });
 
-  router.get('/uniform/registration/webhook-service/config/:subscriptionId', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const projectName = req.query.projectName?.toString();
-      if (projectName) {
-        const webhookConfig = await dataService.getWebhookConfig(req.params.subscriptionId, projectName, req.query.stageName?.toString(), req.query.serviceName?.toString());
-        return res.json(webhookConfig);
-      } else {
-        next(Error('project name not provided'));
+  router.get(
+    '/uniform/registration/webhook-service/config/:subscriptionId',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const projectName = req.query.projectName?.toString();
+        if (projectName) {
+          const webhookConfig = await dataService.getWebhookConfig(
+            req.params.subscriptionId, projectName,
+            req.query.stageName?.toString(),
+            req.query.serviceName?.toString()
+          );
+          return res.json(webhookConfig);
+        } else {
+          next(Error('project name not provided'));
       }
-    } catch (error) {
-      return next(error);
     }
-  });
+  );
 
-  router.delete('/uniform/registration/:integrationId/subscription/:subscriptionId', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const integrationId = req.params.integrationId;
-      const subscriptionId = req.params.subscriptionId;
-      const deleteWebhook = req.query.isWebhookService === 'true';
-      if (integrationId && subscriptionId) {
-        await dataService.deleteSubscription(integrationId, subscriptionId, deleteWebhook);
+  router.delete(
+    '/uniform/registration/:integrationId/subscription/:subscriptionId',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const integrationId = req.params.integrationId;
+        const subscriptionId = req.params.subscriptionId;
+        const deleteWebhook = req.query.isWebhookService === 'true';
+        if (integrationId && subscriptionId) {
+          await dataService.deleteSubscription(integrationId, subscriptionId, deleteWebhook);
+        }
+        return res.json();
+      } catch (error) {
+        return next(error);
       }
-      return res.json();
-    } catch (error) {
-      return next(error);
-    }
-  });
+  );
 
-  router.post('/uniform/registration/:integrationId/subscription', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const integrationId = req.params.integrationId;
-      const subscription = req.body.subscription;
-      if (integrationId && subscription) {
-        await dataService.createSubscription(integrationId, subscription, req.body.webhookConfig);
+  router.post(
+    '/uniform/registration/:integrationId/subscription',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const integrationId = req.params.integrationId;
+        const subscription = req.body.subscription;
+        if (integrationId && subscription) {
+          await dataService.createSubscription(integrationId, subscription, req.body.webhookConfig);
+        }
+        return res.json();
+      } catch (error) {
+        return next(error);
       }
-      return res.json();
-    } catch (error) {
-      return next(error);
     }
-  });
+  );
+
   router.put('/uniform/registration/:integrationId/subscription/:subscriptionId', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const integrationId = req.params.integrationId;
@@ -163,11 +181,8 @@ function apiRouter(params:
       if (integrationId && subscriptionId) {
         await dataService.updateSubscription(integrationId, subscriptionId, req.body.subscription, req.body.webhookConfig);
       }
-      return res.json();
-    } catch (error) {
-      return next(error);
     }
-  });
+  );
 
   router.get('/uniform/registration/:integrationId/info', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -178,14 +193,20 @@ function apiRouter(params:
     }
   });
 
-  router.get('/project/:projectName/service/:serviceName/files', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const serviceResources = await dataService.getResourceFileTreesForService(req.params.projectName, req.params.serviceName);
-      return res.json(serviceResources);
-    } catch (error) {
-      return next(error);
+  router.get(
+    '/project/:projectName/service/:serviceName/files',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const serviceResources = await dataService.getResourceFileTreesForService(
+          req.params.projectName,
+          req.params.serviceName
+        );
+        return res.json(serviceResources);
+      } catch (error) {
+        return next(error);
+      }
     }
-  });
+  );
 
   router.post('/hasUnreadUniformRegistrationLogs', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -200,10 +221,21 @@ function apiRouter(params:
   router.get('/mongodb-datastore/event', async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (req.query.root === 'true') {
-        const response = await dataService.getRoots(req.query.project?.toString(), req.query.pageSize?.toString(), req.query.serviceName?.toString(), req.query.fromTime?.toString(), req.query.beforeTime?.toString(), req.query.keptnContext?.toString());
+        const response = await dataService.getRoots(
+          req.query.project?.toString(),
+          req.query.pageSize?.toString(),
+          req.query.serviceName?.toString(),
+          req.query.fromTime?.toString(),
+          req.query.beforeTime?.toString(),
+          req.query.keptnContext?.toString()
+        );
         return res.json(response);
       } else {
-        const response = await dataService.getTracesByContext(req.query.keptnContext?.toString(), req.query.project?.toString(), req.query.fromTime?.toString());
+        const response = await dataService.getTracesByContext(
+          req.query.keptnContext?.toString(),
+          req.query.project?.toString(),
+          req.query.fromTime?.toString()
+        );
         return res.json(response);
       }
     } catch (error) {
@@ -216,7 +248,7 @@ function apiRouter(params:
       const result = await axios({
         method: req.method as Method,
         url: `${apiUrl}${req.url}`,
-        ...req.method !== 'GET' && {data: req.body},
+        ...(req.method !== 'GET' && { data: req.body }),
         headers: {
           'x-token': apiToken,
           'Content-Type': 'application/json',
@@ -230,6 +262,6 @@ function apiRouter(params:
   });
 
   return router;
-}
+};
 
 export { apiRouter };

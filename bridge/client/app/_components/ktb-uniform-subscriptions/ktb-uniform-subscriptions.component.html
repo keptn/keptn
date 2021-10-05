@@ -1,7 +1,12 @@
 <ng-container *ngIf="projectName$ | async as projectName">
   <ng-container *ngIf="uniformRegistration as uniformRegistration">
-    <button dt-button uitestid="addSubscriptionButton" [routerLink]="['/project', projectName, 'uniform', 'services',  uniformRegistration.id, 'subscriptions', 'add']" class="mb-2"
-            *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
+    <button
+      dt-button
+      uitestid="addSubscriptionButton"
+      [routerLink]="['/project', projectName, 'uniform', 'services', uniformRegistration.id, 'subscriptions', 'add']"
+      class="mb-2"
+      *ngIf="uniformRegistration.canEditSubscriptions(); else disabledButton"
+    >
       <dt-icon name="plus-add"></dt-icon>
       Add subscription
     </button>
@@ -17,12 +22,13 @@
       </ng-template>
     </ng-template>
     <div class="subscription-list">
-      <ktb-subscription-item *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName), let index = index"
-                             [subscription]="subscription"
-                             [integrationId]="uniformRegistration.id"
-                             [isWebhookService]="uniformRegistration.isWebhookService"
-                             name="Subscription {{index + 1}}"
-                             (subscriptionDeleted)="deleteSubscription($event)"
+      <ktb-subscription-item
+        *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName); let index = index"
+        [subscription]="subscription"
+        [integrationId]="uniformRegistration.id"
+        [isWebhookService]="uniformRegistration.isWebhookService"
+        name="Subscription {{ index + 1 }}"
+        (subscriptionDeleted)="deleteSubscription($event)"
       ></ktb-subscription-item>
     </div>
   </ng-container>

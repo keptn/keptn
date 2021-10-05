@@ -3,6 +3,7 @@ package db_test
 import (
 	"context"
 	"fmt"
+	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -54,7 +55,11 @@ func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	if err := pool.Retry(func() error {
 		var err error
-		mongoClient, err = mongo.NewClient(options.Client().ApplyURI(db.GetMongoDBConnectionString()))
+		connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
+		if err != nil {
+			return err
+		}
+		mongoClient, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 		if err != nil {
 			return err
 		}
