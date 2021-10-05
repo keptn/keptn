@@ -11,7 +11,7 @@ describe('Integrations', () => {
     buttons.first().should('have.class', 'active');
   });
 
-  it('should select a integration and show related subscriptions', () => {
+  it('should select an integration and show related subscriptions', () => {
     // given, when
     cy.byTestId('keptn-uniform-integrations-table').get('dt-row').first().click();
 
