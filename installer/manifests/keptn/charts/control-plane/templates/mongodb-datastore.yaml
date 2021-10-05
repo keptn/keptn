@@ -75,8 +75,6 @@ spec:
             secretKeyRef:
               name: mongodb-credentials
               key: mongodb-password
-                name: mongodb-credentials
-                key: password
         - name: MONGODB_EXTERNAL_CONNECTION_STRING
           valueFrom:
             secretKeyRef:
