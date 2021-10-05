@@ -24,7 +24,7 @@ import { SequenceState } from '../../../shared/models/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
-import { EvaluationHistory } from "../_interfaces/evaluation-history";
+import { EvaluationHistory } from '../_interfaces/evaluation-history';
 
 @Injectable({
   providedIn: 'root',

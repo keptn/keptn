@@ -225,7 +225,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this.setEvaluation(evaluationInfo);
   }
 
-  private setEvaluation(evaluationInfo: { evaluation?: Trace, shouldSelect: boolean }): void {
+  private setEvaluation(evaluationInfo: { evaluation?: Trace; shouldSelect: boolean }): void {
     if (this._evaluationData?.id !== evaluationInfo.evaluation?.id) {
       this._selectedEvaluationData = undefined;
       this._evaluationData = evaluationInfo.evaluation;
@@ -253,23 +253,12 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.dataService.evaluationResults
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((results) => {
-        if (this.evaluationData && results.traces?.length) {
-          if (this.evaluationData.data.evaluationHistory?.length) {
-            this.updateResults = results;
-          }
-          else {
-            this.refreshEvaluationBoard(results);
-          }
-        }
-        this._selectedEvaluationData = this._selectedEvaluationData?.id
-          ? this.evaluationData.data.evaluationHistory?.find((h) => h.id === this._selectedEvaluationData?.id)
-          : undefined;
-        this.parseSloFile(this._selectedEvaluationData);
-        if (this.evaluationData.data.evaluationHistory) {
-          this.updateChartData(this.evaluationData.data.evaluationHistory);
+    this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
+      if (this.evaluationData && results.traces?.length) {
+        if (this.evaluationData.data.evaluationHistory?.length) {
+          this.updateResults = results;
+        } else {
+          this.refreshEvaluationBoard(results);
         }
       }
     });
@@ -292,18 +281,22 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public refreshEvaluationBoard(results: EvaluationHistory): void {
     if (this.evaluationData) {
       if (results.type === 'evaluationHistory' && results.triggerEvent === this.evaluationData) {
-        this.evaluationData.data.evaluationHistory = [...results.traces || [],
-          ...this.evaluationData.data.evaluationHistory || []]
-          .sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
-      } else if (results.type === 'invalidateEvaluation' &&
+        this.evaluationData.data.evaluationHistory = [
+          ...(results.traces || []),
+          ...(this.evaluationData.data.evaluationHistory || []),
+        ].sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
+      } else if (
+        results.type === 'invalidateEvaluation' &&
         this.evaluationData.data.project === results.triggerEvent.data.project &&
         this.evaluationData.data.service === results.triggerEvent.data.service &&
-        this.evaluationData.data.stage === results.triggerEvent.data.stage) {
-        this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory
-          ?.filter(e => e.id !== results.triggerEvent.id);
+        this.evaluationData.data.stage === results.triggerEvent.data.stage
+      ) {
+        this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory?.filter(
+          (e) => e.id !== results.triggerEvent.id
+        );
       }
       this._selectedEvaluationData = this._selectedEvaluationData?.id
-        ? this.evaluationData.data.evaluationHistory?.find(h => h.id === this._selectedEvaluationData?.id)
+        ? this.evaluationData.data.evaluationHistory?.find((h) => h.id === this._selectedEvaluationData?.id)
         : undefined;
       this.parseSloFile(this._selectedEvaluationData);
       if (this.evaluationData.data.evaluationHistory) {
