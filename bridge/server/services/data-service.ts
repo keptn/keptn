@@ -341,7 +341,7 @@ export class DataService {
     }
   }
 
-  private async replaceWithBridgeSecrets(webhookConfig: WebhookConfig): Promise<void> {
+  private replaceWithBridgeSecrets(webhookConfig: WebhookConfig): void {
     if (webhookConfig.secrets) {
       for (const webhookSecret of webhookConfig.secrets) {
         const bridgeSecret = '.secret.' + webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
@@ -362,7 +362,7 @@ export class DataService {
     if (!webhookConfig) {
       throw Error('Could not parse curl command');
     }
-    await this.replaceWithBridgeSecrets(webhookConfig);
+    this.replaceWithBridgeSecrets(webhookConfig);
     return webhookConfig;
   }
 
