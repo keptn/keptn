@@ -1,10 +1,10 @@
 export function interceptIntegrations(): void {
-  cy.intercept('/api/v1/metadata', {fixture: 'metadata.mock'});
-  cy.intercept('/api/bridgeInfo', {fixture: 'bridgeInfo.mock'});
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', {fixture: 'project.mock'});
-  cy.intercept('/api/hasUnreadUniformRegistrationLogs', {body: false});
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {fixture: 'projects.mock'});
-  cy.intercept('/api/uniform/registration', {fixture: 'registration.mock'});
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
     body: {
       logs: [],
@@ -37,7 +37,7 @@ export function interceptIntegrations(): void {
       id: 'b5111b1c-446a-410d-bb6c-e1dcd409c890',
     },
   });
-  cy.intercept('/api/uniform/registration/webhook-service/config', {body: true});
-  cy.intercept('/api/project/sockshop/tasks', {fixture: 'tasks.mock'});
-  cy.intercept('/api/secrets/scope/keptn-webhook-service', {fixture: 'secrets.mock'});
+  cy.intercept('/api/uniform/registration/webhook-service/config', { body: true });
+  cy.intercept('/api/project/sockshop/tasks', { fixture: 'tasks.mock' });
+  cy.intercept('/api/secrets/scope/keptn-webhook-service', { fixture: 'secrets.mock' });
 }

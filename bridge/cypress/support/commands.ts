@@ -7,14 +7,12 @@
 declare namespace Cypress {
   // tslint:disable-next-line:no-any
   interface Chainable<Subject = any> {
-    byTestId<E extends Node = HTMLElement>(id: string):
-      Cypress.Chainable<JQuery<E>>;
+    byTestId<E extends Node = HTMLElement>(id: string): Cypress.Chainable<JQuery<E>>;
   }
 }
 
 // Actual function
-const byTestId = (testId: string) =>
-  cy.get(`[uitestid="${testId}"]`);
+const byTestId = (testId: string) => cy.get(`[uitestid="${testId}"]`);
 
 // Hooking into Cypress
 Cypress.Commands.add('byTestId', byTestId);

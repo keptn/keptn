@@ -26,7 +26,7 @@ import { SecretScope } from '../../shared/interfaces/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
-type FlatSecret = { path: string, name: string, key: string, parsedPath: string };
+type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
 
 export class DataService {
   private apiService: ApiService;
@@ -568,11 +568,15 @@ export class DataService {
     return secrets;
   }
 
-  private addWebhookSecretsFromString(parseString: string, allSecretPaths: FlatSecret[], existingSecrets: WebhookSecret[]): string {
-    const foundSecrets = allSecretPaths.filter(scrt => parseString.includes(scrt.path));
+  private addWebhookSecretsFromString(
+    parseString: string,
+    allSecretPaths: FlatSecret[],
+    existingSecrets: WebhookSecret[]
+  ): string {
+    const foundSecrets = allSecretPaths.filter((scrt) => parseString.includes(scrt.path));
     let replacedString = parseString;
     for (const found of foundSecrets) {
-      const idx = existingSecrets.findIndex(secret => secret.name === found.parsedPath);
+      const idx = existingSecrets.findIndex((secret) => secret.name === found.parsedPath);
       if (idx === -1) {
         const secret: WebhookSecret = {
           name: found.parsedPath,
@@ -698,8 +702,8 @@ export class DataService {
 
   public async getSecretsForScope(scope: string): Promise<Secret[]> {
     const response = await this.apiService.getSecrets();
-    const secrets = response.data.Secrets.map(secret => Secret.fromJSON(secret));
-    return secrets.filter(secret => secret.scope === scope);
+    const secrets = response.data.Secrets.map((secret) => Secret.fromJSON(secret));
+    return secrets.filter((secret) => secret.scope === scope);
   }
 
   private async removeWebhooks(

@@ -300,9 +300,7 @@
       "lastseen": "2021-09-29T10:24:43.3Z"
     },
     "subscription": {
-      "topics": [
-        "sh.keptn.>"
-      ],
+      "topics": ["sh.keptn.>"],
       "status": "",
       "filter": {
         "project": "",
@@ -339,9 +337,7 @@
       "lastseen": "2021-09-29T10:24:43.474Z"
     },
     "subscription": {
-      "topics": [
-        "sh.keptn.event.get-sli.triggered"
-      ],
+      "topics": ["sh.keptn.event.get-sli.triggered"],
       "status": "",
       "filter": {
         "project": "",

@@ -403,9 +403,7 @@
             }
           ],
           "stageName": "staging",
-          "parentStages": [
-            "dev"
-          ]
+          "parentStages": ["dev"]
         },
         {
           "services": [
@@ -507,9 +505,7 @@
             }
           ],
           "stageName": "production",
-          "parentStages": [
-            "staging"
-          ]
+          "parentStages": ["staging"]
         }
       ]
     }

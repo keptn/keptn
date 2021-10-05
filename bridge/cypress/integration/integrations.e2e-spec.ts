@@ -27,10 +27,16 @@ describe('Integrations', () => {
     cy.get('ktb-expandable-tile').first().find('dt-expandable-panel').byTestId('addSubscriptionButton').click();
 
     // Fill in all form fields
-    cy.byTestId('edit-subscription-field-isGlobal').click().find('dt-checkbox').should('have.class', 'dt-checkbox-checked');
+    cy.byTestId('edit-subscription-field-isGlobal')
+      .click()
+      .find('dt-checkbox')
+      .should('have.class', 'dt-checkbox-checked');
     cy.byTestId('edit-subscription-field-task').find('dt-select').focus().type('dep');
     cy.byTestId('edit-subscription-field-suffix').find('dt-select').focus().type('fin');
-    cy.byTestId('edit-subscription-field-filterStageService').find('input').focus().type('St{enter}de{enter}Ser{enter}cart{enter}');
+    cy.byTestId('edit-subscription-field-filterStageService')
+      .find('input')
+      .focus()
+      .type('St{enter}de{enter}Ser{enter}cart{enter}');
     cy.byTestId('updateSubscriptionButton').click();
 
     // then
@@ -54,14 +60,18 @@ describe('Integrations', () => {
     cy.byTestId('edit-webhook-field-url').find('input').focus().type('https://example.com?secret=');
     cy.byTestId('edit-webhook-field-url').find('.dt-form-field-suffix button').click();
     addSecret();
-    cy.byTestId('edit-webhook-field-url').find('input').should('have.value', 'https://example.com?secret={{.SecretA.key1}}');
+    cy.byTestId('edit-webhook-field-url')
+      .find('input')
+      .should('have.value', 'https://example.com?secret={{.SecretA.key1}}');
 
     // Payload: insert text and add secret
-    cy.byTestId('edit-webhook-field-payload').find('textarea').focus().type('{id: \'123456789\', secret: ');
+    cy.byTestId('edit-webhook-field-payload').find('textarea').focus().type("{id: '123456789', secret: ");
     cy.byTestId('edit-webhook-field-payload').find('.dt-form-field-suffix button').click();
     addSecret();
     cy.byTestId('edit-webhook-field-payload').find('textarea').focus().type('}');
-    cy.byTestId('edit-webhook-field-payload').find('textarea').should('have.value', '{id: \'123456789\', secret: {{.SecretA.key1}}}');
+    cy.byTestId('edit-webhook-field-payload')
+      .find('textarea')
+      .should('have.value', "{id: '123456789', secret: {{.SecretA.key1}}}");
 
     cy.byTestId('edit-webhook-field-proxy').find('input').focus().type('https://proxy.com');
 
@@ -80,7 +90,6 @@ describe('Integrations', () => {
     // It should redirect after successfully sending the subscription
     cy.location('pathname').should('eq', '/project/sockshop/uniform/services/0f2d35875bbaa72b972157260a7bd4af4f2826df');
   });
-
 
   function addSecret(): void {
     cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').first().find('button').click();

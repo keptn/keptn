@@ -18,9 +18,9 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   };
   spec: {
     webhooks: {
-      type: string, // type === event
-      requests: string[],
-      envFrom?: WebhookSecret[]
+      type: string; // type === event
+      requests: string[];
+      envFrom?: WebhookSecret[];
     }[];
   };
 
@@ -72,14 +72,15 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @params curl
    */
   public addWebhook(eventType: string, curl: string, secrets: WebhookSecret[]): void {
-    const webhook = this.spec.webhooks.find(w => w.type === eventType);
+    const webhook = this.spec.webhooks.find((w) => w.type === eventType);
     if (!webhook) {
       if (secrets && secrets.length) {
-        this.spec.webhooks.push({type: eventType, requests: [curl], envFrom: secrets});
+        this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets });
       } else {
-        this.spec.webhooks.push({type: eventType, requests: [curl]});
+        this.spec.webhooks.push({ type: eventType, requests: [curl] });
       }
-    } else { // overwrite
+    } else {
+      // overwrite
       webhook.requests[0] = curl;
       if (secrets && secrets.length) {
         webhook.envFrom = secrets;
@@ -88,7 +89,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   }
 
   public parsedRequest(eventType: string): WebhookConfig | undefined {
-    const webhook = this.spec.webhooks.find(w => w.type === eventType);
+    const webhook = this.spec.webhooks.find((w) => w.type === eventType);
     const curl = webhook?.requests[0];
     const secrets = webhook?.envFrom;
 
