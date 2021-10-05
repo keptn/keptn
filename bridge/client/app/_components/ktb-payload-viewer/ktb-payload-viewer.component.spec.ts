@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { KtbPayloadViewerComponent } from './ktb-payload-viewer.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -27,6 +27,13 @@ describe('KtbPayloadViewerComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(fakeAsync(() => {
+    const payloadDialogCloseButton: HTMLElement | null = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
+    payloadDialogCloseButton?.click();
+    TestUtils.updateDialog(fixture);
+    flush();
+  }));
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -45,13 +52,13 @@ describe('KtbPayloadViewerComponent', () => {
     TestUtils.updateDialog(fixture);
 
     // then
-    const payloadDialogCloseButton = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
-    const payloadDialogMessage = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
 
     expect(spy).toHaveBeenCalled();
-    expect(payloadDialogCloseButton).toBeTruthy();
+    expect(component.event).toBe(trace);
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(`This is the latest ${trace.type} event`);
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(`This is the latest ${trace.type} event`);
   }));
 
   it('should show event payload dialog with stage', fakeAsync(() => {
@@ -69,13 +76,12 @@ describe('KtbPayloadViewerComponent', () => {
     TestUtils.updateDialog(fixture);
 
     // then
-    const payloadDialogCloseButton = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
-    const payloadDialogMessage = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
 
     expect(spy).toHaveBeenCalled();
-    expect(payloadDialogCloseButton).toBeTruthy();
+    expect(component.event).toBe(trace);
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(
       `This is the latest ${trace.type} event from stage ${trace.data.stage}`
     );
   }));
@@ -95,13 +101,12 @@ describe('KtbPayloadViewerComponent', () => {
     TestUtils.updateDialog(fixture);
 
     // then
-    const payloadDialogCloseButton = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
-    const payloadDialogMessage = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
 
     expect(spy).toHaveBeenCalled();
-    expect(payloadDialogCloseButton).toBeTruthy();
+    expect(component.event).toBe(trace);
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(
       `This is the latest ${trace.type} event for service ${trace.data.service}`
     );
   }));
@@ -122,14 +127,13 @@ describe('KtbPayloadViewerComponent', () => {
     TestUtils.updateDialog(fixture);
 
     // then
-    const payloadDialogCloseButton = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
-    const payloadDialogMessage = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
 
     expect(spy).toHaveBeenCalled();
-    expect(payloadDialogCloseButton).toBeTruthy();
+    expect(component.event).toBe(trace);
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(
-      `This is the latest ${trace.type} event from stage ${trace.data.stage} for service ${trace.data.service}`
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(
+      `This is the latest ${trace.type} event from stage ${trace.data.stage} for service ${trace.data.service}`
     );
   }));
 
@@ -147,12 +151,35 @@ describe('KtbPayloadViewerComponent', () => {
     TestUtils.updateDialog(fixture);
 
     // then
-    const payloadDialogCloseButton = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
-    const payloadDialogMessage = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
 
     expect(spy).toHaveBeenCalled();
-    expect(payloadDialogCloseButton).toBeTruthy();
+    expect(component.event).toBe(undefined);
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(`Could not load any ${trace.type} event`);
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(`Could not load any ${trace.type} event`);
+  }));
+
+  it('should close dialog', fakeAsync(() => {
+    // given
+    const trace: Trace = Trace.fromJSON(EvaluationTracesMock[0]);
+    const spy = jest.spyOn(dataService, 'getEvent').mockReturnValue(of(trace));
+    component.type = trace.type;
+    component.project = trace.data.project;
+    fixture.detectChanges();
+
+    // when
+    const showDialogButton = fixture.nativeElement.querySelector('[uitestid=keptn-show-payload-dialog-button]');
+    showDialogButton.click();
+    TestUtils.updateDialog(fixture);
+
+    const payloadDialogCloseButton: HTMLElement | null = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
+    payloadDialogCloseButton?.click();
+    TestUtils.updateDialog(fixture);
+
+    // then
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+    expect(payloadDialogMessage).toBeFalsy();
+
+    flush();
   }));
 });

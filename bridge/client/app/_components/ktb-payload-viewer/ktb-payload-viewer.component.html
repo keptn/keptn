@@ -16,7 +16,7 @@
     <div *ngIf="event; else noEvent">
       <p uitestid="keptn-payload-dialog-message">
         This is the latest <span class="bold" [textContent]="type"></span> event
-        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
+        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
         <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
       </p>
       <div mat-dialog-content>
@@ -26,7 +26,7 @@
     <ng-template #noEvent>
       <p class="error" uitestid="keptn-payload-dialog-message">
         Could not load any <span class="bold" [textContent]="type"></span> event
-        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
+        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
         <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
       </p>
     </ng-template>
