@@ -28,7 +28,9 @@ describe('KtbPayloadViewerComponent', () => {
   });
 
   afterEach(fakeAsync(() => {
-    const payloadDialogCloseButton: HTMLElement | null = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
+    const payloadDialogCloseButton: HTMLElement | null = document.querySelector(
+      '[uitestid=keptn-close-payload-dialog-button]'
+    );
     payloadDialogCloseButton?.click();
     TestUtils.updateDialog(fixture);
     flush();
@@ -194,7 +196,9 @@ describe('KtbPayloadViewerComponent', () => {
     showDialogButton.click();
     TestUtils.updateDialog(fixture);
 
-    const payloadDialogCloseButton: HTMLElement | null = document.querySelector('[uitestid=keptn-close-payload-dialog-button]');
+    const payloadDialogCloseButton: HTMLElement | null = document.querySelector(
+      '[uitestid=keptn-close-payload-dialog-button]'
+    );
     payloadDialogCloseButton?.click();
     TestUtils.updateDialog(fixture);
 
