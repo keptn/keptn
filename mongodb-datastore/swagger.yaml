@@ -14,7 +14,7 @@ paths:
     get:
       tags:
         - health
-      operationId: health
+      operationId: getHealth
       summary: Health endpoint
       responses:
         200:

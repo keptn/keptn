@@ -235,7 +235,7 @@ func init() {
           "health"
         ],
         "summary": "Health endpoint",
-        "operationId": "health",
+        "operationId": "getHealth",
         "responses": {
           "200": {
             "description": "healthy"
@@ -548,7 +548,7 @@ func init() {
           "health"
         ],
         "summary": "Health endpoint",
-        "operationId": "health",
+        "operationId": "getHealth",
         "responses": {
           "200": {
             "description": "healthy"

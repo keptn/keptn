@@ -4,6 +4,7 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -63,6 +64,9 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 		return event.NewGetEventsByTypeOK().WithPayload(events)
 	})
 
+	api.HealthGetHealthHandler = health.GetHealthHandlerFunc(func(params health.GetHealthParams) middleware.Responder {
+		return health.NewGetHealthOK()
+	})
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

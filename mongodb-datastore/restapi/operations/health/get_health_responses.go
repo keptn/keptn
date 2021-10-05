@@ -11,24 +11,24 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-// HealthOKCode is the HTTP code returned for type HealthOK
-const HealthOKCode int = 200
+// GetHealthOKCode is the HTTP code returned for type GetHealthOK
+const GetHealthOKCode int = 200
 
-/*HealthOK healthy
+/*GetHealthOK healthy
 
-swagger:response healthOK
+swagger:response getHealthOK
 */
-type HealthOK struct {
+type GetHealthOK struct {
 }
 
-// NewHealthOK creates HealthOK with default headers values
-func NewHealthOK() *HealthOK {
+// NewGetHealthOK creates GetHealthOK with default headers values
+func NewGetHealthOK() *GetHealthOK {
 
-	return &HealthOK{}
+	return &GetHealthOK{}
 }
 
 // WriteResponse to the client
-func (o *HealthOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *GetHealthOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
