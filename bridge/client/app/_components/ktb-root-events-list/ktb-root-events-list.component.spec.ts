@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
-import { KtbEventsListComponent } from '../ktb-events-list/ktb-events-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
@@ -9,8 +8,9 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Project } from '../../_models/project';
 import { By } from '@angular/platform-browser';
+import { take } from 'rxjs/operators';
 
-describe('KtbEventsListComponent', () => {
+describe('KtbRootEventsListComponent', () => {
   let component: KtbRootEventsListComponent;
   let fixture: ComponentFixture<KtbRootEventsListComponent>;
   let dataService: DataService;
@@ -20,10 +20,7 @@ describe('KtbEventsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
           provide: DataService,
@@ -33,7 +30,7 @@ describe('KtbEventsListComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
-            params: of({projectName}),
+            params: of({ projectName }),
             queryParams: of({}),
           },
         },
@@ -44,11 +41,8 @@ describe('KtbEventsListComponent', () => {
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
-    // @ts-ignore
-    dataService.getProject(projectName).subscribe((pr: Project) => {
-      project = pr;
-      fixture.detectChanges();
-    });
+    project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
+    fixture.detectChanges();
   });
 
   it('should create root-events-list component', () => {
@@ -129,7 +123,7 @@ describe('KtbEventsListComponent', () => {
 
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
-    const eventData = {sequence: project.sequences[selectedSequenceIndex], stage: undefined};
+    const eventData = { sequence: project.sequences[selectedSequenceIndex], stage: undefined };
     targetSequence.click();
     fixture.detectChanges();
 
@@ -150,15 +144,15 @@ describe('KtbEventsListComponent', () => {
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
     const stageBadges = targetSequence.querySelectorAll('ktb-stage-badge');
-    const targetStage = stageBadges[0];
-    const stageName = targetStage.querySelector('dt-tag').textContent;
+    const targetStage = stageBadges[0] as HTMLElement;
+    const stageName = targetStage.querySelector('dt-tag')?.textContent;
     targetStage.click();
     fixture.detectChanges();
 
     // then
     expect(stageBadges.length).toEqual(2);
     expect(targetSequence.getAttribute('class')).toContain('ktb-tile-selected');
-    expect(changeEvent).toHaveBeenCalledWith({sequence: project.sequences[selectedSequenceIndex], stage: stageName});
+    expect(changeEvent).toHaveBeenCalledWith({ sequence: project.sequences[selectedSequenceIndex], stage: stageName });
   });
 
   it('should have a no specific class when a sequence is running', () => {
@@ -210,9 +204,10 @@ describe('KtbEventsListComponent', () => {
     expect(sequence.classes['ktb-tile-highlight']).toBe(true);
   });
 
-  // tslint:disable-next-line:no-any
-  function getSequenceTile(index: number): any {
-    return fixture.nativeElement.querySelector(`ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`);
+  function getSequenceTile(index: number): HTMLElement {
+    return fixture.nativeElement.querySelector(
+      `ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`
+    );
   }
 
   function prepareSequenceElement(isFinished: boolean, isFaulty: boolean, hasPendingApproval: boolean): void {

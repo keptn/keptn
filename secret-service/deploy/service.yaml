@@ -43,6 +43,13 @@ spec:
               # you can monitor memory usage using "kubectl -n keptn top pods"
               memory: "256Mi"
               cpu: "200m"
+          volumeMounts:
+            - mountPath: /data
+              name: secret-service-configmap-volume
+      volumes:
+        - name: secret-service-configmap-volume
+          configMap:
+            name: secret-service-config
 ---
 apiVersion: v1
 kind: Service

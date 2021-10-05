@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { authenticateSession, getLogoutHint, isAuthenticated, removeSession } from './session';
 
 const router = Router();
@@ -19,7 +19,7 @@ const prefixPath = process.env.PREFIX_PATH;
  *
  * Redirection to / will be either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
  */
-function getRootLocation() {
+function getRootLocation(): string {
   if (prefixPath !== undefined) {
     return `${prefixPath}/bridge`;
   }
@@ -27,14 +27,16 @@ function getRootLocation() {
   return '/';
 }
 
-async function oauthRouter() {
+async function oauthRouter(): Promise<Router> {
   console.log('Enabling OAuth for bridge.');
 
   const discoveryEndpoint = process.env.OAUTH_DISCOVERY;
 
   if (!discoveryEndpoint) {
-    throw Error('OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-    ' Please check your environment variables.');
+    throw Error(
+      'OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+        ' Please check your environment variables.'
+    );
   }
 
   const discoveryResp = await axios({
@@ -71,31 +73,28 @@ async function oauthRouter() {
    * Router level middleware for login
    */
   router.get('/login', async (req: Request, res: Response) => {
-
     let authResponse;
     try {
       authResponse = await axios({
         method: 'get',
         url: authorizationEndpoint,
       });
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError;
       console.log(`Error while handling the login request. Cause : ${err.message}`);
-      return res.render('error',
-        {
-          title: 'Internal error',
-          message: 'Error while handling the login request.',
-          location: getRootLocation()
-        });
+      return res.render('error', {
+        title: 'Internal error',
+        message: 'Error while handling the login request.',
+        location: getRootLocation(),
+      });
     }
 
-
     if (!authResponse.data.hasOwnProperty(AUTH_URL)) {
-      return res.render('error',
-        {
-          title: 'Invalid state',
-          message: 'Failure to obtain login details.',
-          location: getRootLocation()
-        });
+      return res.render('error', {
+        title: 'Invalid state',
+        message: 'Failure to obtain login details.',
+        location: getRootLocation(),
+      });
     }
 
     res.redirect(authResponse.data[AUTH_URL]);
@@ -125,17 +124,18 @@ async function oauthRouter() {
         method: 'post',
         url: tokenDecisionEndpoint,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        data: tokensPayload
+        data: tokensPayload,
       });
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError;
       console.log(`Error while handling the redirect. Cause : ${err.message}`);
 
       if (err.response !== undefined && err.response.status === 403) {
         const response = {
           title: 'Permission denied',
-          message: ''
+          message: '',
         };
 
         if (err.response.data.hasOwnProperty('message')) {
@@ -146,17 +146,17 @@ async function oauthRouter() {
 
         return res.render('error', response);
       } else {
-        return res.render('error',
-          {
-            title: 'Internal error',
-            message: 'Error while handling the redirect. Please retry and check whether the problem exists.',
-            location: getRootLocation()
-          });
+        return res.render('error', {
+          title: 'Internal error',
+          message: 'Error while handling the redirect. Please retry and check whether the problem exists.',
+          location: getRootLocation(),
+        });
       }
     }
 
-    authenticateSession(req, tokenDecision.data[USER], tokenDecision.data[LOGOUT_HINT],
-      () => res.redirect(getRootLocation()));
+    authenticateSession(req, tokenDecision.data[USER], tokenDecision.data[LOGOUT_HINT], () =>
+      res.redirect(getRootLocation())
+    );
   });
 
   /**
@@ -183,39 +183,39 @@ async function oauthRouter() {
         method: 'post',
         url: logoutEndpoint,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         data: {
-          logout_hint: hint
-        }
+          logout_hint: hint,
+        },
       });
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError;
       console.log(`Error while handling the RP logout. Cause : ${err.message}`);
 
-      return res.render('error',
-        {
-          title: 'Internal error',
-          message: 'Logout was successfully handled.' +
-            ' However, there was an error while redirecting you to the correct endpoint.',
-          location : getRootLocation(),
-          locationMessage: 'Home'
-        });
+      return res.render('error', {
+        title: 'Internal error',
+        message:
+          'Logout was successfully handled.' +
+          ' However, there was an error while redirecting you to the correct endpoint.',
+        location: getRootLocation(),
+        locationMessage: 'Home',
+      });
     }
 
     if (!logoutResponse.data.hasOwnProperty(LOGOUT_URL)) {
       console.log('Invalid response from rp_logout.');
-      return res.render('error',
-        {
-          title: 'Internal error',
-          message: 'Logout was successfully handled.' +
-            ' However, there was an error while redirecting you to the correct endpoint.',
-          location : getRootLocation(),
-          locationMessage: 'Home'
-        });
+      return res.render('error', {
+        title: 'Internal error',
+        message:
+          'Logout was successfully handled.' +
+          ' However, there was an error while redirecting you to the correct endpoint.',
+        location: getRootLocation(),
+        locationMessage: 'Home',
+      });
     }
 
     return res.redirect(logoutResponse.data[LOGOUT_URL]);
-
   });
 
   return router;

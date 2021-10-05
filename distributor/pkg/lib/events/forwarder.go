@@ -70,7 +70,7 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	event, err := DecodeCloudEvent(body)
+	event, err := DecodeNATSMessage(body)
 	if err != nil {
 		logger.Errorf("Failed to decode CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -86,10 +86,13 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
-	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
-	go func() {
-		f.EventChannel <- event
-	}()
+	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn\n", event.ID())
+	select {
+	case f.EventChannel <- event:
+		// no-op
+	default:
+		// no-op
+	}
 
 	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
 		return nil

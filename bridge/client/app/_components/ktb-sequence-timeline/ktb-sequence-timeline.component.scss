@@ -22,7 +22,7 @@
 
   .stage-info {
     height: 25px;
-    &> *{
+    & > * {
       vertical-align: middle;
     }
   }
@@ -34,7 +34,8 @@
     text-decoration: black underline;
   }
 
-  .focused, .stage-item:hover .stage-text {
+  .focused,
+  .stage-item:hover .stage-text {
     color: white;
     text-decoration: white underline;
     border-radius: 15px;
@@ -53,4 +54,3 @@
     }
   }
 }
-

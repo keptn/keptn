@@ -11,13 +11,8 @@ describe('KtbEventsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
-      providers: [
-        {provide: POLLING_INTERVAL_MILLIS, useValue: 0},
-      ],
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceViewComponent);

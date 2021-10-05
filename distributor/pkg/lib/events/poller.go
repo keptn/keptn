@@ -6,6 +6,7 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
 
@@ -79,16 +80,21 @@ func (p *Poller) doPollEvents(endpoint, token string) {
 }
 
 func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription, endpoint, token string) {
-	logger.Infof("Retrieving events of type %s", subscription.Event)
-	events, err := p.getEventsFromEndpoint(endpoint, token, subscription.Event)
+	events, err := p.getEventsFromEndpoint(endpoint, token, subscription)
 	if err != nil {
 		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", subscription.Event, endpoint, err)
+		return
 	}
 	logger.Infof("Received %d new .triggered events", len(events))
-
 	// iterate over all events, discard the event if it has already been sent
 	for index := range events {
 		event := *events[index]
+
+		logger.Infof("Adding additional data to event: <subscriptionID=%s>", subscription.ID)
+		// add subscription ID as additional information to the keptn event
+		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{}); err != nil {
+			logger.Error("Unable to add additional information about subscriptions to event")
+		}
 		logger.Infof("Check if event %s has already been sent", event.ID)
 
 		if p.ceCache.Contains(subscription.Event, event.ID) {
@@ -96,36 +102,17 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
 			continue
 		}
-
-		logger.Infof("CloudEvent with ID %s has not been sent yet", event.ID)
-
-		marshal, err := json.Marshal(event)
-
-		if err != nil {
-			logger.Errorf("Marshalling CloudEvent with ID %s failed: %s", event.ID, err.Error())
-			continue
-		}
-
-		e, err := DecodeCloudEvent(marshal)
-
-		if err != nil {
-			logger.Errorf("Decoding CloudEvent with ID %s failed: %s", event.ID, err.Error())
-			continue
-		}
-
-		if e != nil {
-			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
-			// add to CloudEvents cache
-			p.ceCache.Add(*event.Type, event.ID)
-			go func() {
-				if err := p.sendEvent(*e, subscription); err != nil {
-					logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
-					// Sending failed, remove from CloudEvents cache
-					p.ceCache.Remove(*event.Type, event.ID)
-				}
-				logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", subscription.Event, p.ceCache.Length(subscription.Event))
-			}()
-		}
+		logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
+		// add to CloudEvents cache
+		p.ceCache.Add(*event.Type, event.ID)
+		go func() {
+			if err := p.sendEvent(event, subscription); err != nil {
+				logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
+				// Sending failed, remove from CloudEvents cache
+				p.ceCache.Remove(*event.Type, event.ID)
+			}
+			logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", subscription.Event, p.ceCache.Length(subscription.Event))
+		}()
 	}
 
 	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
@@ -134,7 +121,8 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	p.ceCache.Keep(subscription.Event, events)
 }
 
-func (p *Poller) getEventsFromEndpoint(endpoint string, token string, topic string) ([]*keptnmodels.KeptnContextExtendedCE, error) {
+func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
+	logger.Infof("Retrieving events of type %s", subscription.Event)
 	events := make([]*keptnmodels.KeptnContextExtendedCE, 0)
 	nextPageKey := ""
 
@@ -143,7 +131,7 @@ func (p *Poller) getEventsFromEndpoint(endpoint string, token string, topic stri
 	if err != nil {
 		return nil, err
 	}
-	endpointURL.Path = endpointURL.Path + "/" + topic
+	endpointURL.Path = endpointURL.Path + "/" + subscription.Event
 
 	for {
 		q := endpointURL.Query()
@@ -196,7 +184,8 @@ func (p *Poller) getEventsFromEndpoint(endpoint string, token string, topic stri
 	return events, nil
 }
 
-func (p *Poller) sendEvent(event cloudevents.Event, subscription keptnmodels.EventSubscription) error {
+func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription keptnmodels.EventSubscription) error {
+	event := v0_2_0.ToCloudEvent(e)
 	matcher := NewEventMatcherFromSubscription(subscription)
 	if !matcher.Matches(event) {
 		return nil

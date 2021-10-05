@@ -60,7 +60,7 @@ func TestTriggerEvaluationStartTimeSpecified(t *testing.T) {
 	*triggerEvaluation.End = ""
 
 	cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
-		"--timeframe=%s --start=%s --mock", "sockshop", "hardening", "carts", "5m", "2019-07-24T10:17:12")
+		"--timeframe=%s --start=%s --mock", "sockshop", "hardening", "carts", "5m", "2019-07-24T10:17:12.000Z")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -78,7 +78,7 @@ func TestTriggerEvaluationStartAndEndTimeSpecified(t *testing.T) {
 	*triggerEvaluation.End = ""
 
 	cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
-		"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12", "2019-07-24T10:20:12")
+		"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12.000Z", "2019-07-24T10:20:12.000Z")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -96,8 +96,8 @@ func TestTriggerEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 	*triggerEvaluation.End = ""
 
 	cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
-		"--start=%s --end=%s --timeframe=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12",
-		"2019-07-24T10:20:12", "5m")
+		"--start=%s --end=%s --timeframe=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12.000Z",
+		"2019-07-24T10:20:12.000Z", "5m")
 	_, err := executeActionCommandC(cmd)
 
 	if err == nil {
@@ -117,7 +117,7 @@ func TestTriggerEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	*triggerEvaluation.End = ""
 
 	cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
-		"--start=%s --end=%s  --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12", "2019-07-24T10:10:12")
+		"--start=%s --end=%s  --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12.000Z", "2019-07-24T10:10:12.000Z")
 	_, err := executeActionCommandC(cmd)
 
 	if err == nil {

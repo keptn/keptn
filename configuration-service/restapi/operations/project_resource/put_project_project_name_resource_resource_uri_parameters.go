@@ -6,6 +6,7 @@ package project_resource
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	"github.com/keptn/keptn/configuration-service/models"
 )
@@ -94,16 +96,21 @@ func (o *PutProjectProjectNameResourceResourceURIParams) BindRequest(r *http.Req
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Resource = &body
 			}
 		}
 	}
+
 	rResourceURI, rhkResourceURI, _ := route.Params.GetOK("resourceURI")
 	if err := o.bindResourceURI(rResourceURI, rhkResourceURI, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -119,6 +126,7 @@ func (o *PutProjectProjectNameResourceResourceURIParams) bindDisableUpstreamSync
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewPutProjectProjectNameResourceResourceURIParams()
 		return nil
@@ -142,7 +150,6 @@ func (o *PutProjectProjectNameResourceResourceURIParams) bindProjectName(rawData
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ProjectName = raw
 
 	return nil
@@ -157,7 +164,6 @@ func (o *PutProjectProjectNameResourceResourceURIParams) bindResourceURI(rawData
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ResourceURI = raw
 
 	return nil

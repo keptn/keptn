@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { filter, switchMap, takeUntil } from 'rxjs/operators';
 import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
@@ -15,12 +15,11 @@ import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
 
 @Component({
-  selector: 'app-header',
+  selector: 'ktb-header',
   templateUrl: './app-header.component.html',
-  styleUrls: ['./app-header.component.scss']
+  styleUrls: ['./app-header.component.scss'],
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
-
   private readonly unsubscribe$ = new Subject<void>();
   public projects: Observable<Project[] | undefined>;
   public project$: Observable<Project | undefined> = of(undefined);
@@ -32,56 +31,64 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
 
-  constructor(@Inject(DOCUMENT) private _document: HTMLDocument, private router: Router, private dataService: DataService,
-              private notificationsService: NotificationsService, private titleService: Title) {
+  constructor(
+    @Inject(DOCUMENT) private _document: HTMLDocument,
+    private router: Router,
+    private dataService: DataService,
+    private notificationsService: NotificationsService,
+    private titleService: Title
+  ) {
     this.projects = this.dataService.projects;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.titleService.setTitle(this.appTitle);
     this.setAppFavicon(this.logoInvertedUrl);
 
-    this.router.events
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(event => {
-        if (event instanceof RoutesRecognized) {
-          const pieces = event.url.split('/');
-          if (pieces[1] === 'evaluation') {
-            this.project$ = this.dataService.projectName.pipe(
-              switchMap(projectName => this.dataService.getProject(projectName))
-            );
-          }
-          else {
-            const projectName = event.state.root.children[0].params.projectName;
-            this.project$ = this.dataService.getProject(projectName);
-          }
-        } else if (event instanceof NavigationEnd) {
-          // catch url change and update projectBoardView for the project picker
-          const pieces = event.url.split('/');
-          if (pieces.length > 3 && pieces[1] === 'project') {
-            this.projectBoardView = pieces[3];
-          } else {
-            this.projectBoardView = ''; // environment screen
-          }
+    this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
+      if (event instanceof RoutesRecognized) {
+        const pieces = event.url.split('/');
+        if (pieces[1] === 'evaluation') {
+          this.project$ = this.dataService.projectName.pipe(
+            switchMap((projectName) => this.dataService.getProject(projectName))
+          );
+        } else {
+          const projectName = event.state.root.children[0].params.projectName;
+          this.project$ = this.dataService.getProject(projectName);
         }
-      });
+      } else if (event instanceof NavigationEnd) {
+        // catch url change and update projectBoardView for the project picker
+        const pieces = event.url.split('/');
+        if (pieces.length > 3 && pieces[1] === 'project') {
+          this.projectBoardView = pieces[3];
+        } else {
+          this.projectBoardView = ''; // environment screen
+        }
+      }
+    });
 
     this.dataService.keptnInfo
       .pipe(
         filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
         takeUntil(this.unsubscribe$)
-      ).subscribe(keptnInfo => {
+      )
+      .subscribe((keptnInfo) => {
         this.keptnInfo = keptnInfo;
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
-        } else if (keptnInfo.bridgeInfo.enableVersionCheckFeature && keptnInfo.versionCheckEnabled && keptnInfo.availableVersions) {
+        } else if (
+          keptnInfo.bridgeInfo.enableVersionCheckFeature &&
+          keptnInfo.versionCheckEnabled &&
+          keptnInfo.availableVersions
+        ) {
           keptnInfo.keptnVersionInvalid = !semver.valid(keptnInfo.metadata.keptnversion);
           keptnInfo.bridgeVersionInvalid = !semver.valid(keptnInfo.bridgeInfo.bridgeVersion);
           this.doVersionCheck(
             keptnInfo.bridgeInfo.bridgeVersion,
             keptnInfo.metadata.keptnversion,
             keptnInfo.availableVersions.bridge,
-            keptnInfo.availableVersions.cli);
+            keptnInfo.availableVersions.cli
+          );
         }
       });
   }
@@ -96,26 +103,38 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     return ['/project', projectName, this.projectBoardView];
   }
 
-  doVersionCheck(bridgeVersion: string | undefined,
-                 cliVersion: string,
-                 availableBridgeVersions: VersionInfo,
-                 availableCliVersions: VersionInfo) {
+  doVersionCheck(
+    bridgeVersion: string | undefined,
+    cliVersion: string,
+    availableBridgeVersions: VersionInfo,
+    availableCliVersions: VersionInfo
+  ): void {
     if (semver.valid(bridgeVersion) && semver.valid(cliVersion)) {
       const latestVersion = availableCliVersions.stable[availableCliVersions.stable.length - 1];
-      const bridgeVersionsString = this.buildVersionString(this.getNewerVersions(availableBridgeVersions, bridgeVersion));
+      const bridgeVersionsString = this.buildVersionString(
+        this.getNewerVersions(availableBridgeVersions, bridgeVersion)
+      );
       const cliVersionsString = this.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
 
       if (bridgeVersionsString || cliVersionsString) {
-        const versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${cliVersionsString && bridgeVersionsString ? 'and' : ''}
-                            ${bridgeVersionsString ? ' Keptn Bridge ' + bridgeVersionsString : ''} available. For details how to upgrade visit
-                            <a href="https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(latestVersion)}.x/operate/upgrade/" target="_blank">
-                            https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(latestVersion)}.x/operate/upgrade/</a>`;
-        this.notificationsService.addNotification(NotificationType.Info, versionMessage);
+        const versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${
+          cliVersionsString && bridgeVersionsString ? 'and' : ''
+        }
+                            ${
+                              bridgeVersionsString ? ' Keptn Bridge ' + bridgeVersionsString : ''
+                            } available. For details how to upgrade visit
+                            <a href="https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(
+          latestVersion
+        )}.x/operate/upgrade/" target="_blank">
+                            https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(
+          latestVersion
+        )}.x/operate/upgrade/</a>`;
+        this.notificationsService.addNotification(NotificationType.INFO, versionMessage);
       }
     }
   }
 
-  private buildVersionString(versions: VersionInfo) {
+  private buildVersionString(versions: VersionInfo): null | string {
     if (versions.stable.length > 0) {
       return versions.stable.join(', ');
     } else if (versions.prerelease.length > 0) {
@@ -128,16 +147,19 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   private getNewerVersions(availableVersions: VersionInfo, currentVersion?: string): VersionInfo {
     const newerVersions: VersionInfo = {
       stable: [],
-      prerelease: []
+      prerelease: [],
     };
     if (currentVersion) {
-      const stable = availableVersions.stable.filter((stableVersion: string) => semver.lt(currentVersion, stableVersion));
+      const stable = availableVersions.stable.filter((stableVersion: string) =>
+        semver.lt(currentVersion, stableVersion)
+      );
       newerVersions.stable = this.reduceVersions(stable, currentVersion);
 
       // It is only necessary to check prerelease versions when no stable update is available
       if (newerVersions.stable.length === 0) {
-        const prerelease = availableVersions.prerelease
-                                  .filter((prereleaseVersion: string) => semver.lt(currentVersion, prereleaseVersion));
+        const prerelease = availableVersions.prerelease.filter((prereleaseVersion: string) =>
+          semver.lt(currentVersion, prereleaseVersion)
+        );
         newerVersions.prerelease = this.reduceVersions(prerelease, currentVersion);
       }
     }
@@ -162,10 +184,10 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       latestMajor = undefined;
     }
 
-    return [...latestMinor ? [latestMinor] : [], ...latestMajor ? [latestMajor] : []];
+    return [...(latestMinor ? [latestMinor] : []), ...(latestMajor ? [latestMajor] : [])];
   }
 
-  showVersionCheckInfoDialog() {
+  showVersionCheckInfoDialog(): void {
     if (this.keptnInfo?.bridgeInfo.enableVersionCheckFeature) {
       this.versionCheckDialogState = 'info';
     }
@@ -177,17 +199,19 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       this.versionCheckDialogState = 'success';
     }
 
-    setTimeout(() => {
-      this.versionCheckDialogState = null;
-    }, accepted ? 2000 : 0);
+    setTimeout(
+      () => {
+        this.versionCheckDialogState = null;
+      },
+      accepted ? 2000 : 0
+    );
   }
 
-  // tslint:disable-next-line:no-any
-  versionCheckClicked(event: DtSwitchChange<any>) {
+  versionCheckClicked(event: DtSwitchChange<unknown>): void {
     this.dataService.setVersionCheck(event.checked);
   }
 
-  setAppFavicon(path: string){
+  setAppFavicon(path: string): void {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
@@ -195,5 +219,4 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
-
 }

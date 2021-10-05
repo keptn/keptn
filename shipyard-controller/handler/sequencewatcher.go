@@ -86,7 +86,6 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 		if err != nil {
 			// events in the .triggered collection were stored in this format previously
 			fallbackTimeFormat := "2006-01-02T15:04:05.000000000Z"
-			log.WithError(err).Errorf("could not parse event timestamp of event with id %s. Trying to parse with format %s", event.ID, fallbackTimeFormat)
 			eventSentTime, err = time.Parse(fallbackTimeFormat, event.Time)
 			if err != nil {
 				log.WithError(err).Errorf("could not parse event timestamp of event with id %s.", event.ID)

@@ -175,7 +175,9 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Produce  json
 // @Param   project     body    operations.UpdateProjectParams     true        "Project"
 // @Success 200 {object} operations.UpdateProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 400 {object} models.Error "Bad Request"
+// @Failure 424 {object} models.Error "Failed Dependency"
+// @Failure 403 {object} models.Error "Not Found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
@@ -196,14 +198,17 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
+		if common.IsInvalidTokenError(err) {
+			SetFailedDependencyErrorResponse(err, c, err.Error())
+			return
+		}
 		if err == ErrProjectNotFound {
 			SetNotFoundErrorResponse(err, c)
-		} else {
-			SetInternalServerErrorResponse(err, c)
+			return
 		}
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
-
 	c.Status(http.StatusCreated)
 }
 

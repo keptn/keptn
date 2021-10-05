@@ -1,14 +1,14 @@
-import {Component, Input} from '@angular/core';
-import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
+import { Component, Input } from '@angular/core';
+import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 
-import {Trace} from '../../_models/trace';
-import {ResultTypes} from '../../../../shared/models/result-types';
-import {EvaluationResult} from '../../../../shared/interfaces/evaluation-result';
+import { Trace } from '../../_models/trace';
+import { ResultTypes } from '../../../../shared/models/result-types';
+import { EvaluationResult } from '../../../../shared/interfaces/evaluation-result';
 
 @Component({
   selector: 'ktb-evaluation-info',
   templateUrl: './ktb-evaluation-info.component.html',
-  styleUrls: ['./ktb-evaluation-info.component.scss']
+  styleUrls: ['./ktb-evaluation-info.component.scss'],
 })
 export class KtbEvaluationInfoComponent {
   private _evaluationResult?: EvaluationResult;
@@ -32,6 +32,6 @@ export class KtbEvaluationInfoComponent {
   @Input() public fill?: boolean;
 
   public overlayConfig: DtOverlayConfig = {
-    pinnable: true
+    pinnable: true,
   };
 }

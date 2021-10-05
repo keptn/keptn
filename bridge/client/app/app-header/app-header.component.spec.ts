@@ -11,13 +11,8 @@ describe('AppHeaderComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
-      providers: [
-        {provide: RETRY_ON_HTTP_ERROR, useValue: false},
-      ],
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: RETRY_ON_HTTP_ERROR, useValue: false }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppHeaderComponent);

@@ -4,10 +4,12 @@ import (
 	"context"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -24,6 +26,8 @@ type NATSEventReceiver struct {
 	closeChan             chan bool
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
+	ceCache               *CloudEventsCache
+	mutex                 *sync.Mutex
 	currentSubscriptions  []models.EventSubscription
 }
 
@@ -36,6 +40,8 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 		eventSender:           eventSender,
 		closeChan:             make(chan bool),
 		eventMatcher:          eventMatcher,
+		ceCache:               NewCloudEventsCache(),
+		mutex:                 &sync.Mutex{},
 		natsConnectionHandler: nch,
 	}
 }
@@ -84,26 +90,74 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubs
 
 func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 	go func() {
+		n.mutex.Lock()
+		defer n.mutex.Unlock()
 		logger.Infof("Received a message for topic [%s]\n", m.Subject)
-		e, err := DecodeCloudEvent(m.Data)
-		if e != nil && err == nil {
-			var subscriptionForTopic *models.EventSubscription
-			for _, subscription := range n.currentSubscriptions {
-				if subscription.Event == m.Sub.Subject { // need to check against the name of the subscription because this can be a wildcard as well
-					subscriptionForTopic = &subscription
-					break
-				}
+
+		// decode to cloudevent
+		cloudEvent, err := DecodeNATSMessage(m.Data)
+		if err != nil {
+			return
+		}
+
+		// decode to keptn event
+		keptnEvent, err := v0_2_0.ToKeptnEvent(*cloudEvent)
+		if err != nil {
+			return
+		}
+
+		// determine subscription for the received message
+		subscription := n.getSubscriptionFromReceivedMessage(m, *cloudEvent)
+
+		if subscription != nil {
+			// check if the event with the given ID has already been sent for the subscription
+			if n.ceCache.Contains(subscription.Event, keptnEvent.ID+"-"+subscription.ID) {
+				// Skip this event as it has already been sent
+				logger.Infof("CloudEvent with ID %s has already been sent", keptnEvent.ID)
+				return
 			}
-			err = n.sendEvent(*e, subscriptionForTopic)
-			if err != nil {
-				logger.Errorf("Could not send CloudEvent: %v", err)
-			}
+			logger.Infof("Sending CloudEvent with ID %s to %s", keptnEvent.ID, n.env.PubSubRecipient)
+			// add to CloudEvents cache
+			n.ceCache.Add(subscription.Event, keptnEvent.ID+"-"+subscription.ID)
+
+			defer func() {
+				// after some time, remove the cache entry
+				go func() {
+					<-time.After(10 * time.Second)
+					n.ceCache.Remove(subscription.Event, keptnEvent.ID+"-"+subscription.ID)
+				}()
+			}()
+		}
+
+		// add subscription ID as additional information to the keptn event
+		if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
+			logger.WithError(err).Error("Unable to add additional information about subscriptions to event")
+		}
+
+		// forward keptn event
+		err = n.sendEvent(keptnEvent, subscription)
+		if err != nil {
+			logger.Errorf("Could not send CloudEvent: %v", err)
 		}
 	}()
 }
 
-// TODO: remove duplication of this method (poller.go)
-func (n *NATSEventReceiver) sendEvent(event cloudevents.Event, subscription *models.EventSubscription) error {
+func (n *NATSEventReceiver) getSubscriptionFromReceivedMessage(m *nats.Msg, event cloudevents.Event) *models.EventSubscription {
+	var subscriptionForTopic models.EventSubscription
+	for _, subscription := range n.currentSubscriptions {
+		if subscription.Event == m.Sub.Subject { // need to check against the name of the subscription because this can be a wildcard as well
+			matcher := NewEventMatcherFromSubscription(subscription)
+			if matcher.Matches(event) {
+				subscriptionForTopic = subscription
+				break
+			}
+		}
+	}
+	return &subscriptionForTopic
+}
+
+func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscription *models.EventSubscription) error {
+	event := v0_2_0.ToCloudEvent(e)
 	if subscription != nil {
 		matcher := NewEventMatcherFromSubscription(*subscription)
 		if !matcher.Matches(event) {
@@ -122,6 +176,7 @@ func (n *NATSEventReceiver) sendEvent(event cloudevents.Event, subscription *mod
 		logger.WithError(err).Error("Unable to send event")
 		return err
 	}
+
 	logger.Infof("sent event %s", event.ID())
 	return nil
 }

@@ -5,7 +5,7 @@
   position: relative;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     width: 30px;
     height: 100%;
@@ -35,7 +35,7 @@
     min-width: 33%;
 
     // prevent jumping horizontal scrollbar
-    @media screen and (max-width: 2073px){
+    @media screen and (max-width: 2073px) {
       min-width: 32.6%;
     }
 

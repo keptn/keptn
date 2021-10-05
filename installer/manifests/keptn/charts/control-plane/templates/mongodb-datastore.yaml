@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}     
 spec:
   selector:
     matchLabels:
@@ -28,15 +28,14 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "control-plane.chart" . }}     
     spec:
-      {{- list .Values.mongodbDatastore .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
-        image: {{ dict "space" .Values.mongodbDatastore "context" . | include "keptn.image.name" }}
+        image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
         livenessProbe:
           httpGet:
             path: /health
@@ -64,8 +63,8 @@ spec:
           value: "{{ .Values.prefixPath }}"
         - name: MONGODB_HOST
           value: '{{ .Values.mongodb.host }}'
-        - name: MONGODB_DATABASE
-          value: 'keptn'
+        - name: MONGO_DB_NAME
+          value: {{ .Values.mongodb.dbName | default "keptn"}}
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:
@@ -76,13 +75,19 @@ spec:
             secretKeyRef:
                 name: mongodb-credentials
                 key: password
+        - name: MONGODB_EXTERNAL_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: external_connection_string
+              optional: true
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
       - name: distributor
-        image: {{ include "keptn.distributor.imageName" . }}
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
         imagePullPolicy: IfNotPresent
@@ -117,7 +122,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}         
 spec:
   ports:
   - port: 8080

@@ -6,5 +6,4 @@ import { NotificationsService } from '../../_services/notifications.service';
   templateUrl: './ktb-service-settings.component.html',
   providers: [NotificationsService],
 })
-export class KtbServiceSettingsComponent {
-}
+export class KtbServiceSettingsComponent {}

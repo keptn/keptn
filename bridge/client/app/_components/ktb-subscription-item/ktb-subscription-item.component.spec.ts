@@ -16,18 +16,16 @@ describe('KtbSubscriptionItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
-        {provide: DataService, useClass: DataServiceMock},
+        { provide: DataService, useClass: DataServiceMock },
         {
-          provide: ActivatedRoute, useValue: {
-            paramMap: of(convertToParamMap({projectName: 'sockshop'}))
-          }
-        }
-      ]
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: of(convertToParamMap({ projectName: 'sockshop' })),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSubscriptionItemComponent);
@@ -83,7 +81,9 @@ describe('KtbSubscriptionItemComponent', () => {
     TestUtils.updateDialog(fixture);
 
     expect(document.querySelector('dt-confirmation-dialog-state[name=confirm]')).toBeTruthy();
-    expect(document.querySelector('dt-confirmation-dialog-state[name=confirm] *[uitestid=dialogWarningMessage]')).toBeFalsy();
+    expect(
+      document.querySelector('dt-confirmation-dialog-state[name=confirm] *[uitestid=dialogWarningMessage]')
+    ).toBeFalsy();
 
     component.deleteSubscription();
     fixture.detectChanges();
@@ -105,7 +105,9 @@ describe('KtbSubscriptionItemComponent', () => {
     TestUtils.updateDialog(fixture);
 
     expect(document.querySelector('dt-confirmation-dialog-state[name=confirm]')).toBeTruthy();
-    expect(document.querySelector('dt-confirmation-dialog-state[name=confirm] *[uitestid=dialogWarningMessage]')).toBeTruthy();
+    expect(
+      document.querySelector('dt-confirmation-dialog-state[name=confirm] *[uitestid=dialogWarningMessage]')
+    ).toBeTruthy();
 
     component.deleteSubscription();
     fixture.detectChanges();
@@ -128,6 +130,16 @@ describe('KtbSubscriptionItemComponent', () => {
     component.deleteSubscription();
     fixture.detectChanges();
 
-    expect(routeChange).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'uniform', 'services', 'myIntegrationId', 'subscriptions', 'mySubscriptionId', 'edit']);
+    expect(routeChange).toHaveBeenCalledWith([
+      '/',
+      'project',
+      'sockshop',
+      'uniform',
+      'services',
+      'myIntegrationId',
+      'subscriptions',
+      'mySubscriptionId',
+      'edit',
+    ]);
   });
 });

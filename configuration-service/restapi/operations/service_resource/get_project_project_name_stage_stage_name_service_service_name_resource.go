@@ -29,7 +29,7 @@ func NewGetProjectProjectNameStageStageNameServiceServiceNameResource(ctx *middl
 	return &GetProjectProjectNameStageStageNameServiceServiceNameResource{Context: ctx, Handler: handler}
 }
 
-/*GetProjectProjectNameStageStageNameServiceServiceNameResource swagger:route GET /project/{projectName}/stage/{stageName}/service/{serviceName}/resource Service Resource getProjectProjectNameStageStageNameServiceServiceNameResource
+/* GetProjectProjectNameStageStageNameServiceServiceNameResource swagger:route GET /project/{projectName}/stage/{stageName}/service/{serviceName}/resource Service Resource getProjectProjectNameStageStageNameServiceServiceNameResource
 
 Get list of service resources
 
@@ -42,17 +42,15 @@ type GetProjectProjectNameStageStageNameServiceServiceNameResource struct {
 func (o *GetProjectProjectNameStageStageNameServiceServiceNameResource) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetProjectProjectNameStageStageNameServiceServiceNameResourceParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
