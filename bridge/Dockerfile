@@ -7,7 +7,8 @@ ENV VERSION="${version}"
 WORKDIR /usr/src/app
 
 # copy package.json only to install angular dependencies first
-COPY package.json yarn.lock /usr/src/app/
+COPY ./package.json ./yarn.lock ./.yarnrc /usr/src/app/
+COPY ./npm-modules-cache/ npm-modules-cache/
 RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
 RUN yarn build
@@ -21,7 +22,8 @@ ENV VERSION="${version}"
 WORKDIR /usr/src/app/server
 
 # copy package.json only to install dependencies first
-COPY ./server/package.json ./server/yarn.lock ./
+COPY ./server/package.json ./server/yarn.lock ./.yarnrc ./
+COPY ./server/npm-modules-cache/ npm-modules-cache/
 RUN yarn install --frozen-lockfile
 COPY ./server ./
 COPY ./shared /usr/src/app/shared
