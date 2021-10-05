@@ -4,7 +4,7 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { DataService } from '../../_services/data.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { Trace } from '../../_models/trace';
 import { EvaluationTracesMock } from '../../_models/trace.mock';
 import { TestUtils } from '../../_utils/test.utils';
@@ -137,10 +137,32 @@ describe('KtbPayloadViewerComponent', () => {
     );
   }));
 
-  it('should show error message', fakeAsync(() => {
+  it('should show empty message', fakeAsync(() => {
     // given
     const trace: Trace = Trace.fromJSON(EvaluationTracesMock[0]);
     const spy = jest.spyOn(dataService, 'getEvent').mockReturnValue(of(undefined));
+    component.type = trace.type;
+    component.project = trace.data.project;
+    fixture.detectChanges();
+
+    // when
+    const showDialogButton = fixture.nativeElement.querySelector('[uitestid=keptn-show-payload-dialog-button]');
+    showDialogButton.click();
+    TestUtils.updateDialog(fixture);
+
+    // then
+    const payloadDialogMessage: HTMLElement | null = document.querySelector('[uitestid=keptn-payload-dialog-message]');
+
+    expect(spy).toHaveBeenCalled();
+    expect(component.event).toBe(undefined);
+    expect(payloadDialogMessage).toBeTruthy();
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(`Could not load any ${trace.type} event`);
+  }));
+
+  it('should show error message', fakeAsync(() => {
+    // given
+    const trace: Trace = Trace.fromJSON(EvaluationTracesMock[0]);
+    const spy = jest.spyOn(dataService, 'getEvent').mockReturnValue(throwError({}));
     component.type = trace.type;
     component.project = trace.data.project;
     fixture.detectChanges();
