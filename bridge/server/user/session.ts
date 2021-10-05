@@ -13,11 +13,11 @@ declare module 'express-session' {
 const memoryStore = mS(expressSession);
 const router = Router();
 const CHECK_PERIOD = 600_000; // check every 10 minutes
-const SESSION_TIME = getOrDefaultSessionTimeout(3_600_000); // session timeout, default to 60 minutes
+const SESSION_TIME = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
-const SESSION_SECRET = random({ length: 200 });
+const SESSION_SECRET = random({length: 200});
 
 /**
  * Uses a session cookie backed by in-memory cookies store.
@@ -35,7 +35,7 @@ const sessionConfig = {
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
+  genid: (): string => random({length: COOKIE_LENGTH, type: 'url-safe'}),
   store: new memoryStore({
     checkPeriod: CHECK_PERIOD,
     ttl: SESSION_TIME,
@@ -128,19 +128,20 @@ function sessionRouter(app: Express): Router {
 }
 
 /**
- * Function to determine session timeout. Value must be in milliseconds and can be configurable through environment
- * variable SESSION_TIMEOUT_MS. If the configuration is invalid, fallback to provided default value.
+ * Function to determine session timeout. Input value is in minutes and return value is in millisecond. Value can be
+ * configurable through environment variable SESSION_TIMEOUT_MIN. If the configuration is invalid, fallback to
+ * provided default value.
  */
-function getOrDefaultSessionTimeout(def: number): number {
-  if (process.env.SESSION_TIMEOUT_MS) {
-    const sTimeout = parseInt(process.env.SESSION_TIMEOUT_MS, 10);
+function getOrDefaultSessionTimeout(defMinutes: number): number {
+  if (process.env.SESSION_TIMEOUT_MIN) {
+    const sTimeout = parseInt(process.env.SESSION_TIMEOUT_MIN, 10);
 
     if (!isNaN(sTimeout) && sTimeout > 0) {
-      return sTimeout;
+      return sTimeout * 60 * 1000;
     }
   }
 
-  return def;
+  return defMinutes * 60 * 1000;
 }
 
 export { sessionRouter };
