@@ -325,6 +325,8 @@ jobs:
           node-version: 14
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
       - name: Get yarn cache directory
         id: yarn-cache-dir-path
         run: echo "::set-output name=yarn-cache-dir::$(yarn cache dir)"
