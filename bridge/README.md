@@ -194,6 +194,10 @@ The save actions are handled within the `settings.json` file. Please follow the 
 
 ### Enable ESLint
 
+#### Git
+
+We use `\n` for line-endings and this is also configured in ESLint. To tell Git to use the right line-ending, execute the command `git config --global core.autocrlf input`
+
 #### IntelliJ
 
 `Editor -> Inspections -> JavaScript and TypeScript -> Code quality tools`

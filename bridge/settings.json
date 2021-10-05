@@ -1,5 +1,6 @@
 {
-  "html.format.wrapLineLength": 300,
+  "files.eol": "\n",
+  "html.format.wrapLineLength": 120,
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
