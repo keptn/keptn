@@ -249,7 +249,7 @@ export class ApiService {
     stageName?: string,
     serviceName?: string
   ): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}`;
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
     }
