@@ -3,39 +3,28 @@ import {
   ChangeDetectorRef,
   Component,
   Directive,
+  HostBinding,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
+
 type alignmentType = 'right' | 'left';
 @Directive({
   selector: `ktb-expandable-tile-header, [ktb-expandable-tile-header], [ktbExpandableTileHeader]`,
   exportAs: 'ktbExpandableTileHeader',
 })
-export class KtbExpandableTileHeader {}
+export class KtbExpandableTileHeaderDirective {}
 
 @Component({
   selector: 'ktb-expandable-tile',
   templateUrl: './ktb-expandable-tile.component.html',
   styleUrls: ['./ktb-expandable-tile.component.scss'],
-  host: {
-    class: 'ktb-expandable-tile',
-    '[attr.aria-error]': 'error',
-    '[class.ktb-tile-error]': 'error',
-    '[attr.aria-success]': 'success',
-    '[class.ktb-tile-success]': 'success',
-    '[attr.aria-disabled]': 'disabled',
-    '[class.ktb-tile-disabled]': 'disabled',
-    '[attr.aria-warning]': 'warning',
-    '[class.ktb-tile-warning]': 'warning',
-    '[attr.aria-highlight]': 'highlight',
-    '[class.ktb-tile-highlight]': 'highlight',
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbExpandableTileComponent {
-
+  @HostBinding('class') cls = 'ktb-expandable-tile';
   private _error = false;
   private _success = false;
   private _expanded = false;
@@ -53,6 +42,8 @@ export class KtbExpandableTileComponent {
   }
 
   @Input()
+  @HostBinding('attr.aria-error')
+  @HostBinding('class.ktb-tile-error')
   get error(): boolean {
     return this._error;
   }
@@ -64,6 +55,8 @@ export class KtbExpandableTileComponent {
   }
 
   @Input()
+  @HostBinding('attr.aria-success')
+  @HostBinding('class.ktb-tile-success')
   get success(): boolean {
     return this._success;
   }
@@ -87,6 +80,8 @@ export class KtbExpandableTileComponent {
 
   /** Whether the tile is disabled. */
   @Input()
+  @HostBinding('attr.aria-disabled')
+  @HostBinding('class.ktb-tile-disabled')
   get disabled(): boolean {
     return this._disabled;
   }
@@ -98,6 +93,8 @@ export class KtbExpandableTileComponent {
   }
 
   @Input()
+  @HostBinding('attr.aria-warning')
+  @HostBinding('class.ktb-tile-warning')
   get warning(): boolean {
     return this._warning;
   }
@@ -109,6 +106,8 @@ export class KtbExpandableTileComponent {
   }
 
   @Input()
+  @HostBinding('attr.aria-highlight')
+  @HostBinding('class.ktb-tile-highlight')
   get highlight(): boolean {
     return this._highlight;
   }
@@ -119,10 +118,9 @@ export class KtbExpandableTileComponent {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 
-  toggle() {
+  toggle(): void {
     this.expanded = !this.expanded;
   }
-
 }

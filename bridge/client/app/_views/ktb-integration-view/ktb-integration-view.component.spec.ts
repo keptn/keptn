@@ -10,13 +10,8 @@ describe('KtbIntegrationViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
-      providers: [
-        {provide: POLLING_INTERVAL_MILLIS, useValue: 0},
-      ],
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbIntegrationViewComponent);

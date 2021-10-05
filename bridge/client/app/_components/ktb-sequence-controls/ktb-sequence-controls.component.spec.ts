@@ -1,13 +1,14 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {KtbSequenceControlsComponent} from './ktb-sequence-controls.component';
-import {AppModule} from '../../app.module';
+import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
+import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
@@ -18,10 +19,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
           provide: DataService,
@@ -31,7 +29,7 @@ describe('KtbSequenceControlsComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
-            params: of({projectName}),
+            params: of({ projectName }),
             queryParams: of({}),
           },
         },
@@ -43,11 +41,8 @@ describe('KtbSequenceControlsComponent', () => {
 
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
-    // @ts-ignore
-    dataService.getProject(projectName).subscribe((pr: Project) => {
-      project = pr;
-      fixture.detectChanges();
-    });
+    project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
+    fixture.detectChanges();
   });
 
   it('should create', () => {

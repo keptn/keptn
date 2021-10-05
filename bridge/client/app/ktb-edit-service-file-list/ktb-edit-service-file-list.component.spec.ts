@@ -11,10 +11,7 @@ describe('KtbEditServiceFileListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbEditServiceFileListComponent);
@@ -58,7 +55,8 @@ describe('KtbEditServiceFileListComponent', () => {
       },
       {
         fileName: 'metadata.yaml',
-      }];
+      },
+    ];
     component.stageName = 'dev';
     component.serviceName = 'carts';
     component.remoteUri = 'https://github.com/keptn/sockshop-upstream';
@@ -146,7 +144,9 @@ describe('KtbEditServiceFileListComponent', () => {
     const link = component.getGitRepositoryLink();
 
     // then
-    expect(link).toEqual('https://eu-central-1.console.aws.amazon.com/codesuite/codecommit/repositories/sockshop-upstream/browse/refs/heads/dev');
+    expect(link).toEqual(
+      'https://eu-central-1.console.aws.amazon.com/codesuite/codecommit/repositories/sockshop-upstream/browse/refs/heads/dev'
+    );
   });
 
   it('should return the repository url when not github, bitbucket, azure or codeCommit', () => {

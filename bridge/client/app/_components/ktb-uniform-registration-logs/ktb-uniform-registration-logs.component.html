@@ -6,18 +6,17 @@
       </div>
       <div class="p-2 pr-3">{{ log.time }}</div>
       <div class="p-2 pr-3 pl-3">
-        <ng-container *ngIf="log.shkeptncontext && log.triggeredid && log.task else notask">
-          Task: <a [routerLink]="['/', 'project', projectName, 'sequence', log.shkeptncontext, 'event', log.triggeredid]">{{ log.task }}</a>
+        <ng-container *ngIf="log.shkeptncontext && log.triggeredid && log.task; else notask">
+          Task:
+          <a [routerLink]="['/', 'project', projectName, 'sequence', log.shkeptncontext, 'event', log.triggeredid]">{{
+            log.task
+          }}</a>
         </ng-container>
-        <ng-template #notask>
-          n/a
-        </ng-template>
+        <ng-template #notask> n/a </ng-template>
       </div>
-      <div class="p-2 pl-3">{{ log.message}} </div>
+      <div class="p-2 pl-3">{{ log.message }}</div>
     </div>
   </ng-container>
 </div>
 
-<div *ngIf="logs && logs.length === 0">
-  No events for this integration available
-</div>
+<div *ngIf="logs && logs.length === 0">No events for this integration available</div>

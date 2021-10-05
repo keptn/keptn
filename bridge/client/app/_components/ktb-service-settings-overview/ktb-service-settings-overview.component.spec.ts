@@ -11,16 +11,16 @@ describe('KtbServiceSettingsOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-      ],
+      imports: [AppModule],
       providers: [
         {
           provide: ActivatedRoute,
           useValue: {
-            paramMap: of(convertToParamMap({
-              projectName: 'sockshop',
-            })),
+            paramMap: of(
+              convertToParamMap({
+                projectName: 'sockshop',
+              })
+            ),
           },
         },
       ],

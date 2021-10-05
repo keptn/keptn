@@ -1,6 +1,12 @@
 <div class="container" uitestid="keptn-dashboard-projectList">
   <ng-container *ngIf="projects$ | async as projects">
-    <div *ngIf="!projects" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" uitestid="keptn-dashboard-loading">
+    <div
+      *ngIf="!projects"
+      fxLayout="row"
+      fxLayoutAlign="start center"
+      fxLayoutGap="15px"
+      uitestid="keptn-dashboard-loading"
+    >
       <dt-loading-spinner></dt-loading-spinner>
       <p>Loading ...</p>
     </div>
@@ -9,7 +15,8 @@
       <a [routerLink]="'/create/project'"><button dt-button>Create a new project</button></a>
       <div class="new-project-overlay p-3 animation-pulse" *ngIf="projects?.length === 0">
         <div fxLayout="row">
-          <dt-icon name="information" class="event-icon mr-2"></dt-icon><span>Ready for your automation journey?<br/>Start here by creating your first project.</span>
+          <dt-icon name="information" class="event-icon mr-2"></dt-icon
+          ><span>Ready for your automation journey?<br />Start here by creating your first project.</span>
         </div>
       </div>
     </div>
@@ -17,17 +24,14 @@
     <dt-empty-state *ngIf="projects?.length === 0">
       <dt-empty-state-item>
         <dt-empty-state-item-img>
-          <img alt="Logo" class="mt-2" [src]="logoInvertedUrl"/>
+          <img alt="Logo" class="mt-2" [src]="logoInvertedUrl" />
         </dt-empty-state-item-img>
-        <dt-empty-state-item-title class="mt-2" aria-level="2">
-          No projects existing
-        </dt-empty-state-item-title>
+        <dt-empty-state-item-title class="mt-2" aria-level="2"> No projects existing </dt-empty-state-item-title>
         <p>
-          There are no projects available.<br/>
-          Create a new project by using the "Create a new project" button or
-          check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">
-          Quick Start</a> instructions on
-          how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
+          There are no projects available.<br />
+          Create a new project by using the "Create a new project" button or check out the
+          <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer"> Quick Start</a>
+          instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
           <ng-container *ngIf="!isQualityGatesOnly">
             and to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
           </ng-container>
