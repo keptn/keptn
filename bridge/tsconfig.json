@@ -19,8 +19,7 @@
     "noImplicitReturns": true,
     "lib": ["es2018", "dom"]
   },
-  "exclude": ["node_modules", "cypress/**/*.spec.ts"],
-  "include": ["client/**/*.spec.ts"],
+  "exclude": ["node_modules"],
   "angularCompilerOptions": {
     "strictTemplates": true,
     "strictNullChecks": true,
