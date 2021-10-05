@@ -328,7 +328,8 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
           services: [],
           stages: [],
         },
-      })
+      }),
+      undefined
     );
     expect(routerSpy).toHaveBeenCalledWith([
       '/',

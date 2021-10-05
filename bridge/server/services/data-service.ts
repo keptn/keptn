@@ -516,7 +516,7 @@ export class DataService {
   }
 
   public async getWebhookConfig(
-    eventType: string,
+    subscriptionId: string,
     projectName: string,
     stageName?: string,
     serviceName?: string
@@ -656,7 +656,12 @@ export class DataService {
     }
   }
 
-  private async removeWebhook(subscriptionId: string, projectName: string, stage?: string, service?: string): Promise<void> {
+  private async removeWebhook(
+    subscriptionId: string,
+    projectName: string,
+    stage?: string,
+    service?: string
+  ): Promise<void> {
     try {
       const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
       if (webhookConfig.removeWebhook(subscriptionId)) {

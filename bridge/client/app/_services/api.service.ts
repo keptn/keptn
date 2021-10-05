@@ -178,17 +178,17 @@ export class ApiService {
     integrationId: string,
     subscription: Partial<UniformSubscription>,
     webhookConfig?: WebhookConfig
-  ): Observable<object> {
+  ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
-    return this.http.put(url, { subscription, webhookConfig });
+    return this.http.put<Record<string, unknown>>(url, { subscription, webhookConfig });
   }
   public createUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
     webhookConfig?: WebhookConfig
-  ): Observable<object> {
+  ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription`;
-    return this.http.post(url, { subscription, webhookConfig });
+    return this.http.post<Record<string, unknown>>(url, { subscription, webhookConfig });
   }
 
   public getUniformRegistrationLogs(

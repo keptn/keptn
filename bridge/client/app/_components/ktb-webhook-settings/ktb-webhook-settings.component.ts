@@ -68,7 +68,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   public onWebhookFormChange(): void {
     this._webhook.method = this.getFormControl('method').value;
-    this._webhook.url =  this.getFormControl('url').value;
+    this._webhook.url = this.getFormControl('url').value;
     this._webhook.payload = this.getFormControl('payload').value;
     this._webhook.proxy = this.getFormControl('proxy').value;
     this._webhook.header = this.getFormControl('header').value;

@@ -1,7 +1,7 @@
 export type Webhook = {
-  subscriptionId: string,
-  type: string, // type === event
-  requests: string[]
+  subscriptionId: string;
+  type: string; // type === event
+  requests: string[];
 };
 
 export interface WebhookConfigYamlResult {
@@ -11,6 +11,6 @@ export interface WebhookConfigYamlResult {
     name: 'webhook-configuration';
   };
   spec: {
-    webhooks: Webhook[]
+    webhooks: Webhook[];
   };
 }

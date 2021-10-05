@@ -131,13 +131,17 @@ const apiRouter = (params: {
         const projectName = req.query.projectName?.toString();
         if (projectName) {
           const webhookConfig = await dataService.getWebhookConfig(
-            req.params.subscriptionId, projectName,
+            req.params.subscriptionId,
+            projectName,
             req.query.stageName?.toString(),
             req.query.serviceName?.toString()
           );
           return res.json(webhookConfig);
         } else {
           next(Error('project name not provided'));
+        }
+      } catch (error) {
+        return next(error);
       }
     }
   );
@@ -156,6 +160,7 @@ const apiRouter = (params: {
       } catch (error) {
         return next(error);
       }
+    }
   );
 
   router.post(
@@ -174,12 +179,22 @@ const apiRouter = (params: {
     }
   );
 
-  router.put('/uniform/registration/:integrationId/subscription/:subscriptionId', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const integrationId = req.params.integrationId;
-      const subscriptionId = req.params.subscriptionId;
-      if (integrationId && subscriptionId) {
-        await dataService.updateSubscription(integrationId, subscriptionId, req.body.subscription, req.body.webhookConfig);
+  router.put(
+    '/uniform/registration/:integrationId/subscription/:subscriptionId',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const integrationId = req.params.integrationId;
+        const subscriptionId = req.params.subscriptionId;
+        if (integrationId && subscriptionId) {
+          await dataService.updateSubscription(
+            integrationId,
+            subscriptionId,
+            req.body.subscription,
+            req.body.webhookConfig
+          );
+        }
+      } catch (error) {
+        return next(error);
       }
     }
   );
