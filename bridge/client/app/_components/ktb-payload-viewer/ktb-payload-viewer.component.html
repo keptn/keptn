@@ -1,4 +1,4 @@
-<button dt-button variant="secondary" variant="nested" (click)="showEventPayloadDialog()" [disabled]="!type">
+<button dt-button variant="secondary" variant="nested" (click)="showEventPayloadDialog()" [disabled]="!type" uitestid="keptn-show-payload-dialog-button">
   <dt-icon name="coding"></dt-icon>
   <span [textContent]="buttonTitle"></span>
 </button>
@@ -7,7 +7,7 @@
   <h1 mat-dialog-title>Payload viewer</h1>
   <div *ngIf="!loading; else loadingEvent">
     <div *ngIf="event; else noEvent">
-      <p>
+      <p uitestid="keptn-payload-dialog-message">
         This is the latest <span class="bold" [textContent]="type"></span> event
         <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
         <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
@@ -17,7 +17,7 @@
       </div>
     </div>
     <ng-template #noEvent>
-      <p class="error">
+      <p class="error" uitestid="keptn-payload-dialog-message">
         Could not load any <span class="bold" [textContent]="type"></span> event
         <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span></span>&nbsp;
         <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
@@ -28,6 +28,6 @@
     <dt-loading-spinner></dt-loading-spinner>
   </ng-template>
   <div mat-dialog-actions>
-    <button dt-button (click)="closeDialog()">Close</button>
+    <button dt-button (click)="closeDialog()" uitestid="keptn-close-payload-dialog-button">Close</button>
   </div>
 </ng-template>

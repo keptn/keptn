@@ -1,7 +1,7 @@
 import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Trace } from '../../_models/trace';
-import { ApiService } from '../../_services/api.service';
+import { DataService } from '../../_services/data.service';
 
 @Component({
   selector: 'ktb-payload-viewer',
@@ -32,15 +32,15 @@ export class KtbPayloadViewerComponent {
 
   public loading = false;
 
-  constructor(private apiService: ApiService, private dialog: MatDialog) {}
+  constructor(private dataService: DataService, private dialog: MatDialog) {}
 
   showEventPayloadDialog(): void {
     if (this.eventPayloadDialog) {
       this.event = undefined;
       this.loading = true;
-      this.apiService.getEvent(this.type, this.project, this.stage, this.service).subscribe(
-        (eventResult) => {
-          this.event = eventResult.body?.events[0];
+      this.dataService.getEvent(this.type, this.project, this.stage, this.service).subscribe(
+        (event) => {
+          this.event = event;
           this.loading = false;
         },
         (err) => {
