@@ -62,4 +62,4 @@ RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && 
 # Set user
 USER myuser
 
-CMD ["/usr/local/bin/yarn", "start", "--prefix", "./server"]
+CMD ["yarn", "start", "--prefix", "./server"]
