@@ -63,4 +63,4 @@ RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && 
 USER myuser
 
 RUN mkdir -p "/tmp/.yarn-cache"
-CMD ["yarn", "start", "--prefix", "./server"]
+CMD ["npm", "start", "--prefix", "./server"]
