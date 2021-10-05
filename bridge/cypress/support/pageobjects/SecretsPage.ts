@@ -8,11 +8,11 @@ class SecretsPage {
 
   addSecret(SECRET_NAME: string, SECRET_KEY: string, SECRET_VALUE: string): void {
     this.clickAddSecret();
-    cy.get('input[placeholder="Secret name"]')
+    cy.get('input[uitestid="keptn-secret-name-input"]')
       .type(SECRET_NAME)
-      .get('input[placeholder="Key"]')
+      .get('input[uitestid="keptn-secret-key-input"]')
       .type(SECRET_KEY)
-      .get('input[placeholder="Value"]')
+      .get('input[uitestid="keptn-secret-value-input"]')
       .type(SECRET_VALUE)
       .get('button > span')
       .contains('Add secret')

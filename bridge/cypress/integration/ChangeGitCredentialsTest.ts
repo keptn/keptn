@@ -1,7 +1,6 @@
 /// <reference types="cypress" />
 
 import BasePage from '../support/pageobjects/BasePage';
-import changeGitCreds from '../fixtures/change.credentials.payload.json';
 
 describe('Changing git credentials', () => {
   it('The test changes git credentials and makes sure they changed successfully', () => {
@@ -43,7 +42,9 @@ describe('Changing git credentials', () => {
       .inputGitToken(GIT_TOKEN)
       .clickSaveChanges();
 
-    cy.get('@changeGitCredentials').its('request.body').should('deep.equal', changeGitCreds);
-    //  getErrorMessageText().contains('failed to set upstream: Error executing command git remote show origin: exit status 128')
+    return cy.fixture('change.credentials.payload.json').then((json) => {
+      cy.get('@changeGitCredentials').its('request.body').should('deep.equal', json);
+      return;
+    });
   });
 });

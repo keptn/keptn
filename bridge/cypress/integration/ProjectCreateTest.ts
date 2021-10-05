@@ -1,10 +1,9 @@
 /// <reference types="cypress" />
 import BasePage from '../support/pageobjects/BasePage';
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
-import createprojjson from '../fixtures/create.project.request.body.json';
 
-describe('sample mock test', () => {
-  it('test', () => {
+describe('Create new project test', () => {
+  it('test new project create', () => {
     const basePage = new BasePage();
     const newProjectCreatePage = new NewProjectCreatePage();
     const GIT_USERNAME = 'carpe-github-username';
@@ -41,17 +40,24 @@ describe('sample mock test', () => {
       .inputGitUsername(GIT_USERNAME)
       .inputGitToken(GIT_TOKEN);
 
-    return cy.fixture('shipyard.yaml').then((fileContent) => {
-      cy.get('input[id="shipyard-file-input"]').attachFile({
-        fileContent: fileContent.toString(),
-        fileName: 'shipyard.yaml',
-      });
-      return null;
-    });
+    cy.get('input[id="shipyard-file-input"]').attachFile('shipyard.yaml');
 
     newProjectCreatePage.clickCreateProject();
 
     cy.wait('@createProjectUrl', { timeout: 20000 });
-    cy.get('@createProjectUrl').its('request.body').should('deep.equal', createprojjson);
+
+    return cy.fixture('create.project.request.body.json').then((createProjjson) => {
+      cy.get('@createProjectUrl').its('request.body').should('deep.equal', createProjjson);
+      return;
+    });
+
+    /*cy.get('@createProjectUrl').its('request.body').should('deep.equal', {
+      gitRemoteUrl: 'https://git-repo.com',
+      gitToken: 'testtoken',
+      gitUser: 'carpe-github-username',
+      name: 'test-project-bycypress-001',
+      shipyard:
+        'YXBpVmVyc2lvbjogInNwZWMua2VwdG4uc2gvMC4yLjAiDQpraW5kOiAiU2hpcHlhcmQiDQptZXRhZGF0YToNCiAgbmFtZTogInNoaXB5YXJkLXF1YWxpdHktZ2F0ZXMiDQpzcGVjOg0KICBzdGFnZXM6DQogICAgLSBuYW1lOiAicXVhbGl0eS1nYXRlLXRlc3Qi',
+    });*/
   });
 });
