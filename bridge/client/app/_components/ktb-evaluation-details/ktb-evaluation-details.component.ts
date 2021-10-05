@@ -685,9 +685,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
-    this.comparedIndicatorResults = secondaryHighlightIndices.filter(idx => idx >= 0).map(index => {
-      return this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [];
-    });
+    this.comparedIndicatorResults = secondaryHighlightIndices
+      .filter((idx) => idx >= 0)
+      .map((index) => {
+        return this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [];
+      });
     for (const secondaryHighlightIndex of secondaryHighlightIndices) {
       if (secondaryHighlightIndex >= 0) {
         plotBands.push({

@@ -105,7 +105,7 @@ export class KtbSliBreakdownComponent implements OnInit {
     } else {
       this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
     }
-    return indicatorResults.map(indicatorResult =>  {
+    return indicatorResults.map((indicatorResult) => {
       let accSum = 0;
       let accCount = 0;
       for (const comparedIndicatorResult of this.comparedIndicatorResults) {

@@ -188,8 +188,10 @@ describe('KtbSliBreakdownComponent', () => {
     component.comparedIndicatorResults =
       comparedEvaluationIndex === -1
         ? []
-        : [(Evaluations.data.evaluationHistory?.[comparedEvaluationIndex].data.evaluation
-            ?.indicatorResults as IndicatorResult[])];
+        : [
+            Evaluations.data.evaluationHistory?.[comparedEvaluationIndex].data.evaluation
+              ?.indicatorResults as IndicatorResult[],
+          ];
   }
 
   function validateIndicatorResult(
