@@ -185,32 +185,27 @@ In the opened folder:
 
 Make sure that following items are checked:
 
-- Reformat Code (Whole file)
 - Optimize Imports
+- Run eslint --fix
 
 #### Visual Studio Code
 
 The save actions are handled within the `settings.json` file. Please follow the guide for importing the file to enable the feature.
 
-### Enable TSLint
+### Enable ESLint
 
 #### IntelliJ
 
-`File > Settings... > Languages & Tools > TypeScript > TSLint`
+`Editor -> Inspections -> JavaScript and TypeScript -> Code quality tools`
+Enable `ESLint` and disable `TSLint` if enabled
 
-Select `Automatic TSLint configuration`
-
-The automatic TSLint configuration detects automatically the `tslint.json` file in the bridge directory and applies the set rules.
+The automatic ESLint configuration detects automatically the `.eslintrc.json` file in the bridge directory and applies the set rules.
 
 #### Visual Studio Code
 
-- Install the [TSLint](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-tslint-plugin) extension
-- Run `npm i tslint`
-- Open the command palette (Windows: `Ctrl + Shift + P`)
-- Type in `workspace execution`
-- Select `TSLint: Manage workspace library execution`
-- Select `Enable workspace library execution`
-- Close and re-open VSCode for TSLint to work properly
+- Install the [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) extension
+- Run `npm i eslint`
+- Close and re-open VSCode for ESLint to work properly
 
 ### Additional configurations
 
@@ -229,7 +224,7 @@ The automatic TSLint configuration detects automatically the `tslint.json` file 
 
 #### Visual Studio Code
 
-- [TSLint](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-tslint-plugin)
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
 - [Angular Language Service](https://marketplace.visualstudio.com/items?itemName=Angular.ng-template)
 - [Jest](https://marketplace.visualstudio.com/items?itemName=Orta.vscode-jest)
 - [Jest Runner](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner)

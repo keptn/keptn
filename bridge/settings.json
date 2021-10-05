@@ -5,7 +5,10 @@
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "editor.autoIndent": "advanced",
-  "editor.formatOnSave": true,
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "conventionalCommits.gitmoji": false,
   "conventionalCommits.promptBody": false,
   "conventionalCommits.promptFooter": false,
