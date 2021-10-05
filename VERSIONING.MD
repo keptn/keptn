@@ -14,7 +14,7 @@ potentially cause failures in the applications that consume that API, e.g., remo
 changing the response code, requiring additional parameters, or changing the entity models.
 
 Such changes will be avoided - if they must be made, the affected endpoint will be marked as `deprecated`
-and supported for one further `MINOR` version. After that, the affected API may be made backward-incompatible.
+and supported for one further `MINOR` version. After that, the affected API may be made backwards-incompatible.
 
 Backwards-incompatible changes to `internal` API are to be expected.
 
