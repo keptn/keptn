@@ -25,6 +25,7 @@ import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { EvaluationHistory } from '../_interfaces/evaluation-history';
 
 @Injectable({
   providedIn: 'root',
@@ -48,7 +49,8 @@ export class DataService {
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
-  protected _evaluationResults = new Subject<{ type: string; triggerEvent: Trace; traces?: Trace[] }>();
+  protected _evaluationResults = new Subject<
+  >();
 
   constructor(private apiService: ApiService) {}
 
@@ -72,7 +74,7 @@ export class DataService {
     return this._keptnInfo.asObservable();
   }
 
-  get evaluationResults(): Observable<{ type: string; triggerEvent: Trace; traces?: Trace[] }> {
+  get evaluationResults(): Observable<EvaluationHistory> {
     return this._evaluationResults;
   }
 

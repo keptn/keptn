@@ -1,7 +1,12 @@
 <div *ngIf="evaluationData">
   <div class="mt-1 mb-1" *ngIf="showChart && !isInvalidated">
     <div fxLayout="row" class="pr-2">
-      <div fxFlex></div>
+      <div fxFlex>
+        <button dt-button (click)="refreshEvaluationBoard(updateResults)" *ngIf="updateResults">
+          <dt-icon name="refresh"></dt-icon>
+          Refresh
+        </button>
+      </div>
       <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-contextButtons">
         <dt-button-group [(value)]="_comparisonView">
           <dt-button-group-item
