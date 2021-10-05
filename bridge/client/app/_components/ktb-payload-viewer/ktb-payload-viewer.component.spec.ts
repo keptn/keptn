@@ -75,7 +75,9 @@ describe('KtbPayloadViewerComponent', () => {
     expect(spy).toHaveBeenCalled();
     expect(payloadDialogCloseButton).toBeTruthy();
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(`This is the latest ${trace.type} event from stage ${trace.data.stage}`);
+    expect(payloadDialogMessage?.textContent?.trim()).toBe(
+      `This is the latest ${trace.type} event from stage ${trace.data.stage}`
+    );
   }));
 
   it('should show event payload dialog with service', fakeAsync(() => {
@@ -99,7 +101,9 @@ describe('KtbPayloadViewerComponent', () => {
     expect(spy).toHaveBeenCalled();
     expect(payloadDialogCloseButton).toBeTruthy();
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(`This is the latest ${trace.type} event for service ${trace.data.service}`);
+    expect(payloadDialogMessage?.textContent?.trim()).toBe(
+      `This is the latest ${trace.type} event for service ${trace.data.service}`
+    );
   }));
 
   it('should show event payload dialog with stage and service', fakeAsync(() => {
@@ -124,7 +128,9 @@ describe('KtbPayloadViewerComponent', () => {
     expect(spy).toHaveBeenCalled();
     expect(payloadDialogCloseButton).toBeTruthy();
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim()).toBe(`This is the latest ${trace.type} event from stage ${trace.data.stage} for service ${trace.data.service}`);
+    expect(payloadDialogMessage?.textContent?.trim()).toBe(
+      `This is the latest ${trace.type} event from stage ${trace.data.stage} for service ${trace.data.service}`
+    );
   }));
 
   it('should show error message', fakeAsync(() => {

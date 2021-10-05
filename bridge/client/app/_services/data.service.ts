@@ -613,16 +613,8 @@ export class DataService {
       });
   }
 
-  public getEvent(
-    type?: string,
-    project?: string,
-    stage?: string,
-    service?: string
-  ): Observable<Trace | undefined> {
-    return this.apiService.getEvent(type, project, stage, service)
-      .pipe(
-        map((response) => response.body?.events[0]),
-      )
+  public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
+    return this.apiService.getEvent(type, project, stage, service).pipe(map((response) => response.body?.events[0]));
   }
 
   public loadEvaluationResults(event: Trace): void {
