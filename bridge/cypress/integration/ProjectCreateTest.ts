@@ -48,16 +48,7 @@ describe('Create new project test', () => {
 
     return cy.fixture('create.project.request.body.json').then((createProjjson) => {
       cy.get('@createProjectUrl').its('request.body').should('deep.equal', createProjjson);
-      return;
+      return null;
     });
-
-    /*cy.get('@createProjectUrl').its('request.body').should('deep.equal', {
-      gitRemoteUrl: 'https://git-repo.com',
-      gitToken: 'testtoken',
-      gitUser: 'carpe-github-username',
-      name: 'test-project-bycypress-001',
-      shipyard:
-        'YXBpVmVyc2lvbjogInNwZWMua2VwdG4uc2gvMC4yLjAiDQpraW5kOiAiU2hpcHlhcmQiDQptZXRhZGF0YToNCiAgbmFtZTogInNoaXB5YXJkLXF1YWxpdHktZ2F0ZXMiDQpzcGVjOg0KICBzdGFnZXM6DQogICAgLSBuYW1lOiAicXVhbGl0eS1nYXRlLXRlc3Qi',
-    });*/
   });
 });

@@ -10,7 +10,6 @@ class BasePage {
   constructor() {
     const NAVIGATION_MENU_LOCATOR = "button[aria-label='Open page_pattern view']";
     const PROJECT_TILE_LOCATOR = "dt-tile[id='proj_patten']";
-    //     let NAVIGATION_MENU_LOCATOR = "//button[@aria-label='Open page_pattern view']"
     this.NAVIGATION_MENU_LOCATOR = NAVIGATION_MENU_LOCATOR;
     this.PROJECT_TILE_LOCATOR = PROJECT_TILE_LOCATOR;
   }
@@ -20,7 +19,6 @@ class BasePage {
     cy.get('#next_button').click();
     cy.get('#password_login').type(password);
     cy.get('#no_captcha_submit').click();
-    return;
   }
 
   // go to Uniform page
@@ -33,7 +31,6 @@ class BasePage {
   // go to Secrets page
   goToSecretsPage(): void {
     cy.get('[aria-label="Open uniform secrets"]').click();
-    return;
   }
 
   // go to Settings page
@@ -51,7 +48,6 @@ class BasePage {
       .get('dt-option')
       .contains(projectName)
       .click();
-    return;
   }
 
   clickProjectTile(projectName: string): EnvironmentPage {
@@ -71,7 +67,6 @@ class BasePage {
 
   clickMainHeaderKeptn(): void {
     cy.get('.brand > p').contains('keptn').click();
-    return;
   }
 }
 

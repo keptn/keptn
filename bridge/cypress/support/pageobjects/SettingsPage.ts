@@ -38,7 +38,6 @@ class SettingsPage {
 
   submitDelete(): void {
     cy.get('span.dt-button-label').contains('I understand the consequences, delete this project').click();
-    return;
   }
 }
 

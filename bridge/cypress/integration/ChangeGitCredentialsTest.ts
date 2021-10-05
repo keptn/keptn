@@ -44,7 +44,7 @@ describe('Changing git credentials', () => {
 
     return cy.fixture('change.credentials.payload.json').then((json) => {
       cy.get('@changeGitCredentials').its('request.body').should('deep.equal', json);
-      return;
+      return null;
     });
   });
 });
