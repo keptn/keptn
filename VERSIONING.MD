@@ -16,7 +16,7 @@ changing the response code, requiring additional parameters, or changing the ent
 Such changes will be avoided - if they must be made, the affected endpoint will be marked as `deprecated`
 and supported for one further `MINOR` version. After that, the affected API may be made backward-incompatible.
 
-Backwards incompatible changes to `internal` API are to be expected.
+Backwards-incompatible changes to `internal` API are to be expected.
 
 ## Stable vs Next
 
