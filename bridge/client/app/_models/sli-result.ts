@@ -1,4 +1,4 @@
-import {ResultTypes} from '../../../shared/models/result-types';
+import { ResultTypes } from '../../../shared/models/result-types';
 import { Target } from '../../../shared/interfaces/indicator-result';
 
 export class SliResult {
@@ -14,8 +14,8 @@ export class SliResult {
   success!: boolean;
   expanded!: boolean;
   calculatedChanges?: {
-    absolute: number,
-    relative: number
+    absolute: number;
+    relative: number;
   };
   weight!: number;
 }

@@ -1,11 +1,11 @@
 export enum DeleteType {
   PROJECT = 'project',
-  SERVICE = 'service'
+  SERVICE = 'service',
 }
 
 export enum DeleteResult {
   ERROR = 'error',
-  SUCCESS = 'success'
+  SUCCESS = 'success',
 }
 
 export interface DeleteData {

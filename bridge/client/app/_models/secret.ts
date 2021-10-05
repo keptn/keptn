@@ -19,6 +19,10 @@ export class Secret implements scrt {
     this.name = name;
   }
 
+  setScope(scope: string): void {
+    this.scope = scope;
+  }
+
   addData(key: string, value: string): void {
     this.data?.push({key, value});
   }

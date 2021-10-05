@@ -4,7 +4,38 @@ import (
 	"errors"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"net/http"
 )
+
+type configStoreErrType int
+
+const (
+	InvalidTokenError configStoreErrType = iota
+)
+
+// ConfigurationStoreError is the a error type which will eventually
+// be returned by methods of implementations of the ConfigurationStore
+type ConfigurationStoreError struct {
+	// Message is the message of the error for further information
+	Message string
+	// Reason is the type of error which happened
+	Reason configStoreErrType
+}
+
+// Error returns the error message
+func (e *ConfigurationStoreError) Error() string {
+	return e.Message
+}
+
+// IsInvalidTokenError checks whether a given error is of type
+// ConfigurationStoreError with a reason of InvalidTokenError
+func IsInvalidTokenError(err error) bool {
+	var e *ConfigurationStoreError
+	if errors.As(err, &e) {
+		return e.Reason == InvalidTokenError
+	}
+	return false
+}
 
 //go:generate moq -pkg common_mock -out ./fake/configurationstore_mock.go . ConfigurationStore
 type ConfigurationStore interface {
@@ -41,15 +72,16 @@ func (g GitConfigurationStore) GetProjectResource(projectName string, resourceUR
 
 func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) error {
 	if _, err := g.projectAPI.CreateProject(project); err != nil {
-		return errors.New(*err.Message)
+		return g.buildErrResponse(err)
 	}
 	return nil
 }
 
 func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) error {
 	if _, err := g.projectAPI.UpdateConfigurationServiceProject(project); err != nil {
-		return errors.New(*err.Message)
+		return g.buildErrResponse(err)
 	}
+
 	return nil
 }
 
@@ -79,21 +111,31 @@ func (g GitConfigurationStore) UpdateProjectResource(projectName string, resourc
 
 func (g GitConfigurationStore) CreateStage(projectName string, stageName string) error {
 	if _, err := g.stagesAPI.CreateStage(projectName, stageName); err != nil {
-		return errors.New(*err.Message)
+		return g.buildErrResponse(err)
 	}
 	return nil
 }
 
 func (g GitConfigurationStore) CreateService(projectName string, stageName string, serviceName string) error {
 	if _, err := g.servicesAPI.CreateServiceInStage(projectName, stageName, serviceName); err != nil {
-		return errors.New(*err.Message)
+		return g.buildErrResponse(err)
 	}
 	return nil
 }
 
 func (g GitConfigurationStore) DeleteService(projectName string, stageName string, serviceName string) error {
 	if _, err := g.servicesAPI.DeleteServiceFromStage(projectName, stageName, serviceName); err != nil {
-		return errors.New(*err.Message)
+		return g.buildErrResponse(err)
 	}
 	return nil
+}
+
+func (g GitConfigurationStore) buildErrResponse(err *keptnapimodels.Error) error {
+	if err.Code == http.StatusFailedDependency {
+		return &ConfigurationStoreError{
+			Message: err.GetMessage(),
+			Reason:  InvalidTokenError,
+		}
+	}
+	return errors.New(*err.Message)
 }

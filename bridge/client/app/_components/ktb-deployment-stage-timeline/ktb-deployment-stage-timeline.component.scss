@@ -15,7 +15,8 @@
   width: 25px;
 }
 :host::ng-deep {
-  .dt-icon-button.active, .dt-icon-button:hover {
+  .dt-icon-button.active,
+  .dt-icon-button:hover {
     background: $gray-100 !important;
   }
   .dt-button-icon {

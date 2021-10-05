@@ -4,7 +4,7 @@ export class FormUtils {
   public static nameExistsValidator(names: string[]): ValidatorFn {
     return (control: AbstractControl): { duplicate: { value: boolean } } | null => {
       const name = names.includes(control.value);
-      return name ? {duplicate: {value: name}} : null;
+      return name ? { duplicate: { value: name } } : null;
     };
   }
 
@@ -55,9 +55,9 @@ export class FormUtils {
   public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {
     if (allowedExtensions && allowedExtensions.length > 0) {
       const allowedFiles = [];
-      allowedExtensions.forEach(extension => {
+      allowedExtensions.forEach((extension) => {
         const fileArray: File[] = Array.from(files);
-        fileArray.forEach(file => {
+        fileArray.forEach((file) => {
           if (file.name.endsWith(extension)) {
             allowedFiles.push(file);
           }
@@ -81,7 +81,7 @@ export class FormUtils {
       }
 
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = (): void => {
         try {
           const text = reader.result?.toString();
           resolve(text);

@@ -1,6 +1,6 @@
-import {Component, Input} from '@angular/core';
-import {Trace} from '../../_models/trace';
-import {EvaluationResult} from '../../../../shared/interfaces/evaluation-result';
+import { Component, Input } from '@angular/core';
+import { Trace } from '../../_models/trace';
+import { EvaluationResult } from '../../../../shared/interfaces/evaluation-result';
 
 @Component({
   selector: 'ktb-stage-badge',
@@ -8,7 +8,6 @@ import {EvaluationResult} from '../../../../shared/interfaces/evaluation-result'
   styleUrls: ['./ktb-stage-badge.component.scss'],
 })
 export class KtbStageBadgeComponent {
-
   @Input() public evaluation?: Trace;
   @Input() public evaluationResult?: EvaluationResult;
   @Input() public stage?: string;

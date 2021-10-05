@@ -29,7 +29,7 @@ func NewDeleteProjectProjectNameStageStageNameServiceServiceName(ctx *middleware
 	return &DeleteProjectProjectNameStageStageNameServiceServiceName{Context: ctx, Handler: handler}
 }
 
-/*DeleteProjectProjectNameStageStageNameServiceServiceName swagger:route DELETE /project/{projectName}/stage/{stageName}/service/{serviceName} Service deleteProjectProjectNameStageStageNameServiceServiceName
+/* DeleteProjectProjectNameStageStageNameServiceServiceName swagger:route DELETE /project/{projectName}/stage/{stageName}/service/{serviceName} Service deleteProjectProjectNameStageStageNameServiceServiceName
 
 INTERNAL Endpoint: Delete the specified service
 
@@ -42,17 +42,15 @@ type DeleteProjectProjectNameStageStageNameServiceServiceName struct {
 func (o *DeleteProjectProjectNameStageStageNameServiceServiceName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewDeleteProjectProjectNameStageStageNameServiceServiceNameParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

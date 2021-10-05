@@ -1,21 +1,18 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
-import {Sequence} from '../../_models/sequence';
+import { Component, EventEmitter, HostBinding, Input, Output, ViewEncapsulation } from '@angular/core';
+import { Sequence } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-state-info',
   templateUrl: './ktb-sequence-state-info.component.html',
   styleUrls: ['./ktb-sequence-state-info.component.scss'],
-  host: {
-    class: 'ktb-sequence-state-info',
-  },
   encapsulation: ViewEncapsulation.None,
 })
 export class KtbSequenceStateInfoComponent {
-
+  @HostBinding('class') cls = 'ktb-sequence-state-info';
   private _sequence?: Sequence;
   private _showStages = true;
 
-  @Output() readonly stageClicked = new EventEmitter<{ sequence: Sequence, stage?: string }>();
+  @Output() readonly stageClicked = new EventEmitter<{ sequence: Sequence; stage?: string }>();
 
   @Input()
   get sequence(): Sequence | undefined {
@@ -38,7 +35,16 @@ export class KtbSequenceStateInfoComponent {
   }
 
   getServiceLink(sequence: Sequence): (string | undefined)[] {
-    return ['/project', sequence.project, 'service', sequence.service, 'context', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
+    return [
+      '/project',
+      sequence.project,
+      'service',
+      sequence.service,
+      'context',
+      sequence.shkeptncontext,
+      'stage',
+      sequence.getLastStage(),
+    ];
   }
 
   getSequenceLink(sequence: Sequence): (string | undefined)[] {
@@ -46,6 +52,6 @@ export class KtbSequenceStateInfoComponent {
   }
 
   stageClick(sequence: Sequence, stage: string): void {
-    this.stageClicked.emit({sequence, stage});
+    this.stageClicked.emit({ sequence, stage });
   }
 }

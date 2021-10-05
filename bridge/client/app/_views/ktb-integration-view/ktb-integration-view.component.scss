@@ -1,9 +1,11 @@
 #integration-container {
-  ::ng-deep p, ul, ol {
+  ::ng-deep p,
+  ul,
+  ol {
     margin: 0;
   }
   h2 {
-    margin-top: .3em;
-    margin-bottom: .3em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
   }
 }

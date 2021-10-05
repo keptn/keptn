@@ -8,9 +8,7 @@ describe('KtbServiceSettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbServiceSettingsComponent);
     component = fixture.componentInstance;

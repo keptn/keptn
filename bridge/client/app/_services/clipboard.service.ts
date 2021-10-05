@@ -6,9 +6,7 @@ import { JsonSerializable } from '../_models/json-serializable';
   providedIn: 'root',
 })
 export class ClipboardService {
-
-  constructor(private readonly toast: DtToast) {
-  }
+  constructor(private readonly toast: DtToast) {}
 
   copy(serializable: JsonSerializable, label = 'value'): void {
     const value = this.stringify(serializable);
@@ -36,5 +34,4 @@ export class ClipboardService {
       return JSON.stringify(value, undefined, 2);
     }
   }
-
 }

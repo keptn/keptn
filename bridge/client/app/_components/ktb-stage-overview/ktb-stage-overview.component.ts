@@ -6,17 +6,17 @@ import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynat
 import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
-import { map, switchMap, filter, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
+import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 
 @Component({
   selector: 'ktb-stage-overview',
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
 export class KtbStageOverviewComponent implements OnDestroy {
   public project?: Project;
   public selectedStage?: Stage;
@@ -26,18 +26,22 @@ export class KtbStageOverviewComponent implements OnDestroy {
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private unsubscribe$: Subject<void> = new Subject<void>();
 
-  @Output() selectedStageChange: EventEmitter<{ stage: Stage, filterType?: string }> = new EventEmitter();
+  @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType?: string }> = new EventEmitter();
   @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private _changeDetectorRef: ChangeDetectorRef, private route: ActivatedRoute) {
-    const project$ = this.route.params
-      .pipe(
-        map(params => params.projectName),
-        filter(projectName => !!projectName),
-        switchMap(projectName => this.dataService.getProject(projectName)),
-        takeUntil(this.unsubscribe$)
-      );
-    project$.subscribe(project => {
+  constructor(
+    private dataService: DataService,
+    private apiService: ApiService,
+    private _changeDetectorRef: ChangeDetectorRef,
+    private route: ActivatedRoute
+  ) {
+    const project$ = this.route.params.pipe(
+      map((params) => params.projectName),
+      filter((projectName) => !!projectName),
+      switchMap((projectName) => this.dataService.getProject(projectName)),
+      takeUntil(this.unsubscribe$)
+    );
+    project$.subscribe((project) => {
       this.project = project;
       this.setFilter();
     });
@@ -48,42 +52,43 @@ export class KtbStageOverviewComponent implements OnDestroy {
       autocomplete: [
         {
           name: 'Services',
-          autocomplete: this.project?.getServices().map(service => {
-            return {
-              name: service.serviceName
-            };
-          }) ?? []
-        } as DtAutoComplete
-      ]
+          autocomplete:
+            this.project?.getServices().map((service) => ({
+              name: service.serviceName,
+            })) ?? [],
+        } as DtAutoComplete,
+      ],
     };
     this.globalFilter = this.apiService.environmentFilter;
     if (this.project) {
       const services = this.globalFilter[this.project.projectName]?.services || [];
-      // tslint:disable-next-line:no-non-null-assertion
-      this.filteredServices = services.filter(service => this.project!.getServices().some(pService => pService.serviceName === service));
+      this.filteredServices = services.filter((service) =>
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.project!.getServices().some((pService) => pService.serviceName === service)
+      );
     } else {
       this.filteredServices = [];
     }
     this.filterChange.emit(this.filteredServices);
     this.filter = [
-      ...this.filteredServices.map(service => {
-          return [
-            // @ts-ignore
-            this._dataSource.data.autocomplete[0],
-            {name: service}
-          ] as DtFilterArray;
-        }
-      )
+      ...this.filteredServices.map(
+        (service) =>
+          [
+            (this._dataSource.data as DtFilterFieldDefaultDataSourceAutocomplete).autocomplete[0],
+            { name: service },
+          ] as DtFilterArray
+      ),
     ];
 
     this._changeDetectorRef.markForCheck();
   }
 
-  // tslint:disable-next-line:no-any
-  public filterChanged(event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public filterChanged(event: DtFilterFieldChangeEvent<any>): void {
+    // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
     if (this.project) {
-      this.globalFilter[this.project.projectName] = {services: this.filteredServices};
+      this.globalFilter[this.project.projectName] = { services: this.filteredServices };
     }
     this.apiService.environmentFilter = this.globalFilter;
     this.filterChange.emit(this.filteredServices);
@@ -91,7 +96,9 @@ export class KtbStageOverviewComponent implements OnDestroy {
   }
 
   public filterServices(services: Service[]): Service[] {
-    return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
+    return this.filteredServices.length === 0
+      ? services
+      : services.filter((service) => this.filteredServices.includes(service.serviceName));
   }
 
   private getServicesOfFilter(event: DtFilterFieldChangeEvent<DtFilter>): string[] {
@@ -106,10 +113,10 @@ export class KtbStageOverviewComponent implements OnDestroy {
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, stage: Stage, filterType?: string) {
+  public selectStage($event: MouseEvent, stage: Stage, filterType?: string): void {
     this.selectedStage = stage;
     $event.stopPropagation();
-    this.selectedStageChange.emit({stage, filterType});
+    this.selectedStageChange.emit({ stage, filterType });
   }
 
   public ngOnDestroy(): void {

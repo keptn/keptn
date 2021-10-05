@@ -6,7 +6,7 @@ export class Project extends pj {
 
   public static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);
-    project.stages = project.stages.map(stage => Stage.fromJSON(stage));
+    project.stages = project.stages.map((stage) => Stage.fromJSON(stage));
     return project;
   }
 }

@@ -4,7 +4,7 @@ import { IRemediationAction } from '../../shared/models/remediation-action';
 
 export class Remediation extends Sequence {
   stages: (SequenceStage & {
-    actions: IRemediationAction[]
+    actions: IRemediationAction[];
   })[] = [];
 
   public static fromJSON(data: unknown): Remediation {

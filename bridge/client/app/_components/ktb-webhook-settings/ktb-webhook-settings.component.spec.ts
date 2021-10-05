@@ -17,9 +17,7 @@ describe('KtbWebhookSettingsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-      providers: [
-        {provide: DataService, useClass: DataServiceMock},
-      ],
+      providers: [{ provide: DataService, useClass: DataServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbWebhookSettingsComponent);
@@ -32,8 +30,7 @@ describe('KtbWebhookSettingsComponent', () => {
   });
 
   it('should be invalid URL', () => {
-    // @ts-ignore
-    const urlControl: AbstractControl = component.webhookConfigForm.get('url');
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
     const urls = ['', '://keptn.sh', 'keptnsh', 'keptn@sh.sh', 'keptn:sh'];
 
     for (const url of urls) {
@@ -43,9 +40,16 @@ describe('KtbWebhookSettingsComponent', () => {
   });
 
   it('should be valid URL', () => {
-    // @ts-ignore
-    const urlControl: AbstractControl = component.webhookConfigForm.get('url');
-    const urls = ['https://keptn.sh', 'http://keptn.sh', 'http://www.keptn.sh', 'keptn.sh', 'keptn.sh/#id', 'keptn.sh/sh/', 'www.keptn.sh'];
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
+    const urls = [
+      'https://keptn.sh',
+      'http://keptn.sh',
+      'http://www.keptn.sh',
+      'keptn.sh',
+      'keptn.sh/#id',
+      'keptn.sh/sh/',
+      'www.keptn.sh',
+    ];
 
     for (const url of urls) {
       urlControl.setValue(url);

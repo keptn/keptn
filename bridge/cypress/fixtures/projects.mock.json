@@ -289,6 +289,74 @@
               "creationDate": "1631871081704592529",
               "deployedImage": "docker.io/mongo:4.2.2",
               "lastEventTypes": {
+                "sh.keptn.event.configuration.change": {
+                  "eventId": "e054ab8a-da82-4e8f-a145-cb8dec8401f0",
+                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
+                  "time": "1595935687479009225"
+                },
+                "sh.keptn.events.deployment-finished": {
+                  "eventId": "515f5bbb-ac53-4695-93a9-24b98c9f36ed",
+                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
+                  "time": "1595935681680405471"
+                },
+                "sh.keptn.events.evaluation-done": {
+                  "eventId": "10e4e4f0-4d1b-40ff-a0a7-a7a74acf0141",
+                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
+                  "time": "1595935686302042701"
+                },
+                "sh.keptn.events.tests-finished": {
+                  "eventId": "52bcfc2a-1fdd-48be-b671-03a1bdad2a1a",
+                  "keptnContext": "47cf2be7-93a7-4704-8c7a-b24059c62f0a",
+                  "time": "1595935685558352031"
+                }
+              },
+              "openRemediations": null,
+              "serviceName": "carts-db"
+            }
+          ],
+          "stageName": "staging",
+          "parentStages": ["dev"]
+        },
+        {
+          "services": [
+            {
+              "deployedImage": "docker.io/keptnexamples/carts:0.12.1",
+              "lastEventTypes": {
+                "sh.keptn.event.action.finished": {
+                  "eventId": "c13df68f-e2a4-4d02-be34-b24ef939681f",
+                  "keptnContext": "31393236-3532-4337-b236-363530333030",
+                  "time": "1615557378298136721"
+                },
+                "sh.keptn.event.action.started": {
+                  "eventId": "13df4313-953e-4ce3-8599-65e59cad1472",
+                  "keptnContext": "31393236-3532-4337-b236-363530333030",
+                  "time": "1615557378228908496"
+                },
+                "sh.keptn.event.action.triggered": {
+                  "eventId": "dcecbc9f-ace1-4665-8a61-4728bef69141",
+                  "keptnContext": "31393236-3532-4337-b236-363530333030",
+                  "time": "1615557378212050252"
+                },
+                "sh.keptn.event.approval.finished": {
+                  "eventId": "925e7a66-9330-499a-924a-de59a01adebe",
+                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
+                  "time": "1615364119035877155"
+                },
+                "sh.keptn.event.approval.started": {
+                  "eventId": "46f6ded3-5aeb-466c-a073-13fc78388aa6",
+                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
+                  "time": "1615364118993681372"
+                },
+                "sh.keptn.event.approval.triggered": {
+                  "eventId": "c83c00f7-b250-4566-85c5-f1c2d4c59450",
+                  "keptnContext": "2a69a760-6289-4ffc-ac9d-48da0fc945b4",
+                  "time": "1615364118968699341"
+                },
+                "sh.keptn.event.configuration.change": {
+                  "eventId": "22c29d85-7a34-414a-8e7b-aefd93574020",
+                  "keptnContext": "cf20e84a-4d2f-4d9c-bb84-202ea023c035",
+                  "time": "1615191023114026967"
+                },
                 "sh.keptn.event.deployment.finished": {
                   "eventId": "a6492f90-f68a-408c-8816-085f09c1e033",
                   "keptnContext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",

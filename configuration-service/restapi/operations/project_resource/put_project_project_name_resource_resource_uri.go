@@ -29,7 +29,7 @@ func NewPutProjectProjectNameResourceResourceURI(ctx *middleware.Context, handle
 	return &PutProjectProjectNameResourceResourceURI{Context: ctx, Handler: handler}
 }
 
-/*PutProjectProjectNameResourceResourceURI swagger:route PUT /project/{projectName}/resource/{resourceURI} Project Resource putProjectProjectNameResourceResourceUri
+/* PutProjectProjectNameResourceResourceURI swagger:route PUT /project/{projectName}/resource/{resourceURI} Project Resource putProjectProjectNameResourceResourceUri
 
 Update the specified resource
 
@@ -42,17 +42,15 @@ type PutProjectProjectNameResourceResourceURI struct {
 func (o *PutProjectProjectNameResourceResourceURI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewPutProjectProjectNameResourceResourceURIParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

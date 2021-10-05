@@ -14,7 +14,6 @@ export type WebhookSecret = {
 export type WebhookHeader = { name: string, value: string };
 
 export class WebhookConfig implements wc {
-
   public type: string;
   public filter!: UniformSubscriptionFilter;
   public prevConfiguration?: PreviousWebhookConfig;

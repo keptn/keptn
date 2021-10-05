@@ -4,7 +4,7 @@ const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
 
 if (typeof PORT === 'number') {
-  (async () => {
+  (async (): Promise<void> => {
     try {
       const app = await initApp();
       app.set('port', PORT);
@@ -19,8 +19,7 @@ if (typeof PORT === 'number') {
       process.exit(1);
     }
   })();
-}
-else {
+} else {
   console.log(`Error while starting the application. Invalid port`);
   process.exit(1);
 }

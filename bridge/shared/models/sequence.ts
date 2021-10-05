@@ -1,18 +1,18 @@
 import { EvaluationResult } from '../interfaces/evaluation-result';
 
 export type SequenceEvent = {
-  id: string,
-  time: string,
-  type: string
+  id: string;
+  time: string;
+  type: string;
 };
 
 export type SequenceStage = {
-  image?: string,
-  latestEvaluation?: EvaluationResult,
-  latestEvent?: SequenceEvent,
-  latestFailedEvent?: SequenceEvent,
-  state: SequenceState,
-  name: string,
+  image?: string;
+  latestEvaluation?: EvaluationResult;
+  latestEvent?: SequenceEvent;
+  latestFailedEvent?: SequenceEvent;
+  state: SequenceState;
+  name: string;
 };
 
 export enum SequenceState {
@@ -21,13 +21,13 @@ export enum SequenceState {
   FINISHED = 'finished',
   PAUSED = 'paused',
   TIMEDOUT = 'timedOut',
-  UNKNOWN = ''
+  UNKNOWN = '',
 }
 
 export enum SequenceStateControl {
   PAUSE = 'pause',
   ABORT = 'abort',
-  RESUME = 'resume'
+  RESUME = 'resume',
 }
 
 export class Sequence {
