@@ -6,7 +6,7 @@ import { ApiService } from '../../_services/api.service';
 @Component({
   selector: 'ktb-payload-viewer',
   templateUrl: './ktb-payload-viewer.component.html',
-  styleUrls: ['./ktb-payload-viewer.component.scss'],
+  styleUrls: [],
 })
 export class KtbPayloadViewerComponent {
   @Input()
