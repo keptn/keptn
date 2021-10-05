@@ -1,4 +1,9 @@
 # lift config reference: https://help.sonatype.com/lift/configuration-reference
 
 # A deny list of analyis tools to not be applied to the repository.
-disableTools = ["Closure-Compiler"]
+# "Closure-Compiler", "ESLint", "JSHint" are focused on javascript stuff and often flagged generated code
+disableTools = ["Closure-Compiler", "ESLint", "JSHint"]
+
+# Any issue in the ignore list is never reported to the user
+# GoSec -> G306 - Expect WriteFile permissions to be 0600 or less
+ignoreRules = ["G306"]
