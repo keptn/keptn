@@ -494,7 +494,7 @@ export class DataService {
       throw Error('Could not parse webhook.yaml');
     }
   }
-  
+
   private replaceWithBridgeSecrets(webhookConfig: WebhookConfig): void {
     if (webhookConfig.secrets) {
       for (const webhookSecret of webhookConfig.secrets) {
@@ -705,7 +705,7 @@ export class DataService {
   private async removeWebhooks(
     eventType: string,
     projectName: string,
-    stages: stages: string[] | [undefined],
+    stages: string[] | [undefined],
     services: string[] | [undefined]
   ): Promise<void> {
     for (const stage of stages) {

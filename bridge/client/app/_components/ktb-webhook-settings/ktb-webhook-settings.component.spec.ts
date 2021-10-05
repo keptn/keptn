@@ -14,6 +14,43 @@ describe('KtbWebhookSettingsComponent', () => {
   let component: KtbWebhookSettingsComponent;
   let fixture: ComponentFixture<KtbWebhookSettingsComponent>;
 
+  const secretDataSource = [
+    {
+      name: 'SecretA',
+      keys: [
+        {
+          name: 'key1',
+          path: 'SecretA.key1',
+        },
+        {
+          name: 'key2',
+          path: 'SecretA.key2',
+        },
+        {
+          name: 'key3',
+          path: 'SecretA.key3',
+        },
+      ],
+    },
+    {
+      name: 'SecretB',
+      keys: [
+        {
+          name: 'key1',
+          path: 'SecretB.key1',
+        },
+        {
+          name: 'key2',
+          path: 'SecretB.key2',
+        },
+        {
+          name: 'key3',
+          path: 'SecretB.key3',
+        },
+      ],
+    },
+  ];
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
@@ -214,7 +251,9 @@ describe('KtbWebhookSettingsComponent', () => {
     component.setSecret(secretPath, 'url', 30);
 
     // then
-    expect(component.getFormControl('url').value).toEqual(`https://example.com?somestring{{.secret.${secretPath}}}toinsert`);
+    expect(component.getFormControl('url').value).toEqual(
+      `https://example.com?somestring{{.secret.${secretPath}}}toinsert`
+    );
   });
 
   it('should insert the processed string as value to the url form field', () => {
@@ -295,48 +334,17 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith({header: [{name: 'x-token', value: 'token-value'}], method: 'GET', payload: 'payload', proxy: 'https://proxy.com', type: '', url: 'https://example.com'});
+    expect(spy).toHaveBeenCalledWith({
+      header: [{ name: 'x-token', value: 'token-value' }],
+      method: 'GET',
+      payload: 'payload',
+      proxy: 'https://proxy.com',
+      type: '',
+      url: 'https://example.com',
+    });
   });
 
   function getAddHeaderButton(): HTMLElement {
     return fixture.nativeElement.querySelector('[uitestid="ktb-webhook-settings-add-header-button"]');
   }
 });
-
-
-const secretDataSource = [
-  {
-    name: 'SecretA',
-    keys: [
-      {
-        name: 'key1',
-        path: 'SecretA.key1',
-      },
-      {
-        name: 'key2',
-        path: 'SecretA.key2',
-      },
-      {
-        name: 'key3',
-        path: 'SecretA.key3',
-      },
-    ],
-  },
-  {
-    name: 'SecretB',
-    keys: [
-      {
-        name: 'key1',
-        path: 'SecretB.key1',
-      },
-      {
-        name: 'key2',
-        path: 'SecretB.key2',
-      },
-      {
-        name: 'key3',
-        path: 'SecretB.key3',
-      },
-    ],
-  },
-];

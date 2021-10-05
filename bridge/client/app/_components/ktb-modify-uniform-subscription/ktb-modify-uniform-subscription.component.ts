@@ -149,7 +149,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       tap((project) => this.updateDataSource(project)),
       take(1)
     );
-      
+
     const webhook$ = forkJoin({
       subscription: subscription$,
       projectName: projectName$,
@@ -175,12 +175,14 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       take(1)
     );
 
-    const webhookSecrets$ = integrationInfo$.pipe(switchMap(info => {
-      if (info.isWebhookService) {
-        return this.dataService.getSecretsForScope(SecretScope.WEBHOOK);
-      }
-      return of(undefined);
-    }));
+    const webhookSecrets$ = integrationInfo$.pipe(
+      switchMap((info) => {
+        if (info.isWebhookService) {
+          return this.dataService.getSecretsForScope(SecretScope.WEBHOOK);
+        }
+        return of(undefined);
+      })
+    );
 
     this.data$ = forkJoin({
       taskNames: taskNames$,

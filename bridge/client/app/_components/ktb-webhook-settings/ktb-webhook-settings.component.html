@@ -3,7 +3,13 @@
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field fxFlex="160px" uitestid="edit-webhook-field-method">
       <dt-label class="required">Request Method</dt-label>
-      <dt-select (selectionChange)="onWebhookFormChange()" formControlName="method" class="mr-2 item" placeholder="Choose method" aria-label="Choose method">
+      <dt-select
+        (selectionChange)="onWebhookFormChange()"
+        formControlName="method"
+        class="mr-2 item"
+        placeholder="Choose method"
+        aria-label="Choose method"
+      >
         <dt-option *ngFor="let method of webhookMethods" [value]="method" [textContent]="method"></dt-option>
       </dt-select>
       <dt-error *ngIf="getFormControl('method').errors?.required">Method must not be empty</dt-error>
@@ -11,14 +17,21 @@
 
     <dt-form-field fxFlex="calc(100% - 175px)" uitestid="edit-webhook-field-url">
       <dt-label class="required">URL</dt-label>
-      <input #urlInput formControlName="url" dtInput placeholder="URL"/>
+      <input #urlInput formControlName="url" dtInput placeholder="URL" />
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special"
         >URL contains a special character causing it to be invalid. Please remove the special character.</dt-error
       >
       <div dtSuffix>
-        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: undefined, controlName: 'url', selectionStart: urlInput.selectionStart}"></ng-container>
+        <ng-container
+          [ngTemplateOutlet]="secretButton"
+          [ngTemplateOutletContext]="{
+            $implicit: undefined,
+            controlName: 'url',
+            selectionStart: urlInput.selectionStart
+          }"
+        ></ng-container>
       </div>
     </dt-form-field>
   </div>
@@ -58,7 +71,15 @@
             />
             <dt-error>Must not be empty</dt-error>
             <div dtSuffix>
-              <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: '', controlName: 'header', index: i, selectionStart: headerInput.selectionStart}"></ng-container>
+              <ng-container
+                [ngTemplateOutlet]="secretButton"
+                [ngTemplateOutletContext]="{
+                  $implicit: '',
+                  controlName: 'header',
+                  index: i,
+                  selectionStart: headerInput.selectionStart
+                }"
+              ></ng-container>
             </div>
           </dt-form-field>
           <button
@@ -81,7 +102,14 @@
       <textarea #payloadInput class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
       <div dtSuffix>
-        <ng-container [ngTemplateOutlet]="secretButton" [ngTemplateOutletContext]="{$implicit: undefined, controlName: 'payload', selectionStart: payloadInput.selectionStart}"></ng-container>
+        <ng-container
+          [ngTemplateOutlet]="secretButton"
+          [ngTemplateOutletContext]="{
+            $implicit: undefined,
+            controlName: 'payload',
+            selectionStart: payloadInput.selectionStart
+          }"
+        ></ng-container>
       </div>
     </dt-form-field>
   </div>
@@ -98,7 +126,15 @@
 </form>
 
 <ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
-  <button dt-icon-button variant="nested" aria-label="Add secret" ktbTreeListSelect [data]="secretDataSource" [options]="secretOptions" (selected)="setSecret($event, controlName, selectionStart, index)">
+  <button
+    dt-icon-button
+    variant="nested"
+    aria-label="Add secret"
+    ktbTreeListSelect
+    [data]="secretDataSource"
+    [options]="secretOptions"
+    (selected)="setSecret($event, controlName, selectionStart, index)"
+  >
     <dt-icon name="resetpassword"></dt-icon>
   </button>
 </ng-template>

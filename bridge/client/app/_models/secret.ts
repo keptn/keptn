@@ -19,12 +19,12 @@ export class Secret implements scrt {
     this.name = name;
   }
 
-  setScope(scope: string): void {
+  setScope(scope: SecretScope): void {
     this.scope = scope;
   }
 
   addData(key: string, value: string): void {
-    this.data?.push({key, value});
+    this.data?.push({ key, value });
   }
 
   getData(index: number): SecretKeyValuePair {

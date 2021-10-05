@@ -8,7 +8,6 @@ import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/k
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
 
-
 @Component({
   selector: 'ktb-webhook-settings',
   templateUrl: './ktb-webhook-settings.component.html',
@@ -18,14 +17,22 @@ export class KtbWebhookSettingsComponent implements OnInit {
   private _webhook: WebhookConfig = new WebhookConfig();
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
-    url: new FormControl('', [Validators.required, FormUtils.isUrlValidatorWithVariable, FormUtils.urlSpecialCharsWithVariablesValidator]),
+    url: new FormControl('', [
+      Validators.required,
+      FormUtils.isUrlValidatorWithVariable,
+      FormUtils.urlSpecialCharsWithVariablesValidator,
+    ]),
     payload: new FormControl('', []),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator, FormUtils.urlSpecialCharsValidator]),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
-  public secretOptions: TreeListSelectOptions = {headerText: 'selectSecret', emptyText: 'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>'};
+  public secretOptions: TreeListSelectOptions = {
+    headerText: 'selectSecret',
+    emptyText:
+      'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
+  };
 
   @Input()
   set webhook(webhookConfig: WebhookConfig | undefined) {
@@ -86,7 +93,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public addHeader(name?: string, value?: string): void {
     this.header.push(
       new FormGroup({
-        name: new FormControl((name || '', [Validators.required]),
+        name: new FormControl(name || '', [Validators.required]),
         value: new FormControl(value || '', [Validators.required]),
       })
     );
@@ -120,10 +127,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {
-    const scrt: SelectTreeNode = {name: secret.name};
+    const scrt: SelectTreeNode = { name: secret.name };
     if (secret.keys) {
       scrt.keys = secret.keys.map((key: string) => {
-        return {name: key, path: `${secret.name}.${key}`};
+        return { name: key, path: `${secret.name}.${key}` };
       });
       scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
     }

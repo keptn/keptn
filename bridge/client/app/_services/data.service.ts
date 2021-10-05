@@ -198,7 +198,7 @@ export class DataService {
   public addSecret(secret: Secret): Observable<Record<string, unknown>> {
     return this.apiService.addSecret(
       Object.assign({}, secret, {
-        data: secret.data.reduce((result, item) => Object.assign(result, { [item.key]: item.value }), {}),
+        data: secret.data?.reduce((result, item) => Object.assign(result, { [item.key]: item.value }), {}),
       })
     );
   }

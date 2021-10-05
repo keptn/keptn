@@ -5,7 +5,7 @@ export interface SecretKeyValuePair {
 
 export enum SecretScope {
   DEFAULT = 'keptn-default',
-  WEBHOOK = 'keptn-webhook-service'
+  WEBHOOK = 'keptn-webhook-service',
 }
 
 export interface Secret {

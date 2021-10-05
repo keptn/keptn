@@ -1,4 +1,14 @@
-import { Component, ComponentRef, Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  ComponentRef,
+  Directive,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { Overlay, OverlayPositionBuilder, OverlayRef } from '@angular/cdk/overlay';
@@ -32,11 +42,12 @@ export class KtbTreeListSelectDirective implements OnInit {
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
 
   @Input() data: SelectTreeNode[] = [];
-  @Input() options: TreeListSelectOptions = {headerText: '', emptyText: ''};
+  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '' };
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();
 
   @HostListener('click')
   show(): void {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const tooltipPortal: ComponentPortal<KtbTreeListSelectComponent> = new ComponentPortal(KtbTreeListSelectComponent);
     // Disable origin to prevent 'Host has already a portal attached' error
     this.elementRef.nativeElement.disabled = true;
@@ -49,34 +60,44 @@ export class KtbTreeListSelectDirective implements OnInit {
         this.close();
       });
 
-      this.contentRef.instance.selected.subscribe(selected => {
+      this.contentRef.instance.selected.subscribe((selected) => {
         this.selected.emit(selected);
         this.close();
       });
     }
   }
 
-  constructor(private overlay: Overlay, private overlayPositionBuilder: OverlayPositionBuilder, private elementRef: ElementRef, private router: Router) {
+  constructor(
+    private overlay: Overlay,
+    private overlayPositionBuilder: OverlayPositionBuilder,
+    private elementRef: ElementRef,
+    private router: Router
+  ) {
     // Close when navigation happens - to keep the overlay on the UI
-    this.router.events.pipe(filter(event => event instanceof NavigationStart)).subscribe(() => {
+    this.router.events.pipe(filter((event) => event instanceof NavigationStart)).subscribe(() => {
       this.close();
     });
   }
 
   public ngOnInit(): void {
-    const positionStrategy = this.overlayPositionBuilder
-      .flexibleConnectedTo(this.elementRef)
-      .withPositions([{
+    const positionStrategy = this.overlayPositionBuilder.flexibleConnectedTo(this.elementRef).withPositions([
+      {
         originX: 'start',
         originY: 'bottom',
         overlayX: 'start',
         overlayY: 'top',
         offsetY: 10,
         offsetX: -20,
-      }]);
+      },
+    ]);
 
-
-    this.overlayRef = this.overlay.create({positionStrategy, width: '400px', height: '200px', hasBackdrop: true, backdropClass: 'cdk-overlay-transparent-backdrop'});
+    this.overlayRef = this.overlay.create({
+      positionStrategy,
+      width: '400px',
+      height: '200px',
+      hasBackdrop: true,
+      backdropClass: 'cdk-overlay-transparent-backdrop',
+    });
     this.overlayRef.backdropClick().subscribe(() => {
       this.close();
     });
@@ -88,23 +109,33 @@ export class KtbTreeListSelectDirective implements OnInit {
   }
 }
 
-
 @Component({
   selector: 'ktb-tree-list-select',
   templateUrl: './ktb-tree-list-select.component.html',
   styleUrls: ['./ktb-tree-list-select.component.scss'],
 })
 export class KtbTreeListSelectComponent {
-  private treeFlattener: DtTreeFlattener<SelectTreeNode, SelectTreeFlatNode> = new DtTreeFlattener(this.treeTransformer, this.getNodeLevel, this.isNodeExpandable, this.getNodeChildren);
-  public treeControl: FlatTreeControl<SelectTreeFlatNode> = new DtTreeControl<SelectTreeFlatNode>(this.getNodeLevel, this.isNodeExpandable);
-  public dataSource: DtTreeDataSource<SelectTreeNode, SelectTreeFlatNode> = new DtTreeDataSource(this.treeControl, this.treeFlattener);
+  private treeFlattener: DtTreeFlattener<SelectTreeNode, SelectTreeFlatNode> = new DtTreeFlattener(
+    this.treeTransformer,
+    this.getNodeLevel,
+    this.isNodeExpandable,
+    this.getNodeChildren
+  );
+  public treeControl: FlatTreeControl<SelectTreeFlatNode> = new DtTreeControl<SelectTreeFlatNode>(
+    this.getNodeLevel,
+    this.isNodeExpandable
+  );
+  public dataSource: DtTreeDataSource<SelectTreeNode, SelectTreeFlatNode> = new DtTreeDataSource(
+    this.treeControl,
+    this.treeFlattener
+  );
 
   @Input()
   set data(data: SelectTreeNode[]) {
     this.dataSource.data = data;
   }
 
-  @Input() options: TreeListSelectOptions = {headerText: '', emptyText: ''};
+  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '' };
 
   @Output() closeDialog: EventEmitter<void> = new EventEmitter<void>();
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();
