@@ -1,6 +1,6 @@
 {
-  "apiUrl": "http://35.188.183.151.nip.io/api",
-  "apiToken": "NjkTojwd6oHYofarwX7B1Mo3JIDdV63g43ii4ZHgeqckx",
+  "apiUrl": "http://example.com/api",
+  "apiToken": "123456789qwertzuiopasdfghjkl",
   "cliDownloadLink": "https://github.com/keptn/keptn/releases",
   "enableVersionCheckFeature": true,
   "showApiToken": true,
