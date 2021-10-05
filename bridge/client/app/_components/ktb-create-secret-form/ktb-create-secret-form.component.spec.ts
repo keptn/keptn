@@ -93,7 +93,7 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[1];
-    secret.data.push({ key: 'testKey', value: 'testValue' });
+    secret.data?.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);

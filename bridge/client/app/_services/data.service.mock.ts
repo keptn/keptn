@@ -22,8 +22,8 @@ import { WebhookConfigMock } from './_mockData/webhook-config.mock';
 import { FileTreeMock } from '../_models/fileTree.mock';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
-import { SecretScope } from '../../../shared/interfaces/secret';
 import { Secret } from '../_models/secret';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',

@@ -2,9 +2,15 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jest"],
-    "strictNullChecks": false
+    "types": [
+      "jest"
+    ]
   },
-  "files": ["client/polyfills.ts"],
-  "include": ["client/**/*.spec.ts", "client/**/*.d.ts"]
+  "files": [
+    "client/polyfills.ts"
+  ],
+  "include": [
+    "client/**/*.spec.ts",
+    "client/**/*.d.ts"
+  ]
 }
