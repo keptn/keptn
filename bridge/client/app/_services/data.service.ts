@@ -49,8 +49,7 @@ export class DataService {
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
-  protected _evaluationResults = new Subject<
-  >();
+  protected _evaluationResults = new Subject<EvaluationHistory>();
 
   constructor(private apiService: ApiService) {}
 
