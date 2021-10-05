@@ -89,6 +89,69 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 			wantErr:       true,
 		},
 		{
+			name: "try to inject command - should return error (3)",
+			args: args{
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://attack.domain || pwd`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to inject command - should return error (4)",
+			args: args{
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://attack.domain & $(pwd)`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to inject command - should return error (5)",
+			args: args{
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://orf.at && $(pwd)`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to inject command - should return error (6)",
+			args: args{
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://attack.domain ; $(pwd)`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to inject command - should return error (7)",
+			args: args{
+				curlCmd: `curl -X POST -H 'Content-type: application/json';$(pwd) #' --data '{\"text\":\"Hello, World!\"}' localhost:8000`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to inject command - should return error (8)",
+			args: args{
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!}'; $(pwd) #\"}' https://attack.domain`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to inject command - should return error (8)",
+			args: args{
+				curlCmd: "curl -X POST -H 'Content-type:' `whoami` #'--data '{\"text\":\"Hello, World!\"}' localhost:8000",
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
 			name: "try to download to file - should return error",
 			args: args{
 				curlCmd: `curl -X POST -H 'token: abcd' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo -o somefile`,
