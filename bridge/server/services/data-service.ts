@@ -499,11 +499,13 @@ export class DataService {
     if (webhookConfig.secrets) {
       for (const webhookSecret of webhookConfig.secrets) {
         const bridgeSecret = '.secret.' + webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
-        webhookConfig.url = webhookConfig.url.replace('.env.' + webhookSecret.name, bridgeSecret);
-        webhookConfig.payload = webhookConfig.payload.replace('.env.' + webhookSecret.name, bridgeSecret);
+
+        const regex = new RegExp('.env.' + webhookSecret.name, 'g');
+        webhookConfig.url = webhookConfig.url.replace(regex, bridgeSecret);
+        webhookConfig.payload = webhookConfig.payload.replace(regex, bridgeSecret);
 
         for (const header of webhookConfig.header) {
-          header.value = header.value.replace('.env.' + webhookSecret.name, bridgeSecret);
+          header.value = header.value.replace(regex, bridgeSecret);
         }
       }
     }
