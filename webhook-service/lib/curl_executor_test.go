@@ -98,6 +98,15 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 			wantErr:       true,
 		},
 		{
+			name: "try to upload file - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo -F 'data=@path/to/local/file'`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
 			name: "unclosed quote",
 			args: args{
 				curlCmd: `curl -X POST -H 'token: abcd' --data '{\"text\":\"Hello, World!\"} https://my.hook.com/foo -o somefile`,
