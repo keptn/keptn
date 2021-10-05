@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
 )
 
 // NewMongodbDatastoreAPI creates a new MongodbDatastore instance
@@ -49,6 +50,9 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 		}),
 		EventGetEventsByTypeHandler: event.GetEventsByTypeHandlerFunc(func(params event.GetEventsByTypeParams) middleware.Responder {
 			return middleware.NotImplemented("operation event.GetEventsByType has not yet been implemented")
+		}),
+		HealthGetHealthHandler: health.GetHealthHandlerFunc(func(params health.GetHealthParams) middleware.Responder {
+			return middleware.NotImplemented("operation health.GetHealth has not yet been implemented")
 		}),
 		EventSaveEventHandler: event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
 			return middleware.NotImplemented("operation event.SaveEvent has not yet been implemented")
@@ -92,6 +96,8 @@ type MongodbDatastoreAPI struct {
 	EventGetEventsHandler event.GetEventsHandler
 	// EventGetEventsByTypeHandler sets the operation handler for the get events by type operation
 	EventGetEventsByTypeHandler event.GetEventsByTypeHandler
+	// HealthGetHealthHandler sets the operation handler for the get health operation
+	HealthGetHealthHandler health.GetHealthHandler
 	// EventSaveEventHandler sets the operation handler for the save event operation
 	EventSaveEventHandler event.SaveEventHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -175,6 +181,9 @@ func (o *MongodbDatastoreAPI) Validate() error {
 	}
 	if o.EventGetEventsByTypeHandler == nil {
 		unregistered = append(unregistered, "event.GetEventsByTypeHandler")
+	}
+	if o.HealthGetHealthHandler == nil {
+		unregistered = append(unregistered, "health.GetHealthHandler")
 	}
 	if o.EventSaveEventHandler == nil {
 		unregistered = append(unregistered, "event.SaveEventHandler")
@@ -277,6 +286,10 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/event/type/{eventType}"] = event.NewGetEventsByType(o.context, o.EventGetEventsByTypeHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/health"] = health.NewGetHealth(o.context, o.HealthGetHealthHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
