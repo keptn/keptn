@@ -23,7 +23,7 @@ import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-regi
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
-import { SecretScope } from '../../../shared/interfaces/secret';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',

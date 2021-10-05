@@ -22,8 +22,8 @@ import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
 import { Secret } from '../models/secret';
-import { SecretScope } from '../../shared/interfaces/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
+import { SecretScope } from '../../shared/interfaces/secret-scope';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };

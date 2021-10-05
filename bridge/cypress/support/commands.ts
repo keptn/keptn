@@ -3,15 +3,16 @@
 // with Intellisense and code completion in your
 // IDE or Text Editor.
 // ***********************************************
-// tslint:disable-next-line:no-namespace
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Cypress {
-  // tslint:disable-next-line:no-any
-  interface Chainable<Subject = any> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface Chainable<Subject> {
     byTestId<E extends Node = HTMLElement>(id: string): Cypress.Chainable<JQuery<E>>;
   }
 }
 
 // Actual function
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const byTestId = (testId: string) => cy.get(`[uitestid="${testId}"]`);
 
 // Hooking into Cypress

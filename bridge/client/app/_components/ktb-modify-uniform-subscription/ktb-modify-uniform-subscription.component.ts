@@ -16,8 +16,8 @@ import { PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-con
 import { NotificationsService } from '../../_services/notifications.service';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { NotificationType } from '../../_models/notification';
-import { SecretScope } from '../../../../shared/interfaces/secret';
 import { Secret } from '../../_models/secret';
+import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',

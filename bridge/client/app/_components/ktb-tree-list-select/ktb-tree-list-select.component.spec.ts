@@ -21,7 +21,12 @@ describe('KtbTreeListSelectComponent', () => {
   let component: KtbTreeListSelectComponent;
   let fixture: ComponentFixture<KtbTreeListSelectComponent>;
   const testSecretPath = 'SecretA.key1';
-  const testSecret = `{{.${testSecretPath}}}`;
+  const row = {
+    name: 'key1',
+    level: 1,
+    path: testSecretPath,
+    expandable: false,
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -54,7 +59,7 @@ describe('KtbTreeListSelectComponent', () => {
   it('should emit the selected secret', () => {
     // given, when
     const spy = jest.spyOn(component.selected, 'emit');
-    component.handleClick({ name: 'key1', path: testSecretPath, expandable: false, level: 1 });
+    component.handleClick(row);
 
     // then
     expect(spy).toHaveBeenCalledWith(testSecretPath);
@@ -68,10 +73,10 @@ describe('KtbTreeListSelectComponent', () => {
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    directive.contentRef?.instance.selectValue(testSecretPath);
+    directive.contentRef?.instance.handleClick(row);
 
     // then
-    expect(spy).toHaveBeenCalledWith(testSecret);
+    expect(spy).toHaveBeenCalledWith(testSecretPath);
   });
 
   it('should close the dialog when a secret is selected', () => {
@@ -82,7 +87,7 @@ describe('KtbTreeListSelectComponent', () => {
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    directive.contentRef?.instance.selectValue(testSecretPath);
+    directive.contentRef?.instance.handleClick(row);
 
     // then
     expect(spy).toHaveBeenCalled();

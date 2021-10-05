@@ -62,7 +62,7 @@ describe('Integrations', () => {
     addSecret();
     cy.byTestId('edit-webhook-field-url')
       .find('input')
-      .should('have.value', 'https://example.com?secret={{.SecretA.key1}}');
+      .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}');
 
     // Payload: insert text and add secret
     cy.byTestId('edit-webhook-field-payload').find('textarea').focus().type("{id: '123456789', secret: ");
@@ -71,7 +71,7 @@ describe('Integrations', () => {
     cy.byTestId('edit-webhook-field-payload').find('textarea').focus().type('}');
     cy.byTestId('edit-webhook-field-payload')
       .find('textarea')
-      .should('have.value', "{id: '123456789', secret: {{.SecretA.key1}}}");
+      .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}}");
 
     cy.byTestId('edit-webhook-field-proxy').find('input').focus().type('https://proxy.com');
 
@@ -84,7 +84,9 @@ describe('Integrations', () => {
     cy.byTestId('edit-webhook-field-headerValue').find('input').focus().type('Bearer: ');
     cy.byTestId('edit-webhook-field-headerValue').find('.dt-form-field-suffix button').click();
     addSecret();
-    cy.byTestId('edit-webhook-field-headerValue').find('input').should('have.value', 'Bearer: {{.SecretA.key1}}');
+    cy.byTestId('edit-webhook-field-headerValue')
+      .find('input')
+      .should('have.value', 'Bearer: {{.secret.SecretA.key1}}');
 
     cy.byTestId('updateSubscriptionButton').click();
     // It should redirect after successfully sending the subscription
