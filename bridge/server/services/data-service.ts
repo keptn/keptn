@@ -344,12 +344,12 @@ export class DataService {
   private async replaceWithBridgeSecrets(webhookConfig: WebhookConfig): Promise<void> {
     if (webhookConfig.secrets) {
       for (const webhookSecret of webhookConfig.secrets) {
-        const bridgeSecret = webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
+        const bridgeSecret = '.secret.' + webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
         webhookConfig.url = webhookConfig.url.replace('env.' + webhookSecret.name, bridgeSecret);
         webhookConfig.payload = webhookConfig.payload.replace('env.' + webhookSecret.name, bridgeSecret);
 
         for (const header of webhookConfig.header) {
-          header.value = header.value.replace('env.' + webhookSecret.name, bridgeSecret);
+          header.value = header.value.replace('.env.' + webhookSecret.name, bridgeSecret);
         }
       }
     }
@@ -421,7 +421,7 @@ export class DataService {
         existingSecrets.push(secret);
       }
 
-      replacedString = replacedString.replace(found.path, 'env.' + found.parsedPath);
+      replacedString = replacedString.replace('secret.' + found.path, 'env.' + found.parsedPath);
     }
 
     return replacedString;

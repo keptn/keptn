@@ -107,7 +107,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       control = this.getFormControl(controlName);
     }
 
-    const secretVar = `{{.${secret}}}`;
+    const secretVar = `{{.secret.${secret}}}`;
     const firstPart = control.value.slice(0, selectionStart);
     const secondPart = control.value.slice(selectionStart, control.value.length);
     const finalString = firstPart + secretVar + secondPart;
