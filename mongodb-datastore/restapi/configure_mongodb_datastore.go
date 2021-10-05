@@ -4,6 +4,7 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -14,7 +15,6 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
@@ -64,6 +64,9 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 		return event.NewGetEventsByTypeOK().WithPayload(events)
 	})
 
+	api.HealthGetHealthHandler = health.GetHealthHandlerFunc(func(params health.GetHealthParams) middleware.Responder {
+		return health.NewGetHealthOK()
+	})
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
@@ -107,7 +110,6 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Serving ./swagger-ui/
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
