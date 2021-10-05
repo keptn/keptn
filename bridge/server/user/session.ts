@@ -17,7 +17,7 @@ const SESSION_TIME = getOrDefaultSessionTimeout(60); // session timeout, default
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
-const SESSION_SECRET = random({length: 200});
+const SESSION_SECRET = random({ length: 200 });
 
 /**
  * Uses a session cookie backed by in-memory cookies store.
@@ -35,7 +35,7 @@ const sessionConfig = {
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  genid: (): string => random({length: COOKIE_LENGTH, type: 'url-safe'}),
+  genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
   store: new memoryStore({
     checkPeriod: CHECK_PERIOD,
     ttl: SESSION_TIME,
