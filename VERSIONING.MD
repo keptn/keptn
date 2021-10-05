@@ -9,7 +9,7 @@ version number. Patch releases with urgent cherry-picked bugfixes will be made b
 `PATCH` version.
 
 A backwards-incompatible change affects the public API. The public API is any public reachable endpoint
-that is not marked as `internal`. We refer to a backward-incompatible API change, a change that could
+that is not marked as `internal`. We refer to a backwards-incompatible API change, a change that could
 potentially cause failures in the applications that consume that API, e.g., removing an endpoint,
 changing the response code, requiring additional parameters, or changing the entity models.
 
