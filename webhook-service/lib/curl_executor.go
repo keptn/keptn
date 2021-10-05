@@ -85,8 +85,8 @@ func WithUnAllowedURLs(urls []string) CmdCurlExecutorOption {
 
 func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
 	executor := &CmdCurlExecutor{
-		unAllowedCharacters: []string{"$", "|", ";", ">", "$(", " &", "&&", "`"},
-		unAllowedOptions:    []string{"-o", "--output", "-F", "--form"},
+		unAllowedCharacters: []string{"$", "|", ";", ">", "$(", " &", "&&", "`", "/var/run"},
+		unAllowedOptions:    []string{"-o", "--output", "-F", "--form", "-T", "--upload-file", "-K", "--config"},
 		commandExecutor:     cmdExecutor,
 	}
 	for _, o := range opts {
