@@ -22,7 +22,7 @@ WORKDIR /usr/src/app/server
 
 # copy package.json only to install dependencies first
 COPY ./server/package.json ./server/package-lock.json ./
-RUN yarn install
+RUN yarn install --frozen-lockfile
 COPY ./server ./
 COPY ./shared /usr/src/app/shared
 RUN yarn build && \
