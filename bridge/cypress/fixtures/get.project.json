@@ -1,0 +1,24 @@
+{
+  "nextPageKey": "0",
+  "projects": [
+    {
+      "creationDate": "1631101710806442946",
+      "projectName": "dynatrace",
+      "shipyard": "apiVersion: \"spec.keptn.sh/0.2.0\"\nkind: \"Shipyard\"\nmetadata:\n name: \"shipyard-quality-gates\"\nspec:\n stages:\n - name: \"quality-gate-planes\"",
+      "shipyardVersion": "spec.keptn.sh/0.2.0",
+      "stages": [
+        {
+          "services": [
+            {
+              "creationDate": "1631101971684077234",
+              "openRemediations": null,
+              "serviceName": "meeting-service"
+            }
+          ],
+          "stageName": "quality-gate-planes"
+        }
+      ]
+    }
+  ],
+  "totalCount": 1
+}
