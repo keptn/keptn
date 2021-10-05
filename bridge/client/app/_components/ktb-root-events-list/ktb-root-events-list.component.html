@@ -1,31 +1,42 @@
 <div fxLayout="column" fxLayoutGap="5px">
-  <div *ngFor="let sequence of _events;trackBy: identifyEvent">
-    <ktb-selectable-tile (click)="selectEvent(sequence)"
-                         [error]="sequence.isFinished() && sequence.isFaulty()"
-                         [success]="sequence.isFinished() && !sequence.isFaulty()"
-                         [highlight]="sequence.hasPendingApproval()" [selected]="_selectedEvent == sequence"
-                         [attr.uitestid]="'keptn-root-events-list-' + sequence.shkeptncontext"
-                         *ngIf="sequence">
+  <div *ngFor="let sequence of _events; trackBy: identifyEvent">
+    <ktb-selectable-tile
+      (click)="selectEvent(sequence)"
+      [error]="sequence.isFinished() && sequence.isFaulty()"
+      [success]="sequence.isFinished() && !sequence.isFaulty()"
+      [highlight]="sequence.hasPendingApproval()"
+      [selected]="_selectedEvent == sequence"
+      [attr.uitestid]="'keptn-root-events-list-' + sequence.shkeptncontext"
+      *ngIf="sequence"
+    >
       <ktb-selectable-tile-header>
         <div class="container">
           <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="5px">
-            <ktb-sequence-state-info fxFlex fxFlexFill [sequence]="sequence" (stageClicked)="selectEvent($event.sequence, $event.stage)"></ktb-sequence-state-info>
+            <ktb-sequence-state-info
+              fxFlex
+              fxFlexFill
+              [sequence]="sequence"
+              (stageClicked)="selectEvent($event.sequence, $event.stage)"
+            ></ktb-sequence-state-info>
             <ktb-sequence-controls [sequence]="sequence" [smallButtons]="true"></ktb-sequence-controls>
           </div>
         </div>
       </ktb-selectable-tile-header>
-      <p class="m-0 small" *ngIf="sequence.isWaiting(), else notWaiting">
+      <p class="m-0 small" *ngIf="sequence.isWaiting(); else notWaiting">
         Sequence might be waiting for previous sequences to be finished.
       </p>
       <ng-template #notWaiting>
         <p class="m-0 small" uitestid="keptn-root-events-list-eventTiming">
           Started
-          <span [textContent]="sequence.time | toDate | amCalendar:dateUtil.getCalendarFormats()"></span>
+          <span [textContent]="sequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"></span>
           and
-          <span *ngIf="sequence.isFinished()">took <span
-            [textContent]="dateUtil.getDurationFormatted(sequence.time, sequence.getLatestEvent()?.time)"></span></span>
-          <span *ngIf="!sequence.isFinished()">running for <span
-            [textContent]="dateUtil.getDurationFormatted(sequence.time)"></span></span>
+          <span *ngIf="sequence.isFinished()"
+            >took
+            <span [textContent]="dateUtil.getDurationFormatted(sequence.time, sequence.getLatestEvent()?.time)"></span
+          ></span>
+          <span *ngIf="!sequence.isFinished()"
+            >running for <span [textContent]="dateUtil.getDurationFormatted(sequence.time)"></span
+          ></span>
         </p>
         <p class="m-0 small">
           <span *ngIf="!sequence.isFinished()">Recent task: </span>
@@ -38,6 +49,8 @@
   </div>
   <div fxLayout="row" fxLayoutAlign="center center">
     <dt-loading-distractor *ngIf="loading">Loading …</dt-loading-distractor>
-    <button dt-show-more *ngIf="!loading && !project?.allSequencesLoaded" (click)="loadOldSequences()">Show older sequences</button>
+    <button dt-show-more *ngIf="!loading && !project?.allSequencesLoaded" (click)="loadOldSequences()">
+      Show older sequences
+    </button>
   </div>
 </div>

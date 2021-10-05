@@ -5,12 +5,12 @@
 .truncate {
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 .transform-icon {
   transition: transform 150ms ease;
 }
 
 .open {
-  transform: rotate( 90deg );
+  transform: rotate(90deg);
 }

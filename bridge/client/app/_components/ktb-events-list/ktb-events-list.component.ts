@@ -1,21 +1,25 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewEncapsulation} from '@angular/core';
-import {Trace} from '../../_models/trace';
-import {Router} from '@angular/router';
-import {Location} from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostBinding,
+  Input,
+  ViewEncapsulation,
+} from '@angular/core';
+import { Trace } from '../../_models/trace';
+import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'ktb-events-list',
   templateUrl: './ktb-events-list.component.html',
   styleUrls: ['./ktb-events-list.component.scss'],
-  host: {
-    class: 'ktb-events-list'
-  },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbEventsListComponent {
-
+  @HostBinding('class') cls = 'ktb-events-list';
   public _events: Trace[] = [];
   public _focusedEventId?: string;
   private currentScrollElement?: HTMLDivElement;
@@ -42,13 +46,13 @@ export class KtbEventsListComponent {
     }
   }
 
-  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) {}
 
-  identifyEvent(index: number, item: Trace) {
+  identifyEvent(index: number, item: Trace): Date | undefined | null {
     return item ? item.time : null;
   }
 
-  scrollIntoView(element: HTMLDivElement) {
+  scrollIntoView(element: HTMLDivElement): boolean {
     if (element !== this.currentScrollElement) {
       this.currentScrollElement = element;
       setTimeout(() => {
@@ -58,14 +62,20 @@ export class KtbEventsListComponent {
     return true;
   }
 
-  focusEvent(event: Trace) {
+  focusEvent(event: Trace): void {
     if (event.project && event.service) {
-      const routeUrl = this.router.createUrlTree(['/project', event.project, event.service, event.shkeptncontext, event.id]);
+      const routeUrl = this.router.createUrlTree([
+        '/project',
+        event.project,
+        event.service,
+        event.shkeptncontext,
+        event.id,
+      ]);
       this.location.go(routeUrl.toString());
     }
   }
 
-  isInvalidated(event: Trace) {
-    return !!this.events.find(e => e.isEvaluationInvalidation() && e.triggeredid === event.id);
+  isInvalidated(event: Trace): boolean {
+    return !!this.events.find((e) => e.isEvaluationInvalidation() && e.triggeredid === event.id);
   }
 }

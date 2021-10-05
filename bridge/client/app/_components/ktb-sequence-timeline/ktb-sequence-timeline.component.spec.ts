@@ -10,10 +10,7 @@ describe('KtbSequenceTimelineComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-      ],
+      imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceTimelineComponent);

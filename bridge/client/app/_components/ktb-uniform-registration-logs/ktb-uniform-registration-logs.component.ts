@@ -4,7 +4,7 @@ import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-re
 @Component({
   selector: 'ktb-uniform-registration-logs',
   templateUrl: './ktb-uniform-registration-logs.component.html',
-  styleUrls: ['./ktb-uniform-registration-logs.component.scss']
+  styleUrls: ['./ktb-uniform-registration-logs.component.scss'],
 })
 export class KtbUniformRegistrationLogsComponent {
   @Input() logs: UniformRegistrationLog[] = [];

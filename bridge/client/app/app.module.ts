@@ -43,14 +43,23 @@ import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
 import { MomentModule } from 'ngx-moment';
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
-import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
-import { KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
+import {
+  KtbExpandableTileComponent,
+  KtbExpandableTileHeaderDirective,
+} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
+import {
+  KtbHorizontalSeparatorComponent,
+  KtbHorizontalSeparatorTitleDirective,
+} from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
-import { KtbSelectableTileComponent, KtbSelectableTileHeaderDirective } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
+import {
+  KtbSelectableTileComponent,
+  KtbSelectableTileHeaderDirective,
+} from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
 import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
@@ -59,8 +68,11 @@ import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
 import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/ktb-evaluation-info.component';
-import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
-import { KtbTaskItemComponent, KtbTaskItemDetail } from './_components/ktb-task-item/ktb-task-item.component';
+import {
+  KtbEventItemComponent,
+  KtbEventItemDetailDirective,
+} from './_components/ktb-event-item/ktb-event-item.component';
+import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
@@ -129,7 +141,7 @@ import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService): () => Promise<unknown> {
-  return () => appLoadService.init();
+  return (): Promise<string | null> => appLoadService.init();
 }
 
 @NgModule({
@@ -145,20 +157,20 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
     KtbExpandableTileComponent,
-    KtbExpandableTileHeader,
+    KtbExpandableTileHeaderDirective,
     KtbSelectableTileComponent,
     KtbSelectableTileHeaderDirective,
     KtbHorizontalSeparatorComponent,
-    KtbHorizontalSeparatorTitle,
+    KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
     KtbEventsListComponent,
     KtbEventItemComponent,
-    KtbEventItemDetail,
+    KtbEventItemDetailDirective,
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
-    KtbTaskItemDetail,
+    KtbTaskItemDetailDirective,
     KtbEvaluationDetailsComponent,
     KtbEvaluationInfoComponent,
     KtbStageBadgeComponent,
@@ -263,10 +275,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtAlertModule,
     DtTreeTableModule,
   ],
-  entryComponents: [
-    KtbDeletionDialogComponent,
-    KtbConfirmationDialogComponent,
-  ],
+  entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [
     EventService,
     AppInitService,
@@ -306,5 +315,4 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

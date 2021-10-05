@@ -1,18 +1,17 @@
-import {ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild} from '@angular/core';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import { ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable, of } from 'rxjs';
-import {Project} from '../../_models/project';
-import {Trace} from '../../_models/trace';
-import {ClipboardService} from '../../_services/clipboard.service';
-import {DataService} from '../../_services/data.service';
-import {DateUtil} from '../../_utils/date.utils';
+import { Project } from '../../_models/project';
+import { Trace } from '../../_models/trace';
+import { ClipboardService } from '../../_services/clipboard.service';
+import { DataService } from '../../_services/data.service';
+import { DateUtil } from '../../_utils/date.utils';
 
 @Directive({
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
   exportAs: 'ktbEventItemDetail',
 })
-export class KtbEventItemDetail {
-}
+export class KtbEventItemDetailDirective {}
 
 @Component({
   selector: 'ktb-event-item',
@@ -20,15 +19,14 @@ export class KtbEventItemDetail {
   styleUrls: ['./ktb-event-item.component.scss'],
 })
 export class KtbEventItemComponent {
-
   public project$: Observable<Project | undefined> = of(undefined);
   public _event?: Trace;
 
   @ViewChild('eventPayloadDialog')
-  // tslint:disable-next-line:no-any
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   public eventPayloadDialog?: TemplateRef<any>;
-  // tslint:disable-next-line:no-any
   public eventPayloadDialogRef?: MatDialogRef<any, any>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   @Input() public showChartLink = false;
   @Input() public showTime = true;
@@ -49,20 +47,21 @@ export class KtbEventItemComponent {
     }
   }
 
-  constructor(private changeDetectorRef: ChangeDetectorRef,
-              private dataService: DataService,
-              private dialog: MatDialog,
-              private clipboard: ClipboardService,
-              public dateUtil: DateUtil) {
-  }
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef,
+    private dataService: DataService,
+    private dialog: MatDialog,
+    private clipboard: ClipboardService,
+    public dateUtil: DateUtil
+  ) {}
 
-  showEventPayloadDialog() {
+  showEventPayloadDialog(): void {
     if (this.eventPayloadDialog && this._event) {
-      this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog, {data: this._event.plainEvent});
+      this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog, { data: this._event.plainEvent });
     }
   }
 
-  closeEventPayloadDialog() {
+  closeEventPayloadDialog(): void {
     if (this.eventPayloadDialogRef) {
       this.eventPayloadDialogRef.close();
     }
@@ -81,5 +80,4 @@ export class KtbEventItemComponent {
     }
     return true;
   }
-
 }

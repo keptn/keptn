@@ -6,7 +6,7 @@ import { Service as sv } from '../../../shared/models/service';
 import { Approval } from '../_interfaces/approval';
 import { ResultTypes } from '../../../shared/models/result-types';
 
-export type DeploymentInformation = { deploymentUrl?: string, image?: string };
+export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service extends sv {
   allDeploymentsLoaded = false;
@@ -24,14 +24,14 @@ export class Service extends sv {
 
     // Support old (deprecated) format from API - openRemediation should be a Sequence but old format just provides an event
     // If openRemediations do not have stages, it is in the old format and should not be processed as Sequence
-    const hasStages = service.openRemediations?.some(remediation => remediation.stages);
+    const hasStages = service.openRemediations?.some((remediation) => remediation.stages);
     if (hasStages) {
-      service.openRemediations = service.openRemediations?.map(remediation => Sequence.fromJSON(remediation)) ?? [];
+      service.openRemediations = service.openRemediations?.map((remediation) => Sequence.fromJSON(remediation)) ?? [];
     } else {
       service.openRemediations = [];
     }
-    service.openRemediations = service.openRemediations?.map(remediation => Sequence.fromJSON(remediation)) ?? [];
-    service.openApprovals = service.openApprovals.map(approval => {
+    service.openRemediations = service.openRemediations?.map((remediation) => Sequence.fromJSON(remediation)) ?? [];
+    service.openApprovals = service.openApprovals.map((approval) => {
       approval.trace = Trace.fromJSON(approval.trace);
       if (approval.evaluationTrace) {
         approval.evaluationTrace = Trace.fromJSON(approval.evaluationTrace);
@@ -46,7 +46,10 @@ export class Service extends sv {
   }
 
   get deploymentTime(): number | undefined {
-    return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time || this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time;
+    return (
+      this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time ||
+      this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time
+    );
   }
 
   get evaluationContext(): string | undefined {
@@ -54,7 +57,11 @@ export class Service extends sv {
   }
 
   public getShortImageName(): string | undefined {
-    return this.deployedImage?.split('/').pop()?.split(':').find(() => true);
+    return this.deployedImage
+      ?.split('/')
+      .pop()
+      ?.split(':')
+      .find(() => true);
   }
 
   getImageName(): string | undefined {
@@ -78,6 +85,8 @@ export class Service extends sv {
   }
 
   public getFailedEvaluationSequence(): Sequence | undefined {
-    return this.latestSequence?.getEvaluation(this.stage)?.result === ResultTypes.FAILED ? this.latestSequence : undefined;
+    return this.latestSequence?.getEvaluation(this.stage)?.result === ResultTypes.FAILED
+      ? this.latestSequence
+      : undefined;
   }
 }

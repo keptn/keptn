@@ -3,13 +3,13 @@ module github.com/keptn/keptn/helm-service
 go 1.16
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.9.1-0.20210921105323-c6aa0eaeb562
-	github.com/keptn/kubernetes-utils v0.9.1-0.20210922074106-4fb89e149fe6
+	github.com/keptn/go-utils v0.10.0
+	github.com/keptn/kubernetes-utils v0.10.0
 	github.com/kinbiko/jsonassert v1.0.2
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
@@ -19,7 +19,7 @@ require (
 	k8s.io/cli-runtime v0.22.1
 	k8s.io/client-go v0.22.1
 	k8s.io/kubectl v0.22.1
-	sigs.k8s.io/yaml v1.2.0
+	sigs.k8s.io/yaml v1.3.0
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod

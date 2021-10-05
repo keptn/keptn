@@ -1,15 +1,13 @@
 {
-    "html.format.wrapLineLength": 300,
-    "javascript.preferences.quoteStyle": "single",
-    "typescript.preferences.quoteStyle": "single",
-    "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
-    "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
-    "editor.autoIndent": "advanced",
-    "editor.formatOnSave": true,
-    "conventionalCommits.gitmoji": false,
-    "conventionalCommits.promptBody": false,
-    "conventionalCommits.promptFooter": false,
-    "conventionalCommits.scopes": [
-        "bridge"
-    ]
+  "html.format.wrapLineLength": 300,
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "editor.autoIndent": "advanced",
+  "editor.formatOnSave": true,
+  "conventionalCommits.gitmoji": false,
+  "conventionalCommits.promptBody": false,
+  "conventionalCommits.promptFooter": false,
+  "conventionalCommits.scopes": ["bridge"]
 }

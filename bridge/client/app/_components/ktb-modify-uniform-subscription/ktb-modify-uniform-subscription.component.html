@@ -1,7 +1,7 @@
 <ktb-notification-bar></ktb-notification-bar>
 <div class="container">
-  <ng-container *ngIf="data$ | async as data, else loading">
-    <h2>{{editMode ? 'Edit' : 'Create'}} subscription</h2>
+  <ng-container *ngIf="data$ | async as data; else loading">
+    <h2>{{ editMode ? 'Edit' : 'Create' }} subscription</h2>
     <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field *ngIf="!isWebhookService">
@@ -17,21 +17,36 @@
             </ng-template>
           </ng-template>
           <ng-template #isGlobalCheckbox>
-            <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox">Use for all projects</dt-checkbox>
+            <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox"
+              >Use for all projects</dt-checkbox
+            >
           </ng-template>
-
         </dt-form-field>
         <div fxLayout="row" fxLayoutGap="5px">
           <dt-form-field>
             <dt-label class="required">Task</dt-label>
-            <dt-select formControlName="taskPrefix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
+            <dt-select
+              formControlName="taskPrefix"
+              class="mr-2 item"
+              placeholder="Choose your task"
+              aria-label="Choose your task"
+            >
               <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
             </dt-select>
           </dt-form-field>
           <dt-form-field>
             <dt-label class="required">Task suffix</dt-label>
-            <dt-select formControlName="taskSuffix" class="mr-2 item" placeholder="Choose your task suffix" aria-label="Choose your task suffix">
-              <dt-option *ngFor="let suffix of suffixes" [value]="suffix.value" [textContent]="suffix.displayValue"></dt-option>
+            <dt-select
+              formControlName="taskSuffix"
+              class="mr-2 item"
+              placeholder="Choose your task suffix"
+              aria-label="Choose your task suffix"
+            >
+              <dt-option
+                *ngFor="let suffix of suffixes"
+                [value]="suffix.value"
+                [textContent]="suffix.displayValue"
+              ></dt-option>
             </dt-select>
           </dt-form-field>
         </div>
@@ -39,19 +54,39 @@
           <label>Filter by stages and services</label>
           <dt-filter-field
             [dataSource]="_dataSource"
-            [filters]="data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)"
-            (filterChanges)="data.subscription.filterChanged($event, data.project.projectName); updateIsGlobalCheckbox(data.subscription)"
+            [filters]="
+              data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)
+            "
+            (filterChanges)="
+              data.subscription.filterChanged($event, data.project.projectName);
+              updateIsGlobalCheckbox(data.subscription)
+            "
             class="mb-2"
             aria-label="Filter by stage and service"
             clearAllLabel="Clear all"
           ></dt-filter-field>
-          <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length">If you add a service you must add a stage</dt-error>
+          <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length"
+            >If you add a service you must add a stage</dt-error
+          >
         </div>
-        <ktb-webhook-settings *ngIf="isWebhookService" [(webhook)]="data.webhook" (validityChanged)="isWebhookFormValid = $event"></ktb-webhook-settings>
+        <ktb-webhook-settings
+          *ngIf="isWebhookService"
+          [(webhook)]="data.webhook"
+          (validityChanged)="isWebhookFormValid = $event"
+        ></ktb-webhook-settings>
         <div fxLayout="row">
-          <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!isFormValid(data.subscription)" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)" dt-button>
-            <dt-loading-spinner *ngIf="updating" aria-label="{{editMode ? 'Updating' : 'Creating'}} subscription"></dt-loading-spinner>
-            {{editMode ? 'Update' : 'Create'}} subscription
+          <button
+            class="mr-2"
+            uitestid="updateSubscriptionButton"
+            [disabled]="!isFormValid(data.subscription)"
+            (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)"
+            dt-button
+          >
+            <dt-loading-spinner
+              *ngIf="updating"
+              aria-label="{{ editMode ? 'Updating' : 'Creating' }} subscription"
+            ></dt-loading-spinner>
+            {{ editMode ? 'Update' : 'Create' }} subscription
           </button>
           <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
             Cancel
@@ -59,9 +94,7 @@
         </div>
       </div>
     </form>
-    <div class="mt-2 required-info">
-      fields are required
-    </div>
+    <div class="mt-2 required-info">fields are required</div>
   </ng-container>
   <ng-template #loading>
     <dt-loading-spinner></dt-loading-spinner>

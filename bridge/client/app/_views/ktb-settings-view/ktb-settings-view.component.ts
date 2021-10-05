@@ -6,5 +6,4 @@ import { Component } from '@angular/core';
   styleUrls: [],
   providers: [],
 })
-export class KtbSettingsViewComponent {
-}
+export class KtbSettingsViewComponent {}
