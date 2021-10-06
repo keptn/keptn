@@ -3,6 +3,7 @@
 import SettingsPage from './SettingsPage';
 import NewProjectCreatePage from './NewProjectCreatePage';
 import EnvironmentPage from './EnvironmentPage';
+import ServicesPage from './ServicesPage';
 
 class BasePage {
   NAVIGATION_MENU_LOCATOR: string;
@@ -33,8 +34,13 @@ class BasePage {
     cy.get('[aria-label="Open uniform secrets"]').click();
   }
 
-  // go to Settings page
+  // go to Services page
+  goToServicesPage(): ServicesPage {
+    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'services')).click();
+    return new ServicesPage();
+  }
 
+  // go to Settings page
   gotoSettingsPage(): SettingsPage {
     cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'settings')).click();
     return new SettingsPage();
