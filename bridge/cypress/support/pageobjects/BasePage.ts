@@ -60,7 +60,7 @@ class BasePage {
     return this;
   }
 
-  clickCreatNewProjectButton(): NewProjectCreatePage {
+  clickCreateNewProjectButton(): NewProjectCreatePage {
     cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').click();
     return new NewProjectCreatePage();
   }

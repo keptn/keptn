@@ -26,6 +26,7 @@
             "polyfills": "client/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
+            "allowedCommonJsDependencies": ["@dynatrace/barista-components/chart", "semver/preload"],
             "assets": [
               "client/favicon.ico",
               "client/assets",

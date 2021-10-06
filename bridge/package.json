@@ -2,7 +2,7 @@
   "name": "bridge",
   "private": true,
   "scripts": {
-    "serve": "ng serve --port=3000",
+    "serve": "ng serve --port=3000 --no-live-reload",
     "start": "cd ./server && npm run start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
     "start:prod": "npm run build && npm run start",
