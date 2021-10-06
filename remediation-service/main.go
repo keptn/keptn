@@ -11,7 +11,7 @@ const getActionTriggeredEventType = "sh.keptn.event.get-action.triggered"
 const serviceName = "remediation-service"
 
 func main() {
-	go api.RunHealthEndpoint("8080")
+	go api.RunHealthEndpoint("10998")
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
 		sdk.WithTaskHandler(
