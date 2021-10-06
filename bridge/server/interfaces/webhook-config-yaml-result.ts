@@ -1,7 +1,10 @@
+import { WebhookSecret } from '../../shared/models/webhook-config';
+
 export type Webhook = {
   subscriptionId: string;
   type: string; // type === event
   requests: string[];
+  envFrom?: WebhookSecret[];
 };
 
 export interface WebhookConfigYamlResult {

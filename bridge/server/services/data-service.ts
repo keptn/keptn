@@ -551,7 +551,7 @@ export class DataService {
   }
 
   public async saveWebhookConfig(webhookConfig: WebhookConfig, subscriptionId: string): Promise<boolean> {
-    const currentFilters = await this.getPreviousWebhookConfig(webhookConfig.filter);
+    const currentFilters = await this.getWebhookConfigFilter(webhookConfig.filter);
 
     if (webhookConfig.prevConfiguration) {
       const previousFilter = await this.getWebhookConfigFilter(webhookConfig.prevConfiguration.filter);

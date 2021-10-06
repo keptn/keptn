@@ -21,7 +21,7 @@
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special">
-         URL contains a special character causing it to be invalid. Please remove the special character. 
+        URL contains a special character causing it to be invalid. Please remove the special character.
       </dt-error>
       <div dtSuffix>
         <ng-container
