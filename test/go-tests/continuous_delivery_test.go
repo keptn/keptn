@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"path"
 	"testing"
+	"time"
 )
 
 const onboardServiceShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
@@ -173,12 +174,24 @@ func Test_Continuous_Delivery(t *testing.T) {
 	err = VerifyDirectDeployment(cartsServiceName, keptnProjectName, "dev", "docker.io/keptnexamples/carts", "0.10.1")
 	require.Nil(t, err)
 
+	t.Log("Verify network access to public URI of carts in stage dev")
+	cartPubURL, err := GetPublicURLOfService(cartsServiceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+"/health", time.Minute)
+	require.Nil(t, err)
+
 	t.Log("Verify direct delivery of carts db in stage staging")
 	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "staging", "mongo", "latest")
 	require.Nil(t, err)
 
 	t.Log("Verify delivery of carts in stage staging")
 	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "staging", "docker.io/keptnexamples/carts", "0.10.1")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of carts in stage staging")
+	cartPubURL, err = GetPublicURLOfService(cartsServiceName, keptnProjectName, "staging")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+"/health", time.Minute)
 	require.Nil(t, err)
 
 	t.Log("Verify direct delivery of carts db in stage prod-a")
@@ -189,12 +202,24 @@ func Test_Continuous_Delivery(t *testing.T) {
 	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "prod-a", "docker.io/keptnexamples/carts", "0.10.1")
 	require.Nil(t, err)
 
+	t.Log("Verify network access to public URI of carts in stage prod-a")
+	cartPubURL, err = GetPublicURLOfService(cartsServiceName, keptnProjectName, "prod-a")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+"/health", time.Minute)
+	require.Nil(t, err)
+
 	t.Log("Verify direct delivery of carts db in stage prod-b")
 	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "prod-b", "mongo", "latest")
 	require.Nil(t, err)
 
-	t.Log("Verify delivery of carts in stage prod-a")
+	t.Log("Verify delivery of carts in stage prod-b")
 	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "prod-b", "docker.io/keptnexamples/carts", "0.10.1")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of carts in stage prod-b")
+	cartPubURL, err = GetPublicURLOfService(cartsServiceName, keptnProjectName, "prod-b")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+"/health", time.Minute)
 	require.Nil(t, err)
 
 }

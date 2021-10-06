@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
@@ -9,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -132,6 +134,30 @@ func checkDeployment(client *kubernetes.Clientset, deploymentName, namespace str
 		}
 		return true, nil
 	}
+}
+
+func WaitForURL(url string, timeout time.Duration) error {
+	return wait.PollImmediate(time.Second*3, timeout, checkURL(url))
+}
+
+func checkURL(url string) wait.ConditionFunc {
+	return func() (bool, error) {
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		_, err := http.Get(url)
+		if err != nil {
+			return false, nil
+		}
+		return true, nil
+	}
+}
+
+func GetFromConfigMap(namespace string, getDataByKeyFn func(data map[string]string) string) (string, error) {
+	client, _ := keptnkubeutils.GetClientset(false)
+	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "ingress-config", metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	return getDataByKeyFn(cm.Data), nil
 }
 
 // WaitForDeploymentInNamespace

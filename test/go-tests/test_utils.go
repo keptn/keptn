@@ -440,3 +440,13 @@ func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImag
 	}
 	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*6, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
+
+func GetPublicURLOfService(serviceName, projectName, stageName string) (string, error) {
+	ingressHostnameSuffix, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), func(data map[string]string) string { return data["ingress_hostname_suffix"] })
+	if err != nil {
+		return "", fmt.Errorf("unable to get public URL of service %s: %w", serviceName, err)
+	}
+
+	return fmt.Sprintf("http://%s.%s-%s.%s", serviceName, projectName, stageName, ingressHostnameSuffix), nil
+
+}
