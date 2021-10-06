@@ -74,7 +74,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   public addWebhook(eventType: string, curl: string, secrets: WebhookSecret[]): void {
     const webhook = this.spec.webhooks.find((w) => w.type === eventType);
     if (!webhook) {
-      if (secrets && secrets.length) {
+      if (secrets.length) {
         this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets });
       } else {
         this.spec.webhooks.push({ type: eventType, requests: [curl] });
