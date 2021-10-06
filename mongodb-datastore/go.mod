@@ -3,7 +3,7 @@ module github.com/keptn/keptn/mongodb-datastore
 go 1.16
 
 require (
-	github.com/go-openapi/errors v0.19.9
+	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/loads v0.20.2
 	github.com/go-openapi/runtime v0.19.31
 	github.com/go-openapi/spec v0.20.3
@@ -15,6 +15,6 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.10.0
 	github.com/stretchr/testify v1.7.0
-	go.mongodb.org/mongo-driver v1.7.2
+	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 )
