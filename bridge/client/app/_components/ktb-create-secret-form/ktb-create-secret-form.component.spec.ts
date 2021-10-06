@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbCreateSecretFormComponent } from './ktb-create-secret-form.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -37,12 +36,14 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[0];
-    secret.data.push({ key: 'testKey', value: 'testValue' });
+    secret.data?.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);
-    component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
-    component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    if (secret.data) {
+      component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
+      component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    }
     component.createSecretForm.updateValueAndValidity();
     fixture.detectChanges();
 
@@ -62,13 +63,15 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[1];
-    secret.data.push({ key: 'testKey', value: 'testValue' });
+    secret.data?.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);
     component.getFormControl('scope')?.setValue(secret.scope);
-    component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
-    component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    if (secret.data) {
+      component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
+      component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    }
     component.createSecretForm.updateValueAndValidity();
     fixture.detectChanges();
 
@@ -90,13 +93,15 @@ describe('KtbCreateSecretFormComponent', () => {
     const secret: Secret = new Secret();
     secret.name = 'test';
     secret.scope = component.scopes[1];
-    secret.data.push({ key: 'testKey', value: 'testValue' });
+    secret.data?.push({ key: 'testKey', value: 'testValue' });
 
     // when
     component.getFormControl('name')?.setValue(secret.name);
     component.getFormControl('scope')?.setValue(secret.scope);
-    component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
-    component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    if (secret.data) {
+      component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
+      component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+    }
     component.createSecretForm.updateValueAndValidity();
     fixture.detectChanges();
 

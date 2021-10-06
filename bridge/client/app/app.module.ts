@@ -136,6 +136,11 @@ import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit
 import { DtAlertModule } from '@dynatrace/barista-components/alert';
 import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list/ktb-edit-service-file-list.component';
 import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
+import {
+  KtbTreeListSelectComponent,
+  KtbTreeListSelectDirective,
+} from './_components/ktb-tree-list-select/ktb-tree-list-select.component';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
 
 registerLocaleData(localeEn, 'en');
@@ -221,6 +226,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbServiceSettingsListComponent,
     KtbEditServiceComponent,
     KtbEditServiceFileListComponent,
+    KtbTreeListSelectComponent,
+    KtbTreeListSelectDirective,
     KtbSequenceStateInfoComponent,
   ],
   imports: [
@@ -274,6 +281,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     ReactiveFormsModule,
     DtAlertModule,
     DtTreeTableModule,
+    OverlayModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [

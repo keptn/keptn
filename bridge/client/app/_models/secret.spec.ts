@@ -11,7 +11,7 @@ describe('Secret', () => {
       // then
       expect(secret).toBeTruthy();
       expect(secret.scope).toBe('keptn-default');
-      expect(secret.data.length).toEqual(0);
+      expect(secret.data?.length).toEqual(0);
     })
   );
 
@@ -40,7 +40,7 @@ describe('Secret', () => {
       secret.addData('key2', 'value2');
 
       // then
-      expect(secret.data.length).toEqual(2);
+      expect(secret.data?.length).toEqual(2);
       expect(secret.getData(0).key).toEqual('key1');
       expect(secret.getData(0).value).toEqual('value1');
       expect(secret.getData(1).key).toEqual('key2');
@@ -61,7 +61,7 @@ describe('Secret', () => {
       secret.removeData(1);
 
       // then
-      expect(secret.data.length).toEqual(2);
+      expect(secret.data?.length).toEqual(2);
       expect(secret.getData(0).key).toEqual('key1');
       expect(secret.getData(0).value).toEqual('value1');
       expect(secret.getData(1).key).toEqual('key3');
