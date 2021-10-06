@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -30,6 +31,11 @@ func Test_ReceiveFromNATSAndForwaredEvent(t *testing.T) {
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
+
+	// make sure the message handler of the receiver is set before continuing with the test
+	require.Eventually(t, func() bool {
+		return receiver.natsConnectionHandler.messageHandler != nil
+	}, 5*time.Second, time.Second)
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
 			ID:     "id1",
