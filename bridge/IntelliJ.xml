@@ -1,5 +1,6 @@
 <code_scheme name="Project" version="173">
-  <option name="RIGHT_MARGIN" value="300" />
+  <option name="LINE_SEPARATOR" value="&#xA;" />
+  <option name="RIGHT_MARGIN" value="120" />
   <TypeScriptCodeStyleSettings version="0">
     <option name="USE_DOUBLE_QUOTES" value="false" />
     <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />

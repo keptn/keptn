@@ -1,27 +1,38 @@
 <h2>Webhook configuration</h2>
-<form class="mb-2" [formGroup]="webhookConfigForm" (input)="onWebhookFormChange()" id="webhook-config-form">
+<form class="mb-2" (input)="onWebhookFormChange()" [formGroup]="webhookConfigForm" id="webhook-config-form">
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field fxFlex="160px">
+    <dt-form-field fxFlex="160px" uitestid="edit-webhook-field-method">
       <dt-label class="required">Request Method</dt-label>
       <dt-select
+        (selectionChange)="onWebhookFormChange()"
         formControlName="method"
         class="mr-2 item"
         placeholder="Choose method"
         aria-label="Choose method"
-        (selectionChange)="onWebhookFormChange()"
       >
         <dt-option *ngFor="let method of webhookMethods" [value]="method" [textContent]="method"></dt-option>
       </dt-select>
       <dt-error *ngIf="getFormControl('method').errors?.required">Method must not be empty</dt-error>
     </dt-form-field>
-    <dt-form-field fxFlex="calc(100% - 175px)">
+
+    <dt-form-field fxFlex="calc(100% - 175px)" uitestid="edit-webhook-field-url">
       <dt-label class="required">URL</dt-label>
-      <input formControlName="url" dtInput placeholder="URL" />
+      <input #urlInput formControlName="url" dtInput placeholder="URL" />
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url?.special">
-        URL contains a special character causing it to be invalid. Please remove the special character.
+         URL contains a special character causing it to be invalid. Please remove the special character. 
       </dt-error>
+      <div dtSuffix>
+        <ng-container
+          [ngTemplateOutlet]="secretButton"
+          [ngTemplateOutletContext]="{
+            $implicit: undefined,
+            controlName: 'url',
+            selectionStart: urlInput.selectionStart
+          }"
+        ></ng-container>
+      </div>
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -43,14 +54,15 @@
     <ng-container *ngFor="let headerGroup of headerControls; let i = index">
       <form [formGroup]="headerGroup">
         <div class="mb-1" fxLayout="row" fxLayoutAlign="start end" fxLayoutGap="15px">
-          <dt-form-field>
+          <dt-form-field uitestid="edit-webhook-field-headerName">
             <dt-label class="required">Name</dt-label>
             <input formControlName="name" type="text" dtInput placeholder="e.g. Content-Type" autocomplete="false" />
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
-          <dt-form-field>
+          <dt-form-field uitestid="edit-webhook-field-headerValue">
             <dt-label class="required">Value</dt-label>
             <input
+              #headerInput
               formControlName="value"
               type="text"
               dtInput
@@ -58,6 +70,17 @@
               autocomplete="false"
             />
             <dt-error>Must not be empty</dt-error>
+            <div dtSuffix>
+              <ng-container
+                [ngTemplateOutlet]="secretButton"
+                [ngTemplateOutletContext]="{
+                  $implicit: '',
+                  controlName: 'header',
+                  index: i,
+                  selectionStart: headerInput.selectionStart
+                }"
+              ></ng-container>
+            </div>
           </dt-form-field>
           <button
             type="button"
@@ -74,14 +97,24 @@
     </ng-container>
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field>
+    <dt-form-field class="text-area" uitestid="edit-webhook-field-payload">
       <dt-label>Custom payload</dt-label>
-      <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
+      <textarea #payloadInput class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
+      <div dtSuffix>
+        <ng-container
+          [ngTemplateOutlet]="secretButton"
+          [ngTemplateOutletContext]="{
+            $implicit: undefined,
+            controlName: 'payload',
+            selectionStart: payloadInput.selectionStart
+          }"
+        ></ng-container>
+      </div>
     </dt-form-field>
   </div>
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field>
+    <dt-form-field uitestid="edit-webhook-field-proxy">
       <dt-label>Proxy</dt-label>
       <input formControlName="proxy" type="url" dtInput placeholder="Proxy" />
       <dt-error *ngIf="getFormControl('proxy').errors?.url?.pattern">Proxy must be a valid URL</dt-error>
@@ -91,3 +124,17 @@
     </dt-form-field>
   </div>
 </form>
+
+<ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
+  <button
+    dt-icon-button
+    variant="nested"
+    aria-label="Add secret"
+    ktbTreeListSelect
+    [data]="secretDataSource"
+    [options]="secretOptions"
+    (selected)="setSecret($event, controlName, selectionStart, index)"
+  >
+    <dt-icon name="resetpassword"></dt-icon>
+  </button>
+</ng-template>

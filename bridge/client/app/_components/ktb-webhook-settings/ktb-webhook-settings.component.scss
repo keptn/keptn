@@ -16,3 +16,17 @@
   resize: vertical;
   font-family: monospace;
 }
+
+::ng-deep {
+  .dt-form-field.text-area {
+    .dt-form-field-suffix {
+      align-items: start;
+      position: absolute;
+      right: 1px;
+    }
+  }
+
+  .dt-suffix:last-child:not(.dt-button) {
+    margin-right: 0;
+  }
+}

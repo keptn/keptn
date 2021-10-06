@@ -13,7 +13,7 @@ import { UniformRegistration } from '../models/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
-import { WebhookConfig, WebhookConfigFilter } from '../../shared/models/webhook-config';
+import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
 import { UniformSubscription, UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
@@ -21,9 +21,12 @@ import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
+import { Secret } from '../models/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
+import { SecretScope } from '../../shared/interfaces/secret-scope';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
+type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
 
 export class DataService {
   private apiService: ApiService;
@@ -515,6 +518,22 @@ export class DataService {
     }
   }
 
+  private replaceWithBridgeSecrets(webhookConfig: WebhookConfig): void {
+    if (webhookConfig.secrets) {
+      for (const webhookSecret of webhookConfig.secrets) {
+        const bridgeSecret = '.secret.' + webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
+
+        const regex = new RegExp('.env.' + webhookSecret.name, 'g');
+        webhookConfig.url = webhookConfig.url.replace(regex, bridgeSecret);
+        webhookConfig.payload = webhookConfig.payload.replace(regex, bridgeSecret);
+
+        for (const header of webhookConfig.header) {
+          header.value = header.value.replace(regex, bridgeSecret);
+        }
+      }
+    }
+  }
+
   public async getWebhookConfig(
     subscriptionId: string,
     projectName: string,
@@ -527,28 +546,30 @@ export class DataService {
     if (!webhookConfig) {
       throw Error('Could not parse curl command');
     }
+    this.replaceWithBridgeSecrets(webhookConfig);
     return webhookConfig;
   }
 
   public async saveWebhookConfig(webhookConfig: WebhookConfig, subscriptionId: string): Promise<boolean> {
-    const currentConfig = await this.getPreviousWebhookConfig(webhookConfig.filter);
+    const currentFilters = await this.getPreviousWebhookConfig(webhookConfig.filter);
 
     if (webhookConfig.prevConfiguration) {
-      const previousFilter = await this.getPreviousWebhookConfig(webhookConfig.prevConfiguration.filter);
+      const previousFilter = await this.getWebhookConfigFilter(webhookConfig.prevConfiguration.filter);
       await this.removePreviousWebhooks(previousFilter, webhookConfig.prevConfiguration.type);
     }
 
+    const secrets = await this.parseAndReplaceWebhookSecret(webhookConfig);
     const curl = this.generateWebhookConfigCurl(webhookConfig);
 
-    for (const project of currentConfig.projects) {
-      for (const stage of currentConfig.stages) {
-        for (const service of currentConfig.services) {
+    for (const project of currentFilters.projects) {
+      for (const stage of currentFilters.stages) {
+        for (const service of currentFilters.services) {
           const previousWebhookConfig: WebhookConfigYaml = await this.getOrCreateWebhookConfigYaml(
             project,
             stage,
             service
           );
-          previousWebhookConfig.addWebhook(webhookConfig.type, curl, subscriptionId);
+          previousWebhookConfig.addWebhook(webhookConfig.type, curl, subscriptionId, secrets);
           await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
         }
       }
@@ -557,6 +578,66 @@ export class DataService {
     return true;
   }
 
+  private async parseAndReplaceWebhookSecret(webhookConfig: WebhookConfig): Promise<WebhookSecret[]> {
+    const webhookScopeSecrets = await this.getSecretsForScope(SecretScope.WEBHOOK);
+    const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
+
+    const secrets: WebhookSecret[] = [];
+    webhookConfig.url = this.addWebhookSecretsFromString(webhookConfig.url, flatSecret, secrets);
+    webhookConfig.payload = this.addWebhookSecretsFromString(webhookConfig.payload, flatSecret, secrets);
+
+    for (const head of webhookConfig.header) {
+      head.value = this.addWebhookSecretsFromString(head.value, flatSecret, secrets);
+    }
+
+    return secrets;
+  }
+
+  private addWebhookSecretsFromString(
+    parseString: string,
+    allSecretPaths: FlatSecret[],
+    existingSecrets: WebhookSecret[]
+  ): string {
+    const foundSecrets = allSecretPaths.filter((scrt) => parseString.includes(scrt.path));
+    let replacedString = parseString;
+    for (const found of foundSecrets) {
+      const idx = existingSecrets.findIndex((secret) => secret.name === found.parsedPath);
+      if (idx === -1) {
+        const secret: WebhookSecret = {
+          name: found.parsedPath,
+          secretRef: {
+            name: found.name,
+            key: found.key,
+          },
+        };
+        existingSecrets.push(secret);
+      }
+
+      replacedString = replacedString.replace(new RegExp('secret.' + found.path, 'g'), 'env.' + found.parsedPath);
+    }
+
+    return replacedString;
+  }
+
+  private getSecretPathFlat(secrets: Secret[]): FlatSecret[] {
+    const flatScopeSecrets: FlatSecret[] = [];
+    for (const secret of secrets) {
+      if (secret.keys) {
+        for (const key of secret.keys) {
+          const sanitizedName = secret.name.replace(/[^a-zA-Z0-9]/g, '');
+          const sanitizedKey = key.replace(/[^a-zA-Z0-9]/g, '');
+          const flat: FlatSecret = {
+            path: secret.name + '.' + key,
+            name: secret.name,
+            key,
+            parsedPath: 'secret_' + sanitizedName + '_' + sanitizedKey,
+          };
+          flatScopeSecrets.push(flat);
+        }
+      }
+    }
+    return flatScopeSecrets;
+  }
   private async getOrCreateWebhookConfigYaml(
     project: string,
     stage?: string,
@@ -587,7 +668,7 @@ export class DataService {
     }
   }
 
-  private async getPreviousWebhookConfig(webhookConfig: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
+  private async getWebhookConfigFilter(webhookConfig: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
     return {
       projects: webhookConfig.projects?.length
         ? webhookConfig.projects
@@ -631,11 +712,12 @@ export class DataService {
       const response = await this.apiService.getUniformSubscription(integrationId, subscriptionId);
       const subscription = response.data;
       const projectName = subscription.filter.projects?.[0];
-      if (projectName && subscription.filter.stages?.length) {
+
+      if (projectName) {
         await this.removeWebhooks(
           subscriptionId,
           projectName,
-          subscription.filter.stages,
+          subscription.filter.stages?.length ? subscription.filter.stages : [undefined],
           subscription.filter.services?.length ? subscription.filter.services : [undefined]
         );
       }
@@ -643,10 +725,16 @@ export class DataService {
     await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
   }
 
+  public async getSecretsForScope(scope: string): Promise<Secret[]> {
+    const response = await this.apiService.getSecrets();
+    const secrets = response.data.Secrets.map((secret) => Secret.fromJSON(secret));
+    return secrets.filter((secret) => secret.scope === scope);
+  }
+
   private async removeWebhooks(
     subscriptionId: string,
     projectName: string,
-    stages: string[],
+    stages: string[] | [undefined],
     services: string[] | [undefined]
   ): Promise<void> {
     for (const stage of stages) {

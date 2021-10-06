@@ -24,6 +24,7 @@ import { HeatmapOptions } from '../../_models/heatmap-options';
 import { HeatmapData, HeatmapSeriesOptions } from '../../_models/heatmap-series-options';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
+import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
@@ -50,7 +51,7 @@ _treemap(Highcharts);
 })
 export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public comparedIndicatorResults: IndicatorResult[] = [];
+  public comparedIndicatorResults: IndicatorResult[][] = [];
   @Input() public showChart = true;
   @Input() public isInvalidated = false;
 
@@ -208,6 +209,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private _heatmapCategoriesFull: string[] = [];
   private _heatmapCategoriesReduced: string[] = [];
   private _shouldSelectEvaluation = true;
+  public updateResults?: EvaluationHistory;
 
   @Input()
   get evaluationData(): Trace | undefined {
@@ -224,16 +226,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private setEvaluation(evaluationInfo: { evaluation?: Trace; shouldSelect: boolean }): void {
-    if (this._evaluationData !== evaluationInfo.evaluation) {
-      this._selectedEvaluationData =
-        evaluationInfo.evaluation?.id === this._evaluationData?.id ? this._selectedEvaluationData : undefined;
+    if (this._evaluationData?.id !== evaluationInfo.evaluation?.id) {
+      this._selectedEvaluationData = undefined;
       this._evaluationData = evaluationInfo.evaluation;
       this._chartSeries = [];
       this._metrics = ['Score'];
       this._heatmapOptions.yAxis[0].categories = ['Score'];
-      this._shouldSelectEvaluation = evaluationInfo.shouldSelect && !this._selectedEvaluationData;
+      this._shouldSelectEvaluation = evaluationInfo.shouldSelect;
       this.evaluationDataChanged();
-      this._changeDetectorRef.markForCheck();
+    } else if (this._evaluationData) {
+      this.dataService.loadEvaluationResults(this._evaluationData);
     }
   }
 
@@ -252,28 +254,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
-      if (this.evaluationData) {
-        if (results.type === 'evaluationHistory' && results.triggerEvent === this.evaluationData) {
-          this.evaluationData.data.evaluationHistory = [
-            ...(results.traces || []),
-            ...(this.evaluationData.data.evaluationHistory || []),
-          ].sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
-        } else if (
-          results.type === 'invalidateEvaluation' &&
-          this.evaluationData.data.project === results.triggerEvent.data.project &&
-          this.evaluationData.data.service === results.triggerEvent.data.service &&
-          this.evaluationData.data.stage === results.triggerEvent.data.stage
-        ) {
-          this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory?.filter(
-            (e) => e.id !== results.triggerEvent.id
-          );
-        }
-        this._selectedEvaluationData = this._selectedEvaluationData?.id
-          ? this.evaluationData.data.evaluationHistory?.find((h) => h.id === this._selectedEvaluationData?.id)
-          : undefined;
-        this.parseSloFile(this._selectedEvaluationData);
-        if (this.evaluationData.data.evaluationHistory) {
-          this.updateChartData(this.evaluationData.data.evaluationHistory);
+      if (this.evaluationData && results.traces?.length) {
+        if (this.evaluationData.data.evaluationHistory?.length) {
+          this.updateResults = results;
+        } else {
+          this.refreshEvaluationBoard(results);
         }
       }
     });
@@ -291,6 +276,34 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         this.selectEvaluationData(trace);
       }
     }
+  }
+
+  public refreshEvaluationBoard(results: EvaluationHistory): void {
+    if (this.evaluationData) {
+      if (results.type === 'evaluationHistory' && results.triggerEvent === this.evaluationData) {
+        this.evaluationData.data.evaluationHistory = [
+          ...(results.traces || []),
+          ...(this.evaluationData.data.evaluationHistory || []),
+        ].sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
+      } else if (
+        results.type === 'invalidateEvaluation' &&
+        this.evaluationData.data.project === results.triggerEvent.data.project &&
+        this.evaluationData.data.service === results.triggerEvent.data.service &&
+        this.evaluationData.data.stage === results.triggerEvent.data.stage
+      ) {
+        this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory?.filter(
+          (e) => e.id !== results.triggerEvent.id
+        );
+      }
+      this._selectedEvaluationData = this._selectedEvaluationData?.id
+        ? this.evaluationData.data.evaluationHistory?.find((h) => h.id === this._selectedEvaluationData?.id)
+        : undefined;
+      this.parseSloFile(this._selectedEvaluationData);
+      if (this.evaluationData.data.evaluationHistory) {
+        this.updateChartData(this.evaluationData.data.evaluationHistory);
+      }
+    }
+    this.updateResults = undefined;
   }
 
   private parseSloFile(evaluationData?: Trace): void {
@@ -685,9 +698,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
-    const index = secondaryHighlightIndices.find((idx) => idx >= 0) ?? -1;
-    this.comparedIndicatorResults =
-      index >= 0 ? this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [] : [];
+    this.comparedIndicatorResults = secondaryHighlightIndices
+      .filter((idx) => idx >= 0)
+      .map((index) => {
+        return this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [];
+      });
     for (const secondaryHighlightIndex of secondaryHighlightIndices) {
       if (secondaryHighlightIndex >= 0) {
         plotBands.push({

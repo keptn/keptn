@@ -120,11 +120,17 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 		}
 	}
 
+	objectives := []*keptn.SLO{}
 	for _, objective := range slo.Objectives {
+		if objective == nil {
+			continue
+		}
 		if objective.Weight == 0 {
 			objective.Weight = 1
 		}
+		objectives = append(objectives, objective)
 	}
+	slo.Objectives = objectives
 
 	return slo, nil
 }

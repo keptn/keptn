@@ -1,6 +1,6 @@
 import Yaml from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
-import { WebhookConfig } from '../../shared/models/webhook-config';
+import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
 import { Webhook, WebhookConfigYamlResult } from './webhook-config-yaml-result';
 
 const order: { [key: string]: number } = {
@@ -60,13 +60,20 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @params eventType
    * @params curl
    */
-  public addWebhook(eventType: string, curl: string, subscriptionId: string): void {
-    const webhook = this.getWebhook(subscriptionId);
+  public addWebhook(eventType: string, curl: string, subscriptionId: string, secrets: WebhookSecret[]): void {
+    const webhook =  this.getWebhook(subscriptionId);
     if (!webhook) {
-      this.spec.webhooks.push({ type: eventType, requests: [curl], subscriptionId });
+      if (secrets.length) {
+        this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets, subscriptionId });
+      } else {
+        this.spec.webhooks.push({ type: eventType, requests: [curl] });
+      }
     } else {
       // overwrite
       webhook.requests[0] = curl;
+      if (secrets && secrets.length) {
+        webhook.envFrom = secrets;
+      }
     }
   }
 
@@ -85,7 +92,13 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   public parsedRequest(subscriptionId: string): WebhookConfig | undefined {
     const webhook = this.getWebhook(subscriptionId);
     const curl = webhook?.requests[0];
-    return curl ? this.parseConfig(curl) : undefined;
+    const secrets = webhook?.envFrom;
+
+    const parsedConfig = curl ? this.parseConfig(curl) : undefined;
+    if (parsedConfig) {
+      parsedConfig.secrets = secrets;
+    }
+    return parsedConfig;
   }
 
   private parseConfig(curl: string): WebhookConfig {
