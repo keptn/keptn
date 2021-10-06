@@ -10,6 +10,7 @@ import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
+import { Secret } from '../../shared/interfaces/secret';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -225,10 +226,13 @@ export class ApiService {
   public saveWebhookConfig(
     content: string,
     projectName: string,
-    stageName: string,
+    stageName?: string,
     serviceName?: string
   ): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}`;
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
     if (serviceName) {
       url += `/service/${serviceName}`;
     }
@@ -275,5 +279,10 @@ export class ApiService {
     }
 
     return this.axios.get<ResourceResponse>(url, params);
+  }
+
+  public getSecrets(): Promise<AxiosResponse<{ Secrets: Secret[] }>> {
+    const url = `${this.baseUrl}/secrets/v1/secret`;
+    return this.axios.get<{ Secrets: Secret[] }>(url);
   }
 }
