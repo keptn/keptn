@@ -25,6 +25,7 @@ import { HeatmapData, HeatmapSeriesOptions } from '../../_models/heatmap-series-
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
+import { AppUtils } from '../../_utils/app.utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
@@ -43,6 +44,12 @@ _more(Highcharts);
 _noData(Highcharts);
 _heatmap(Highcharts);
 _treemap(Highcharts);
+
+type SliInfo = {
+  score: number;
+  warningCount: number;
+  failedCount: number;
+};
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -240,8 +247,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   get heatmapSeries(): DtChartSeries[] {
-    // type 'heatmap' does not exist in barista components but in highcharts
-    return this._heatmapSeries as DtChartSeries[];
+    return this._heatmapSeries;
   }
 
   constructor(
@@ -255,6 +261,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
       if (this.evaluationData && results.traces?.length) {
+        this.parseSloFile(results.traces);
         if (this.evaluationData.data.evaluationHistory?.length) {
           this.updateResults = results;
         } else {
@@ -298,7 +305,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._selectedEvaluationData = this._selectedEvaluationData?.id
         ? this.evaluationData.data.evaluationHistory?.find((h) => h.id === this._selectedEvaluationData?.id)
         : undefined;
-      this.parseSloFile(this._selectedEvaluationData);
       if (this.evaluationData.data.evaluationHistory) {
         this.updateChartData(this.evaluationData.data.evaluationHistory);
       }
@@ -306,36 +312,38 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this.updateResults = undefined;
   }
 
-  private parseSloFile(evaluationData?: Trace): void {
-    if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
-      evaluationData.data.evaluation.sloFileContentParsed = atob(evaluationData.data.evaluation.sloFileContent);
-      evaluationData.data.evaluation.score_pass = evaluationData.data.evaluation.sloFileContentParsed
-        .split('total_score:')[1]
-        ?.split('pass:')[1]
-        ?.split(' ')[1]
-        ?.replace(/"/g, '')
-        ?.split('%')[0];
-      evaluationData.data.evaluation.score_warning = evaluationData.data.evaluation.sloFileContentParsed
-        .split('total_score:')[1]
-        ?.split('warning:')[1]
-        ?.split(' ')[1]
-        ?.replace(/"/g, '')
-        ?.split('%')[0];
-      evaluationData.data.evaluation.compare_with = evaluationData.data.evaluation.sloFileContentParsed
-        .split('comparison:')[1]
-        ?.split('compare_with:')[1]
-        ?.split(' ')[1]
-        ?.replace(/"/g, '');
-      evaluationData.data.evaluation.include_result_with_score = evaluationData.data.evaluation.sloFileContentParsed
-        .split('comparison:')[1]
-        ?.split('include_result_with_score:')[1]
-        ?.split(' ')[1]
-        ?.replace(/"/g, '');
-      if (evaluationData.data.evaluation.comparedEvents) {
-        evaluationData.data.evaluation.number_of_comparison_results =
-          evaluationData.data.evaluation.comparedEvents?.length;
-      } else {
-        evaluationData.data.evaluation.number_of_comparison_results = 0;
+  private parseSloFile(evaluationTraces: Trace[]): void {
+    for (const evaluationData of evaluationTraces) {
+      if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
+        evaluationData.data.evaluation.sloFileContentParsed = atob(evaluationData.data.evaluation.sloFileContent);
+        evaluationData.data.evaluation.score_pass = evaluationData.data.evaluation.sloFileContentParsed
+          .split('total_score:')[1]
+          ?.split('pass:')[1]
+          ?.split(' ')[1]
+          ?.replace(/"/g, '')
+          ?.split('%')[0];
+        evaluationData.data.evaluation.score_warning = evaluationData.data.evaluation.sloFileContentParsed
+          .split('total_score:')[1]
+          ?.split('warning:')[1]
+          ?.split(' ')[1]
+          ?.replace(/"/g, '')
+          ?.split('%')[0];
+        evaluationData.data.evaluation.compare_with = evaluationData.data.evaluation.sloFileContentParsed
+          .split('comparison:')[1]
+          ?.split('compare_with:')[1]
+          ?.split(' ')[1]
+          ?.replace(/"/g, '');
+        evaluationData.data.evaluation.include_result_with_score = evaluationData.data.evaluation.sloFileContentParsed
+          .split('comparison:')[1]
+          ?.split('include_result_with_score:')[1]
+          ?.split(' ')[1]
+          ?.replace(/"/g, '');
+        if (evaluationData.data.evaluation.comparedEvents) {
+          evaluationData.data.evaluation.number_of_comparison_results =
+            evaluationData.data.evaluation.comparedEvents?.length;
+        } else {
+          evaluationData.data.evaluation.number_of_comparison_results = 0;
+        }
       }
     }
   }
@@ -414,7 +422,32 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private getSliResultInfo(chartSeries: EvaluationChartItem[]): { [evaluationId: string]: SliInfo | undefined } {
+    const sliResultsScores: {
+      [evaluationId: string]: SliInfo | undefined;
+    } = {};
+    for (const chartItem of chartSeries) {
+      for (const item of chartItem.data) {
+        if (item.evaluationData?.data.evaluation?.indicatorResults && !sliResultsScores[item.evaluationData.id]) {
+          const indicatorResults = item.evaluationData.data.evaluation.indicatorResults;
+          sliResultsScores[item.evaluationData.id] = indicatorResults.reduce(
+            (acc, result) => {
+              return {
+                score: acc.score + result.score,
+                warningCount: acc.warningCount + (result.status === ResultTypes.WARNING ? 1 : 0),
+                failedCount: acc.failedCount + (result.status === ResultTypes.FAILED ? 1 : 0),
+              };
+            },
+            { score: 0, warningCount: 0, failedCount: 0 } as SliInfo
+          );
+        }
+      }
+    }
+    return sliResultsScores;
+  }
+
   private setHeatmapData(chartSeries: EvaluationChartItem[]): void {
+    const sliResultsInfo: { [evaluationId: string]: SliInfo | undefined } = this.getSliResultInfo(chartSeries);
     this._heatmapSeriesReduced = [
       {
         name: 'Score',
@@ -440,19 +473,26 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         data:
           chartSeries
             .find((series) => series.name === 'Score')
-            ?.data.filter((s) => s.evaluationData)
+            ?.data.filter((s): s is EvaluationChartDataItem & { evaluationData: Trace } => !!s.evaluationData)
             .map((s) => {
               const index = this._metrics.indexOf('Score');
-              /* eslint-disable @typescript-eslint/no-non-null-assertion */
-              const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData!.getHeatmapLabel());
+              const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
               const dataPoint = {
                 x,
                 y: index,
                 z: s.y,
                 evaluation: s.evaluationData,
-                color: this._evaluationColor[s.evaluationData!.data.result ?? 'info'],
+                color: this._evaluationColor[s.evaluationData.data.result ?? 'info'],
+                value: s.y,
+                sliInfo: {
+                  warningCount: sliResultsInfo[s.evaluationData.id]?.warningCount,
+                  failedCount: sliResultsInfo[s.evaluationData.id]?.failedCount,
+                  thresholdPass: s.evaluationData.data.evaluation?.score_pass,
+                  thresholdWarn: s.evaluationData.data.evaluation?.score_warning,
+                  fail: s.evaluationData.isFailed(),
+                  warn: s.evaluationData.isWarning(),
+                },
               };
-              /* eslint-enable @typescript-eslint/no-non-null-assertion */
               const reducedDataPoint = { ...dataPoint };
               reducedDataPoint.y = 9;
               this._heatmapSeriesReduced[0].data.push(reducedDataPoint);
@@ -467,29 +507,45 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           (r, d) => [
             ...r,
             ...d.data
-              .filter((s) => s.indicatorResult)
+              .filter((s): s is EvaluationChartDataItem & { indicatorResult: IndicatorResult } => !!s.indicatorResult)
               .map((s) => {
-                /* eslint-disable @typescript-eslint/no-non-null-assertion */
-                const index = this._metrics.indexOf(s.indicatorResult!.value.metric);
+                const index = this._metrics.indexOf(s.indicatorResult.value.metric);
                 const x = s.evaluationData
                   ? this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel())
                   : -1;
+                const totalScore = sliResultsInfo[s.evaluationData?.id ?? '']?.score;
+                const score = !totalScore
+                  ? 0
+                  : AppUtils.round(
+                      (s.indicatorResult.score / totalScore) * (s.evaluationData?.data.evaluation?.score ?? 1),
+                      2
+                    );
 
                 return {
                   x,
                   y: index,
-                  z: s.indicatorResult!.score,
-                  color: s.indicatorResult!.value.success
-                    ? this._evaluationColor[s.indicatorResult!.status]
+                  z: s.indicatorResult.score,
+                  color: s.indicatorResult.value.success
+                    ? this._evaluationColor[s.indicatorResult.status]
                     : this._evaluationColor.info,
+                  data: {
+                    keySli: s.indicatorResult.keySli,
+                    score: score,
+                    passTargets: s.indicatorResult.passTargets,
+                    warningTargets: s.indicatorResult.warningTargets,
+                  },
+                  value: AppUtils.formatNumber(s.indicatorResult.value.value),
                 };
-                /* eslint-enable @typescript-eslint/no-non-null-assertion */
               }),
           ],
           [] as HeatmapData[]
         ),
       },
     ];
+  }
+
+  public formatNumber(num: number): number {
+    return AppUtils.formatNumber(num);
   }
 
   private getChartSeries(evaluationHistory: Trace[]): EvaluationChartItem[] {
@@ -645,7 +701,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   selectEvaluationData(evaluation?: Trace, forceSelect = false): void {
     if (this._shouldSelectEvaluation || forceSelect) {
-      this.parseSloFile(evaluation);
       this._selectedEvaluationData = evaluation;
       this.highlightHeatmap();
     }
@@ -769,8 +824,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  public getEvaluationFromPoint(tooltip: { points: SeriesPoint[] }): Trace {
-    return tooltip.points[0].point.evaluationData;
+  public getEvaluationFromPoint(points: SeriesPoint[]): Trace {
+    return points[0].point.evaluationData;
   }
 
   public toggleHeatmap(): void {

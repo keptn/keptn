@@ -35,6 +35,85 @@
       [series]="heatmapSeries"
       (seriesVisibilityChange)="seriesVisibilityChanged($event)"
     >
+      <dt-chart-tooltip>
+        <ng-template let-tooltip>
+          <dt-key-value-list style="min-width: 100px" *ngIf="tooltip.point.point as dataPoint">
+            <dt-key-value-list-item>
+              <dt-key-value-list-key> Value </dt-key-value-list-key>
+              <dt-key-value-list-value>
+                {{ dataPoint.value | number: '1.0-2' }}
+              </dt-key-value-list-value>
+            </dt-key-value-list-item>
+
+            <ng-container *ngIf="dataPoint.sliInfo as info">
+              <dt-key-value-list-item>
+                <dt-key-value-list-key> Total warning SLIs </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  {{ info.warningCount }}
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <dt-key-value-list-item>
+                <dt-key-value-list-key> Total failed SLIs </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  {{ info.failedCount }}
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <span class="key-value-parent"> Threshold </span>
+              <dt-key-value-list-item class="ml-1">
+                <dt-key-value-list-key>pass</dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  <span [class.error]="info.fail" [textContent]="info.thresholdPass"></span>
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <dt-key-value-list-item class="ml-1">
+                <dt-key-value-list-key>warning</dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  <span
+                    [class.warning]="info.warn && !info.fail"
+                    [class.error]="info.fail"
+                    [textContent]="info.thresholdWarn"
+                  ></span>
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+            </ng-container>
+
+            <ng-container *ngIf="dataPoint.data">
+              <dt-key-value-list-item>
+                <dt-key-value-list-key> Score </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  {{ dataPoint.data.score | number: '1.0-2' }}
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <dt-key-value-list-item>
+                <dt-key-value-list-key> Key SLI </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  {{ dataPoint.data.keySli ? 'true' : 'false' }}
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <span class="key-value-parent">Pass Criteria</span>
+              <dt-key-value-list-item *ngFor="let target of dataPoint.data.passTargets" class="ml-1">
+                <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <span class="key-value-parent"> Warning Criteria </span>
+              <dt-key-value-list-item *ngFor="let target of dataPoint.data.warningTargets" class="ml-1">
+                <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+            </ng-container>
+          </dt-key-value-list>
+        </ng-template>
+      </dt-chart-tooltip>
     </dt-chart>
 
     <button
