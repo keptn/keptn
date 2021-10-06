@@ -79,7 +79,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	//create dependencies
-
 	mesh := mesh.NewIstioMesh()
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
