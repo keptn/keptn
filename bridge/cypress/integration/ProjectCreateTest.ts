@@ -55,13 +55,5 @@ describe('Create new project test', () => {
     cy.get('input[id="shipyard-file-input"]').attachFile('shipyard.yaml');
 
     newProjectCreatePage.clickCreateProject();
-
-    // eslint-disable-next-line promise/catch-or-return,promise/always-return
-    // cy.fixture('create.project.request.body').then((requestBody) => {
-    //   console.log(cy.get('@createProjectUrl'));
-    //   newProjectCreatePage.clickCreateProject();
-    //   cy.wait(1000);
-    //   cy.get('@createProjectUrl').its('request.body').should('deep.equal', requestBody);
-    // });
   });
 });
