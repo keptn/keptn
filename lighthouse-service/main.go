@@ -24,13 +24,12 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
-
 	os.Exit(_main(os.Args[1:], env))
 }
 
 func _main(args []string, env envConfig) int {
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+
+	ctx := cloudevents.WithEncodingStructured(context.Background())
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
