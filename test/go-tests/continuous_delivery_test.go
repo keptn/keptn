@@ -124,8 +124,11 @@ func Test_Continuous_Delivery(t *testing.T) {
 	gitExamplesBranchName := "master"
 	gitExampleRepositoryLocalDir, _ := CreateTmpDir()
 	keptnProjectName := "sockshop"
-	keptnServiceName := "carts"
+	cartsServiceName := "carts"
 	cartsChartLocalDir := path.Join(gitExampleRepositoryLocalDir, "onboarding-carts", "carts")
+	cartsJmeterDir := path.Join(gitExampleRepositoryLocalDir, "onboarding-carts", "jmeter")
+	cartsDBServiceName := "carts-db"
+	cartsDBChartLocalDir := path.Join(gitExampleRepositoryLocalDir, "onboarding-carts", "carts-db")
 
 	t.Logf("Cloning Keptn examples GIT repository %s from branch %s", gitExamplesRepositoryURL, gitExamplesBranchName)
 	_, err := ExecuteCommandf("git clone --branch %s %s --single-branch %s", gitExamplesBranchName, gitExamplesRepositoryURL, gitExampleRepositoryLocalDir)
@@ -137,7 +140,20 @@ func Test_Continuous_Delivery(t *testing.T) {
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("Onboarding service %s in project %s with chart %s", keptnServiceName, keptnProjectName, cartsChartLocalDir)
-	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", keptnServiceName, keptnProjectName, cartsChartLocalDir)
+	t.Logf("Onboarding service %s in project %s with chart %s", cartsServiceName, keptnProjectName, cartsChartLocalDir)
+	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", cartsServiceName, keptnProjectName, cartsChartLocalDir)
+	require.Nil(t, err)
+
+	t.Log("Adding functional test resources for jmeter")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, cartsServiceName, "dev", cartsJmeterDir+"/basiccheck.jmx", "jmeter/basiccheck.jmx")
+	require.Nil(t, err)
+
+	t.Log("Adding performance test resources for jmeter")
+	// Note: in order to speed up the tests we use basiccheck also for performance test
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, cartsServiceName, "staging", cartsJmeterDir+"/basiccheck.jmx", "jmeter/basiccheck.jmx")
+	require.Nil(t, err)
+
+	t.Logf("Onboarding service %s in project %s with chart %s", cartsDBServiceName, keptnProjectName, cartsDBChartLocalDir)
+	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", cartsDBServiceName, keptnProjectName, cartsDBChartLocalDir)
 	require.Nil(t, err)
 }
