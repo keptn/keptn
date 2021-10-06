@@ -59,6 +59,7 @@ bridge:
     discovery: ""
     secureCookie: false
     trustProxy: ""
+    sessionTimeoutMin: ""
 
 distributor:
   metadata:

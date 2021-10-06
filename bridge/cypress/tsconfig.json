@@ -6,7 +6,7 @@
     "outDir": "../out-tsc/e2e",
     "module": "commonjs",
     "target": "ES2018",
-    "types": ["cypress"],
+    "types": ["cypress", "cypress-file-upload"],
     "lib": ["es2018", "dom"]
   }
 }

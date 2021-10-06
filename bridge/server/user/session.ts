@@ -13,7 +13,7 @@ declare module 'express-session' {
 const memoryStore = mS(expressSession);
 const router = Router();
 const CHECK_PERIOD = 600_000; // check every 10 minutes
-const SESSION_TIME = 1_200_000; // max age is 20 minutes
+const SESSION_TIME = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
@@ -104,7 +104,7 @@ function removeSession(req: Request): void {
 }
 
 function sessionRouter(app: Express): Router {
-  console.log('Enabling sessions for bridge.');
+  console.log(`Enabling sessions for bridge with session timeout ${SESSION_TIME}ms.`);
 
   if (process.env.SECURE_COOKIE === 'true') {
     console.log('Setting secure cookies. Make sure SSL is enabled for deployment & correct trust proxy value is used.');
@@ -125,6 +125,23 @@ function sessionRouter(app: Express): Router {
   router.use(expressSession(sessionConfig));
 
   return router;
+}
+
+/**
+ * Function to determine session timeout. Input value is in minutes and return value is in millisecond. Value can be
+ * configurable through environment variable SESSION_TIMEOUT_MIN. If the configuration is invalid, fallback to
+ * provided default value.
+ */
+function getOrDefaultSessionTimeout(defMinutes: number): number {
+  if (process.env.SESSION_TIMEOUT_MIN) {
+    const sTimeout = parseInt(process.env.SESSION_TIMEOUT_MIN, 10);
+
+    if (!isNaN(sTimeout) && sTimeout > 0) {
+      return sTimeout * 60 * 1000;
+    }
+  }
+
+  return defMinutes * 60 * 1000;
 }
 
 export { sessionRouter };

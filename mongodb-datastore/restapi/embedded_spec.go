@@ -228,6 +228,20 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health endpoint",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "healthy"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -312,7 +326,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "mongodb-datastore",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/",
   "paths": {
@@ -527,6 +541,20 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health endpoint",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "healthy"
+          }
+        }
+      }
     }
   },
   "definitions": {
