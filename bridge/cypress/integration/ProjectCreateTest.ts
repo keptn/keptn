@@ -13,15 +13,27 @@ describe('Create new project test', () => {
     cy.fixture('get.project.json').as('initProjectJSON');
     cy.fixture('metadata.json').as('initmetadata');
 
-    cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
+    cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata' }).as('metadataCmpl');
+
     cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
       fixture: 'get.project.json',
     }).as('initProjects');
+
     cy.intercept('POST', 'api/controlPlane/v1/project', {
       statusCode: 200,
-      body: '',
+      body: {},
     }).as('createProjectUrl');
-    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
+
+    // eslint-disable-next-line promise/catch-or-return,promise/always-return
+    cy.fixture('create.project.request.body').then((reqBody) => {
+      cy.intercept('POST', 'api/controlPlane/v1/project', (req) => {
+        expect(req.body).to.deep.equal(reqBody);
+        return { status: 200, body: {} };
+      });
+    });
+
+    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences' });
+
     cy.intercept('GET', 'api/project/testproject?approval=true&remediation=true', {
       statusCode: 200,
     }).as('projectApproval');
@@ -44,11 +56,12 @@ describe('Create new project test', () => {
 
     newProjectCreatePage.clickCreateProject();
 
-    cy.wait('@createProjectUrl', { timeout: 20000 });
-
-    return cy.fixture('create.project.request.body.json').then((createProjjson) => {
-      cy.get('@createProjectUrl').its('request.body').should('deep.equal', createProjjson);
-      return null;
-    });
+    // eslint-disable-next-line promise/catch-or-return,promise/always-return
+    // cy.fixture('create.project.request.body').then((requestBody) => {
+    //   console.log(cy.get('@createProjectUrl'));
+    //   newProjectCreatePage.clickCreateProject();
+    //   cy.wait(1000);
+    //   cy.get('@createProjectUrl').its('request.body').should('deep.equal', requestBody);
+    // });
   });
 });
