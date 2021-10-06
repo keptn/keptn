@@ -28,6 +28,5 @@ afterEach(() => {
   // eslint-disable-next-line promise/always-return,promise/catch-or-return
   cy.window().then((window) => {
     expect(window.console.error).to.have.callCount(0);
-    expect(window.console.warn).to.have.callCount(0);
   });
 });
