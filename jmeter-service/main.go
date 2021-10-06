@@ -36,7 +36,6 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
-
 	os.Exit(_main(os.Args[1:], env))
 }
 
