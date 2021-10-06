@@ -156,4 +156,45 @@ func Test_Continuous_Delivery(t *testing.T) {
 	t.Logf("Onboarding service %s in project %s with chart %s", cartsDBServiceName, keptnProjectName, cartsDBChartLocalDir)
 	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", cartsDBServiceName, keptnProjectName, cartsDBChartLocalDir)
 	require.Nil(t, err)
+
+	t.Logf("Trigger delivery of carts db")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=mongo:latest --sequence=delivery-direct", keptnProjectName, cartsDBServiceName)
+	require.Nil(t, err)
+
+	t.Logf("Trigger delivery of carts")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, cartsServiceName, "docker.io/keptnexamples/carts", "0.10.1", "delivery")
+	require.Nil(t, err)
+
+	t.Log("Verify direct delivery of carts db in stage dev")
+	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "dev", "mongo", "latest")
+	require.Nil(t, err)
+
+	t.Log("Verify Direct delivery of carts in stage dev")
+	err = VerifyDirectDeployment(cartsServiceName, keptnProjectName, "dev", "docker.io/keptnexamples/carts", "0.10.1")
+	require.Nil(t, err)
+
+	t.Log("Verify direct delivery of carts db in stage staging")
+	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "staging", "mongo", "latest")
+	require.Nil(t, err)
+
+	t.Log("Verify delivery of carts in stage staging")
+	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "staging", "docker.io/keptnexamples/carts", "0.10.1")
+	require.Nil(t, err)
+
+	t.Log("Verify direct delivery of carts db in stage prod-a")
+	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "prod-a", "mongo", "latest")
+	require.Nil(t, err)
+
+	t.Log("Verify delivery of carts in stage prod-a")
+	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "prod-a", "docker.io/keptnexamples/carts", "0.10.1")
+	require.Nil(t, err)
+
+	t.Log("Verify direct delivery of carts db in stage prod-b")
+	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "prod-b", "mongo", "latest")
+	require.Nil(t, err)
+
+	t.Log("Verify delivery of carts in stage prod-a")
+	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "prod-b", "docker.io/keptnexamples/carts", "0.10.1")
+	require.Nil(t, err)
+
 }
