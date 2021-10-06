@@ -12,12 +12,12 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
-
 // When a command from ./commands is ready to use, import with `import './commands'` syntax
-import './commands';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'cypress-xpath';
+import './commands';
+import './intercept';
 
 Cypress.on('window:before:load', (window) => {
   cy.spy(window.console, 'error');
@@ -28,6 +28,5 @@ afterEach(() => {
   // eslint-disable-next-line promise/always-return,promise/catch-or-return
   cy.window().then((window) => {
     expect(window.console.error).to.have.callCount(0);
-    expect(window.console.warn).to.have.callCount(0);
   });
 });

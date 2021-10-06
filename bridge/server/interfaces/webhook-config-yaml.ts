@@ -1,6 +1,6 @@
 import Yaml from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
-import { WebhookConfig } from '../../shared/models/webhook-config';
+import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
 import { WebhookConfigYamlResult } from './webhook-config-yaml-result';
 
 const order: { [key: string]: number } = {
@@ -20,6 +20,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     webhooks: {
       type: string; // type === event
       requests: string[];
+      envFrom?: WebhookSecret[];
     }[];
   };
 
@@ -70,19 +71,33 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @params eventType
    * @params curl
    */
-  public addWebhook(eventType: string, curl: string): void {
+  public addWebhook(eventType: string, curl: string, secrets: WebhookSecret[]): void {
     const webhook = this.spec.webhooks.find((w) => w.type === eventType);
     if (!webhook) {
-      this.spec.webhooks.push({ type: eventType, requests: [curl] });
+      if (secrets.length) {
+        this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets });
+      } else {
+        this.spec.webhooks.push({ type: eventType, requests: [curl] });
+      }
     } else {
       // overwrite
       webhook.requests[0] = curl;
+      if (secrets && secrets.length) {
+        webhook.envFrom = secrets;
+      }
     }
   }
 
   public parsedRequest(eventType: string): WebhookConfig | undefined {
-    const curl = this.spec.webhooks.find((w) => w.type === eventType)?.requests[0];
-    return curl ? this.parseConfig(curl) : undefined;
+    const webhook = this.spec.webhooks.find((w) => w.type === eventType);
+    const curl = webhook?.requests[0];
+    const secrets = webhook?.envFrom;
+
+    const parsedConfig = curl ? this.parseConfig(curl) : undefined;
+    if (parsedConfig) {
+      parsedConfig.secrets = secrets;
+    }
+    return parsedConfig;
   }
 
   private parseConfig(curl: string): WebhookConfig {
