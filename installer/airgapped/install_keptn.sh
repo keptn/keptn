@@ -39,6 +39,7 @@ control-plane.statisticsService.image.repository=${TARGET_INTERNAL_DOCKER_REGIST
 control-plane.lighthouseService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/lighthouse-service,\
 control-plane.secretService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/secret-service,\
 control-plane.approvalService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/approval-service,\
+control-plane.webhookService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/webhook-service,\
 continuous-delivery.distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/distributor"
 
 echo ""
