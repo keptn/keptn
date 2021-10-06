@@ -1,10 +1,89 @@
 /// <reference types="cypress" />
 
-//import BasePage from '../support/pageobjects/BasePage';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Test Navigation Buttons In Evaluation Screen', () => {
   it('The test clicks on Navigation buttons and make sure the pages are aopen respectivily ', () => {
-    //  const basePage = new BasePage();
-    //basePage.gotoServicesPage();
+    const basePage = new BasePage();
+
+    cy.fixture('get.project.json').as('initProjectJSON');
+    cy.fixture('metadata.json').as('initmetadata');
+
+    cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
+    cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
+      fixture: 'get.project.json',
+    }).as('initProjects');
+
+    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?*', { fixture: 'project.sequences.json' });
+
+    cy.intercept('PUT', 'api/controlPlane/v1/project', {
+      statusCode: 200,
+    }).as('changeGitCredentials');
+
+    cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
+      statusCode: 200,
+    }).as('hasUnreadUniformRegistrationLogs');
+
+    cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
+      statusCode: 200,
+      fixture: 'get.approval.json',
+    }).as('getApproval');
+
+    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=100&name=remediation&state=triggered', {
+      statusCode: 200,
+      fixture: 'sequence.dynatrace.json',
+    });
+
+    cy.intercept('GET', 'api/mongodb-datastore/event?root=true&pageSize=1&project=dynatrace&*', {
+      statusCode: 200,
+      fixture: 'service/get.eval.data.json',
+    }).as('getEventRoot');
+
+    cy.intercept('GET', 'api/mongodb-datastore/event?keptnContext=*&project=dynatrace', {
+      statusCode: 200,
+      fixture: 'service/get.event2.data.json',
+    }).as('getEventKeptnContextWithProject');
+
+    cy.intercept('GET', 'api/mongodb-datastore/event?keptnContext=*', {
+      statusCode: 200,
+      fixture: 'service/get.event.keptn.context.json',
+    }).as('getEventWithKeptnContext');
+
+    cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+      statusCode: 200,
+      fixture: 'service/get.eval.data.json',
+    }).as('getEventEvalFinished');
+
+    cy.intercept(
+      'GET',
+      'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:dynatrace*',
+      {
+        statusCode: 200,
+        fixture: 'service/get.eval.data.json',
+      }
+    ).as('getEventEvalFinishedWithProject');
+
+    cy.visit('/');
+    cy.wait('@metadataCmpl');
+    basePage.declineAutomaticUpdate().clickProjectTile('dynatrace');
+    basePage
+      .goToServicesPage()
+      .clickOnServicePanelByName('items')
+      .clickOnServiceInnerPanelByName('items')
+      .clickEvaluationBoardButton()
+      .clickViewServiceDetails()
+      .verifyCurrentOpenServiceNameEvaluationPanel('items')
+      .clickEvaluationBoardButton()
+      .clickViewSequenceDetails();
+
+    cy.get('*[uitestid="keptn-sequence-view-roots"]');
+
+    basePage
+      .goToServicesPage()
+      .clickOnServicePanelByName('items')
+      .clickOnServiceInnerPanelByName('items')
+      .clickEvaluationBoardButton()
+      .clickGoBack()
+      .verifyCurrentOpenServiceNameEvaluationPanel('items');
   });
 });

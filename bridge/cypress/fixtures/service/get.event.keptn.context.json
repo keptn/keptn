@@ -1,0 +1,225 @@
+{
+  "events": [
+    {
+      "data": {
+        "labels": {
+          "Dashboard Link": "https://cui38248.dev.dynatracelabs.com#dashboard;id=fce12958-fdfc-4a67-9484-49353a6091da;gtf=c_1633511213000_1633511513000",
+          "DtCreds": "dynatrace"
+        },
+        "project": "dynatrace",
+        "result": "pass",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "succeeded"
+      },
+      "id": "cd87f6aa-7d1c-44be-9e6a-2f0d8416e6d7",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:12:17.289Z",
+      "type": "sh.keptn.event.quality-gate.evaluation.finished",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "a8496705-7472-4554-8cea-e79d63330620"
+    },
+    {
+      "data": {
+        "evaluation": {
+          "comparedEvents": ["d916dc5d-0fb9-46aa-8759-4ec74b93a9f1"],
+          "gitCommit": "",
+          "indicatorResults": [
+            {
+              "displayName": "",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<37",
+                  "targetValue": 37,
+                  "violated": false
+                }
+              ],
+              "score": 2,
+              "status": "pass",
+              "value": {
+                "metric": "teststep_rt",
+                "success": true,
+                "value": 3.2136448032290614
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<81",
+                  "targetValue": 81,
+                  "violated": false
+                }
+              ]
+            }
+          ],
+          "result": "pass",
+          "score": 100,
+          "sloFileContent": "c3BlY192ZXJzaW9uOiAiIgpmaWx0ZXI6IHt9CmNvbXBhcmlzb246CiAgY29tcGFyZV93aXRoOiBzaW5nbGVfcmVzdWx0CiAgaW5jbHVkZV9yZXN1bHRfd2l0aF9zY29yZTogcGFzcwogIG51bWJlcl9vZl9jb21wYXJpc29uX3Jlc3VsdHM6IDEKICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2ZwpvYmplY3RpdmVzOgotIHNsaTogdGVzdHN0ZXBfcnQKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDwzNwogIHdhcm5pbmc6CiAgLSBjcml0ZXJpYToKICAgIC0gPDgxCiAgd2VpZ2h0OiAyCiAga2V5X3NsaTogZmFsc2UKdG90YWxfc2NvcmU6CiAgcGFzczogOTAlCiAgd2FybmluZzogNzUlCg==",
+          "timeEnd": "2021-10-06T09:11:53.345Z",
+          "timeStart": "2021-10-06T09:06:53.345Z"
+        },
+        "labels": {
+          "Dashboard Link": "https://cui38248.dev.dynatracelabs.com#dashboard;id=fce12958-fdfc-4a67-9484-49353a6091da;gtf=c_1633511213000_1633511513000",
+          "DtCreds": "dynatrace"
+        },
+        "project": "dynatrace",
+        "result": "pass",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "succeeded"
+      },
+      "id": "f00d84b1-c0b8-4fe4-a120-f72b25f0dcd2",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:12:17.013Z",
+      "type": "sh.keptn.event.evaluation.finished",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "e2b2192d-7440-4010-88f6-147049d13c27"
+    },
+    {
+      "data": {
+        "get-sli": {
+          "end": "2021-10-06T09:11:53.345Z",
+          "indicatorValues": [
+            {
+              "metric": "teststep_rt",
+              "success": true,
+              "value": 3.2136448032290614
+            }
+          ],
+          "start": "2021-10-06T09:06:53.345Z"
+        },
+        "labels": {
+          "Dashboard Link": "https://cui38248.dev.dynatracelabs.com#dashboard;id=fce12958-fdfc-4a67-9484-49353a6091da;gtf=c_1633511213000_1633511513000",
+          "DtCreds": "dynatrace"
+        },
+        "project": "dynatrace",
+        "result": "pass",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "succeeded"
+      },
+      "id": "f7961113-d865-4d7d-b619-8182c7db578b",
+      "source": "dynatrace-service",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:12:14.591Z",
+      "type": "sh.keptn.event.get-sli.finished",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "6657b28e-2682-4acd-a2bb-f8057076712d"
+    },
+    {
+      "data": {
+        "project": "dynatrace",
+        "result": "pass",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "succeeded"
+      },
+      "id": "be0e3d5a-0f60-4ce6-9a38-ee1d2c00df7e",
+      "source": "dynatrace-service",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:11:56.832Z",
+      "type": "sh.keptn.event.get-sli.started",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "6657b28e-2682-4acd-a2bb-f8057076712d"
+    },
+    {
+      "data": {
+        "deployment": "",
+        "get-sli": {
+          "end": "2021-10-06T09:11:53.345Z",
+          "indicators": ["response_time_p95", "error_rate", "throughput"],
+          "sliProvider": "dynatrace",
+          "start": "2021-10-06T09:06:53.345Z"
+        },
+        "project": "dynatrace",
+        "service": "items",
+        "stage": "quality-gate"
+      },
+      "id": "6657b28e-2682-4acd-a2bb-f8057076712d",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:11:55.817Z",
+      "type": "sh.keptn.event.get-sli.triggered",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3"
+    },
+    {
+      "data": {
+        "project": "dynatrace",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "succeeded"
+      },
+      "id": "a3b9aa96-002e-42b4-ac46-d7c40d0e4288",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:11:54.497Z",
+      "type": "sh.keptn.event.evaluation.started",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "e2b2192d-7440-4010-88f6-147049d13c27"
+    },
+    {
+      "data": {
+        "deployment": {
+          "deploymentNames": null
+        },
+        "evaluation": {
+          "end": "2021-10-06T09:11:53.345Z",
+          "start": "2021-10-06T09:06:53.345Z",
+          "timeframe": ""
+        },
+        "message": "",
+        "project": "dynatrace",
+        "result": "",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "",
+        "test": {
+          "end": "",
+          "start": ""
+        }
+      },
+      "id": "e2b2192d-7440-4010-88f6-147049d13c27",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:11:54.404Z",
+      "type": "sh.keptn.event.evaluation.triggered",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3"
+    },
+    {
+      "data": {
+        "deployment": {
+          "deploymentNames": null
+        },
+        "evaluation": {
+          "end": "2021-10-06T09:11:53.345Z",
+          "start": "2021-10-06T09:06:53.345Z",
+          "timeframe": ""
+        },
+        "project": "dynatrace",
+        "service": "items",
+        "stage": "quality-gate",
+        "test": {
+          "end": "",
+          "start": ""
+        }
+      },
+      "id": "a8496705-7472-4554-8cea-e79d63330620",
+      "source": "https://github.com/keptn/keptn/api",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:11:53.345Z",
+      "type": "sh.keptn.event.quality-gate.evaluation.triggered",
+      "shkeptncontext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+      "shkeptnspecversion": "0.2.3"
+    }
+  ],
+  "pageSize": 100,
+  "totalCount": 8
+}
