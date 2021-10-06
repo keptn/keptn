@@ -40,6 +40,7 @@ objectives:
           - "<+15%"
           - ">-8%"
           - "<500"
+  - null
   - sli: security_vulnerabilities
     weight: 2
     pass:
