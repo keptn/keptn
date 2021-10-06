@@ -3,6 +3,9 @@
 // with Intellisense and code completion in your
 // IDE or Text Editor.
 // ***********************************************
+
+import 'cypress-file-upload';
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Cypress {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,4 +53,3 @@ Cypress.Commands.add('byTestId', byTestId);
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
-import 'cypress-file-upload';
