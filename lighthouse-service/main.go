@@ -29,7 +29,8 @@ func main() {
 
 func _main(args []string, env envConfig) int {
 
-	ctx := cloudevents.WithEncodingStructured(context.Background())
+	ctx := context.Background()
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
