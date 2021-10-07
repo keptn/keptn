@@ -2,11 +2,11 @@
   "name": "bridge",
   "private": true,
   "scripts": {
-    "start": "cd ./server && npm run start",
+    "start": "cd ./server && yarn start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
-    "start:prod": "npm run build && npm run start",
+    "start:prod": "yarn build && yarn start",
     "start:client:dev": "ng build --watch",
-    "start:server:dev": "cd ./server && npm run dev",
+    "start:server:dev": "cd ./server && yarn dev",
     "start:ci": "ng serve --port=3000 --no-live-reload --configuration=test",
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
@@ -15,7 +15,6 @@
     "lint:fix": "eslint --fix ./",
     "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
-    "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run --browser=chrome",
     "test:ui": "start-server-and-test start:ci http://localhost:3000 cypress:run"

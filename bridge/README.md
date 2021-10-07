@@ -106,8 +106,8 @@ kubectl delete -f deploy/service.yaml
 
 ## Local development
 
-1. Run `npm install` from bridge root level.
-2. Run `npm install` from server folder.
+1. Run `yarn install` from bridge root level.
+2. Run `yarn install` from server folder.
 3. Set `API_URL` and `API_TOKEN` environment variables, depending on your Keptn installation and operating system:
    **Linux/MacOS**
    ```console
@@ -119,7 +119,7 @@ kubectl delete -f deploy/service.yaml
    set API_URL=http://keptn.127.0.0.1.nip.io/api
    set API_TOKEN=1234-exam-ple
    ```
-4. Run `npm run start:dev` from bridge root level to start the express server and the Angular app.
+4. Run `yarn start:dev` from bridge root level to start the express server and the Angular app.
 5. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ### UI testing with Cypress
@@ -219,7 +219,7 @@ The automatic ESLint configuration detects automatically the `.eslintrc.json` fi
 #### Visual Studio Code
 
 - Install the [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) extension
-- Run `npm i eslint`
+- Run `yarn add eslint`
 - Close and re-open VSCode for ESLint to work properly
 
 ### Additional configurations
