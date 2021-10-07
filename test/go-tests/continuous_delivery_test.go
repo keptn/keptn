@@ -119,7 +119,7 @@ spec:
             - name: "release"
 `
 
-func Test_Continuous_Delivery(t *testing.T) {
+func Test_ContinuousDelivery(t *testing.T) {
 
 	gitExamplesRepositoryURL := "https://github.com/keptn/examples"
 	gitExamplesBranchName := "master"

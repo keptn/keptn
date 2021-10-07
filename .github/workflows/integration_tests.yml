@@ -628,12 +628,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          PROJECT: "sockshop"
-          SERVICE: "carts"
-        run: |
-          test/test_onboard_service.sh
-          test/test_new_artifact.sh
-          test/test_delete_project.sh
+        run: cd test/go-tests && go test -run ContinuousDelivery -v
 
       - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
         id: test_continuous_delivery_remote_exec
@@ -642,12 +637,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          PROJECT: "sockshop"
-          SERVICE: "carts"
-        run: |
-          test/test_onboard_service.sh
-          test/test_new_artifact.sh
-          test/test_delete_project.sh
+        run: cd test/go-tests && go test -run ContinuousDelivery -v
 
       - name: Test Manage Secrets
         id: test_manage_secrets
