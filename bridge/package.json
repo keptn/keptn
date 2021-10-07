@@ -2,6 +2,7 @@
   "name": "bridge",
   "private": true,
   "scripts": {
+    "serve": "ng serve --port=3000 --no-live-reload",
     "start": "cd ./server && yarn start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
     "start:prod": "yarn build && yarn start",
