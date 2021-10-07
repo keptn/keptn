@@ -41,7 +41,10 @@ describe('Integrations', () => {
 
     // then
     // It should redirect after successfully sending the subscription
-    cy.location('pathname').should('eq', '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297');
+    cy.location('pathname').should(
+      'eq',
+      '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscriptions/add'
+    );
   });
 
   it('should add a webhook subscription', () => {
@@ -90,7 +93,10 @@ describe('Integrations', () => {
 
     cy.byTestId('updateSubscriptionButton').click();
     // It should redirect after successfully sending the subscription
-    cy.location('pathname').should('eq', '/project/sockshop/uniform/services/0f2d35875bbaa72b972157260a7bd4af4f2826df');
+    cy.location('pathname').should(
+      'eq',
+      '/project/sockshop/uniform/services/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscriptions/add'
+    );
   });
 
   function addSecret(): void {
