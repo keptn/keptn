@@ -2,12 +2,12 @@
   "name": "bridge",
   "private": true,
   "scripts": {
-    "serve": "ng serve --port=3000 --no-live-reload",
     "start": "cd ./server && npm run start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
     "start:prod": "npm run build && npm run start",
     "start:client:dev": "ng build --watch",
     "start:server:dev": "cd ./server && npm run dev",
+    "start:ci": "ng serve --port=3000 --no-live-reload",
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "jest --config=jest.config.ts",
@@ -17,7 +17,9 @@
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
     "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "serve:ci": "ng serve --port=3000 --no-live-reload",
+    "test:ui": "start-server-and-test serve http://localhost:3000 cypress:run"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
@@ -111,6 +113,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "2.4.1",
     "puppeteer": "^10.4.0",
+    "start-server-and-test": "^1.14.0",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.1.0",
     "typescript": "^4.1.6"
