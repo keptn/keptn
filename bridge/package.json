@@ -7,7 +7,7 @@
     "start:prod": "npm run build && npm run start",
     "start:client:dev": "ng build --watch",
     "start:server:dev": "cd ./server && npm run dev",
-    "start:ci": "ng serve --port=3000 --no-live-reload",
+    "start:ci": "ng serve --port=3000 --no-live-reload --configuration=test",
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "jest --config=jest.config.ts",

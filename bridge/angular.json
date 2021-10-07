@@ -75,6 +75,14 @@
                   "maximumError": "18kb"
                 }
               ]
+            },
+            "test": {
+              "fileReplacements": [
+                {
+                  "replace": "client/environments/environment.ts",
+                  "with": "client/environments/environment.test.ts"
+                }
+              ]
             }
           }
         },
@@ -86,6 +94,9 @@
           "configurations": {
             "production": {
               "browserTarget": "bridge:build:production"
+            },
+            "test": {
+              "browserTarget": "bridge:build:test"
             }
           }
         },

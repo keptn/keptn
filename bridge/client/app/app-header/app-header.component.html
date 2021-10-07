@@ -133,7 +133,11 @@
   ></ktb-user>
 </dt-context-dialog>
 
-<dt-confirmation-dialog [state]="versionCheckDialogState" aria-label="Version check feature info">
+<dt-confirmation-dialog
+  [state]="versionCheckDialogState"
+  aria-label="Version check feature info"
+  *ngIf="isVersionCheckEnabled"
+>
   <dt-confirmation-dialog-state name="info">
     Keptn provides an automatic version check to be notified about new versions and security patches for Keptn. It is
     recommended to have this check enabled. This setting can be changed in the user menu on the top right.

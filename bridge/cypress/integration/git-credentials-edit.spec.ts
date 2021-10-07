@@ -42,7 +42,6 @@ describe('Changing git credentials', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
-    basePage.declineAutomaticUpdate();
     basePage.selectProject(DYNATRACE_PROJECT);
     basePage
       .gotoSettingsPage()

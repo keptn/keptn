@@ -14,7 +14,7 @@ class Environment extends DynamicEnvironment {
     this.production = false;
     this.appConfigUrl = 'assets/default-branding/app-config.json';
     this.baseUrl = '/';
-    this.versionCheckEnabled = true;
+    this.versionCheckEnabled = false;
   }
 }
 

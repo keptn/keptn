@@ -45,7 +45,6 @@ describe('Create new project test', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
-    basePage.declineAutomaticUpdate();
     basePage
       .clickCreateNewProjectButton()
       .inputProjectName(PROJECT_NAME)
