@@ -341,6 +341,7 @@ jobs:
           yarn global add codecov
           yarn global add libnpx@10.2.0
           yarn install --frozen-lockfile
+        working-directory: ./bridge
       - name: Test
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
         run: |
@@ -378,6 +379,7 @@ jobs:
           yarn global add codecov
           yarn global add libnpx@10.2.0
           yarn install --frozen-lockfile
+        working-directory: ./bridge
       - name: Test
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
         run: |
