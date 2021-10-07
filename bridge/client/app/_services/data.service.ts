@@ -158,16 +158,18 @@ export class DataService {
 
   public updateUniformSubscription(
     integrationId: string,
-    subscription: UniformSubscription
+    subscription: UniformSubscription,
+    webhookConfig?: WebhookConfig
   ): Observable<Record<string, unknown>> {
-    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced);
+    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
 
   public createUniformSubscription(
     integrationId: string,
-    subscription: UniformSubscription
+    subscription: UniformSubscription,
+    webhookConfig?: WebhookConfig
   ): Observable<Record<string, unknown>> {
-    return this.apiService.createUniformSubscription(integrationId, subscription.reduced);
+    return this.apiService.createUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
 
   public getUniformRegistrationLogs(
@@ -682,17 +684,13 @@ export class DataService {
       .pipe(map((taskNames) => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))));
   }
 
-  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
-    return this.apiService.saveWebhookConfig(config);
-  }
-
   public getWebhookConfig(
-    eventType: string,
+    subscriptionId: string,
     projectName: string,
     stageName?: string,
     serviceName?: string
   ): Observable<WebhookConfig> {
-    return this.apiService.getWebhookConfig(eventType, projectName, stageName, serviceName);
+    return this.apiService.getWebhookConfig(subscriptionId, projectName, stageName, serviceName);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
