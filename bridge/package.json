@@ -18,7 +18,6 @@
     "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "serve:ci": "ng serve --port=3000 --no-live-reload",
     "test:ui": "start-server-and-test serve http://localhost:3000 cypress:run"
   },
   "license": "Apache-2.0",
