@@ -2,7 +2,7 @@
 
 Keptn 0.10.0 provides a native way for integrating your tooling by just calling their Webhooks. This is a great enabler for various delivery and operational use cases that can be implemented without writing custom code. 
 
-Two steps and your tool is connect: (1) Definition of task that works as trigger followed by (2) the definition of HTTP request endpoint and payload for the Webhook. 
+Two steps and your tool is integrated: (1) definition of task that works as trigger (2) definition of HTTP request endpoint and payload for the Webhook. 
 
 > screenshot: webhook.png
 
