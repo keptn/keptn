@@ -1,0 +1,8 @@
+---
+spec_version: '1.0'
+indicators:
+  http_response_time_seconds_main_page_sum: sum(rate(http_server_request_duration_seconds_sum{method="GET",route="/",status_code="200",job="$SERVICE-$PROJECT-$STAGE-canary"}[$DURATION_SECONDS])/rate(http_server_request_duration_seconds_count{method="GET",route="/",status_code="200",job="$SERVICE-$PROJECT-$STAGE-canary"}[$DURATION_SECONDS]))
+  failing_request: promhttp_metric_handler_requests_total{code!="200",job="$SERVICE-$PROJECT-$STAGE"}
+  http_requests_total_sucess: http_requests_total{status="success"}
+  go_routines: go_goroutines{job="$SERVICE-$PROJECT-$STAGE"}
+  request_throughput: sum(rate(http_requests_total{status="success"}[$DURATION_SECONDS]))

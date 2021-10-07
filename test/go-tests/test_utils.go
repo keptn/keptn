@@ -451,14 +451,31 @@ func GetDiagnostics(service string) string {
 }
 
 func VerifyDirectDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*2, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
 
 func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
+	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*2, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
 		return err
 	}
-	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*2, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+}
+
+func VerifyTaskStartedEventExists(t *testing.T, keptnContext, projectName, stage string, taskName string) {
+	var startedEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Logf("verifying that " + taskName + ".finished event for context %s does exist", keptnContext)
+		taskStarted, err := GetLatestEventOfType(keptnContext, projectName, stage, keptnv2.GetStartedEventType(taskName))
+		if err != nil || taskStarted == nil {
+			return false
+		}
+		startedEvent = taskStarted
+		return true
+	}, 1*time.Minute, 10*time.Second)
+	eventData := &keptnv2.EventData{}
+	err := keptnv2.Decode(startedEvent.Data, eventData)
+
+	require.Nil(t, err)
 }
 
 func GetPublicURLOfService(serviceName, projectName, stageName string) (string, error) {

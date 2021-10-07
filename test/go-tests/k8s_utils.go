@@ -111,7 +111,7 @@ func checkDeployment(client *kubernetes.Clientset, deploymentName, namespace str
 		}
 
 		// check replicas count
-		if deployment.Status.Replicas != *(deployment.Spec.Replicas) {
+		if deployment.Status.ReadyReplicas != *(deployment.Spec.Replicas) {
 			return false, nil
 		}
 
