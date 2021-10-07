@@ -35,7 +35,8 @@ gcloud beta container --project "$GCLOUD_PROJECT_NAME" clusters create "$CLUSTER
     --addons $ADDONS \
     --no-enable-autoupgrade --no-enable-autorepair \
     --enable-shielded-nodes \
-    --labels owner=ci,expiry=auto-delete
+    --labels owner=ci,expiry=auto-delete \
+    --default-max-pods-per-node "110"
 
 # shellcheck disable=SC2181
 if [[ $? != '0' ]]; then
