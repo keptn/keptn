@@ -1,6 +1,6 @@
 module.exports = {
   rootDir: './',
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/cypress'],
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/cypress', '<rootDir>/client/environments'],
   preset: 'jest-preset-angular',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   collectCoverage: true,
