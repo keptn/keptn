@@ -7,14 +7,12 @@ class Environment extends DynamicEnvironment {
   public production: boolean;
   public appConfigUrl: string;
   public baseUrl: string;
-  public versionCheckEnabled: boolean;
 
   constructor() {
     super();
     this.production = true;
     this.appConfigUrl = 'assets/branding/app-config.json';
     this.baseUrl = '/bridge';
-    this.versionCheckEnabled = true;
   }
 }
 

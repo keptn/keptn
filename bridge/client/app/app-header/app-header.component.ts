@@ -30,7 +30,6 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public keptnInfo?: KeptnInfo;
   public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
-  public isVersionCheckEnabled = environment.versionCheckEnabled;
 
   constructor(
     @Inject(DOCUMENT) private _document: HTMLDocument,
