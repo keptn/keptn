@@ -104,8 +104,8 @@ class HeatmapPoint implements IHeatmapPoint {
 })
 export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public comparedIndicatorResults: IndicatorResult[] = [];
   public HeatmapPointClass = HeatmapPoint;
+  public comparedIndicatorResults: IndicatorResult[][] = [];
   @Input() public showChart = true;
   @Input() public isInvalidated = false;
 
@@ -800,9 +800,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
-    const index = secondaryHighlightIndices.find((idx) => idx >= 0) ?? -1;
-    this.comparedIndicatorResults =
-      index >= 0 ? this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [] : [];
+    this.comparedIndicatorResults = secondaryHighlightIndices
+      .filter((idx) => idx >= 0)
+      .map((index) => {
+        return this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [];
+      });
     for (const secondaryHighlightIndex of secondaryHighlightIndices) {
       if (secondaryHighlightIndex >= 0) {
         plotBands.push({
