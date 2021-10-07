@@ -18,7 +18,7 @@
     "preinstall": "npx npm-force-resolutions",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test:ui": "start-server-and-test start:ci http://localhost:3000 cypress:run"
+    "test:ui": "start-server-and-test start:ci http://localhost:3000 cypress:run -- --browser=chrome"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",

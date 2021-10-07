@@ -379,12 +379,6 @@ jobs:
         with:
           name: bridge-e2e-screenshots
           path: bridge/dist/cypress/screenshots/
-      - name: Upload Bridge E2E Videos
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: bridge-e2e-videos
-          path: bridge/dist/cypress/videos/
 
   bridge-code-style:
     name: Bridge Code Style
