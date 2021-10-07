@@ -30,3 +30,4 @@ scopes:
   - secret-service
   - shipyard-controller
   - statistics-service
+  - webhook-service
