@@ -24,6 +24,7 @@ import { SequenceState } from '../../../shared/models/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
 
 @Injectable({
@@ -191,10 +192,14 @@ export class DataService {
     );
   }
 
+  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+    return this.apiService.getSecretsForScope(scope);
+  }
+
   public addSecret(secret: Secret): Observable<Record<string, unknown>> {
     return this.apiService.addSecret(
       Object.assign({}, secret, {
-        data: secret.data.reduce((result, item) => Object.assign(result, { [item.key]: item.value }), {}),
+        data: secret.data?.reduce((result, item) => Object.assign(result, { [item.key]: item.value }), {}),
       })
     );
   }

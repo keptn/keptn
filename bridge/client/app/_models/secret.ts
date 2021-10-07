@@ -1,14 +1,11 @@
+import { Secret as scrt, SecretKeyValuePair } from '../../../shared/interfaces/secret';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
-class KeyValuePair {
-  key!: string;
-  value!: string;
-}
-
-export class Secret {
+export class Secret implements scrt {
   name!: string;
-  scope!: string;
-  data: KeyValuePair[];
+  scope!: SecretScope;
+  keys?: string[];
+  data?: SecretKeyValuePair[];
 
   constructor() {
     this.scope = SecretScope.DEFAULT;
@@ -23,7 +20,7 @@ export class Secret {
     this.name = name;
   }
 
-  setScope(scope: string): void {
+  setScope(scope: SecretScope): void {
     this.scope = scope;
   }
 
@@ -31,7 +28,11 @@ export class Secret {
     this.data?.push({ key, value });
   }
 
-  getData(index: number): KeyValuePair {
+  getData(index: number): SecretKeyValuePair {
+    if (!this.data) {
+      this.data = [];
+    }
+
     return this.data[index];
   }
 

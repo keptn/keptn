@@ -236,6 +236,15 @@ const apiRouter = (params: {
     }
   });
 
+  router.get('/secrets/scope/:scope', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const response = await dataService.getSecretsForScope(req.params.scope);
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.all('*', async (req, res, next) => {
     try {
       const result = await axios({

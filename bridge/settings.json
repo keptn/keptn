@@ -1,11 +1,15 @@
 {
-  "html.format.wrapLineLength": 300,
+  "files.eol": "\n",
+  "html.format.wrapLineLength": 120,
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "editor.autoIndent": "advanced",
-  "editor.formatOnSave": true,
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "conventionalCommits.gitmoji": false,
   "conventionalCommits.promptBody": false,
   "conventionalCommits.promptFooter": false,

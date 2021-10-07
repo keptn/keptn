@@ -10,6 +10,15 @@ consumes:
 produces:
   - application/json
 paths:
+  /health:
+    get:
+      tags:
+        - health
+      operationId: getHealth
+      summary: Health endpoint
+      responses:
+        200:
+          description: healthy
   /event:
     post:
       tags:
