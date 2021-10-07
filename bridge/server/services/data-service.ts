@@ -16,7 +16,7 @@ import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-re
 import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
-import { UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
+import { UniformSubscription, UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
 import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
@@ -480,6 +480,29 @@ export class DataService {
     return Yaml.parse(shipyard);
   }
 
+  public async createSubscription(
+    integrationId: string,
+    subscription: UniformSubscription,
+    webhookConfig?: WebhookConfig
+  ): Promise<void> {
+    const response = await this.apiService.createSubscription(integrationId, subscription);
+    if (webhookConfig) {
+      await this.saveWebhookConfig(webhookConfig, response.data.id);
+    }
+  }
+
+  public async updateSubscription(
+    integrationId: string,
+    subscriptionId: string,
+    subscription: UniformSubscription,
+    webhookConfig?: WebhookConfig
+  ): Promise<void> {
+    await this.apiService.updateSubscription(integrationId, subscriptionId, subscription);
+    if (webhookConfig) {
+      await this.saveWebhookConfig(webhookConfig, subscriptionId);
+    }
+  }
+
   private async getWebhookConfigYaml(
     projectName: string,
     stageName?: string,
@@ -512,14 +535,14 @@ export class DataService {
   }
 
   public async getWebhookConfig(
-    eventType: string,
+    subscriptionId: string,
     projectName: string,
     stageName?: string,
     serviceName?: string
   ): Promise<WebhookConfig> {
     const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stageName, serviceName);
 
-    const webhookConfig = webhookConfigYaml.parsedRequest(eventType);
+    const webhookConfig = webhookConfigYaml.parsedRequest(subscriptionId);
     if (!webhookConfig) {
       throw Error('Could not parse curl command');
     }
@@ -527,7 +550,7 @@ export class DataService {
     return webhookConfig;
   }
 
-  public async saveWebhookConfig(webhookConfig: WebhookConfig): Promise<boolean> {
+  public async saveWebhookConfig(webhookConfig: WebhookConfig, subscriptionId: string): Promise<boolean> {
     const currentFilters = await this.getWebhookConfigFilter(webhookConfig.filter);
 
     if (webhookConfig.prevConfiguration) {
@@ -546,7 +569,7 @@ export class DataService {
             stage,
             service
           );
-          previousWebhookConfig.addWebhook(webhookConfig.type, curl, secrets);
+          previousWebhookConfig.addWebhook(webhookConfig.type, curl, subscriptionId, secrets);
           await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
         }
       }
@@ -692,7 +715,7 @@ export class DataService {
 
       if (projectName) {
         await this.removeWebhooks(
-          subscription.event,
+          subscriptionId,
           projectName,
           subscription.filter.stages?.length ? subscription.filter.stages : [undefined],
           subscription.filter.services?.length ? subscription.filter.services : [undefined]
@@ -709,22 +732,27 @@ export class DataService {
   }
 
   private async removeWebhooks(
-    eventType: string,
+    subscriptionId: string,
     projectName: string,
     stages: string[] | [undefined],
     services: string[] | [undefined]
   ): Promise<void> {
     for (const stage of stages) {
       for (const service of services) {
-        await this.removeWebhook(eventType, projectName, stage, service);
+        await this.removeWebhook(subscriptionId, projectName, stage, service);
       }
     }
   }
 
-  private async removeWebhook(eventType: string, projectName: string, stage?: string, service?: string): Promise<void> {
+  private async removeWebhook(
+    subscriptionId: string,
+    projectName: string,
+    stage?: string,
+    service?: string
+  ): Promise<void> {
     try {
       const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
-      if (webhookConfig.removeWebhook(eventType)) {
+      if (webhookConfig.removeWebhook(subscriptionId)) {
         if (webhookConfig.hasWebhooks()) {
           await this.apiService.saveWebhookConfig(webhookConfig.toYAML(), projectName, stage, service);
         } else {

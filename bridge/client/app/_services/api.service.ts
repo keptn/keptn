@@ -177,18 +177,19 @@ export class ApiService {
 
   public updateUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>
+    subscription: Partial<UniformSubscription>,
+    webhookConfig?: WebhookConfig
   ): Observable<Record<string, unknown>> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscription.id}`;
-    return this.http.put<Record<string, unknown>>(url, subscription);
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
+    return this.http.put<Record<string, unknown>>(url, { subscription, webhookConfig });
   }
-
   public createUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>
+    subscription: Partial<UniformSubscription>,
+    webhookConfig?: WebhookConfig
   ): Observable<Record<string, unknown>> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`;
-    return this.http.post<Record<string, unknown>>(url, subscription);
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription`;
+    return this.http.post<Record<string, unknown>>(url, { subscription, webhookConfig });
   }
 
   public getUniformRegistrationLogs(
@@ -439,12 +440,12 @@ export class ApiService {
   }
 
   public getWebhookConfig(
-    eventType: string,
+    subscriptionId: string,
     projectName: string,
     stageName?: string,
     serviceName?: string
   ): Observable<WebhookConfig> {
-    const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${eventType}`;
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${subscriptionId}`;
     const params = {
       projectName,
       ...(stageName && { stageName }),
