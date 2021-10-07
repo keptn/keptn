@@ -1,10 +1,12 @@
 package event_handler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"net/url"
+	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
@@ -18,7 +20,7 @@ type StartEvaluationHandler struct {
 	SLOFileRetriever  SLOFileRetriever `deep:"-"`
 }
 
-func (eh *StartEvaluationHandler) HandleEvent() error {
+func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
 
@@ -46,14 +48,19 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	if err != nil {
 		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
 	}
-
-	go eh.sendGetSliCloudEvent(keptnContext, e, evaluationStartTimestamp, evaluationEndTimestamp)
+	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	go eh.sendGetSliCloudEvent(ctx, keptnContext, e, evaluationStartTimestamp, evaluationEndTimestamp)
 
 	return nil
 }
 
 // fetch SLO and send the internal get-sli event
-func (eh *StartEvaluationHandler) sendGetSliCloudEvent(keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
+func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
+	defer func() {
+		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		eh.KeptnHandler.Logger.Info("Terminating Start-evaluation handler")
+	}()
+
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 

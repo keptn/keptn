@@ -5,10 +5,14 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
@@ -24,13 +28,13 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
+	go keptnapi.RunHealthEndpoint("10998")
 	os.Exit(_main(os.Args[1:], env))
 }
 
 func _main(args []string, env envConfig) int {
-
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
@@ -41,7 +45,7 @@ func _main(args []string, env envConfig) int {
 		log.Fatalf("failed to create client, %v", err)
 	}
 	log.Fatal(c.StartReceiver(ctx, gotEvent))
-
+	ctx.Value("Wg").(*sync.WaitGroup).Wait()
 	return 0
 }
 
@@ -62,4 +66,20 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	return nil
+}
+
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+
+	go func() {
+		<-ch
+		log.Fatal("Container termination triggered, waiting for graceful shutdown")
+		cancel()
+	}()
+
+	return ctx
 }
