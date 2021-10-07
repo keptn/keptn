@@ -102,6 +102,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 60
       serviceAccountName: keptn-lighthouse-service
 ---
 apiVersion: v1
