@@ -7,10 +7,10 @@ ENV VERSION="${version}"
 WORKDIR /usr/src/app
 
 # copy package.json only to install angular dependencies first
-COPY package.json package-lock.json /usr/src/app/
-RUN npm ci
+COPY package.json yarn.lock /usr/src/app/
+RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
-RUN npm run build
+RUN yarn build
 
 FROM node:14-alpine3.14 as bridgeServerBuilder
 
@@ -21,12 +21,12 @@ ENV VERSION="${version}"
 WORKDIR /usr/src/app/server
 
 # copy package.json only to install dependencies first
-COPY ./server/package.json ./server/package-lock.json ./
-RUN npm i
+COPY ./server/package.json ./server/yarn.lock ./
+RUN yarn install --frozen-lockfile
 COPY ./server ./
 COPY ./shared /usr/src/app/shared
-RUN npm run build && \
-  npm ci --production
+RUN yarn build && \
+  yarn install --frozen-lockfile --production
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -62,4 +62,4 @@ RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && 
 # Set user
 USER myuser
 
-CMD ["/usr/local/bin/npm", "start", "--prefix", "./server"]
+CMD ["npm", "start", "--prefix", "./server"]
