@@ -349,6 +349,7 @@ jobs:
     name: UI Tests Bridge
     needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
+    runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
         uses: actions/setup-node@v2.4.0
