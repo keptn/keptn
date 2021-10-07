@@ -71,6 +71,7 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
+{{- if .Values.webhookService.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -83,6 +84,7 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
+{{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
