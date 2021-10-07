@@ -5,23 +5,13 @@ import (
 	"crypto/tls"
 	"fmt"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
-	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
-	"testing"
 	"time"
 )
-
-type LogfFn func(format string, args ...interface{})
-
-func KubeClient(t *testing.T) *kubernetes.Clientset {
-	clientset, err := keptnkubeutils.GetClientset(false)
-	require.Nil(t, err)
-	return clientset
-}
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
 	clientset, err := keptnkubeutils.GetClientset(false)
@@ -151,9 +141,9 @@ func checkURL(url string) wait.ConditionFunc {
 	}
 }
 
-func GetFromConfigMap(namespace string, getDataByKeyFn func(data map[string]string) string) (string, error) {
+func GetFromConfigMap(namespace string, configMapName string, getDataByKeyFn func(data map[string]string) string) (string, error) {
 	client, _ := keptnkubeutils.GetClientset(false)
-	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "ingress-config", metav1.GetOptions{})
+	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

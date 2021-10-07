@@ -442,7 +442,7 @@ func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImag
 }
 
 func GetPublicURLOfService(serviceName, projectName, stageName string) (string, error) {
-	ingressHostnameSuffix, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), func(data map[string]string) string { return data["ingress_hostname_suffix"] })
+	ingressHostnameSuffix, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), "ingress-config", func(data map[string]string) string { return data["ingress_hostname_suffix"] })
 	if err != nil {
 		return "", fmt.Errorf("unable to get public URL of service %s: %w", serviceName, err)
 	}
