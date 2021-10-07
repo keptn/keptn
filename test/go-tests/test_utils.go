@@ -431,14 +431,14 @@ func GetDiagnostics(service string) string {
 }
 
 func VerifyDirectDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*6, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
 
 func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*6, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
+	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
 		return err
 	}
-	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*6, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
 
 func GetPublicURLOfService(serviceName, projectName, stageName string) (string, error) {
