@@ -78,6 +78,13 @@ spec:
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/bash
+                  - -c
+                  - sleep 30
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
