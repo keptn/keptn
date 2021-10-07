@@ -6,12 +6,12 @@ The *jmeter-service* has been updated with the implementation from the Keptn-Con
 
 The *jmeter-service* is part of the *Execution Plane for Continuous Delivery*.
 
-You can find installation instructions [here](https://keptn.sh/docs/0.8.x/operate/install/#install-keptn).
+You can find installation instructions [here](https://keptn.sh/docs/0.10.x/operate/install/#install-keptn).
 
 To install it next to your Keptn installation, you can use the following command:
 
 ```console
-helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.4/jmeter-service-0.8.4.tgz -n keptn
+helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.10.0/jmeter-service-0.10.0.tgz -n keptn
 ```
 
 ## Development
@@ -93,25 +93,4 @@ workloads:
     acceptederrorrate: 1.0
 ```
 
-With this file, the defaults for the *performance* test strategy are overwritten. The file also defines a new workload for a new test strategy called *performance_light*. In order to make the JMeter service execute that workload, you have to specify that value when you send a configuration-change or deployment-finish event to Keptn. Here is an example:
-
-```
-{
-  "contenttype": "application/json",
-  "data": {
-    "deploymentURIPublic": "http://simplenode.simpleproject-staging.keptn06-agrabner.demo.keptn.sh",
-    "project": "sockshop",
-    "service": "carts",
-    "stage": "dev",
-    "testStrategy" : "performance_light",
-    "labels": {
-        "user" : "grabnerandi"
-    }
-  },
-  "source": "performance-service",
-  "specversion": "0.2",
-  "type": "sh.keptn.events.deployment-finished"
-}
-```
-
-This now gives you a lot of flexibility when implementing "*Performance Testing as a Self-Service*".
+With this file, the defaults for the *performance* test strategy are overwritten. The file also defines a new workload for a new test strategy called *performance_light*.
