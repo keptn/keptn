@@ -13,7 +13,7 @@
 <ng-template #eventPayloadDialog let-data>
   <h1 mat-dialog-title>Payload viewer</h1>
   <div *ngIf="!loading; else loadingEvent">
-    <div *ngIf="event; else noEvent">
+    <div *ngIf="event; else errorTemplate">
       <p uitestid="keptn-payload-dialog-message">
         This is the latest <span class="bold" [textContent]="type"></span> event
         <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
@@ -23,12 +23,17 @@
         <pre [textContent]="event | json"></pre>
       </div>
     </div>
-    <ng-template #noEvent>
-      <p class="error" uitestid="keptn-payload-dialog-message">
-        Could not load any <span class="bold" [textContent]="type"></span> event
-        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
-        <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
-      </p>
+    <ng-template #errorTemplate>
+      <dt-alert severity="error" uitestid="keptn-payload-dialog-message" *ngIf="error; else noEventTemplate">
+        <span [textContent]="error.message"></span>
+      </dt-alert>
+      <ng-template #noEventTemplate>
+        <dt-alert severity="warning" uitestid="keptn-payload-dialog-message">
+          Could not find any <span class="bold" [textContent]="type"></span> event
+          <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
+          <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
+        </dt-alert>
+      </ng-template>
     </ng-template>
   </div>
   <ng-template #loadingEvent>

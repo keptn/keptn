@@ -31,6 +31,7 @@ export class KtbPayloadViewerComponent {
   public event: Trace | undefined;
 
   public loading = false;
+  public error: Error | undefined;
 
   constructor(private dataService: DataService, private dialog: MatDialog) {}
 
@@ -42,10 +43,12 @@ export class KtbPayloadViewerComponent {
         (event) => {
           this.event = event;
           this.loading = false;
+          this.error = undefined;
         },
         (err) => {
           this.event = undefined;
           this.loading = false;
+          this.error = err;
         }
       );
       this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog);
