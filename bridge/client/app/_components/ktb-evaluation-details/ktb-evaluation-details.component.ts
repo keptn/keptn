@@ -469,7 +469,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getSliResultInfo(chartSeries: EvaluationChartItem[]): { [evaluationId: string]: SliInfo | undefined } {
+  private getSliResultInfos(chartSeries: EvaluationChartItem[]): { [evaluationId: string]: SliInfo | undefined } {
     const sliResultsScores: {
       [evaluationId: string]: SliInfo | undefined;
     } = {};
@@ -477,24 +477,34 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       for (const item of chartItem.data) {
         if (item.evaluationData?.data.evaluation?.indicatorResults && !sliResultsScores[item.evaluationData.id]) {
           const indicatorResults = item.evaluationData.data.evaluation.indicatorResults;
-          sliResultsScores[item.evaluationData.id] = indicatorResults.reduce(
-            (acc, result) => {
-              return {
-                score: acc.score + result.score,
-                warningCount: acc.warningCount + (result.status === ResultTypes.WARNING ? 1 : 0),
-                failedCount: acc.failedCount + (result.status === ResultTypes.FAILED ? 1 : 0),
-              };
-            },
-            { score: 0, warningCount: 0, failedCount: 0 } as SliInfo
-          );
+          sliResultsScores[item.evaluationData.id] = this.getSliResultInfo(indicatorResults);
         }
       }
     }
     return sliResultsScores;
   }
 
+  private getSliResultInfo(indicatorResults: IndicatorResult[]): {
+    score: number;
+    warningCount: number;
+    failedCount: number;
+  } {
+    return indicatorResults.reduce(
+      (acc, result) => {
+        const warning = result.status === ResultTypes.WARNING ? 1 : 0;
+        const failed = result.status === ResultTypes.FAILED ? 1 : 0;
+        return {
+          score: acc.score + result.score,
+          warningCount: acc.warningCount + warning,
+          failedCount: acc.failedCount + failed,
+        };
+      },
+      { score: 0, warningCount: 0, failedCount: 0 } as SliInfo
+    );
+  }
+
   private setHeatmapData(chartSeries: EvaluationChartItem[]): void {
-    const sliResultsInfo: { [evaluationId: string]: SliInfo | undefined } = this.getSliResultInfo(chartSeries);
+    const sliResultsInfo: { [evaluationId: string]: SliInfo | undefined } = this.getSliResultInfos(chartSeries);
     this._heatmapSeriesReduced = [
       {
         name: 'Score',
