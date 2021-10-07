@@ -22,7 +22,7 @@ import { Trace } from '../../_models/trace';
 import { EvaluationChartDataItem, EvaluationChartItem } from '../../_models/evaluation-chart-item';
 import { HeatmapOptions } from '../../_models/heatmap-options';
 import { HeatmapData, HeatmapSeriesOptions } from '../../_models/heatmap-series-options';
-import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
+import { IndicatorResult, Target } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
@@ -51,6 +51,52 @@ type SliInfo = {
   failedCount: number;
 };
 
+interface IHeatmapPoint {
+  sliInfo?: {
+    warningCount: number;
+    failedCount: number;
+    thresholdPass: number;
+    thresholdWarn: number;
+    fail: boolean;
+    warn: boolean;
+  };
+  data?: {
+    keySli: boolean;
+    score: number;
+    passTargets: Target[];
+    warningTargets: Target[];
+  };
+  value: number;
+  x: number;
+  y: number;
+  z: number;
+  evaluation?: Trace;
+  color: string;
+}
+
+class HeatmapPoint implements IHeatmapPoint {
+  sliInfo?: {
+    warningCount: number;
+    failedCount: number;
+    thresholdPass: number;
+    thresholdWarn: number;
+    fail: boolean;
+    warn: boolean;
+  };
+  data?: {
+    keySli: boolean;
+    score: number;
+    passTargets: Target[];
+    warningTargets: Target[];
+  };
+  value = 0;
+  color = '';
+  evaluation?: Trace;
+  x = 0;
+  y = 0;
+  z = 0;
+}
+
 @Component({
   selector: 'ktb-evaluation-details',
   templateUrl: './ktb-evaluation-details.component.html',
@@ -59,6 +105,7 @@ type SliInfo = {
 export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public comparedIndicatorResults: IndicatorResult[] = [];
+  public HeatmapPointClass = HeatmapPoint;
   @Input() public showChart = true;
   @Input() public isInvalidated = false;
 
@@ -477,7 +524,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
             .map((s) => {
               const index = this._metrics.indexOf('Score');
               const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
-              const dataPoint = {
+              const dataPoint: IHeatmapPoint = {
                 x,
                 y: index,
                 z: s.y,
@@ -485,10 +532,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                 color: this._evaluationColor[s.evaluationData.data.result ?? 'info'],
                 value: s.y,
                 sliInfo: {
-                  warningCount: sliResultsInfo[s.evaluationData.id]?.warningCount,
-                  failedCount: sliResultsInfo[s.evaluationData.id]?.failedCount,
-                  thresholdPass: s.evaluationData.data.evaluation?.score_pass,
-                  thresholdWarn: s.evaluationData.data.evaluation?.score_warning,
+                  warningCount: sliResultsInfo[s.evaluationData.id]?.warningCount ?? 0,
+                  failedCount: sliResultsInfo[s.evaluationData.id]?.failedCount ?? 0,
+                  thresholdPass: +(s.evaluationData.data.evaluation?.score_pass ?? 0),
+                  thresholdWarn: +(s.evaluationData.data.evaluation?.score_warning ?? 0),
                   fail: s.evaluationData.isFailed(),
                   warn: s.evaluationData.isWarning(),
                 },
@@ -535,7 +582,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                     warningTargets: s.indicatorResult.warningTargets,
                   },
                   value: AppUtils.formatNumber(s.indicatorResult.value.value),
-                };
+                } as IHeatmapPoint;
               }),
           ],
           [] as HeatmapData[]

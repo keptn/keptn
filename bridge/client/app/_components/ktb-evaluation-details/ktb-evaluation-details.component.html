@@ -37,7 +37,10 @@
     >
       <dt-chart-tooltip>
         <ng-template let-tooltip>
-          <dt-key-value-list style="min-width: 100px" *ngIf="tooltip.point.point as dataPoint">
+          <dt-key-value-list
+            style="min-width: 100px"
+            *ngIf="tooltip.point.point | toType: HeatmapPointClass as dataPoint"
+          >
             <dt-key-value-list-item>
               <dt-key-value-list-key> Value </dt-key-value-list-key>
               <dt-key-value-list-value>
@@ -61,23 +64,25 @@
               </dt-key-value-list-item>
 
               <span class="key-value-parent"> Threshold </span>
-              <dt-key-value-list-item class="ml-1">
-                <dt-key-value-list-key>pass</dt-key-value-list-key>
-                <dt-key-value-list-value>
-                  <span [class.error]="info.fail" [textContent]="info.thresholdPass"></span>
-                </dt-key-value-list-value>
-              </dt-key-value-list-item>
+              <div class="ml-2">
+                <dt-key-value-list-item>
+                  <dt-key-value-list-key>pass</dt-key-value-list-key>
+                  <dt-key-value-list-value>
+                    <span [class.error]="info.fail" [textContent]="info.thresholdPass"></span>
+                  </dt-key-value-list-value>
+                </dt-key-value-list-item>
 
-              <dt-key-value-list-item class="ml-1">
-                <dt-key-value-list-key>warning</dt-key-value-list-key>
-                <dt-key-value-list-value>
-                  <span
-                    [class.warning]="info.warn && !info.fail"
-                    [class.error]="info.fail"
-                    [textContent]="info.thresholdWarn"
-                  ></span>
-                </dt-key-value-list-value>
-              </dt-key-value-list-item>
+                <dt-key-value-list-item>
+                  <dt-key-value-list-key>warning</dt-key-value-list-key>
+                  <dt-key-value-list-value>
+                    <span
+                      [class.warning]="info.warn && !info.fail"
+                      [class.error]="info.fail"
+                      [textContent]="info.thresholdWarn"
+                    ></span>
+                  </dt-key-value-list-value>
+                </dt-key-value-list-item>
+              </div>
             </ng-container>
 
             <ng-container *ngIf="dataPoint.data">
@@ -96,20 +101,24 @@
               </dt-key-value-list-item>
 
               <span class="key-value-parent">Pass Criteria</span>
-              <dt-key-value-list-item *ngFor="let target of dataPoint.data.passTargets" class="ml-1">
-                <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
-                <dt-key-value-list-value>
-                  <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
-                </dt-key-value-list-value>
-              </dt-key-value-list-item>
+              <div class="ml-2">
+                <dt-key-value-list-item *ngFor="let target of dataPoint.data.passTargets">
+                  <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
+                  <dt-key-value-list-value>
+                    <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
+                  </dt-key-value-list-value>
+                </dt-key-value-list-item>
+              </div>
 
               <span class="key-value-parent"> Warning Criteria </span>
-              <dt-key-value-list-item *ngFor="let target of dataPoint.data.warningTargets" class="ml-1">
-                <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
-                <dt-key-value-list-value>
-                  <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
-                </dt-key-value-list-value>
-              </dt-key-value-list-item>
+              <div class="ml-2">
+                <dt-key-value-list-item *ngFor="let target of dataPoint.data.warningTargets">
+                  <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
+                  <dt-key-value-list-value>
+                    <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
+                  </dt-key-value-list-value>
+                </dt-key-value-list-item>
+              </div>
             </ng-container>
           </dt-key-value-list>
         </ng-template>
