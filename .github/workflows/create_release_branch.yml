@@ -78,8 +78,8 @@ jobs:
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           commit-message: "Prepare release ${{ github.event.inputs.versionName }}"
-          committer: ${{ secrets.KEPTN_BOT_USER }}
-          author: ${{ secrets.KEPTN_BOT_USER }}
+          committer: ${{ env.KEPTN_BOT_USER }}
+          author: ${{ env.KEPTN_BOT_USER }}
           signoff: true
           branch: ${{ env.RELEASE_BRANCH_NAME }}
           delete-branch: true
