@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -14,6 +15,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -63,7 +65,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		Type string `json:"type"`
 	}
 	ch := make(chan string)
-
+	wg := &sync.WaitGroup{}
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
 	var returnSlo bool
 	var sloFileContent string
 	var returnServiceNotFound bool
@@ -263,7 +266,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				},
 				SLOFileRetriever: tt.fields.SLOFileRetriever,
 			}
-			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
+			if err := eh.HandleEvent(ctx); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

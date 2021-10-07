@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"errors"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/sirupsen/logrus"
@@ -10,6 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 	"reflect"
+	"sync"
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -82,7 +84,8 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYet(t *testing.T) {
 	ce := cloudevents.NewEvent()
-
+	wg := &sync.WaitGroup{}
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -98,7 +101,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYet(t *testi
 	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
 	require.Nil(t, err)
 
-	err = handler.HandleEvent()
+	err = handler.HandleEvent(ctx)
 	require.Nil(t, err)
 	require.Len(t, fakeK8sClient.Actions(), 1)
 	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
@@ -106,7 +109,8 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYet(t *testi
 
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYetAndCreateFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
-
+	wg := &sync.WaitGroup{}
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -126,7 +130,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYetAndCreate
 	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
 	require.Nil(t, err)
 
-	err = handler.HandleEvent()
+	err = handler.HandleEvent(ctx)
 	require.NotNil(t, err)
 	require.Len(t, fakeK8sClient.Actions(), 1)
 	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
@@ -139,7 +143,8 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYetAndCreate
 
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExists(t *testing.T) {
 	ce := cloudevents.NewEvent()
-
+	wg := &sync.WaitGroup{}
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -156,7 +161,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExists(t *testin
 	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
 	require.Nil(t, err)
 
-	err = handler.HandleEvent()
+	err = handler.HandleEvent(ctx)
 	require.Nil(t, err)
 	require.Len(t, fakeK8sClient.Actions(), 2)
 	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
@@ -165,7 +170,8 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExists(t *testin
 
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExistsUpdateFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
-
+	wg := &sync.WaitGroup{}
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -186,7 +192,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExistsUpdateFail
 	handler, err := NewConfigureMonitoringHandler(ce, logger, WithK8sClient(fakeK8sClient))
 	require.Nil(t, err)
 
-	err = handler.HandleEvent()
+	err = handler.HandleEvent(ctx)
 	require.NotNil(t, err)
 	require.Len(t, fakeK8sClient.Actions(), 2)
 	require.Equal(t, "create", fakeK8sClient.Actions()[0].GetVerb())
