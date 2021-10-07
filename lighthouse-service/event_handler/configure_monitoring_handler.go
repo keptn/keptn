@@ -55,7 +55,6 @@ func (eh *ConfigureMonitoringHandler) HandleEvent(ctx context.Context) error {
 	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
 	defer func() {
 		ctx.Value("Wg").(*sync.WaitGroup).Done()
-		eh.Logger.Info("Terminating Configuration-monitoring handler")
 	}()
 
 	var keptnContext string

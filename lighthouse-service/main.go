@@ -62,7 +62,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 	if handler != nil {
-		return handler.HandleEvent()
+		return handler.HandleEvent(ctx)
 	}
 
 	return nil
