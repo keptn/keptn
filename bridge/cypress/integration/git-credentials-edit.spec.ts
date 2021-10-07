@@ -20,6 +20,14 @@ describe('Changing git credentials', () => {
     }).as('initProjects');
     cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
 
+    // eslint-disable-next-line promise/catch-or-return,promise/always-return
+    cy.fixture('change.credentials.payload.json').then((reqBody) => {
+      cy.intercept('PUT', 'api/controlPlane/v1/project', (req) => {
+        expect(req.body).to.deep.equal(reqBody);
+        return { status: 200 };
+      });
+    });
+
     cy.intercept('PUT', 'api/controlPlane/v1/project', {
       statusCode: 200,
     }).as('changeGitCredentials');
@@ -42,10 +50,5 @@ describe('Changing git credentials', () => {
       .inputGitUsername(GIT_USER)
       .inputGitToken(GIT_TOKEN)
       .clickSaveChanges();
-
-    return cy.fixture('change.credentials.payload.json').then((json) => {
-      cy.get('@changeGitCredentials').its('request.body').should('deep.equal', json);
-      return null;
-    });
   });
 });
