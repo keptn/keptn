@@ -18,6 +18,7 @@ metadata:
 spec:
   webhooks:
     - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: my-subscription-id
       envFrom: 
         - name: "secretKey"
           secretRef:
@@ -39,7 +40,7 @@ curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.
 the responses of those requests will be stored in the `data.mytask.responses` property of the correlating 
 `sh.keptn.event.mytask.finished` event that will be sent by the webhook service once the two requests have been finished:
 
-```
+```json
 {
   "data": {
     "labels": null,
@@ -69,6 +70,32 @@ As shown in the example above, the webhook.yaml file allows referencing secrets 
 Keptn control plane. Those secrets can then be used in the `curl` commands that should be executed for a certain task, using the `{{.env.<secret>}}` placeholder.
 In addition to secrets, properties from incoming events, such as e.g. `{{.data.project}}`, `{{.shkeptncontext}}` etc. can be referenced using the template syntax.
 Note that the execution of the defined requests will fail if any of the referenced values is not available.
+
+### Disable automatic finished events
+
+By default, the webhook service will send one `<task>.started` and one `<task>.finished` event for each received triggered event, where the `<task>.finished` event contains the aggregated responses 
+of the executed requests. This behavior can be changed such that the responsibility of sending the `<task>.finished` events is moved to the services called by the webhook service. In this case,
+the webhook service will send a `<task>.started` event for each of the curl requests that are to be executed. Afterwards, the requests are executed and, if they are successful, no `<task>.finished` event is sent by the webhook service.
+If, however, one of the requests fails (e.g. due to an unknown environment variable, or if an unallowed curl command has been detected) the webhook service will send a `<task>.finished` event with `resutl=fail;status=errored` for this particular request and all requests that should have been executed afterwards. The remaining requests will not be executed in this case.
+Sending the finished events can be disabled by setting `sendFinished` to `false` within the webhook configuration, e.g.:
+
+```yaml
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.othertask.triggered"
+      subscriptionID: my-subscription-id
+      sendFinished: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - "curl http://shipyard-controller:8080/v1/project"
+```
 
 ### Enabling webhooks for a project, stage or service
 

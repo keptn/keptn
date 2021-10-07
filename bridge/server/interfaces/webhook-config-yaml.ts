@@ -1,7 +1,7 @@
 import Yaml from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
-import { WebhookConfigYamlResult } from './webhook-config-yaml-result';
+import { Webhook, WebhookConfigYamlResult } from './webhook-config-yaml-result';
 
 const order: { [key: string]: number } = {
   apiVersion: 0,
@@ -17,14 +17,10 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     name: 'webhook-configuration';
   };
   spec: {
-    webhooks: {
-      type: string; // type === event
-      requests: string[];
-      envFrom?: WebhookSecret[];
-    }[];
+    webhooks: Webhook[];
   };
 
-  constructor(type?: string, request?: string) {
+  constructor() {
     this.spec = {
       webhooks: [],
     };
@@ -33,12 +29,6 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     };
     this.apiVersion = 'webhookconfig.keptn.sh/v1alpha1';
     this.kind = 'WebhookConfig';
-    if (type && request) {
-      this.spec.webhooks.push({
-        requests: [request],
-        type,
-      });
-    }
   }
 
   public static fromJSON(data: WebhookConfigYamlResult): WebhookConfigYaml {
@@ -46,11 +36,11 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   }
 
   /**
-   * @params eventType
+   * @params subscriptionId
    * @returns true if the webhooks have been changed
    */
-  public removeWebhook(eventType: string): boolean {
-    const index = this.spec.webhooks.findIndex((webhook) => webhook.type === eventType);
+  public removeWebhook(subscriptionId: string): boolean {
+    const index = this.getWebhookIndex(subscriptionId);
     const changed = index !== -1;
     if (changed) {
       this.spec.webhooks[index].requests.splice(0, 1);
@@ -66,18 +56,17 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   }
 
   /**
-   * Either adds a webhook or overwrites it if there is already one for the given eventType
-   *
+   * Either adds a webhook or updates it if there is already one for the given subscriptionId
    * @params eventType
    * @params curl
    */
-  public addWebhook(eventType: string, curl: string, secrets: WebhookSecret[]): void {
-    const webhook = this.spec.webhooks.find((w) => w.type === eventType);
+  public addWebhook(eventType: string, curl: string, subscriptionId: string, secrets: WebhookSecret[]): void {
+    const webhook = this.getWebhook(subscriptionId);
     if (!webhook) {
       if (secrets.length) {
-        this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets });
+        this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets, subscriptionId });
       } else {
-        this.spec.webhooks.push({ type: eventType, requests: [curl] });
+        this.spec.webhooks.push({ type: eventType, requests: [curl], subscriptionId });
       }
     } else {
       // overwrite
@@ -88,8 +77,20 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     }
   }
 
-  public parsedRequest(eventType: string): WebhookConfig | undefined {
-    const webhook = this.spec.webhooks.find((w) => w.type === eventType);
+  private getWebhook(subscriptionId: string): Webhook | undefined {
+    return this.spec.webhooks.find(this.findWebhook(subscriptionId));
+  }
+
+  private getWebhookIndex(subscriptionId: string): number {
+    return this.spec.webhooks.findIndex(this.findWebhook(subscriptionId));
+  }
+
+  private findWebhook(subscriptionId: string): (webhook: Webhook) => boolean {
+    return (webhook: Webhook): boolean => webhook.subscriptionId === subscriptionId;
+  }
+
+  public parsedRequest(subscriptionId: string): WebhookConfig | undefined {
+    const webhook = this.getWebhook(subscriptionId);
     const curl = webhook?.requests[0];
     const secrets = webhook?.envFrom;
 

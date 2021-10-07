@@ -189,6 +189,27 @@ export class ApiService {
     );
   }
 
+  public createSubscription(
+    integrationId: string,
+    subscription: UniformSubscription
+  ): Promise<AxiosResponse<{ id: string }>> {
+    return this.axios.post(
+      `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`,
+      subscription
+    );
+  }
+
+  public updateSubscription(
+    integrationId: string,
+    subscriptionId: string,
+    subscription: UniformSubscription
+  ): Promise<AxiosResponse<Record<string, unknown>>> {
+    return this.axios.put(
+      `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`,
+      subscription
+    );
+  }
+
   public getWebhookConfig(
     projectName: string,
     stageName?: string,
