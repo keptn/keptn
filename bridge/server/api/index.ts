@@ -3,7 +3,6 @@ import { Method } from 'axios';
 import { currentPrincipal } from '../user/session';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
-import { WebhookConfig } from '../../shared/interfaces/webhook-config';
 
 const router = Router();
 
@@ -126,13 +125,13 @@ const apiRouter = (params: {
   });
 
   router.get(
-    '/uniform/registration/webhook-service/config/:eventType',
+    '/uniform/registration/webhook-service/config/:subscriptionId',
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const projectName = req.query.projectName?.toString();
         if (projectName) {
           const webhookConfig = await dataService.getWebhookConfig(
-            req.params.eventType,
+            req.params.subscriptionId,
             projectName,
             req.query.stageName?.toString(),
             req.query.serviceName?.toString()
@@ -141,19 +140,6 @@ const apiRouter = (params: {
         } else {
           next(Error('project name not provided'));
         }
-      } catch (error) {
-        return next(error);
-      }
-    }
-  );
-
-  router.post(
-    '/uniform/registration/webhook-service/config',
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const webhookConfig: WebhookConfig = req.body.config;
-        const result = await dataService.saveWebhookConfig(webhookConfig);
-        return res.json(result);
       } catch (error) {
         return next(error);
       }
@@ -171,6 +157,42 @@ const apiRouter = (params: {
           await dataService.deleteSubscription(integrationId, subscriptionId, deleteWebhook);
         }
         return res.json();
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
+
+  router.post(
+    '/uniform/registration/:integrationId/subscription',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const integrationId = req.params.integrationId;
+        const subscription = req.body.subscription;
+        if (integrationId && subscription) {
+          await dataService.createSubscription(integrationId, subscription, req.body.webhookConfig);
+        }
+        return res.json();
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
+
+  router.put(
+    '/uniform/registration/:integrationId/subscription/:subscriptionId',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const integrationId = req.params.integrationId;
+        const subscriptionId = req.params.subscriptionId;
+        if (integrationId && subscriptionId) {
+          await dataService.updateSubscription(
+            integrationId,
+            subscriptionId,
+            req.body.subscription,
+            req.body.webhookConfig
+          );
+        }
       } catch (error) {
         return next(error);
       }
