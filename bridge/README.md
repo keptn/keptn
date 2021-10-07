@@ -125,12 +125,12 @@ kubectl delete -f deploy/service.yaml
 ### UI testing with Cypress
 [Cypress Reference](https://docs.cypress.io/api/table-of-contents)
 
-UI tests in Keptn Bridge may not require any API call. When writing tests, please make sure to mock every outgoing request to `/api` with `cy.intercept`<br/>
+UI tests in Keptn Bridge must not require any API call. When writing tests, please make sure to mock every outgoing request to `/api` with `cy.intercept`<br/>
 [Cypress Intercept Reference](https://docs.cypress.io/api/commands/intercept)
 
 To test your UI tests locally, use following commands:
 * `npm run serve` - this serves Angular on port 3000 with no live reload - this will also ensure, that no API connection is made.
-* `npm run cypress:open` - Development of tests<br/>This opens a browser where changes where you can run your tests and inspect them. This will be automatically updated on every code change made on the .spec.ts file.
+* `npm run cypress:open` - Development of tests<br/>This opens a browser where changes where you can run your tests and inspect them. This will be automatically updated on every code change made on the `*.spec.ts` files.
 * or `npm run cypress:run` - Headless browser mode also used in CI<br/>This will just run the tests on a headless browser without the possibility to inspect them.
 
 ## IDE Setup
