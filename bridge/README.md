@@ -2,7 +2,7 @@
 
 Keptn bridge allows to browse the Keptn events.
 
-Note that npm dependencies are separated into two parts. Root level `package.json` contains dependencies for angular and other general requirements. Express server dependencies are located inside `package.json` located in server folder.
+Note that yarn dependencies are separated into two parts. Root level `package.json` contains dependencies for angular and other general requirements. Express server dependencies are located inside `package.json` located in server folder.
 
 ## Installation
 
@@ -129,9 +129,9 @@ UI tests in Keptn Bridge must not require any API call. When writing tests, plea
 [Cypress Intercept Reference](https://docs.cypress.io/api/commands/intercept)
 
 To test your UI tests locally, use following commands:
-* `npm run serve` - this serves Angular on port 3000 with no live reload - this will also ensure, that no API connection is made.
-* `npm run cypress:open` - Development of tests<br/>This opens a browser where changes where you can run your tests and inspect them. This will be automatically updated on every code change made on the `*.spec.ts` files.
-* or `npm run cypress:run` - Headless browser mode also used in CI<br/>This will just run the tests on a headless browser without the possibility to inspect them.
+* `yarn start:ci` - this serves Angular on port 3000 with no live reload - this will also ensure, that no API connection is made.
+* `yarn cypress:open` - Development of tests<br/>This opens a browser where changes where you can run your tests and inspect them. This will be automatically updated on every code change made on the `*.spec.ts` files.
+* or `yarn cypress:run` - Headless browser mode also used in CI<br/>This will just run the tests on a headless browser without the possibility to inspect them.
 
 ## IDE Setup
 

@@ -2,7 +2,7 @@
   "apiUrl": "http://example.com/api",
   "apiToken": "123456789qwertzuiopasdfghjkl",
   "cliDownloadLink": "https://github.com/keptn/keptn/releases",
-  "enableVersionCheckFeature": true,
+  "enableVersionCheckFeature": false,
   "showApiToken": true,
   "authType": "NONE"
 }
