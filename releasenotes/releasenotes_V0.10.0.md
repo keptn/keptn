@@ -1,10 +1,8 @@
 # Release Notes 0.10.0
 
-Keptn 0.10.0 provides a native way for integrating your tooling by just calling their Webhooks. This is a great enabler for various delivery and operational use cases that can be implemented without writing custom code. 
+Keptn 0.10.0 provides a native way for integrating your tooling by just calling their Webhooks. This is a great enabler for various delivery and operational use cases that can be implemented without writing custom code. Just two steps and your tool is integrated: (1) define the sequence task that works as a trigger (2) define the HTTP request endpoint and payload of the Webhook: 
 
-Two steps and your tool is integrated: (1) definition of task that works as trigger (2) definition of HTTP request endpoint and payload for the Webhook. 
-
-> screenshot: webhook.png
+![webhook](https://user-images.githubusercontent.com/729071/136449846-756723c5-e42f-4699-8121-e3255754a117.png)
 
 ---
 
@@ -12,7 +10,7 @@ Two steps and your tool is integrated: (1) definition of task that works as trig
 
 :tada: *Seamless integration of DevOps landscape* using Webhooks: This release is a major step towards the seamless integration of DevOps tooling for your continuous delivery or operational use cases. Therefore, Keptn 0.10 ships a webhook-service with Keptn core that allows the call of external tools using HTTP. To customize this HTTP request, the Bridge provides the corresponding interface and the secret management has been extended in this regard. 
 
-:star: *Create/Delete a service* via Bridge
+:star: *Create/Delete a service* via Bridge: Next to the Webhook configuration, the Bridge allows creating and deleting a service. 
 
 SDK (Experimental)
 
