@@ -55,12 +55,7 @@ class BasePage {
     return new EnvironmentPage();
   }
 
-  declineAutomaticUpdate(): this {
-    cy.get('.dt-button-secondary > span.dt-button-label').contains('Decline').click();
-    return this;
-  }
-
-  clickCreatNewProjectButton(): NewProjectCreatePage {
+  clickCreateNewProjectButton(): NewProjectCreatePage {
     cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').click();
     return new NewProjectCreatePage();
   }

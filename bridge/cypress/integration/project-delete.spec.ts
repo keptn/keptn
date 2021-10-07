@@ -29,7 +29,7 @@ describe('Project delete test', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
-    basePage.declineAutomaticUpdate().clickProjectTile('dynatrace');
+    basePage.clickProjectTile('dynatrace');
     basePage.gotoSettingsPage().clickDeleteProjectButton().typeProjectNameToDelete('dynatrace').submitDelete();
   });
 });

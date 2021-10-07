@@ -50,7 +50,6 @@ describe('Keptn Secrets adding deleting test', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
-    basePage.declineAutomaticUpdate();
     basePage.selectProject(DYNATRACE_PROJECT);
 
     basePage.goToUniformPage().goToSecretsPage();

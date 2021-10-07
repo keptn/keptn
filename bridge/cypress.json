@@ -6,7 +6,7 @@
   "pluginsFile": "cypress/plugins/index.ts",
   "fixturesFolder": "cypress/fixtures",
   "baseUrl": "http://localhost:3000",
-  "video": true,
+  "video": false,
   "screenshotOnRunFailure": true,
   "viewportHeight": 1080,
   "viewportWidth": 1920,

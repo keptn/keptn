@@ -26,6 +26,7 @@
             "polyfills": "client/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
+            "allowedCommonJsDependencies": ["@dynatrace/barista-components/chart", "semver/preload"],
             "assets": [
               "client/favicon.ico",
               "client/assets",
@@ -74,6 +75,14 @@
                   "maximumError": "18kb"
                 }
               ]
+            },
+            "test": {
+              "fileReplacements": [
+                {
+                  "replace": "client/environments/environment.ts",
+                  "with": "client/environments/environment.test.ts"
+                }
+              ]
             }
           }
         },
@@ -85,6 +94,9 @@
           "configurations": {
             "production": {
               "browserTarget": "bridge:build:production"
+            },
+            "test": {
+              "browserTarget": "bridge:build:test"
             }
           }
         },
