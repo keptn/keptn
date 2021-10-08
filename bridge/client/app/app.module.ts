@@ -51,7 +51,6 @@ import {
   KtbHorizontalSeparatorComponent,
   KtbHorizontalSeparatorTitleDirective,
 } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
-import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
@@ -159,7 +158,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     EvaluationBoardComponent,
     KtbSequenceViewComponent,
     KtbServiceViewComponent,
-    KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
     KtbExpandableTileComponent,
