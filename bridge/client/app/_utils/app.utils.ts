@@ -13,6 +13,25 @@ export class AppUtils {
   public static copyObject<T>(data: T): T {
     return JSON.parse(JSON.stringify(data));
   }
+
+  public static round(value: number, places: number): number {
+    return +(Math.round(Number(`${value}e+${places}`)) + `e-${places}`);
+  }
+
+  public static formatNumber(value: number): number {
+    let n = value;
+    if (n < 1) {
+      n = Math.floor(n * 1000) / 1000;
+    } else if (n < 100) {
+      n = Math.floor(n * 100) / 100;
+    } else if (n < 1000) {
+      n = Math.floor(n * 10) / 10;
+    } else {
+      n = Math.floor(n);
+    }
+
+    return n;
+  }
 }
 
 export const POLLING_INTERVAL_MILLIS = new InjectionToken<number>('Polling interval in millis');

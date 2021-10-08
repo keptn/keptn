@@ -431,6 +431,19 @@ export class ApiService {
     });
   }
 
+  public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<EventResult> {
+    const url = `${this._baseUrl}/mongodb-datastore/event`;
+    const params = {
+      pageSize: '1',
+      ...(type && { type }),
+      ...(project && { project }),
+      ...(stage && { stage }),
+      ...(service && { service }),
+    };
+
+    return this.http.get<EventResult>(url, { params });
+  }
+
   public sendSequenceControl(project: string, keptnContext: string, state: string): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/sequence/${project}/${keptnContext}/control`;
 

@@ -1,0 +1,44 @@
+<button
+  dt-button
+  variant="secondary"
+  (click)="showEventPayloadDialog()"
+  [disabled]="!type"
+  uitestid="keptn-show-payload-dialog-button"
+>
+  <dt-icon name="coding"></dt-icon>
+  <span [textContent]="buttonTitle"></span>
+</button>
+
+<ng-template #eventPayloadDialog>
+  <h1 mat-dialog-title>Payload viewer</h1>
+  <div *ngIf="!loading; else loadingEvent">
+    <div *ngIf="event; else errorTemplate">
+      <p uitestid="keptn-payload-dialog-message">
+        This is the latest <span class="bold" [textContent]="type"></span> event
+        <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
+        <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
+      </p>
+      <div mat-dialog-content>
+        <pre [textContent]="event | json"></pre>
+      </div>
+    </div>
+    <ng-template #errorTemplate>
+      <dt-alert severity="error" uitestid="keptn-payload-dialog-message" *ngIf="error; else noEventTemplate">
+        <span [textContent]="error.message"></span>
+      </dt-alert>
+      <ng-template #noEventTemplate>
+        <dt-alert severity="warning" uitestid="keptn-payload-dialog-message">
+          Could not find any <span class="bold" [textContent]="type"></span> event
+          <span *ngIf="stage">from stage <span class="bold" [textContent]="stage"></span>&nbsp;</span>
+          <span *ngIf="service">for service <span class="bold" [textContent]="service"></span></span>
+        </dt-alert>
+      </ng-template>
+    </ng-template>
+  </div>
+  <ng-template #loadingEvent>
+    <dt-loading-spinner></dt-loading-spinner>
+  </ng-template>
+  <div mat-dialog-actions>
+    <button dt-button (click)="closeDialog()" uitestid="keptn-close-payload-dialog-button">Close</button>
+  </div>
+</ng-template>
