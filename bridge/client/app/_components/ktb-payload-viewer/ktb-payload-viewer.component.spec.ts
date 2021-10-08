@@ -164,21 +164,23 @@ describe('KtbPayloadViewerComponent', () => {
   it('should show error message', fakeAsync(() => {
     // given
     const trace: Trace = Trace.fromJSON(EvaluationTracesMock[0]);
-    const spy = jest.spyOn(dataService, 'getEvent').mockReturnValue(throwError({
-      'headers': {
-        'normalizedNames': {},
-        'lazyUpdate': null,
-        'lazyInit': null,
-        'headers': {}
-      },
-      'status': 401,
-      'statusText': 'Unauthorized',
-      'url': `http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}`,
-      'ok': false,
-      'name': 'HttpErrorResponse',
-      'message': `Http failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`,
-      'error': 'Request failed with status code 401'
-    }));
+    const spy = jest.spyOn(dataService, 'getEvent').mockReturnValue(
+      throwError({
+        headers: {
+          normalizedNames: {},
+          lazyUpdate: null,
+          lazyInit: null,
+          headers: {},
+        },
+        status: 401,
+        statusText: 'Unauthorized',
+        url: `http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}`,
+        ok: false,
+        name: 'HttpErrorResponse',
+        message: `Http failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`,
+        error: 'Request failed with status code 401',
+      })
+    );
     component.type = trace.type;
     component.project = trace.data.project;
     fixture.detectChanges();
@@ -194,7 +196,9 @@ describe('KtbPayloadViewerComponent', () => {
     expect(spy).toHaveBeenCalled();
     expect(component.event).toBe(undefined);
     expect(payloadDialogMessage).toBeTruthy();
-    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(`Http failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`);
+    expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(
+      `Http failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`
+    );
   }));
 
   it('should close dialog', fakeAsync(() => {

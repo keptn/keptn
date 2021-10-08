@@ -431,12 +431,7 @@ export class ApiService {
     });
   }
 
-  public getEvent(
-    type?: string,
-    project?: string,
-    stage?: string,
-    service?: string
-  ): Observable<EventResult> {
+  public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<EventResult> {
     const url = `${this._baseUrl}/mongodb-datastore/event`;
     const params = {
       pageSize: '1',
