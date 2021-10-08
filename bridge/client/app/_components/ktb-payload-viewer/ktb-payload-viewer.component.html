@@ -9,7 +9,7 @@
   <span [textContent]="buttonTitle"></span>
 </button>
 
-<ng-template #eventPayloadDialog let-data>
+<ng-template #eventPayloadDialog>
   <h1 mat-dialog-title>Payload viewer</h1>
   <div *ngIf="!loading; else loadingEvent">
     <div *ngIf="event; else errorTemplate">
