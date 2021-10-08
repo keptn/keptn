@@ -436,7 +436,7 @@ export class ApiService {
     project?: string,
     stage?: string,
     service?: string
-  ): Observable<HttpResponse<EventResult>> {
+  ): Observable<EventResult> {
     const url = `${this._baseUrl}/mongodb-datastore/event`;
     const params = {
       pageSize: '1',
@@ -446,7 +446,7 @@ export class ApiService {
       ...(service && { service }),
     };
 
-    return this.http.get<EventResult>(url, { params, observe: 'response' });
+    return this.http.get<EventResult>(url, { params });
   }
 
   public sendSequenceControl(project: string, keptnContext: string, state: string): Observable<unknown> {
