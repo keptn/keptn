@@ -209,7 +209,7 @@ describe('KtbEditServiceFileListComponent', () => {
     const link = component.getGitRepositoryLink();
 
     // then
-    expect(link).toEqual('https://dev.azure.com/keptn/_git/sockshop-upstream?path=carts&version=GBdev');
+    expect(link).toEqual('https://dev.azure.com/keptn/_git/sockshop-upstream');
   });
 
   it('should get the link for azure for a stage when clone url is used', () => {
@@ -222,7 +222,7 @@ describe('KtbEditServiceFileListComponent', () => {
     const link = component.getGitRepositoryLink();
 
     // then
-    expect(link).toEqual('https://dev.azure.com/keptn/_git/sockshop-upstream?path=carts&version=GBdev');
+    expect(link).toEqual('https://dev.azure.com/keptn/_git/sockshop-upstream');
   });
 
   it('should get the link for codeCommit for a stage (clone url is the same)', () => {
