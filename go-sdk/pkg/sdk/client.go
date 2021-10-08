@@ -19,7 +19,7 @@ func NewHTTPClientFromEnv() cloudevents.Client {
 		log.Fatalf("failed to process env var: %s", err)
 	}
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPort(env.Port), cloudevents.WithPath(env.Path))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPort(env.Port), cloudevents.WithPath(env.Path), cloudevents.WithGetHandlerFunc(api.HealthEndpointHandler))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
