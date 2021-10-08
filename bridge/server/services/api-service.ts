@@ -59,19 +59,19 @@ export class ApiService {
   }
 
   public getTraces(
-    eventType: string,
-    pageSize: number,
-    projectName: string,
-    stageName: string,
-    serviceName: string,
+    eventType?: string,
+    pageSize?: number,
+    projectName?: string,
+    stageName?: string,
+    serviceName?: string,
     keptnContext?: string
   ): Promise<AxiosResponse<EventResult>> {
     const params = {
-      project: projectName,
-      service: serviceName,
-      stage: stageName,
-      type: eventType,
-      limit: pageSize.toString(),
+      ...(projectName && { project: projectName }),
+      ...(serviceName && { service: serviceName }),
+      ...(stageName && { stage: stageName }),
+      ...(eventType && { type: eventType }),
+      ...(pageSize && { pageSize: pageSize.toString() }),
       ...(keptnContext && { keptnContext }),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, { params });

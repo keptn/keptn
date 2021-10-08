@@ -142,6 +142,7 @@ import {
 } from './_components/ktb-tree-list-select/ktb-tree-list-select.component';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
+import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -229,6 +230,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbTreeListSelectComponent,
     KtbTreeListSelectDirective,
     KtbSequenceStateInfoComponent,
+    KtbPayloadViewerComponent,
   ],
   imports: [
     BrowserModule,

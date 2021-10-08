@@ -86,6 +86,14 @@ export class UniformSubscription implements us {
     return this._filter;
   }
 
+  public getFirstStage(): string | undefined {
+    return this.filter.stages?.find(() => true);
+  }
+
+  public getFirstService(): string | undefined {
+    return this.filter.services?.find(() => true);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public filterChanged(event: DtFilterFieldChangeEvent<any>, projectName: string): void {
     // can't set another type because of "is not assignable to..."
