@@ -40,13 +40,13 @@ securityContext: {}                          # Set the security context (e.g. ru
 #  runAsNonRoot: true
 #  runAsUser: 1000
 
-resources:                                   # Resource limits and requests
-  requests:
-    cpu: 25m
-    memory: 64Mi
+resources:                                  # Resource limits and requests
   limits:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
 
 nodeSelector: {}                             # Node selector configuration
 
