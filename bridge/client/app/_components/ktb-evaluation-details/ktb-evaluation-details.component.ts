@@ -49,10 +49,12 @@ type SliInfo = {
   score: number;
   warningCount: number;
   failedCount: number;
+  passCount: number;
 };
 
 interface IHeatmapPoint {
   sliInfo?: {
+    passCount: number;
     warningCount: number;
     failedCount: number;
     thresholdPass: number;
@@ -76,6 +78,7 @@ interface IHeatmapPoint {
 
 class HeatmapPoint implements IHeatmapPoint {
   sliInfo?: {
+    passCount: number;
     warningCount: number;
     failedCount: number;
     thresholdPass: number;
@@ -488,6 +491,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     score: number;
     warningCount: number;
     failedCount: number;
+    passCount: number;
   } {
     return indicatorResults.reduce(
       (acc, result) => {
@@ -497,9 +501,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           score: acc.score + result.score,
           warningCount: acc.warningCount + warning,
           failedCount: acc.failedCount + failed,
+          passCount: acc.passCount + 1 - warning - failed,
         };
       },
-      { score: 0, warningCount: 0, failedCount: 0 } as SliInfo
+      { score: 0, warningCount: 0, failedCount: 0, passCount: 0 } as SliInfo
     );
   }
 
@@ -544,6 +549,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                 sliInfo: {
                   warningCount: sliResultsInfo[s.evaluationData.id]?.warningCount ?? 0,
                   failedCount: sliResultsInfo[s.evaluationData.id]?.failedCount ?? 0,
+                  passCount: sliResultsInfo[s.evaluationData.id]?.passCount ?? 0,
                   thresholdPass: +(s.evaluationData.data.evaluation?.score_pass ?? 0),
                   thresholdWarn: +(s.evaluationData.data.evaluation?.score_warning ?? 0),
                   fail: s.evaluationData.isFailed(),

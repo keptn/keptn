@@ -50,6 +50,13 @@
 
             <ng-container *ngIf="dataPoint.sliInfo as info">
               <dt-key-value-list-item>
+                <dt-key-value-list-key> Total passed SLIs </dt-key-value-list-key>
+                <dt-key-value-list-value>
+                  {{ info.passCount }}
+                </dt-key-value-list-value>
+              </dt-key-value-list-item>
+
+              <dt-key-value-list-item>
                 <dt-key-value-list-key> Total warning SLIs </dt-key-value-list-key>
                 <dt-key-value-list-value>
                   {{ info.warningCount }}
