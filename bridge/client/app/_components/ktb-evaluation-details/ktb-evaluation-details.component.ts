@@ -305,6 +305,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     return this._heatmapSeries;
   }
 
+  public get heatmapHeight(): number {
+    return this.heatmapChart?._chartObject?.plotHeight ?? 0;
+  }
+
+  public get heatmapWidth(): number {
+    return this.heatmapChart?._chartObject?.chartWidth ?? 0;
+  }
+
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
