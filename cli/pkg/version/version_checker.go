@@ -156,6 +156,10 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 				logging.PrintLog(err.Error(), logging.InfoLevel)
 				return false, false
 			}
+			if newVersions.stable.newestCompatible == nil && newVersions.prerelease.newestCompatible == nil {
+				fmt.Printf("Keptn CLI and Keptn cluster version are already on the latest version ( %v )! \n", cliVersion)
+				return false, true
+			}
 			if newVersions.stable.newestCompatible != nil {
 				segments := newVersions.stable.newestCompatible.Segments()
 				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
