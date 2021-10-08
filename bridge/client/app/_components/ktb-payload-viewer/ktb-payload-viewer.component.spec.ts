@@ -200,7 +200,7 @@ describe('KtbPayloadViewerComponent', () => {
   it('should close dialog', fakeAsync(() => {
     // given
     const trace: Trace = Trace.fromJSON(EvaluationTracesMock[0]);
-    const spy = jest.spyOn(dataService, 'getEvent').mockReturnValue(of(trace));
+    jest.spyOn(dataService, 'getEvent').mockReturnValue(of(trace));
     component.type = trace.type;
     component.project = trace.data.project;
     fixture.detectChanges();
