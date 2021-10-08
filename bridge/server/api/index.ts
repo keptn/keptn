@@ -247,7 +247,7 @@ const apiRouter = (params: {
         return res.json(response);
       } else if (req.query.keptnContext && !req.query.pageSize) {
         const response = await dataService.getTracesByContext(
-          req.query.keptnContext?.toString(),
+          req.query.keptnContext.toString(),
           req.query.project?.toString(),
           req.query.fromTime?.toString()
         );
