@@ -613,6 +613,10 @@ export class DataService {
       });
   }
 
+  public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
+    return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
+  }
+
   public loadEvaluationResults(event: Trace): void {
     let fromTime: Date | undefined;
     const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
