@@ -78,7 +78,7 @@ export class KtbEditServiceFileListComponent {
 
   private getAzureUrl(uri: string): string {
     uri = uri.replace(/https:\/\/.*@dev.azure.com\//, 'https://dev.azure.com/');
-    return uri + '?path=' + this.serviceName + '&version=GB' + this.stageName;
+    return uri;
   }
 
   private getCodeCommitUrl(uri: string): string {
