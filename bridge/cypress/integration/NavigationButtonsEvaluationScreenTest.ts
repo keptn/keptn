@@ -65,7 +65,7 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
-    basePage.declineAutomaticUpdate().clickProjectTile('dynatrace');
+    basePage.clickProjectTile('dynatrace');
     basePage
       .goToServicesPage()
       .clickOnServicePanelByName('items')
