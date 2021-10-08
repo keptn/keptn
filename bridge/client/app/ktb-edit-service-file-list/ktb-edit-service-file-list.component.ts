@@ -27,7 +27,7 @@ export class KtbEditServiceFileListComponent {
 
   @Input() public stageName = '';
   @Input() public serviceName = '';
-  @Input() public remoteUri = '';
+  @Input() public remoteUri: string | undefined = '';
 
   @Input()
   set treeData(treeData: TreeEntry[]) {
