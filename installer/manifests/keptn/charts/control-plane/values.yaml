@@ -111,6 +111,7 @@ approvalService:
     tag: ""
 
 webhookService:
+  enabled: true
   image:
     repository: docker.io/keptn/webhook-service
     tag: ""
