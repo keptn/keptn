@@ -193,6 +193,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         }
+        return res.json();
       } catch (error) {
         return next(error);
       }

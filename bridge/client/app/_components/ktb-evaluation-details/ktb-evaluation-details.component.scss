@@ -33,8 +33,6 @@
 }
 
 .button-show-more-slo {
-  width: calc(100% - 17px);
   position: absolute;
-  bottom: 147px;
-  right: 17px;
+  z-index: 1;
 }

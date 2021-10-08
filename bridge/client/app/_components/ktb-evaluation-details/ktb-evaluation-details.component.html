@@ -26,6 +26,28 @@
     </div>
   </div>
   <div class="chart-container m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation()">
+    <button
+      dt-button
+      variant="secondary"
+      class="button-show-more-slo"
+      *ngIf="!isHeatmapExtended && isHeatmapExtendable && _comparisonView === 'heatmap'"
+      (click)="toggleHeatmap()"
+      [style.top.px]="heatmapHeight + 20"
+      [style.width.px]="heatmapWidth - 8"
+    >
+      <dt-icon name="sorter2-down"></dt-icon> Show all SLIs
+    </button>
+    <button
+      dt-button
+      variant="secondary"
+      class="button-show-more-slo"
+      *ngIf="isHeatmapExtended && isHeatmapExtendable && _comparisonView === 'heatmap'"
+      [style.top.px]="heatmapHeight + 20"
+      [style.width.px]="heatmapWidth - 8"
+      (click)="toggleHeatmap()"
+    >
+      <dt-icon name="sorter2-up"></dt-icon> Collapse to 10 SLIs
+    </button>
     <dt-chart
       class="mr-2"
       #heatmapChart
@@ -36,25 +58,6 @@
       (seriesVisibilityChange)="seriesVisibilityChanged($event)"
     >
     </dt-chart>
-
-    <button
-      dt-button
-      variant="secondary"
-      class="button-show-more-slo"
-      *ngIf="!isHeatmapExtended && isHeatmapExtendable && _comparisonView === 'heatmap'"
-      (click)="toggleHeatmap()"
-    >
-      <dt-icon name="sorter2-down"></dt-icon> Show all SLIs
-    </button>
-    <button
-      dt-button
-      variant="secondary"
-      class="button-show-more-slo"
-      *ngIf="isHeatmapExtended && isHeatmapExtendable && _comparisonView === 'heatmap'"
-      (click)="toggleHeatmap()"
-    >
-      <dt-icon name="sorter2-up"></dt-icon> Collapse to 10 SLIs
-    </button>
 
     <dt-chart
       *ngIf="showChart && _comparisonView == 'chart'"

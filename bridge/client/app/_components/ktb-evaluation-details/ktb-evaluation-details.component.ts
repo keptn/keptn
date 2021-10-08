@@ -5,7 +5,7 @@ import Highcharts, {
   SeriesHeatmapDataOptions,
   SeriesLineOptions,
 } from 'highcharts';
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import {
   DtChart,
@@ -14,7 +14,7 @@ import {
   DtChartSeriesVisibilityChangeEvent,
 } from '@dynatrace/barista-components/chart';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -228,6 +228,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private setEvaluation(evaluationInfo: { evaluation?: Trace; shouldSelect: boolean }): void {
     if (this._evaluationData?.id !== evaluationInfo.evaluation?.id) {
       this._selectedEvaluationData = undefined;
+      this.updateResults = undefined;
       this._evaluationData = evaluationInfo.evaluation;
       this._chartSeries = [];
       this._metrics = ['Score'];
@@ -244,12 +245,21 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     return this._heatmapSeries as DtChartSeries[];
   }
 
+  public get heatmapHeight(): number {
+    return this.heatmapChart?._chartObject?.plotHeight ?? 0;
+  }
+
+  public get heatmapWidth(): number {
+    return this.heatmapChart?._chartObject?.chartWidth ?? 0;
+  }
+
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private dialog: MatDialog,
     private clipboard: ClipboardService,
-    public dateUtil: DateUtil
+    public dateUtil: DateUtil,
+    private zone: NgZone
   ) {}
 
   public ngOnInit(): void {
@@ -270,12 +280,25 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       if (this.isInvalidated) {
         this.selectEvaluationData(this._evaluationData);
       } else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory) {
-        const trace = this._evaluationData.data.evaluationHistory.find(
-          (h) => h.shkeptncontext === this._evaluationData?.shkeptncontext
-        );
-        this.selectEvaluationData(trace);
+        this.setHeatmapDataAfterRender(this._evaluationData.data.evaluationHistory);
       }
     }
+  }
+
+  /**
+   * If the data for the heatmap is set before the element is rendered, the width of the heatmap exceeds the page width
+   * @param data
+   * @private
+   */
+  private setHeatmapDataAfterRender(data: Trace[]): void {
+    this.zone.onMicrotaskEmpty
+      .asObservable()
+      .pipe(take(1), takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.updateChartData(data);
+        const trace = data.find((h) => h.shkeptncontext === this._evaluationData?.shkeptncontext);
+        this.selectEvaluationData(trace);
+      });
   }
 
   public refreshEvaluationBoard(results: EvaluationHistory): void {
