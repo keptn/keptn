@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/keptn/keptn/helm-service/pkg/types"
+	"sync"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -25,8 +27,8 @@ func NewDeleteHandler(keptnHandler Handler, stagesHandler types.IStagesHandler, 
 }
 
 // HandleEvent takes the sh.keptn.internal.event.service.delete event and deletes the service in all stages
-func (h *DeleteHandler) HandleEvent(ce cloudevents.Event) {
-
+func (h *DeleteHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
+	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
 	serviceDeleteEvent := keptnv2.ServiceDeleteFinishedEventData{}
 
 	err := ce.DataAs(&serviceDeleteEvent)

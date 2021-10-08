@@ -9,6 +9,9 @@ import (
 	logger "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
@@ -94,24 +97,25 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	// ToDo: Multithreaded is important here, such that the endpoint responds immediately
 	// else we will have deployment handler take 30 seconds, and after that the response will be sent
-
+	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
-		go deploymentHandler.HandleEvent(event)
+		go deploymentHandler.HandleEvent(ctx, event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
-		go releaseHandler.HandleEvent(event)
+		go releaseHandler.HandleEvent(ctx, event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName) {
 		rollbackHandler := createRollbackHandler(configServiceURL, mesh, keptnHandler)
-		go rollbackHandler.HandleEvent(event)
+		go rollbackHandler.HandleEvent(ctx, event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
-		go actionHandler.HandleEvent(event)
+		go actionHandler.HandleEvent(ctx, event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
-		go deleteHandler.HandleEvent(event)
+		go deleteHandler.HandleEvent(ctx, event)
 	} else {
 		logger.Error("Received unexpected keptn event")
+		ctx.Value("Wg").(*sync.WaitGroup).Done()
 	}
 
 	return nil
@@ -184,8 +188,7 @@ func _main(args []string, env envConfig) int {
 		log.Println("Warning: helm-service is running without admin RBAC rights. See #3511 for details.")
 	}
 
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
@@ -216,4 +219,20 @@ func hasAdminRights() (bool, error) {
 		return false, err
 	}
 	return resp.Status.Allowed, nil
+}
+
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+
+	go func() {
+		<-ch
+		log.Fatal("Container termination triggered, starting graceful shutdown")
+		cancel()
+	}()
+
+	return ctx
 }

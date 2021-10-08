@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/keptn/keptn/helm-service/pkg/types"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -44,8 +46,8 @@ func NewReleaseHandler(keptnHandler Handler,
 }
 
 // HandleEvent handles release.triggered events and either promotes or aborts an artifact
-func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
-
+func (h *ReleaseHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
+	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
 	e := keptnv2.ReleaseTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to release event")

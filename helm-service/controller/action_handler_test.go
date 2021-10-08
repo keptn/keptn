@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"context"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 )
 
@@ -18,7 +20,9 @@ func TestCreateActionHandler(t *testing.T) {
 }
 
 func TestHandleActionTriggeredEvent(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -82,15 +86,16 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 	})
 
 	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
-
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
 	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
 
 }
 
 func TestHandleEvent_InvalidData(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -155,7 +160,7 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 
 	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
 	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
@@ -163,6 +168,9 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 }
 
 func TestHandleUnparsableEvent(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -184,13 +192,15 @@ func TestHandleUnparsableEvent(t *testing.T) {
 		},
 	}
 
-	instance.HandleEvent(createUnparsableEvent())
+	instance.HandleEvent(ctx, createUnparsableEvent())
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedFinishEventData, mockedBaseHandler.handledErrorEvents[0])
 }
 
 func TestHandleEvent_SendStartEventFails(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -241,13 +251,15 @@ func TestHandleEvent_SendStartEventFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedFinishEvent, mockedBaseHandler.handledErrorEvents[0])
 }
 
 func TestHandleEvent_SendFinishEventFails(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -299,13 +311,15 @@ func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedFinishEvent, mockedBaseHandler.handledErrorEvents[0])
 }
 
 func TestHandleEvent_WithMissingAction(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -327,6 +341,6 @@ func TestHandleEvent_WithMissingAction(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 
 }

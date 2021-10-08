@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
@@ -9,10 +10,12 @@ import (
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 )
 
 func TestCreateRollbackHandler(t *testing.T) {
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -26,7 +29,9 @@ func TestCreateRollbackHandler(t *testing.T) {
 }
 
 func TestHandleRollbackEvent(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -55,7 +60,7 @@ func TestHandleRollbackEvent(t *testing.T) {
 	_ = ce.SetData(cloudevents.ApplicationJSON, rollbackTriggeredEventData)
 
 	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(&testGenChart, "version", nil)
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 
 	assert.Equal(t, 1, len(mockedBaseHandler.upgradeChartInvocations))
 	assert.Equal(t, keptn.Duplicate, mockedBaseHandler.upgradeChartInvocations[0].strategy)
@@ -75,6 +80,9 @@ func TestHandleRollbackEvent(t *testing.T) {
 }
 
 func TestHandleRollbackEvent_UpdatingChartFails(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -113,7 +121,7 @@ func TestHandleRollbackEvent_UpdatingChartFails(t *testing.T) {
 
 	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "", errors.New("Whoops..."))
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -8,11 +9,14 @@ import (
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"sync"
 	"testing"
 )
 
 func TestHandleReleaseTriggeredEvent_WhenDeploymentStrategyDirect_ThenNoActionRequired(t *testing.T) {
-
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -37,7 +41,7 @@ func TestHandleReleaseTriggeredEvent_WhenDeploymentStrategyDirect_ThenNoActionRe
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, releaseTriggeredEventData)
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 
 	expectedReleaseStartedEvent := cloudevents.NewEvent()
 	expectedReleaseStartedEvent.SetType("sh.keptn.event.release.started")
@@ -71,6 +75,9 @@ func TestHandleReleaseTriggeredEvent_WhenDeploymentStrategyDirect_ThenNoActionRe
 }
 
 func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -95,7 +102,7 @@ func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T)
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, releaseTriggeredEventData)
 
-	instance.HandleEvent(ce)
+	instance.HandleEvent(ctx, ce)
 
 	expectedReleaseStartedEvent := cloudevents.NewEvent()
 	expectedReleaseStartedEvent.SetType("sh.keptn.event.release.started")
