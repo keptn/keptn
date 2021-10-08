@@ -108,6 +108,58 @@ describe('KtbEditServiceFileListComponent', () => {
     expect(link).toEqual('https://github.com/keptn/sockshop-upstream/tree/dev/carts');
   });
 
+  it('should get the link for github for a given stage when clone url is used', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://github.com/keptn/sockshop-upstream.git';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://github.com/keptn/sockshop-upstream/tree/dev/carts');
+  });
+
+  it('should get the link for gitlab for a given stage', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://gitlab.com/keptn/sockshop-upstream';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://gitlab.com/keptn/sockshop-upstream/tree/dev/carts');
+  });
+
+  it('should get the link for gitlab for a given stage if a clone url is used', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://gitlab.com/keptn/sockshop-upstream.git';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://gitlab.com/keptn/sockshop-upstream/tree/dev/carts');
+  });
+
+  it('should get the fallback link for gitlab when a self hosted solution is used', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://gitlab.company.com/keptn/sockshop-upstream.git';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://gitlab.company.com/keptn/sockshop-upstream');
+  });
+
   it('should get the link for bitbucket for a stage', () => {
     // given
     component.stageName = 'dev';
@@ -119,6 +171,32 @@ describe('KtbEditServiceFileListComponent', () => {
 
     // then
     expect(link).toEqual('https://bitbucket.org/keptn/sockshop-upstream/src/dev/carts');
+  });
+
+  it('should get the link for bitbucket for a stage when clone url is used', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://johndoe@bitbucket.org/keptn/sockshop-upstream.git';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://bitbucket.org/keptn/sockshop-upstream/src/dev/carts');
+  });
+
+  it('should get the fallback link for bitbucket when a self hosted solution is used', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://bitbucket.company.org/git/keptn/sockshop-upstream.git';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://bitbucket.company.org/git/keptn/sockshop-upstream');
   });
 
   it('should get the link for azure for a stage', () => {
@@ -134,7 +212,20 @@ describe('KtbEditServiceFileListComponent', () => {
     expect(link).toEqual('https://dev.azure.com/keptn/_git/sockshop-upstream?path=carts&version=GBdev');
   });
 
-  it('should get the link for codeCommit for a stage', () => {
+  it('should get the link for azure for a stage when clone url is used', () => {
+    // given
+    component.stageName = 'dev';
+    component.remoteUri = 'https://johndoe@dev.azure.com/keptn/_git/sockshop-upstream';
+    component.serviceName = 'carts';
+
+    // when
+    const link = component.getGitRepositoryLink();
+
+    // then
+    expect(link).toEqual('https://dev.azure.com/keptn/_git/sockshop-upstream?path=carts&version=GBdev');
+  });
+
+  it('should get the link for codeCommit for a stage (clone url is the same)', () => {
     // given
     component.stageName = 'dev';
     component.remoteUri = 'https://git-codecommit.eu-central-1.amazonaws.com/v1/repos/sockshop-upstream';
