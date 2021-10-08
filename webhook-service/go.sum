@@ -146,6 +146,8 @@ github.com/keptn/go-utils v0.10.0 h1:ViYtBqcO6yf8pBkAUKWhCOkWDXdhBjzyP7xu3fFTwtI
 github.com/keptn/go-utils v0.10.0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
 github.com/keptn/keptn/go-sdk v0.0.0-20211004085310-cb529001e505 h1:BoIXNHL7wsvUTfkQjJovekmRBThxLIw9/ZpRbGMdePQ=
 github.com/keptn/keptn/go-sdk v0.0.0-20211004085310-cb529001e505/go.mod h1:5hi+fZN+8WNL/Sj6lyupZzjhJ12/ZjB4REf2sewBPKc=
+github.com/keptn/keptn/go-sdk v0.0.0-20211008073819-577416a64f1e h1:byAFf0EL7aeFbNuUBlNHkic1UN2Cse+hubcSH/Csprs=
+github.com/keptn/keptn/go-sdk v0.0.0-20211008073819-577416a64f1e/go.mod h1:y/tOsC6dy0n/pKqPnFq25LvA5F4c66iKwvrollOpDbg=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
