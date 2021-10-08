@@ -30,6 +30,7 @@ import { AppUtils } from '../../_utils/app.utils';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
 /* eslint-disable @typescript-eslint/no-var-requires */
+const _boostCanvas = require('highcharts/modules/boost-canvas');
 const _boost = require('highcharts/modules/boost');
 const _noData = require('highcharts/modules/no-data-to-display');
 const _more = require('highcharts/highcharts-more');
@@ -38,6 +39,7 @@ const _treemap = require('highcharts/modules/treemap');
 /* eslint-enable @typescript-eslint/no-var-requires */
 type SeriesPoint = PointClickEventObject & { series: EvaluationChartItem; point: { evaluationData: Trace } };
 
+_boostCanvas(Highcharts);
 _boost(Highcharts);
 _noData(Highcharts);
 _more(Highcharts);
@@ -475,16 +477,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private getSliResultInfos(chartSeries: EvaluationChartItem[]): SliInfoDictionary {
-    const sliResultsScores: SliInfoDictionary = {};
+    const sliResultInfos: SliInfoDictionary = {};
     for (const chartItem of chartSeries) {
       for (const item of chartItem.data) {
-        if (item.evaluationData?.data.evaluation?.indicatorResults && !sliResultsScores[item.evaluationData.id]) {
+        if (item.evaluationData?.data.evaluation?.indicatorResults && !sliResultInfos[item.evaluationData.id]) {
           const indicatorResults = item.evaluationData.data.evaluation.indicatorResults;
-          sliResultsScores[item.evaluationData.id] = this.getSliResultInfo(indicatorResults);
+          sliResultInfos[item.evaluationData.id] = this.getSliResultInfo(indicatorResults);
         }
       }
     }
-    return sliResultsScores;
+    return sliResultInfos;
   }
 
   private getSliResultInfo(indicatorResults: IndicatorResult[]): {
