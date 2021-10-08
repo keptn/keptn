@@ -14,6 +14,8 @@ Keptn 0.10.0 provides a native way for integrating your tooling by just calling 
 
 SDK (Experimental)
 
+:information_source: Keptn provides an internal Git repository for each Keptn project regardless of whether a Git upstream is configured. This internal Git repository will become deprecated in an upcoming Keptn release; more detail will follow. Consequently, it is recommended to set a Git upstream to your own, publically accessible Git repository today. Therefore, use the Keptn [CLI](https://keptn.sh/docs/0.10.x/reference/cli/commands/keptn_update_project/) or [Bridge](https://keptn.sh/docs/0.10.x/reference/bridge/manage_projects/). If there are specific requirements to connect to an own repository, please reach out on Slack: keptn.slack.com  
+
 ---
 
 ## Keptn Enhancement Proposals
