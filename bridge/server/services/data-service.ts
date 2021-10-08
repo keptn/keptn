@@ -280,11 +280,11 @@ export class DataService {
   }
 
   private async getTrace(
-    keptnContext: string,
-    projectName: string,
-    stageName: string,
-    serviceName: string,
-    eventType: EventTypes
+    keptnContext?: string,
+    projectName?: string,
+    stageName?: string,
+    serviceName?: string,
+    eventType?: EventTypes
   ): Promise<Trace | undefined> {
     const response = await this.apiService.getTraces(eventType, 1, projectName, stageName, serviceName, keptnContext);
     return response.data.events.shift();
@@ -440,6 +440,25 @@ export class DataService {
     } while (nextPage !== 0);
 
     return result;
+  }
+
+  public async getTraces(
+    keptnContext?: string,
+    projectName?: string,
+    stageName?: string,
+    serviceName?: string,
+    eventType?: string,
+    pageSize?: number
+  ): Promise<EventResult> {
+    const response = await this.apiService.getTraces(
+      eventType,
+      pageSize,
+      projectName,
+      stageName,
+      serviceName,
+      keptnContext
+    );
+    return response.data;
   }
 
   public async getResourceFileTreesForService(projectName: string, serviceName: string): Promise<FileTree[]> {

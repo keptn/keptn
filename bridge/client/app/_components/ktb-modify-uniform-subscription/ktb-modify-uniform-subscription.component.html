@@ -70,6 +70,13 @@
             >If you add a service you must add a stage</dt-error
           >
         </div>
+        <ktb-payload-viewer
+          [buttonTitle]="'Show example payload'"
+          [type]="getSelectedTask()"
+          [project]="data.project.projectName"
+          [stage]="data.subscription.getFirstStage()"
+          [service]="data.subscription.getFirstService()"
+        ></ktb-payload-viewer>
         <ktb-webhook-settings
           *ngIf="isWebhookService"
           [(webhook)]="data.webhook"
