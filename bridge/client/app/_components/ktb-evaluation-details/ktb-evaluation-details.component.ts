@@ -52,6 +52,8 @@ type SliInfo = {
   passCount: number;
 };
 
+type SliInfoDictionary = { [evaluationId: string]: SliInfo | undefined };
+
 interface IHeatmapPoint {
   sliInfo?: {
     passCount: number;
@@ -472,10 +474,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getSliResultInfos(chartSeries: EvaluationChartItem[]): { [evaluationId: string]: SliInfo | undefined } {
-    const sliResultsScores: {
-      [evaluationId: string]: SliInfo | undefined;
-    } = {};
+  private getSliResultInfos(chartSeries: EvaluationChartItem[]): SliInfoDictionary {
+    const sliResultsScores: SliInfoDictionary = {};
     for (const chartItem of chartSeries) {
       for (const item of chartItem.data) {
         if (item.evaluationData?.data.evaluation?.indicatorResults && !sliResultsScores[item.evaluationData.id]) {
@@ -509,7 +509,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private setHeatmapData(chartSeries: EvaluationChartItem[]): void {
-    const sliResultsInfo: { [evaluationId: string]: SliInfo | undefined } = this.getSliResultInfos(chartSeries);
+    const sliResultsInfo: SliInfoDictionary = this.getSliResultInfos(chartSeries);
     this._heatmapSeriesReduced = [
       {
         name: 'Score',
