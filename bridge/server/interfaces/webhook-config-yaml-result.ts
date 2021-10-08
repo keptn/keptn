@@ -1,7 +1,7 @@
 import { WebhookSecret } from '../../shared/models/webhook-config';
 
 export type Webhook = {
-  subscriptionId: string;
+  subscriptionID: string;
   type: string; // type === event
   requests: string[];
   envFrom?: WebhookSecret[];

@@ -64,9 +64,14 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     const webhook = this.getWebhook(subscriptionId);
     if (!webhook) {
       if (secrets.length) {
-        this.spec.webhooks.push({ type: eventType, requests: [curl], envFrom: secrets, subscriptionId });
+        this.spec.webhooks.push({
+          type: eventType,
+          requests: [curl],
+          envFrom: secrets,
+          subscriptionID: subscriptionId,
+        });
       } else {
-        this.spec.webhooks.push({ type: eventType, requests: [curl], subscriptionId });
+        this.spec.webhooks.push({ type: eventType, requests: [curl], subscriptionID: subscriptionId });
       }
     } else {
       // overwrite
@@ -86,7 +91,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   }
 
   private findWebhook(subscriptionId: string): (webhook: Webhook) => boolean {
-    return (webhook: Webhook): boolean => webhook.subscriptionId === subscriptionId;
+    return (webhook: Webhook): boolean => webhook.subscriptionID === subscriptionId;
   }
 
   public parsedRequest(subscriptionId: string): WebhookConfig | undefined {
