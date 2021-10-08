@@ -5,15 +5,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type IUniformIntegrationHandler interface {
@@ -44,8 +45,8 @@ func NewUniformIntegrationHandler(uniformRepo db.UniformRepo) *UniformIntegratio
 // @Accept json
 // @Produce json
 // @Param integration body models.Integration true "Integration"
-// @Success 201 {object} models.RegisterResponse "ok"
-// @Success 200 {object} models.RegisterResponse "ok"
+// @Success 200 {object} models.RegisterResponse "ok: registration already exists"
+// @Success 201 {object} models.RegisterResponse "ok: a new registration has been created"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration [post]
