@@ -136,8 +136,8 @@ func Test_Webhook(t *testing.T) {
 
 	// create a secret that should be referenced in the webhook
 	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
-		"name": "my-webhook-k8s-secret",
-		//		"scope": "keptn-default-scope",
+		"name":  "my-webhook-k8s-secret",
+		"scope": "keptn-webhook-service",
 		"data": map[string]string{
 			"my-key": "my-value",
 		},
@@ -253,8 +253,8 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 
 	// create a secret that should be referenced in the webhook
 	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
-		"name": "my-webhook-k8s-secret",
-		//		"scope": "keptn-default-scope",
+		"name":  "my-webhook-k8s-secret",
+		"scope": "keptn-webhook-service",
 		"data": map[string]string{
 			"my-key": "my-value",
 		},
