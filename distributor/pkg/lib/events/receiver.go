@@ -2,15 +2,16 @@ package events
 
 import (
 	"context"
+	"os"
+	"sync"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
-	"os"
-	"sync"
-	"time"
 )
 
 // EventReceiver is responsible for receive and process events from Keptn
@@ -84,7 +85,7 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubs
 	}
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(topics, n.env.PubSubGroup)
 	if err != nil {
-		logger.Errorf("Unable to subscribe to topics %v", topics)
+		logger.Errorf("Unable to subscribe to topics %v\nError: %v", topics, err)
 	}
 }
 
