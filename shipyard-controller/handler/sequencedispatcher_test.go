@@ -112,6 +112,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	require.Equal(t, *mockEventRepo.GetEventsCalls()[0].Filter.ID, queueItem.EventID)
 	require.Equal(t, mockEventRepo.GetEventsCalls()[0].Status[0], common.TriggeredEvent)
 
+	// if the sequence has been dispatched immediately, we do not need to insert it into the queue
 	require.Empty(t, mockSequenceQueueRepo.QueueSequenceCalls())
 
 	// has the queueItem been removed properly?
