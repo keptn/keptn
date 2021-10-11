@@ -344,7 +344,7 @@ func CloneRepo(project string, credentials common_models.GitCredentials) (bool, 
 }
 
 func isNoRemoteHeadFoundError(err error) bool {
-	return strings.Contains("Couldn't find remote ref HEAD", err.Error())
+	return strings.Contains(err.Error(), "Couldn't find remote ref HEAD")
 }
 
 func getRepoURI(uri string, user string, token string) string {
