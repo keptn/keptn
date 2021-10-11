@@ -352,14 +352,22 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
    * @private
    */
   private setHeatmapDataAfterRender(data: Trace[]): void {
-    this.zone.onMicrotaskEmpty
-      .asObservable()
-      .pipe(take(1), takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        this.updateChartData(data);
-        const trace = data.find((h) => h.shkeptncontext === this._evaluationData?.shkeptncontext);
-        this.selectEvaluationData(trace);
-      });
+    const updateData = (): void => {
+      this.updateChartData(data);
+      const trace = data.find((h) => h.shkeptncontext === this._evaluationData?.shkeptncontext);
+      this.selectEvaluationData(trace);
+    };
+
+    if (this.zone.hasPendingMicrotasks) {
+      this.zone.onMicrotaskEmpty
+        .asObservable()
+        .pipe(take(1), takeUntil(this.unsubscribe$))
+        .subscribe(() => {
+          updateData();
+        });
+    } else {
+      updateData();
+    }
   }
 
   public refreshEvaluationBoard(results: EvaluationHistory): void {
