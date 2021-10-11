@@ -451,14 +451,14 @@ func GetDiagnostics(service string) string {
 }
 
 func VerifyDirectDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*2, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*3, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
 
 func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*2, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
+	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*3, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
 		return err
 	}
-	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*2, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*3, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
 
 func VerifyTaskStartedEventExists(t *testing.T, keptnContext, projectName, stage string, taskName string) {
