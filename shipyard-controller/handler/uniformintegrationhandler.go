@@ -120,7 +120,12 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		// if the integration already exists, update only the last seen field
 		// and return integration ID
 		if errors.Is(err, db.ErrUniformRegistrationAlreadyExists) {
-			_, _ = rh.uniformRepo.UpdateLastSeen(integration.ID)
+			result, _ := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: hash})
+			if result[0].MetaData.IntegrationVersion != integration.MetaData.IntegrationVersion || result[0].MetaData.DistributorVersion != integration.MetaData.DistributorVersion {
+				rh.uniformRepo.CreateOrUpdateUniformIntegration(*integration)
+			} else {
+				_, _ = rh.uniformRepo.UpdateLastSeen(integration.ID)
+			}
 			c.JSON(http.StatusOK, &models.RegisterResponse{
 				ID: integration.ID,
 			})
