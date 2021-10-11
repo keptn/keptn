@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"context"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,13 +10,14 @@ import (
 )
 
 func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
-	k8s := KubeClient(t)
+	k8s, err := keptnkubeutils.GetClientset(false)
+	require.Nil(t, err)
 	var ns = GetKeptnNameSpaceFromEnv()
 	secret1 := "my-new-secret"
 	secret2 := "my-new-secret-2"
 
 	// create secret 1
-	_, err := ExecuteCommandf("keptn create secret %s --from-literal=mykey1=myvalue1", secret1)
+	_, err = ExecuteCommandf("keptn create secret %s --from-literal=mykey1=myvalue1", secret1)
 	require.Nil(t, err)
 
 	// create secret 2

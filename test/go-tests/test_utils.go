@@ -15,9 +15,6 @@ import (
 	"github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"os"
 	"reflect"
@@ -70,7 +67,7 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, shipyardFilePath))
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s", projectName, shipyardFilePath))
 
 		if err == nil {
 			return nil
@@ -269,16 +266,12 @@ func RestartPod(deploymentName string) error {
 	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
 }
 
-func WaitForPodOfDeployment(deploymentName string) error {
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
-}
-
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
 	return CreateTmpFile("shipyard-*.yaml", shipyardContent)
 }
 
 func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
-	file, err := ioutil.TempFile(".", fileNamePattern)
+	file, err := ioutil.TempFile("", fileNamePattern)
 	if err != nil {
 		return "", err
 	}
@@ -287,6 +280,10 @@ func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
 		return "", err
 	}
 	return file.Name(), nil
+}
+
+func CreateTmpDir() (string, error) {
+	return ioutil.TempDir("", "")
 }
 
 func ExecuteCommand(cmd string) (string, error) {
@@ -399,93 +396,6 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	return states, resp, err
 }
 
-func KubeClient(t *testing.T) *kubernetes.Clientset {
-	clientset, err := keptnkubeutils.GetClientset(false)
-	require.Nil(t, err)
-	return clientset
-}
-
-func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
-	clientset, err := keptnkubeutils.GetClientset(false)
-	if err != nil {
-		return err
-	}
-	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	for index, container := range depl.Spec.Template.Spec.Containers {
-		if "distributor" == container.Name {
-			for _, e := range envVars {
-				replaced := false
-				for ii, existingEnvVar := range depl.Spec.Template.Spec.Containers[index].Env {
-					// if we find an already existing env war with the same name, we need to replace it
-					if existingEnvVar.Name == e.Name {
-						depl.Spec.Template.Spec.Containers[index].Env[ii] = e
-						replaced = true
-						break
-					}
-				}
-				// if we did not replace an env var, we need to append it
-				if !replaced {
-					depl.Spec.Template.Spec.Containers[index].Env = append(depl.Spec.Template.Spec.Containers[index].Env, e)
-					replaced = false
-				}
-			}
-		}
-	}
-
-	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
-}
-
-func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
-	clientset, err := keptnkubeutils.GetClientset(false)
-	if err != nil {
-		return "", err
-	}
-	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-
-	for _, container := range depl.Spec.Template.Spec.Containers {
-		if containerName == container.Name {
-			return container.Image, nil
-		}
-	}
-	return "", fmt.Errorf("container %s not found in deployment %s", containerName, deploymentName)
-}
-
-func SetImageOfDeploymentContainer(deploymentName, containerName, image string) error {
-	clientset, err := keptnkubeutils.GetClientset(false)
-	if err != nil {
-		return err
-	}
-
-	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	for index, container := range depl.Spec.Template.Spec.Containers {
-		if containerName == container.Name {
-			depl.Spec.Template.Spec.Containers[index].Image = image
-			depl.Spec.Template.Spec.Containers[index].ImagePullPolicy = "Always"
-		}
-	}
-	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
-}
-
 func GetDiagnostics(service string) string {
 	outputBuilder := strings.Builder{}
 	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, service)
@@ -518,4 +428,25 @@ func GetDiagnostics(service string) string {
 	outputBuilder.WriteString(describeDeploymentOutput)
 
 	return outputBuilder.String()
+}
+
+func VerifyDirectDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
+	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+}
+
+func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
+	if err := WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag}); err != nil {
+		return err
+	}
+	return WaitAndCheckDeployment(serviceName+"-primary", projectName+"-"+stageName, time.Minute*10, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+}
+
+func GetPublicURLOfService(serviceName, projectName, stageName string) (string, error) {
+	ingressHostnameSuffix, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), "ingress-config", func(data map[string]string) string { return data["ingress_hostname_suffix"] })
+	if err != nil {
+		return "", fmt.Errorf("unable to get public URL of service %s: %w", serviceName, err)
+	}
+
+	return fmt.Sprintf("http://%s.%s-%s.%s", serviceName, projectName, stageName, ingressHostnameSuffix), nil
+
 }
