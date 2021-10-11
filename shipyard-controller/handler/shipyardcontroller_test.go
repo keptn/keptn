@@ -2359,7 +2359,7 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 	return result, nil
 }
 
-func Test_shipyardController_CancelSequence(t *testing.T) {
+func Test_shipyardController_TimeoutSequence(t *testing.T) {
 	sc := getTestShipyardController("")
 
 	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event models.Event) {}}
@@ -2375,6 +2375,17 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		ID:             "my-sequence-triggered-id",
 		Shkeptncontext: "my-keptn-context-id",
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
+	}, common.TriggeredEvent)
+
+	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-deployment-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
 	_ = sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", models.TaskSequenceEvent{
@@ -2402,6 +2413,75 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
+
+	fakeEventRepo := sc.eventRepo.(*db_mock.EventRepoMock)
+
+	require.Len(t, fakeEventRepo.DeleteEventCalls(), 2)
+	require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-sequence-triggered-id")
+	require.Equal(t, fakeEventRepo.DeleteEventCalls()[1].EventID, "my-deployment-triggered-id")
+}
+
+func Test_shipyardController_CancelSequence(t *testing.T) {
+	sc := getTestShipyardController("")
+
+	taskSequenceRepoMock := sc.taskSequenceRepo.(*db_mock.TaskSequenceRepoMock)
+
+	taskSequenceMapping := models.TaskSequenceEvent{
+		TaskSequenceName: "delivery",
+		TriggeredEventID: "my-deployment-triggered-id",
+		Task:             models.Task{},
+		Stage:            "my-stage",
+		KeptnContext:     "my-keptn-context-id",
+	}
+	taskSequenceRepoMock.GetTaskSequencesFunc = func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+		return []models.TaskSequenceEvent{
+			taskSequenceMapping,
+		}, nil
+	}
+
+	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
+	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
+
+	// insert the test data
+	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-sequence-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
+	}, common.TriggeredEvent)
+
+	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-deployment-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
+	}, common.TriggeredEvent)
+
+	_ = sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", taskSequenceMapping)
+
+	// invoke the CancelSequence function
+	err := sc.cancelSequence(common.SequenceControl{
+		KeptnContext: "my-keptn-context-id",
+		Project:      "my-project",
+		Stage:        "my-stage",
+	})
+
+	require.Nil(t, err)
+	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
+
+	fakeEventRepo := sc.eventRepo.(*db_mock.EventRepoMock)
+
+	require.Len(t, fakeEventRepo.DeleteEventCalls(), 2)
+	require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-deployment-triggered-id")
+	require.Equal(t, fakeEventRepo.DeleteEventCalls()[1].EventID, "my-sequence-triggered-id")
 }
 
 func TestGetShipyardControllerInstance(t *testing.T) {
