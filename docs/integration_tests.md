@@ -263,15 +263,7 @@ Pre-requisites:
    ```console
    kubectl -n keptn get deployments -owide
    ```
-1. Configuration for the test:
+1. Run tests (e.g., UniformRegistration):
    ```console
-   export PROJECT=sockshop
-   ```
-1. Run the test for onboarding a service
-   ```console
-   bash ./test/test_onboard_service.sh
-   ```
-1. Run the test for sending a new artifact
-   ```console
-   bash ./test/test_new_artifact.sh
+   cd test/go-tests && go test -run UniformRegistration -v
    ```
