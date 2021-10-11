@@ -220,6 +220,16 @@ func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) erro
 	if len(sequences) == 0 {
 		return fmt.Errorf("could not find open sequence events for sequence %s", cancel.KeptnContext)
 	}
+
+	// delete all open .triggered events for the task sequence
+	for _, sequenceEvent := range sequences {
+		err := sc.eventRepo.DeleteEvent(cancel.Project, sequenceEvent.TriggeredEventID, common.TriggeredEvent)
+		if err != nil {
+			// log the error, but continue
+			log.WithError(err).Error("could not delete ")
+		}
+	}
+
 	lastTaskOfSequence := getLastTaskOfSequence(sequences)
 
 	sequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(models.EventScope{
@@ -879,6 +889,19 @@ func (sc *shipyardController) completeTaskSequence(eventScope *models.EventScope
 
 	for _, event := range finishedEvents {
 		err = sc.eventRepo.DeleteEvent(eventScope.Project, event.ID, common.FinishedEvent)
+		if err != nil {
+			log.Errorf("could not delete %s event with ID %s: %s", *event.Type, event.ID, err.Error())
+			return err
+		}
+	}
+
+	triggeredEvents, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
+		Stage:        &eventScope.Stage,
+		KeptnContext: &eventScope.KeptnContext,
+	}, common.TriggeredEvent)
+
+	for _, event := range triggeredEvents {
+		err = sc.eventRepo.DeleteEvent(eventScope.Project, event.ID, common.TriggeredEvent)
 		if err != nil {
 			log.Errorf("could not delete %s event with ID %s: %s", *event.Type, event.ID, err.Error())
 			return err
