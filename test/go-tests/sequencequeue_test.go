@@ -248,6 +248,48 @@ func Test_SequenceQueue(t *testing.T) {
 	wg.Wait()
 }
 
+func Test_SequenceControl_TriggerMultiple(t *testing.T) {
+	projectName := "sequence-queue2"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+
+	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	for i := 0; i < 10; i++ {
+		t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+		_, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+	}
+
+	openTriggeredEvents := &OpenTriggeredEventsResponse{}
+	require.Eventually(t, func() bool {
+		resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1") + "?project=" + projectName)
+		if err != nil {
+			return false
+		}
+
+		err = resp.ToJSON(openTriggeredEvents)
+		if err != nil {
+			return false
+		}
+		// must be exactly one .triggered event
+		return len(openTriggeredEvents.Events) == 1
+	}, 20*time.Second, 2*time.Second)
+	require.Nil(t, err)
+}
+
 func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup, allowedStates []string) {
 	defer wg.Done()
 	context := triggerSequence(t, projectName, serviceName, stageName, "evaluation")

@@ -27,6 +27,9 @@ import (
 // 			HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
 // 				panic("mock out the HandleIncomingEvent method")
 // 			},
+// 			StartTaskSequenceFunc: func(event models.Event) error {
+// 				panic("mock out the StartTaskSequence method")
+// 			},
 // 		}
 //
 // 		// use mockedIShipyardController in code that requires handler.IShipyardController
@@ -45,6 +48,9 @@ type IShipyardControllerMock struct {
 
 	// HandleIncomingEventFunc mocks the HandleIncomingEvent method.
 	HandleIncomingEventFunc func(event models.Event, waitForCompletion bool) error
+
+	// StartTaskSequenceFunc mocks the StartTaskSequence method.
+	StartTaskSequenceFunc func(event models.Event) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -72,11 +78,17 @@ type IShipyardControllerMock struct {
 			// WaitForCompletion is the waitForCompletion argument value.
 			WaitForCompletion bool
 		}
+		// StartTaskSequence holds details about calls to the StartTaskSequence method.
+		StartTaskSequence []struct {
+			// Event is the event argument value.
+			Event models.Event
+		}
 	}
 	lockControlSequence             sync.RWMutex
 	lockGetAllTriggeredEvents       sync.RWMutex
 	lockGetTriggeredEventsOfProject sync.RWMutex
 	lockHandleIncomingEvent         sync.RWMutex
+	lockStartTaskSequence           sync.RWMutex
 }
 
 // ControlSequence calls ControlSequenceFunc.
@@ -208,5 +220,36 @@ func (mock *IShipyardControllerMock) HandleIncomingEventCalls() []struct {
 	mock.lockHandleIncomingEvent.RLock()
 	calls = mock.calls.HandleIncomingEvent
 	mock.lockHandleIncomingEvent.RUnlock()
+	return calls
+}
+
+// StartTaskSequence calls StartTaskSequenceFunc.
+func (mock *IShipyardControllerMock) StartTaskSequence(event models.Event) error {
+	if mock.StartTaskSequenceFunc == nil {
+		panic("IShipyardControllerMock.StartTaskSequenceFunc: method is nil but IShipyardController.StartTaskSequence was just called")
+	}
+	callInfo := struct {
+		Event models.Event
+	}{
+		Event: event,
+	}
+	mock.lockStartTaskSequence.Lock()
+	mock.calls.StartTaskSequence = append(mock.calls.StartTaskSequence, callInfo)
+	mock.lockStartTaskSequence.Unlock()
+	return mock.StartTaskSequenceFunc(event)
+}
+
+// StartTaskSequenceCalls gets all the calls that were made to StartTaskSequence.
+// Check the length with:
+//     len(mockedIShipyardController.StartTaskSequenceCalls())
+func (mock *IShipyardControllerMock) StartTaskSequenceCalls() []struct {
+	Event models.Event
+} {
+	var calls []struct {
+		Event models.Event
+	}
+	mock.lockStartTaskSequence.RLock()
+	calls = mock.calls.StartTaskSequence
+	mock.lockStartTaskSequence.RUnlock()
 	return calls
 }
