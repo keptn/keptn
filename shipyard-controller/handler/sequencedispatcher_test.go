@@ -16,8 +16,6 @@ import (
 func TestSequenceDispatcher(t *testing.T) {
 	theClock := clock.NewMock()
 
-	startSequenceChannel := make(chan models.Event)
-
 	startSequenceCalls := []models.Event{}
 	triggeredEvents := []models.Event{
 		{
@@ -33,13 +31,6 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 	currentTaskSequences := []models.TaskSequenceEvent{}
 	mockQueue := []models.QueueItem{}
-
-	go func() {
-		for {
-			startSequenceCall := <-startSequenceChannel
-			startSequenceCalls = append(startSequenceCalls, startSequenceCall)
-		}
-	}()
 
 	mockEventRepo := &db_mock.EventRepoMock{
 		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
@@ -77,8 +68,12 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, startSequenceChannel, theClock)
-	sequenceDispatcher.Run(context.Background())
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock)
+
+	sequenceDispatcher.Run(context.Background(), func(event models.Event) error {
+		startSequenceCalls = append(startSequenceCalls, event)
+		return nil
+	})
 
 	// check if repos are queried
 	theClock.Add(11 * time.Second)

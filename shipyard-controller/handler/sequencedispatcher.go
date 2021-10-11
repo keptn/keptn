@@ -16,17 +16,18 @@ import (
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
-	Run(ctx context.Context)
+	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
 }
 
 type SequenceDispatcher struct {
-	eventRepo      db.EventRepo
-	eventQueueRepo db.EventQueueRepo
-	sequenceQueue  db.SequenceQueueRepo
-	sequenceRepo   db.TaskSequenceRepo
-	theClock       clock.Clock
-	syncInterval   time.Duration
-	eventChannel   chan models.Event
+	eventRepo          db.EventRepo
+	eventQueueRepo     db.EventQueueRepo
+	sequenceQueue      db.SequenceQueueRepo
+	sequenceRepo       db.TaskSequenceRepo
+	theClock           clock.Clock
+	syncInterval       time.Duration
+	startSequenceFunc  func(event models.Event) error
+	shipyardController shipyardController
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -36,7 +37,6 @@ func NewSequenceDispatcher(
 	sequenceQueueRepo db.SequenceQueueRepo,
 	sequenceRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
-	eventChannel chan models.Event,
 	theClock clock.Clock,
 
 ) ISequenceDispatcher {
@@ -47,7 +47,6 @@ func NewSequenceDispatcher(
 		sequenceRepo:   sequenceRepo,
 		theClock:       theClock,
 		syncInterval:   syncInterval,
-		eventChannel:   eventChannel,
 	}
 }
 
@@ -58,8 +57,9 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	return sd.dispatchSequence(queueItem)
 }
 
-func (sd *SequenceDispatcher) Run(ctx context.Context) {
+func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
 	ticker := sd.theClock.Ticker(sd.syncInterval)
+	sd.startSequenceFunc = startSequenceFunc
 	go func() {
 		for {
 			select {
@@ -127,7 +127,9 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 
 	sequenceTriggeredEvent := events[0]
 
-	sd.eventChannel <- sequenceTriggeredEvent
+	if err := sd.startSequenceFunc(sequenceTriggeredEvent); err != nil {
+		return fmt.Errorf("could not start task sequence %s: %s", queuedSequence.EventID, err.Error())
+	}
 
 	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
 }
