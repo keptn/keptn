@@ -155,6 +155,22 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Len(t, integrations, 1)
 	require.Len(t, integrations[0].Subscriptions, 1)
 
+	// update version of distributor
+	updatedUniformIntegration := uniformIntegration
+	updatedUniformIntegration.MetaData.DistributorVersion = "0.8.4"
+
+	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration)
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	// check if distributor version changed for the same integration
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+
+	integrations = []models.Integration{}
+	err = resp.ToJSON(&integrations)
+
+	require.Equal(t, "0.8.4", integrations[0].MetaData.DistributorVersion)
+
 	// delete the integration
 	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/" + registrationResponse.ID)
 
@@ -267,7 +283,6 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	projectName := "uniform-filter"
 	serviceName := "myservice"
 	sequencename := "mysequence"
-
 	shipyardFilePath, err := CreateTmpShipyardFile(filteredUniformTestShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
