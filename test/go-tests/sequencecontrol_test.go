@@ -106,6 +106,15 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
+	resp, err = ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1"))
+	require.Nil(t, err)
+
+	openTriggeredEvents := &OpenTriggeredEventsResponse{}
+	err = resp.ToJSON(openTriggeredEvents)
+	require.Nil(t, err)
+
+	require.Empty(t, openTriggeredEvents.Events)
+
 	t.Log("sending task finished event")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultPass,

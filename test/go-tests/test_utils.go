@@ -32,6 +32,10 @@ const (
 type APIEventSender struct {
 }
 
+type OpenTriggeredEventsResponse struct {
+	Events []*models.KeptnContextExtendedCE `json:"events"`
+}
+
 func (sender *APIEventSender) Send(ctx context.Context, event v2.Event) error {
 	return sender.SendEvent(event)
 }
