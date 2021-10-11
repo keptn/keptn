@@ -112,6 +112,8 @@ func TestSequenceDispatcher(t *testing.T) {
 	require.Equal(t, *mockEventRepo.GetEventsCalls()[0].Filter.ID, queueItem.EventID)
 	require.Equal(t, mockEventRepo.GetEventsCalls()[0].Status[0], common.TriggeredEvent)
 
+	require.Empty(t, mockSequenceQueueRepo.QueueSequenceCalls())
+
 	// has the queueItem been removed properly?
 	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
 	require.Equal(t, queueItem, mockSequenceQueueRepo.DeleteQueuedSequencesCalls()[0].ItemFilter)

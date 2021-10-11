@@ -64,7 +64,6 @@ func NewProjectManager(
 }
 
 func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
-	log.Info("Getting all projects")
 	allProjects, err := pm.ProjectMaterializedView.GetProjects()
 	if err != nil {
 		return nil, err
@@ -73,7 +72,6 @@ func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
 }
 
 func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject, error) {
-	log.Infof("Getting project with name %s", projectName)
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -11,6 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"time"
 )
+
+var errSequenceBlocked = errors.New("sequence is currently blocked")
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
@@ -52,10 +55,18 @@ func NewSequenceDispatcher(
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
-	if err := sd.sequenceQueue.QueueSequence(queueItem); err != nil {
-		return err
+	// try to dispatch the sequence immediately
+	if err := sd.dispatchSequence(queueItem); err != nil {
+		if err == errSequenceBlocked {
+			// if the sequence is currently blocked, insert it into the queue
+			if err := sd.sequenceQueue.QueueSequence(queueItem); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
-	return sd.dispatchSequence(queueItem)
+	return nil
 }
 
 func (sd *SequenceDispatcher) Run(ctx context.Context) {
@@ -96,7 +107,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
-		return nil
+		return errSequenceBlocked
 	}
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
 	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
@@ -110,7 +121,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// if there is a sequence running in the stage, we cannot trigger this sequence yet
 	if sd.areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
-		return nil
+		return errSequenceBlocked
 	}
 
 	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{
