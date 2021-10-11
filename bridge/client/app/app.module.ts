@@ -51,7 +51,6 @@ import {
   KtbHorizontalSeparatorComponent,
   KtbHorizontalSeparatorTitleDirective,
 } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
-import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
@@ -142,6 +141,7 @@ import {
 } from './_components/ktb-tree-list-select/ktb-tree-list-select.component';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
+import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -158,7 +158,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     EvaluationBoardComponent,
     KtbSequenceViewComponent,
     KtbServiceViewComponent,
-    KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
     KtbExpandableTileComponent,
@@ -229,6 +228,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbTreeListSelectComponent,
     KtbTreeListSelectDirective,
     KtbSequenceStateInfoComponent,
+    KtbPayloadViewerComponent,
   ],
   imports: [
     BrowserModule,

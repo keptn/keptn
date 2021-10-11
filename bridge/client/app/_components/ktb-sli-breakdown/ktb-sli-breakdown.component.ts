@@ -3,6 +3,7 @@ import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
 import { SliResult } from '../../_models/sli-result';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
+import { AppUtils } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-sli-breakdown',
@@ -82,21 +83,6 @@ export class KtbSliBreakdownComponent implements OnInit {
     this.tableEntries.data = this.assembleTablesEntries(this.indicatorResults);
   }
 
-  private formatNumber(value: number): number {
-    let n = value;
-    if (n < 1) {
-      n = Math.floor(n * 1000) / 1000;
-    } else if (n < 100) {
-      n = Math.floor(n * 100) / 100;
-    } else if (n < 1000) {
-      n = Math.floor(n * 10) / 10;
-    } else {
-      n = Math.floor(n);
-    }
-
-    return n;
-  }
-
   private assembleTablesEntries(indicatorResults: IndicatorResult[]): SliResult[] {
     const totalscore = indicatorResults.reduce((acc, result) => acc + result.score, 0);
     const isOld = indicatorResults.some((result) => !!result.targets);
@@ -118,18 +104,18 @@ export class KtbSliBreakdownComponent implements OnInit {
       const comparedValue = accSum / accCount;
       const compared: Partial<SliResult> = {};
       if (comparedValue) {
-        compared.comparedValue = this.formatNumber(comparedValue);
+        compared.comparedValue = AppUtils.formatNumber(comparedValue);
         compared.calculatedChanges = {
-          absolute: this.formatNumber(comparedValue - indicatorResult.value.value),
-          relative: this.formatNumber((comparedValue / (indicatorResult.value.value || 1)) * 100 - 100),
+          absolute: AppUtils.formatNumber(comparedValue - indicatorResult.value.value),
+          relative: AppUtils.formatNumber((comparedValue / (indicatorResult.value.value || 1)) * 100 - 100),
         };
       }
 
       return {
         name: indicatorResult.displayName || indicatorResult.value.metric,
-        value: indicatorResult.value.message || this.formatNumber(indicatorResult.value.value),
+        value: indicatorResult.value.message || AppUtils.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
-        score: totalscore === 0 ? 0 : this.round((indicatorResult.score / totalscore) * this.score, 2),
+        score: totalscore === 0 ? 0 : AppUtils.round((indicatorResult.score / totalscore) * this.score, 2),
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,
@@ -144,10 +130,6 @@ export class KtbSliBreakdownComponent implements OnInit {
 
   private sortIndicatorResult(resultA: IndicatorResult, resultB: IndicatorResult): number {
     return (resultA.displayName || resultA.value.metric).localeCompare(resultB.displayName || resultB.value.metric);
-  }
-
-  private round(value: number, places: number): number {
-    return +(Math.round(Number(`${value}e+${places}`)) + `e-${places}`);
   }
 
   public setExpanded(result: SliResult): void {

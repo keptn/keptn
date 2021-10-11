@@ -42,33 +42,57 @@ export class KtbEditServiceFileListComponent {
   }
 
   public getGitRepositoryLink(): string {
+    let uri = '';
     if (this.remoteUri) {
-      if (this.remoteUri.includes('github.') || this.remoteUri.includes('gitlab.')) {
-        return this.remoteUri + '/tree/' + this.stageName + '/' + this.serviceName;
-      }
-      if (this.remoteUri.includes('bitbucket.')) {
-        return this.remoteUri + '/src/' + this.stageName + '/' + this.serviceName;
-      }
-      if (this.remoteUri.includes('azure.')) {
-        return this.remoteUri + '?path=' + this.serviceName + '&version=GB' + this.stageName;
-      }
-      if (this.remoteUri.includes('git-codecommit.')) {
-        const repoParts = this.remoteUri.split('/');
-        const region = repoParts.find((part) => part.includes('git-codecommit.'))?.split('.')[1];
-        const repoName = repoParts[repoParts.length - 1];
-        return (
-          'https://' +
-          region +
-          '.console.aws.amazon.com/codesuite/codecommit/repositories/' +
-          repoName +
-          '/browse/refs/heads/' +
-          this.stageName
-        );
+      uri = this.remoteUri;
+
+      // Remove .git from the end of the URL
+      if (uri.endsWith('.git')) {
+        uri = uri.slice(0, -4);
       }
 
-      return this.remoteUri;
+      if (uri.includes('github.com/') || uri.includes('gitlab.com/')) {
+        return this.getGithubGitlabUrl(uri);
+      }
+      if (uri.includes('bitbucket.org/')) {
+        return this.getBitbucketUrl(uri);
+      }
+      if (uri.includes('dev.azure.com/')) {
+        return this.getAzureUrl(uri);
+      }
+      if (uri.includes('git-codecommit.')) {
+        return this.getCodeCommitUrl(uri);
+      }
     }
-    return '';
+    return uri;
+  }
+
+  private getGithubGitlabUrl(uri: string): string {
+    return uri + '/tree/' + this.stageName + '/' + this.serviceName;
+  }
+
+  private getBitbucketUrl(uri: string): string {
+    uri = uri.replace(/https:\/\/(.*)@/, 'https://');
+    return uri + '/src/' + this.stageName + '/' + this.serviceName;
+  }
+
+  private getAzureUrl(uri: string): string {
+    uri = uri.replace(/https:\/\/.*@dev.azure.com\//, 'https://dev.azure.com/');
+    return uri;
+  }
+
+  private getCodeCommitUrl(uri: string): string {
+    const repoParts = uri.split('/');
+    const region = repoParts.find((part) => part.includes('git-codecommit.'))?.split('.')[1];
+    const repoName = repoParts[repoParts.length - 1];
+    return (
+      'https://' +
+      region +
+      '.console.aws.amazon.com/codesuite/codecommit/repositories/' +
+      repoName +
+      '/browse/refs/heads/' +
+      this.stageName
+    );
   }
 
   private getLevel(entry: TreeFlatEntry): number {

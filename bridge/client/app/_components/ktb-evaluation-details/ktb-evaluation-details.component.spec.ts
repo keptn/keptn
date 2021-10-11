@@ -6,6 +6,8 @@ import { EvaluationsTop10 } from '../../_services/_mockData/evaluations-top10.mo
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { Evaluations } from '../../_services/_mockData/evaluations.mock';
 import { Trace } from '../../_models/trace';
+import { EvaluationChartItemMock } from '../../_services/_mockData/evaluation-chart-item.mock';
+import { SliInfoMock } from '../../_services/_mockData/sli-info.mock';
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbEvaluationDetailsComponent;
@@ -84,5 +86,12 @@ describe('KtbEvaluationDetailsComponent', () => {
 
     // then
     expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(17);
+  });
+
+  it('should aggregate SLI results', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const result = component.getSliResultInfos(EvaluationChartItemMock);
+    expect(result).toEqual(SliInfoMock);
   });
 });
