@@ -45,17 +45,21 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Only interpret events with status=errored as error logs (#5170) [#5186](https://github.com/keptn/keptn/issues/5186)
   - *Fixed:* Leaking go routines in forwarder.go [#5404](https://github.com/keptn/keptn/issues/5404)
   - *Fixed:* Fails when having no initial PubSub topic defined [#5230](https://github.com/keptn/keptn/issues/5230)
+  - *Fixed* potential timing issue in distributor unit tests [#5538](https://github.com/keptn/keptn/issues/5538)
 
 - *helm-service*:
   - Customize Helm Chart image pull registry & pull secrets [#4984](https://github.com/keptn/keptn/issues/4984)
+  - Revert upgrade to helm v3.7.0 because of memory issues [#5588](https://github.com/keptn/keptn/issues/5588)
+  - Increase resource limits to avoid OOM crashes [#5572](https://github.com/keptn/keptn/issues/5572)
 
 - *jmeter-service*:
   - Prevent failure if deploymentURIs does not end with a '/' [#3612](https://github.com/keptn/keptn/issues/3612)
 
 - *lighthouse-service*:
   - Calcscore missing error msg (#5142) [#5252](https://github.com/keptn/keptn/issues/5252)
-  - Added error logs for failing monitoring configuration (#5088) [#5220](https://github.com/keptn/keptn/issues/5220)
-  - Add message to event in case SLO parsing failed (#5130) [#5135](https://github.com/keptn/keptn/issues/5135)
+  - Added error logs for failing monitoring configuration [#5220](https://github.com/keptn/keptn/issues/5220)
+  - Add message to event in case SLO parsing failed [#5135](https://github.com/keptn/keptn/issues/5135)
+  - Check for `nil` entries in SLO objectives (#5522) [#5523](https://github.com/keptn/keptn/issues/5523)
 
 - *mongodb-datastore*:
   - Added dedicated GET endpoint for readiness probe [#5499](https://github.com/keptn/keptn/issues/5499)
@@ -88,7 +92,8 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Additional curl command validation to increase security [#5500](https://github.com/keptn/keptn/issues/5500)
   - Allow to disable sending the finished event in the webhook-service (#5368) [#5418](https://github.com/keptn/keptn/issues/5418)
   - Filter Webhooks based on received subscription ID (#5264) [#5392](https://github.com/keptn/keptn/issues/5392)
-
+  - Allow to control if webhook-service is installed (#5556) [#5574](https://github.com/keptn/keptn/issues/5574)
+  - Add required scope to secret created for webhook integration test [#5594](https://github.com/keptn/keptn/issues/5594)
 </p>
 </details>
 
@@ -114,6 +119,16 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Set empty array when open remediations are not a sequence [#5217](https://github.com/keptn/keptn/issues/5217)
   - Delete a service [#4380](https://github.com/keptn/keptn/issues/4380)
   - Create a service [#4500](https://github.com/keptn/keptn/issues/4500)
+  - Show loading bar only on initial data fetch #4910 (#5386) [#5586](https://github.com/keptn/keptn/issues/5586)
+  - Show payload of last event in subscription configuration (#5265) (#5473) [#5585](https://github.com/keptn/keptn/issues/5585)
+  - Make all project tiles same height (#5571) [#5577](https://github.com/keptn/keptn/issues/5577)
+  - Tooltips for heatmap [#4523](https://github.com/keptn/keptn/issues/4523)
+  - Dynamically set SLI button positions [#5416](https://github.com/keptn/keptn/issues/5416)
+  - Support also clone urls for creating the git repo link [#5391](https://github.com/keptn/keptn/issues/5391)
+  - Update webhook with right subscription property, fix stuck subscription update (#5581) [#5582](https://github.com/keptn/keptn/issues/5582)
+  - Heatmap did not correctly change on stage change [#5578](https://github.com/keptn/keptn/issues/5578)
+  - Allow multiple webhooks with same subscription configuration [#5267](https://github.com/keptn/keptn/issues/5267)
+  - Add secrets to webhook configuration [#4751](https://github.com/keptn/keptn/issues/4751)
 
 - *Refactoring:*
   - Removed deprecated links [#4612](https://github.com/keptn/keptn/issues/4612)
@@ -138,7 +153,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Redirect to service or sequence did not work on dashboard [#5126](https://github.com/keptn/keptn/issues/5126)
   - Project delete dialog was not closed [#5091](https://github.com/keptn/keptn/issues/5091)
   - Faded-out integrations where not excluded from unread-error-event check [#5118](https://github.com/keptn/keptn/issues/5118)
-
+  - Fixed SLI compared value [#5460](https://github.com/keptn/keptn/issues/5460)
 </p>
 </details>
 
@@ -147,7 +162,9 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
  - Temporarily revert customization of repository string in chart [#5414](https://github.com/keptn/keptn/issues/5414)
  - Add option for Ingress to control-plane Helm Chart Keptn installer [#5066](https://github.com/keptn/keptn/issues/5066)
- - Fix bug where OpenShift route service go-utils were not upgraded during auto upgrade
+ - Use correct images in airgapped installation [#5532](https://github.com/keptn/keptn/issues/5532)
+ - Bump nginx image version to 1.21.3-alpine (#5545) [#5564](https://github.com/keptn/keptn/issues/5564)
+ - *Fix* bug where OpenShift route service go-utils were not upgraded during auto upgrade
 </p>
 </details>
 
