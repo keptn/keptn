@@ -162,4 +162,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	// GetEvents and DeleteQueuedSequences should not have been called again at this point
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
 	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
+
+	// item should have been added to queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
 }

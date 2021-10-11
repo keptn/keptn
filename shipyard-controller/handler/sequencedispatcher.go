@@ -59,8 +59,8 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	if err := sd.dispatchSequence(queueItem); err != nil {
 		if err == errSequenceBlocked {
 			// if the sequence is currently blocked, insert it into the queue
-			if err := sd.sequenceQueue.QueueSequence(queueItem); err != nil {
-				return err
+			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+				return err2
 			}
 		} else {
 			return err
