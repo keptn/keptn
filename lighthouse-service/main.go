@@ -68,6 +68,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
+// storing wait group into context to sync before shutdown
 func getGracefulContext() context.Context {
 
 	ch := make(chan os.Signal, 1)
