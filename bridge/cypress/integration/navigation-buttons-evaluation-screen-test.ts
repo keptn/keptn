@@ -86,5 +86,6 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       .clickEvaluationBoardButton()
       .clickGoBack()
       .verifyCurrentOpenServiceNameEvaluationPanel('items');
+    basePage.clickMainHeaderKeptn();
   });
 });
