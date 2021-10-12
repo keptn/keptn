@@ -654,9 +654,10 @@ export class DataService {
       .subscribe(() => {
         const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
         if (project?.projectName) {
-          const service = project?.getServices().find((s) => s.serviceName === approval.data.service);
-          const sequence = service?.sequences.find((r) => r.shkeptncontext === approval.shkeptncontext);
-          const deployment = service?.deployments.find((d) => d.shkeptncontext === approval.shkeptncontext);
+          const stage = project.stages.find((st) => st.stageName === approval.data.stage);
+          const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
+          const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
+          const deployment = service?.deployments.find((dep) => dep.shkeptncontext === approval.shkeptncontext);
 
           if (sequence) {
             // update data of sequence screen
