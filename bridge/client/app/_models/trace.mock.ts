@@ -2322,7 +2322,407 @@ const evaluationTraces: any = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const multipleEvaluationsTraces: any = {
+  traces: [
+    {
+      traces: [],
+      data: {
+        project: 'dynatrace',
+        service: 'items',
+        stage: 'quality-gate',
+        status: 'succeeded',
+        temporaryData: {
+          distributor: {
+            subscriptionID: '',
+          },
+        },
+      },
+      id: 'b6d7982e-d604-43bc-8c2f-022d0cc9be34',
+      source: 'lighthouse-service',
+      specversion: '1.0',
+      time: '2021-10-11T08:55:37.414Z',
+      type: 'sh.keptn.event.evaluation.started',
+      shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+      shkeptnspecversion: '0.2.3',
+      triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      plainEvent: {
+        data: {
+          project: 'dynatrace',
+          service: 'items',
+          stage: 'quality-gate',
+          status: 'succeeded',
+          temporaryData: {
+            distributor: {
+              subscriptionID: '',
+            },
+          },
+        },
+        id: 'b6d7982e-d604-43bc-8c2f-022d0cc9be34',
+        source: 'lighthouse-service',
+        specversion: '1.0',
+        time: '2021-10-11T08:55:37.414Z',
+        type: 'sh.keptn.event.evaluation.started',
+        shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+        shkeptnspecversion: '0.2.3',
+        triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      },
+    },
+    {
+      traces: [],
+      data: {
+        project: 'dynatrace',
+        service: 'items',
+        stage: 'quality-gate',
+        temporaryData: {
+          distributor: {
+            subscriptionID: '',
+          },
+        },
+      },
+      id: 'bcc9d50c-2002-452a-9871-9e6c4650d35a',
+      source: 'webhook-service',
+      specversion: '1.0',
+      time: '2021-10-11T08:55:42.933Z',
+      type: 'sh.keptn.event.evaluation.started',
+      shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+      triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      plainEvent: {
+        data: {
+          project: 'dynatrace',
+          service: 'items',
+          stage: 'quality-gate',
+          temporaryData: {
+            distributor: {
+              subscriptionID: '',
+            },
+          },
+        },
+        id: 'bcc9d50c-2002-452a-9871-9e6c4650d35a',
+        source: 'webhook-service',
+        specversion: '1.0',
+        time: '2021-10-11T08:55:42.933Z',
+        type: 'sh.keptn.event.evaluation.started',
+        shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+        triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      },
+    },
+    {
+      traces: [],
+      data: {
+        labels: null,
+        message: 'could not retrieve Webhook config: no webhook config found',
+        project: 'dynatrace',
+        result: 'fail',
+        service: 'items',
+        stage: 'quality-gate',
+        status: 'errored',
+        temporaryData: {
+          distributor: {
+            subscriptionID: '',
+          },
+        },
+      },
+      id: '7b0ff004-58c4-4c11-afb4-dc0f70d6adb9',
+      source: 'webhook-service',
+      specversion: '1.0',
+      time: '2021-10-11T08:55:42.939Z',
+      type: 'sh.keptn.event.evaluation.finished',
+      shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+      triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      plainEvent: {
+        data: {
+          labels: null,
+          message: 'could not retrieve Webhook config: no webhook config found',
+          project: 'dynatrace',
+          result: 'fail',
+          service: 'items',
+          stage: 'quality-gate',
+          status: 'errored',
+          temporaryData: {
+            distributor: {
+              subscriptionID: '',
+            },
+          },
+        },
+        id: '7b0ff004-58c4-4c11-afb4-dc0f70d6adb9',
+        source: 'webhook-service',
+        specversion: '1.0',
+        time: '2021-10-11T08:55:42.939Z',
+        type: 'sh.keptn.event.evaluation.finished',
+        shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+        triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      },
+    },
+    {
+      traces: [],
+      data: {
+        evaluation: {
+          comparedEvents: ['5c563cbe-e862-4a42-829c-d319683d3654'],
+          gitCommit: '',
+          indicatorResults: [
+            {
+              displayName: '',
+              keySli: false,
+              passTargets: [
+                {
+                  criteria: '<600',
+                  targetValue: 600,
+                  violated: false,
+                },
+              ],
+              score: 1,
+              status: 'pass',
+              value: {
+                metric: 'response_time_p95',
+                success: true,
+                value: 10.219262258461157,
+              },
+              warningTargets: [
+                {
+                  criteria: '<=800',
+                  targetValue: 800,
+                  violated: false,
+                },
+              ],
+            },
+            {
+              displayName: '',
+              keySli: false,
+              passTargets: [
+                {
+                  criteria: '<5',
+                  targetValue: 5,
+                  violated: false,
+                },
+              ],
+              score: 1,
+              status: 'pass',
+              value: {
+                metric: 'error_rate',
+                success: true,
+                value: 0,
+              },
+              warningTargets: null,
+            },
+            {
+              displayName: '',
+              keySli: false,
+              passTargets: null,
+              score: 0,
+              status: 'info',
+              value: {
+                metric: 'throughput',
+                success: true,
+                value: 933,
+              },
+              warningTargets: null,
+            },
+          ],
+          result: 'pass',
+          score: 100,
+          sloFileContent:
+            'c3BlY192ZXJzaW9uOiAiMS4wIgpmaWx0ZXI6IHt9CmNvbXBhcmlzb246CiAgY29tcGFyZV93aXRoOiBzaW5nbGVfcmVzdWx0CiAgaW5jbHVkZV9yZXN1bHRfd2l0aF9zY29yZTogcGFzcwogIG51bWJlcl9vZl9jb21wYXJpc29uX3Jlc3VsdHM6IDEKICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2ZwpvYmplY3RpdmVzOgotIHNsaTogcmVzcG9uc2VfdGltZV9wOTUKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDw2MDAKICB3YXJuaW5nOgogIC0gY3JpdGVyaWE6CiAgICAtIDw9ODAwCiAgd2VpZ2h0OiAxCiAga2V5X3NsaTogZmFsc2UKLSBzbGk6IGVycm9yX3JhdGUKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDw1CiAgd2FybmluZzogW10KICB3ZWlnaHQ6IDEKICBrZXlfc2xpOiBmYWxzZQotIHNsaTogdGhyb3VnaHB1dAogIGRpc3BsYXlOYW1lOiAiIgogIHBhc3M6IFtdCiAgd2FybmluZzogW10KICB3ZWlnaHQ6IDAKICBrZXlfc2xpOiBmYWxzZQp0b3RhbF9zY29yZToKICBwYXNzOiA5MCUKICB3YXJuaW5nOiA3NSUK',
+          timeEnd: '2021-10-11T08:55:36.469Z',
+          timeStart: '2021-10-11T08:50:36.469Z',
+        },
+        labels: {
+          DtCreds: 'dynatrace',
+        },
+        project: 'dynatrace',
+        result: 'pass',
+        service: 'items',
+        stage: 'quality-gate',
+        status: 'succeeded',
+        temporaryData: {
+          distributor: {
+            subscriptionID: '',
+          },
+        },
+      },
+      id: 'e859b7ba-c82a-44fd-bd69-313aed264f7e',
+      source: 'lighthouse-service',
+      specversion: '1.0',
+      time: '2021-10-11T08:55:51.316Z',
+      type: 'sh.keptn.event.evaluation.finished',
+      shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+      shkeptnspecversion: '0.2.3',
+      triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      plainEvent: {
+        data: {
+          evaluation: {
+            comparedEvents: ['5c563cbe-e862-4a42-829c-d319683d3654'],
+            gitCommit: '',
+            indicatorResults: [
+              {
+                displayName: '',
+                keySli: false,
+                passTargets: [
+                  {
+                    criteria: '<600',
+                    targetValue: 600,
+                    violated: false,
+                  },
+                ],
+                score: 1,
+                status: 'pass',
+                value: {
+                  metric: 'response_time_p95',
+                  success: true,
+                  value: 10.219262258461157,
+                },
+                warningTargets: [
+                  {
+                    criteria: '<=800',
+                    targetValue: 800,
+                    violated: false,
+                  },
+                ],
+              },
+              {
+                displayName: '',
+                keySli: false,
+                passTargets: [
+                  {
+                    criteria: '<5',
+                    targetValue: 5,
+                    violated: false,
+                  },
+                ],
+                score: 1,
+                status: 'pass',
+                value: {
+                  metric: 'error_rate',
+                  success: true,
+                  value: 0,
+                },
+                warningTargets: null,
+              },
+              {
+                displayName: '',
+                keySli: false,
+                passTargets: null,
+                score: 0,
+                status: 'info',
+                value: {
+                  metric: 'throughput',
+                  success: true,
+                  value: 933,
+                },
+                warningTargets: null,
+              },
+            ],
+            result: 'pass',
+            score: 100,
+            sloFileContent:
+              'c3BlY192ZXJzaW9uOiAiMS4wIgpmaWx0ZXI6IHt9CmNvbXBhcmlzb246CiAgY29tcGFyZV93aXRoOiBzaW5nbGVfcmVzdWx0CiAgaW5jbHVkZV9yZXN1bHRfd2l0aF9zY29yZTogcGFzcwogIG51bWJlcl9vZl9jb21wYXJpc29uX3Jlc3VsdHM6IDEKICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2ZwpvYmplY3RpdmVzOgotIHNsaTogcmVzcG9uc2VfdGltZV9wOTUKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDw2MDAKICB3YXJuaW5nOgogIC0gY3JpdGVyaWE6CiAgICAtIDw9ODAwCiAgd2VpZ2h0OiAxCiAga2V5X3NsaTogZmFsc2UKLSBzbGk6IGVycm9yX3JhdGUKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDw1CiAgd2FybmluZzogW10KICB3ZWlnaHQ6IDEKICBrZXlfc2xpOiBmYWxzZQotIHNsaTogdGhyb3VnaHB1dAogIGRpc3BsYXlOYW1lOiAiIgogIHBhc3M6IFtdCiAgd2FybmluZzogW10KICB3ZWlnaHQ6IDAKICBrZXlfc2xpOiBmYWxzZQp0b3RhbF9zY29yZToKICBwYXNzOiA5MCUKICB3YXJuaW5nOiA3NSUK',
+            timeEnd: '2021-10-11T08:55:36.469Z',
+            timeStart: '2021-10-11T08:50:36.469Z',
+          },
+          labels: {
+            DtCreds: 'dynatrace',
+          },
+          project: 'dynatrace',
+          result: 'pass',
+          service: 'items',
+          stage: 'quality-gate',
+          status: 'succeeded',
+          temporaryData: {
+            distributor: {
+              subscriptionID: '',
+            },
+          },
+        },
+        id: 'e859b7ba-c82a-44fd-bd69-313aed264f7e',
+        source: 'lighthouse-service',
+        specversion: '1.0',
+        time: '2021-10-11T08:55:51.316Z',
+        type: 'sh.keptn.event.evaluation.finished',
+        shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+        shkeptnspecversion: '0.2.3',
+        triggeredid: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+      },
+    },
+  ],
+  data: {
+    deployment: {
+      deploymentNames: null,
+    },
+    evaluation: {
+      end: '2021-10-11T08:55:36.469Z',
+      start: '2021-10-11T08:50:36.469Z',
+      timeframe: '',
+    },
+    message: '',
+    project: 'dynatrace',
+    result: '',
+    service: 'items',
+    stage: 'quality-gate',
+    status: '',
+    temporaryData: {
+      distributor: {
+        subscriptionID: '',
+      },
+    },
+    test: {
+      end: '',
+      start: '',
+    },
+  },
+  id: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+  source: 'shipyard-controller',
+  specversion: '1.0',
+  time: '2021-10-11T08:55:37.408Z',
+  type: 'sh.keptn.event.evaluation.triggered',
+  shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+  shkeptnspecversion: '0.2.3',
+  plainEvent: {
+    data: {
+      deployment: {
+        deploymentNames: null,
+      },
+      evaluation: {
+        end: '2021-10-11T08:55:36.469Z',
+        start: '2021-10-11T08:50:36.469Z',
+        timeframe: '',
+      },
+      message: '',
+      project: 'dynatrace',
+      result: '',
+      service: 'items',
+      stage: 'quality-gate',
+      status: '',
+      temporaryData: {
+        distributor: {
+          subscriptionID: '',
+        },
+      },
+      test: {
+        end: '',
+        start: '',
+      },
+    },
+    id: '38d85901-1d46-43a8-8eae-c872d49ddd7c',
+    source: 'shipyard-controller',
+    specversion: '1.0',
+    time: '2021-10-11T08:55:37.408Z',
+    type: 'sh.keptn.event.evaluation.triggered',
+    shkeptncontext: 'cdc4cbaf-9fc8-45a8-8e8c-7b51e0f056e8',
+    shkeptnspecversion: '0.2.3',
+  },
+  finished: true,
+  started: true,
+  label: 'evaluation',
+  icon: 'traffic-light',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rootTracesMock: any = rootTraces;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const evaluationTracesMock: any = evaluationTraces;
-export { rootTracesMock as RootTracesMock, evaluationTracesMock as EvaluationTracesMock };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const multipleEvaluationTracesMock: any = multipleEvaluationsTraces;
+export {
+  rootTracesMock as RootTracesMock,
+  evaluationTracesMock as EvaluationTracesMock,
+  multipleEvaluationTracesMock as MultipleEvaluationTracesMock,
+};
