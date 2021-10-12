@@ -44,6 +44,12 @@ ktb-root {
   white-space: nowrap;
 }
 
+.overflow-ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .dt-info-group-content > * {
   white-space: normal;
 }

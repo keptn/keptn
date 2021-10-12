@@ -10,7 +10,7 @@ const DEFAULT_PAGE_SIZE = 3;
 @Component({
   selector: 'ktb-services-list',
   templateUrl: './ktb-services-list.component.html',
-  styleUrls: ['./ktb-services-list.component.scss'],
+  styleUrls: [],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
 })
