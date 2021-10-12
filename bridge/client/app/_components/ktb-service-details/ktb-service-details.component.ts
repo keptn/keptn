@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { Deployment, DeploymentSelection } from '../../_models/deployment';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -49,7 +49,6 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   }
 
   constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
