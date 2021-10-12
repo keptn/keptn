@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
@@ -10,10 +12,9 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"time"
 )
 
-const userFriendlyTimeFormat = "2006-01-02T15:04:05.000Z"
+const userFriendlyTimeFormat = "2006-01-02T15:04:05"
 
 const (
 	evaluationErrInvalidTimeframe = iota
