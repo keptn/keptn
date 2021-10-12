@@ -12,8 +12,6 @@ Keptn 0.10.0 provides a native way for integrating your tooling by just calling 
 
 :star: *Create/Delete a service* via Bridge: Next to the Webhook configuration, the Bridge allows creating and deleting a service. 
 
-SDK (Experimental)
-
 :information_source: Keptn provides an internal Git repository for each Keptn project regardless of whether a Git upstream is configured. This internal Git repository will become deprecated in an upcoming Keptn release; more detail will follow. Consequently, it is recommended to set a Git upstream to your own, publically accessible Git repository today. Therefore, use the Keptn [CLI](https://keptn.sh/docs/0.10.x/reference/cli/commands/keptn_update_project/) or [Bridge](https://keptn.sh/docs/0.10.x/reference/bridge/manage_projects/). If there are specific requirements to connect to an own repository, please reach out on Slack: keptn.slack.com  
 
 ---
@@ -37,6 +35,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Implemented endpoints for deleting service and stage resources (#5136) [#5145](https://github.com/keptn/keptn/issues/5145)
   - Handle error and use dedicated HTTP error code when failing to update project due to wrong token [#5438](https://github.com/keptn/keptn/issues/5438)
   - Fall back to previous git credentials when updating upstream fails (#5064) [#5171](https://github.com/keptn/keptn/issues/5171)
+  - *Fix* updating upstream to uninitialized repo [#5569](https://github.com/keptn/keptn/issues/5569)
 
 - *distributor*:
   - Ensure that the subscriptionId is passed to the event (#5405) [#5412](https://github.com/keptn/keptn/issues/5412)
@@ -82,6 +81,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Adapted HTTP status codes of GET /event endpoint (#5132) [#5134](https://github.com/keptn/keptn/issues/5134)
   - Avoid endless loop (#5096) [#5124](https://github.com/keptn/keptn/issues/5124)
   - *Fixed:* Dependency incompatibilities (#5078) [#5127](https://github.com/keptn/keptn/issues/5127)
+  - Clean up list of open `.triggered` events when completing a sequence [#5601](https://github.com/keptn/keptn/issues/5601)
 
 - *secret-service*:
   - Creation of RoleBinding based on scope name [#5300](https://github.com/keptn/keptn/issues/5300)
@@ -181,7 +181,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <details><summary>API</summary>
 <p>
  - Try to use X-real-ip and X-forwarded-for headers [#5082](https://github.com/keptn/keptn/issues/5082)
- - Fixed broken go-sum in go-sdk module [#5463](https://github.com/keptn/keptn/issues/5463)
+ - *Fixed* broken go-sum in go-sdk module [#5463](https://github.com/keptn/keptn/issues/5463)
  - Option to disable automatic event response in SDK (#5368) [#5453](https://github.com/keptn/keptn/issues/5453)
 </p>
 </details>
@@ -189,14 +189,16 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 
 ## Development Process / Testing
 
-- Fixed paths in commit messages [#5451](https://github.com/keptn/keptn/issues/5451)
-- Fixed integration tests [#5390](https://github.com/keptn/keptn/issues/5390)
+- *Fixed* paths in commit messages [#5451](https://github.com/keptn/keptn/issues/5451)
+- *Fixed* integration tests [#5390](https://github.com/keptn/keptn/issues/5390)
 - Added retry mechanism for creating projects in integration tests (#5241) [#5253](https://github.com/keptn/keptn/issues/5253)
 - Updated go-dependencies in integration tests (#5200) [#5205](https://github.com/keptn/keptn/issues/5205)
 - Add disclamer to avoid security vulnerabilities to be reported reported as bugs [#5169](https://github.com/keptn/keptn/issues/5169)
 - Update Maintainers file [#5314](https://github.com/keptn/keptn/issues/5314)
 
 ## Good to know / Known Limitations
+
+- It is not possible to pause/abort queued sequences [#5472](https://github.com/keptn/keptn/issues/5472)
 
 ## Upgrade to 0.10.0
 
