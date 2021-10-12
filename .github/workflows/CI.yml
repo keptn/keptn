@@ -309,8 +309,7 @@ jobs:
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
         run: |
-          docker build ./ --target builder-test
-        working-directory: ${{ matrix.config.working-dir }}
+          docker build ${{ matrix.config.working-dir }} --target builder-test
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS

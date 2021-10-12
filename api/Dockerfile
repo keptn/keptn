@@ -23,9 +23,18 @@ RUN go mod download
 COPY . .
 
 FROM builder-base as builder-test
-RUN apk add --no-cache curl bash
+
+COPY codecov.yml ./
+
+RUN apk add --no-cache curl bash gnupg coreutils
 RUN go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
-RUN curl -s https://codecov.io/bash -o "./codecov" && \
+
+RUN curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import && \
+    curl -Os https://uploader.codecov.io/latest/alpine/codecov && \
+    curl -Os https://uploader.codecov.io/latest/alpine/codecov.SHA256SUM && \
+    curl -Os https://uploader.codecov.io/latest/alpine/codecov.SHA256SUM.sig && \
+    gpgv codecov.SHA256SUM.sig codecov.SHA256SUM && \
+    shasum -a 256 -c codecov.SHA256SUM && \
     chmod +x "./codecov" && \
     ./codecov -c -F api
 
