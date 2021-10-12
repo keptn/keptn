@@ -58,7 +58,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 			return
 		}
 		if strings.Contains(fmt.Sprint(err), ErrTooBigKeySize) {
-			SetBadRequestErrorResponse(err, c, "Unable to create secret")
+			SetBadRequestErrorResponse(err, c, "Unable to create secret, secret name or key are too long")
 			return
 		}
 		SetInternalServerErrorResponse(err, c, "Unable to create secret")
