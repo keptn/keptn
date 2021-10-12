@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"net/http"
+	"strings"
 )
+
+var ErrTooBigKeySize = "must be no more than 253 characters"
 
 type ISecretHandler interface {
 	CreateSecret(c *gin.Context)
@@ -37,7 +41,6 @@ type SecretHandler struct {
 // @Failure 500 {object} model.Error
 // @Router /secret [post]
 func (s SecretHandler) CreateSecret(c *gin.Context) {
-
 	secret := model.Secret{}
 	if err := c.ShouldBindJSON(&secret); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
@@ -52,6 +55,10 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 	if err != nil {
 		if err == backend.ErrSecretAlreadyExists {
 			SetConflictErrorResponse(err, c, "Unable to create secret")
+			return
+		}
+		if strings.Contains(fmt.Sprint(err), ErrTooBigKeySize) {
+			SetBadRequestErrorResponse(err, c, "Unable to create secret")
 			return
 		}
 		SetInternalServerErrorResponse(err, c, "Unable to create secret")
