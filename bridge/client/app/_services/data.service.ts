@@ -293,12 +293,16 @@ export class DataService {
       .pipe(map((project) => Project.fromJSON(project)))
       .subscribe(
         (project: Project) => {
-          const projects = this._projects.getValue();
+          let projects = this._projects.getValue();
           const existingProject = projects?.find((p) => p.projectName === project.projectName);
           if (existingProject) {
             Object.assign(existingProject, project.reduced);
-            this._projects.next(projects);
+            existingProject.projectDetailsLoaded = true;
+          } else {
+            project.projectDetailsLoaded = true;
+            projects = [...(projects ?? []), project];
           }
+          this._projects.next(projects);
         },
         (err) => {
           if (err.status === 404) {
@@ -328,10 +332,9 @@ export class DataService {
           projects = projects.map((project) => {
             const existingProject = existingProjects?.find((p) => p.projectName === project.projectName);
             if (existingProject) {
-              return Object.assign(existingProject, project.reduced);
-            } else {
-              return project;
+              project = Object.assign(existingProject, project.reduced);
             }
+            return project;
           });
           this._projects.next(projects);
         },
