@@ -12,7 +12,7 @@ import { Approval } from '../_interfaces/approval';
 
 export class Project extends pj {
   allSequencesLoaded = false;
-  isWholeProject = false; // true if project was fetched via project endpoint of bridge server
+  projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
   stages: Stage[] = [];
   services?: Service[];
   sequences: Sequence[] = [];
@@ -26,7 +26,7 @@ export class Project extends pj {
 
   // returns a project without default values
   get reduced(): Partial<Project> {
-    const { sequences, allSequencesLoaded, isWholeProject, ...copyProject } = this;
+    const { sequences, allSequencesLoaded, projectDetailsLoaded, ...copyProject } = this;
     return copyProject;
   }
 

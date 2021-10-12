@@ -27,7 +27,7 @@ export class KtbEnvironmentViewComponent {
 
     this.project$ = projectName$.pipe(
       switchMap((projectName) => this.dataService.getProject(projectName)),
-      map((project) => (project?.isWholeProject ? project : undefined))
+      map((project) => (project?.projectDetailsLoaded ? project : undefined))
     );
   }
 }

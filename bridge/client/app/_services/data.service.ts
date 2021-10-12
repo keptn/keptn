@@ -297,9 +297,9 @@ export class DataService {
           const existingProject = projects?.find((p) => p.projectName === project.projectName);
           if (existingProject) {
             Object.assign(existingProject, project.reduced);
-            existingProject.isWholeProject = true;
+            existingProject.projectDetailsLoaded = true;
           } else {
-            project.isWholeProject = true;
+            project.projectDetailsLoaded = true;
             projects = [...(projects ?? []), project];
           }
           this._projects.next(projects);
