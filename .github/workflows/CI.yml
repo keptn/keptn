@@ -310,16 +310,17 @@ jobs:
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
         run: |
           docker build ${{ matrix.config.working-dir }} --target builder-test -t ${{ matrix.config.artifact }}-test
-          docker build ${{ matrix.config.working-dir }} --target builder-test -t ${{ matrix.config.artifact }}-test
           docker run --rm -v "$PWD/shared:/shared" ${{ matrix.config.artifact }}-test
 
-          curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+          curl -s https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
           curl -Os https://uploader.codecov.io/latest/alpine/codecov
           curl -Os https://uploader.codecov.io/latest/alpine/codecov.SHA256SUM
           curl -Os https://uploader.codecov.io/latest/alpine/codecov.SHA256SUM.sig
           gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
           shasum -a 256 -c codecov.SHA256SUM
+          ls -la
           chmod +x "./codecov"
+          ls -la
           ./codecov -c -F ${{ matrix.config.artifact }}
 
   unit-tests-node:
