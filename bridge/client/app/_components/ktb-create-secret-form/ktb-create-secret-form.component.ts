@@ -23,7 +23,7 @@ export class KtbCreateSecretFormComponent {
     scope: [this.scopes[0], [Validators.required]],
     data: this.fb.array([
       this.fb.group({
-        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
+        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
         value: ['', [Validators.required]],
       }),
     ]),
@@ -70,7 +70,7 @@ export class KtbCreateSecretFormComponent {
   public addPair(): void {
     this.data?.push(
       this.fb.group({
-        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
+        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
         value: ['', [Validators.required]],
       })
     );
