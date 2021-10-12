@@ -320,10 +320,8 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/alpine/codecov.SHA256SUM.sig
           gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
           shasum -a 256 -c codecov.SHA256SUM
-          ls -la
           chmod +x "./codecov"
-          ls -la
-          codecov -c -F ${{ matrix.config.artifact }}
+          "./codecov" -c -F ${{ matrix.config.artifact }}
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
