@@ -190,10 +190,17 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	// Scenario 2: Check automatic TTL expiration of Uniform Integration
 	setShipyardControllerEnvVar(t, "UNIFORM_INTEGRATION_TTL", "1m")
 	// re-register the integration
-	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
-
-	require.Nil(t, err)
-	require.Equal(t, http.StatusCreated, resp.Response().StatusCode)
+	// do this in a retry loop since we restarted the shipyard controller pod right before - in some cases it seemed to not be ready at this point
+	require.Eventually(t, func() bool {
+		resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
+		if err != nil {
+			return false
+		}
+		if resp.Response().StatusCode != http.StatusCreated {
+			return false
+		}
+		return true
+	}, 30*time.Second, 5*time.Second)
 
 	// check again if it has been created correctly
 	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
