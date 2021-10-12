@@ -6,7 +6,9 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -63,6 +65,21 @@ spec:
               name: mytask
             - 
               name: evaluation`
+
+const sequenceQueueShipyard2 = `--- 
+apiVersion: "spec.keptn.sh/0.2.3"
+kind: Shipyard
+metadata:
+  name: "shipyard-echo-service"
+spec:
+  stages:
+    - name: "dev"
+      sequences:
+        - name: "mysequence"
+          tasks:
+            - name: "task1"
+            - name: "task2"
+            - name: "task3"`
 
 func Test_SequenceQueue(t *testing.T) {
 	projectName := "sequence-queue"
@@ -254,7 +271,9 @@ func Test_SequenceControl_TriggerMultiple(t *testing.T) {
 	stageName := "dev"
 	sequencename := "mysequence"
 
-	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
+	numSequences := 10
+
+	shipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard2)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
@@ -268,11 +287,44 @@ func Test_SequenceControl_TriggerMultiple(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < numSequences; i++ {
 		t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
 		_, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 	}
+	verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
 
+	var currentActiveSequence scmodels.SequenceState
+	for i := 0; i < numSequences; i++ {
+		require.Eventually(t, func() bool {
+			states, _, err := GetState(projectName)
+			if err != nil {
+				return false
+			}
+			for _, state := range states.States {
+				if state.State == scmodels.SequenceStartedState {
+					currentActiveSequence = state
+					return true
+				}
+			}
+			return false
+		}, 15*time.Second, 2*time.Second)
+
+		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), operations.SequenceControlCommand{
+			State: common.AbortSequence,
+			Stage: "",
+		})
+		require.Nil(t, err)
+		if i == numSequences-1 {
+			verifyNumberOfOpenTriggeredEvents(t, projectName, 0)
+		} else {
+			verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
+		}
+	}
+
+	require.Nil(t, err)
+}
+
+func verifyNumberOfOpenTriggeredEvents(t *testing.T, projectName string, numberOfEvents int) {
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}
 	require.Eventually(t, func() bool {
 		resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1") + "?project=" + projectName)
@@ -285,9 +337,8 @@ func Test_SequenceControl_TriggerMultiple(t *testing.T) {
 			return false
 		}
 		// must be exactly one .triggered event
-		return len(openTriggeredEvents.Events) == 1
+		return len(openTriggeredEvents.Events) == numberOfEvents
 	}, 20*time.Second, 2*time.Second)
-	require.Nil(t, err)
 }
 
 func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup, allowedStates []string) {
