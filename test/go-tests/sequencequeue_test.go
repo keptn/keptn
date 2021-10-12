@@ -337,6 +337,7 @@ func verifyNumberOfOpenTriggeredEvents(t *testing.T, projectName string, numberO
 			return false
 		}
 		// must be exactly one .triggered event
+		t.Logf("received %d events, expected %d", len(openTriggeredEvents.Events), numberOfEvents)
 		return len(openTriggeredEvents.Events) == numberOfEvents
 	}, 20*time.Second, 2*time.Second)
 }
