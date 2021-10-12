@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
@@ -95,6 +96,24 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 	}
 	validPayload, _ := json.Marshal(myValidIntegration)
 
+	myValidIntegrationUpdated := &models.Integration{
+		ID:   "my-id",
+		Name: "my-name",
+		MetaData: keptnmodels.MetaData{
+			Hostname:           "my-host",
+			DistributorVersion: "0.8.4",
+			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscriptions: []keptnmodels.EventSubscription{
+			{
+				Event: "sh.keptn.event.test.triggered",
+			},
+		},
+	}
+	validPayloadUpdated, _ := json.Marshal(myValidIntegrationUpdated)
+
 	myInvalidIntegration := &keptnmodels.Integration{
 		ID:   "my-id",
 		Name: "my-name",
@@ -108,6 +127,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		},
 	}
 	invalidPayload, _ := json.Marshal(myInvalidIntegration)
+
 	type fields struct {
 		integrationManager *db_mock.UniformRepoMock
 	}
@@ -117,6 +137,8 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		request         *http.Request
 		wantStatus      int
 		wantIntegration *models.Integration
+		wantFuncs       []string
+		wanted          []func(*db_mock.UniformRepoMock)
 	}{
 		{
 			name: "create registration",
@@ -128,6 +150,40 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
 			wantStatus:      http.StatusCreated,
 			wantIntegration: myValidIntegration,
+		},
+		{
+			name: "create registration already existing",
+			fields: fields{
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+						return nil, nil
+					},
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{*myValidIntegration}, nil
+					},
+				},
+			},
+			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
+			wantStatus:      http.StatusOK,
+			wantIntegration: myValidIntegration,
+			wantFuncs:       []string{"GetUniformIntegrationsCalls", "UpdateLastSeenCalls"},
+		},
+		{
+			name: "create existing registration with different version",
+			fields: fields{
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc:         func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					CreateOrUpdateUniformIntegrationFunc: func(integration models.Integration) error { return nil },
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{*myValidIntegration}, nil
+					},
+				},
+			},
+			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayloadUpdated)),
+			wantStatus:      http.StatusOK,
+			wantIntegration: myValidIntegrationUpdated,
+			wantFuncs:       []string{"GetUniformIntegrationsCalls", "CreateOrUpdateUniformIntegrationCalls"},
 		},
 		{
 			name: "create registration fails",
@@ -164,6 +220,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			wantStatus: http.StatusBadRequest,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rh := handler.NewUniformIntegrationHandler(tt.fields.integrationManager)
@@ -177,6 +234,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			require.Equal(t, tt.wantStatus, w.Code)
 
 			if tt.wantIntegration != nil {
+				require.Len(t, tt.fields.integrationManager.CreateUniformIntegrationCalls(), 1)
 				require.NotEmpty(t, tt.fields.integrationManager.CreateUniformIntegrationCalls())
 				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Name)
 				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.MetaData.Hostname)
@@ -186,8 +244,16 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				require.Equal(t, tt.wantIntegration.Subscriptions[0].Event, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Subscriptions[0].Event)
 				require.Equal(t, tt.wantIntegration.Subscriptions[0].Filter, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Subscriptions[0].Filter)
 			}
+			if tt.wantFuncs != nil {
+				for _, m := range tt.wantFuncs {
+					// check that each expected method is called exactly once
+					require.Len(t, reflect.ValueOf(tt.fields.integrationManager).MethodByName(m).Call([]reflect.Value{}), 1)
+				}
+
+			}
 		})
 	}
+
 }
 
 func TestUniformIntegrationKeepAlive(t *testing.T) {
