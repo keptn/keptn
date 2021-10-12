@@ -308,9 +308,11 @@ jobs:
 
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        env:
+          IMAGE_NAME: ${{ matrix.config.artifact }}-test
         run: |
-          docker build ${{ matrix.config.working-dir }} --target builder-test -t ${{ matrix.config.artifact }}-test
-          docker run --rm -v "$PWD/shared:/shared" ${{ matrix.config.artifact }}-test
+          docker build ${{ matrix.config.working-dir }} --target builder-test -t $IMAGE_NAME
+          docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
           curl -s https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
           curl -Os https://uploader.codecov.io/latest/alpine/codecov
@@ -321,7 +323,7 @@ jobs:
           ls -la
           chmod +x "./codecov"
           ls -la
-          ./codecov -c -F ${{ matrix.config.artifact }}
+          codecov -c -F ${{ matrix.config.artifact }}
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
