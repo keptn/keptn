@@ -18,7 +18,7 @@ import (
 // 			AddFunc: func(queueItem models.QueueItem) error {
 // 				panic("mock out the Add method")
 // 			},
-// 			RunFunc: func(ctx context.Context)  {
+// 			RunFunc: func(ctx context.Context, startSequenceFunc func(event models.Event) error)  {
 // 				panic("mock out the Run method")
 // 			},
 // 		}
@@ -32,7 +32,7 @@ type ISequenceDispatcherMock struct {
 	AddFunc func(queueItem models.QueueItem) error
 
 	// RunFunc mocks the Run method.
-	RunFunc func(ctx context.Context)
+	RunFunc func(ctx context.Context, startSequenceFunc func(event models.Event) error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -45,6 +45,8 @@ type ISequenceDispatcherMock struct {
 		Run []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+			// StartSequenceFunc is the startSequenceFunc argument value.
+			StartSequenceFunc func(event models.Event) error
 		}
 	}
 	lockAdd sync.RWMutex
@@ -83,29 +85,33 @@ func (mock *ISequenceDispatcherMock) AddCalls() []struct {
 }
 
 // Run calls RunFunc.
-func (mock *ISequenceDispatcherMock) Run(ctx context.Context) {
+func (mock *ISequenceDispatcherMock) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
 	if mock.RunFunc == nil {
 		panic("ISequenceDispatcherMock.RunFunc: method is nil but ISequenceDispatcher.Run was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
+		Ctx               context.Context
+		StartSequenceFunc func(event models.Event) error
 	}{
-		Ctx: ctx,
+		Ctx:               ctx,
+		StartSequenceFunc: startSequenceFunc,
 	}
 	mock.lockRun.Lock()
 	mock.calls.Run = append(mock.calls.Run, callInfo)
 	mock.lockRun.Unlock()
-	mock.RunFunc(ctx)
+	mock.RunFunc(ctx, startSequenceFunc)
 }
 
 // RunCalls gets all the calls that were made to Run.
 // Check the length with:
 //     len(mockedISequenceDispatcher.RunCalls())
 func (mock *ISequenceDispatcherMock) RunCalls() []struct {
-	Ctx context.Context
+	Ctx               context.Context
+	StartSequenceFunc func(event models.Event) error
 } {
 	var calls []struct {
-		Ctx context.Context
+		Ctx               context.Context
+		StartSequenceFunc func(event models.Event) error
 	}
 	mock.lockRun.RLock()
 	calls = mock.calls.Run
