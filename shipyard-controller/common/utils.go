@@ -1,6 +1,24 @@
 package common
 
+import (
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"time"
+)
+
 type RollbackFunc func() error
+
+func ParseTimestamp(ts string, theClock clock.Clock) time.Time {
+	parsedTime, err := timeutils.ParseTimestamp(ts)
+	if err != nil {
+		if theClock == nil {
+			return time.Now().UTC()
+		} else {
+			return theClock.Now().UTC()
+		}
+	}
+	return *parsedTime
+}
 
 func Stringp(s string) *string {
 	return &s

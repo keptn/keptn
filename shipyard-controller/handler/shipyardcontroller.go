@@ -506,7 +506,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return sc.sequenceDispatcher.Add(models.QueueItem{
 			Scope:     *eventScope,
 			EventID:   event.ID,
-			Timestamp: time.Now().UTC(),
+			Timestamp: common.ParseTimestamp(event.Time, nil),
 		})
 	}
 	return sc.StartTaskSequence(event)
