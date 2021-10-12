@@ -114,7 +114,6 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceFinished})
 
 	require.Nil(t, err)
-
 }
 
 func Test_SequenceControl_PauseAndResume(t *testing.T) {

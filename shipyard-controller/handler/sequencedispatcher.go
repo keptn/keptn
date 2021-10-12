@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -9,24 +10,29 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
+
+var errSequenceBlocked = errors.New("sequence is currently blocked")
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
-	Run(ctx context.Context)
+	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
 }
 
 type SequenceDispatcher struct {
-	eventRepo      db.EventRepo
-	eventQueueRepo db.EventQueueRepo
-	sequenceQueue  db.SequenceQueueRepo
-	sequenceRepo   db.TaskSequenceRepo
-	theClock       clock.Clock
-	syncInterval   time.Duration
-	eventChannel   chan models.Event
+	eventRepo          db.EventRepo
+	eventQueueRepo     db.EventQueueRepo
+	sequenceQueue      db.SequenceQueueRepo
+	sequenceRepo       db.TaskSequenceRepo
+	theClock           clock.Clock
+	syncInterval       time.Duration
+	startSequenceFunc  func(event models.Event) error
+	shipyardController shipyardController
+	mutex              sync.Mutex
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -36,7 +42,6 @@ func NewSequenceDispatcher(
 	sequenceQueueRepo db.SequenceQueueRepo,
 	sequenceRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
-	eventChannel chan models.Event,
 	theClock clock.Clock,
 
 ) ISequenceDispatcher {
@@ -47,19 +52,28 @@ func NewSequenceDispatcher(
 		sequenceRepo:   sequenceRepo,
 		theClock:       theClock,
 		syncInterval:   syncInterval,
-		eventChannel:   eventChannel,
+		mutex:          sync.Mutex{},
 	}
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
-	if err := sd.sequenceQueue.QueueSequence(queueItem); err != nil {
-		return err
+	// try to dispatch the sequence immediately
+	if err := sd.dispatchSequence(queueItem); err != nil {
+		if err == errSequenceBlocked {
+			// if the sequence is currently blocked, insert it into the queue
+			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+				return err2
+			}
+		} else {
+			return err
+		}
 	}
-	return sd.dispatchSequence(queueItem)
+	return nil
 }
 
-func (sd *SequenceDispatcher) Run(ctx context.Context) {
+func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
 	ticker := sd.theClock.Ticker(sd.syncInterval)
+	sd.startSequenceFunc = startSequenceFunc
 	go func() {
 		for {
 			select {
@@ -93,10 +107,12 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
+	sd.mutex.Lock()
+	defer sd.mutex.Unlock()
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
-		return nil
+		return errSequenceBlocked
 	}
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
 	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
@@ -110,7 +126,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// if there is a sequence running in the stage, we cannot trigger this sequence yet
 	if sd.areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
-		return nil
+		return errSequenceBlocked
 	}
 
 	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{
@@ -127,7 +143,9 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 
 	sequenceTriggeredEvent := events[0]
 
-	sd.eventChannel <- sequenceTriggeredEvent
+	if err := sd.startSequenceFunc(sequenceTriggeredEvent); err != nil {
+		return fmt.Errorf("could not start task sequence %s: %s", queuedSequence.EventID, err.Error())
+	}
 
 	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
 }

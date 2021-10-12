@@ -28,6 +28,7 @@ type IShipyardController interface {
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
 	ControlSequence(controlSequence common.SequenceControl) error
+	StartTaskSequence(event models.Event) error
 }
 
 type shipyardController struct {
@@ -90,7 +91,7 @@ func (sc *shipyardController) registerToChannels(ctx context.Context) {
 				log.Infof("stop listening to channels")
 				return
 			case startSequenceEvent := <-sc.startSequenceChan:
-				err := sc.startTaskSequence(startSequenceEvent)
+				err := sc.StartTaskSequence(startSequenceEvent)
 				if err != nil {
 					log.WithError(err).Error("could not start task sequence")
 				}
@@ -498,7 +499,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 			Timestamp: time.Now().UTC(),
 		})
 	}
-	return sc.startTaskSequence(event)
+	return sc.StartTaskSequence(event)
 }
 
 func (sc *shipyardController) onTriggerSequenceFailed(event models.Event, eventScope *models.EventScope, msg string, taskSequenceName string) error {
@@ -524,7 +525,7 @@ func (sc *shipyardController) onTriggerSequenceFailed(event models.Event, eventS
 	}, taskSequenceName, event.ID)
 }
 
-func (sc *shipyardController) startTaskSequence(event models.Event) error {
+func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return err

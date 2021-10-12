@@ -104,7 +104,6 @@ func main() {
 		createSequenceQueueRepo(),
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
-		sequenceDispatcherChannel,
 		clock.New(),
 	)
 
@@ -118,7 +117,7 @@ func main() {
 		sequenceTimeoutChannel,
 		sequenceControlChannel,
 	)
-	sequenceDispatcher.Run(context.Background())
+	sequenceDispatcher.Run(context.Background(), shipyardController.StartTaskSequence)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
