@@ -84,6 +84,26 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole2.Rules[0].ResourceNames)
 }
 
+func TestCreateSecrets_TooLongName(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	secret := createTestSecret("my-verylongname", "my-scope")
+	kubernetes.Fake.PrependReactor("create", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("Error creating kubernetes secret")
+	})
+
+	err := backend.CreateSecret(secret)
+	assert.NotNil(t, err)
+}
+
 func TestCreateSecret_FetchingScopesFails(t *testing.T) {
 	kubernetes := k8sfake.NewSimpleClientset()
 	scopesRepository := &fake.ScopesRepositoryMock{}

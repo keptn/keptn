@@ -74,6 +74,16 @@ func TestHandler_CreateSecret(t *testing.T) {
 			expectedHTTPStatus: http.StatusInternalServerError,
 		},
 		{
+			name: "POST Create Secret - too long name",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					CreateSecretFunc: func(secret model.Secret) error { return backend.ErrTooBigKeySize },
+				},
+			},
+			request:            httptest.NewRequest("POST", "/secret", bytes.NewBuffer([]byte(`{"verylongname":"my-secret","scope":"my-scope","data":{"username":"keptn"}}`))),
+			expectedHTTPStatus: http.StatusBadRequest,
+		},
+		{
 			name: "POST Create Secret - Input INVALID",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{
