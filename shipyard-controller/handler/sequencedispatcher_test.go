@@ -16,8 +16,6 @@ import (
 func TestSequenceDispatcher(t *testing.T) {
 	theClock := clock.NewMock()
 
-	startSequenceChannel := make(chan models.Event)
-
 	startSequenceCalls := []models.Event{}
 	triggeredEvents := []models.Event{
 		{
@@ -33,13 +31,6 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 	currentTaskSequences := []models.TaskSequenceEvent{}
 	mockQueue := []models.QueueItem{}
-
-	go func() {
-		for {
-			startSequenceCall := <-startSequenceChannel
-			startSequenceCalls = append(startSequenceCalls, startSequenceCall)
-		}
-	}()
 
 	mockEventRepo := &db_mock.EventRepoMock{
 		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
@@ -77,8 +68,12 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, startSequenceChannel, theClock)
-	sequenceDispatcher.Run(context.Background())
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock)
+
+	sequenceDispatcher.Run(context.Background(), func(event models.Event) error {
+		startSequenceCalls = append(startSequenceCalls, event)
+		return nil
+	})
 
 	// check if repos are queried
 	theClock.Add(11 * time.Second)
@@ -111,6 +106,9 @@ func TestSequenceDispatcher(t *testing.T) {
 	require.Equal(t, mockEventRepo.GetEventsCalls()[0].Project, queueItem.Scope.Project)
 	require.Equal(t, *mockEventRepo.GetEventsCalls()[0].Filter.ID, queueItem.EventID)
 	require.Equal(t, mockEventRepo.GetEventsCalls()[0].Status[0], common.TriggeredEvent)
+
+	// if the sequence has been dispatched immediately, we do not need to insert it into the queue
+	require.Empty(t, mockSequenceQueueRepo.QueueSequenceCalls())
 
 	// has the queueItem been removed properly?
 	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
@@ -159,4 +157,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	// GetEvents and DeleteQueuedSequences should not have been called again at this point
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
 	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
+
+	// item should have been added to queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
 }
