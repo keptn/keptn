@@ -241,6 +241,12 @@ class Trace extends tc {
     return this.type === EventTypes.EVALUATION_INVALIDATED;
   }
 
+  public getEvaluationFinishedEvent(): Trace | undefined {
+    return this.traces.find(
+      (trace) => trace.source === 'lighthouse-service' && trace.type.endsWith(EventTypes.EVALUATION_FINISHED)
+    );
+  }
+
   hasLabels(): boolean {
     return Object.keys(this.data.labels || {}).length > 0;
   }
