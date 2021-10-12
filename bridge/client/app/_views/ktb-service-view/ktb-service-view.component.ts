@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostBinding,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -21,7 +13,6 @@ import { Location } from '@angular/common';
   styleUrls: ['./ktb-service-view.component.scss'],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbServiceViewComponent implements OnInit, OnDestroy {
   @HostBinding('class') cls = 'ktb-service-view';
@@ -32,7 +23,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public isQualityGatesOnly = false;
 
   constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
@@ -42,10 +32,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
-    });
-
-    this.dataService.changedDeployments.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this._changeDetectorRef.markForCheck();
     });
 
     const params$ = this.route.params.pipe(takeUntil(this.unsubscribe$));
@@ -58,7 +44,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
 
     params$.pipe(take(1)).subscribe((params) => {
       this.serviceName = params.serviceName;
-      this._changeDetectorRef.markForCheck();
     });
 
     combineLatest([params$, project$])
@@ -96,7 +81,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       }
       this.dataService.loadOpenRemediations(project);
       this.project = project;
-      this._changeDetectorRef.markForCheck();
     });
   }
 
@@ -154,7 +138,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public selectService(projectName: string, serviceName: string): void {
     if (this.serviceName !== serviceName) {
       this.serviceName = serviceName;
-      this._changeDetectorRef.markForCheck();
     }
   }
 

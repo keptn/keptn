@@ -26,6 +26,7 @@ import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-regi
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
+import { Service } from '../_models/service';
 
 @Injectable({
   providedIn: 'root',
@@ -654,16 +655,46 @@ export class DataService {
     this.apiService
       .sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished')
       .subscribe(() => {
-        const sequence = this._projects
-          .getValue()
-          ?.find((p) => p.projectName === approval.data.project)
-          ?.getServices()
-          .find((s) => s.serviceName === approval.data.service)
-          ?.sequences.find((r) => r.shkeptncontext === approval.shkeptncontext);
-        if (sequence) {
-          this.loadTraces(sequence);
+        const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
+        if (project?.projectName) {
+          const stage = project.stages.find((st) => st.stageName === approval.data.stage);
+          const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
+          const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
+          const deployment = service?.deployments.find((dep) => dep.shkeptncontext === approval.shkeptncontext);
+
+          if (sequence) {
+            // update data of sequence screen
+            this.loadTraces(sequence);
+          }
+          if (deployment) {
+            // update data of service screen
+            this.getRoot(project.projectName, deployment.shkeptncontext).subscribe((root) => {
+              if (deployment.sequence) {
+                deployment.sequence = root;
+              }
+            });
+          }
+          if (service) {
+            // update data of environment screen
+            this.updateServiceApproval(service, approval);
+          }
         }
       });
+  }
+
+  private updateServiceApproval(service: Service, approval: Trace): void {
+    const approvalIndex = service.openApprovals.findIndex((a) => a.trace.id === approval.id);
+    if (approvalIndex >= 0 && approval.data.project) {
+      service.openApprovals.splice(approvalIndex, 1);
+      this.apiService
+        .getSequences(approval.data.project, 1, undefined, undefined, undefined, undefined, service.getLatestSequence())
+        .subscribe((response) => {
+          const seq = response.body?.states[0];
+          if (seq) {
+            service.latestSequence = Sequence.fromJSON(seq);
+          }
+        });
+    }
   }
 
   public sendSequenceControl(sequence: Sequence, state: string): void {

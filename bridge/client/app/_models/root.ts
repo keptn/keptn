@@ -84,7 +84,7 @@ export class Root extends Trace {
 
   getPendingApproval(stageName?: string): Trace | undefined {
     return this.findTrace(
-      (trace) => !!trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.stage === stageName)
+      (trace) => trace.isApprovalTriggered() && trace.isApprovalPending() && (!stageName || trace.stage === stageName)
     );
   }
 

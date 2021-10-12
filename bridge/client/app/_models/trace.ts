@@ -201,6 +201,10 @@ class Trace extends tc {
       : undefined;
   }
 
+  public isApprovalTriggered(): boolean {
+    return this.type === EventTypes.APPROVAL_TRIGGERED;
+  }
+
   public isApprovalPending(): boolean {
     let pending = true;
     for (let i = 0; i < this.traces.length && pending; ++i) {

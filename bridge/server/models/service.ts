@@ -16,14 +16,4 @@ export class Service extends sv {
   public static fromJSON(data: unknown): Service {
     return Object.assign(new this(), data);
   }
-
-  public getLatestSequence(): string | undefined {
-    let latestSequence: ServiceEvent | undefined;
-    for (const key of Object.keys(this.lastEventTypes)) {
-      if (!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
-        latestSequence = this.lastEventTypes[key];
-      }
-    }
-    return latestSequence?.keptnContext;
-  }
 }
