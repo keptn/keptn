@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostBinding,
-  Input,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, HostBinding, Input, ViewEncapsulation } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Service } from '../../_models/service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -20,7 +13,6 @@ const DEFAULT_PAGE_SIZE = 3;
   styleUrls: ['./ktb-services-list.component.scss'],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbServicesListComponent {
   @HostBinding('class') cls = 'ktb-services-list';
@@ -56,16 +48,11 @@ export class KtbServicesListComponent {
     return DEFAULT_PAGE_SIZE;
   }
 
-  constructor(
-    public dataService: DataService,
-    public dateUtil: DateUtil,
-    private _changeDetectorRef: ChangeDetectorRef
-  ) {}
+  constructor(public dataService: DataService, public dateUtil: DateUtil) {}
 
   updateDataSource(): void {
     this.services.sort(this.compare());
     this.dataSource = new DtTableDataSource(this.services.slice(0, this.pageSize));
-    this._changeDetectorRef.markForCheck();
   }
 
   private compare() {
