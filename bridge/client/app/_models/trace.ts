@@ -7,6 +7,7 @@ import { ProblemStates } from './problem-states';
 import { DateUtil } from '../_utils/date.utils';
 import { Trace as tc, TraceData } from '../../../shared/models/trace';
 import { DtIconType } from '@dynatrace/barista-icons';
+import { KeptnService } from '../../../shared/models/keptn-service';
 
 class Trace extends tc {
   traces: Trace[] = [];
@@ -243,7 +244,7 @@ class Trace extends tc {
 
   public getEvaluationFinishedEvent(): Trace | undefined {
     return this.traces.find(
-      (trace) => trace.source === 'lighthouse-service' && trace.type.endsWith(EventTypes.EVALUATION_FINISHED)
+      (trace) => trace.source === KeptnService.LIGHTHOUSE_SERVICE && trace.type.endsWith(EventTypes.EVALUATION_FINISHED)
     );
   }
 
