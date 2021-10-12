@@ -19,7 +19,7 @@ export class KtbCreateSecretFormComponent {
   public scopes: SecretScope[] = Object.values(SecretScope);
 
   public createSecretForm = this.fb.group({
-    name: ['', [Validators.required, Validators.pattern(this.secretNamePattern)]],
+    name: ['', [Validators.required, Validators.pattern(this.secretNamePattern), Validators.maxLength(253)]],
     scope: [this.scopes[0], [Validators.required]],
     data: this.fb.array([
       this.fb.group({
