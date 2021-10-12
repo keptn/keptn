@@ -243,7 +243,7 @@ class Trace extends tc {
   }
 
   public getEvaluationFinishedEvent(): Trace | undefined {
-    return this.traces.find(
+    return this.findTrace(
       (trace) => trace.source === KeptnService.LIGHTHOUSE_SERVICE && trace.type.endsWith(EventTypes.EVALUATION_FINISHED)
     );
   }

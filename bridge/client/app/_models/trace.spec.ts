@@ -65,7 +65,7 @@ describe('Trace', () => {
 
   it('should get the latest evaluation from source lighthouse-service when multiple evaluation finished events are given', () => {
     // given
-    const tracesMock: Trace = Trace.fromJSON(MultipleEvaluationTracesMock);
+    const tracesMock: Trace = MultipleEvaluationTracesMock;
 
     // when
     const evalFinishedTrace: Trace | undefined = tracesMock.getEvaluationFinishedEvent();
