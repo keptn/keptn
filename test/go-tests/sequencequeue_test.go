@@ -265,7 +265,7 @@ func Test_SequenceQueue(t *testing.T) {
 	wg.Wait()
 }
 
-func Test_SequenceControl_TriggerMultiple(t *testing.T) {
+func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	projectName := "sequence-queue2"
 	serviceName := "myservice"
 	stageName := "dev"

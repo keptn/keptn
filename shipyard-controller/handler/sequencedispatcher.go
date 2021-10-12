@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
 
@@ -31,6 +32,7 @@ type SequenceDispatcher struct {
 	syncInterval       time.Duration
 	startSequenceFunc  func(event models.Event) error
 	shipyardController shipyardController
+	mutex              sync.Mutex
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -50,6 +52,7 @@ func NewSequenceDispatcher(
 		sequenceRepo:   sequenceRepo,
 		theClock:       theClock,
 		syncInterval:   syncInterval,
+		mutex:          sync.Mutex{},
 	}
 }
 
@@ -104,6 +107,8 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
+	sd.mutex.Lock()
+	defer sd.mutex.Unlock()
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
