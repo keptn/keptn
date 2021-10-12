@@ -309,8 +309,7 @@ jobs:
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
         run: |
-          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
-          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
+          docker build ./ --target builder-test
         working-directory: ${{ matrix.config.working-dir }}
 
   unit-tests-node:
