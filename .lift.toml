@@ -6,4 +6,5 @@ disableTools = ["Closure-Compiler", "ESLint", "JSHint"]
 
 # Any issue in the ignore list is never reported to the user
 # GoSec -> G306 - Expect WriteFile permissions to be 0600 or less
-ignoreRules = ["G306"]
+# U1000 - false positive
+ignoreRules = ["G306", "U1000"]
