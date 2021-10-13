@@ -12,6 +12,7 @@ import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
+import { SequenceState } from '../../shared/models/sequence';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -42,7 +43,7 @@ export class ApiService {
     projectName: string,
     pageSize: number,
     sequenceName?: string,
-    state?: string,
+    state?: SequenceState,
     fromTime?: string,
     beforeTime?: string,
     keptnContext?: string
