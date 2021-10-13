@@ -75,9 +75,12 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
       }
     } else {
       // overwrite
+      webhook.type = eventType;
       webhook.requests[0] = curl;
-      if (secrets && secrets.length) {
+      if (secrets.length) {
         webhook.envFrom = secrets;
+      } else {
+        delete webhook.envFrom;
       }
     }
   }
