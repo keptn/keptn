@@ -17,7 +17,7 @@
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run --browser=chrome",
-    "test:ui": "start-server-and-test start:ci http://localhost:3000 cypress:run"
+    "test:ui": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cypress:run'"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
