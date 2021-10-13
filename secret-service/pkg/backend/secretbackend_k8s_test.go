@@ -11,8 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 	"testing"
@@ -82,6 +85,30 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole1.Rules[0].ResourceNames)
 	k8sRole2, err = kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-manage-secrets", metav1.GetOptions{})
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole2.Rules[0].ResourceNames)
+}
+
+func TestCreateSecrets_TooLongName(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	secret := createTestSecret("my-verylongname", "my-scope")
+	kubernetes.Fake.PrependReactor("create", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+
+		var errs = field.ErrorList{field.Invalid(nil, nil, " must be no more than 253 characters")}
+		return true, nil, k8serr.NewInvalid(schema.GroupKind{}, "secret", errs)
+	})
+
+	err := backend.CreateSecret(secret)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, ErrTooBigKeySize, err)
 }
 
 func TestCreateSecret_FetchingScopesFails(t *testing.T) {

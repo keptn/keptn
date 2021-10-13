@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+var ErrCreation = "Unable to create secret"
+
 type ISecretHandler interface {
 	CreateSecret(c *gin.Context)
 	UpdateSecret(c *gin.Context)
@@ -37,7 +39,6 @@ type SecretHandler struct {
 // @Failure 500 {object} model.Error
 // @Router /secret [post]
 func (s SecretHandler) CreateSecret(c *gin.Context) {
-
 	secret := model.Secret{}
 	if err := c.ShouldBindJSON(&secret); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
@@ -51,10 +52,14 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 	err := s.SecretBackend.CreateSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretAlreadyExists {
-			SetConflictErrorResponse(err, c, "Unable to create secret")
+			SetConflictErrorResponse(err, c, ErrCreation)
 			return
 		}
-		SetInternalServerErrorResponse(err, c, "Unable to create secret")
+		if err == backend.ErrTooBigKeySize {
+			SetBadRequestErrorResponse(err, c, ErrCreation)
+			return
+		}
+		SetInternalServerErrorResponse(err, c, ErrCreation)
 		return
 	}
 
