@@ -6,6 +6,4 @@ on:
       - "master"
 jobs:
   check:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: keptn/gh-automation/.github/workflows/dco.yml@ci/dco-pipeline
+    uses: keptn/gh-automation/.github/workflows/dco.yml@ci/dco-pipeline
