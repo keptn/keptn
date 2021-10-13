@@ -316,8 +316,8 @@ jobs:
 
           curl -Os https://uploader.codecov.io/latest/alpine/codecov
           chmod +x "./codecov"
-          ls -la "./codecov"
-          ./codecov -c -F ${{ matrix.config.artifact }}
+          ls -la "$PWD/codecov"
+          "$PWD/codecov" -c -F ${{ matrix.config.artifact }}
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
