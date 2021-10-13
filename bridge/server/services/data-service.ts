@@ -585,7 +585,7 @@ export class DataService {
 
     if (webhookConfig.prevConfiguration) {
       const previousFilter = await this.getWebhookConfigFilter(webhookConfig.prevConfiguration.filter);
-      await this.removePreviousWebhooks(previousFilter, webhookConfig.prevConfiguration.type);
+      await this.removePreviousWebhooks(previousFilter, subscriptionId);
     }
 
     const secrets = await this.parseAndReplaceWebhookSecret(webhookConfig);
@@ -688,11 +688,11 @@ export class DataService {
     return previousWebhookConfig;
   }
 
-  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, type: string): Promise<void> {
+  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, subscriptionId: string): Promise<void> {
     for (const project of previousConfig.projects) {
       for (const stage of previousConfig.stages) {
         for (const service of previousConfig.services) {
-          await this.removeWebhook(type, project, stage, service);
+          await this.removeWebhook(subscriptionId, project, stage, service);
         }
       }
     }
