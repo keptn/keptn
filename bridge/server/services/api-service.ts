@@ -11,6 +11,7 @@ import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
 import { Secret } from '../../shared/interfaces/secret';
+import { KeptnService } from '../../shared/models/keptn-service';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -64,7 +65,8 @@ export class ApiService {
     projectName?: string,
     stageName?: string,
     serviceName?: string,
-    keptnContext?: string
+    keptnContext?: string,
+    eventSource?: KeptnService
   ): Promise<AxiosResponse<EventResult>> {
     const params = {
       ...(projectName && { project: projectName }),
@@ -73,6 +75,7 @@ export class ApiService {
       ...(eventType && { type: eventType }),
       ...(pageSize && { pageSize: pageSize.toString() }),
       ...(keptnContext && { keptnContext }),
+      ...(eventSource && { source: eventSource }),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, { params });
   }
@@ -138,7 +141,7 @@ export class ApiService {
   ): Promise<AxiosResponse<EventResult>> {
     const contextString = keptnContext ? ` AND shkeptncontext:${keptnContext}` : '';
     const params = {
-      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}${contextString}`,
+      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}${contextString} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
       excludeInvalidated: 'true',
       limit: pageSize.toString(),
     };

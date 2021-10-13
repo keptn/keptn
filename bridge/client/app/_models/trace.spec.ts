@@ -1,6 +1,7 @@
 import { Trace } from './trace';
 import { waitForAsync } from '@angular/core/testing';
-import { EvaluationTracesMock, RootTracesMock } from './trace.mock';
+import { EvaluationTracesMock, MultipleEvaluationTracesMock, RootTracesMock } from './trace.mock';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 
 describe('Trace', () => {
   it(
@@ -61,4 +62,18 @@ describe('Trace', () => {
       expect(evaluationTraces[0].service).toEqual('carts');
     })
   );
+
+  it('should get the latest evaluation from source lighthouse-service when multiple evaluation finished events are given', () => {
+    // given
+    const tracesMock: Trace = MultipleEvaluationTracesMock;
+
+    // when
+    const evalFinishedTrace: Trace | undefined = tracesMock.getEvaluationFinishedEvent();
+
+    // then
+    expect(evalFinishedTrace).toBeTruthy();
+    expect(evalFinishedTrace?.source).toEqual('lighthouse-service');
+    expect(evalFinishedTrace?.type).toEqual(EventTypes.EVALUATION_FINISHED);
+    expect(evalFinishedTrace?.data.evaluation?.score).toEqual(100);
+  });
 });
