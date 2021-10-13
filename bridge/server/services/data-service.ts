@@ -24,6 +24,7 @@ import { EventResult } from '../interfaces/event-result';
 import { Secret } from '../models/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 import { SecretScope } from '../../shared/interfaces/secret-scope';
+import { KeptnService } from '../../shared/models/keptn-service';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -284,9 +285,18 @@ export class DataService {
     projectName?: string,
     stageName?: string,
     serviceName?: string,
-    eventType?: EventTypes
+    eventType?: EventTypes,
+    eventSource?: KeptnService
   ): Promise<Trace | undefined> {
-    const response = await this.apiService.getTraces(eventType, 1, projectName, stageName, serviceName, keptnContext);
+    const response = await this.apiService.getTraces(
+      eventType,
+      1,
+      projectName,
+      stageName,
+      serviceName,
+      keptnContext,
+      eventSource
+    );
     return response.data.events.shift();
   }
 
@@ -312,7 +322,8 @@ export class DataService {
         projectName,
         stageName,
         serviceName,
-        EventTypes.EVALUATION_FINISHED
+        EventTypes.EVALUATION_FINISHED,
+        KeptnService.LIGHTHOUSE_SERVICE
       );
       approvals.push({
         evaluationTrace,

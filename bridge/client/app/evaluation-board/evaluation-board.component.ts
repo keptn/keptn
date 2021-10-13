@@ -12,6 +12,7 @@ import { Deployment } from '../_models/deployment';
 import { environment } from '../../environments/environment';
 import { DateUtil } from '../_utils/date.utils';
 import { Project } from '../_models/project';
+import { KeptnService } from '../../../shared/models/keptn-service';
 
 @Component({
   selector: 'ktb-evaluation-board',
@@ -67,6 +68,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
                 this.evaluations = traces.filter(
                   (t) =>
                     t.type === EventTypes.EVALUATION_FINISHED &&
+                    t.source === KeptnService.LIGHTHOUSE_SERVICE &&
                     (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector)
                 );
                 if (this.root.project) {
