@@ -296,6 +296,8 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 			// after triggering the first sequence, wait a few seconds to make sure this one is the first to be executed
 			// all other sequences should be sorted correctly internally
 			<-time.After(10 * time.Second)
+		} else {
+			<-time.After(1 * time.Second)
 		}
 	}
 	verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
