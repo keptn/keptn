@@ -314,10 +314,18 @@ jobs:
           docker build ${{ matrix.config.working-dir }} --target builder-test -t $IMAGE_NAME
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
+      - name: Report test coverage for ${{ matrix.config.artifact }}
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        run: |
+          curl -s https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
           curl -Os https://uploader.codecov.io/latest/linux/codecov
+          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
+          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
+          gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+          shasum -a 256 -c codecov.SHA256SUM
           chmod +x "./codecov"
-          ls -la "codecov"
           ./codecov -c -F ${{ matrix.config.artifact }}
+
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
