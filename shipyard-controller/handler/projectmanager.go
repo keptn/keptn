@@ -317,10 +317,6 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
-	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
-		log.Errorf("could not delete task sequence collection: %s", err.Error())
-	}
-
 	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
 		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
@@ -335,6 +331,10 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 		},
 	}}); err != nil {
 		log.Errorf("could ot delete queued sequences: %s", err.Error())
+	}
+
+	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
+		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
 	if err := pm.EventQueueRepo.DeleteQueuedEvents(models.EventScope{
