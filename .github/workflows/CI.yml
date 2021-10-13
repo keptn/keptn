@@ -321,6 +321,7 @@ jobs:
           gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
           shasum -a 256 -c codecov.SHA256SUM
           chmod +x "./codecov"
+          ls -la "./codecov"
           "./codecov" -c -F ${{ matrix.config.artifact }}
 
   unit-tests-node:
