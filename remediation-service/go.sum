@@ -22,8 +22,8 @@ github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.9.1-0.20210927081802-47257796192b/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
-github.com/keptn/go-utils v0.10.0 h1:ViYtBqcO6yf8pBkAUKWhCOkWDXdhBjzyP7xu3fFTwtI=
-github.com/keptn/go-utils v0.10.0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
+github.com/keptn/go-utils v0.10.1-0.20211013110612-c6f17c04cd7c h1:azf5TWNRh1jUsq6CejfrqXnJGzNMEk2XAXX2kCw8z6Y=
+github.com/keptn/go-utils v0.10.1-0.20211013110612-c6f17c04cd7c/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
 github.com/keptn/keptn/go-sdk v0.0.0-20211004094531-157ce0514700 h1:XCSpCy9dbfIwSGupZ63AohtbCLipTlCRdDBEtscs4zY=
 github.com/keptn/keptn/go-sdk v0.0.0-20211004094531-157ce0514700/go.mod h1:5hi+fZN+8WNL/Sj6lyupZzjhJ12/ZjB4REf2sewBPKc=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
