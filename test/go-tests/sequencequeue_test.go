@@ -297,7 +297,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 			// all other sequences should be sorted correctly internally
 			<-time.After(10 * time.Second)
 		} else {
-			<-time.After(1 * time.Second)
+			<-time.After(2 * time.Second)
 		}
 	}
 	verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
