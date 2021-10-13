@@ -11,7 +11,28 @@
         fxFlex
       >
         <div class="container" fxFlex fxLayout="column">
+          <dt-empty-state *ngIf="project.sequences?.length === 0">
+            <dt-empty-state-item>
+              <dt-empty-state-item-title class="mt-2" aria-level="2">
+                <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                  <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
+                  <p class="m-0">No sequences executed yet</p>
+                </div>
+              </dt-empty-state-item-title>
+              <p>
+                For this project there were no sequences executed yet.<br />
+                <a
+                  [href]="'/reference/cli/commands/keptn_trigger/' | keptnUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Instructions how to trigger a sequence</a
+                >.
+              </p>
+            </dt-empty-state-item>
+          </dt-empty-state>
+
           <ktb-root-events-list
+            *ngIf="project.sequences?.length != 0"
             uitestid="keptn-sequence-view-roots"
             [events]="getFilteredSequences(project.sequences)"
             [selectedEvent]="currentSequence"
@@ -65,8 +86,8 @@
             </ng-template>
           </p>
           <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning"
-            >Sequence might be waiting for previous sequences to be finished.</dt-alert
-          >
+            >Sequence might be waiting for previous sequences to be finished.
+          </dt-alert>
         </dt-info-group>
       </div>
       <ktb-sequence-timeline
