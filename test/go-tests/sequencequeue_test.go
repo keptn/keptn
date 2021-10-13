@@ -330,8 +330,8 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 	stageName := "dev"
 	sequencename := "mysequence"
 
-	numServices := 20
-	numSequencesPerService := 10
+	numServices := 50
+	numSequencesPerService := 1
 
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard2)
 	require.Nil(t, err)
@@ -343,7 +343,6 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 
 	for i := 0; i < numServices; i++ {
 		serviceName := fmt.Sprintf("service-%d", i)
-		t.Logf("creating service %s", serviceName)
 		output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 		require.Nil(t, err)
 		require.Contains(t, output, "created successfully")
