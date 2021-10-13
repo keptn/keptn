@@ -306,6 +306,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Set up Node
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: 14
+
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
         env:
@@ -316,8 +321,8 @@ jobs:
 
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x "./codecov"
-          ls -la "$PWD/codecov"
-          $PWD/codecov -c -F ${{ matrix.config.artifact }}
+          ls -la "codecov"
+          ./codecov -c -F ${{ matrix.config.artifact }}
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
