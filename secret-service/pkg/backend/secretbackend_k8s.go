@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"strings"
 )
 
 const SecretBackendTypeK8s = "kubernetes"
@@ -59,7 +60,7 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Create(context.TODO(), k.createK8sSecretObj(secret, namespace), metav1.CreateOptions{})
 	if err != nil {
 		log.Errorf("Unable to create secret %s with scope %s: %s", secret.Name, secret.Scope, err)
-		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonInvalid {
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonInvalid && strings.Contains(statusError.Status().Message, "must be no more than 253 characters") {
 			return ErrTooBigKeySize
 		}
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {

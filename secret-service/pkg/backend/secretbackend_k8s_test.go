@@ -11,8 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 	"testing"
@@ -97,11 +100,15 @@ func TestCreateSecrets_TooLongName(t *testing.T) {
 
 	secret := createTestSecret("my-verylongname", "my-scope")
 	kubernetes.Fake.PrependReactor("create", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, errors.New("Error creating kubernetes secret")
+
+		var errs = field.ErrorList{field.Invalid(nil, nil, " must be no more than 253 characters")}
+		return true, nil, k8serr.NewInvalid(schema.GroupKind{}, "secret", errs)
 	})
 
 	err := backend.CreateSecret(secret)
+
 	assert.NotNil(t, err)
+	assert.Equal(t, ErrTooBigKeySize, err)
 }
 
 func TestCreateSecret_FetchingScopesFails(t *testing.T) {
