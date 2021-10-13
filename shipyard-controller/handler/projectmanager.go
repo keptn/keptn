@@ -163,6 +163,10 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard); err != nil {
 		return err, rollbackFunc
 	}
+
+	// make sure mongodb collections from previous project with the same name are emptied
+	pm.deleteProjectSequenceCollections(*params.Name)
+
 	return nil, nilRollback
 }
 
@@ -317,12 +321,22 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
-	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
+	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
+		log.Errorf("could not delete project: %s", err.Error())
+	}
+
+	pm.deleteProjectSequenceCollections(projectName)
+
+	return resultMessage.String(), nil
+}
+
+func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
+	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
 		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
-	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
-		log.Errorf("could not delete project: %s", err.Error())
+	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
+		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
 	if err := pm.SequenceQueueRepo.DeleteQueuedSequences(models.QueueItem{Scope: models.EventScope{
@@ -330,11 +344,7 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 			Project: projectName,
 		},
 	}}); err != nil {
-		log.Errorf("could ot delete queued sequences: %s", err.Error())
-	}
-
-	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
-		log.Errorf("could not delete task sequence collection: %s", err.Error())
+		log.Errorf("could not delete queued sequences: %s", err.Error())
 	}
 
 	if err := pm.EventQueueRepo.DeleteQueuedEvents(models.EventScope{
@@ -344,9 +354,6 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 	}); err != nil {
 		log.Errorf("could not delete queued events: %s", err.Error())
 	}
-
-	return resultMessage.String(), nil
-
 }
 
 func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
