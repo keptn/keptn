@@ -81,7 +81,7 @@
     "@angular-eslint/template-parser": "4.3.0",
     "@angular/cli": "^11.2.14",
     "@angular/compiler-cli": "^11.2.8",
-    "@angular/language-service": "^11.2.13",
+    "@angular/language-service": "^12.2.9",
     "@cypress/schematic": "^1.5.0",
     "@types/dompurify": "^2.2.3",
     "@types/jest": "^27.0.2",
