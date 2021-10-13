@@ -314,7 +314,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     },
     {
       provide: POLLING_INTERVAL_MILLIS,
-      useValue: environment.pollingInterval ?? 30_000,
+      useValue: environment.pollingIntervalMillis ?? 30_000,
     },
     {
       provide: RETRY_ON_HTTP_ERROR,
