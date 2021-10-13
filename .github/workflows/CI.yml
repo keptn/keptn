@@ -314,7 +314,7 @@ jobs:
           docker build ${{ matrix.config.working-dir }} --target builder-test -t $IMAGE_NAME
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
-          curl -Os https://uploader.codecov.io/latest/alpine/codecov
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x "./codecov"
           ls -la "$PWD/codecov"
           $PWD/codecov -c -F ${{ matrix.config.artifact }}
