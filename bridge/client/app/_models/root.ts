@@ -34,17 +34,6 @@ export class Root extends Trace {
     return this.traces.length === 0 ? false : this.traces[this.traces.length - 1]?.isStarted() ?? false;
   }
 
-  hasFailedEvaluation(): string | undefined {
-    let result: string | undefined;
-    if (this.traces) {
-      const failedEvaluation = this.findTrace((t) => !!(t.isEvaluation() && t.isFailedEvaluation()));
-      if (failedEvaluation) {
-        result = failedEvaluation.stage;
-      }
-    }
-    return result;
-  }
-
   getDeploymentTrace(stage: string): Trace | undefined {
     return this.findTrace((trace) => trace.isDeployment() === stage);
   }

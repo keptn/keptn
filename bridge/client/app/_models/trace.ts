@@ -123,16 +123,6 @@ class Trace extends tc {
     return result;
   }
 
-  isFailedEvaluation(): string | undefined {
-    let result: string | undefined;
-    if (this.data) {
-      if (this.getFinishedEvent()?.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
-        result = this.data.stage;
-      }
-    }
-    return result;
-  }
-
   isWarning(stageName?: string): boolean {
     let result = false;
     if (this.getFinishedEvent()?.data.result === ResultTypes.WARNING) {
