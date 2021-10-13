@@ -112,7 +112,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 		return
 	}
 
-	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) {
+	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && *event.Source == "lighthouse-service" {
 		if err := smv.updateEvaluationOfSequence(event, state); err != nil {
 			log.Errorf("could not update evaluation of sequence state: %s", err.Error())
 			return
