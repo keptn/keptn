@@ -324,6 +324,69 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
+	projectName := "sequence-queue3"
+
+	stageName := "dev"
+	sequencename := "mysequence"
+
+	numServices := 20
+	numSequencesPerService := 10
+
+	shipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard2)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	for i := 0; i < numServices; i++ {
+		serviceName := fmt.Sprintf("service-%d", i)
+		t.Logf("creating service %s", serviceName)
+		output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+		require.Nil(t, err)
+		require.Contains(t, output, "created successfully")
+	}
+
+	triggerSequence := func(serviceName string, wg *sync.WaitGroup) {
+		_, err := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+		require.Nil(t, err)
+		wg.Done()
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(numServices * numSequencesPerService)
+
+	for i := 0; i < numServices; i++ {
+		for j := 0; j < numSequencesPerService; j++ {
+			serviceName := fmt.Sprintf("service-%d", i)
+			go triggerSequence(serviceName, &wg)
+		}
+	}
+	wg.Wait()
+
+	// after all sequences have been triggered, delete the project
+	_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+
+	require.Nil(t, err)
+
+	// recreate the project again
+	t.Logf("recreating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	// check if there are any open .triggered events for the project
+	openTriggeredEvents := &OpenTriggeredEventsResponse{}
+	resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1") + "?project=" + projectName)
+	require.Nil(t, err)
+
+	err = resp.ToJSON(openTriggeredEvents)
+	require.Nil(t, err)
+
+	require.Empty(t, openTriggeredEvents.Events)
+}
+
 func verifyNumberOfOpenTriggeredEvents(t *testing.T, projectName string, numberOfEvents int) {
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}
 	require.Eventually(t, func() bool {
