@@ -290,7 +290,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	sequenceContexts := []string{}
 	for i := 0; i < numSequences; i++ {
 		contextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
-		t.Logf("triggered sequence %s with contet %s", sequencename, contextID)
+		t.Logf("triggered sequence %s with context %s", sequencename, contextID)
 		sequenceContexts = append(sequenceContexts, contextID)
 		if i == 0 {
 			// after triggering the first sequence, wait a few seconds to make sure this one is the first to be executed
