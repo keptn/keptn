@@ -323,7 +323,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			expectUpdateStateToBeCalled: true,
 			keptnContext:                "my-context",
 			eventType:                   keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
-			eventSource:                 "lighthouse-service",
+			eventSource:                 sequencehooks.SequenceEvaluationService,
 			eventId:                     "my-id",
 			eventData: &keptnv2.EvaluationFinishedEventData{
 				EventData: keptnv2.EventData{
@@ -405,7 +405,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			expectUpdateStateToBeCalled: true,
 			keptnContext:                "my-context",
 			eventType:                   keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-			eventSource:                 "lighthouse-service",
+			eventSource:                 sequencehooks.SequenceEvaluationService,
 			eventId:                     "my-id",
 			eventData: &keptnv2.EventData{
 				Project: "my-project",

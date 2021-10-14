@@ -14,6 +14,7 @@ import (
 
 const eventScopeErrorMessage = "could not determine event scope of event"
 const sequenceStateRetrievalErrorMsg = "could not fetch sequence state for keptnContext %s: %s"
+const SequenceEvaluationService = "lighthouse-service"
 
 type SequenceStateMaterializedView struct {
 	SequenceStateRepo db.SequenceStateRepo
@@ -112,7 +113,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 		return
 	}
 
-	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && *event.Source == "lighthouse-service" {
+	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && *event.Source == SequenceEvaluationService {
 		if err := smv.updateEvaluationOfSequence(event, state); err != nil {
 			log.Errorf("could not update evaluation of sequence state: %s", err.Error())
 			return
