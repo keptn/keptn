@@ -81,7 +81,7 @@
           *ngIf="isWebhookService"
           [(webhook)]="data.webhook"
           [secrets]="data.webhookSecrets"
-          (validityChanged)="isWebhookFormValid = $event"
+          (validityChanged)="webhookFormValidityChanged($event)"
         ></ktb-webhook-settings>
         <div fxLayout="row">
           <button

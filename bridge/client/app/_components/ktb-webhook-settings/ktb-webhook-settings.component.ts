@@ -17,14 +17,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
   private _webhook: WebhookConfig = new WebhookConfig();
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
-    url: new FormControl('', [
-      Validators.required,
-      FormUtils.isUrlValidatorWithVariable,
-      FormUtils.urlSpecialCharsWithVariablesValidator,
-    ]),
+    url: new FormControl('', [Validators.required, FormUtils.isUrlValidator]),
     payload: new FormControl('', []),
     header: new FormArray([]),
-    proxy: new FormControl('', [FormUtils.isUrlValidator, FormUtils.urlSpecialCharsValidator]),
+    proxy: new FormControl('', [FormUtils.isUrlValidator]),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];

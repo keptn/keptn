@@ -25,6 +25,7 @@ import { Secret } from '../models/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 import { SecretScope } from '../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../shared/models/keptn-service';
+import { SequenceState } from '../../shared/models/sequence';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -53,7 +54,7 @@ export class DataService {
     let remediations: Remediation[] = [];
 
     if (includeRemediation) {
-      remediations = await this.getRemediations(projectName);
+      remediations = await this.getOpenRemediations(projectName);
     }
     const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
@@ -199,13 +200,14 @@ export class DataService {
     projectName: string,
     sequenceName: string,
     stageName?: string,
-    keptnContext?: string
+    keptnContext?: string,
+    sequenceState?: SequenceState
   ): Promise<Sequence[]> {
     const response = await this.apiService.getSequences(
       projectName,
       this.MAX_SEQUENCE_PAGE_SIZE,
       sequenceName,
-      undefined,
+      sequenceState,
       undefined,
       undefined,
       keptnContext
@@ -232,8 +234,14 @@ export class DataService {
     return sequences.map((sequence) => Sequence.fromJSON(sequence));
   }
 
-  public async getRemediations(projectName: string): Promise<Remediation[]> {
-    const sequences = await this.getSequences(projectName, SequenceTypes.REMEDIATION);
+  public async getOpenRemediations(projectName: string): Promise<Remediation[]> {
+    const sequences = await this.getSequences(
+      projectName,
+      SequenceTypes.REMEDIATION,
+      undefined,
+      undefined,
+      SequenceState.STARTED
+    );
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
       const stageName = sequence.stages[0]?.name;
