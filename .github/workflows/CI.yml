@@ -38,73 +38,45 @@ env:
 
   API_ARTIFACT: "api"
   API_FOLDER: "api/"
-  API_TEST_FOLDERS: "./handlers/... ./utils/..."
-  API_GO_FLAGS: ""
 
   OS_ROUTE_SVC_ARTIFACT: "openshift-route-service"
   OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
-  OS_ROUTE_SVC_TEST_FOLDERS: "./..."
-  OS_ROUTE_SVC_GO_FLAGS: "-race"
 
   JMETER_SVC_ARTIFACT: "jmeter-service"
   JMETER_SVC_FOLDER: "jmeter-service/"
-  JMETER_SVC_TEST_FOLDERS: "./..."
-  JMETER_SVC_GO_FLAGS: "-race"
 
   HELM_SVC_ARTIFACT: "helm-service"
   HELM_SVC_FOLDER: "helm-service/"
-  HELM_SVC_TEST_FOLDERS: "./..."
-  HELM_SVC_GO_FLAGS: "-race"
 
   APPROVAL_SVC_ARTIFACT: "approval-service"
   APPROVAL_SVC_FOLDER: "approval-service/"
-  APPROVAL_SVC_TEST_FOLDERS: "./..."
-  APPROVAL_SVC_GO_FLAGS: "-race"
 
   DISTRIBUTOR_ARTIFACT: "distributor"
   DISTRIBUTOR_FOLDER: "distributor/"
-  DISTRIBUTOR_TEST_FOLDERS: "./..."
-  DISTRIBUTOR_GO_FLAGS: ""
 
   SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
   SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
-  SHIPYARD_CONTROLLER_TEST_FOLDERS: "./..."
-  SHIPYARD_CONTROLLER_GO_FLAGS: ""
 
   SECRET_SVC_ARTIFACT: "secret-service"
   SECRET_SVC_FOLDER: "secret-service/"
-  SECRET_SVC_TEST_FOLDERS: "./..."
-  SECRET_SVC_GO_FLAGS: ""
 
   CONFIGURATION_SVC_ARTIFACT: "configuration-service"
   CONFIGURATION_SVC_FOLDER: "configuration-service/"
-  CONFIGURATION_SVC_TEST_FOLDERS: "./..."
-  CONFIGURATION_SVC_GO_FLAGS: ""
 
   REMEDIATION_SVC_ARTIFACT: "remediation-service"
   REMEDIATION_SVC_FOLDER: "remediation-service/"
-  REMEDIATION_SVC_TEST_FOLDERS: "./..."
-  REMEDIATION_SVC_GO_FLAGS: "-race"
 
   LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
   LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
-  LIGHTHOUSE_SVC_TEST_FOLDERS: "./..."
-  LIGHTHOUSE_SVC_GO_FLAGS: ""
 
   MONGODB_DS_ARTIFACT: "mongodb-datastore"
   MONGODB_DS_FOLDER: "mongodb-datastore/"
-  MONGODB_DS_TEST_FOLDERS: "./..."
-  MONGODB_DS_GO_FLAGS: "-race"
 
   STATISTICS_SVC_ARTIFACT: "statistics-service"
   STATISTICS_SVC_FOLDER: "statistics-service/"
-  STATISTICS_SVC_TEST_FOLDERS: "./..."
-  STATISTICS_SVC_GO_FLAGS: "-race"
 
   WEBHOOK_SVC_ARTIFACT: "webhook-service"
   WEBHOOK_SVC_FOLDER: "webhook-service/"
-  WEBHOOK_SVC_TEST_FOLDERS: "./..."
-  WEBHOOK_SVC_GO_FLAGS: "-race"
 
 defaults:
   run:
