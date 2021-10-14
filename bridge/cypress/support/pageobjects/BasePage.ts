@@ -69,6 +69,12 @@ class BasePage {
   clickMainHeaderKeptn(): void {
     cy.get('.brand > p').contains('keptn').click();
   }
+
+  chooseProjectFromHeaderMenu(projectName: string): this {
+    cy.get('dt-select[aria-label="Choose project"]').click();
+    cy.get('dt-option[id^="dt-option"]').contains(projectName).click();
+    return this;
+  }
 }
 
 export default BasePage;

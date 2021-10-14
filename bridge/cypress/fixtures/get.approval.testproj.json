@@ -1,0 +1,22 @@
+{
+  "stages": [
+    {
+      "services": [
+        {
+          "lastEventTypes": {},
+          "openRemediations": null,
+          "openApprovals": [],
+          "creationDate": "1629190178019300348",
+          "serviceName": "newService"
+        }
+      ],
+      "stageName": "newproj-quality-gate"
+    }
+  ],
+  "creationDate": "1629211070179837245",
+  "gitRemoteURI": "https://github.com/carpe-github/claus-tenant-dev-testproj.git",
+  "gitUser": "carpe-github-testproj",
+  "projectName": "testproject",
+  "shipyard": "apiVersion: \"spec.keptn.sh/0.2.0\"\nkind: \"Shipyard\"\nmetadata:\n  name: \"shipyard-quality-gates\"\nspec:\n  stages:\n    - name: \"newproj-quality-gate\"",
+  "shipyardVersion": "spec.keptn.sh/0.2.0"
+}

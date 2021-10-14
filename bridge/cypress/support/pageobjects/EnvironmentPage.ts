@@ -1,4 +1,6 @@
 /// <reference types="cypress" />
 
-class EnvironmentPage {}
+class EnvironmentPage {
+  STAGE_HEADER_LOC = 'div > h2';
+}
 export default EnvironmentPage;

@@ -1,10 +1,12 @@
 import 'cypress-file-upload';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-declare namespace Cypress {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface Chainable<Subject> {
-    byTestId<E extends Node = HTMLElement>(id: string): Cypress.Chainable<JQuery<E>>;
+declare global {
+  namespace Cypress {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    interface Chainable<Subject> {
+      byTestId<E extends Node = HTMLElement>(id: string): Cypress.Chainable<JQuery<E>>;
+    }
   }
 }
 

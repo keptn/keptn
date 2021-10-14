@@ -1,6 +1,8 @@
 /// <reference types="cypress" />
 
 class ServicesPage {
+  SERVICE_PANEL_TEXT_LOC = 'dt-info-group-title.dt-info-group-title > div > h2';
+
   clickOnServicePanelByName(serviceName: string): this {
     cy.get('div.dt-info-group-content').get('h2').contains(serviceName).click();
     return this;
