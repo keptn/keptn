@@ -39,6 +39,7 @@
           }
         ],
         "@angular-eslint/no-host-metadata-property": "off",
+        "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/explicit-member-accessibility": [
           "off",
           {
