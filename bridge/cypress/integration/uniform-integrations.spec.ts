@@ -1,8 +1,8 @@
 import { interceptIntegrations } from '../support/intercept';
-import UnifromPage from '../support/pageobjects/UniformPage';
+import UniformPage from '../support/pageobjects/UniformPage';
 
 describe('Integrations', () => {
-  const uniformPage = new UnifromPage();
+  const uniformPage = new UniformPage();
 
   beforeEach(() => {
     interceptIntegrations();

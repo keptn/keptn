@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-class UnifromPage {
+class UniformPage {
   UNIFORM_NAME_LOC = 'span.ng-star-inserted';
   UNIFORM_SUBMENU_LOC = 'uniform-submenu';
   UNIFORM_INTEGRATION_TABLE_LOC = 'keptn-uniform-integrations-table';
@@ -16,4 +16,4 @@ class UnifromPage {
   EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID = 'edit-subscription-field-suffix';
   EDIT_WEBHOOK_FIELD_URL_ID = 'edit-webhook-field-url';
 }
-export default UnifromPage;
+export default UniformPage;
