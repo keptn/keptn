@@ -110,7 +110,10 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 
 		raw := fmt.Sprintf("%s-%s-%s-%s-%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.Subscription.Filter.Project, integration.Subscription.Filter.Stage, integration.Subscription.Filter.Service)
 		hasher := sha1.New() //nolint:gosec
-		hasher.Write([]byte(raw))
+		_, err = hasher.Write([]byte(raw))
+		if err != nil {
+			SetInternalServerErrorResponse(err, c)
+		}
 		hash = hex.EncodeToString(hasher.Sum(nil))
 		integration.ID = hash
 	}

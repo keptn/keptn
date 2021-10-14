@@ -88,7 +88,10 @@ staging        2020-04-06T14:37:45.210Z
 					fmt.Fprintln(w, stage.StageName+"\tn/a")
 				}
 			}
-			w.Flush()
+			err = w.Flush()
+			if err != nil {
+				return errors.New(err.Error())
+			}
 		}
 		return nil
 	},

@@ -136,7 +136,10 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 					fmt.Fprintln(w, project.ProjectName+"\t"+parseCreationDate(project.CreationDate)+"\t"+project.ShipyardVersion)
 				}
 			}
-			w.Flush()
+			err = w.Flush()
+			if err != nil {
+				return errors.New(err.Error())
+			}
 		}
 		return nil
 	},
