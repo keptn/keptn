@@ -17,7 +17,6 @@ import (
 )
 
 var mongoDbVersion = "4.4.9"
-var mongoDbPort = 27017
 
 func TestMain(m *testing.M) {
 	mongoServer, err := setupLocalMongoDB()
@@ -31,8 +30,10 @@ func TestMain(m *testing.M) {
 func setupLocalMongoDB() (*memongo.Server, error) {
 	mongoServer, err := memongo.Start(mongoDbVersion)
 
-	os.Setenv("MONGO_DB_NAME", memongo.RandomDatabase())
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", mongoServer.URIWithRandomDB())
+	randomDbName := memongo.RandomDatabase()
+
+	os.Setenv("MONGO_DB_NAME", randomDbName)
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
 
 	var mongoClient *mongo.Client
 	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
