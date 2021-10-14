@@ -12,6 +12,7 @@ export class FeatureFlagsService {
     this.featureFlags = environment.featureFlags;
   }
 
+  // TODO: remove this, once a feature flag is added
   isExampleFeatureEnabled(): boolean {
     return this.featureFlags.exampleFlag;
   }

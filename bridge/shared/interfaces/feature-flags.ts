@@ -1,3 +1,3 @@
 export interface FeatureFlags {
-  exampleFlag: boolean;
+  exampleFlag: boolean; // TODO: remove this, once a feature flag is added
 }
