@@ -3,10 +3,12 @@ package cespec
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/alecthomas/jsonschema"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"os"
 )
 
 func createDataJSONSchemaSection(md *MarkDown, eventType string, data interface{}) {
@@ -199,7 +201,12 @@ func Generate(outputDir string) {
 
 	file, err := os.Create(outputDir + "/" + "cloudevents.md")
 	check(err)
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Error closing file: %s\n", err)
+		}
+	}()
+
 	file.WriteString(md.String())
 	file.Sync()
 

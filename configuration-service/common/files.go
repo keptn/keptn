@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/base64"
+	"log"
 	"os"
 	"strings"
 )
@@ -38,13 +39,21 @@ func WriteFile(path string, content []byte) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	file, err = os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	// write some text line-by-line to file
 	_, err = file.WriteString(string(content))

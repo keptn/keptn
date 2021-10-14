@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -248,7 +249,11 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 	if err != nil {
 		return err
 	}
-	defer writeToFile.Close()
+	defer func() {
+		if err := writeToFile.Close(); err != nil {
+			log.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	_, err = writeToFile.Write([]byte(resourceContent))
 	if err != nil {
