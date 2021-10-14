@@ -6,6 +6,6 @@ on:
       - "master"
 jobs:
   check:
-    uses: keptn/gh-automation/.github/workflows/dco.yml@main
+    uses: keptn/gh-automation/.github/workflows/dco.yml@v1
 
 
