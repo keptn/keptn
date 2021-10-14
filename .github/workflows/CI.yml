@@ -34,7 +34,7 @@ env:
   WEBHOOK_SVC_ARTIFACT_PREFIX: "WEBHOOK_SVC"
 
   BRIDGE_ARTIFACT: "bridge2"
-  BRIDGE_FOLDER: "bridge/"
+  BRIDGE_FOLDER: "bridge"
 
   API_ARTIFACT: "api"
   API_FOLDER: "api/"
