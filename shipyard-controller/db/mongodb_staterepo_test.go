@@ -29,11 +29,10 @@ func TestMain(m *testing.M) {
 }
 
 func setupLocalMongoDB() (*memongo.Server, error) {
-	os.Setenv("MONGO_DB_NAME", "keptn")
-	os.Setenv("MONGODB_USER", "keptn")
-	os.Setenv("MONGODB_PASSWORD", "password")
 	mongoServer, err := memongo.Start(mongoDbVersion)
-	os.Setenv("MONGODB_HOST", mongoServer.URI())
+
+	os.Setenv("MONGO_DB_NAME", memongo.RandomDatabase())
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", mongoServer.URIWithRandomDB())
 
 	var mongoClient *mongo.Client
 	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
