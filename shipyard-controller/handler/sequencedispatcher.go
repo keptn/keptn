@@ -21,6 +21,7 @@ var errSequenceBlocked = errors.New("sequence is currently blocked")
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
 	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
+	Remove(eventScope models.EventScope) error
 }
 
 type SequenceDispatcher struct {
@@ -69,6 +70,15 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		}
 	}
 	return nil
+}
+
+func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
+	sd.mutex.Lock()
+	defer sd.mutex.Unlock()
+
+	return sd.sequenceQueue.DeleteQueuedSequences(models.QueueItem{
+		Scope: eventScope,
+	})
 }
 
 func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
