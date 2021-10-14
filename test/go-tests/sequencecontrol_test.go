@@ -125,7 +125,7 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func Test_SequenceControl_AbortUnstartedSequence(t *testing.T) {
+func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	projectName := "sequence-abort2"
 	serviceName := "myservice"
 	stageName := "dev"
