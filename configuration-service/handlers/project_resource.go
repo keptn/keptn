@@ -3,6 +3,10 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"net/url"
+	"path/filepath"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -10,8 +14,6 @@ import (
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
-	"io/ioutil"
-	"net/url"
 )
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
@@ -171,6 +173,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project resource not found")})
 	}
 
+	resourcePath = filepath.Clean(resourcePath)
 	dat, err := ioutil.ReadFile(resourcePath)
 	if err != nil {
 		logger.Error(err.Error())

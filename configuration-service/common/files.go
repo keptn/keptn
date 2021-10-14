@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/base64"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -40,6 +41,7 @@ func WriteFile(path string, content []byte) error {
 	}
 	defer file.Close()
 
+	path = filepath.Clean(path)
 	file, err = os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		return err

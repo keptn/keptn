@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"io/ioutil"
@@ -79,6 +80,7 @@ func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error)
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		// password-store not found, read credentials from apiTokenFile
 		apiTokenFile := cm.getLinuxApiTokenFile(namespace)
+		apiTokenFile = filepath.Clean(apiTokenFile)
 		data, err := ioutil.ReadFile(apiTokenFile)
 		if err != nil {
 			return url.URL{}, "", err
