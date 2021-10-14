@@ -8,54 +8,11 @@ export class FormUtils {
     };
   }
 
-  public static isUrlValidator(control: AbstractControl): { url: { pattern?: boolean; special?: boolean } } | null {
-    let result: { url: { pattern: boolean } } | null = null;
-    const value = control.value?.toString();
-    if (value) {
-      if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;=]+$/)) {
-        result = { url: { pattern: true } };
-      }
+  public static isUrlValidator(control: AbstractControl): { url: { value: boolean } } | null {
+    if (control.value && control.value.search(/^http(s?):\/\//) === -1) {
+      return { url: { value: true } };
     }
-    return result;
-  }
-
-  public static isUrlValidatorWithVariable(
-    control: AbstractControl
-  ): { url: { pattern?: boolean; special?: boolean } } | null {
-    let result: { url: { pattern: boolean } } | null = null;
-    const value = control.value?.toString();
-    if (value) {
-      if (!value.match(/^(?:http(s)?:\/\/)?[\w.\-]+(?:\.[\w.\-]+)+[\w\-.~:\/?#\[\]@!$&'()*+,;={}]+$/)) {
-        result = { url: { pattern: true } };
-      }
-    }
-    return result;
-  }
-
-  public static urlSpecialCharsValidator(
-    control: AbstractControl
-  ): { url: { pattern?: boolean; special?: boolean } } | null {
-    let result: { url: { special: boolean } } | null = null;
-    const value = control.value?.toString();
-    if (value) {
-      if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]*$/)) {
-        result = { url: { special: true } };
-      }
-    }
-    return result;
-  }
-
-  public static urlSpecialCharsWithVariablesValidator(
-    control: AbstractControl
-  ): { url: { pattern?: boolean; special?: boolean } } | null {
-    let result: { url: { special: boolean } } | null = null;
-    const value = control.value?.toString();
-    if (value) {
-      if (!value.match(/^[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;={}]*$/)) {
-        result = { url: { special: true } };
-      }
-    }
-    return result;
+    return null;
   }
 
   public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {
