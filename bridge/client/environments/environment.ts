@@ -7,6 +7,7 @@ class Environment extends DynamicEnvironment {
   public production: boolean;
   public appConfigUrl: string;
   public baseUrl: string;
+  public pollingIntervalMillis?: number;
 
   constructor() {
     super();
