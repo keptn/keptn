@@ -1,4 +1,4 @@
-import { Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, HostBinding, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -14,7 +14,7 @@ import { Location } from '@angular/common';
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
 })
-export class KtbServiceViewComponent implements OnInit, OnDestroy {
+export class KtbServiceViewComponent implements OnDestroy {
   @HostBinding('class') cls = 'ktb-service-view';
   private readonly unsubscribe$ = new Subject<void>();
   public project?: Project;
@@ -27,9 +27,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     public location: Location
-  ) {}
-
-  ngOnInit(): void {
+  ) {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
@@ -38,7 +36,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
 
     const project$ = params$.pipe(
       switchMap((params) => this.dataService.getProject(params.projectName)),
-      filter((project: Project | undefined): project is Project => !!project),
+      filter((project: Project | undefined): project is Project => !!project?.projectDetailsLoaded),
       takeUntil(this.unsubscribe$)
     );
 
