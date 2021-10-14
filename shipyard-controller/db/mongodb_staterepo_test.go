@@ -3,14 +3,12 @@ package db_test
 import (
 	"context"
 	"fmt"
-	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
@@ -18,73 +16,36 @@ import (
 	"time"
 )
 
-func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
+var mongoDbVersion = "4.4.9"
+var mongoDbPort = 27017
+
+func TestMain(m *testing.M) {
+	mongoServer, err := setupLocalMongoDB()
+	if err != nil {
+		log.Fatalf("Mongo Server setup failed: %s", err)
+	}
+	defer mongoServer.Stop()
+	m.Run()
+}
+
+func setupLocalMongoDB() (*memongo.Server, error) {
 	os.Setenv("MONGO_DB_NAME", "keptn")
 	os.Setenv("MONGODB_USER", "keptn")
 	os.Setenv("MONGODB_PASSWORD", "password")
+	mongoServer, err := memongo.Start(mongoDbVersion)
+	os.Setenv("MONGODB_HOST", mongoServer.URI())
 
-	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
-	}
 	var mongoClient *mongo.Client
-	// pulls an image, creates a container based on it and runs it
-	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Repository: "docker.io/centos/mongodb-36-centos7",
-		Tag:        "1",
-		Env:        []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password"},
-		PortBindings: map[docker.Port][]docker.PortBinding{
-			"27017/tcp": {{HostPort: "27017"}}, // this makes the container reachable via localhost:27017 instead of always using a random port
-		},
-	}, func(config *docker.HostConfig) {
-		// set AutoRemove to true so that stopped container goes away by itself
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{
-			Name: "no",
-		}
-	})
-
+	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
 	if err != nil {
-		log.Fatalf("Could not start resource: %s", err)
+		return nil, err
+	}
+	err = mongoClient.Connect(context.TODO())
+	if err != nil {
+		return nil, err
 	}
 
-	port := resource.GetPort("27017/tcp")
-	os.Setenv("MONGODB_HOST", "localhost:"+port)
-
-	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
-	if err := pool.Retry(func() error {
-		var err error
-		connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
-		if err != nil {
-			return err
-		}
-		mongoClient, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
-		if err != nil {
-			return err
-		}
-		err = mongoClient.Connect(context.TODO())
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
-	}
-	return pool, resource
-}
-
-func shutDownLocalMongoDB(pool *dockertest.Pool, resource *dockertest.Resource) {
-	if err := pool.Purge(resource); err != nil {
-		log.Fatalf("Could not purge resource: %s", err)
-	}
-}
-
-func TestMain(m *testing.M) {
-	pool, dbResource := setupLocalMongoDB()
-	code := m.Run()
-	shutDownLocalMongoDB(pool, dbResource)
-	os.Exit(code)
+	return mongoServer, err
 }
 
 func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
