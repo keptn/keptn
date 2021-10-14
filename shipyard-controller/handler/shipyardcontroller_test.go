@@ -2494,7 +2494,6 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	}
 
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
-
 	sequenceDispatcherMock.RemoveFunc = func(eventScope models.EventScope) error {
 		return nil
 	}
@@ -2544,7 +2543,6 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	}
 
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
-
 	sequenceDispatcherMock.RemoveFunc = func(eventScope models.EventScope) error {
 		return errors.New("oops")
 	}
