@@ -66,9 +66,16 @@ describe('KtbWebhookSettingsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should be invalid URL', () => {
+  it('should be invalid URL when not starting with http(s)://', () => {
     const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
-    const urls = ['', '://keptn.sh', 'keptnsh', 'keptn@sh.sh', 'keptn:sh'];
+    const urls = [
+      '://keptn.sh',
+      'www.keptn.sh',
+      'http:/www.keptn.sh',
+      'http//www.keptn.sh',
+      'htp://www.keptn.sh',
+      'ftp://www.keptn.sh',
+    ];
 
     for (const url of urls) {
       urlControl.setValue(url);
@@ -76,16 +83,15 @@ describe('KtbWebhookSettingsComponent', () => {
     }
   });
 
-  it('should be valid URL', () => {
+  it('should be valid URL when it starts with http(s)://', () => {
     const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
     const urls = [
       'https://keptn.sh',
       'http://keptn.sh',
       'http://www.keptn.sh',
-      'keptn.sh',
-      'keptn.sh/#id',
-      'keptn.sh/sh/',
-      'www.keptn.sh',
+      'http://my-jenkins-servcer.default.svc.cluster.local:8080/job/nodejs example app/build?token=',
+      'http://my-jenkins-servcer.default.svc.cluster.local:8080/job/nodejs%20example%20app/build?token=',
+      'http://my-jenkins-servcer.com/job/nodejs example app/build?token=',
     ];
 
     for (const url of urls) {
@@ -196,7 +202,7 @@ describe('KtbWebhookSettingsComponent', () => {
     const methodControl = component.getFormControl('method');
 
     // when
-    urlControl.setValue('keptn.sh');
+    urlControl.setValue('https://keptn.sh');
     methodControl.setValue('POST');
     expect(component.webhookConfigForm.valid).toEqual(true);
   });
