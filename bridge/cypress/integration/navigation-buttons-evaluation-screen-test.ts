@@ -68,12 +68,6 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
     cy.visit('/');
     basePage.clickProjectTile('dynatrace');
 
-    for (let i = 0; i < 50; i++) {
-      basePage.goToServicesPage().clickOnServicePanelByName('items').clickOnServiceInnerPanelByName('items');
-      basePage.gotoSettingsPage();
-      cy.log('i =' + i);
-    }
-
     basePage
       .goToServicesPage()
       .clickOnServicePanelByName('items')
