@@ -6,14 +6,9 @@ import { FeatureFlags } from '../../../shared/interfaces/feature-flags';
   providedIn: 'root',
 })
 export class FeatureFlagsService {
-  private featureFlags: FeatureFlags;
+  public featureFlags: FeatureFlags;
 
   constructor() {
     this.featureFlags = environment.featureFlags;
-  }
-
-  // TODO: remove this, once a feature flag is added
-  isExampleFeatureEnabled(): boolean {
-    return this.featureFlags.exampleFlag;
   }
 }
