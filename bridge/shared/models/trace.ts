@@ -106,6 +106,7 @@ export class Trace {
   type!: EventTypes | string;
   time?: Date;
   data!: TraceData;
+  isShipyardEvent?: boolean;
 
   public getShortImageName(): string | undefined {
     let image;

@@ -32,7 +32,8 @@ class Trace extends tc {
       return data;
     }
 
-    const plainEvent = JSON.parse(JSON.stringify(data));
+    // remove isShipyardEvent property to hide from payload
+    const { isShipyardEvent, ...plainEvent } = JSON.parse(JSON.stringify(data));
     const trace: Trace = Object.assign(new this(), data, { plainEvent });
 
     if (trace.data?.evaluationHistory?.length) {
@@ -110,7 +111,8 @@ class Trace extends tc {
 
   isFaulty(stageName?: string): boolean {
     let result = false;
-    if (this.data) {
+    // Property isShipyardEvent can be undefined, that we ignore it and test isFaulty
+    if (this.data && this.isShipyardEvent !== false) {
       if (
         this.isFailed() ||
         (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
