@@ -3,9 +3,11 @@ package event_handler
 import (
 	"encoding/json"
 	"errors"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -15,9 +17,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/stretchr/testify/assert"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
@@ -3208,6 +3207,48 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "error reading SLO file",
+			fields: fields{
+				Event: incomingEvent,
+				EventStore: &event_handler_mock.EventStoreMock{GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+					return []*models.KeptnContextExtendedCE{
+						{
+							Contenttype:        "",
+							Data:               keptnv2.EvaluationTriggeredEventData{},
+							ID:                 "my-id",
+							Shkeptncontext:     "my-context",
+							Shkeptnspecversion: "0.2.0",
+							Source:             stringp("my-source"),
+							Specversion:        "1.0",
+							Triggeredid:        "my-triggered-id",
+							Type:               stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+						},
+					}, nil
+				},
+				},
+				KeptnHandler: keptn,
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+						return nil, errors.New("Could not check out branch containing stage config")
+					}},
+					ServiceHandler: &event_handler_mock.ServiceHandlerMock{GetServiceFunc: func(project string, stage string, service string) (*models.Service, error) {
+						return &models.Service{}, nil
+					}},
+				},
+			},
+			wantErr: false,
+			wantEvents: []keptnv2.EvaluationFinishedEventData{
+				{
+					EventData: keptnv2.EventData{
+						Status:  keptnv2.StatusErrored,
+						Result:  keptnv2.ResultFailed,
+						Message: "could not checkout the SLO",
+					},
+					Evaluation: keptnv2.EvaluationDetails{},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -3233,7 +3274,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 
 					return true
 				},
-				time.Second*20, time.Second*1,
+				time.Second*30, time.Second*1,
 			)
 
 			// evaluate which events have been sent
