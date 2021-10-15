@@ -3155,6 +3155,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 	keptn, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
 		EventSender: &keptnfake.EventSender{},
 	})
+
 	type fields struct {
 		Event            cloudevents.Event
 		HTTPClient       *http.Client
@@ -3271,10 +3272,11 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 					if len(sender.SentEvents) != len(tt.wantEvents) {
 						return false
 					}
-
+					//recycling sender for the next test
+					sender.SentEvents = nil
 					return true
 				},
-				time.Second*30, time.Second*1,
+				time.Second*3, time.Second*1,
 			)
 
 			// evaluate which events have been sent
