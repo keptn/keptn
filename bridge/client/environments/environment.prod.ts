@@ -7,8 +7,7 @@ class Environment extends DynamicEnvironment {
     this.appConfigUrl = 'assets/branding/app-config.json';
     this.baseUrl = '/bridge';
 
-    this.featureFlags = {
-    };
+    this.featureFlags = {};
   }
 }
 

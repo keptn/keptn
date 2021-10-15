@@ -27,8 +27,7 @@ export class DynamicEnvironment {
     this.production = false;
     this.appConfigUrl = 'assets/default-branding/app-config.json';
     this.baseUrl = '/';
-    this.featureFlags = {
-    };
+    this.featureFlags = {};
   }
 
   public get config(): WindowConfig {
