@@ -391,6 +391,22 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
+	eventRepo.DeleteEventCollectionsFunc = func(project string) error {
+		return nil
+	}
+
+	taskSequenceRepo.DeleteTaskSequenceCollectionFunc = func(project string) error {
+		return nil
+	}
+
+	sequenceQueueRepo.DeleteQueuedSequencesFunc = func(itemFilter models.QueueItem) error {
+		return nil
+	}
+
+	eventQueueRepo.DeleteQueuedEventsFunc = func(scope models.EventScope) error {
+		return nil
+	}
+
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &operations.CreateProjectParams{
 		GitRemoteURL: "git-url",
