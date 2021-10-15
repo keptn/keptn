@@ -67,7 +67,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 
 	// check if the incoming event was a task.triggered event, and if the 'sendFinished'  property of the webhook was set to true
 	// only in this case, the result should be sent back to Keptn in the form of a .finished event
-	if keptnv2.IsTaskEventType(*event.Type) && webhook.SendFinished {
+	if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && webhook.SendFinished {
 		taskName, _, err := keptnv2.ParseTaskEventType(*event.Type)
 		if err != nil {
 			return nil, sdkError(fmt.Sprintf("could not derive task name from event type %s", *event.Type), err)
@@ -148,6 +148,10 @@ func (th *TaskHandler) sendFinishedEvent(keptnHandler sdk.IKeptn, event sdk.Kept
 }
 
 func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, webhook *lib.Webhook) *sdk.Error {
+	// only send .started events for <task>.triggered events
+	if !keptnv2.IsTaskEventType(*event.Type) || !keptnv2.IsTriggeredEventType(*event.Type) {
+		return nil
+	}
 	// check if 'sendFinished' is set to true
 	if webhook.SendFinished {
 		// if sendFinished is set, we only need to send one started event
