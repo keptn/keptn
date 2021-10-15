@@ -1,3 +1,3 @@
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FeatureFlags {
-  exampleFlag: boolean; // TODO: remove this, once a feature flag is added
 }
