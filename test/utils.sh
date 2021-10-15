@@ -65,7 +65,7 @@ function get_event() {
   event_type=$1
   keptn_context_id=$2
   project=$3
-  keptn get event "$event_type" --keptn-context="${keptn_context_id}" --project="$project"
+  keptn get event "$event_type" --keptn-context="${keptn_context_id}" --project="$project" --quiet
 }
 
 function get_event_with_retry() {
@@ -76,7 +76,7 @@ function get_event_with_retry() {
   RETRY=0; RETRY_MAX=50;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    response=$(keptn get event "$event_type" --keptn-context="${keptn_context_id}" --project="$project")
+    response=$(keptn get event "$event_type" --keptn-context="${keptn_context_id}" --project="$project" --quiet)
 
     if [[ "$response" == "No event returned" ]]; then
       RETRY=$((RETRY+1))
