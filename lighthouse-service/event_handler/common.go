@@ -78,7 +78,7 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service string) (*keptn.Serv
 				return nil, ErrServiceNotFound
 			}
 		} else {
-			if strings.Contains(strings.ToLower(err.Error()), "could not check out branch") {
+			if strings.Contains(strings.ToLower(err.Error()), "could not check out ") {
 				return nil, ErrConfigService
 			}
 			return nil, ErrSLOFileNotFound
