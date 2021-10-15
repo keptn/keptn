@@ -32,6 +32,36 @@ spec:
       requests:
         - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
 
+const webHookContentWithStartedEvent = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.started"
+      subscriptionID: "my-subscription-id"
+      sendFinished: true
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+
+const webHookContentWithFinishedEvent = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.finished"
+      subscriptionID: "my-subscription-id"
+      sendFinished: true
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+
 const webHookContentWithMultipleRequests = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
@@ -146,6 +176,72 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
 	assert.Equal(t, keptnv2.ResultPass, eventData.Result)
+}
+
+func Test_HandleIncomingStartedEvent(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "success", nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithStartedEvent})
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
+
+	require.Len(t, curlExecutorMock.CurlCalls(), 1)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+
+	//verify sent events
+	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
+}
+
+func Test_HandleIncomingFinishedEvent(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "success", nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithFinishedEvent})
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
+
+	require.Len(t, curlExecutorMock.CurlCalls(), 1)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+
+	//verify sent events
+	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
 }
 
 func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
