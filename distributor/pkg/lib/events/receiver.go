@@ -124,7 +124,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 }
 
 func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.EventSubscription, keptnEvent models.KeptnContextExtendedCE, err error) error {
-	for _, subscription := range subscriptions {
+	for i, subscription := range subscriptions {
 		// check if the event with the given ID has already been sent for the subscription
 		if n.ceCache.Contains(subscription.Event, keptnEvent.ID+"-"+subscription.ID) {
 			// Skip this event as it has already been sent
@@ -148,7 +148,7 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 			logger.WithError(err).Error("Unable to add additional information about subscriptions to event")
 		}
 		// forward keptn event
-		err = n.sendEvent(keptnEvent, &subscription)
+		err = n.sendEvent(keptnEvent, &subscriptions[i])
 		if err != nil {
 			logger.Errorf("Could not send CloudEvent: %v", err)
 		}
