@@ -42,6 +42,9 @@ var ErrStageNotFound = errors.New("stage not found")
 // ErrServiceNotFound godoc
 var ErrServiceNotFound = errors.New("service not found")
 
+// ErrServiceNotFound godoc
+var ErrConfigService = errors.New("could not checkout the SLO")
+
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
 type ResourceHandler interface {
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
@@ -75,6 +78,9 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service string) (*keptn.Serv
 				return nil, ErrServiceNotFound
 			}
 		} else {
+			if strings.Contains(strings.ToLower(err.Error()), "Could not check out branch containing stage config") {
+				return nil, ErrConfigService
+			}
 			return nil, ErrSLOFileNotFound
 		}
 	}
