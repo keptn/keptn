@@ -8,7 +8,6 @@ class Environment extends DynamicEnvironment {
     this.baseUrl = '/bridge';
 
     this.featureFlags = {
-      exampleFlag: false,
     };
   }
 }

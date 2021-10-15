@@ -5,7 +5,6 @@ class Environment extends DynamicEnvironment {
     super();
     this.pollingIntervalMillis = 0;
     this.featureFlags = {
-      exampleFlag: false,
     };
   }
 }

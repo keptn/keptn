@@ -4,7 +4,6 @@ class Environment extends DynamicEnvironment {
   constructor() {
     super();
     this.featureFlags = {
-      exampleFlag: true,
     };
   }
 }

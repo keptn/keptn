@@ -28,7 +28,6 @@ export class DynamicEnvironment {
     this.appConfigUrl = 'assets/default-branding/app-config.json';
     this.baseUrl = '/';
     this.featureFlags = {
-      exampleFlag: true,
     };
   }
 
