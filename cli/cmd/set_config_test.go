@@ -18,7 +18,7 @@ func init() {
 
 func TestSetCmdRunError(t *testing.T) {
 
-	configMng = config.NewCLIConfigManager()
+	configMng = config.NewCLIConfigManager("")
 	err := setConfigCmd.RunE(nil, []string{"automaticversionchek", "true"})
 	assert.Equal(t, err.Error(), "Unsupported key automaticversionchek", "Wrong error")
 }
@@ -27,7 +27,7 @@ const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-0
 
 func TestSetAutomaticVersionCheckFalse(t *testing.T) {
 
-	configMng = config.NewCLIConfigManager()
+	configMng = config.NewCLIConfigManager("")
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		t.Errorf("Unexpected error %v", err)

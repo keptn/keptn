@@ -151,7 +151,7 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 
 // initChecks needs to be run when credentialManager is called or initialized
 func initChecks(autoApplyNewContext bool, cm CredentialManagerInterface) {
-	cliConfigManager := config.NewCLIConfigManager()
+	cliConfigManager := config.NewCLIConfigManager("")
 	cliConfig, err := cliConfigManager.LoadCLIConfig()
 	if err != nil {
 		log.Fatal(err)
