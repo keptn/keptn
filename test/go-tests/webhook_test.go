@@ -260,6 +260,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
+	taskName := "mytask"
 
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
@@ -288,7 +289,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 	// create subscriptions for the webhook-service
 	webhookYamlWithSubscriptionIDs := webhookWithOverlappingSubscriptionsYaml
 	subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
-		Event: keptnv2.GetTriggeredEventType("mytask"),
+		Event: keptnv2.GetTriggeredEventType(taskName),
 		Filter: models.EventSubscriptionFilter{
 			Projects: []string{projectName},
 			Stages:   []string{stageName},
@@ -300,7 +301,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 
 	// create a second subscription that overlaps with the previously created one
 	subscriptionID2, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
-		Event: keptnv2.GetTriggeredEventType("mytask"),
+		Event: keptnv2.GetTriggeredEventType(taskName),
 		Filter: models.EventSubscriptionFilter{
 			Projects: []string{projectName},
 			Stages:   []string{stageName, "otherstage"},
@@ -313,7 +314,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 	// wait some time to make sure the webhook service has pulled the updated subscription
 	<-time.After(20 * time.Second) // sorry :(
 
-	// now, let's add an webhook.yaml file to our service
+	// now, let's add a webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
 	defer os.Remove(webhookFilePath)
@@ -323,32 +324,18 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 
 	require.Nil(t, err)
 
-	triggerSequenceAndVerifyTaskFinishedEvent := func(sequencename, taskFinishedType string, verify func(t *testing.T, decodedEvent map[string]interface{})) {
-		t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
-		keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
-		var taskFinishedEvent *models.KeptnContextExtendedCE
-		require.Eventually(t, func() bool {
-			taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(taskFinishedType))
-			if err != nil || taskFinishedEvent == nil {
-				return false
-			}
-			return true
-		}, 30*time.Second, 3*time.Second)
+	var taskFinishedEvent []*models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskFinishedEvent, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(taskName))
+		if err != nil || taskFinishedEvent == nil || len(taskFinishedEvent) != 2 {
+			return false
+		}
+		return true
+	}, 30*time.Second, 3*time.Second)
 
-		require.NotNil(t, taskFinishedEvent)
-
-		decodedEvent := map[string]interface{}{}
-
-		err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
-		require.Nil(t, err)
-
-		verify(t, decodedEvent)
-	}
-
-	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "mytask", func(t *testing.T, decodedEvent map[string]interface{}) {
-		require.NotNil(t, decodedEvent["mytask"])
-	})
 }
 
 func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {

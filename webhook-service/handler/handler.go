@@ -173,7 +173,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), req)
 		if err != nil {
-			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s'", req), lib.WithNrOfExecutedRequests(executedRequests))
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s' : %s", req, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// perform the request
 		response, err := th.curlExecutor.Curl(parsedCurlCommand)
