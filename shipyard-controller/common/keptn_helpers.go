@@ -3,6 +3,11 @@ package common
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/Masterminds/semver/v3"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -10,10 +15,6 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"gopkg.in/yaml.v3"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 const defaultKeptnNamespace = "keptn"
@@ -88,10 +89,10 @@ func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 // ValidateShipyardStages godoc
 func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 	
-	number_of_stages := len(shipyard.Spec.Stages)
+	numberOfStages := len(shipyard.Spec.Stages)
 	
 	// A shipyard must have at least one stage
-	if number_of_stages == 0 {
+	if numberOfStages == 0 {
         	errorMsg := "Shipyard must contain stages.\n"
 		errorMsg += "Please update shipyard file with stages and try again."
 		return errors.New(errorMsg)
