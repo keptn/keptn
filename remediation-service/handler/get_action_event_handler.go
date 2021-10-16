@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+
 	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
@@ -41,7 +42,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 	// determine next action
 	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.ActionIndex)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "No more actions defined for problem type " + getActionTriggeredData.Problem.RootCause + " in remediation.yaml file."}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "No more actions defined for problem type " + getActionTriggeredData.Problem.ProblemTitle + " " + getActionTriggeredData.Problem.RootCause + " in remediation.yaml file."}
 	}
 
 	finishedEventData := keptnv2.GetActionFinishedEventData{
