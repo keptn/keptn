@@ -110,7 +110,7 @@ func getDeploymentName(strategy keptnevents.DeploymentStrategy, generatedChart b
 	} else if strategy == keptnevents.Direct {
 		return "direct"
 	} else if strategy == keptnevents.UserManaged {
-		return "user-managed"
+		return "user_managed"
 	}
 	return ""
 }
