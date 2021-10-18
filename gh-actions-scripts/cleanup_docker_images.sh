@@ -126,10 +126,10 @@ function delete_tag() {
 
   echo -ne "Deleting ${REPO}:${TAG}"
 
-  curl -I \
+  image_digest=$(curl -I \
       -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
       -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-      "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${TAG}"
+      "https://hub.docker.com/v2/$DOCKER_ORG/api/manifests/0.9.3-dev.202110040932")
 
   exit 2
 
