@@ -88,7 +88,7 @@ func initConfig() {
 		cfgMgr.CLIConfigPath = cfgFile
 	}
 
-	logging.PrintLog(fmt.Sprintf("Using config file: %s", cfgMgr.CLIConfigPath), logging.InfoLevel)
+	logging.PrintLog(fmt.Sprintf("Using config file: %s", cfgMgr.CLIConfigPath), logging.VerboseLevel)
 
 	var err error
 	rootCLIConfig, err = cfgMgr.LoadCLIConfig()
