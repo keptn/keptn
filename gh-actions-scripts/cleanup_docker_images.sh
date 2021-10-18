@@ -56,9 +56,9 @@ fi
 # Authenticate against DockerHub API
 
 # shellcheck disable=SC2086
-DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+DOCKER_HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
-if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
+if [[ "$DOCKER_HUB_TOKEN" == "null" ]]; then
   echo "Failed to authenticate on DockerHub API."
   exit 1
 fi
@@ -71,12 +71,12 @@ function get_outdated_commit_hash_tags() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?page_size=1" | jq -r '.count')
   # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   echo >&2 "Found $COUNT tags for $REPO without filter"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?ordering=-last_updated&page_size=${COUNT}" |
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?ordering=-last_updated&page_size=${COUNT}" |
     jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("\\b[0-9a-f]{7}\\b"))|.name')
   echo "$response"
 }
@@ -90,12 +90,12 @@ function get_outdated_datetime_tags() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
   # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   echo >&2 "Found $COUNT tags for $REPO (filter $TAG_FILTER)"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" |
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" |
     jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("^\\b[0-9]{8}\\b"))|.name')
   echo "$response"
 }
@@ -110,12 +110,12 @@ function get_outdated_images() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
   # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   echo >&2 "Found $COUNT tags for $REPO (filter $TAG_FILTER)"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
   echo "$response"
 }
 
@@ -123,28 +123,19 @@ function get_outdated_images() {
 function delete_tag() {
   REPO=$1
   TAG=$2
+  DOCKER_REGISTRY_TOKEN=$3
+
+  echo -e "Fetching image manifest for ${REPO}:${TAG}"
+
+  image_digest=$(curl -s -I \
+      -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+      "https://index.docker.io/v2/${DOCKER_ORG}/${REPO}/manifests/${TAG}" \
+    | awk '$1 == "docker-content-digest:" { print $2 }' \
+    | tr -d $'\r' \
+  )
 
   echo -e "Deleting ${REPO}:${TAG}"
-
-  NEW_DOCKER_API_TOKEN=$(curl -H "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:keptn/api:pull" | jq -r .token)
-
-  echo "I got a new token and will use it now..."
-
-  image_digest=$(curl -I \
-      -H "Authorization: Bearer ${NEW_DOCKER_API_TOKEN}" \
-      -H "Accept: application/json" \
-      "https://registry.docker.io/v2/keptn/api/manifests/0.9.3-dev.202110040932")
-  echo "Image Digest that will be deleted: ${image_digest}"
-
-  exit 2
-
-  curl -H "Authorization: JWT ${DOCKER_API_TOKEN}" -X DELETE "https://registry-1.docker.io/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}"
-
-#  response=$(curl -s -o /dev/null -i -X DELETE \
-#    -w "%{http_code}" \
-#    -H "Accept: application/json" \
-#    -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
-#    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/")
+  response=$(curl -s -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" -X DELETE "https://registry-1.docker.io/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}")
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"
@@ -154,61 +145,63 @@ function delete_tag() {
   fi
 }
 
-for s in "${IMAGES[@]}"; do
-  echo "Deleting outdated images for service ${s}"
+for service in "${IMAGES[@]}"; do
+  echo "Deleting outdated images for service ${service}"
 
   # get all outdated commit hash tags
-  outdated_commit_hash_tags=$(get_outdated_commit_hash_tags "$s" "$MAX_AGE")
+  outdated_commit_hash_tags=$(get_outdated_commit_hash_tags "$service" "$MAX_AGE")
 
-  outdated_datetime_tags=$(get_outdated_datetime_tags "$s" "2020" "$MAX_AGE")
+  outdated_datetime_tags=$(get_outdated_datetime_tags "$service" "2020" "$MAX_AGE")
 
   # get all outdated tag where tag contains "dev-PR"
-  # outdated_dev_pr_tags=$(get_outdated_images "$s" "dev-PR" "$MAX_AGE")
+  # outdated_dev_pr_tags=$(get_outdated_images "$service" "dev-PR" "$MAX_AGE")
 
   # ToDo: Also Check for "x.y.z-dev.20" tags (e.g., 0.8.0-dev.20210101)
-  # outdated_dev_tags=$(get_outdated_images "$s" "dev.20" "$MAX_AGE")
+  # outdated_dev_tags=$(get_outdated_images "$service" "dev.20" "$MAX_AGE")
 
   # get all outdated tag where tag contains "feature"
-  outdated_feature_tags=$(get_outdated_images "$s" "feature" "$MAX_AGE")
+  outdated_feature_tags=$(get_outdated_images "$service" "feature" "$MAX_AGE")
   # get all outdated tag where tag contains "bug"
-  outdated_bug_tags=$(get_outdated_images "$s" "bug" "$MAX_AGE")
+  outdated_bug_tags=$(get_outdated_images "$service" "bug" "$MAX_AGE")
   # get all outdated tag where tag contains "patch"
-  outdated_patch_tags=$(get_outdated_images "$s" "patch" "$MAX_AGE")
+  outdated_patch_tags=$(get_outdated_images "$service" "patch" "$MAX_AGE")
 
   # get all outdated tag where tag contains "dirty"
-  outdated_dirty_tags=$(get_outdated_images "$s" "dirty" "$MAX_AGE")
+  outdated_dirty_tags=$(get_outdated_images "$service" "dirty" "$MAX_AGE")
+
+  docker_registry_token=$(curl -s -H "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${DOCKER_ORG}/${service}:pull,push" | jq -r .token)
 
   for tag in ${outdated_commit_hash_tags}; do
-    delete_tag "$s" "$tag"
+    delete_tag "$service" "$tag" "$docker_registry_token"
   done
 
   for tag in ${outdated_datetime_tags}; do
-    delete_tag "$s" "$tag"
+    delete_tag "$service" "$tag" "$docker_registry_token"
   done
 
   # variable definitions commented out above
 
   # for tag in ${outdated_dev_pr_tags}; do
-  #   echo "dummy" "$s" "$tag"
+  #   echo "dummy" "$service" "$tag"
   # done
 
   # for tag in ${outdated_dev_tags}; do
-  #   echo "dummy" "$s" "$tag"
+  #   echo "dummy" "$service" "$tag"
   # done
 
   for tag in ${outdated_feature_tags}; do
-    delete_tag "$s" "$tag"
+    delete_tag "$service" "$tag" "$docker_registry_token"
   done
 
   for tag in ${outdated_bug_tags}; do
-    delete_tag "$s" "$tag"
+    delete_tag "$service" "$tag" "$docker_registry_token"
   done
 
   for tag in ${outdated_patch_tags}; do
-    delete_tag "$s" "$tag"
+    delete_tag "$service" "$tag" "$docker_registry_token"
   done
 
   for tag in ${outdated_dirty_tags}; do
-    delete_tag "$s" "$tag"
+    delete_tag "$service" "$tag" "$docker_registry_token"
   done
 done
