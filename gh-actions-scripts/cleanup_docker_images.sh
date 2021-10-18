@@ -124,9 +124,11 @@ function delete_tag() {
   REPO=$1
   TAG=$2
 
-  echo -ne "Deleting ${REPO}:${TAG}"
+  echo -e "Deleting ${REPO}:${TAG}"
 
   NEW_DOCKER_API_TOKEN=$(curl "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:keptn/api:pull" | jq -r .token)
+
+  echo "I got a new token and will use it now..."
 
   image_digest=$(curl -I \
       -H "Authorization: Bearer ${NEW_DOCKER_API_TOKEN}" \
