@@ -97,19 +97,20 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		}
 		logger.Infof("Check if event %s has already been sent", event.ID)
 
-		if p.ceCache.Contains(subscription.Event, event.ID) {
+		cacheID := event.ID + "-" + subscription.ID
+		if p.ceCache.Contains(subscription.Event, cacheID) {
 			// Skip this event as it has already been sent
-			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
+			logger.Infof("CloudEvent with ID %s has already been sent for subscription %s", event.ID, subscription.ID)
 			continue
 		}
 		logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
 		// add to CloudEvents cache
-		p.ceCache.Add(*event.Type, event.ID)
+		p.ceCache.Add(*event.Type, cacheID)
 		go func() {
 			if err := p.sendEvent(event, subscription); err != nil {
 				logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
 				// Sending failed, remove from CloudEvents cache
-				p.ceCache.Remove(*event.Type, event.ID)
+				p.ceCache.Remove(*event.Type, cacheID)
 			}
 			logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", subscription.Event, p.ceCache.Length(subscription.Event))
 		}()
