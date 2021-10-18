@@ -519,10 +519,6 @@ jobs:
         if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
-        with:
-          key: docker-build-cache-${{ github.workflow }}-{hash}
-          restore-keys: |
-            docker-build-cache-${{ github.workflow }}
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
