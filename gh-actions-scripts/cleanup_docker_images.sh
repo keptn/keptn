@@ -124,21 +124,22 @@ function delete_tag() {
   REPO=$1
   TAG=$2
 
-  # shellcheck disable=SC2034
-  response_test=$(curl -s -i \
-    -w "%{http_code}" \
-    -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-    -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
-    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/" | awk '$1 == "Docker-Content-Digest:" { print $2 }' | tr -d $'\r')
-  echo "$response_test"
-
   echo -ne "Deleting ${REPO}:${TAG}"
 
-  response=$(curl -s -o /dev/null -i -X DELETE \
-    -w "%{http_code}" \
-    -H "Accept: application/json" \
-    -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
-    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/")
+  curl -H "Authorization: JWT ${DOCKER_API_TOKEN}" -X DELETE "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$(
+      curl -I \
+          -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
+          -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+          "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${TAG}" \
+      | awk '$1 == "docker-content-digest:" { print $2 }' \
+      | tr -d $'\r' \
+  )"
+
+#  response=$(curl -s -o /dev/null -i -X DELETE \
+#    -w "%{http_code}" \
+#    -H "Accept: application/json" \
+#    -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
+#    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/")
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"
