@@ -440,6 +440,11 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
+      - name: Update go-test dependencies
+        id: update_go_test_dependencies
+        continue-on-error: true
+        run: cd test/go-tests && go get ./...
+
       - name: Test Airgapped Images
         id: test_airgapped_images
         if: env.RUN_AIRGAPPED_TEST == 'true'
@@ -465,7 +470,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go get ./... && go test -run UniformRegistration -v
+        run: cd test/go-tests && go test -run UniformRegistration -v
 
       - name: Test Log Ingestion
         # do not run this test for the airgapped scenario
