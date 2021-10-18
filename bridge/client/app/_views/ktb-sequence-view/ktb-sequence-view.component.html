@@ -25,8 +25,22 @@
               >.
             </p>
           </div>
-
+          <div
+            fxLayout="row"
+            fxLayoutAlign="start"
+            uitestid="keptn-noSequences"
+            *ngIf="getFilteredSequences(project.sequences).length === 0 && project.sequences?.length !== 0"
+          >
+            <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
+            <p class="m-0 ml-2">
+              No sequences triggered yet that match your filter criteria.<br />Follow the instructions to
+              <a [href]="'/reference/cli/commands/keptn_trigger/' | keptnUrl" target="_blank" rel="noopener noreferrer"
+                >trigger a sequence</a
+              >.
+            </p>
+          </div>
           <ktb-root-events-list
+            *ngIf="getFilteredSequences(project.sequences).length !== 0"
             uitestid="keptn-sequence-view-roots"
             [events]="getFilteredSequences(project.sequences)"
             [selectedEvent]="currentSequence"
