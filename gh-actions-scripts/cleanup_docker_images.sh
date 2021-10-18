@@ -170,7 +170,7 @@ for service in "${IMAGES[@]}"; do
   # get all outdated tag where tag contains "dirty"
   outdated_dirty_tags=$(get_outdated_images "$service" "dirty" "$MAX_AGE")
 
-  docker_registry_token=$(curl -s -H "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${DOCKER_ORG}/${service}:delete" | jq -r .token)
+  docker_registry_token=$(curl -s -H "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${DOCKER_ORG}/${service}:pull,delete" | jq -r .token)
 
   for tag in ${outdated_commit_hash_tags}; do
     delete_tag "$service" "$tag" "$docker_registry_token"
