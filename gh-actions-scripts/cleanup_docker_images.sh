@@ -140,6 +140,7 @@ function delete_tag() {
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"
+    exit 1
   else
     echo " - Done!"
   fi
