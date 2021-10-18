@@ -116,8 +116,6 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 	require.Nil(t, err)
 	defer os.Remove(sequenceStateShipyardFilePath)
 
-	source := "golang-test"
-
 	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
@@ -134,36 +132,10 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 	}()
 	require.Nil(t, err)
 
-	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
-
 	// trigger the task sequence
 	t.Log("starting task sequence")
-	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
-		Contenttype: "application/json",
-		Data: keptnv2.DeploymentTriggeredEventData{
-			EventData: keptnv2.EventData{
-				Project: projectName,
-				Stage:   "dev",
-				Service: serviceName,
-			},
-		},
-		ID:                 uuid.NewString(),
-		Shkeptnspecversion: KeptnSpecVersion,
-		Source:             &source,
-		Specversion:        "1.0",
-		Type:               &eventType,
-	})
-
 	keptnContextID, err := TriggerSequence(projectName, serviceName, "dev", "delivery", nil)
 	require.Nil(t, err)
-	body := resp.String()
-	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
-	require.NotEmpty(t, body)
-
-	context := &models.EventContext{}
-	err = resp.ToJSON(context)
-	require.Nil(t, err)
-	require.NotNil(t, context.KeptnContext)
 
 	// wait a minute and make verify that the sequence has not been timed out
 	<-time.After(30 * time.Second)
