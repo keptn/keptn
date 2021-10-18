@@ -126,10 +126,12 @@ function delete_tag() {
 
   echo -ne "Deleting ${REPO}:${TAG}"
 
+  NEW_DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:keptn/api:pull" | jq -r .token)
+
   image_digest=$(curl -I \
-      -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
+      -H "Authorization: JWT ${NEW_DOCKER_API_TOKEN}" \
       -H "Accept: application/json" \
-      "https://index.docker.io/v2/keptn/api/manifests/0.9.3-dev.202110040932")
+      "https://registry.docker.io/v2/keptn/api/manifests/0.9.3-dev.202110040932")
   echo "Image Digest that will be deleted: ${image_digest}"
 
   exit 2
