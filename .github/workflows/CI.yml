@@ -277,7 +277,7 @@ jobs:
 
       - name: Report test coverage for ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: codecov/codecov-actions@v2
+        uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
           verbose: true
@@ -309,7 +309,7 @@ jobs:
         run: make test-unit-cli
 
       - name: Report test coverage for CLI
-        uses: codecov/codecov-actions@v2
+        uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
           verbose: true
