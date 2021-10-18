@@ -62,7 +62,7 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 		Deployment: keptnv2.DeploymentFinishedData{
 			DeploymentStrategy:   "user_managed",
 			DeploymentURIsPublic: []string{"https://myurl"},
-			DeploymentNames:      []string{"user-managed"},
+			DeploymentNames:      []string{"user_managed"},
 			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
