@@ -126,14 +126,15 @@ function delete_tag() {
 
   echo -ne "Deleting ${REPO}:${TAG}"
 
-  curl -H "Authorization: JWT ${DOCKER_API_TOKEN}" -X DELETE "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$(
-      curl -I \
-          -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
-          -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-          "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${TAG}" \
-      | awk '$1 == "docker-content-digest:" { print $2 }' \
-      | tr -d $'\r' \
-  )"
+  image_digest=$(curl -I \
+      -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
+      -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+      "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${TAG}" \
+   | awk '$1 == "docker-content-digest:" { print $2 }' \
+   | tr -d $'\r')
+
+  echo "Image Digest that will be deleted: ${image_digest}"
+  curl -H "Authorization: JWT ${DOCKER_API_TOKEN}" -X DELETE "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}"
 
 #  response=$(curl -s -o /dev/null -i -X DELETE \
 #    -w "%{http_code}" \
