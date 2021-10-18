@@ -32,7 +32,10 @@ func WriteFile(path string, content []byte) error {
 
 	// delete the file and re-create it, if it existed previously
 	if !os.IsNotExist(err) {
-		DeleteFile(path)
+		err = DeleteFile(path)
+		if err != nil {
+			return err
+		}
 	}
 	file, err := os.Create(path)
 	if err != nil {
