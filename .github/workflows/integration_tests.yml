@@ -470,7 +470,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run UniformRegistration -v
+        run: cd test/go-tests && go test -run UniformRegistration -v
 
       - name: Test Log Ingestion
         # do not run this test for the airgapped scenario
@@ -480,7 +480,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run LogIngestion -v
+        run: cd test/go-tests && go test -run LogIngestion -v
 
       - name: Test Log Forwarding
         # do not run this test for the airgapped scenario
@@ -490,7 +490,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run LogForwarding -v
+        run: cd test/go-tests && go test -run LogForwarding -v
 
       - name: Test Sequence States
         # do not run this test for the airgapped scenario
@@ -500,7 +500,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run SequenceState -v
+        run: cd test/go-tests && go test -run SequenceState -v
 
       - name: Test Sequence Loop
         # do not run this test for the airgapped scenario
@@ -510,7 +510,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run SequenceLoopIntegrationTest -v
+        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
 
       - name: Test Delayed Tasks
         # do not run this test for the airgapped scenario
@@ -530,7 +530,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run Test_QualityGates -v
+        run: cd test/go-tests && go test -run Test_QualityGates -v
 
       - name: Test Quality Gates Backwards compatibility
         id: test_quality_gates_backwards_compatibility
@@ -551,7 +551,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
-        run: go test -run Test_SelfHealing -v
+        run: cd test/go-tests && go test -run Test_SelfHealing -v
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant
@@ -561,7 +561,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run Test_DeliveryAssistant -v
+        run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
 
       - name: Test User Managed Delivery
         id: test_user_managed_delivery
@@ -570,7 +570,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run CustomUserManagedEndpointsTest -v
+        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
 
       - name: Install Remote Execution Plane
         id: install_remote_execution_plane
@@ -609,7 +609,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run ContinuousDelivery -v
+        run: cd test/go-tests && go test -run ContinuousDelivery -v
 
       - name: Test Manage Secrets
         id: test_manage_secrets
@@ -619,7 +619,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run:  go test -run ManageSecrets -v
+        run:  cd test/go-tests && go test -run ManageSecrets -v
 
       - name: Test Webhook Integration
         id: test_webhook_integration
@@ -629,7 +629,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run Test_Webhook -v
+        run: cd test/go-tests && go test -run Test_Webhook -v
 
       #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
       #        id: test_continuous_delivery
@@ -650,7 +650,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run SequenceTimeout -v
+        run: cd test/go-tests && go test -run SequenceTimeout -v
 
       - name: Test Sequence Control
         # do not run this test for the airgapped scenario
@@ -660,7 +660,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run SequenceControl -v
+        run: cd test/go-tests && go test -run SequenceControl -v
 
       - name: Test Sequence Queue
         # do not run this test for the airgapped scenario
@@ -670,7 +670,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: go test -run SequenceQueue -v
+        run: cd test/go-tests && go test -run SequenceQueue -v
 
       - name: keptn generate support-archive
         if: always()
