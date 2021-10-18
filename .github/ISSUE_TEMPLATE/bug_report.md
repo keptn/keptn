@@ -45,7 +45,7 @@ Your issue may already be reported! Please search on the [issue tracker](https:/
 <!-- Please provide a clear and concise description of what the bug is. Code samples should be put in the **To Reproduce** section. -->
 
 **To Reproduce**
-<!-- Please provide detailed instructions of how to reproduce the behaviour, including code samples if applicable. -->
+<!-- Please provide detailed instructions on how to reproduce the behaviour, including code samples if applicable. -->
 
 Steps to reproduce the behavior:
 1. Go to '...'
