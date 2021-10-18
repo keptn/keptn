@@ -130,7 +130,7 @@ function delete_tag() {
     -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
     -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
     "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/")
-  echo response_test
+  echo "$response_test"
 
   echo -ne "Deleting ${REPO}:${TAG}"
 
