@@ -134,7 +134,7 @@ function delete_tag() {
     | tr -d $'\r' \
   )
 
-  echo -e "Deleting ${REPO}:${TAG}"
+  echo -e "Deleting ${REPO}:${TAG} with  digest ${image_digest}"
   response=$(curl -s -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" -X DELETE "https://registry-1.docker.io/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}")
 
   if [[ "$response" != "204" ]]; then
