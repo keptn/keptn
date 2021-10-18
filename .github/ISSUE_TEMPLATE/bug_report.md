@@ -27,18 +27,19 @@ Your issue may already be reported! Please search on the [issue tracker](https:/
 **Affected Component**
 <!-- Please tell us which component of Keptn is affected (leave empty if you are unsure). -->
 
-* [ ] Docs
+* [ ] Approval
+* [ ] Bridge
 * [ ] CLI
-* [ ] Kubernetes Integration
-* [ ] Openshift Integration
+* [ ] Datastore
+* [ ] Docs
+* [ ] Distributor / Event Broker
 * [ ] Helm
 * [ ] Istio
-* [ ] Bridge
-* [ ] Approval
-* [ ] Datastore
+* [ ] Jmeter
+* [ ] Kubernetes Integration
+* [ ] Openshift Integration
 * [ ] REST API
-* [ ] eventbroker / distributor
-* [ ] jmeter
+* [ ] Webhook
 
 **Describe the bug**
 <!-- Please provide a clear and concise description of what the bug is. Code samples should be put in the **To Reproduce** section. -->
