@@ -60,7 +60,7 @@ fi
 DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
 if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
-  echo "Failed to authenticate on DockerHub Api."
+  echo "Failed to authenticate on DockerHub API."
   exit 1
 fi
 
@@ -136,6 +136,7 @@ function delete_tag() {
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"
+    exit 1
   else
     echo " - Done!"
   fi
