@@ -277,15 +277,12 @@ jobs:
 
       - name: Report test coverage for ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        run: |
-          curl -s https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
-          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
-          gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
-          shasum -a 256 -c codecov.SHA256SUM
-          chmod +x "./codecov"
-          ./codecov -c -F ${{ matrix.config.artifact }}
+        uses: codecov/codecov-actions@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          move_coverage_to_trash: true
+          flags: ${{ matrix.config.artifact }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
@@ -312,15 +309,12 @@ jobs:
         run: make test-unit-cli
 
       - name: Report test coverage for CLI
-        run: |
-          curl -s https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
-          curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
-          gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
-          shasum -a 256 -c codecov.SHA256SUM
-          chmod +x "./codecov"
-          ./codecov -c -F cli
+        uses: codecov/codecov-actions@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          move_coverage_to_trash: true
+          flags: cli
 
   ############################################################################
   # Build CLI                                                                #
