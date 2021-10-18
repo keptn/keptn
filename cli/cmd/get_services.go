@@ -140,7 +140,10 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 				}
 
 			}
-			w.Flush()
+			err = w.Flush()
+			if err != nil {
+				return errors.New(err.Error())
+			}
 
 		}
 		return nil

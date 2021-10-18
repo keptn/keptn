@@ -233,9 +233,20 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	resultDirectory := fmt.Sprintf("%s_%s_%s_%s_%s", testInfo.Project, testInfo.Service, testInfo.Stage, workload.TestStrategy, testInfo.Context)
 
 	// lets first remove all potentially left over result files from previous runs -> we keep them between runs for troubleshooting though
-	os.RemoveAll(resultDirectory)
-	os.RemoveAll(resultDirectory + "_result.tlf")
-	os.RemoveAll("output.txt")
+	err := os.RemoveAll(resultDirectory)
+	if err != nil {
+		return false, err
+	}
+
+	err = os.RemoveAll(resultDirectory + "_result.tlf")
+	if err != nil {
+		return false, err
+	}
+
+	err = os.RemoveAll("output.txt")
+	if err != nil {
+		return false, err
+	}
 
 	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger)
 }
