@@ -125,11 +125,11 @@ function delete_tag() {
   TAG=$2
 
   # shellcheck disable=SC2034
-  response_test=$(curl -s -i -X GET \
+  response_test=$(curl -s -i \
     -w "%{http_code}" \
     -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
     -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
-    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/")
+    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/$TAG/" | awk '$1 == "Docker-Content-Digest:" { print $2 }' | tr -d $'\r')
   echo "$response_test"
 
   echo -ne "Deleting ${REPO}:${TAG}"
