@@ -170,6 +170,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.refreshFilterDataSource();
         // Set unfinished sequences so that the state updates can be loaded
         this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
+        this._changeDetectorRef.markForCheck();
       }
     });
   }
