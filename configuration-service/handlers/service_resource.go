@@ -3,14 +3,15 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -99,6 +100,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service resource not found")})
 	}
 
+	resourcePath = filepath.Clean(resourcePath)
 	dat, err := ioutil.ReadFile(resourcePath)
 	if err != nil {
 		logger.Error(err.Error())

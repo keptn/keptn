@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"helm.sh/helm/v3/pkg/chart"
@@ -50,6 +51,7 @@ func CreateTestHelmChartData(t *testing.T) []byte {
 	defer os.RemoveAll(name)
 	defer os.RemoveAll("carts")
 
+	name = filepath.Clean(name)
 	bytes, err := ioutil.ReadFile(name)
 	check(err, t)
 	return bytes
