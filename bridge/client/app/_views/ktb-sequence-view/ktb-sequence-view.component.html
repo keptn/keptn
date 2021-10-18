@@ -27,7 +27,7 @@
           </div>
 
           <ktb-root-events-list
-            *ngIf="project.sequences?.length != 0"
+            *ngIf="project.sequences.length !== 0"
             uitestid="keptn-sequence-view-roots"
             [events]="getFilteredSequences(project.sequences)"
             [selectedEvent]="currentSequence"
