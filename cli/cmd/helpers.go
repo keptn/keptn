@@ -120,6 +120,10 @@ func CheckEndpointStatus(endPoint string) error {
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	err = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

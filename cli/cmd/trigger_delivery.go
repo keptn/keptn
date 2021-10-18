@@ -114,7 +114,10 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 
 	valuesJson := map[string]interface{}{}
 	valuesJson["image"] = *deliveryInputData.Image + ":" + *deliveryInputData.Tag
-	json.Unmarshal([]byte(jsonStr), &valuesJson)
+	err = json.Unmarshal([]byte(jsonStr), &valuesJson)
+	if err != nil {
+		return fmt.Errorf("Error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
+	}
 
 	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
 		EventData: keptnv2.EventData{

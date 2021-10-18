@@ -2,11 +2,12 @@ package fake
 
 import (
 	"encoding/json"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 type ConfigurationService struct {
@@ -149,7 +150,11 @@ func NewSimpleMockConfigurationService() *ConfigurationService {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(""))
 		}
-		json.Unmarshal(bytes, &itf)
+
+		err = json.Unmarshal(bytes, &itf)
+		if err != nil {
+			panic("Error unmarshalling bytes to interface")
+		}
 
 		var response interface{}
 		switch r.Method {

@@ -200,8 +200,10 @@ func Generate(outputDir string) {
 	file, err := os.Create(outputDir + "/" + "cloudevents.md")
 	check(err)
 	defer file.Close()
-	file.WriteString(md.String())
-	file.Sync()
+	_, err = file.WriteString(md.String())
+	check(err)
+	err = file.Sync()
+	check(err)
 
 }
 
