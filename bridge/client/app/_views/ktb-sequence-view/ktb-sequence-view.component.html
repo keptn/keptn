@@ -15,7 +15,7 @@
             fxLayout="row"
             fxLayoutAlign="start"
             uitestid="keptn-noSequences"
-            *ngIf="project.sequences?.length === 0"
+            *ngIf="project.sequences.length === 0"
           >
             <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
             <p class="m-0 ml-2">
@@ -29,7 +29,7 @@
             fxLayout="row"
             fxLayoutAlign="start"
             uitestid="keptn-noSequences"
-            *ngIf="getFilteredSequences(project.sequences).length === 0 && project.sequences?.length !== 0"
+            *ngIf="getFilteredSequences(project.sequences).length === 0 && project.sequences.length !== 0"
           >
             <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
             <p class="m-0 ml-2">
