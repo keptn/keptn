@@ -128,15 +128,19 @@ function delete_tag() {
   echo -e "Fetching image manifest for ${REPO}:${TAG}"
 
   image_digest=$(curl -s -I \
-      -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" \
-      -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-      "https://index.docker.io/v2/${DOCKER_ORG}/${REPO}/manifests/${TAG}" \
+    -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" \
+    -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+    "https://index.docker.io/v2/${DOCKER_ORG}/${REPO}/manifests/${TAG}" \
     | awk '$1 == "docker-content-digest:" { print $2 }' \
     | tr -d $'\r' \
   )
 
   echo -e "Deleting ${REPO}:${TAG} with digest ${image_digest}"
-  response=$(curl -s -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" -X DELETE "https://registry-1.docker.io/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}")
+  response=$(curl -s \
+    -X DELETE \
+    -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" \
+    "https://registry-1.docker.io/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}" \
+  )
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"
@@ -170,7 +174,11 @@ for service in "${IMAGES[@]}"; do
   # get all outdated tag where tag contains "dirty"
   outdated_dirty_tags=$(get_outdated_images "$service" "dirty" "$MAX_AGE")
 
-  docker_registry_token=$(curl -s -H "Content-Type: application/json" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${DOCKER_ORG}/${service}:*" | jq -r .token)
+  docker_registry_token=$(curl -s \
+    -H "Content-Type: application/json" \
+    "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${DOCKER_ORG}/${service}:*" \
+    | jq -r .token\
+  )
 
   for tag in ${outdated_commit_hash_tags}; do
     delete_tag "$service" "$tag" "$docker_registry_token"
