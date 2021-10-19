@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
+
 	"github.com/hashicorp/go-version"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"regexp"
 )
 
 var (
@@ -63,25 +64,63 @@ func getKubeServerVersion() (string, error) {
 	return submatches[1] + "." + submatches[2], nil
 }
 
-// CheckKubeServerVersion checks the Kubernetes Server version against the given constraints
-func CheckKubeServerVersion(constraints string) error {
+// CheckKubeServerVersion checks the Kubernetes Server version against the given constraints and returns true if the version is higher than the given constraints
+func CheckKubeServerVersion(constraints string) (bool, error) {
 
 	serverVersion, err := getKubeServerVersion()
 	if err != nil {
-		return err
+		return false, err
 	}
 	hVersion, err := version.NewVersion(serverVersion)
 	if err != nil {
-		return err
+		return false, err
 	}
 	hConstraints, err := version.NewConstraint(constraints)
 	if err != nil {
-		return err
+		return false, err
 	}
-	if hConstraints.Check(hVersion) {
-		return nil
+
+	isNewerVersion, allConstraintsValid := checkIsNewVersion(hConstraints, hVersion)
+
+	if allConstraintsValid {
+		return false, nil
 	}
-	return fmt.Errorf("The Kubernetes Server Version '%s' doesn't satisfy constraints '%s'", serverVersion, constraints)
+
+	return isNewerVersion, fmt.Errorf("The Kubernetes Server Version '%s' doesn't satisfy constraints '%s'", serverVersion, constraints)
+}
+
+// checkIsNewVersion checks if the provided version is higher than all constraints and if all constraints are valid
+func checkIsNewVersion(hConstraints version.Constraints, serverVersion *version.Version) (bool, bool) {
+	isNewerVersion := false
+	allConstraintsValid := true
+	for _, constraint := range hConstraints {
+		validConstraint := constraint.Check(serverVersion)
+		if !validConstraint {
+			allConstraintsValid = false
+			constraintVersionString := getConstraintVersion(constraint.String())
+
+			constraintVersion, err := version.NewVersion(constraintVersionString)
+			if err != nil {
+				return false, false
+			}
+			if serverVersion.GreaterThan(constraintVersion) {
+				isNewerVersion = true
+			} else {
+				return false, false
+			}
+		}
+	}
+	return isNewerVersion, allConstraintsValid
+}
+
+// getConstraintVersion returns the version of a constraint without leading spaces, <, >, =
+func getConstraintVersion(constraint string) string {
+	for index, character := range constraint {
+		if character != '<' && character != '>' && character != ' ' && character != '=' {
+			return constraint[index:]
+		}
+	}
+	return constraint
 }
 
 // CheckDeploymentManagedByHelm implements a naive check if the deployment with the given name in the given namespace

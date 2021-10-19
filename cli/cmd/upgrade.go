@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Copyright © 2019 NAME HERE <EMAIL ADDRESS>
@@ -20,9 +21,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/common"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"helm.sh/helm/v3/pkg/release"
 
@@ -157,10 +160,17 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 
 	// check if Kubernetes server version is compatible (except OpenShift)
 	if *upgradeParams.PlatformIdentifier != platform.OpenShiftIdentifier {
-		if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+		if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil && !isNewerVersion {
 			logging.PrintLog(err.Error(), logging.VerboseLevel)
 			logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
+		} else if isNewerVersion {
+			logging.PrintLog("The Kubernetes server version is higher than the one that is officially supported", logging.InfoLevel)
+			userConfirmation := common.NewUserInput().AskBool("Do you still want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
+
+			if !userConfirmation {
+				return fmt.Errorf("Stopping upgrade.")
+			}
 		}
 	}
 
