@@ -11,12 +11,7 @@
         fxFlex
       >
         <div class="container" fxFlex fxLayout="column">
-          <div
-            fxLayout="row"
-            fxLayoutAlign="start"
-            uitestid="keptn-noSequences"
-            *ngIf="project.sequences.length === 0"
-          >
+          <div fxLayout="row" fxLayoutAlign="start" uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
             <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
             <p class="m-0 ml-2">
               No sequences triggered yet.<br />Follow the instructions to
