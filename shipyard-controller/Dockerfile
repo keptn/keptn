@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.16.2-alpine as builder
+FROM golang:1.16.2-alpine as builder-base
 ARG version=develop
 
 # install additional dependencies
@@ -26,6 +26,36 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+FROM golang:1.16.2 as builder-test
+ARG version=develop
+
+# install additional dependencies
+RUN apt-get install -y gcc libc-dev git
+
+# Force the go compiler to use modules
+ENV GO111MODULE=on
+ENV BUILDFLAGS=""
+ENV GOPROXY=https://proxy.golang.org
+
+# Pre-Req for gin-gonic/go-swagger: Install swag cli to generate swagger.yaml and swagger.json
+RUN go get -u github.com/swaggo/swag/cmd/swag@v1.7.0
+
+WORKDIR /go/src/github.com/keptn/keptn/shipyard-controller
+
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy local code to the container image.
+COPY . .
+
+CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
+
+FROM builder-base as builder
+
 ENV REPLACE="version: ${version}"
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
@@ -45,7 +75,7 @@ RUN sed -i "s/version: develop/${REPLACE}/g" docs/swagger.yaml
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.14
+FROM alpine:3.14 as production
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn Shipyard Controller" \

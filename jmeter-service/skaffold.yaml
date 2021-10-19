@@ -1,10 +1,13 @@
-apiVersion: skaffold/v2beta10
+apiVersion: skaffold/v2beta22
 kind: Config
 build:
+  local:
+    useBuildkit: true
   artifacts:
     - image: keptn/jmeter-service
       docker:
         dockerfile: Dockerfile
+        target: production
 # Before executing this, install jmeter-service manually:
 # helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.4/jmeter-service-0.8.4.tgz -n keptn
 deploy:
