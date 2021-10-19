@@ -13,7 +13,7 @@
 #####################################################################################################
 
 # max age that images should have before they are marked as outdated
-MAX_AGE=30
+MAX_AGE_DAYS=30
 IMAGES=(
   "api"
   "bridge2"
@@ -63,12 +63,14 @@ if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
   exit 1
 fi
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  TARGET_DATE=$(echo "$(date +%s) - (${MAX_AGE_DAYS} * 24 * 60 * 60)" | bc)
+else
+  TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
+fi
+
 function get_outdated_commit_hash_tags() {
   REPO=$1
-  MAX_AGE_DAYS=$2
-
-  # Target-Date = Current Date Minus $MAX_AGE_DAYS
-  TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # Count number of tags based on the tag filter
   COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?page_size=1" | jq -r '.count')
@@ -84,10 +86,6 @@ function get_outdated_commit_hash_tags() {
 function get_outdated_datetime_tags() {
   REPO=$1
   TAG_FILTER=$2
-  MAX_AGE_DAYS=$3
-
-  # Target-Date = Current Date Minus $MAX_AGE_DAYS
-  TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # Count number of tags based on the tag filter
   COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
@@ -104,10 +102,6 @@ function get_outdated_datetime_tags() {
 function get_outdated_images() {
   REPO=$1
   TAG_FILTER=$2
-  MAX_AGE_DAYS=$3
-
-  # Target-Date = Current Date Minus $MAX_AGE_DAYS
-  TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # Count number of tags based on the tag filter
   COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
@@ -143,18 +137,18 @@ for s in "${IMAGES[@]}"; do
   echo "Deleting outdated images for service ${s}"
 
   # get all outdated commit hash tags
-  outdated_commit_hash_tags=$(get_outdated_commit_hash_tags "$s" "$MAX_AGE")
+  outdated_commit_hash_tags=$(get_outdated_commit_hash_tags "$s")
 
-  outdated_datetime_tags=$(get_outdated_datetime_tags "$s" "2021" "$MAX_AGE")
+  outdated_datetime_tags=$(get_outdated_datetime_tags "$s" "2021")
 
   # get all outdated tag where tag contains "dev-PR"
-   outdated_dev_pr_tags=$(get_outdated_images "$s" "dev-PR" "$MAX_AGE")
+   outdated_dev_pr_tags=$(get_outdated_images "$s" "dev-PR")
 
   # ToDo: Also Check for "x.y.z-dev.20" tags (e.g., 0.8.0-dev.20210101)
-   outdated_dev_tags=$(get_outdated_images "$s" "dev.20" "$MAX_AGE")
+   outdated_dev_tags=$(get_outdated_images "$s" "dev.20")
 
   # get all outdated tag where tag contains "dirty"
-  outdated_dirty_tags=$(get_outdated_images "$s" "dirty" "$MAX_AGE")
+  outdated_dirty_tags=$(get_outdated_images "$s" "dirty")
 
   for tag in ${outdated_commit_hash_tags}; do
     delete_tag "$s" "$tag"
