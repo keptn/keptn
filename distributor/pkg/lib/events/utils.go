@@ -136,25 +136,32 @@ func (c *CloudEventsCache) Contains(topicName, eventID string) bool {
 	c.RLock()
 	defer c.RUnlock()
 
-	eventsForTopic := c.cache[topicName]
-	for _, id := range eventsForTopic {
-		if id == eventID {
-			return true
-		}
-	}
-	return false
+	return c.contains(topicName, eventID)
 }
 
 func (c *CloudEventsCache) Keep(topicName string, events []*keptnmodels.KeptnContextExtendedCE) {
 	c.Lock()
 	defer c.Unlock()
 
+	// keeping 0 events, means clearing the cache
+	if len(events) == 0 {
+		c.clear(topicName)
+	}
+
+	// convert to raw ids without duplicates
+	ids := dedup(toIDs(events))
+
+	// if none of the ids is known cached do nothing
+	if !c.containsSlice(topicName, ids) {
+		return
+	}
+
+	currentEventsForTopic := c.cache[topicName]
 	eventsToKeep := []string{}
-	eventsForTopic := c.cache[topicName]
-	for _, cacheEventID := range eventsForTopic {
-		for _, e := range events {
-			if cacheEventID == e.ID {
-				eventsToKeep = append(eventsToKeep, e.ID)
+	for _, idOfEventToKeep := range ids {
+		for _, e := range currentEventsForTopic {
+			if idOfEventToKeep == e {
+				eventsToKeep = append(eventsToKeep, e)
 			}
 		}
 	}
@@ -165,4 +172,49 @@ func (c *CloudEventsCache) Length(topicName string) int {
 	c.RLock()
 	defer c.RUnlock()
 	return len(c.cache[topicName])
+}
+
+func (c *CloudEventsCache) clear(topicName string) {
+	c.cache[topicName] = []string{}
+}
+
+func (c *CloudEventsCache) contains(topicName, eventID string) bool {
+	eventsForTopic := c.cache[topicName]
+	for _, id := range eventsForTopic {
+		if id == eventID {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *CloudEventsCache) containsSlice(topicName string, ids []string) bool {
+	contains := false
+	for _, id := range ids {
+		if c.contains(topicName, id) {
+			contains = true
+			break
+		}
+	}
+	return contains
+}
+
+func toIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
+	ids := []string{}
+	for _, e := range events {
+		ids = append(ids, e.ID)
+	}
+	return ids
+}
+
+func dedup(ids []string) []string {
+	result := make([]string, 0, len(ids))
+	temp := map[string]struct{}{}
+	for _, item := range ids {
+		if _, ok := temp[item]; !ok {
+			temp[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
 }

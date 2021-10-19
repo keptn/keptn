@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 )
@@ -46,6 +47,37 @@ func TestAddRemoveEvent(t *testing.T) {
 	cache.Remove("t1", "e3")
 	assert.Equal(t, 1, cache.Length("t1"))
 	assert.True(t, cache.Contains("t1", "e2"))
+}
+
+func TestKeep_NonExistingEvent(t *testing.T) {
+	cache := NewCloudEventsCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+	cache.Add("t1", "e3")
+
+	require.Equal(t, 3, cache.Length("t1"))
+	cache.Keep("t1", []*models.KeptnContextExtendedCE{ce("e0")})
+	assert.Equal(t, 3, cache.Length("t1"))
+}
+
+func TestKeep_WithDuplicates(t *testing.T) {
+	cache := NewCloudEventsCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+
+	require.Equal(t, 2, cache.Length("t1"))
+	cache.Keep("t1", []*models.KeptnContextExtendedCE{ce("e2"), ce("e2")})
+	assert.Equal(t, 1, cache.Length("t1"))
+}
+
+func TestKeep_WithEmptyEvents(t *testing.T) {
+	cache := NewCloudEventsCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+
+	require.Equal(t, 2, cache.Length("t1"))
+	cache.Keep("t1", []*models.KeptnContextExtendedCE{})
+	assert.Equal(t, 0, cache.Length("t1"))
 }
 
 func TestKeep(t *testing.T) {
