@@ -116,7 +116,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	}
 
 	logger.Infof("Cleaning up list of sent events for topic %s", subscription.Event)
-	p.ceCache.Keep(subscription.Event, toIDs(events))
+	p.ceCache.Keep(subscription.Event, ToIDs(events))
 }
 
 func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {

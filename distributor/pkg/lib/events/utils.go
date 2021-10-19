@@ -154,7 +154,7 @@ func (c *Cache) Keep(key string, elements []string) {
 	}
 
 	// convert to raw ids without duplicates
-	ids := dedup(elements)
+	ids := Dedup(elements)
 
 	// if none of the ids is known cached do nothing
 	if !c.containsSlice(key, ids) {
@@ -205,7 +205,8 @@ func (c *Cache) containsSlice(key string, elements []string) bool {
 	return contains
 }
 
-func toIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
+// ToIDs takes a list of cloud events and returns a list of ids of the given cloud events
+func ToIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
 	ids := []string{}
 	for _, e := range events {
 		ids = append(ids, e.ID)
@@ -213,7 +214,8 @@ func toIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
 	return ids
 }
 
-func dedup(elements []string) []string {
+// Dedup removes duplicate elements from the given list of strings
+func Dedup(elements []string) []string {
 	result := make([]string, 0, len(elements))
 	temp := map[string]struct{}{}
 	for _, el := range elements {
