@@ -98,7 +98,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 
 		logger.Infof("Adding temporary data to event: <subscriptionID=%s>", subscription.ID)
 		// add subscription ID as additional information to the keptn event
-		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{}); err != nil {
+		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
 			logger.Errorf("Unable to add temporary information about subscriptions to event: %v", err)
 		}
 
@@ -116,7 +116,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	}
 
 	logger.Infof("Cleaning up list of sent events for topic %s", subscription.Event)
-	p.ceCache.Keep(subscription.Event, events)
+	p.ceCache.Keep(subscription.Event, toIDs(events))
 }
 
 func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
@@ -199,6 +199,5 @@ func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription ke
 		return err
 	}
 
-	logger.Infof("sent event %s", event.ID())
 	return nil
 }

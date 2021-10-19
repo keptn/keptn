@@ -56,7 +56,7 @@ func TestKeep_NonExistingEvent(t *testing.T) {
 	cache.Add("t1", "e3")
 
 	require.Equal(t, 3, cache.Length("t1"))
-	cache.Keep("t1", []*models.KeptnContextExtendedCE{ce("e0")})
+	cache.Keep("t1", []string{"e0"})
 	assert.Equal(t, 3, cache.Length("t1"))
 }
 
@@ -66,7 +66,7 @@ func TestKeep_WithDuplicates(t *testing.T) {
 	cache.Add("t1", "e2")
 
 	require.Equal(t, 2, cache.Length("t1"))
-	cache.Keep("t1", []*models.KeptnContextExtendedCE{ce("e2"), ce("e2")})
+	cache.Keep("t1", []string{"e02", "e02"})
 	assert.Equal(t, 1, cache.Length("t1"))
 }
 
@@ -76,7 +76,7 @@ func TestKeep_WithEmptyEvents(t *testing.T) {
 	cache.Add("t1", "e2")
 
 	require.Equal(t, 2, cache.Length("t1"))
-	cache.Keep("t1", []*models.KeptnContextExtendedCE{})
+	cache.Keep("t1", []string{})
 	assert.Equal(t, 0, cache.Length("t1"))
 }
 
@@ -88,8 +88,8 @@ func TestKeep(t *testing.T) {
 	cache.Add("t2", "e4")
 	cache.Add("t2", "e5")
 
-	cache.Keep("t1", []*models.KeptnContextExtendedCE{ce("e2")})
-	cache.Keep("t2", []*models.KeptnContextExtendedCE{ce("e3"), ce("e5")})
+	cache.Keep("t1", []string{"e2"})
+	cache.Keep("t2", []string{"e3", "e5"})
 
 	assert.Equal(t, 1, cache.Length("t1"))
 	assert.Equal(t, 2, cache.Length("t2"))
