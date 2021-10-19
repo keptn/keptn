@@ -120,6 +120,10 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 			logger.Infof("Sending CloudEvent with ID %s to %s", keptnEvent.ID, n.env.PubSubRecipient)
 			// add to CloudEvents cache
 			n.ceCache.Add(subscription.Event, keptnEvent.ID+"-"+subscription.ID)
+			// add subscription ID as additional information to the keptn event
+			if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
+				logger.WithError(err).Error("Unable to add additional information about subscriptions to event")
+			}
 
 			defer func() {
 				// after some time, remove the cache entry
@@ -128,11 +132,6 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 					n.ceCache.Remove(subscription.Event, keptnEvent.ID+"-"+subscription.ID)
 				}()
 			}()
-		}
-
-		// add subscription ID as additional information to the keptn event
-		if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
-			logger.WithError(err).Error("Unable to add additional information about subscriptions to event")
 		}
 
 		// forward keptn event
