@@ -11,7 +11,7 @@ import (
 )
 
 func TestAddEvent(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t2", "e3")
@@ -23,7 +23,7 @@ func TestAddEvent(t *testing.T) {
 }
 
 func TestAddEventTwice(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e2")
@@ -32,7 +32,7 @@ func TestAddEventTwice(t *testing.T) {
 }
 
 func TestAddRemoveEvent(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e3")
@@ -50,7 +50,7 @@ func TestAddRemoveEvent(t *testing.T) {
 }
 
 func TestKeep_NonExistingEvent(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e3")
@@ -61,7 +61,7 @@ func TestKeep_NonExistingEvent(t *testing.T) {
 }
 
 func TestKeep_WithDuplicates(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 
@@ -71,7 +71,7 @@ func TestKeep_WithDuplicates(t *testing.T) {
 }
 
 func TestKeep_WithEmptyEvents(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 
@@ -81,7 +81,7 @@ func TestKeep_WithEmptyEvents(t *testing.T) {
 }
 
 func TestKeep(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t2", "e3")

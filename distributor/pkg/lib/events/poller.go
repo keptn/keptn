@@ -25,7 +25,7 @@ type EventSender interface {
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
 	eventSender          EventSender
-	ceCache              *CloudEventsCache
+	ceCache              *Cache
 	env                  config.EnvConfig
 	httpClient           *http.Client
 	eventMatcher         *EventMatcher
@@ -35,7 +35,7 @@ type Poller struct {
 func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
 	return &Poller{
 		eventSender:  eventSender,
-		ceCache:      NewCloudEventsCache(),
+		ceCache:      NewCache(),
 		env:          envConfig,
 		httpClient:   httpClient,
 		eventMatcher: NewEventMatcherFromEnv(envConfig),

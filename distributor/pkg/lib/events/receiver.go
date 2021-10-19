@@ -27,7 +27,7 @@ type NATSEventReceiver struct {
 	closeChan             chan bool
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
-	ceCache               *CloudEventsCache
+	ceCache               *Cache
 	mutex                 *sync.Mutex
 	currentSubscriptions  []models.EventSubscription
 }
@@ -41,7 +41,7 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 		eventSender:           eventSender,
 		closeChan:             make(chan bool),
 		eventMatcher:          eventMatcher,
-		ceCache:               NewCloudEventsCache(),
+		ceCache:               NewCache(),
 		mutex:                 &sync.Mutex{},
 		natsConnectionHandler: nch,
 	}

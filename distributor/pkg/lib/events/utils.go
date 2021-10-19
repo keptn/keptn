@@ -81,24 +81,21 @@ func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
-// CloudEventsCache is used to (temporarily) store incoming events
-// This is useful, especially when receiving events from on the remote
-// execution plane, where polling is used to fetch the events from Keptn.
-// Events of times *.triggered will
-type CloudEventsCache struct {
+// Cache is used to store key value data
+type Cache struct {
 	sync.RWMutex
 	cache map[string][]string
 }
 
-// NewCloudEventsCache creates a new cloud event cache
-func NewCloudEventsCache() *CloudEventsCache {
-	return &CloudEventsCache{
+// NewCache creates a new cache
+func NewCache() *Cache {
+	return &Cache{
 		cache: make(map[string][]string),
 	}
 }
 
 // Add adds a new element for a given key to the cache
-func (c *CloudEventsCache) Add(key, element string) {
+func (c *Cache) Add(key, element string) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -113,7 +110,7 @@ func (c *CloudEventsCache) Add(key, element string) {
 }
 
 // Get returns all elements for a given key from the cache
-func (c *CloudEventsCache) Get(key string) []string {
+func (c *Cache) Get(key string) []string {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -123,7 +120,7 @@ func (c *CloudEventsCache) Get(key string) []string {
 }
 
 // Remove removes an element for a given key from the cache
-func (c *CloudEventsCache) Remove(key, element string) bool {
+func (c *Cache) Remove(key, element string) bool {
 	c.Lock()
 	defer c.Unlock()
 
@@ -139,7 +136,7 @@ func (c *CloudEventsCache) Remove(key, element string) bool {
 }
 
 // Contains checks whether the given element for a topic name is contained in the cache
-func (c *CloudEventsCache) Contains(key, element string) bool {
+func (c *Cache) Contains(key, element string) bool {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -147,7 +144,7 @@ func (c *CloudEventsCache) Contains(key, element string) bool {
 }
 
 // Keep deletes all elements for a topic from the cache except the ones given by events
-func (c *CloudEventsCache) Keep(key string, elements []string) {
+func (c *Cache) Keep(key string, elements []string) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -177,17 +174,17 @@ func (c *CloudEventsCache) Keep(key string, elements []string) {
 }
 
 // Lenghts returns the number of cached elements for a given topic
-func (c *CloudEventsCache) Length(key string) int {
+func (c *Cache) Length(key string) int {
 	c.RLock()
 	defer c.RUnlock()
 	return len(c.cache[key])
 }
 
-func (c *CloudEventsCache) clear(key string) {
+func (c *Cache) clear(key string) {
 	c.cache[key] = []string{}
 }
 
-func (c *CloudEventsCache) contains(key, element string) bool {
+func (c *Cache) contains(key, element string) bool {
 	eventsForTopic := c.cache[key]
 	for _, id := range eventsForTopic {
 		if id == element {
@@ -197,7 +194,7 @@ func (c *CloudEventsCache) contains(key, element string) bool {
 	return false
 }
 
-func (c *CloudEventsCache) containsSlice(key string, elements []string) bool {
+func (c *Cache) containsSlice(key string, elements []string) bool {
 	contains := false
 	for _, id := range elements {
 		if c.contains(key, id) {
