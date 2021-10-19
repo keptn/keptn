@@ -136,17 +136,17 @@ function delete_tag() {
   )
 
   echo -e "Deleting ${REPO}:${TAG} with digest ${image_digest}"
-  response=$(curl -s \
-    -X DELETE \
-    -H "Authorization: Bearer ${DOCKER_HUB_TOKEN}" \
-    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}" \
-  )
-
 #  response=$(curl -s \
 #    -X DELETE \
 #    -H "Authorization: Bearer ${DOCKER_HUB_TOKEN}" \
-#    "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/" \
+#    "https://hub.docker.com/v2/$DOCKER_ORG/$REPO/manifests/${image_digest}" \
 #  )
+
+  response=$(curl -s \
+    -X DELETE \
+    -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" \
+    "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/" \
+  )
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"
