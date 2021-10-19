@@ -145,7 +145,7 @@ function delete_tag() {
   response=$(curl -s \
     -X DELETE \
     -H "Authorization: Bearer ${DOCKER_REGISTRY_TOKEN}" \
-    "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/" \
+    "https://registry-1.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/" \
   )
 
   if [[ "$response" != "204" ]]; then
