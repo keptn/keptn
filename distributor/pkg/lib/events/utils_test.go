@@ -66,7 +66,7 @@ func TestKeep_WithDuplicates(t *testing.T) {
 	cache.Add("t1", "e2")
 
 	require.Equal(t, 2, cache.Length("t1"))
-	cache.Keep("t1", []string{"e02", "e02"})
+	cache.Keep("t1", []string{"e2", "e2"})
 	assert.Equal(t, 1, cache.Length("t1"))
 }
 
