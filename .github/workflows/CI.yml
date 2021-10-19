@@ -38,73 +38,45 @@ env:
 
   API_ARTIFACT: "api"
   API_FOLDER: "api/"
-  API_TEST_FOLDERS: "./handlers/... ./utils/..."
-  API_GO_FLAGS: ""
 
   OS_ROUTE_SVC_ARTIFACT: "openshift-route-service"
   OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
-  OS_ROUTE_SVC_TEST_FOLDERS: "./..."
-  OS_ROUTE_SVC_GO_FLAGS: "-race"
 
   JMETER_SVC_ARTIFACT: "jmeter-service"
   JMETER_SVC_FOLDER: "jmeter-service/"
-  JMETER_SVC_TEST_FOLDERS: "./..."
-  JMETER_SVC_GO_FLAGS: "-race"
 
   HELM_SVC_ARTIFACT: "helm-service"
   HELM_SVC_FOLDER: "helm-service/"
-  HELM_SVC_TEST_FOLDERS: "./..."
-  HELM_SVC_GO_FLAGS: "-race"
 
   APPROVAL_SVC_ARTIFACT: "approval-service"
   APPROVAL_SVC_FOLDER: "approval-service/"
-  APPROVAL_SVC_TEST_FOLDERS: "./..."
-  APPROVAL_SVC_GO_FLAGS: "-race"
 
   DISTRIBUTOR_ARTIFACT: "distributor"
   DISTRIBUTOR_FOLDER: "distributor/"
-  DISTRIBUTOR_TEST_FOLDERS: "./..."
-  DISTRIBUTOR_GO_FLAGS: ""
 
   SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
   SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
-  SHIPYARD_CONTROLLER_TEST_FOLDERS: "./..."
-  SHIPYARD_CONTROLLER_GO_FLAGS: ""
 
   SECRET_SVC_ARTIFACT: "secret-service"
   SECRET_SVC_FOLDER: "secret-service/"
-  SECRET_SVC_TEST_FOLDERS: "./..."
-  SECRET_SVC_GO_FLAGS: ""
 
   CONFIGURATION_SVC_ARTIFACT: "configuration-service"
   CONFIGURATION_SVC_FOLDER: "configuration-service/"
-  CONFIGURATION_SVC_TEST_FOLDERS: "./..."
-  CONFIGURATION_SVC_GO_FLAGS: ""
 
   REMEDIATION_SVC_ARTIFACT: "remediation-service"
   REMEDIATION_SVC_FOLDER: "remediation-service/"
-  REMEDIATION_SVC_TEST_FOLDERS: "./..."
-  REMEDIATION_SVC_GO_FLAGS: "-race"
 
   LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
   LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
-  LIGHTHOUSE_SVC_TEST_FOLDERS: "./..."
-  LIGHTHOUSE_SVC_GO_FLAGS: ""
 
   MONGODB_DS_ARTIFACT: "mongodb-datastore"
   MONGODB_DS_FOLDER: "mongodb-datastore/"
-  MONGODB_DS_TEST_FOLDERS: "./..."
-  MONGODB_DS_GO_FLAGS: "-race"
 
   STATISTICS_SVC_ARTIFACT: "statistics-service"
   STATISTICS_SVC_FOLDER: "statistics-service/"
-  STATISTICS_SVC_TEST_FOLDERS: "./..."
-  STATISTICS_SVC_GO_FLAGS: "-race"
 
   WEBHOOK_SVC_ARTIFACT: "webhook-service"
   WEBHOOK_SVC_FOLDER: "webhook-service/"
-  WEBHOOK_SVC_TEST_FOLDERS: "./..."
-  WEBHOOK_SVC_GO_FLAGS: "-race"
 
 defaults:
   run:
@@ -278,162 +250,46 @@ jobs:
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
-  unit-tests-go-microservices:
-    name: Unit Tests Go Microservices
+  unit-tests-microservices:
+    name: Unit Tests Microservices
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     steps:
-      # Always skip this job for the bridge
-      - name: Set up Go 1.x
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
       - name: Checkout Code
-        if: matrix.config.artifact != 'bridge2'
         uses: actions/checkout@v2.3.4
 
-      # cache go modules
-      - if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-        uses: actions/cache@v2.1.6
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+      - name: Build ${{ matrix.config.artifact }} test image
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+        timeout-minutes: 15
+        env:
+          IMAGE_NAME: ${{ matrix.config.artifact }}-test
+        run: |
+          docker build ${{ matrix.config.working-dir }} --target builder-test -t $IMAGE_NAME
 
       - name: Test ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+        env:
+          IMAGE_NAME: ${{ matrix.config.artifact }}-test
         run: |
-          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
-          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
-        working-directory: ${{ matrix.config.working-dir }}
+          docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
-  unit-tests-node:
-    name: Unit Tests Bridge/NodeJS
-    needs: prepare_ci_run
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Set up Node
-        uses: actions/setup-node@v2.4.1
+      - name: Report test coverage for ${{ matrix.config.artifact }}
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+        uses: codecov/codecov-action@v2
         with:
-          node-version: 14
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-        with:
-          fetch-depth: 0
-      - name: Get yarn cache directory
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=yarn-cache-dir::$(yarn cache dir)"
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.yarn-cache-dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install libs
-        run: |
-          yarn global add codecov
-          yarn global add libnpx@10.2.0
-          yarn install --frozen-lockfile
-        working-directory: ./bridge
-      - name: Test
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: |
-          yarn test
-        working-directory: ./bridge
-      - name: Coverage report
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
-
-  ui-tests:
-    name: UI Tests Bridge
-    needs: prepare_ci_run
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Set up Node
-        uses: actions/setup-node@v2.4.1
-        with:
-          node-version: 14
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-        with:
-          fetch-depth: 0
-      - name: Get yarn cache directory
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=yarn-cache-dir::$(yarn cache dir)"
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.yarn-cache-dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install libs
-        run: |
-          yarn global add codecov
-          yarn global add libnpx@10.2.0
-          yarn install --frozen-lockfile
-        working-directory: ./bridge
-      - name: Test
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: |
-          yarn test:ui
-        working-directory: ./bridge
-      - name: Upload Bridge E2E Screenshots
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: bridge-e2e-screenshots
-          path: bridge/dist/cypress/screenshots/
-
-  bridge-code-style:
-    name: Bridge Code Style
-    needs: prepare_ci_run
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Set up Node
-        uses: actions/setup-node@v2.4.0
-        with:
-          node-version: 14
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-      - name: Get yarn cache directory
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=yarn-cache-dir::$(yarn cache dir)"
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.yarn-cache-dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Prepare test setup
-        working-directory: ./bridge
-        run: |
-          yarn global add libnpx@10.2.0
-          yarn install --frozen-lockfile
-      - name: ESLint
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        working-directory: ./bridge
-        run: |
-          yarn prettier:check
-          yarn lint:check
-
+          fail_ci_if_error: true
+          verbose: true
+          move_coverage_to_trash: true
+          flags: ${{ matrix.config.artifact }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
     needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    strategy:
-      matrix:
-        platform: [ ubuntu-20.04 ] #, macOS-11.0, windows-2019 ]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-20.04
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -450,11 +306,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-cli
 
-      - name: Test cli
-        run: make test-unit-cli # go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Test CLI
+        run: make test-unit-cli
 
-      - name: Coverage report
-        run: bash <(curl -s https://codecov.io/bash) -c -F cli
+      - name: Report test coverage for CLI
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          move_coverage_to_trash: true
+          flags: cli
 
   ############################################################################
   # Build CLI                                                                #
@@ -589,7 +450,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   prepare_github_pr_comment:
-    needs: [prepare_ci_run, unit-tests-go-microservices]
+    needs: [prepare_ci_run, unit-tests-microservices]
     name: Prepare GitHub Report Comment
     runs-on: ubuntu-20.04
     steps:
@@ -606,7 +467,7 @@ jobs:
           recreate: true
 
   docker_build:
-    needs: [prepare_ci_run, unit-tests-go-microservices, prepare_github_pr_comment]
+    needs: [prepare_ci_run, unit-tests-microservices, prepare_github_pr_comment]
     name: Docker Build
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
@@ -658,10 +519,6 @@ jobs:
         if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
-        with:
-          key: docker-build-cache-${{ github.workflow }}-{hash}
-          restore-keys: |
-            docker-build-cache-${{ github.workflow }}
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"

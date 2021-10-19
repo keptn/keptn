@@ -29,6 +29,7 @@ IMAGES=(
   "secret-service"
   "shipyard-controller"
   "statistics-service"
+  "webhook-service"
 )
 
 # ensure the params/variables are set
