@@ -144,7 +144,7 @@ function delete_tag() {
 
     response=$(curl -s \
       -X DELETE \
-      -H "Authorization: JWT ${DOCKER_HUB_TOKEN}"
+      -H "Authorization: JWT ${DOCKER_HUB_TOKEN}" \
       "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/" \
     )
 
