@@ -59,26 +59,26 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 		wantErr        bool
 	}{
 		{
-			name: "valid request - append --fail flag",
+			name: "valid request - append --fail-with-body flag",
 			args: args{
 				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo`,
 			},
 			want:          "success",
 			shouldExecute: true,
 			wantPassedArgs: []string{
-				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://my.hook.com/foo", "--fail",
+				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://my.hook.com/foo", "--fail-with-body",
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid request - --fail flag already there",
 			args: args{
-				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo --fail`,
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo --fail-with-body`,
 			},
 			want:          "success",
 			shouldExecute: true,
 			wantPassedArgs: []string{
-				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://my.hook.com/foo", "--fail",
+				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://my.hook.com/foo", "--fail-with-body",
 			},
 			wantErr: false,
 		},
