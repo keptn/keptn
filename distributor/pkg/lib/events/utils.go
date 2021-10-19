@@ -81,17 +81,23 @@ func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
+// CloudEventsCache is used to (temporarily) store incoming events
+// This is useful, especially when receiving events from on the remote
+// execution plane, where polling is used to fetch the events from Keptn.
+// Events of times *.triggered will
 type CloudEventsCache struct {
 	sync.RWMutex
 	cache map[string][]string
 }
 
+// NewCloudEventsCache creates a new cloud event cache
 func NewCloudEventsCache() *CloudEventsCache {
 	return &CloudEventsCache{
 		cache: make(map[string][]string),
 	}
 }
 
+// Add adds a new element for a given topic to the cache
 func (c *CloudEventsCache) Add(topicName, eventID string) {
 	c.Lock()
 	defer c.Unlock()
@@ -106,6 +112,7 @@ func (c *CloudEventsCache) Add(topicName, eventID string) {
 	c.cache[topicName] = append(c.cache[topicName], eventID)
 }
 
+// Get returns all elements for a given topic from the cache
 func (c *CloudEventsCache) Get(topicName string) []string {
 	c.RLock()
 	defer c.RUnlock()
@@ -115,7 +122,7 @@ func (c *CloudEventsCache) Get(topicName string) []string {
 	return cp
 }
 
-// Remove a CloudEvent with specified type from the cache
+// Remove removes an element for a given topic from the cache
 func (c *CloudEventsCache) Remove(topicName, eventID string) bool {
 	c.Lock()
 	defer c.Unlock()
@@ -123,8 +130,7 @@ func (c *CloudEventsCache) Remove(topicName, eventID string) bool {
 	eventsForTopic := c.cache[topicName]
 	for index, id := range eventsForTopic {
 		if id == eventID {
-			// found
-			// make sure to store the result back in c.cache[topicName]
+			// found, make sure to store the result back in c.cache[topicName]
 			c.cache[topicName] = append(eventsForTopic[:index], eventsForTopic[index+1:]...)
 			return true
 		}
@@ -132,6 +138,7 @@ func (c *CloudEventsCache) Remove(topicName, eventID string) bool {
 	return false
 }
 
+// Contains checks whether the given element for a topic name is contained in the cache
 func (c *CloudEventsCache) Contains(topicName, eventID string) bool {
 	c.RLock()
 	defer c.RUnlock()
@@ -139,6 +146,7 @@ func (c *CloudEventsCache) Contains(topicName, eventID string) bool {
 	return c.contains(topicName, eventID)
 }
 
+// Keep deletes all elements for a topic from the cache except the ones given by events
 func (c *CloudEventsCache) Keep(topicName string, events []*keptnmodels.KeptnContextExtendedCE) {
 	c.Lock()
 	defer c.Unlock()
@@ -168,6 +176,7 @@ func (c *CloudEventsCache) Keep(topicName string, events []*keptnmodels.KeptnCon
 	c.cache[topicName] = eventsToKeep
 }
 
+// Lenghts returns the number of cached elements for a given topic
 func (c *CloudEventsCache) Length(topicName string) int {
 	c.RLock()
 	defer c.RUnlock()
