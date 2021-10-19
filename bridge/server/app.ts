@@ -9,7 +9,7 @@ import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import admZip from 'adm-zip';
-import { apiRouter } from './api';
+import { apiRouter } from './api/index';
 import { execSync } from 'child_process';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -248,7 +248,7 @@ async function setAuth(): Promise<string> {
     await setBasisAUTH();
   } else {
     authType = 'NONE';
-    console.error('Not installing authentication middleware');
+    console.log('Not installing authentication middleware');
   }
 
   return authType;
