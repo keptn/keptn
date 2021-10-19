@@ -90,14 +90,13 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	for index := range events {
 		event := *events[index]
 
-		logger.Infof("Check if event %s has already been sent", event.ID)
 		if p.ceCache.Contains(subscription.Event, event.ID) {
 			// Skip this event as it has already been sent
 			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
 			continue
 		}
 
-		logger.Infof("Adding additional data to event: <subscriptionID=%s>", subscription.ID)
+		logger.Infof("Adding temporary data to event: <subscriptionID=%s>", subscription.ID)
 		// add subscription ID as additional information to the keptn event
 		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{}); err != nil {
 			logger.Errorf("Unable to add temporary information about subscriptions to event: %v", err)
@@ -113,7 +112,6 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 				// Sending failed, remove from CloudEvents cache
 				p.ceCache.Remove(*event.Type, event.ID)
 			}
-			logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", subscription.Event, p.ceCache.Length(subscription.Event))
 		}()
 	}
 
