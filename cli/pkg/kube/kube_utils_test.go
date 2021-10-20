@@ -25,14 +25,15 @@ var checkSplitTests = []struct {
 	executeError   error
 }{
 	{">= 1.13, <= 1.15", false, "", v115, nil},
-	{">= 1.13, <= 1.15", true, "The Kubernetes Server Version '99.99' doesn't satisfy constraints '>= 1.13, <= 1.15'", v9999, nil},
-	{"< 1.13", true, "The Kubernetes Server Version '1.15' doesn't satisfy constraints '< 1.13'", v115, nil},
-	{"1.13", true, "The Kubernetes Server Version '1.15' doesn't satisfy constraints '1.13'", v115, nil},
+	{">= 1.13, <= 1.15", true, "", v9999, nil},
+	{"< 1.13", true, "", v115, nil},
+	{"1.13", true, "", v115, nil},
 	{"wrong constraints", false, "Malformed constraint: wrong constraints", v115, nil},
 	{">= 1.13, <= 1.15", false, "execute error", v115, errors.New("execute error")},
 	{">= 1.13, <= 1.15", false, "Server Version not found: no version", "no version", nil},
 	{">= 1.13, <= 1.15", false, "", v113Plus, nil},
 	{">= 1.13, <= 1.15", false, "", v113PlusBeta, nil},
+	{">= 1.14, <= 1.15", false, "The Kubernetes Server Version '1.13+beta' doesn't satisfy constraints '>= 1.14, <= 1.15'", v113PlusBeta, nil},
 }
 
 func TestSplitCheckKubeServerVersion(t *testing.T) {

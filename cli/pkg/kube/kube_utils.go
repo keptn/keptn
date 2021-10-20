@@ -85,8 +85,11 @@ func CheckKubeServerVersion(constraints string) (bool, error) {
 	if allConstraintsValid {
 		return false, nil
 	}
+	if isNewerVersion {
+		return true, nil
+	}
 
-	return isNewerVersion, fmt.Errorf("The Kubernetes Server Version '%s' doesn't satisfy constraints '%s'", serverVersion, constraints)
+	return false, fmt.Errorf("The Kubernetes Server Version '%s' doesn't satisfy constraints '%s'", serverVersion, constraints)
 }
 
 // checkIsNewVersion checks if the provided version is higher than all constraints and if all constraints are valid

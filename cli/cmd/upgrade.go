@@ -160,7 +160,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 
 	// check if Kubernetes server version is compatible (except OpenShift)
 	if *upgradeParams.PlatformIdentifier != platform.OpenShiftIdentifier {
-		if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil && !isNewerVersion {
+		if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 			logging.PrintLog(err.Error(), logging.VerboseLevel)
 			logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
