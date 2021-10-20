@@ -125,22 +125,21 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 
 func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.EventSubscription, keptnEvent models.KeptnContextExtendedCE, err error) error {
 	for i, subscription := range subscriptions {
-		cacheID := keptnEvent.ID + "-" + subscription.ID
 		// check if the event with the given ID has already been sent for the subscription
-		if n.ceCache.Contains(subscription.Event, cacheID) {
+		if n.ceCache.Contains(subscription.ID, keptnEvent.ID) {
 			// Skip this event as it has already been sent
 			logger.Infof("CloudEvent with ID %s has already been sent", keptnEvent.ID)
 			continue
 		}
 		logger.Infof("Sending CloudEvent with ID %s to %s", keptnEvent.ID, n.env.PubSubRecipient)
 		// add to CloudEvents cache
-		n.ceCache.Add(subscription.Event, cacheID)
+		n.ceCache.Add(subscription.ID, keptnEvent.ID)
 
 		defer func() {
 			// after some time, remove the cache entry
 			go func() {
 				<-time.After(10 * time.Second)
-				n.ceCache.Remove(subscription.Event, cacheID)
+				n.ceCache.Remove(subscription.ID, keptnEvent.ID)
 			}()
 		}()
 
