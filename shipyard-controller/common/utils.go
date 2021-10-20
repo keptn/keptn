@@ -8,6 +8,10 @@ import (
 
 type RollbackFunc func() error
 
+// ParseTimestamp tries to parse the given timestamp.
+// If for some reason, the provided value cannot be parsed, the current time is returned instead
+// Optionally, the function allows to pass an implementation of the Clock interface, which is then used for determining the fallback value that should be returned in case
+// the given timestamp could not be parsed
 func ParseTimestamp(ts string, theClock clock.Clock) time.Time {
 	parsedTime, err := timeutils.ParseTimestamp(ts)
 	if err != nil {
