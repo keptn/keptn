@@ -260,10 +260,7 @@ func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent
 	scope.Result = keptnv2.ResultPass
 	scope.Status = keptnv2.StatusUnknown // TODO: check which states should be set in case of cancellation
 
-	if err := sc.completeTaskSequence(scope, taskSequenceName, sequenceTriggeredEvent.ID); err != nil {
-		return err
-	}
-	return nil
+	return sc.completeTaskSequence(scope, taskSequenceName, sequenceTriggeredEvent.ID)
 }
 
 func (sc *shipyardController) cancelQueuedSequence(cancel common.SequenceControl) error {
