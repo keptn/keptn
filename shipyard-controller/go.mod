@@ -8,7 +8,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/swag v0.19.14 // indirect
-	github.com/go-test/deep v1.0.5
+	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/keptn/go-utils v0.10.0
