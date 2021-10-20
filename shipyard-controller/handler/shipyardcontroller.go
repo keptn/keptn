@@ -456,12 +456,31 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return err
 	}
 
-	// fetching shipyard file from project git repo
-	shipyard, err := sc.retrieveShipyard(eventScope.Project)
+	// fetching cached shipyard file from project git repo
+	shipyard, err := common.GetShipyard(eventScope.Project)
 	if err != nil {
 		msg := "could not retrieve shipyard: " + err.Error()
 		log.Error(msg)
 
+		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
+	}
+
+	// update the shipyard content of the project
+	shipyardContent, err := yaml.Marshal(shipyard)
+	if err != nil {
+		// log the error but continue
+		log.Errorf("could not encode shipyard file of project %s: %s", eventScope.Project, err.Error())
+	}
+	if err := sc.eventsDBOperations.UpdateShipyard(eventScope.Project, string(shipyardContent)); err != nil {
+		// log the error but continue
+		log.Errorf("could not update shipyard content of project %s: %s", eventScope.Project, err.Error())
+	}
+
+	// validate the shipyard version - only shipyard files following the current keptn spec are supported by the shipyard controller
+	err = common.ValidateShipyardVersion(shipyard)
+	if err != nil {
+		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
+		msg := fmt.Sprintf("invalid shipyard version: %s", err.Error())
 		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
 	}
 
@@ -491,41 +510,6 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		})
 	}
 	return sc.StartTaskSequence(event)
-}
-
-// retrieveShipyard tries to fetch the shipyard.yaml from the configuration service's resource API
-// if an error happens during the retrieval, the cached shipyard file of the materialized view representing the project will be used.
-func (sc *shipyardController) retrieveShipyard(project string) (*keptnv2.Shipyard, error) {
-	shipyard, err := common.GetShipyard(project)
-	if err != nil {
-		// log the error but continue
-		log.Errorf("could not retrieve shipyard file of project %s via resource API: %s", project, err.Error())
-		// if the shipyard resource could not be retrieved, use the cached shipyard as a fallback
-		cachedShipyard, err := sc.getCachedShipyard(project)
-		if err != nil {
-			return nil, err
-		}
-		return cachedShipyard, nil
-	}
-
-	// update the shipyard content of the project
-	shipyardContent, err := yaml.Marshal(shipyard)
-	if err != nil {
-		// log the error but continue
-		log.Errorf("could not encode shipyard file of project %s: %s", project, err.Error())
-	}
-	if err := sc.eventsDBOperations.UpdateShipyard(project, string(shipyardContent)); err != nil {
-		// log the error but continue
-		log.Errorf("could not update shipyard content of project %s: %s", project, err.Error())
-	}
-
-	// validate the shipyard version - only shipyard files following the current keptn spec are supported by the shipyard controller
-	err = common.ValidateShipyardVersion(shipyard)
-	if err != nil {
-		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
-		return nil, fmt.Errorf("invalid shipyard version: %s", err.Error())
-	}
-	return shipyard, nil
 }
 
 func (sc *shipyardController) onTriggerSequenceFailed(event models.Event, eventScope *models.EventScope, msg string, taskSequenceName string) error {

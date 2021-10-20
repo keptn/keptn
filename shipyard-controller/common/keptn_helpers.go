@@ -39,7 +39,6 @@ func GetShipyard(projectName string) (*keptnv2.Shipyard, error) {
 		return nil, errors.New("Could not get configuration-service URL: " + err.Error())
 	}
 	resourceHandler := keptnapi.NewResourceHandler(csEndpoint.String())
-	resourceHandler.HTTPClient.Timeout = 10 * time.Second
 	resource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
 	if err != nil {
 		return nil, errors.New("Could not retrieve shipyard.yaml for project " + projectName + ": " + err.Error())
