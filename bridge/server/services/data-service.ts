@@ -482,32 +482,32 @@ export class DataService {
     for (const stage of shipyard.spec.stages) {
       if (stage.sequences) {
         for (const sequence of stage.sequences) {
-          const seqPrefix = EventTypes.PREFIX + stage.name + '.' + sequence.name + '.';
-          dict[seqPrefix + SequenceState.TRIGGERED] = true;
-          dict[seqPrefix + SequenceState.STARTED] = true;
-          dict[seqPrefix + SequenceState.FINISHED] = true;
+          setEventsForDict(EventTypes.PREFIX + stage.name + '.' + sequence.name + '.');
 
           for (const task of sequence.tasks) {
             const taskPrefix = EventTypes.PREFIX + task.name + '.';
             if (!dict[taskPrefix + SequenceState.TRIGGERED]) {
-              dict[taskPrefix + SequenceState.TRIGGERED] = true;
-              dict[taskPrefix + SequenceState.STARTED] = true;
-              dict[taskPrefix + SequenceState.FINISHED] = true;
+              setEventsForDict(taskPrefix);
             }
           }
         }
       }
       // Evaluation sequence is not defined in shipyard but needed for every stage
-      const evalPrefix = EventTypes.PREFIX + stage.name + '.evaluation.';
-      dict[evalPrefix + SequenceState.TRIGGERED] = true;
-      dict[evalPrefix + SequenceState.STARTED] = true;
-      dict[evalPrefix + SequenceState.FINISHED] = true;
+      setEventsForDict(EventTypes.PREFIX + stage.name + '.evaluation.');
     }
+    // get-sli event is not defined in shipyard but needed
+    setEventsForDict(EventTypes.PREFIX + 'get-sli.');
 
     if (Object.keys(dict).length !== 0) {
       return dict;
     }
     return undefined;
+
+    function setEventsForDict(prefix: string): void {
+      dict[prefix + SequenceState.TRIGGERED] = true;
+      dict[prefix + SequenceState.STARTED] = true;
+      dict[prefix + SequenceState.FINISHED] = true;
+    }
   }
 
   public async getTraces(
