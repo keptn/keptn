@@ -1,0 +1,80 @@
+name: Build CLI
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+        description: 'Version string that should be used in image tags'
+      datetime:
+        type: string
+        required: true
+        description: 'Datetime of the current build'
+      build-matrix:
+        type: string
+        default: '{}'
+        required: true
+        description: 'Build matrix generated from changed artifacts in current branch'
+      build-everything:
+        type: boolean
+        required: true
+        description: 'Set to true if this is a special build where all artifacts need to be built'
+defaults:
+  run:
+    shell: bash
+jobs:
+  docker_build:
+    name: Docker Build
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(inputs.build-matrix) }}
+    env:
+      VERSION: ${{ inputs.version }}
+      DATETIME: ${{ inputs.datetime }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Docker Cache
+        id: docker_cache
+        if: matrix.config.should-run == 'true'
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't push images to dockerhub
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - id: docker_build_image
+        name: "Docker Build keptn/${{ matrix.config.artifact }}"
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || inputs.build-everything == 'true' )
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.config.working-dir }}
+          tags: |
+            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          build-args: |
+            version=${{ env.VERSION }}
+          push: true
+          pull: true
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

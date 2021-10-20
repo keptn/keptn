@@ -1,0 +1,112 @@
+name: Build CLI
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+      datetime:
+        type: string
+        required: false
+        default: ''
+      release:
+        description: 'Set to true if the current build is for a release'
+        type: boolean
+        required: false
+        default: false
+defaults:
+  run:
+    shell: bash
+env:
+  GO_VERSION: "^1.16"
+jobs:
+  build-cli:
+    name: Build Keptn CLI
+    strategy:
+      matrix:
+        include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "amd64"
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "arm"
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "arm64"
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+            GOOS: "darwin"
+            GOARCH: "amd64"
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+            GOOS: "darwin"
+            GOARCH: "arm64"
+          - platform: "ubuntu-20.04"
+            GOOS: "windows"
+            GOARCH: "amd64"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Checkout Code
+        uses: actions/checkout@v2.4.0
+      # cache go modules
+      - uses: actions/cache@v2.1.6
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
+      - name: Build CLI
+        env:
+          GOARCH: ${{ matrix.GOARCH }}
+          GOOS: ${{ matrix.GOOS }}
+          BRANCH: ${{ inputs.branch }}
+          VERSION: ${{ inputs.version }}
+          DATETIME: ${{ inputs.datetime }}
+          RELEASE_BUILD: ${{ inputs.release }}
+        run: |
+          FILE_ENDING=""
+          # overwrite file ending for windows binaries
+          if [[ "$GOOS" == "windows" ]]; then
+            FILE_ENDING=".exe"
+          fi
+
+          # determine output file name based on version, go os, architecture
+          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
+
+          if [[ "$BRANCH" == "master" ]] && [[ "$RELEASE_BUILD" == 'false' ]] && [[ "$DATETIME" != '' ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+          fi
+
+          if [[ "$GOOS" == "linux" ]]; then
+            # enable static build for linux
+            export CGO_ENABLED=0
+          fi
+
+          if [[ "$GOOS" == "darwin" ]]; then
+            # enable CGO for compiling docker credential helper natively
+            export CGO_ENABLED=1
+          fi
+
+          # build the binary using makefile
+          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
+          # verify output file exists
+          ls bin/${OUTPUT_EXECUTABLE_NAME}
+
+          # create a .tar.gz archive of the binary
+          mkdir dist
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
+
+      - name: Upload Keptn CLI as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: keptn-cli
+          path: dist/
