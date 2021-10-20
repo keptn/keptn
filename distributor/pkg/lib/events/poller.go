@@ -25,7 +25,7 @@ type EventSender interface {
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
 	eventSender          EventSender
-	ceCache              *CloudEventsCache
+	ceCache              *Cache
 	env                  config.EnvConfig
 	httpClient           *http.Client
 	eventMatcher         *EventMatcher
@@ -35,7 +35,7 @@ type Poller struct {
 func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
 	return &Poller{
 		eventSender:  eventSender,
-		ceCache:      NewCloudEventsCache(),
+		ceCache:      NewCache(),
 		env:          envConfig,
 		httpClient:   httpClient,
 		eventMatcher: NewEventMatcherFromEnv(envConfig),
@@ -90,35 +90,33 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	for index := range events {
 		event := *events[index]
 
-		logger.Infof("Adding additional data to event: <subscriptionID=%s>", subscription.ID)
-		// add subscription ID as additional information to the keptn event
-		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{}); err != nil {
-			logger.Error("Unable to add additional information about subscriptions to event")
-		}
-		logger.Infof("Check if event %s has already been sent", event.ID)
-
 		if p.ceCache.Contains(subscription.Event, event.ID) {
 			// Skip this event as it has already been sent
 			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
 			continue
 		}
-		logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
+
+		logger.Infof("Adding temporary data to event: <subscriptionID=%s>", subscription.ID)
+		// add subscription ID as additional information to the keptn event
+		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
+			logger.Errorf("Unable to add temporary information about subscriptions to event: %v", err)
+		}
+
 		// add to CloudEvents cache
 		p.ceCache.Add(*event.Type, event.ID)
+
 		go func() {
+			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
 			if err := p.sendEvent(event, subscription); err != nil {
 				logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
 				// Sending failed, remove from CloudEvents cache
 				p.ceCache.Remove(*event.Type, event.ID)
 			}
-			logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", subscription.Event, p.ceCache.Length(subscription.Event))
 		}()
 	}
 
-	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
-	// is not an open .triggered event anymore, it can be removed from the list
 	logger.Infof("Cleaning up list of sent events for topic %s", subscription.Event)
-	p.ceCache.Keep(subscription.Event, events)
+	p.ceCache.Keep(subscription.Event, ToIDs(events))
 }
 
 func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
@@ -201,6 +199,5 @@ func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription ke
 		return err
 	}
 
-	logger.Infof("sent event %s", event.ID())
 	return nil
 }
