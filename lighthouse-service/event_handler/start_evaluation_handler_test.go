@@ -434,7 +434,7 @@ func Test_getEvaluationTimestamps(t *testing.T) {
 				return
 			}
 
-			timeFormat := "2006-01-02T15:05:05.000Z"
+			timeFormat := timeutils.KeptnTimeFormatISO8601
 			gotParsedStart, err := time.Parse(timeFormat, gotStart)
 			require.Nil(t, err)
 
