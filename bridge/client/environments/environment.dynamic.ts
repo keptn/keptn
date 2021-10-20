@@ -1,3 +1,5 @@
+import { FeatureFlags } from '../../shared/interfaces/feature-flags';
+
 export interface WindowConfig {
   appTitle: string;
   logoUrl: string;
@@ -12,6 +14,22 @@ declare global {
 }
 
 export class DynamicEnvironment {
+  public appTitle?: string;
+  public logoUrl?: string;
+  public logoInvertedUrl?: string;
+  public production: boolean;
+  public appConfigUrl: string;
+  public baseUrl: string;
+  public featureFlags: FeatureFlags;
+  public pollingIntervalMillis?: number;
+
+  constructor() {
+    this.production = false;
+    this.appConfigUrl = 'assets/default-branding/app-config.json';
+    this.baseUrl = '/';
+    this.featureFlags = {};
+  }
+
   public get config(): WindowConfig {
     return (
       window.config || {

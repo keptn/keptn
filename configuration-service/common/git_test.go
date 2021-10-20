@@ -421,6 +421,71 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "push to upstream - no remote ref HEAD found, should continue",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+					if args[0] == "for-each-ref" {
+						return "master", nil
+					} else if args[0] == "remote" {
+						return `* remote origin
+						  Fetch URL: https://my-repo.git
+						  Push  URL: https://my-repo.git
+						  HEAD branch: master
+						  Remote branch:
+							release-0.8.0 tracked
+						  Local branch configured for 'git pull':
+							release-0.8.0 merges with remote release-0.8.0
+						  Local ref configured for 'git push':
+							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
+					} else if args[0] == "checkout" {
+						return "", nil
+					} else if args[0] == "push" {
+						return "", nil
+					} else if args[0] == "pull" && args[1] == "-s" {
+						return "", errors.New("Couldn't find remote ref HEAD")
+					}
+					return "", errors.New("unexpected command")
+				}},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+				repoURI: "https://my-repo.git",
+			},
+			wantErr: false,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"for-each-ref", "--format=%(refname:short)", "refs/heads/*"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"remote", "show", "origin"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"checkout", "master"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"pull", "-s", "recursive", "-X", "theirs", "https://my-repo.git"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"push", "--set-upstream", "https://my-repo.git", "master"},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

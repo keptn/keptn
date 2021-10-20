@@ -64,3 +64,5 @@ flags:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   statistics-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  webhook-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags

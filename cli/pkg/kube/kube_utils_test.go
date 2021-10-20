@@ -18,19 +18,22 @@ const v113PlusBeta = `Client Version: version.Info{Major:"1", Minor:"17", GitVer
 Server Version: version.Info{Major:"1", Minor:"13+beta", GitVersion:"v1.15.5", GitCommit:"20c265fef0741dd71a66480e35bd69f18351daea", GitTreeState:"clean", BuildDate:"2019-10-15T19:07:57Z", GoVersion:"go1.12.10", Compiler:"gc", Platform:"linux/amd64"}`
 
 var checkSplitTests = []struct {
-	constraints   string
-	err           string
-	executeOutput string
-	executeError  error
+	constraints    string
+	isNewerVersion bool
+	err            string
+	executeOutput  string
+	executeError   error
 }{
-	{">= 1.13, <= 1.15", "", v115, nil},
-	{">= 1.13, <= 1.15", "The Kubernetes Server Version '99.99' doesn't satisfy constraints '>= 1.13, <= 1.15'", v9999, nil},
-	{"< 1.13", "The Kubernetes Server Version '1.15' doesn't satisfy constraints '< 1.13'", v115, nil},
-	{"wrong constraints", "Malformed constraint: wrong constraints", v115, nil},
-	{">= 1.13, <= 1.15", "execute error", v115, errors.New("execute error")},
-	{">= 1.13, <= 1.15", "Server Version not found: no version", "no version", nil},
-	{">= 1.13, <= 1.15", "", v113Plus, nil},
-	{">= 1.13, <= 1.15", "", v113PlusBeta, nil},
+	{">= 1.13, <= 1.15", false, "", v115, nil},
+	{">= 1.13, <= 1.15", true, "", v9999, nil},
+	{"< 1.13", true, "", v115, nil},
+	{"1.13", true, "", v115, nil},
+	{"wrong constraints", false, "Malformed constraint: wrong constraints", v115, nil},
+	{">= 1.13, <= 1.15", false, "execute error", v115, errors.New("execute error")},
+	{">= 1.13, <= 1.15", false, "Server Version not found: no version", "no version", nil},
+	{">= 1.13, <= 1.15", false, "", v113Plus, nil},
+	{">= 1.13, <= 1.15", false, "", v113PlusBeta, nil},
+	{">= 1.14, <= 1.15", false, "The Kubernetes Server Version '1.13+beta' doesn't satisfy constraints '>= 1.14, <= 1.15'", v113PlusBeta, nil},
 }
 
 func TestSplitCheckKubeServerVersion(t *testing.T) {
@@ -46,12 +49,14 @@ func TestSplitCheckKubeServerVersion(t *testing.T) {
 		t.Run(tt.constraints, func(t *testing.T) {
 			executeOutput = tt.executeOutput
 			executeError = tt.executeError
-			err := CheckKubeServerVersion(tt.constraints)
+			isNewerVersion, err := CheckKubeServerVersion(tt.constraints)
+
 			if tt.err == "" {
 				require.NoError(t, err)
 			} else {
 				require.EqualError(t, err, tt.err)
 			}
+			require.Equal(t, isNewerVersion, tt.isNewerVersion)
 		})
 	}
 }

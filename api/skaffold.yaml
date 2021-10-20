@@ -1,10 +1,13 @@
-apiVersion: skaffold/v1beta13
+apiVersion: skaffold/v2beta22
 kind: Config
 build:
+  local:
+    useBuildkit: true
   artifacts:
     - image: keptn/api
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
+        target: production
         buildArgs:
           debugBuild: true
 deploy:

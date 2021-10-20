@@ -135,6 +135,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  */
 func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptncommon.Logger) (bool, error) {
 	os.RemoveAll(resultsDir)
+
 	os.MkdirAll(resultsDir, 0644)
 
 	// Step 1: Lets download all files that match /jmeter/ into a local temp directory
@@ -142,7 +143,9 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	// Implementing https://github.com/keptn/keptn/issues/2756
 	localTempDir := testInfo.Context
 	os.RemoveAll(localTempDir)
+
 	os.MkdirAll(localTempDir, 0644)
+
 	fileMatchPattern := JMeterConfigDirectory
 	primaryScriptDownloaded, downloadedFileCount, err := GetAllKeptnResources(testInfo.Project, testInfo.Stage, testInfo.Service, true, fileMatchPattern, workload.Script, localTempDir, logger)
 

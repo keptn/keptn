@@ -79,7 +79,10 @@ func (m *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) err
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	prjInterface := transformProjectToInterface(project)
+	prjInterface, err := transformProjectToInterface(project)
+	if err != nil {
+		return err
+	}
 
 	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.InsertOne(ctx, prjInterface)
@@ -97,7 +100,10 @@ func (m *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) err
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	prjInterface := transformProjectToInterface(project)
+	prjInterface, err := transformProjectToInterface(project)
+	if err != nil {
+		return err
+	}
 	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
 	if err != nil {
@@ -149,10 +155,13 @@ func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
 	return projectCollection
 }
 
-func transformProjectToInterface(prj *models.ExpandedProject) interface{} {
+func transformProjectToInterface(prj *models.ExpandedProject) (interface{}, error) {
 	// marshall and unmarshall again because for some reason the json tags of the golang struct of the project type are not considered
 	marshal, _ := json.Marshal(prj)
 	var prjInterface interface{}
-	json.Unmarshal(marshal, &prjInterface)
-	return prjInterface
+	err := json.Unmarshal(marshal, &prjInterface)
+	if err != nil {
+		return nil, err
+	}
+	return prjInterface, nil
 }

@@ -280,7 +280,10 @@ func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
 		return "", err
 	}
 	if err := ioutil.WriteFile(file.Name(), []byte(fileContent), os.ModeAppend); err != nil {
-		os.Remove(file.Name())
+		err = os.Remove(file.Name())
+		if err != nil {
+			return "", err
+		}
 		return "", err
 	}
 	return file.Name(), nil

@@ -48,7 +48,7 @@ echo "Changed files:"
 echo "$CHANGED_FILES"
 matrix_config='{"config":['
 # shellcheck disable=SC2016
-build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "test-folders": $test_folders, "go-flags": $go_flags }'
+build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run }'
 
 echo "Checking changed files against artifacts now"
 echo "::group::Check output"
@@ -72,8 +72,6 @@ for changed_file in $CHANGED_FILES; do
     artifact_fullname="${artifact}_ARTIFACT"
     artifact_folder="${artifact}_FOLDER"
     should_build_artifact="BUILD_${artifact}"
-    artifact_go_flags="${artifact}_GO_FLAGS"
-    artifact_test_folders="${artifact}_TEST_FOLDERS"
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
@@ -82,8 +80,6 @@ for changed_file in $CHANGED_FILES; do
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "${!should_build_artifact}" \
-        --arg test_folders "${!artifact_test_folders}" \
-        --arg go_flags "${!artifact_go_flags}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
@@ -100,8 +96,6 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     artifact_fullname="${artifact}_ARTIFACT"
     artifact_folder="${artifact}_FOLDER"
     should_build_artifact="BUILD_${artifact}"
-    artifact_go_flags="${artifact}_GO_FLAGS"
-    artifact_test_folders="${artifact}_TEST_FOLDERS"
 
     if [[ "${!should_build_artifact}" != 'true' ]]; then
       echo "Adding unchanged artifact $artifact to build matrix since build everything was requested"
@@ -109,8 +103,6 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "false" \
-        --arg test_folders "${!artifact_test_folders}" \
-        --arg go_flags "${!artifact_go_flags}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"

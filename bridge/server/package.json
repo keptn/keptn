@@ -14,7 +14,7 @@
     "url": "https://github.com/keptn/keptn/issues"
   },
   "dependencies": {
-    "adm-zip": "^0.5.7",
+    "adm-zip": "^0.5.9",
     "axios": "^0.21.4",
     "cookie-parser": "^1.4.5",
     "crypto-random-string": "^4.0.0",
@@ -42,6 +42,6 @@
     "nodemon": "^2.0.13",
     "supertest": "^6.1.6",
     "ts-jest": "^27.0.7",
-    "typescript": "^4.4.3"
+    "typescript": "^4.4.4"
   }
 }

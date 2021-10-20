@@ -1,10 +1,13 @@
-apiVersion: skaffold/v2beta10
+apiVersion: skaffold/v2beta22
 kind: Config
 build:
+  local:
+    useBuildkit: true
   artifacts:
     - image: keptn/helm-service
       docker:
         dockerfile: Dockerfile
+        target: production
 # Before executing this, install helm-service manually:
 # helm install helm-service https://github.com/keptn/keptn/releases/download/0.8.4/helm-service-0.8.4.tgz -n keptn
 deploy:
