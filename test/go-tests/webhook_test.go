@@ -33,6 +33,9 @@ spec:
         - name: "unallowedsequence"
           tasks:
             - name: "unallowedtask"
+        - name: "failedsequence"
+          tasks:
+            - name: "failedtask"
         - name: "mysequence"
           tasks:
             - name: "mytask"`
@@ -53,6 +56,11 @@ spec:
             key: "my-key"
       requests:
         - "curl http://shipyard-controller:8080/v1/project{{.unknownKey}}"
+    - type: "sh.keptn.event.failedtask.triggered"
+      subscriptionID: ${failedtask-sub-id}
+      sendFinished: true
+      requests:
+        - "curl http://shipyard-controller:8080/v1/some-unknown-api"
     - type: "sh.keptn.event.unallowedtask.triggered"
       subscriptionID: ${unallowedtask-sub-id}
       sendFinished: true
@@ -169,7 +177,7 @@ func Test_Webhook(t *testing.T) {
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
-	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask"}
+	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask", "failedtask"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
 	for _, taskType := range taskTypes {
@@ -252,6 +260,15 @@ func Test_Webhook(t *testing.T) {
 		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
 		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
 		require.Nil(t, decodedEvent["unknowntask"])
+	})
+
+	// Now, trigger another sequence that contains a task which results in a HTTP error status
+	sequencename = "failedsequence"
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "failedtask", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["failedtask"])
 	})
 }
 

@@ -27,7 +27,7 @@ type NATSEventReceiver struct {
 	closeChan             chan bool
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
-	ceCache               *CloudEventsCache
+	ceCache               *Cache
 	mutex                 *sync.Mutex
 	currentSubscriptions  []models.EventSubscription
 }
@@ -41,7 +41,7 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 		eventSender:           eventSender,
 		closeChan:             make(chan bool),
 		eventMatcher:          eventMatcher,
-		ceCache:               NewCloudEventsCache(),
+		ceCache:               NewCache(),
 		mutex:                 &sync.Mutex{},
 		natsConnectionHandler: nch,
 	}
@@ -146,7 +146,7 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 
 		// add subscription ID as additional information to the keptn event
 		if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
-			logger.WithError(err).Error("Unable to add additional information about subscriptions to event")
+			logger.WithError(err).Error("Unable to add temporary information about subscriptions to event")
 		}
 		// forward keptn event
 		err = n.sendEvent(keptnEvent, &subscriptions[i])

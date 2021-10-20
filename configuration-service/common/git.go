@@ -160,12 +160,18 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 			// create new remote origin in case updating was not possible
 			_, err := g.Executor.ExecuteCommand("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
 			if err != nil {
-				removeRemoteOrigin(project)
+				err = removeRemoteOrigin(project)
+				if err != nil {
+					return err
+				}
 				return obfuscateErrorMessage(err, credentials)
 			}
 		}
 		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
-			removeRemoteOrigin(project)
+			err = removeRemoteOrigin(project)
+			if err != nil {
+				return err
+			}
 			return fmt.Errorf("failed to set upstream: %v", err)
 		}
 	}
@@ -197,7 +203,10 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	}
 	err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
+		if !isNoRemoteHeadFoundError(err) {
+			return obfuscateErrorMessage(err, credentials)
+		}
 	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
 	if err != nil {
@@ -214,7 +223,10 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		}
 		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
+			if !isNoRemoteHeadFoundError(err) {
+				return obfuscateErrorMessage(err, credentials)
+			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
@@ -335,6 +347,10 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 func CloneRepo(project string, credentials common_models.GitCredentials) (bool, error) {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
 	return g.CloneRepo(project, credentials)
+}
+
+func isNoRemoteHeadFoundError(err error) bool {
+	return strings.Contains(err.Error(), "Couldn't find remote ref HEAD")
 }
 
 func getRepoURI(uri string, user string, token string) string {

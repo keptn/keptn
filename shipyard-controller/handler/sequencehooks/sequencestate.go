@@ -43,7 +43,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		Name:           sequenceName,
 		Service:        eventScope.Service,
 		Project:        eventScope.Project,
-		Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+		Time:           timeutils.GetKeptnTimeStamp(common.ParseTimestamp(event.Time, nil)),
 		Shkeptncontext: eventScope.KeptnContext,
 		State:          models.SequenceTriggeredState,
 		Stages:         []models.SequenceStateStage{},

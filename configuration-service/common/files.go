@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/base64"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -32,7 +33,10 @@ func WriteFile(path string, content []byte) error {
 
 	// delete the file and re-create it, if it existed previously
 	if !os.IsNotExist(err) {
-		DeleteFile(path)
+		err = DeleteFile(path)
+		if err != nil {
+			return err
+		}
 	}
 	file, err := os.Create(path)
 	if err != nil {
@@ -40,6 +44,7 @@ func WriteFile(path string, content []byte) error {
 	}
 	defer file.Close()
 
+	path = filepath.Clean(path)
 	file, err = os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		return err

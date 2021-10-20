@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"io/ioutil"
 )
 
 type FakeKeptn struct {
@@ -148,6 +150,7 @@ func (t TestResourceHandler) GetProjectResource(project string, resourceURI stri
 }
 
 func newResourceFromFile(filename string) *models.Resource {
+	filename = filepath.Clean(filename)
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil

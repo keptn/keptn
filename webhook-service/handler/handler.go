@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
 	logger "github.com/sirupsen/logrus"
+	"strings"
 )
 
 const webhookConfigFileName = "webhook/webhook.yaml"
@@ -55,14 +56,14 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 
 	secretEnvVars, err := th.gatherSecretEnvVars(*webhook)
 	if err != nil {
-		onError(err)
-		return nil, sdkError(err.Error(), err)
+		onError(err, secretEnvVars)
+		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
 	}
 	eventAdapter.Add("env", secretEnvVars)
 	responses, err = th.performWebhookRequests(*webhook, eventAdapter, responses)
 	if err != nil {
-		onError(err)
-		return nil, sdkError(err.Error(), err)
+		onError(err, secretEnvVars)
+		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
 	}
 
 	// check if the incoming event was a task.triggered event, and if the 'sendFinished'  property of the webhook was set to true
@@ -110,8 +111,8 @@ func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.Ke
 	return nil, sdkError(err.Error(), err)
 }
 
-func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, webhook *lib.Webhook) func(err error) {
-	return func(err error) {
+func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, webhook *lib.Webhook) func(err error, secrets map[string]string) {
+	return func(err error, secrets map[string]string) {
 		logger.WithError(err).Error("error during webhook execution")
 		whe, ok := err.(*lib.WebhookExecutionError)
 
@@ -122,7 +123,7 @@ func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn,
 			"labels":  eventAdapter.Labels(),
 			"result":  keptnv2.ResultFailed,
 			"status":  keptnv2.StatusErrored,
-			"message": err.Error(),
+			"message": removeSecretsFromMessage(err.Error(), secrets),
 		}
 
 		if ok && whe.PreExecutionError {
@@ -139,6 +140,14 @@ func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn,
 			}
 		}
 	}
+}
+
+func removeSecretsFromMessage(errMsg string, secrets map[string]string) string {
+	result := errMsg
+	for _, val := range secrets {
+		result = strings.ReplaceAll(result, val, "***")
+	}
+	return result
 }
 
 func (th *TaskHandler) sendFinishedEvent(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, result map[string]interface{}) {

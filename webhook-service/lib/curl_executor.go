@@ -72,6 +72,7 @@ type CmdCurlExecutor struct {
 	unAllowedURLs       []string
 	unAllowedCharacters []string
 	unAllowedOptions    []string
+	requiredOptions     []string
 	commandExecutor     ICommandExecutor
 }
 
@@ -87,6 +88,7 @@ func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOpt
 	executor := &CmdCurlExecutor{
 		unAllowedCharacters: []string{"$", "|", ";", ">", "$(", " &", "&&", "`", "/var/run"},
 		unAllowedOptions:    []string{"-o", "--output", "-F", "--form", "-T", "--upload-file", "-K", "--config"},
+		requiredOptions:     []string{"--fail-with-body"},
 		commandExecutor:     cmdExecutor,
 	}
 	for _, o := range opts {
@@ -103,7 +105,7 @@ func (ce *CmdCurlExecutor) Curl(curlCmd string) (string, error) {
 
 	resp, err := ce.commandExecutor.ExecuteCommand("curl", args[1:]...)
 	if err != nil {
-		return "", &CurlError{err: fmt.Errorf("error during curl request execution"), reason: RequestError}
+		return "", &CurlError{err: fmt.Errorf("error during curl request execution: %s.\nResponse: \n%s", err.Error(), resp), reason: RequestError}
 	}
 	return resp, nil
 }
@@ -138,6 +140,8 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 		return nil, &CurlError{err: err, reason: UnallowedURLError}
 	}
 
+	args = ce.appendOptions(args)
+
 	return args, nil
 }
 
@@ -159,6 +163,25 @@ func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
 		}
 	}
 	return nil
+}
+
+func (ce *CmdCurlExecutor) appendOptions(args []string) []string {
+	addOptions := []string{}
+	for _, requiredOption := range ce.requiredOptions {
+		optionFound := false
+		for _, arg := range args {
+			if arg == requiredOption {
+				optionFound = true
+				break
+			}
+		}
+		if optionFound {
+			continue
+		}
+		addOptions = append(addOptions, requiredOption)
+	}
+	args = append(args, addOptions...)
+	return args
 }
 
 func parseCommandLine(command string) ([]string, error) {
