@@ -119,7 +119,7 @@ jobs:
           fi
 
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
@@ -259,7 +259,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       - name: Build ${{ matrix.config.artifact }} test image
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
@@ -296,7 +296,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Checkout Code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       # cache go modules
       - uses: actions/cache@v2.1.6
@@ -353,7 +353,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Checkout Code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
       # cache go modules
       - uses: actions/cache@v2.1.6
         with:
@@ -426,7 +426,7 @@ jobs:
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       - name: Build Helm Charts
         id: build_helm_charts
@@ -480,7 +480,7 @@ jobs:
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1

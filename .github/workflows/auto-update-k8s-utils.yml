@@ -18,7 +18,7 @@ jobs:
           go-version: 1.16.x
 
       - name: Checkout code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       - name: Auto update go mod
         run: ./gh-actions-scripts/auto-update-utils.sh "${{ env.K8S_UTILS_TARGET }}" "kubernetes-utils"
