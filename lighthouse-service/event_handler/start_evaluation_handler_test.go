@@ -391,8 +391,8 @@ func Test_getEvaluationTimestamps(t *testing.T) {
 					},
 				},
 			},
-			wantStart: timeutils.GetKeptnTimeStamp(time.Now().UTC().Add(-10 * time.Minute).Round(time.Minute)),
-			wantEnd:   timeutils.GetKeptnTimeStamp(time.Now().UTC().Round(time.Minute)),
+			wantStart: timeutils.GetKeptnTimeStamp(time.Now().UTC().Add(-10 * time.Minute)),
+			wantEnd:   timeutils.GetKeptnTimeStamp(time.Now().UTC()),
 			wantErr:   false,
 		},
 		{
