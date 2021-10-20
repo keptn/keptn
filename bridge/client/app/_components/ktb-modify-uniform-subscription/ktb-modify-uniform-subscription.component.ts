@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
@@ -73,7 +73,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     private route: ActivatedRoute,
     private dataService: DataService,
     private router: Router,
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
+    private _changeDetectorRef: ChangeDetectorRef
   ) {
     const subscription$ = this.route.paramMap.pipe(
       map((paramMap) => ({
@@ -281,6 +282,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
 
     return type;
+  }
+
+  public webhookFormValidityChanged(isValid: boolean): void {
+    this.isWebhookFormValid = isValid;
+    this._changeDetectorRef.detectChanges();
   }
 
   public ngOnDestroy(): void {

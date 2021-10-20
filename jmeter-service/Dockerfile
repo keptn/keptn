@@ -1,7 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.16.2-alpine as builder
+FROM golang:1.16.2-alpine as builder-base
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
@@ -23,6 +23,12 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+FROM builder-base as builder-test
+
+CMD go test -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
+
+FROM builder-base as builder
+
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
@@ -32,7 +38,7 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3.14
+FROM alpine:3.14 as production
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn JMeter Service" \

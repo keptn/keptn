@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostBinding,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, HostBinding, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -21,9 +13,8 @@ import { Location } from '@angular/common';
   styleUrls: ['./ktb-service-view.component.scss'],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbServiceViewComponent implements OnInit, OnDestroy {
+export class KtbServiceViewComponent implements OnDestroy {
   @HostBinding('class') cls = 'ktb-service-view';
   private readonly unsubscribe$ = new Subject<void>();
   public project?: Project;
@@ -32,33 +23,25 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public isQualityGatesOnly = false;
 
   constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
     public location: Location
-  ) {}
-
-  ngOnInit(): void {
+  ) {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
-    });
-
-    this.dataService.changedDeployments.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this._changeDetectorRef.markForCheck();
     });
 
     const params$ = this.route.params.pipe(takeUntil(this.unsubscribe$));
 
     const project$ = params$.pipe(
       switchMap((params) => this.dataService.getProject(params.projectName)),
-      filter((project: Project | undefined): project is Project => !!project),
+      filter((project: Project | undefined): project is Project => !!project?.projectDetailsLoaded),
       takeUntil(this.unsubscribe$)
     );
 
     params$.pipe(take(1)).subscribe((params) => {
       this.serviceName = params.serviceName;
-      this._changeDetectorRef.markForCheck();
     });
 
     combineLatest([params$, project$])
@@ -96,7 +79,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       }
       this.dataService.loadOpenRemediations(project);
       this.project = project;
-      this._changeDetectorRef.markForCheck();
     });
   }
 
@@ -154,7 +136,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public selectService(projectName: string, serviceName: string): void {
     if (this.serviceName !== serviceName) {
       this.serviceName = serviceName;
-      this._changeDetectorRef.markForCheck();
     }
   }
 

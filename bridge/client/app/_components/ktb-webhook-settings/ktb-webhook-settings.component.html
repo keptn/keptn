@@ -19,10 +19,7 @@
       <dt-label class="required">URL</dt-label>
       <input #urlInput formControlName="url" dtInput placeholder="URL" />
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
-      <dt-error *ngIf="getFormControl('url').errors?.url?.pattern">URL must be a valid URL</dt-error>
-      <dt-error *ngIf="getFormControl('url').errors?.url?.special">
-        URL contains a special character causing it to be invalid. Please remove the special character.
-      </dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.url">URL must start with http(s)://</dt-error>
       <div dtSuffix>
         <ng-container
           [ngTemplateOutlet]="secretButton"
@@ -117,10 +114,7 @@
     <dt-form-field uitestid="edit-webhook-field-proxy">
       <dt-label>Proxy</dt-label>
       <input formControlName="proxy" type="url" dtInput placeholder="Proxy" />
-      <dt-error *ngIf="getFormControl('proxy').errors?.url?.pattern">Proxy must be a valid URL</dt-error>
-      <dt-error *ngIf="getFormControl('proxy').errors?.url?.special"
-        >Proxy contains a special character causing it to be invalid. Please remove the special character.</dt-error
-      >
+      <dt-error *ngIf="getFormControl('proxy').errors?.url">URL must start with http(s)://</dt-error>
     </dt-form-field>
   </div>
 </form>

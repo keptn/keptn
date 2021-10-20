@@ -1,5 +1,5 @@
-<div fxFlexFill>
-  <div class="container" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="project">
+<div fxFlexFill *ngIf="project; else loading">
+  <div class="container" fxFlex="34" fxLayout="column" fxLayoutGap="15px">
     <div fxFlex fxLayout="column" fxLayoutGap="15px">
       <div>
         <dt-info-group>
@@ -76,10 +76,19 @@
   <ng-template #noDeployment>
     <p class="m-0">
       Service not deployed yet. Use
-      <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer"
-        >keptn trigger delivery</a
+      <a
+        [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl"
+        target="_blank"
+        rel="noopener noreferrer"
       >
+        keptn trigger delivery
+      </a>
       to trigger a deployment.
     </p>
   </ng-template>
 </div>
+<ng-template #loading>
+  <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
+    <dt-loading-distractor>Loading …</dt-loading-distractor>
+  </div>
+</ng-template>

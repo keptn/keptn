@@ -7,6 +7,7 @@ import { ProblemStates } from './problem-states';
 import { DateUtil } from '../_utils/date.utils';
 import { Trace as tc, TraceData } from '../../../shared/models/trace';
 import { DtIconType } from '@dynatrace/barista-icons';
+import { KeptnService } from '../../../shared/models/keptn-service';
 
 class Trace extends tc {
   traces: Trace[] = [];
@@ -122,16 +123,6 @@ class Trace extends tc {
     return result;
   }
 
-  isFailedEvaluation(): string | undefined {
-    let result: string | undefined;
-    if (this.data) {
-      if (this.getFinishedEvent()?.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
-        result = this.data.stage;
-      }
-    }
-    return result;
-  }
-
   isWarning(stageName?: string): boolean {
     let result = false;
     if (this.getFinishedEvent()?.data.result === ResultTypes.WARNING) {
@@ -201,6 +192,10 @@ class Trace extends tc {
       : undefined;
   }
 
+  public isApprovalTriggered(): boolean {
+    return this.type === EventTypes.APPROVAL_TRIGGERED;
+  }
+
   public isApprovalPending(): boolean {
     let pending = true;
     for (let i = 0; i < this.traces.length && pending; ++i) {
@@ -239,6 +234,12 @@ class Trace extends tc {
 
   public isEvaluationInvalidation(): boolean {
     return this.type === EventTypes.EVALUATION_INVALIDATED;
+  }
+
+  public getEvaluationFinishedEvent(): Trace | undefined {
+    return this.findTrace(
+      (trace) => trace.source === KeptnService.LIGHTHOUSE_SERVICE && trace.type.endsWith(EventTypes.EVALUATION_FINISHED)
+    );
   }
 
   hasLabels(): boolean {

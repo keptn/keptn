@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.16.2-alpine as builder
+FROM golang:1.16.2-alpine as builder-base
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/configuration-service
@@ -22,6 +22,12 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+FROM builder-base as builder-test
+
+CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
+
+FROM builder-base as builder
+
 ENV REPLACE="version: ${version}"
 RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml
 
@@ -34,7 +40,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/configuration-service-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.14
+FROM alpine:3.14 as production
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn Configuration Service" \
@@ -55,7 +61,6 @@ RUN apk --update add --no-cache git
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/main /configuration-service
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger-original.yaml
-
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger.yaml
 # Replace contents for api proxy
 RUN sed -i "s|basePath: /v1|basePath: /api/configuration-service/v1 |g" /swagger-ui/swagger.yaml

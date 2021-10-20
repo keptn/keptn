@@ -5,11 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -26,6 +25,7 @@ const authErrorMsg = "This command requires to be authenticated. See \"keptn aut
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = NewRootCommand(version.NewVersionChecker())
+var rootCLIConfig config.CLIConfig
 
 func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 	rootCmd := &cobra.Command{
@@ -34,7 +34,7 @@ func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 		Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			runVersionCheck(vChecker, os.Args[1:])
+			runVersionCheck(vChecker, os.Args[1:], rootCLIConfig)
 		},
 	}
 	return rootCmd
@@ -81,27 +81,19 @@ func initConfig() {
 		logging.LogLevel = logging.QuietLevel
 	}
 
+	cfgMgr := config.NewCLIConfigManager()
+
 	if cfgFile != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".cli" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".cli")
+		cfgMgr.CLIConfigPath = cfgFile
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	logging.PrintLog(fmt.Sprintf("Using config file: %s", cfgMgr.CLIConfigPath), logging.VerboseLevel)
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		logging.PrintLog(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()), logging.InfoLevel)
+	var err error
+	rootCLIConfig, err = cfgMgr.LoadCLIConfig()
+	if err != nil {
+		logging.PrintLog(err.Error(), logging.InfoLevel)
 	}
 }
 
@@ -113,7 +105,13 @@ func (s *options) appendIfNotEmpty(newOption string) {
 	}
 }
 
-func runVersionCheck(vChecker *version.VersionChecker, flags []string) {
+// passing flags and cliConfig as arguments makes it easy to test this function
+func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig config.CLIConfig) {
+	// Don't check version if AutomaticVersionCheck is disabled
+	if !cliConfig.AutomaticVersionCheck {
+		return
+	}
+
 	// Server version won't be available during `install`
 	// because the Server is not installed yet
 	if isInstallSubCommand(flags) {

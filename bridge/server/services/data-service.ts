@@ -24,6 +24,8 @@ import { EventResult } from '../interfaces/event-result';
 import { Secret } from '../models/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 import { SecretScope } from '../../shared/interfaces/secret-scope';
+import { KeptnService } from '../../shared/models/keptn-service';
+import { SequenceState } from '../../shared/models/sequence';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -52,7 +54,7 @@ export class DataService {
     let remediations: Remediation[] = [];
 
     if (includeRemediation) {
-      remediations = await this.getRemediations(projectName);
+      remediations = await this.getOpenRemediations(projectName);
     }
     const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
@@ -198,13 +200,14 @@ export class DataService {
     projectName: string,
     sequenceName: string,
     stageName?: string,
-    keptnContext?: string
+    keptnContext?: string,
+    sequenceState?: SequenceState
   ): Promise<Sequence[]> {
     const response = await this.apiService.getSequences(
       projectName,
       this.MAX_SEQUENCE_PAGE_SIZE,
       sequenceName,
-      undefined,
+      sequenceState,
       undefined,
       undefined,
       keptnContext
@@ -231,8 +234,14 @@ export class DataService {
     return sequences.map((sequence) => Sequence.fromJSON(sequence));
   }
 
-  public async getRemediations(projectName: string): Promise<Remediation[]> {
-    const sequences = await this.getSequences(projectName, SequenceTypes.REMEDIATION);
+  public async getOpenRemediations(projectName: string): Promise<Remediation[]> {
+    const sequences = await this.getSequences(
+      projectName,
+      SequenceTypes.REMEDIATION,
+      undefined,
+      undefined,
+      SequenceState.STARTED
+    );
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
       const stageName = sequence.stages[0]?.name;
@@ -284,9 +293,18 @@ export class DataService {
     projectName?: string,
     stageName?: string,
     serviceName?: string,
-    eventType?: EventTypes
+    eventType?: EventTypes,
+    eventSource?: KeptnService
   ): Promise<Trace | undefined> {
-    const response = await this.apiService.getTraces(eventType, 1, projectName, stageName, serviceName, keptnContext);
+    const response = await this.apiService.getTraces(
+      eventType,
+      1,
+      projectName,
+      stageName,
+      serviceName,
+      keptnContext,
+      eventSource
+    );
     return response.data.events.shift();
   }
 
@@ -312,7 +330,8 @@ export class DataService {
         projectName,
         stageName,
         serviceName,
-        EventTypes.EVALUATION_FINISHED
+        EventTypes.EVALUATION_FINISHED,
+        KeptnService.LIGHTHOUSE_SERVICE
       );
       approvals.push({
         evaluationTrace,
@@ -377,7 +396,7 @@ export class DataService {
 
   public async getTasks(projectName: string): Promise<string[]> {
     const shipyard = await this.getShipyard(projectName);
-    const tasks: string[] = ['service.delete', 'service.create', 'evaluation'];
+    const tasks: string[] = ['evaluation'];
     for (const stage of shipyard.spec.stages) {
       if (stage.sequences) {
         for (const sequence of stage.sequences) {
@@ -574,7 +593,7 @@ export class DataService {
 
     if (webhookConfig.prevConfiguration) {
       const previousFilter = await this.getWebhookConfigFilter(webhookConfig.prevConfiguration.filter);
-      await this.removePreviousWebhooks(previousFilter, webhookConfig.prevConfiguration.type);
+      await this.removePreviousWebhooks(previousFilter, subscriptionId);
     }
 
     const secrets = await this.parseAndReplaceWebhookSecret(webhookConfig);
@@ -677,11 +696,11 @@ export class DataService {
     return previousWebhookConfig;
   }
 
-  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, type: string): Promise<void> {
+  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, subscriptionId: string): Promise<void> {
     for (const project of previousConfig.projects) {
       for (const stage of previousConfig.stages) {
         for (const service of previousConfig.services) {
-          await this.removeWebhook(type, project, stage, service);
+          await this.removeWebhook(subscriptionId, project, stage, service);
         }
       }
     }

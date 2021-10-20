@@ -1,4 +1,11 @@
-FROM node:14-alpine3.14 as bridgeBuilder
+FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test
+WORKDIR /usr/src/app
+COPY package.json yarn.lock /usr/src/app/
+RUN yarn install --frozen-lockfile
+COPY . /usr/src/app
+CMD yarn test && yarn test:ui && mv ./coverage/ /shared/coverage
+
+FROM node:14-alpine3.14 as builder-base
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -10,9 +17,11 @@ WORKDIR /usr/src/app
 COPY package.json yarn.lock /usr/src/app/
 RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
+
+FROM builder-base as bridge-builder
 RUN yarn build
 
-FROM node:14-alpine3.14 as bridgeServerBuilder
+FROM node:14-alpine3.14 as bridge-server-builder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -30,7 +39,7 @@ RUN yarn build && \
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:14-alpine3.14 as bridgeProduction
+FROM node:14-alpine3.14 as production
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn Bridge" \
@@ -49,10 +58,10 @@ ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local"
 ENV API_TOKEN ""
 
 # copy angular output from angularBuilder
-COPY --from=bridgeBuilder /usr/src/app/dist /usr/src/app/dist
-COPY --from=bridgeServerBuilder /usr/src/app/server/dist /usr/src/app/server/dist
-COPY --from=bridgeServerBuilder /usr/src/app/server/package.json /usr/src/app/server/
-COPY --from=bridgeServerBuilder /usr/src/app/server/node_modules /usr/src/app/server/node_modules
+COPY --from=bridge-builder /usr/src/app/dist /usr/src/app/dist
+COPY --from=bridge-server-builder /usr/src/app/server/dist /usr/src/app/server/dist
+COPY --from=bridge-server-builder /usr/src/app/server/package.json /usr/src/app/server/
+COPY --from=bridge-server-builder /usr/src/app/server/node_modules /usr/src/app/server/node_modules
 
 # Copy server static files
 COPY ./server/views /usr/src/app/server/views

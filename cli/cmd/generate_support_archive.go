@@ -307,6 +307,7 @@ func recursiveZip(pathToZip, destPath string) error {
 		if err != nil {
 			return err
 		}
+		filePath = filepath.Clean(filePath)
 		fsFile, err := os.Open(filePath)
 		if err != nil {
 			return err
@@ -553,6 +554,7 @@ func writeKeptnInstallerLog(logFileName string, dir string) {
 		writeErrorableStringResult(newErrorableStringResult("", err), filepath.Join(dir, logFileName))
 		return
 	}
+	path = filepath.Clean(path)
 	installerLog := filepath.Join(path, logFileName)
 	res, err := ioutil.ReadFile(installerLog)
 	writeErrorableStringResult(newErrorableStringResult(string(res), err), filepath.Join(dir, logFileName))

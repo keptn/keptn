@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.16.2-alpine as builder
+FROM golang:1.16.2-alpine as builder-base
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
@@ -19,13 +19,18 @@ COPY go.mod go.sum ./
 # Download dependencies
 RUN go mod download
 
+# Copy local code to the container image.
+COPY . .
+
+FROM builder-base as builder-test
+
+CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
+
+FROM builder-base as builder
 ARG debugBuild
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
-
-# Copy local code to the container image.
-COPY . .
 
 ENV REPLACE="version: ${version}"
 RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
@@ -36,8 +41,8 @@ RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/
 # either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
-# Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.14
+
+FROM alpine:3.14 as production
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn API" \

@@ -140,10 +140,10 @@ acorn@^7.1.1:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-7.4.1.tgz#feaed255973d2e77555b83dbc08851a6c63520fa"
   integrity sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==
 
-adm-zip@^0.5.7:
-  version "0.5.7"
-  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.5.7.tgz#86d73d2c9b7766024e47f736b31af71e253b6d8d"
-  integrity sha512-QLEo3eoC2B0i3+g/G5nNzKbGoVOjW2ingZ4TXl7/YeDM+FAl3SiHSNnokTZLFEuVHBn5CbZ42KJcIIsRji1EgQ==
+adm-zip@^0.5.9:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.5.9.tgz#b33691028333821c0cf95c31374c5462f2905a83"
+  integrity sha512-s+3fXLkeeLjZ2kLjCBwQufpI5fuN+kIGBxu6530nVQZGVol0d7Y/M88/xw9HGGUcJjKf8LutN3VPRUBq6N7Ajg==
 
 ansi-align@^3.0.0:
   version "3.0.0"
@@ -1586,10 +1586,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@^4.4.3:
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.3.tgz#bdc5407caa2b109efd4f82fe130656f977a29324"
-  integrity sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==
+typescript@^4.4.4:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
+  integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
 
 uid-safe@~2.1.5:
   version "2.1.5"

@@ -103,7 +103,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Check out code.
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       - name: Create downloads folder
         run: mkdir ~/downloads
@@ -156,7 +156,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.14.1
+        uses: dawidd6/action-download-artifact@v2.15.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -439,6 +439,11 @@ jobs:
       - name: Verify that Keptn CLI is authenticated using keptn status
         timeout-minutes: 1
         run: keptn status
+
+      - name: Update go-test dependencies
+        id: update_go_test_dependencies
+        continue-on-error: true
+        run: cd test/go-tests && go get ./...
 
       - name: Test Airgapped Images
         id: test_airgapped_images
@@ -749,7 +754,7 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
 
       - name: Debug - Output Branch
         run: echo $BRANCH
@@ -789,7 +794,7 @@ jobs:
           # Todo: some calculations should be done...
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.14.1
+        uses: dawidd6/action-download-artifact@v2.15.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -867,7 +872,7 @@ jobs:
       - name: Find PR number for current build
         id: find_pr_for_build
         if: always()
-        uses: jwalton/gh-find-current-pr@v1.2.0
+        uses: jwalton/gh-find-current-pr@v1.2.1
 
       - name: Create PR comment if tests failed
         # Only run if not on master branch and we have a PR number
@@ -1050,13 +1055,13 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.14.1
+        uses: dawidd6/action-download-artifact@v2.15.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}

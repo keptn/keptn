@@ -9,7 +9,7 @@ import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delet
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-secrets-list.component.html',
-  styleUrls: ['./ktb-secrets-list.component.scss'],
+  styleUrls: [],
 })
 export class KtbSecretsListComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();

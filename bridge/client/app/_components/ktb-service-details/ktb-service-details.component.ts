@@ -1,13 +1,5 @@
 import { Location } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { Component, Input, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { Deployment, DeploymentSelection } from '../../_models/deployment';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,7 +13,6 @@ import { ClipboardService } from '../../_services/clipboard.service';
   selector: 'ktb-service-details',
   templateUrl: './ktb-service-details.component.html',
   styleUrls: ['./ktb-service-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbServiceDetailsComponent implements OnDestroy {
   private _deploymentInfo?: DeploymentSelection;
@@ -54,12 +45,10 @@ export class KtbServiceDetailsComponent implements OnDestroy {
         this.validateStage(info);
         this._deploymentInfo = info;
       }
-      this._changeDetectorRef.markForCheck();
     }
   }
 
   constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
@@ -69,7 +58,6 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   ) {
     this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
       this.projectName = params.projectName;
-      this._changeDetectorRef.markForCheck();
     });
   }
 
@@ -133,7 +121,6 @@ export class KtbServiceDetailsComponent implements OnDestroy {
         stageName,
       ]);
       this.location.go(routeUrl.toString());
-      this._changeDetectorRef.markForCheck();
     }
   }
 

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Directive,
-  HostBinding,
-  Input,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, Directive, HostBinding, Input, ViewEncapsulation } from '@angular/core';
 
 @Directive({
   selector: `ktb-selectable-tile-header, [ktb-selectable-tile-header], [ktbSelectableTileHeader]`,
@@ -20,7 +12,6 @@ export class KtbSelectableTileHeaderDirective {}
   styleUrls: ['./ktb-selectable-tile.component.scss'],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSelectableTileComponent {
   @HostBinding('class') cls = 'ktb-selectable-tile';
@@ -42,7 +33,6 @@ export class KtbSelectableTileComponent {
   set selected(value: boolean) {
     if (this._selected !== value) {
       this._selected = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -57,7 +47,6 @@ export class KtbSelectableTileComponent {
   set disabled(value: boolean) {
     if (this._disabled && this._selected) {
       this._selected = false;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -71,7 +60,6 @@ export class KtbSelectableTileComponent {
   set error(value: boolean) {
     if (this._error !== value) {
       this._error = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -85,7 +73,6 @@ export class KtbSelectableTileComponent {
   set warning(value: boolean) {
     if (this._warning !== value) {
       this._warning = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -99,7 +86,6 @@ export class KtbSelectableTileComponent {
   set success(value: boolean) {
     if (this._success !== value) {
       this._success = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -113,9 +99,6 @@ export class KtbSelectableTileComponent {
   set highlight(value: boolean) {
     if (this._highlight !== value) {
       this._highlight = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
-
-  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 }

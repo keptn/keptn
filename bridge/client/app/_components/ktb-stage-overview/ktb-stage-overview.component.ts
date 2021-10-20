@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { Project } from '../../_models/project';
 import { Stage } from '../../_models/stage';
 import { DataService } from '../../_services/data.service';
@@ -15,7 +15,6 @@ import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-c
   selector: 'ktb-stage-overview',
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbStageOverviewComponent implements OnDestroy {
   public project?: Project;
@@ -29,12 +28,7 @@ export class KtbStageOverviewComponent implements OnDestroy {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType?: string }> = new EventEmitter();
   @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(
-    private dataService: DataService,
-    private apiService: ApiService,
-    private _changeDetectorRef: ChangeDetectorRef,
-    private route: ActivatedRoute
-  ) {
+  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {
     const project$ = this.route.params.pipe(
       map((params) => params.projectName),
       filter((projectName) => !!projectName),
@@ -79,8 +73,6 @@ export class KtbStageOverviewComponent implements OnDestroy {
           ] as DtFilterArray
       ),
     ];
-
-    this._changeDetectorRef.markForCheck();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,7 +84,6 @@ export class KtbStageOverviewComponent implements OnDestroy {
     }
     this.apiService.environmentFilter = this.globalFilter;
     this.filterChange.emit(this.filteredServices);
-    this._changeDetectorRef.markForCheck();
   }
 
   public filterServices(services: Service[]): Service[] {

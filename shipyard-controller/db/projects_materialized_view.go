@@ -188,7 +188,10 @@ func (mv *ProjectsMaterializedView) UpdatedShipyard(projectName string, shipyard
 
 	if existingProject.Shipyard != shipyard {
 		existingProject.Shipyard = shipyard
-		mv.ProjectRepo.UpdateProject(existingProject)
+		err = mv.ProjectRepo.UpdateProject(existingProject)
+		if err != nil {
+			return err
+		}
 		if err != nil {
 			log.Errorf("could not update shipyard of project %s: %s", projectName, err.Error())
 			return nil

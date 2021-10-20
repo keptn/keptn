@@ -19,7 +19,7 @@ class SecretsPage {
   }
 
   deleteSecret(SECRET_NAME: string | number | RegExp): void {
-    cy.get('dt-row.dt-row > dt-cell').contains(SECRET_NAME).next().children('button').click();
+    cy.get('dt-row.dt-row > dt-cell > p').contains(SECRET_NAME).parent().next().children('button').click();
     cy.get('span.dt-button-label').contains('Delete').click();
   }
 }
