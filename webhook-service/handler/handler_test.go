@@ -603,3 +603,45 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 	assert.Equal(t, keptnv2.StatusErrored, eventData.Status)
 	assert.Equal(t, keptnv2.ResultFailed, eventData.Result)
 }
+
+func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "", errors.New("unable to execute curl call containing secret my-secret-value")
+	}
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContent})
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	require.NotEmpty(t, secretReaderMock.ReadSecretCalls())
+	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
+	require.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+
+	//verify sent events
+	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+
+	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	eventData := &keptnv2.EventData{}
+	keptnv2.EventDataAs(finishedEvent, eventData)
+	require.Nil(t, err)
+	assert.Equal(t, keptnv2.StatusErrored, eventData.Status)
+	assert.Equal(t, keptnv2.ResultFailed, eventData.Result)
+	assert.NotContains(t, eventData.Message, "my-secret-value")
+}
