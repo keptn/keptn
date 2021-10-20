@@ -71,18 +71,23 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 	executionContext := NewExecutionContext(ctx, 1)
 	go poller.Start(executionContext)
 
-	poller.UpdateSubscriptions([]keptnmodels.EventSubscription{{
-		ID:    "id1",
-		Event: "sh.keptn.event.task.triggered",
-	},
+	poller.UpdateSubscriptions([]keptnmodels.EventSubscription{
+		{
+			ID:    "id1",
+			Event: "sh.keptn.event.task.triggered",
+		},
 		{
 			ID:    "id2",
 			Event: "sh.keptn.event.task2.triggered",
-		}},
-	)
+		},
+		{
+			ID:    "id3",
+			Event: "sh.keptn.event.task2.triggered",
+		},
+	})
 
 	assert.Eventually(t, func() bool {
-		if len(eventSender.SentEvents) != 2 {
+		if len(eventSender.SentEvents) != 3 {
 			return false
 		}
 		firstSentEvent := eventSender.SentEvents[0]
@@ -97,7 +102,13 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 		event.GetTemporaryData("distributor", &event2TmpData)
 		subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
 
-		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2"
+		thirdSentEvent := eventSender.SentEvents[2]
+		event3, _ := keptnv2.ToKeptnEvent(thirdSentEvent)
+		var event3TmpData map[string]interface{}
+		event3.GetTemporaryData("distributor", &event3TmpData)
+		subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
+
+		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2" && subscriptionIDInThirdEvent == "id3"
 	}, time.Second*time.Duration(5), time.Second)
 	cancel()
 	executionContext.Wg.Wait()
