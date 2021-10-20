@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Copyright © 2019 NAME HERE <EMAIL ADDRESS>
@@ -19,8 +20,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/common"
 
@@ -136,10 +138,17 @@ keptn install --hide-sensitive-data                                    # install
 
 			// check if Kubernetes server version is compatible (except OpenShift)
 			if *installParams.PlatformIdentifier != platform.OpenShiftIdentifier {
-				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+				if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
 					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
+				} else if isNewerVersion {
+					logging.PrintLog("The Kubernetes server version is higher than the one officially supported. This is not recommended and could have negative impacts on the stability of Keptn - use at your own risk.", logging.InfoLevel)
+					userConfirmation := userInput.AskBool("Do you want to continue?", &common.UserInputOptions{assumeYes})
+
+					if !userConfirmation {
+						return fmt.Errorf("Stopping installation.")
+					}
 				}
 			}
 
