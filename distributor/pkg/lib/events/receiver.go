@@ -131,7 +131,6 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 			logger.Infof("CloudEvent with ID %s has already been sent", keptnEvent.ID)
 			continue
 		}
-		logger.Infof("Sending CloudEvent with ID %s to %s", keptnEvent.ID, n.env.PubSubRecipient)
 		// add to CloudEvents cache
 		n.ceCache.Add(subscription.ID, keptnEvent.ID)
 
@@ -185,6 +184,7 @@ func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscript
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
+	logger.Infof("Sending CloudEvent with ID %s to %s", event.ID(), n.env.PubSubRecipient)
 	if err := n.eventSender.Send(ctx, event); err != nil {
 		logger.WithError(err).Error("Unable to send event")
 		return err
