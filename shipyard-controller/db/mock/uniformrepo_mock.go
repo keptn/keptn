@@ -26,6 +26,9 @@ import (
 // 			DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
 // 				panic("mock out the DeleteSubscription method")
 // 			},
+// 			DeleteSubscriptionsByNameFunc: func(subscriptionName string) error {
+// 				panic("mock out the DeleteServiceFromSubscriptions method")
+// 			},
 // 			DeleteUniformIntegrationFunc: func(id string) error {
 // 				panic("mock out the DeleteUniformIntegration method")
 // 			},
@@ -59,6 +62,9 @@ type UniformRepoMock struct {
 
 	// DeleteSubscriptionFunc mocks the DeleteSubscription method.
 	DeleteSubscriptionFunc func(integrationID string, subscriptionID string) error
+
+	// DeleteSubscriptionsByNameFunc mocks the DeleteServiceFromSubscriptions method.
+	DeleteSubscriptionsByNameFunc func(subscriptionName string) error
 
 	// DeleteUniformIntegrationFunc mocks the DeleteUniformIntegration method.
 	DeleteUniformIntegrationFunc func(id string) error
@@ -101,6 +107,11 @@ type UniformRepoMock struct {
 			// SubscriptionID is the subscriptionID argument value.
 			SubscriptionID string
 		}
+		// DeleteServiceFromSubscriptions holds details about calls to the DeleteServiceFromSubscriptions method.
+		DeleteSubscriptionsByName []struct {
+			// SubscriptionName is the subscriptionName argument value.
+			SubscriptionName string
+		}
 		// DeleteUniformIntegration holds details about calls to the DeleteUniformIntegration method.
 		DeleteUniformIntegration []struct {
 			// ID is the id argument value.
@@ -133,6 +144,7 @@ type UniformRepoMock struct {
 	lockCreateOrUpdateUniformIntegration sync.RWMutex
 	lockCreateUniformIntegration         sync.RWMutex
 	lockDeleteSubscription               sync.RWMutex
+	lockDeleteSubscriptionsByName        sync.RWMutex
 	lockDeleteUniformIntegration         sync.RWMutex
 	lockGetSubscription                  sync.RWMutex
 	lockGetSubscriptions                 sync.RWMutex
@@ -269,6 +281,37 @@ func (mock *UniformRepoMock) DeleteSubscriptionCalls() []struct {
 	mock.lockDeleteSubscription.RLock()
 	calls = mock.calls.DeleteSubscription
 	mock.lockDeleteSubscription.RUnlock()
+	return calls
+}
+
+// DeleteServiceFromSubscriptions calls DeleteSubscriptionsByNameFunc.
+func (mock *UniformRepoMock) DeleteServiceFromSubscriptions(subscriptionName string) error {
+	if mock.DeleteSubscriptionsByNameFunc == nil {
+		panic("UniformRepoMock.DeleteSubscriptionsByNameFunc: method is nil but UniformRepo.DeleteServiceFromSubscriptions was just called")
+	}
+	callInfo := struct {
+		SubscriptionName string
+	}{
+		SubscriptionName: subscriptionName,
+	}
+	mock.lockDeleteSubscriptionsByName.Lock()
+	mock.calls.DeleteSubscriptionsByName = append(mock.calls.DeleteSubscriptionsByName, callInfo)
+	mock.lockDeleteSubscriptionsByName.Unlock()
+	return mock.DeleteSubscriptionsByNameFunc(subscriptionName)
+}
+
+// DeleteSubscriptionsByNameCalls gets all the calls that were made to DeleteServiceFromSubscriptions.
+// Check the length with:
+//     len(mockedUniformRepo.DeleteSubscriptionsByNameCalls())
+func (mock *UniformRepoMock) DeleteSubscriptionsByNameCalls() []struct {
+	SubscriptionName string
+} {
+	var calls []struct {
+		SubscriptionName string
+	}
+	mock.lockDeleteSubscriptionsByName.RLock()
+	calls = mock.calls.DeleteSubscriptionsByName
+	mock.lockDeleteSubscriptionsByName.RUnlock()
 	return calls
 }
 

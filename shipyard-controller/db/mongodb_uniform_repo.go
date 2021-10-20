@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strings"
 	"time"
 )
 
@@ -304,4 +305,60 @@ func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUnifo
 	}
 
 	return result, nil
+}
+
+func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionName string) error {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	if err != nil {
+		return err
+	}
+	defer cancel()
+	/*
+		filter := bson.D{
+			{"$or", bson.A{
+				bson.D{{"subscription.filter.service", subscriptionName}},
+				bson.D{{"subscriptions.filter.services", subscriptionName}},
+			}},
+		}
+	*/
+	//cur, err := collection.Find(ctx,filter)
+
+	fetchedIntegrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: subscriptionName})
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		return err
+	}
+
+	//for cur.Next(ctx) {
+	//	integration := &models.Integration{}
+	for _, integration := range fetchedIntegrations {
+		//if err := cur.Decode(integration); err != nil {
+		// log the error, but continue
+		//	logger.Errorf("could not decode integration: %s", err.Error())
+		//}
+		services := strings.ReplaceAll(integration.Subscription.Filter.Service, subscriptionName+",", "")
+		services = strings.ReplaceAll(services, subscriptionName, "")
+		integration.Subscription.Filter.Service = services
+
+		for i, _ := range integration.Subscriptions {
+			subscription := &integration.Subscriptions[i]
+			newServices := []string{}
+			for j, _ := range subscription.Filter.Services {
+				service := &subscription.Filter.Services[j]
+				if *service != subscriptionName {
+					newServices = append(newServices, *service)
+				}
+			}
+			subscription.Filter.Services = newServices
+		}
+		opts := options.Update().SetUpsert(true)
+		filter := bson.D{{"_id", integration.ID}}
+		update := bson.D{{"$set", integration}}
+
+		_, err = collection.UpdateOne(ctx, filter, update, opts)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
