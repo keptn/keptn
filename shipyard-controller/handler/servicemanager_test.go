@@ -286,7 +286,8 @@ func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 func TestDeleteService(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore,uniformRepo)
 
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
@@ -312,6 +313,9 @@ func TestDeleteService(t *testing.T) {
 		return nil
 	}
 	projectMVRepo.DeleteServiceFunc = func(project string, stage string, service string) error {
+		return nil
+	}
+	uniformRepo.DeleteServiceFromSubscriptionsFunc = func(serviceName string) error {
 		return nil
 	}
 
