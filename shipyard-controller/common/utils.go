@@ -17,9 +17,8 @@ func ParseTimestamp(ts string, theClock clock.Clock) time.Time {
 	if err != nil {
 		if theClock == nil {
 			return time.Now().UTC()
-		} else {
-			return theClock.Now().UTC()
 		}
+		return theClock.Now().UTC()
 	}
 	return *parsedTime
 }
