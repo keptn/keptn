@@ -11,7 +11,7 @@
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
-        "version": "1.0"
+        "version": "develop"
     },
     "basePath": "/v1",
     "paths": {
@@ -205,13 +205,34 @@
                 }
             }
         },
+        "model.GetSecretResponseItem": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "keys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "scope": {
+                    "description": "Scope determines the scope of the secret (default=\"keptn-default\")",
+                    "type": "string"
+                }
+            }
+        },
         "model.GetSecretsResponse": {
             "type": "object",
             "properties": {
-                "secrets": {
+                "Secrets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.SecretMetadata"
+                        "$ref": "#/definitions/model.GetSecretResponseItem"
                     }
                 }
             }
@@ -225,21 +246,6 @@
                 "data": {
                     "$ref": "#/definitions/model.Data"
                 },
-                "name": {
-                    "type": "string"
-                },
-                "scope": {
-                    "description": "Scope determines the scope of the secret (default=\"keptn-default\")",
-                    "type": "string"
-                }
-            }
-        },
-        "model.SecretMetadata": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
                 "name": {
                     "type": "string"
                 },

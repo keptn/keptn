@@ -11,17 +11,12 @@ definitions:
       message:
         type: string
     type: object
-  model.GetSecretsResponse:
+  model.GetSecretResponseItem:
     properties:
-      secrets:
+      keys:
         items:
-          $ref: '#/definitions/model.SecretMetadata'
+          type: string
         type: array
-    type: object
-  model.Secret:
-    properties:
-      data:
-        $ref: '#/definitions/model.Data'
       name:
         type: string
       scope:
@@ -30,8 +25,17 @@ definitions:
     required:
     - name
     type: object
-  model.SecretMetadata:
+  model.GetSecretsResponse:
     properties:
+      Secrets:
+        items:
+          $ref: '#/definitions/model.GetSecretResponseItem'
+        type: array
+    type: object
+  model.Secret:
+    properties:
+      data:
+        $ref: '#/definitions/model.Data'
       name:
         type: string
       scope:
@@ -49,7 +53,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Secret Service API
-  version: "1.0"
+  version: develop
 paths:
   /secret:
     delete:
