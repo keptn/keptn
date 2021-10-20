@@ -435,7 +435,7 @@ export class DataService {
     projectName?: string | undefined,
     fromTime?: string | undefined
   ): Promise<EventResult> {
-    let tasksDict: { [type: string]: string } | undefined;
+    let tasksDict: { [type: string]: boolean | undefined } | undefined;
     let result: EventResult = {
       events: [],
       pageSize: 0,
@@ -475,35 +475,33 @@ export class DataService {
     return result;
   }
 
-  private async getTaskDict(projectName: string): Promise<{ [type: string]: string } | undefined> {
-    const dict: { [type: string]: string } = {};
-
+  private async getTaskDict(projectName: string): Promise<{ [type: string]: boolean | undefined } | undefined> {
+    const dict: { [type: string]: boolean | undefined } = {};
     const shipyard = await this.getShipyard(projectName);
 
-    const prefix = 'sh.keptn.event.';
     for (const stage of shipyard.spec.stages) {
       if (stage.sequences) {
         for (const sequence of stage.sequences) {
-          const seqPrefix = prefix + stage.name + '.' + sequence.name + '.';
-          dict[seqPrefix + SequenceState.TRIGGERED] = seqPrefix + SequenceState.TRIGGERED;
-          dict[seqPrefix + SequenceState.STARTED] = seqPrefix + SequenceState.STARTED;
-          dict[seqPrefix + SequenceState.FINISHED] = seqPrefix + SequenceState.FINISHED;
+          const seqPrefix = EventTypes.PREFIX + stage.name + '.' + sequence.name + '.';
+          dict[seqPrefix + SequenceState.TRIGGERED] = true;
+          dict[seqPrefix + SequenceState.STARTED] = true;
+          dict[seqPrefix + SequenceState.FINISHED] = true;
 
           for (const task of sequence.tasks) {
-            const taskPrefix = prefix + task.name + '.';
+            const taskPrefix = EventTypes.PREFIX + task.name + '.';
             if (!dict[taskPrefix + SequenceState.TRIGGERED]) {
-              dict[taskPrefix + SequenceState.TRIGGERED] = taskPrefix + SequenceState.TRIGGERED;
-              dict[taskPrefix + SequenceState.STARTED] = taskPrefix + SequenceState.STARTED;
-              dict[taskPrefix + SequenceState.FINISHED] = taskPrefix + SequenceState.FINISHED;
+              dict[taskPrefix + SequenceState.TRIGGERED] = true;
+              dict[taskPrefix + SequenceState.STARTED] = true;
+              dict[taskPrefix + SequenceState.FINISHED] = true;
             }
           }
         }
       }
       // Evaluation sequence is not defined in shipyard but needed for every stage
-      const evalPrefix = prefix + stage.name + '.evaluation.';
-      dict[evalPrefix + SequenceState.TRIGGERED] = evalPrefix + SequenceState.TRIGGERED;
-      dict[evalPrefix + SequenceState.STARTED] = evalPrefix + SequenceState.STARTED;
-      dict[evalPrefix + SequenceState.FINISHED] = evalPrefix + SequenceState.FINISHED;
+      const evalPrefix = EventTypes.PREFIX + stage.name + '.evaluation.';
+      dict[evalPrefix + SequenceState.TRIGGERED] = true;
+      dict[evalPrefix + SequenceState.STARTED] = true;
+      dict[evalPrefix + SequenceState.FINISHED] = true;
     }
 
     if (Object.keys(dict).length !== 0) {
