@@ -18,6 +18,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/go-utils/pkg/common/retry"
 )
 
 const (
@@ -260,10 +261,17 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	// hence we need to manually construct hostWithPort here
 	hostWithPort := fmt.Sprintf("%s:%s", serviceURL.Hostname(), derivePort(serviceURL))
 
-	if _, err := net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
-		return err
-	}
-	return nil
+	var err error = nil
+
+	_ = retry.Retry(func() error {
+		if _, err = net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
+			return err
+		}
+
+		return nil
+	}, retry.DelayBetweenRetries(time.Second*5), retry.NumberOfRetries(3))
+
+	return err
 }
 
 func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptncommon.Logger) error {
