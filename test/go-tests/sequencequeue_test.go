@@ -287,9 +287,18 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
+	sequenceContexts := []string{}
 	for i := 0; i < numSequences; i++ {
-		t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
-		_, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+		contextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+		t.Logf("triggered sequence %s with context %s", sequencename, contextID)
+		sequenceContexts = append(sequenceContexts, contextID)
+		if i == 0 {
+			// after triggering the first sequence, wait a few seconds to make sure this one is the first to be executed
+			// all other sequences should be sorted correctly internally
+			<-time.After(10 * time.Second)
+		} else {
+			<-time.After(2 * time.Second)
+		}
 	}
 	verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
 
@@ -302,7 +311,12 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 			}
 			for _, state := range states.States {
 				if state.State == scmodels.SequenceStartedState {
+					// make sure the sequences are started in the chronologically correct order
+					if sequenceContexts[i] != state.Shkeptncontext {
+						return false
+					}
 					currentActiveSequence = state
+					t.Logf("received expected active sequence: %s", state.Shkeptncontext)
 					return true
 				}
 			}
