@@ -165,8 +165,8 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 			logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 		} else if isNewerVersion {
-			logging.PrintLog("The Kubernetes server version is higher than the one that is officially supported. This could have impact in the stability of Keptn.", logging.InfoLevel)
-			userConfirmation := common.NewUserInput().AskBool("Do you still want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
+			logging.PrintLog("The Kubernetes server version is higher than the one officially supported. This is not recommended and could have negative impacts on the stability of Keptn - use at your own risk.", logging.InfoLevel)
+			userConfirmation := common.NewUserInput().AskBool("Do you want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
 
 			if !userConfirmation {
 				return fmt.Errorf("Stopping upgrade.")
