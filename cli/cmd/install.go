@@ -143,7 +143,7 @@ keptn install --hide-sensitive-data                                    # install
 					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 				} else if isNewerVersion {
-					logging.PrintLog("The Kubernetes server version is higher than the one that is officially supported", logging.InfoLevel)
+					logging.PrintLog("The Kubernetes server version is higher than the one that is officially supported. This could have impact in the stability of Keptn.", logging.InfoLevel)
 					userConfirmation := userInput.AskBool("Do you still want to continue?", &common.UserInputOptions{assumeYes})
 
 					if !userConfirmation {
