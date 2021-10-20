@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
-	github.com/go-test/deep v1.0.7
+	github.com/go-test/deep v1.0.8
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.10.0
