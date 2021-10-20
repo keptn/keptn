@@ -292,6 +292,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 		eventData                    keptncommon.EventProperties
 		keptnContext                 string
 		eventType                    string
+		eventSource                  string
 		expectUpdateStateToBeCalled  bool
 		expectEvaluationToBeUpdated  bool
 		expectFailedEventToBeUpdated bool
@@ -322,6 +323,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			expectUpdateStateToBeCalled: true,
 			keptnContext:                "my-context",
 			eventType:                   keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+			eventSource:                 sequencehooks.SequenceEvaluationService,
 			eventId:                     "my-id",
 			eventData: &keptnv2.EvaluationFinishedEventData{
 				EventData: keptnv2.EventData{
@@ -335,6 +337,47 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 				},
 			},
 			expectEvaluationToBeUpdated: true,
+		},
+		{
+			name: "update evaluation fails: not a lighthouse finished event",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{
+							States: []models.SequenceState{
+								{
+									Name:           "my-sequence",
+									Service:        "my-service",
+									Project:        "my-project",
+									Shkeptncontext: "my-context",
+									State:          "triggered",
+									Stages:         nil,
+								},
+							},
+						}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			expectUpdateStateToBeCalled: true,
+			keptnContext:                "my-context",
+			eventType:                   keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+			eventSource:                 "not-lighthouse",
+			eventId:                     "my-id",
+			eventData: &keptnv2.EvaluationFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-state",
+					Service: "my-service",
+					Result:  keptnv2.ResultPass,
+				},
+				Evaluation: keptnv2.EvaluationDetails{
+					Score: 100.0,
+				},
+			},
+			expectEvaluationToBeUpdated: false,
 		},
 		{
 			name: "failed task",
@@ -362,6 +405,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			expectUpdateStateToBeCalled: true,
 			keptnContext:                "my-context",
 			eventType:                   keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+			eventSource:                 sequencehooks.SequenceEvaluationService,
 			eventId:                     "my-id",
 			eventData: &keptnv2.EventData{
 				Project: "my-project",
@@ -379,6 +423,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 				ID:             tt.eventId,
 				Shkeptncontext: tt.keptnContext,
 				Type:           &tt.eventType,
+				Source:         &tt.eventSource,
 			}
 
 			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
@@ -411,6 +456,102 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 
 		})
 	}
+}
+
+func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testing.T) {
+
+	eventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
+	badSource := "not the right one"
+	goodSource := sequencehooks.SequenceEvaluationService
+
+	events := []models.Event{
+		{Shkeptncontext: "my-context",
+			Type:   &eventType,
+			Source: &badSource,
+			ID:     "my-id1",
+			Data: &keptnv2.EvaluationFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-state",
+					Service: "my-service",
+					Result:  keptnv2.ResultPass,
+				},
+				Evaluation: keptnv2.EvaluationDetails{
+					Score: 75.0,
+				},
+			},
+		},
+		{Shkeptncontext: "my-context",
+			Type:   &eventType,
+			Source: &goodSource,
+			ID:     "my-id2",
+			Data: &keptnv2.EvaluationFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-state",
+					Service: "my-service",
+					Result:  keptnv2.ResultPass,
+				},
+				Evaluation: keptnv2.EvaluationDetails{
+					Score: 100.0,
+				},
+			},
+		},
+		{
+			Shkeptncontext: "my-context",
+			Type:           &eventType,
+			Source:         &badSource,
+			ID:             "my-id3",
+			Data: &keptnv2.EvaluationFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-state",
+					Service: "my-service",
+					Result:  keptnv2.ResultPass,
+				},
+				Evaluation: keptnv2.EvaluationDetails{
+					Score: 55.0,
+				},
+			},
+		},
+	}
+
+	t.Run("multiple score test", func(t *testing.T) {
+
+		SequenceStateRepo := &db_mock.SequenceStateRepoMock{
+			FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				return &models.SequenceStates{
+					States: []models.SequenceState{
+						{
+							Name:           "my-sequence",
+							Service:        "my-service",
+							Project:        "my-project",
+							Shkeptncontext: "my-context",
+							State:          "triggered",
+							Stages:         nil,
+						},
+					},
+				}, nil
+			},
+			UpdateSequenceStateFunc: func(state models.SequenceState) error {
+				return nil
+			},
+		}
+		smv := sequencehooks.NewSequenceStateMaterializedView(SequenceStateRepo)
+
+		for i, event := range events {
+
+			smv.OnSequenceTaskFinished(event)
+			call := SequenceStateRepo.UpdateSequenceStateCalls()[i]
+			require.Equal(t, event.ID, call.State.Stages[0].LatestEvent.ID)
+			if *event.Source == goodSource {
+				goodScore := event.Data.(*keptnv2.EvaluationFinishedEventData).Evaluation.Score
+				require.Equal(t, goodScore, call.State.Stages[0].LatestEvaluation.Score)
+			} else {
+				require.Nil(t, call.State.Stages[0].LatestEvaluation)
+			}
+		}
+	})
 }
 
 func TestSequenceStateMaterializedView_OnSequenceTaskStarted(t *testing.T) {
