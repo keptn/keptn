@@ -1,27 +1,25 @@
 import request from 'supertest';
-import { Express } from 'express';
-// import {expect, jest, test, } from '@jest/globals';
-// eslint-disable-next-line import/no-extraneous-dependencies
-//
-// jest.mock(axios);
-// import { ShipyardResponse } from '../fixtures/shipyard-response';
-let app: Express;
+import MockAdapter from 'axios-mock-adapter';
+import { ShipyardResponse } from '../fixtures/shipyard-response';
+
+let axiosMock: MockAdapter;
 
 describe('Test the root path', () => {
-  beforeAll(async () => {
-    app = global.app;
+  beforeAll(() => {
+    axiosMock = new MockAdapter(global.axiosInstance);
   });
-  test('It should return bridgeInfo', async () => {
-    const response = await request(app).get('/api/bridgeInfo');
-    expect(response.body).toEqual({
-      apiUrl: global.baseUrl,
-      apiToken: 'apiToken',
-      cliDownloadLink: 'https://github.com/keptn/keptn/releases',
-      enableVersionCheckFeature: true,
-      showApiToken: true,
-      authType: 'NONE',
-    });
+
+  afterEach(() => {
+    axiosMock.reset();
+  });
+
+  it('should retrieve task names', async () => {
+    const projectName = 'sockshop';
+    axiosMock
+      .onGet(global.baseUrl + `/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
+      .reply(200, ShipyardResponse);
+    const response = await request(global.app).get(`/api/project/${projectName}/tasks`);
+    expect(response.body).toEqual(['evaluation', 'deployment', 'test', 'release', 'rollback', 'get-action', 'action']);
     expect(response.statusCode).toBe(200);
   });
-  it('should retrieve task names', async () => {});
 });

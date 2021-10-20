@@ -19,16 +19,20 @@ export class ApiService {
   private readonly escapeSlash = '%252F';
 
   constructor(private readonly baseUrl: string, private readonly apiToken: string) {
-    this.axios = Axios.create({
-      // accepts self-signed ssl certificate
-      httpsAgent: new https.Agent({
-        rejectUnauthorized: false,
-      }),
-      headers: {
-        'x-token': apiToken,
-        'Content-Type': 'application/json',
-      },
-    });
+    if (process.env.NODE_ENV === 'test' && global.axiosInstance) {
+      this.axios = global.axiosInstance;
+    } else {
+      this.axios = Axios.create({
+        // accepts self-signed ssl certificate
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+        headers: {
+          'x-token': apiToken,
+          'Content-Type': 'application/json',
+        },
+      });
+    }
   }
 
   public getProjects(): Promise<AxiosResponse<ProjectResult>> {
