@@ -265,11 +265,9 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 
 	_ = retry.Retry(func() error {
 		if _, err = net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
-			fmt.Printf("checkEndpointAvailable failed: %v", err)
 			return err
 		}
 
-		fmt.Printf("checkEndpointAvailable succeeded!")
 		return nil
 	}, retry.DelayBetweenRetries(time.Second*5), retry.NumberOfRetries(3))
 
