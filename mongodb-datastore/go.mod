@@ -10,7 +10,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.3
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
-	github.com/go-test/deep v1.0.7
+	github.com/go-test/deep v1.0.8
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.10.0
