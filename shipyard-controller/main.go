@@ -91,9 +91,16 @@ func main() {
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
 
+	uniformRepo := createUniformRepo()
+	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
+	if err != nil {
+		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
+	}
+
 	serviceManager := handler.NewServiceManager(
 		projectsMV,
 		common.NewGitConfigurationStore(csEndpoint.String()),
+		uniformRepo,
 	)
 
 	stageManager := handler.NewStageManager(projectsMV)
@@ -179,12 +186,6 @@ func main() {
 	)
 
 	watcher.Run(context.Background())
-
-	uniformRepo := createUniformRepo()
-	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
-	if err != nil {
-		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
-	}
 
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformRepo)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)

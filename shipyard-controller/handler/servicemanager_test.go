@@ -14,7 +14,8 @@ import (
 func TestCreateService_GettingStagesFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 
 	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -31,7 +32,8 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 
 	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -64,7 +66,8 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 
 	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -101,7 +104,8 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 
 	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -142,8 +146,8 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 func TestCreateService(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
-
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
@@ -198,8 +202,8 @@ func TestCreateService(t *testing.T) {
 func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
-
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
@@ -212,8 +216,8 @@ func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
-
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
@@ -247,8 +251,8 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore)
-
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
@@ -287,8 +291,8 @@ func TestDeleteService(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
-	instance := NewServiceManager(projectMVRepo, configurationStore,uniformRepo)
-
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
