@@ -1,8 +1,7 @@
-import { init } from '../app';
-import { Express } from 'express';
 import request from 'supertest';
+import { Express } from 'express';
+// import {expect, jest, test, } from '@jest/globals';
 // eslint-disable-next-line import/no-extraneous-dependencies
-// import { jest } from '@jest/globals';
 //
 // jest.mock(axios);
 // import { ShipyardResponse } from '../fixtures/shipyard-response';
@@ -10,14 +9,12 @@ let app: Express;
 
 describe('Test the root path', () => {
   beforeAll(async () => {
-    app = await init();
-    app.set('port', 80);
-    app.listen(80, '0.0.0.0');
+    app = global.app;
   });
   test('It should return bridgeInfo', async () => {
     const response = await request(app).get('/api/bridgeInfo');
     expect(response.body).toEqual({
-      apiUrl: 'http://localhost',
+      apiUrl: global.baseUrl,
       apiToken: 'apiToken',
       cliDownloadLink: 'https://github.com/keptn/keptn/releases',
       enableVersionCheckFeature: true,
@@ -26,4 +23,5 @@ describe('Test the root path', () => {
     });
     expect(response.statusCode).toBe(200);
   });
+  it('should retrieve task names', async () => {});
 });
