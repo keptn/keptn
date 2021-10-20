@@ -81,88 +81,148 @@ func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
-type CloudEventsCache struct {
+// Cache is used to store key value data
+type Cache struct {
 	sync.RWMutex
 	cache map[string][]string
 }
 
-func NewCloudEventsCache() *CloudEventsCache {
-	return &CloudEventsCache{
+// NewCache creates a new cache
+func NewCache() *Cache {
+	return &Cache{
 		cache: make(map[string][]string),
 	}
 }
 
-func (c *CloudEventsCache) Add(topicName, eventID string) {
+// Add adds a new element for a given key to the cache
+func (c *Cache) Add(key, element string) {
 	c.Lock()
 	defer c.Unlock()
 
-	eventsForTopic := c.cache[topicName]
+	eventsForTopic := c.cache[key]
 	for _, id := range eventsForTopic {
-		if id == eventID {
+		if id == element {
 			return
 		}
 	}
 
-	c.cache[topicName] = append(c.cache[topicName], eventID)
+	c.cache[key] = append(c.cache[key], element)
 }
 
-func (c *CloudEventsCache) Get(topicName string) []string {
+// Get returns all elements for a given key from the cache
+func (c *Cache) Get(key string) []string {
 	c.RLock()
 	defer c.RUnlock()
 
-	cp := make([]string, len(c.cache[topicName]))
-	copy(cp, c.cache[topicName])
+	cp := make([]string, len(c.cache[key]))
+	copy(cp, c.cache[key])
 	return cp
 }
 
-// Remove a CloudEvent with specified type from the cache
-func (c *CloudEventsCache) Remove(topicName, eventID string) bool {
+// Remove removes an element for a given key from the cache
+func (c *Cache) Remove(key, element string) bool {
 	c.Lock()
 	defer c.Unlock()
 
-	eventsForTopic := c.cache[topicName]
+	eventsForTopic := c.cache[key]
 	for index, id := range eventsForTopic {
-		if id == eventID {
-			// found
-			// make sure to store the result back in c.cache[topicName]
-			c.cache[topicName] = append(eventsForTopic[:index], eventsForTopic[index+1:]...)
+		if id == element {
+			// found, make sure to store the result back in c.cache[key]
+			c.cache[key] = append(eventsForTopic[:index], eventsForTopic[index+1:]...)
 			return true
 		}
 	}
 	return false
 }
 
-func (c *CloudEventsCache) Contains(topicName, eventID string) bool {
+// Contains checks whether the given element for a topic name is contained in the cache
+func (c *Cache) Contains(key, element string) bool {
 	c.RLock()
 	defer c.RUnlock()
 
-	eventsForTopic := c.cache[topicName]
-	for _, id := range eventsForTopic {
-		if id == eventID {
-			return true
-		}
-	}
-	return false
+	return c.contains(key, element)
 }
 
-func (c *CloudEventsCache) Keep(topicName string, events []*keptnmodels.KeptnContextExtendedCE) {
+// Keep deletes all elements for a topic from the cache except the ones given by events
+func (c *Cache) Keep(key string, elements []string) {
 	c.Lock()
 	defer c.Unlock()
 
+	// keeping 0 elements, means clearing the cache
+	if len(elements) == 0 {
+		c.clear(key)
+	}
+
+	// convert to raw ids without duplicates
+	ids := Dedup(elements)
+
+	// if none of the ids is known cached do nothing
+	if !c.containsSlice(key, ids) {
+		return
+	}
+
+	currentEventsForTopic := c.cache[key]
 	eventsToKeep := []string{}
-	eventsForTopic := c.cache[topicName]
-	for _, cacheEventID := range eventsForTopic {
-		for _, e := range events {
-			if cacheEventID == e.ID {
-				eventsToKeep = append(eventsToKeep, e.ID)
+	for _, idOfEventToKeep := range ids {
+		for _, e := range currentEventsForTopic {
+			if idOfEventToKeep == e {
+				eventsToKeep = append(eventsToKeep, e)
 			}
 		}
 	}
-	c.cache[topicName] = eventsToKeep
+	c.cache[key] = eventsToKeep
 }
 
-func (c *CloudEventsCache) Length(topicName string) int {
+// Lenghts returns the number of cached elements for a given topic
+func (c *Cache) Length(key string) int {
 	c.RLock()
 	defer c.RUnlock()
-	return len(c.cache[topicName])
+	return len(c.cache[key])
+}
+
+func (c *Cache) clear(key string) {
+	c.cache[key] = []string{}
+}
+
+func (c *Cache) contains(key, element string) bool {
+	eventsForTopic := c.cache[key]
+	for _, id := range eventsForTopic {
+		if id == element {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Cache) containsSlice(key string, elements []string) bool {
+	contains := false
+	for _, id := range elements {
+		if c.contains(key, id) {
+			contains = true
+			break
+		}
+	}
+	return contains
+}
+
+// ToIDs takes a list of cloud events and returns a list of ids of the given cloud events
+func ToIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
+	ids := []string{}
+	for _, e := range events {
+		ids = append(ids, e.ID)
+	}
+	return ids
+}
+
+// Dedup removes duplicate elements from the given list of strings
+func Dedup(elements []string) []string {
+	result := make([]string, 0, len(elements))
+	temp := map[string]struct{}{}
+	for _, el := range elements {
+		if _, ok := temp[el]; !ok {
+			temp[el] = struct{}{}
+			result = append(result, el)
+		}
+	}
+	return result
 }

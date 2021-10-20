@@ -3,14 +3,16 @@ package events
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 )
 
 func TestAddEvent(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t2", "e3")
@@ -22,7 +24,7 @@ func TestAddEvent(t *testing.T) {
 }
 
 func TestAddEventTwice(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e2")
@@ -31,7 +33,7 @@ func TestAddEventTwice(t *testing.T) {
 }
 
 func TestAddRemoveEvent(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e3")
@@ -48,16 +50,47 @@ func TestAddRemoveEvent(t *testing.T) {
 	assert.True(t, cache.Contains("t1", "e2"))
 }
 
+func TestKeep_NonExistingEvent(t *testing.T) {
+	cache := NewCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+	cache.Add("t1", "e3")
+
+	require.Equal(t, 3, cache.Length("t1"))
+	cache.Keep("t1", []string{"e0"})
+	assert.Equal(t, 3, cache.Length("t1"))
+}
+
+func TestKeep_WithDuplicates(t *testing.T) {
+	cache := NewCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+
+	require.Equal(t, 2, cache.Length("t1"))
+	cache.Keep("t1", []string{"e2", "e2"})
+	assert.Equal(t, 1, cache.Length("t1"))
+}
+
+func TestKeep_WithEmptyEvents(t *testing.T) {
+	cache := NewCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+
+	require.Equal(t, 2, cache.Length("t1"))
+	cache.Keep("t1", []string{})
+	assert.Equal(t, 0, cache.Length("t1"))
+}
+
 func TestKeep(t *testing.T) {
-	cache := NewCloudEventsCache()
+	cache := NewCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t2", "e3")
 	cache.Add("t2", "e4")
 	cache.Add("t2", "e5")
 
-	cache.Keep("t1", []*models.KeptnContextExtendedCE{ce("e2")})
-	cache.Keep("t2", []*models.KeptnContextExtendedCE{ce("e3"), ce("e5")})
+	cache.Keep("t1", []string{"e2"})
+	cache.Keep("t2", []string{"e3", "e5"})
 
 	assert.Equal(t, 1, cache.Length("t1"))
 	assert.Equal(t, 2, cache.Length("t2"))
@@ -372,4 +405,48 @@ func getExpectedCloudEvent() *cloudevents.Event {
 	event.SetExtension("shkeptncontext", "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb")
 	event.SetData(cloudevents.TextPlain, `""`)
 	return &event
+}
+
+func Test_toIDs(t *testing.T) {
+	type args struct {
+		events []*keptnmodels.KeptnContextExtendedCE
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{"ToIDs - empty list of events", args{[]*keptnmodels.KeptnContextExtendedCE{}}, []string{}},
+		{"ToIDs - one event", args{[]*keptnmodels.KeptnContextExtendedCE{ce("id1")}}, []string{"id1"}},
+		{"ToIDs - multiple events", args{[]*keptnmodels.KeptnContextExtendedCE{ce("id1"), ce("id2")}}, []string{"id1", "id2"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ToIDs(tt.args.events); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ToIDs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_dedup(t *testing.T) {
+	type args struct {
+		elements []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{"Dedup - empty list", args{[]string{}}, []string{}},
+		{"Dedup - with no duplicates", args{[]string{"1", "2"}}, []string{"1", "2"}},
+		{"Dedup - with duplicates", args{[]string{"1", "2", "1", "", ""}}, []string{"1", "2", ""}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Dedup(tt.args.elements); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Dedup() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
