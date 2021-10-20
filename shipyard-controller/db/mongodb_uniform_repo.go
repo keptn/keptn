@@ -340,9 +340,21 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 		services = strings.ReplaceAll(services, subscriptionName, "")
 		integration.Subscription.Filter.Service = services
 
-		for i, _ := range integration.Subscriptions {
+		totalSub := len(integration.Subscriptions)
+		for i := 0; i < totalSub; i++ {
 			subscription := &integration.Subscriptions[i]
 			newServices := []string{}
+
+			//remove subscription if it concerns only the deleted service
+			if len(subscription.Filter.Services) == 1 && subscription.Filter.Services[0] == subscriptionName {
+				copy(integration.Subscriptions[i:], integration.Subscriptions[i+1:])
+				integration.Subscriptions[totalSub-1] = keptnmodels.EventSubscription{}
+				integration.Subscriptions = integration.Subscriptions[:totalSub-1]
+				totalSub = len(integration.Subscriptions)
+				i--
+				continue
+			}
+			//otherwise remove service
 			for j, _ := range subscription.Filter.Services {
 				service := &subscription.Filter.Services[j]
 				if *service != subscriptionName {

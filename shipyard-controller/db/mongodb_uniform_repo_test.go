@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+type integrationTest struct {
+	Integration             models.Integration
+	WantedSubscriptionsSize int
+}
+
 func generateIntegrations() []models.Integration {
 
 	integration1 := models.Integration{
@@ -33,6 +38,22 @@ func generateIntegrations() []models.Integration {
 					Stages:   []string{"st1", "st2"},
 				},
 			},
+			{
+				Event: "sh.keptn.event.test",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr2"},
+					Services: []string{"sv1"},
+					Stages:   []string{"st1", "st2"},
+				},
+			},
+			{
+				Event: "sh.keptn.event",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr4"},
+					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1", "st2"},
+				},
+			},
 		},
 	}
 
@@ -45,7 +66,7 @@ func generateIntegrations() []models.Integration {
 			Filter: keptnmodels.SubscriptionFilter{
 				Project: "pr1",
 				Stage:   "st1,st2",
-				Service: "sv0,sv1,sv2",
+				Service: "sv0,sv2,sv1",
 			},
 		},
 		Subscriptions: []keptnmodels.EventSubscription{
@@ -78,6 +99,22 @@ func generateIntegrations() []models.Integration {
 				Filter: keptnmodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1"},
+				},
+			},
+			{
+				Event: "sh.keptn.event.deployment",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr1"},
+					Services: []string{},
+					Stages:   []string{},
+				},
+			},
+			{
+				Event: "sh.keptn.event.test",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr2"},
+					Services: []string{"sv1"},
 					Stages:   []string{"st1"},
 				},
 			},
@@ -120,7 +157,6 @@ func generateIntegrations() []models.Integration {
 	}
 	return []models.Integration{integration1, integration2, integration3, integration4, integration5}
 }
-
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	testIntegrations := generateIntegrations()
@@ -326,6 +362,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 	testIntegrations := generateIntegrations()
+	wantedSubscriptions := []int{2, 1, 2, 0, 0}
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
 
@@ -346,19 +383,20 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: "sv1"})
 	require.Equal(t, 0, len(integrations))
 
-	for _, ti := range testIntegrations {
+	for i, ti := range testIntegrations {
 		fetchedIntegration, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: ti.ID})
 		require.Equal(t, ti.Name, fetchedIntegration[0].Name)
 
-		t.Logf("CURRENT : \"%+v\\n\" ", ti)
+		t.Logf("CURRENT : \"%+v\\n\" ", ti.Subscriptions)
 		t.Logf(" -----------------")
-		t.Logf("FETCHED : \"%+v\\n\"", fetchedIntegration[0])
+		t.Logf("FETCHED : \"%+v\\n\"", fetchedIntegration[0].Subscriptions)
 
 		//if strings.Contains(ti.Subscription.Filter.Service, "sv1") {
 		services := strings.ReplaceAll(ti.Subscription.Filter.Service, "sv1,", "")
 		services = strings.ReplaceAll(services, "sv1", "")
 		//} else {
 		require.Equal(t, services, fetchedIntegration[0].Subscription.Filter.Service)
-
+		require.Equal(t, wantedSubscriptions[i], len(fetchedIntegration[0].Subscriptions))
 	}
+
 }
