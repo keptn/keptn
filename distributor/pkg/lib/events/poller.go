@@ -89,8 +89,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	// iterate over all events, discard the event if it has already been sent
 	for index := range events {
 		event := *events[index]
-		cacheID := event.ID + "-" + subscription.ID
-		if p.ceCache.Contains(subscription.Event, cacheID) {
+		if p.ceCache.Contains(subscription.ID, event.ID) {
 			// Skip this event as it has already been sent
 			logger.Infof("CloudEvent with ID %s has already been sent for subscription %s", event.ID, subscription.ID)
 			continue
@@ -103,19 +102,19 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		}
 
 		// add to CloudEvents cache
-		p.ceCache.Add(*event.Type, cacheID)
+		p.ceCache.Add(subscription.ID, event.ID)
 		go func() {
 			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
 			if err := p.sendEvent(event, subscription); err != nil {
 				logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
 				// Sending failed, remove from CloudEvents cache
-				p.ceCache.Remove(*event.Type, cacheID)
+				p.ceCache.Remove(subscription.ID, event.ID)
 			}
 		}()
 	}
 
 	logger.Infof("Cleaning up list of sent events for topic %s", subscription.Event)
-	p.ceCache.Keep(subscription.Event, ToIDs(events))
+	p.ceCache.Keep(subscription.ID, ToIDs(events))
 }
 
 func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
