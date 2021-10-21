@@ -43,12 +43,10 @@ export class DataServiceMock extends DataService {
 
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
     let totalCount;
-    let sequences;
+    let sequences: Sequence[];
     if (beforeTime) {
-      sequences = SequencesData.slice(
-        project.sequences.length,
-        project.sequences.length + this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE
-      );
+      const currentIndex = project.sequences?.length || 0;
+      sequences = SequencesData.slice(currentIndex, currentIndex + this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE);
       totalCount = sequences.length;
     } else {
       totalCount = SequencesData.length;
@@ -56,7 +54,7 @@ export class DataServiceMock extends DataService {
     }
     this.addNewSequences(project, sequences, !!beforeTime, oldSequence);
 
-    if (this.allSequencesLoaded(project.sequences.length, totalCount, fromTime, beforeTime)) {
+    if (this.allSequencesLoaded(project.sequences?.length || 0, totalCount, fromTime, beforeTime)) {
       project.allSequencesLoaded = true;
     }
     project.stages.forEach((stage) => {

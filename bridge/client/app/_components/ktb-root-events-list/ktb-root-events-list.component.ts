@@ -37,12 +37,12 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence; stage?: string }>();
 
   @Input()
-  get events(): Sequence[] {
+  get events(): Sequence[] | undefined {
     return this._events;
   }
 
-  set events(value: Sequence[]) {
-    if (this._events !== value) {
+  set events(value: Sequence[] | undefined) {
+    if (this._events !== value && value != undefined) {
       this._events = value;
       this._changeDetectorRef.markForCheck();
     }

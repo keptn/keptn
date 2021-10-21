@@ -105,7 +105,7 @@ describe('KtbRootEventsListComponent', () => {
     const selectedSequenceIndex = 1;
     dataService.loadSequences(project);
     component.events = project.sequences;
-    component.selectedEvent = project.sequences[selectedSequenceIndex];
+    component.selectedEvent = project.sequences?.[selectedSequenceIndex];
     fixture.detectChanges();
 
     // then
@@ -123,7 +123,7 @@ describe('KtbRootEventsListComponent', () => {
 
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
-    const eventData = { sequence: project.sequences[selectedSequenceIndex], stage: undefined };
+    const eventData = { sequence: project.sequences?.[selectedSequenceIndex], stage: undefined };
     targetSequence.click();
     fixture.detectChanges();
 
