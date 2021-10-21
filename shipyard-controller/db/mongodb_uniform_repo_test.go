@@ -375,7 +375,6 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 
 	integrations, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: "sv1"})
 	require.Len(t, integrations, 4)
-	t.Logf("FOUND : \"%+v\\n\"", integrations)
 
 	err := mdbrepo.DeleteServiceFromSubscriptions("sv1")
 	require.Nil(t, err)
@@ -387,14 +386,9 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 		fetchedIntegration, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: ti.ID})
 		require.Equal(t, ti.Name, fetchedIntegration[0].Name)
 
-		t.Logf("CURRENT : \"%+v\\n\" ", ti.Subscriptions)
-		t.Logf(" -----------------")
-		t.Logf("FETCHED : \"%+v\\n\"", fetchedIntegration[0].Subscriptions)
-
-		//if strings.Contains(ti.Subscription.Filter.Service, "sv1") {
 		services := strings.ReplaceAll(ti.Subscription.Filter.Service, "sv1,", "")
 		services = strings.ReplaceAll(services, "sv1", "")
-		//} else {
+
 		require.Equal(t, services, fetchedIntegration[0].Subscription.Filter.Service)
 		require.Equal(t, wantedSubscriptions[i], len(fetchedIntegration[0].Subscriptions))
 	}

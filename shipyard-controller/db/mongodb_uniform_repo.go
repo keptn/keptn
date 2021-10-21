@@ -313,29 +313,26 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 		return err
 	}
 	defer cancel()
-	/*
-		filter := bson.D{
-			{"$or", bson.A{
-				bson.D{{"subscription.filter.service", subscriptionName}},
-				bson.D{{"subscriptions.filter.services", subscriptionName}},
-			}},
-		}
-	*/
-	//cur, err := collection.Find(ctx,filter)
 
-	fetchedIntegrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: subscriptionName})
+	filter := bson.D{
+		{"$or", bson.A{
+			bson.D{{"subscription.filter.service", subscriptionName}},
+			bson.D{{"subscriptions.filter.services", subscriptionName}},
+		}},
+	}
+
+	cur, err := collection.Find(ctx, filter)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return err
 	}
 
-	//for cur.Next(ctx) {
-	//	integration := &models.Integration{}
-	for _, integration := range fetchedIntegrations {
-		//if err := cur.Decode(integration); err != nil {
-		// log the error, but continue
-		//	logger.Errorf("could not decode integration: %s", err.Error())
-		//}
+	for cur.Next(ctx) {
+		integration := &models.Integration{}
+		if err := cur.Decode(integration); err != nil {
+			//log the error, but continue
+			logger.Errorf("could not decode integration: %s", err.Error())
+		}
 		services := strings.ReplaceAll(integration.Subscription.Filter.Service, subscriptionName+",", "")
 		services = strings.ReplaceAll(services, subscriptionName, "")
 		integration.Subscription.Filter.Service = services
