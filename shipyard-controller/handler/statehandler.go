@@ -96,6 +96,9 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 		Project:      project,
 	})
 	if err != nil {
+		if err == ErrSequenceNotFound {
+			SetNotFoundErrorResponse(err, c, "Could not control sequence")
+		}
 		SetInternalServerErrorResponse(err, c, "Unable to control sequence")
 		return
 	}
