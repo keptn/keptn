@@ -87,6 +87,13 @@ func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 
 // ValidateShipyardStages godoc
 func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
+	// A shipyard must have at least one stage
+	if len(shipyard.Spec.Stages) == 0 {
+		errorMsg := "Shipyard must contain at least one stage.\n"
+		errorMsg += "Please update the Shipyard file and try again."
+		return errors.New(errorMsg)
+	}
+
 	for _, stage := range shipyard.Spec.Stages {
 		if stage.Name == "" {
 			return errors.New("all stages within the shipyard must have a name")
