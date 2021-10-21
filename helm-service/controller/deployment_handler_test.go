@@ -62,7 +62,7 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 		Deployment: keptnv2.DeploymentFinishedData{
 			DeploymentStrategy:   "user_managed",
 			DeploymentURIsPublic: []string{"https://myurl"},
-			DeploymentNames:      []string{"user-managed"},
+			DeploymentNames:      []string{"user_managed"},
 			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
@@ -263,7 +263,7 @@ func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t 
 			DeploymentStrategy:   "user_managed",
 			DeploymentURIsLocal:  []string{"https://my-local-url"},
 			DeploymentURIsPublic: []string{"https://myurl"},
-			DeploymentNames:      []string{"user-managed"},
+			DeploymentNames:      []string{"user_managed"},
 			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
@@ -328,7 +328,7 @@ func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *test
 		},
 		Deployment: keptnv2.DeploymentFinishedData{
 			DeploymentStrategy: "user_managed",
-			DeploymentNames:    []string{"user-managed"},
+			DeploymentNames:    []string{"user_managed"},
 			GitCommit:          "USER_CHART_GIT_ID",
 		},
 	})
