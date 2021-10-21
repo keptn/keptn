@@ -41,6 +41,7 @@ env:
   BRIDGE_SERVER_ARTIFACT: "bridge2"
   BRIDGE_SERVER_FOLDER: "bridge/"
   BRIDGE_SERVER_DOCKER_TEST_TARGET: "bridge-server-test"
+  BRIDGE_SERVER_SHOULD_PUSH_IMAGE: "false"
 
   API_ARTIFACT: "api"
   API_FOLDER: "api/"
@@ -566,7 +567,7 @@ jobs:
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' ) )
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
@@ -610,7 +611,7 @@ jobs:
 
       - id: docker_retag_image
         name: "Docker Retag keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null' && matrix.config.should-push-image == 'true'
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}

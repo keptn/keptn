@@ -50,7 +50,7 @@ echo "Changed files:"
 echo "$CHANGED_FILES"
 matrix_config='{"config":['
 # shellcheck disable=SC2016
-build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "docker-test-target": $docker_test_target }'
+build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "docker-test-target": $docker_test_target, "should-push-image": $should_push_image }'
 
 echo "Checking changed files against artifacts now"
 echo "::group::Check output"
@@ -75,6 +75,11 @@ for changed_file in $CHANGED_FILES; do
     artifact_folder="${artifact}_FOLDER"
     should_build_artifact="BUILD_${artifact}"
     docker_test_target="${artifact}_DOCKER_TEST_TARGET"
+    should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
+
+    if [ "${!should_push_image}" != "false" ]; then
+      should_push_image="true"
+    fi
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
@@ -84,6 +89,7 @@ for changed_file in $CHANGED_FILES; do
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "${!should_build_artifact}" \
         --arg docker_test_target "${!docker_test_target}" \
+        --arg should_push_image "${!should_push_image}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
@@ -106,8 +112,9 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
       artifact_config=$(jq -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
-        --arg docker_test_target "${!docker_test_target}" \
         --arg should_run "false" \
+        --arg docker_test_target "${!docker_test_target}" \
+        --arg should_push_image "${!should_push_image}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
