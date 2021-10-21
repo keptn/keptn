@@ -4,6 +4,7 @@ describe('Test the root path', () => {
   it('should return bridgeInfo', async () => {
     const response = await request(global.app).get('/api/bridgeInfo');
     expect(response.body).toEqual({
+      bridgeVersion: 'develop',
       apiUrl: global.baseUrl,
       apiToken: 'apiToken',
       cliDownloadLink: 'https://github.com/keptn/keptn/releases',
