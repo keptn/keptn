@@ -1,6 +1,6 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { catchError, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
+import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Trace } from '../_models/trace';
 import { DataService } from '../_services/data.service';
