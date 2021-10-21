@@ -135,3 +135,25 @@ func TestExtractImageOfDeploymentEvent(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateShipyardStages(t *testing.T) {
+	type args struct {
+		shipyard *keptnv2.Shipyard
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"valid stages", args{shipyard: &keptnv2.Shipyard{Spec: keptnv2.ShipyardSpec{Stages: []keptnv2.Stage{{Name: "stagename"}}}}}, false},
+		{"invalid stages - shall fail", args{shipyard: &keptnv2.Shipyard{Spec: keptnv2.ShipyardSpec{Stages: []keptnv2.Stage{{}}}}}, true},
+		{"empty stages - shall fail", args{shipyard: &keptnv2.Shipyard{Spec: keptnv2.ShipyardSpec{Stages: []keptnv2.Stage{}}}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ValidateShipyardStages(tt.args.shipyard); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateShipyardStages() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
