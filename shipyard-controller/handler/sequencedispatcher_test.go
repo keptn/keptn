@@ -161,3 +161,24 @@ func TestSequenceDispatcher(t *testing.T) {
 	// item should have been added to queue
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
 }
+
+func TestSequenceDispatcher_Remove(t *testing.T) {
+	mockSequenceQueueRepo := &db_mock.SequenceQueueRepoMock{
+		DeleteQueuedSequencesFunc: func(itemFilter models.QueueItem) error {
+			return nil
+		},
+	}
+
+	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, mockSequenceQueueRepo, nil, 10*time.Second, nil)
+
+	myScope := models.EventScope{
+		EventData:    keptnv2.EventData{Project: "my-project"},
+		KeptnContext: "my-context",
+	}
+	err := sequenceDispatcher.Remove(myScope)
+
+	require.Nil(t, err)
+
+	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
+	require.Equal(t, models.QueueItem{Scope: myScope}, mockSequenceQueueRepo.DeleteQueuedSequencesCalls()[0].ItemFilter)
+}

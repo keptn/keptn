@@ -18,6 +18,9 @@ import (
 // 			AddFunc: func(queueItem models.QueueItem) error {
 // 				panic("mock out the Add method")
 // 			},
+// 			RemoveFunc: func(eventScope models.EventScope) error {
+// 				panic("mock out the Remove method")
+// 			},
 // 			RunFunc: func(ctx context.Context, startSequenceFunc func(event models.Event) error)  {
 // 				panic("mock out the Run method")
 // 			},
@@ -31,6 +34,9 @@ type ISequenceDispatcherMock struct {
 	// AddFunc mocks the Add method.
 	AddFunc func(queueItem models.QueueItem) error
 
+	// RemoveFunc mocks the Remove method.
+	RemoveFunc func(eventScope models.EventScope) error
+
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context, startSequenceFunc func(event models.Event) error)
 
@@ -41,6 +47,11 @@ type ISequenceDispatcherMock struct {
 			// QueueItem is the queueItem argument value.
 			QueueItem models.QueueItem
 		}
+		// Remove holds details about calls to the Remove method.
+		Remove []struct {
+			// EventScope is the eventScope argument value.
+			EventScope models.EventScope
+		}
 		// Run holds details about calls to the Run method.
 		Run []struct {
 			// Ctx is the ctx argument value.
@@ -49,8 +60,9 @@ type ISequenceDispatcherMock struct {
 			StartSequenceFunc func(event models.Event) error
 		}
 	}
-	lockAdd sync.RWMutex
-	lockRun sync.RWMutex
+	lockAdd    sync.RWMutex
+	lockRemove sync.RWMutex
+	lockRun    sync.RWMutex
 }
 
 // Add calls AddFunc.
@@ -81,6 +93,37 @@ func (mock *ISequenceDispatcherMock) AddCalls() []struct {
 	mock.lockAdd.RLock()
 	calls = mock.calls.Add
 	mock.lockAdd.RUnlock()
+	return calls
+}
+
+// Remove calls RemoveFunc.
+func (mock *ISequenceDispatcherMock) Remove(eventScope models.EventScope) error {
+	if mock.RemoveFunc == nil {
+		panic("ISequenceDispatcherMock.RemoveFunc: method is nil but ISequenceDispatcher.Remove was just called")
+	}
+	callInfo := struct {
+		EventScope models.EventScope
+	}{
+		EventScope: eventScope,
+	}
+	mock.lockRemove.Lock()
+	mock.calls.Remove = append(mock.calls.Remove, callInfo)
+	mock.lockRemove.Unlock()
+	return mock.RemoveFunc(eventScope)
+}
+
+// RemoveCalls gets all the calls that were made to Remove.
+// Check the length with:
+//     len(mockedISequenceDispatcher.RemoveCalls())
+func (mock *ISequenceDispatcherMock) RemoveCalls() []struct {
+	EventScope models.EventScope
+} {
+	var calls []struct {
+		EventScope models.EventScope
+	}
+	mock.lockRemove.RLock()
+	calls = mock.calls.Remove
+	mock.lockRemove.RUnlock()
 	return calls
 }
 

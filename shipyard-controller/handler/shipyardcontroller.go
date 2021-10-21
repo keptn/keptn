@@ -20,6 +20,7 @@ import (
 const maxRepoReadRetries = 5
 
 var ErrNoMatchingEvent = errors.New("no matching event found")
+var ErrSequenceNotFound = errors.New("sequence not found")
 var shipyardControllerInstance *shipyardController
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
@@ -219,7 +220,8 @@ func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) erro
 		return err
 	}
 	if len(sequences) == 0 {
-		return fmt.Errorf("could not find open sequence events for sequence %s", cancel.KeptnContext)
+		log.Infof("no active sequence for context %s found. Trying to remove it from the queue", cancel.KeptnContext)
+		return sc.cancelQueuedSequence(cancel)
 	}
 
 	// delete all open .triggered events for the task sequence
@@ -227,7 +229,7 @@ func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) erro
 		err := sc.eventRepo.DeleteEvent(cancel.Project, sequenceEvent.TriggeredEventID, common.TriggeredEvent)
 		if err != nil {
 			// log the error, but continue
-			log.WithError(err).Error("could not delete ")
+			log.WithError(err).Error("could not delete event")
 		}
 	}
 
@@ -242,21 +244,65 @@ func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) erro
 	}, lastTaskOfSequence.TaskSequenceName)
 
 	if sequenceTriggeredEvent != nil {
-		sc.onSequenceFinished(*sequenceTriggeredEvent)
-		scope, err := models.NewEventScope(*sequenceTriggeredEvent)
-		if err != nil {
-			return err
-		}
-
-		scope.Result = keptnv2.ResultPass
-		scope.Status = keptnv2.StatusUnknown // TODO: check which states should be set in case of cancellation
-
-		if err := sc.completeTaskSequence(scope, lastTaskOfSequence.TaskSequenceName, sequenceTriggeredEvent.ID); err != nil {
-			return err
-		}
+		return sc.forceTaskSequenceCompletion(sequenceTriggeredEvent, lastTaskOfSequence.TaskSequenceName)
 	}
 
 	return nil
+}
+
+func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent *models.Event, taskSequenceName string) error {
+	sc.onSequenceFinished(*sequenceTriggeredEvent)
+	scope, err := models.NewEventScope(*sequenceTriggeredEvent)
+	if err != nil {
+		return err
+	}
+
+	scope.Result = keptnv2.ResultPass
+	scope.Status = keptnv2.StatusUnknown // TODO: check which states should be set in case of cancellation
+
+	return sc.completeTaskSequence(scope, taskSequenceName, sequenceTriggeredEvent.ID)
+}
+
+func (sc *shipyardController) cancelQueuedSequence(cancel common.SequenceControl) error {
+	// first, remove the sequence from the queue
+	err := sc.sequenceDispatcher.Remove(
+		models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: cancel.Project,
+				Stage:   cancel.Stage,
+			},
+			KeptnContext: cancel.KeptnContext,
+		},
+	)
+
+	if err != nil {
+		log.WithError(err).Errorf("could not remove sequence %s from sequence queue", cancel.KeptnContext)
+	}
+
+	events, err := sc.eventRepo.GetEvents(
+		cancel.Project,
+		common.EventFilter{KeptnContext: &cancel.KeptnContext, Stage: &cancel.Stage},
+		common.TriggeredEvent,
+	)
+	if err != nil {
+		if err == db.ErrNoEventFound {
+			return ErrSequenceNotFound
+		}
+		return err
+	} else if len(events) == 0 {
+		return ErrSequenceNotFound
+	}
+	// the first event of the context should be a task sequence event that contains the sequence name
+	sequenceTriggeredEvent := events[0]
+	if !keptnv2.IsSequenceEventType(*sequenceTriggeredEvent.Type) {
+		return ErrSequenceNotFound
+	}
+	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*sequenceTriggeredEvent.Type)
+	if err != nil {
+		return err
+	}
+
+	return sc.forceTaskSequenceCompletion(&sequenceTriggeredEvent, sequenceName)
 }
 
 func (sc *shipyardController) timeoutSequence(timeout common.SequenceTimeout) error {
