@@ -11,7 +11,8 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "${KEPTN_NAMESPACE}" -o 
 ########################################################################################################################
 # Testcase 1: backwards compatibility for 0.7.x evaluation-done events
 ########################################################################################################################
-
+# disable the automatic version check to avoid any interference when parsing the responses from the CLI output
+keptn set config AutomaticVersionCheck false
 # feed a legacy evaluation-done event to Keptn
 echo "Testing backwards compatibility with Kepn 0.7.x evaluation-done events"
 
