@@ -18,6 +18,7 @@ env:
   INSTALLER_FOLDER: "installer/"
   
   BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
+  BRIDGE_SERVER_ARTIFACT_PREFIX: "BRIDGE_SERVER"
   API_ARTIFACT_PREFIX: "API"
   OS_ROUTE_SVC_ARTIFACT_PREFIX: "OS_ROUTE_SVC"
   JMETER_SVC_ARTIFACT_PREFIX: "JMETER_SVC"
@@ -35,48 +36,67 @@ env:
 
   BRIDGE_ARTIFACT: "bridge2"
   BRIDGE_FOLDER: "bridge/"
+  BRIDGE_DOCKER_TEST_TARGET: "builder-test"
+
+  BRIDGE_SERVER_ARTIFACT: "bridge2"
+  BRIDGE_SERVER_FOLDER: "bridge/"
+  BRIDGE_SERVER_DOCKER_TEST_TARGET: "bridge-server-test"
 
   API_ARTIFACT: "api"
   API_FOLDER: "api/"
+  API_DOCKER_TEST_TARGET: "builder-test"
 
   OS_ROUTE_SVC_ARTIFACT: "openshift-route-service"
   OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
+  OS_ROUTE_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   JMETER_SVC_ARTIFACT: "jmeter-service"
   JMETER_SVC_FOLDER: "jmeter-service/"
+  JMETER_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   HELM_SVC_ARTIFACT: "helm-service"
   HELM_SVC_FOLDER: "helm-service/"
+  HELM_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   APPROVAL_SVC_ARTIFACT: "approval-service"
   APPROVAL_SVC_FOLDER: "approval-service/"
+  APPROVAL_DOCKER_TEST_TARGET: "builder-test"
 
   DISTRIBUTOR_ARTIFACT: "distributor"
   DISTRIBUTOR_FOLDER: "distributor/"
+  DISTRIBUTOR_DOCKER_TEST_TARGET: "builder-test"
 
   SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
   SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
+  SHIPYARD_CONTROLLER_DOCKER_TEST_TARGET: "builder-test"
 
   SECRET_SVC_ARTIFACT: "secret-service"
   SECRET_SVC_FOLDER: "secret-service/"
+  SECRET_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   CONFIGURATION_SVC_ARTIFACT: "configuration-service"
   CONFIGURATION_SVC_FOLDER: "configuration-service/"
+  CONFIGURATION_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   REMEDIATION_SVC_ARTIFACT: "remediation-service"
   REMEDIATION_SVC_FOLDER: "remediation-service/"
+  REMEDIATION_DOCKER_TEST_TARGET: "builder-test"
 
   LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
   LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
+  LIGHTHOUSE_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   MONGODB_DS_ARTIFACT: "mongodb-datastore"
   MONGODB_DS_FOLDER: "mongodb-datastore/"
+  MONGODB_DS_DOCKER_TEST_TARGET: "builder-test"
 
   STATISTICS_SVC_ARTIFACT: "statistics-service"
   STATISTICS_SVC_FOLDER: "statistics-service/"
+  STATISTICS_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   WEBHOOK_SVC_ARTIFACT: "webhook-service"
   WEBHOOK_SVC_FOLDER: "webhook-service/"
+  WEBHOOK_SVC_DOCKER_TEST_TARGET: "builder-test"
 
 defaults:
   run:
@@ -267,7 +287,7 @@ jobs:
         env:
           IMAGE_NAME: ${{ matrix.config.artifact }}-test
         run: |
-          docker build ${{ matrix.config.working-dir }} --target builder-test -t $IMAGE_NAME
+          docker build ${{ matrix.config.working-dir }} --target ${{ matrix.config.docker-test-target }} -t $IMAGE_NAME
 
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
