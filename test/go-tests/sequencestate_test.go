@@ -248,7 +248,7 @@ func Test_SequenceState(t *testing.T) {
 		Evaluation: keptnv2.EvaluationDetails{
 			Score: 100.0,
 		},
-	}, source)
+	}, "lighthouse-service")
 	require.Nil(t, err)
 
 	// verify state
@@ -268,6 +268,10 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		devStage := state.Stages[0]
+
+		if devStage.LatestEvaluation == nil {
+			return false
+		}
 
 		if !IsEqual(t, 100.0, devStage.LatestEvaluation.Score, "devStage.LatestEvaluation.Score") {
 			return false
