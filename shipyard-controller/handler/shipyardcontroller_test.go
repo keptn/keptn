@@ -287,9 +287,10 @@ func Test_getEventScope(t *testing.T) {
 
 func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo      db.ProjectRepo
-		eventRepo        db.EventRepo
-		taskSequenceRepo db.TaskSequenceRepo
+		projectRepo       db.ProjectRepo
+		eventRepo         db.EventRepo
+		taskSequenceRepo  db.TaskSequenceRepo
+		eventDbOperations db.EventsDbOperations
 	}
 	type args struct {
 		event models.Event
@@ -328,6 +329,9 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						{},
 					}, nil
 				}},
+				eventDbOperations: &db_mock.EventsDbOperationsMock{UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+					return nil
+				}},
 			},
 			args: args{
 				event: fake.GetTestStartedEvent(),
@@ -358,6 +362,9 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						{},
 					}, nil
 				}},
+				eventDbOperations: &db_mock.EventsDbOperationsMock{UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+					return nil
+				}},
 			},
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
@@ -369,9 +376,10 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo:      tt.fields.projectRepo,
-				eventRepo:        tt.fields.eventRepo,
-				taskSequenceRepo: tt.fields.taskSequenceRepo,
+				projectRepo:        tt.fields.projectRepo,
+				eventRepo:          tt.fields.eventRepo,
+				taskSequenceRepo:   tt.fields.taskSequenceRepo,
+				eventsDBOperations: tt.fields.eventDbOperations,
 			}
 			err := em.handleStartedEvent(tt.args.event)
 			if (err != nil) != tt.wantErr {
@@ -386,9 +394,10 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 
 func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo      db.ProjectRepo
-		eventRepo        db.EventRepo
-		taskSequenceRepo db.TaskSequenceRepo
+		projectRepo        db.ProjectRepo
+		eventRepo          db.EventRepo
+		taskSequenceRepo   db.TaskSequenceRepo
+		eventsDbOperations db.EventsDbOperations
 	}
 	type args struct {
 		event models.Event
@@ -423,6 +432,9 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 					return []models.TaskSequenceEvent{
 						{},
 					}, nil
+				}},
+				eventsDbOperations: &db_mock.EventsDbOperationsMock{UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+					return nil
 				}},
 			},
 			args: args{
