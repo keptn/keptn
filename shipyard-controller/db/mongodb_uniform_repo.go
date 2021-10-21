@@ -351,6 +351,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 				i--
 				continue
 			}
+
 			//otherwise remove service
 			for j, _ := range subscription.Filter.Services {
 				service := &subscription.Filter.Services[j]

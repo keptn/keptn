@@ -362,7 +362,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 	testIntegrations := generateIntegrations()
-	wantedSubscriptions := []int{2, 1, 2, 0, 0}
+	wantedSubscriptions := []int{2, 1, 2, 0, 0} //checking that subscriptions with empty services are deleted
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
 
