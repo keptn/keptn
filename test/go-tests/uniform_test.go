@@ -32,7 +32,7 @@ spec:
           tasks:
             - name: "echo"`
 
-const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/1b5249c3a1bd2e47a94dc0aa3b8a4af98a3d14a5/deploy/service-with-fixed-node-name-env.yaml"
+const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/main/deploy/service-with-fixed-node-name-env.yaml"
 
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
