@@ -52,7 +52,7 @@ describe('KtbRootEventsListComponent', () => {
   it('should show 25 sequences', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // then
@@ -66,12 +66,12 @@ describe('KtbRootEventsListComponent', () => {
   it('should load old sequences', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // when
     component.loadOldSequences();
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // then
@@ -84,13 +84,13 @@ describe('KtbRootEventsListComponent', () => {
   it('should not show "show older sequences"', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     component.loadOldSequences();
-    component.events = project.sequences;
+    component.events = project.sequences || [];
 
     // when
     component.loadOldSequences();
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // then
@@ -104,7 +104,7 @@ describe('KtbRootEventsListComponent', () => {
     // given
     const selectedSequenceIndex = 1;
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     component.selectedEvent = project.sequences?.[selectedSequenceIndex];
     fixture.detectChanges();
 
@@ -118,7 +118,7 @@ describe('KtbRootEventsListComponent', () => {
     const selectedSequenceIndex = 5;
     const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // when
@@ -138,7 +138,7 @@ describe('KtbRootEventsListComponent', () => {
     const selectedSequenceIndex = 8;
     const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // when
