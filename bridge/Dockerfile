@@ -1,9 +1,14 @@
-FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test
+FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test-base
 WORKDIR /usr/src/app
 COPY package.json yarn.lock /usr/src/app/
 RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
-CMD yarn test && yarn test:ui && mv ./coverage/ /shared/coverage
+
+FROM builder-test-base as builder-test-unit
+CMD yarn test && mv ./coverage/ /shared/coverage
+
+FROM builder-test-base as builder-test-ui
+CMD yarn test:ui
 
 FROM node:14-alpine3.14 as builder-base
 
