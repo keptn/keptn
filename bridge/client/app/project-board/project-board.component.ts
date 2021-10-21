@@ -64,10 +64,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             this._errorSubject.next('project');
           }
         }),
-        catchError(() => {
-          this._errorSubject.next('projects');
-          return of(false);
-        }),
         takeUntil(this.unsubscribe$)
       )
       .subscribe();
