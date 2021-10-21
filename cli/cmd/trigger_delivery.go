@@ -93,7 +93,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
 		if errObj != nil {
-			return fmt.Errorf("Error while retrieving information for project %v: %v:", *deliveryInputData.Project, errObj.Message)
+			return fmt.Errorf("Error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
 		}
 		if len(project.Stages) > 0 {
 			deliveryInputData.Stage = &project.Stages[0].StageName
