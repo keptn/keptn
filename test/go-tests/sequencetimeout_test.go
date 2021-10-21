@@ -163,7 +163,7 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 			return false
 		}
 		return true
-	}, 40*time.Second, 5*time.Second)
+	}, 60*time.Second, 5*time.Second)
 
 }
 
