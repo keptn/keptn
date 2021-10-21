@@ -536,7 +536,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         with:
@@ -567,7 +567,7 @@ jobs:
 
       - id: docker_cache
         name: Docker Cache
-        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
+        if: matrix.config.should-push-image == 'true' && (matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' ))
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
 
@@ -605,7 +605,7 @@ jobs:
       - name: "Download Build Config from last successful build"
         uses: dawidd6/action-download-artifact@v2.15.0
         id: download_last_build_config
-        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
+        if: matrix.config.should-push-image == 'true' && matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -666,7 +666,7 @@ jobs:
           fi
 
       - name: Report Docker Build to PR
-        if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        if: always() && matrix.config.should-push-image == 'true' && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
@@ -678,7 +678,7 @@ jobs:
           append: true
 
       - name: Delete PR comment on failure
-        if: failure() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        if: failure() && matrix.config.should-push-image == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
