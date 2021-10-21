@@ -229,7 +229,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }, {});
   }
 
-  updateFilterSequence(sequences: Sequence[]): void {
+  updateFilterSequence(sequences?: Sequence[]): void {
     if (sequences) {
       const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Sequence');
       if (filterItem) {

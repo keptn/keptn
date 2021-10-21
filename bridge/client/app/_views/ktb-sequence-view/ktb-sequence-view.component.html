@@ -10,7 +10,7 @@
         clearAllLabel="Clear all"
         fxFlex
       >
-        <div class="container" fxFlex fxLayout="column">
+        <div class="container" fxFlex fxLayout="column" *ngIf="project.sequences; else loadingSequences">
           <div fxLayout="row" fxLayoutAlign="start" uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
             <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
             <p class="m-0 ml-2">
@@ -44,6 +44,11 @@
           ></ktb-root-events-list>
           <div class="mb-3"></div>
         </div>
+        <ng-template #loadingSequences>
+          <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
+            <dt-loading-distractor>Loading …</dt-loading-distractor>
+          </div>
+        </ng-template>
       </dt-quick-filter>
     </div>
   </div>
