@@ -21,7 +21,7 @@ COPY . /usr/src/app
 FROM builder-base as bridge-builder
 RUN yarn build
 
-FROM node:14-alpine3.14 as bridge-server-builder
+FROM node:14-alpine3.14 as bridge-server-builder-base
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -34,6 +34,12 @@ COPY ./server/package.json ./server/yarn.lock ./
 RUN yarn install --frozen-lockfile
 COPY ./server ./
 COPY ./shared /usr/src/app/shared
+
+FROM bridge-server-builder-base as bridge-server-test
+CMD yarn test && \
+  mv ./coverage/ /shared/coverage/server
+
+FROM bridge-server-builder-base as bridge-server-builder
 RUN yarn build && \
   yarn install --frozen-lockfile --production
 
