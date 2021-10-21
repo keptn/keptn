@@ -79,6 +79,8 @@ for changed_file in $CHANGED_FILES; do
 
     if [ "${!should_push_image}" != "false" ]; then
       should_push_image="true"
+    else
+      should_push_image="false"
     fi
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
@@ -89,7 +91,7 @@ for changed_file in $CHANGED_FILES; do
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "${!should_build_artifact}" \
         --arg docker_test_target "${!docker_test_target}" \
-        --arg should_push_image "${!should_push_image}" \
+        --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
@@ -114,7 +116,7 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "false" \
         --arg docker_test_target "${!docker_test_target}" \
-        --arg should_push_image "${!should_push_image}" \
+        --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
