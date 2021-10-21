@@ -87,23 +87,18 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			endPointErr)
 	}
 
-	resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	shipyardResource, err := resourceHandler.GetProjectResource(*deliveryInputData.Project, "shipyard.yaml")
-	if err != nil {
-		return fmt.Errorf("Error while retrieving shipyard.yaml for project %v: %v:", *deliveryInputData.Project, err)
-	}
-
-	shipyard, err := keptnv2.DecodeShipyardYAML([]byte(shipyardResource.ResourceContent))
-	if err != nil {
-		return fmt.Errorf("Error while decoding shipyard.yaml for project %v: %v", *deliveryInputData.Project, err)
-	}
-
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
 	if deliveryInputData.Stage == nil || *deliveryInputData.Stage == "" {
-		if len(shipyard.Spec.Stages) > 0 {
-			deliveryInputData.Stage = &shipyard.Spec.Stages[0].Name
+		// retrieve the project information to determine the first stage
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
+		if errObj != nil {
+			return fmt.Errorf("Error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
+		}
+		if len(project.Stages) > 0 {
+			deliveryInputData.Stage = &project.Stages[0].StageName
 		} else {
-			return fmt.Errorf("Could not start sequence because no stage has been found in the shipyard.yaml of project %s", *deliveryInputData.Project)
+			return fmt.Errorf("Could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
 		}
 	}
 
