@@ -1,9 +1,6 @@
 name: DCO
 on:
   pull_request:
-  push:
-    branches:
-      - "master"
 jobs:
   check:
     uses: keptn/gh-automation/.github/workflows/dco.yml@v1
