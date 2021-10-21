@@ -244,7 +244,7 @@ var doc = `{
         "model.GetSecretsResponse": {
             "type": "object",
             "properties": {
-                "secrets": {
+                "Secrets": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.GetSecretResponseItem"

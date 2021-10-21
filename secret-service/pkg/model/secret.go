@@ -23,5 +23,5 @@ type GetSecretResponseItem struct {
 }
 
 type GetSecretsResponse struct {
-	Secrets []GetSecretResponseItem `json:"secrets"`
+	Secrets []GetSecretResponseItem `json:"Secrets"`
 }

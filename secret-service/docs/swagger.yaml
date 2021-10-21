@@ -27,7 +27,7 @@ definitions:
     type: object
   model.GetSecretsResponse:
     properties:
-      secrets:
+      Secrets:
         items:
           $ref: '#/definitions/model.GetSecretResponseItem'
         type: array
