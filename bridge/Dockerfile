@@ -37,7 +37,7 @@ COPY ./shared /usr/src/app/shared
 
 FROM bridge-server-builder-base as bridge-server-test
 CMD yarn test && \
-  mv ./coverage/ /shared/coverage/server
+  mv ./coverage/ /shared/coverage
 
 FROM bridge-server-builder-base as bridge-server-builder
 RUN yarn build && \
