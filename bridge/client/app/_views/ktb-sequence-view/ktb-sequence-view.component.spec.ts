@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { Projects } from '../../_services/_mockData/projects.mock';
 import { SequencesData } from '../../_services/_mockData/sequences.mock';
+import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 describe('KtbEventsListComponent', () => {
   let httpMock: HttpTestingController;
@@ -32,6 +33,7 @@ describe('KtbEventsListComponent', () => {
             queryParams: of({}),
           },
         },
+        { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
       ],
     }).compileComponents();
 
