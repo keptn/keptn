@@ -6,7 +6,6 @@ import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { take } from 'rxjs/operators';
 import { Projects } from '../../_services/_mockData/projects.mock';
 import { SequencesData } from '../../_services/_mockData/sequences.mock';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
@@ -19,7 +18,6 @@ describe('KtbEventsListComponent', () => {
   let dataService: DataService;
 
   const projectName = 'sockshop';
-  let project: Project;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
