@@ -711,7 +711,7 @@ func (sc *shipyardController) getTaskSequenceContextForEvent(event models.Event)
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
 
 	// get the taskSequence related to the triggeredID and proceed with the next task
-	log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
+	log.Debugf("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
 	taskContext, err := sc.getTaskSequenceContext(eventScope)
 	if err != nil {
 		return nil, nil, err
