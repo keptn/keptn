@@ -84,15 +84,10 @@ describe('KtbEventsListComponent', () => {
     project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
     dataService.loadSequences(project);
     const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
-    const sequencesPollingRequest = httpMock.expectOne((request) =>
-      request.urlWithParams.includes(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25&fromTime=`)
-    );
-
     sequencesRequest.flush({
       states: [],
       totalCount: 0,
     });
-    sequencesPollingRequest.flush([]);
 
     httpMock.verify();
     fixture.detectChanges();
@@ -119,14 +114,10 @@ describe('KtbEventsListComponent', () => {
     project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
     dataService.loadSequences(project);
     const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
-    const sequencesPollingRequest = httpMock.expectOne((request) =>
-      request.urlWithParams.includes(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25&fromTime=`)
-    );
     sequencesRequest.flush({
       states: SequencesData,
       totalCount: SequencesData.length,
     });
-    sequencesPollingRequest.flush([]);
 
     httpMock.verify();
     fixture.detectChanges();
