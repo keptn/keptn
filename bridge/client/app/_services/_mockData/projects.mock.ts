@@ -1176,29 +1176,6 @@ const projectsData: any = [
       },
     ],
   },
-  {
-    creationDate: '1634631392847647586',
-    projectName: 'emptyProject',
-    shipyard:
-      'apiVersion: "spec.keptn.sh/0.2.2"\r\nkind: "Shipyard"\r\nmetadata:\r\n  name: "shipyard-sockshop"\r\nspec:\r\n  stages:\r\n    - name: "dev"\r\n      sequences:\r\n        - name: "delivery"\r\n          tasks:\r\n            - name: "deployment"\r\n              properties:\r\n                deploymentstrategy: "direct"\r\n            - name: "test"\r\n              properties:\r\n                teststrategy: "functional"\r\n            - name: "evaluation"\r\n            - name: "release"\r\n        - name: "delivery-direct"\r\n          tasks:\r\n            - name: "deployment"\r\n              properties:\r\n                deploymentstrategy: "direct"\r\n            - name: "release"\r\n\r\n    - name: "staging"\r\n      sequences:\r\n        - name: "delivery"\r\n          triggeredOn:\r\n            - event: "dev.delivery.finished"\r\n          tasks:\r\n            - name: "deployment"\r\n              properties:\r\n                deploymentstrategy: "blue_green_service"\r\n            - name: "test"\r\n              properties:\r\n                teststrategy: "performance"\r\n            - name: "evaluation"\r\n            - name: "release"\r\n        - name: "rollback"\r\n          triggeredOn:\r\n            - event: "staging.delivery.finished"\r\n              selector:\r\n                match:\r\n                  result: "fail"\r\n          tasks:\r\n            - name: "rollback"\r\n        - name: "delivery-direct"\r\n          triggeredOn:\r\n            - event: "dev.delivery-direct.finished"\r\n          tasks:\r\n            - name: "deployment"\r\n              properties:\r\n                deploymentstrategy: "direct"\r\n            - name: "release"\r\n\r\n    - name: "production"\r\n      sequences:\r\n        - name: "delivery"\r\n          triggeredOn:\r\n            - event: "staging.delivery.finished"\r\n          tasks:\r\n            - name: "deployment"\r\n              properties:\r\n                deploymentstrategy: "blue_green_service"\r\n            - name: "release"\r\n        - name: "rollback"\r\n          triggeredOn:\r\n            - event: "production.delivery.finished"\r\n              selector:\r\n                match:\r\n                  result: "fail"\r\n          tasks:\r\n            - name: "rollback"\r\n        - name: "delivery-direct"\r\n          triggeredOn:\r\n            - event: "staging.delivery-direct.finished"\r\n          tasks:\r\n            - name: "deployment"\r\n              properties:\r\n                deploymentstrategy: "direct"\r\n            - name: "release"\r\n\r\n        - name: "remediation"\r\n          triggeredOn:\r\n            - event: "production.remediation.finished"\r\n              selector:\r\n                match:\r\n                  evaluation.result: "fail"\r\n          tasks:\r\n            - name: "get-action"\r\n            - name: "action"\r\n            - name: "evaluation"\r\n              triggeredAfter: "15m"\r\n              properties:\r\n                timeframe: "15m"\r\n',
-    shipyardVersion: 'spec.keptn.sh/0.2.2',
-    stages: [
-      {
-        services: [],
-        stageName: 'dev',
-      },
-      {
-        services: [],
-        stageName: 'staging',
-        parentStages: ['dev'],
-      },
-      {
-        services: [],
-        stageName: 'production',
-        parentStages: ['staging'],
-      },
-    ],
-  },
 ];
 
 const projects: Project[] = projectsData.map((project: Project) => {
