@@ -457,3 +457,44 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 	return fmt.Sprintf("http://%s.%s-%s.%s", serviceName, projectName, stageName, ingressHostnameSuffix), nil
 
 }
+
+func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
+	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
+	if err != nil {
+		return err
+	}
+
+	t.Log("restarting shipyard controller pod")
+	err = RestartPod("shipyard-controller")
+	if err != nil {
+		return err
+	}
+
+	// wait 10s to make sure we wait for the updated pod to be ready
+	<-time.After(10 * time.Second)
+	t.Log("waiting for shipyard controller pod to be ready again")
+	err = WaitForPodOfDeployment("shipyard-controller")
+	if err != nil {
+		return err
+	}
+
+	// check whether the API is reachable again
+	require.Eventually(t, func() bool {
+		t.Log("Verifying API availability")
+		// use the shipyard-controller's project endpoint to check API availability
+		resp, err := ApiGETRequest("/controlPlane/v1/project")
+		if err != nil {
+			t.Errorf("got error from API: %s", err.Error())
+			return false
+		}
+
+		if resp.Response().StatusCode != http.StatusOK {
+			t.Errorf("API response does not have expected status code")
+			return false
+		}
+
+		return true
+	}, 30*time.Second, 5*time.Second)
+
+	return nil
+}

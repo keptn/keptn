@@ -188,7 +188,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Empty(t, integrations)
 
 	// Scenario 2: Check automatic TTL expiration of Uniform Integration
-	setShipyardControllerEnvVar(t, "UNIFORM_INTEGRATION_TTL", "1m")
+	SetShipyardControllerEnvVar(t, "UNIFORM_INTEGRATION_TTL", "1m")
 	// re-register the integration
 	// do this in a retry loop since we restarted the shipyard controller pod right before - in some cases it seemed to not be ready at this point
 	require.Eventually(t, func() bool {
