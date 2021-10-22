@@ -173,7 +173,7 @@ func Test_Webhook(t *testing.T) {
 		"data": map[string]string{
 			"my-key": "my-value",
 		},
-	})
+	}, 3)
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
