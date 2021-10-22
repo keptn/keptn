@@ -403,10 +403,11 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 		event models.Event
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantEventUpdate bool
 	}{
 		{
 			name: "received finished event with no matching triggered event",
@@ -440,18 +441,27 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 			args: args{
 				event: fake.GetTestFinishedEventWithUnmatchedSource(),
 			},
-			wantErr: true,
+			wantErr:         true,
+			wantEventUpdate: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo:      tt.fields.projectRepo,
-				eventRepo:        tt.fields.eventRepo,
-				taskSequenceRepo: tt.fields.taskSequenceRepo,
+				projectRepo:        tt.fields.projectRepo,
+				eventRepo:          tt.fields.eventRepo,
+				taskSequenceRepo:   tt.fields.taskSequenceRepo,
+				eventsDBOperations: tt.fields.eventsDbOperations,
 			}
 			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			dbOperationsMock := tt.fields.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+			if tt.wantEventUpdate {
+				require.Len(t, dbOperationsMock.UpdateEventOfServiceCalls(), 1)
+			} else {
+				require.Empty(t, dbOperationsMock.UpdateEventOfServiceCalls())
 			}
 		})
 	}
