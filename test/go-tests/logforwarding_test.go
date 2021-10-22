@@ -113,7 +113,7 @@ func Test_LogForwarding(t *testing.T) {
 func getIntegrations() ([]*models.Integration, *req.Resp, error) {
 	integrations := []*models.Integration{}
 
-	resp, err := ApiGETRequest("/controlPlane/v1/uniform/registration")
+	resp, err := ApiGETRequest("/controlPlane/v1/uniform/registration", 3)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -127,7 +127,7 @@ func getIntegrations() ([]*models.Integration, *req.Resp, error) {
 func getLogs(integrationID string) (*models.GetLogsResponse, *req.Resp, error) {
 	logs := &models.GetLogsResponse{}
 
-	resp, err := ApiGETRequest("/controlPlane/v1/log?integrationId=" + integrationID)
+	resp, err := ApiGETRequest("/controlPlane/v1/log?integrationId="+integrationID, 3)
 	if err != nil {
 		return nil, nil, err
 	}

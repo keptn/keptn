@@ -102,11 +102,11 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.AbortSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	resp, err = ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1"))
+	resp, err = ApiGETRequest("/controlPlane/v1/event/triggered/"+keptnv2.GetTriggeredEventType("task1"), 3)
 	require.Nil(t, err)
 
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}
@@ -176,7 +176,7 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, secondContextID), operations.SequenceControlCommand{
 		State: common.AbortSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -226,7 +226,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.PauseSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -247,7 +247,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.ResumeSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -269,7 +269,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.PauseSequence,
 		Stage: stageName,
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -290,7 +290,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.ResumeSequence,
 		Stage: stageName,
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -345,7 +345,7 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.PauseSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -359,7 +359,7 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.ResumeSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 

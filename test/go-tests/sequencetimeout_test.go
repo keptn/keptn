@@ -92,7 +92,7 @@ func Test_SequenceTimeout(t *testing.T) {
 		Source:             &source,
 		Specversion:        "1.0",
 		Type:               &eventType,
-	})
+	}, 3)
 	require.Nil(t, err)
 	body := resp.String()
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
