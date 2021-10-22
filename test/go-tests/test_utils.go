@@ -504,12 +504,12 @@ func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) erro
 		// use the shipyard-controller's project endpoint to check API availability
 		resp, err := ApiGETRequest("/controlPlane/v1/project", 3)
 		if err != nil {
-			t.Errorf("got error from API: %s", err.Error())
+			t.Logf("got error from API: %s", err.Error())
 			return false
 		}
 
 		if resp.Response().StatusCode != http.StatusOK {
-			t.Errorf("API response does not have expected status code")
+			t.Logf("API response does not have expected status code")
 			return false
 		}
 
