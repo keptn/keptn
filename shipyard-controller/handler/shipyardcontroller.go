@@ -347,22 +347,6 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 		return err
 	}
 
-	if eventData.Project != "" && eventData.Stage != "" && eventData.Service != "" {
-		go func() {
-			common.LockProject(eventData.Project)
-			defer common.UnlockProject(eventData.Project)
-			if err := sc.eventsDBOperations.UpdateEventOfService(
-				event.Data,
-				*event.Type,
-				event.Shkeptncontext,
-				event.ID,
-				event.Triggeredid,
-			); err != nil {
-				log.Errorf("could not update event for project %s: %s", eventData.Project, err.Error())
-			}
-		}()
-	}
-
 	statusType, err := keptnv2.ParseEventKind(*event.Type)
 	if err != nil {
 		return err
@@ -433,17 +417,8 @@ func (sc *shipyardController) ControlSequence(controlSequence common.SequenceCon
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	log.Infof("Received .started event: %s", *event.Type)
-	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
-	// if those are not present the next action can not be determined
-	eventScope, err := models.NewEventScope(event)
-	if err != nil {
-		log.Errorf("Could not determine eventScope of event: %s", err.Error())
-		return err
-	}
-	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
 
-	log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
-	taskContext, err := sc.getTaskSequenceContext(eventScope)
+	eventScope, taskContext, err := sc.getTaskSequenceContextForEvent(event)
 	if err != nil {
 		return err
 	} else if taskContext == nil {
@@ -613,22 +588,11 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		return nil
 	}
 
-	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
-	// if those are not present the next action can not be determined
-	eventScope, err := models.NewEventScope(event)
-	if err != nil {
-		log.Errorf("Could not determine eventScope of event: %s", err.Error())
-		return err
-	}
-	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
-
-	// get the taskSequence related to the triggeredID and proceed with the next task
-	log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
-	taskContext, err := sc.getTaskSequenceContext(eventScope)
+	eventScope, taskContext, err := sc.getTaskSequenceContextForEvent(event)
 	if err != nil {
 		return err
 	} else if taskContext == nil {
-		return fmt.Errorf("no task sequence context for event with scope %v found", eventScope)
+		return fmt.Errorf("no sequence context for event with scope %v found", eventScope)
 	}
 
 	common.LockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
@@ -715,6 +679,26 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		return sc.proceedTaskSequence(eventScope, sequence, finishedEventsData, taskContext)
 	}
 	return nil
+}
+
+func (sc *shipyardController) getTaskSequenceContextForEvent(event models.Event) (*models.EventScope, *models.TaskSequenceEvent, error) {
+	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
+	// if those are not present the next action can not be determined
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Could not determine eventScope of event: %s", err.Error())
+	}
+	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
+
+	// get the taskSequence related to the triggeredID and proceed with the next task
+	log.Debugf("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
+	taskContext, err := sc.getTaskSequenceContext(eventScope)
+	if err != nil {
+		return nil, nil, err
+	} else if taskContext == nil {
+		return nil, nil, fmt.Errorf("no task sequence context for event with scope %v found", eventScope)
+	}
+	return eventScope, taskContext, nil
 }
 
 func (sc *shipyardController) getTaskSequenceContext(eventScope *models.EventScope) (*models.TaskSequenceEvent, error) {
