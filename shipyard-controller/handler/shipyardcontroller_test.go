@@ -2605,9 +2605,6 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 }
 
 func TestGetShipyardControllerInstance(t *testing.T) {
-	sequenceStartChannel := make(chan models.Event)
-	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
-	sequenceControlChannel := make(chan common.SequenceControl)
 	ctx, cancel := context.WithCancel(context.TODO())
 	sc := GetShipyardControllerInstance(
 		ctx,
@@ -2616,9 +2613,7 @@ func TestGetShipyardControllerInstance(t *testing.T) {
 			},
 		},
 		&fake.ISequenceDispatcherMock{},
-		sequenceStartChannel,
-		sequenceTimeoutChannel,
-		sequenceControlChannel,
+		make(chan common.SequenceTimeout),
 	)
 	require.NotNil(t, sc)
 	cancel()

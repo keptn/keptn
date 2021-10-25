@@ -38,9 +38,7 @@ type shipyardController struct {
 	projectMvRepo              db.ProjectMVRepo
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
-	startSequenceChan          chan models.Event
 	sequenceTimeoutChan        chan common.SequenceTimeout
-	sequenceControlChan        chan common.SequenceControl
 	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
 	sequenceStartedHooks       []sequencehooks.ISequenceStartedHook
 	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
@@ -57,9 +55,7 @@ func GetShipyardControllerInstance(
 	ctx context.Context,
 	eventDispatcher IEventDispatcher,
 	sequenceDispatcher ISequenceDispatcher,
-	startSequenceChan chan models.Event,
-	cancelSequenceChan chan common.SequenceTimeout,
-	sequenceControlChan chan common.SequenceControl,
+	sequenceTimeoutChannel chan common.SequenceTimeout,
 ) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
@@ -73,9 +69,7 @@ func GetShipyardControllerInstance(
 			},
 			eventDispatcher:     eventDispatcher,
 			sequenceDispatcher:  sequenceDispatcher,
-			startSequenceChan:   startSequenceChan,
-			sequenceControlChan: sequenceControlChan,
-			sequenceTimeoutChan: cancelSequenceChan,
+			sequenceTimeoutChan: sequenceTimeoutChannel,
 		}
 		shipyardControllerInstance.registerToChannels(ctx)
 	}
@@ -89,12 +83,6 @@ func (sc *shipyardController) registerToChannels(ctx context.Context) {
 			case <-ctx.Done():
 				log.Infof("stop listening to channels")
 				return
-			case startSequenceEvent := <-sc.startSequenceChan:
-				err := sc.StartTaskSequence(startSequenceEvent)
-				if err != nil {
-					log.WithError(err).Error("could not start task sequence")
-				}
-				break
 			case timeoutSequence := <-sc.sequenceTimeoutChan:
 				err := sc.timeoutSequence(timeoutSequence)
 				if err != nil {

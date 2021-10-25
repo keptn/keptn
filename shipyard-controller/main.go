@@ -13,7 +13,6 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -99,7 +98,6 @@ func main() {
 	stageManager := handler.NewStageManager(projectsMV)
 
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
-	sequenceDispatcherChannel := make(chan models.Event)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -110,14 +108,11 @@ func main() {
 	)
 
 	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
-	sequenceControlChannel := make(chan common.SequenceControl)
 	shipyardController := handler.GetShipyardControllerInstance(
 		context.Background(),
 		eventDispatcher,
 		sequenceDispatcher,
-		sequenceDispatcherChannel,
 		sequenceTimeoutChannel,
-		sequenceControlChannel,
 	)
 	sequenceDispatcher.Run(context.Background(), shipyardController.StartTaskSequence)
 
