@@ -221,7 +221,7 @@ func Test_QualityGates(t *testing.T) {
 		Shkeptncontext:     evaluationFinishedEvent.Shkeptncontext,
 		Triggeredid:        evaluationFinishedEvent.Triggeredid,
 		Type:               &evaluationInvalidatedEventType,
-	})
+	}, 3)
 	require.Nil(t, err)
 
 	// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results

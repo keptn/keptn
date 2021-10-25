@@ -92,7 +92,7 @@ func Test_SequenceTimeout(t *testing.T) {
 		Source:             &source,
 		Specversion:        "1.0",
 		Type:               &eventType,
-	})
+	}, 3)
 	require.Nil(t, err)
 	body := resp.String()
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
@@ -168,23 +168,5 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 }
 
 func setShipyardControllerTaskTimeout(t *testing.T, timeoutValue string) error {
-	return setShipyardControllerEnvVar(t, "TASK_STARTED_WAIT_DURATION", timeoutValue)
-}
-
-func setShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
-	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
-	if err != nil {
-		return err
-	}
-
-	t.Log("restarting shipyard controller pod")
-	err = RestartPod("shipyard-controller")
-	if err != nil {
-		return err
-	}
-
-	// wait 10s to make sure we wait for the updated pod to be ready
-	<-time.After(10 * time.Second)
-	t.Log("waiting for shipyard controller pod to be ready again")
-	return WaitForPodOfDeployment("shipyard-controller")
+	return SetShipyardControllerEnvVar(t, "TASK_STARTED_WAIT_DURATION", timeoutValue)
 }

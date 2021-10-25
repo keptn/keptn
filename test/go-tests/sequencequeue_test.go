@@ -326,7 +326,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), operations.SequenceControlCommand{
 			State: common.AbortSequence,
 			Stage: "",
-		})
+		}, 3)
 		require.Nil(t, err)
 		if i == numSequences-1 {
 			verifyNumberOfOpenTriggeredEvents(t, projectName, 0)
@@ -391,7 +391,7 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 
 	// check if there are any open .triggered events for the project
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}
-	resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1") + "?project=" + projectName)
+	resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/"+keptnv2.GetTriggeredEventType("task1")+"?project="+projectName, 3)
 	require.Nil(t, err)
 
 	err = resp.ToJSON(openTriggeredEvents)
@@ -403,7 +403,7 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 func verifyNumberOfOpenTriggeredEvents(t *testing.T, projectName string, numberOfEvents int) {
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}
 	require.Eventually(t, func() bool {
-		resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/" + keptnv2.GetTriggeredEventType("task1") + "?project=" + projectName)
+		resp, err := ApiGETRequest("/controlPlane/v1/event/triggered/"+keptnv2.GetTriggeredEventType("task1")+"?project="+projectName, 3)
 		if err != nil {
 			return false
 		}
@@ -472,7 +472,7 @@ func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequence
 		Source:             &source,
 		Specversion:        "1.0",
 		Type:               &eventType,
-	})
+	}, 3)
 	require.Nil(t, err)
 	body := resp.String()
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
