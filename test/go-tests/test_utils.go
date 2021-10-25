@@ -404,6 +404,18 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	return states, resp, err
 }
 
+func GetProject(projectName string) (*scmodels.ExpandedProject, error) {
+	project := &scmodels.ExpandedProject{}
+
+	resp, err := ApiGETRequest("/controlPlane/v1/project/" + projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = resp.ToJSON(project)
+	return project, err
+}
+
 func GetDiagnostics(service string) string {
 	outputBuilder := strings.Builder{}
 	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, service)

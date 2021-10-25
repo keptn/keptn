@@ -423,9 +423,12 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 }
 
 // UpdateEventOfService updates a service event
-func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+func (mv *ProjectsMaterializedView) UpdateEventOfService(e models.Event) error {
+	if e.Type == nil {
+		return errors.New("event type must be set")
+	}
 	eventData := &keptnv2.EventData{}
-	err := keptnv2.Decode(event, eventData)
+	err := keptnv2.Decode(e.Data, eventData)
 	if err != nil {
 		log.Errorf("Could not parse event data: %s", err.Error())
 		return err
@@ -441,26 +444,26 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 	}
 
 	contextInfo := &models.EventContext{
-		EventID:      eventID,
-		KeptnContext: keptnContext,
+		EventID:      e.ID,
+		KeptnContext: e.Shkeptncontext,
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
 	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *models.ExpandedService) error {
 		if service.LastEventTypes == nil {
 			service.LastEventTypes = map[string]models.EventContext{}
 		}
-		service.LastEventTypes[eventType] = *contextInfo
+		service.LastEventTypes[*e.Type] = *contextInfo
 
 		// for events of type "deployment.finished", find the correlating
 		// "deployment.triggered" event to update the deployed image name
-		if eventType == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
+		if *e.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
 
-			events, errObj := mv.getAllDeploymentTriggeredEvents(eventData, triggeredID, keptnContext)
+			events, errObj := mv.getAllDeploymentTriggeredEvents(eventData, e.Triggeredid, e.Shkeptncontext)
 			if errObj != nil {
 				return err
 			}
 			if events == nil || len(events) == 0 {
-				return errors.New("No deployment.triggered events could be found for keptn context " + keptnContext)
+				return errors.New("No deployment.triggered events could be found for keptn context " + e.Shkeptncontext)
 			}
 
 			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
@@ -543,6 +546,20 @@ func (mv *ProjectsMaterializedView) CloseOpenRemediations(project, stage, servic
 	}
 
 	return mv.ProjectRepo.UpdateProject(existingProject)
+}
+
+func (mv *ProjectsMaterializedView) OnSequenceTaskStarted(event models.Event) {
+	err := mv.UpdateEventOfService(event)
+	if err != nil {
+		log.WithError(err).Errorf("could not update lastEvent property for task.started event")
+	}
+}
+
+func (mv *ProjectsMaterializedView) OnSequenceTaskFinished(event models.Event) {
+	err := mv.UpdateEventOfService(event)
+	if err != nil {
+		log.WithError(err).Errorf("could not update lastEvent property for task.finished event")
+	}
 }
 
 func (mv *ProjectsMaterializedView) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]models.Event, error) {

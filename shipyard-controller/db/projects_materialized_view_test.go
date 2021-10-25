@@ -892,9 +892,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		EventRetriever EventRepo
 	}
 	type args struct {
-		keptnBase    interface{}
-		eventType    string
-		keptnContext string
+		event models.Event
 	}
 	tests := []struct {
 		name    string
@@ -903,44 +901,113 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "configuration-change",
+			name: "empty event type",
+			fields: fields{
+				ProjectRepo:    &db_mock.ProjectRepoMock{},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Shkeptncontext: "test-context",
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid data",
+			fields: fields{
+				ProjectRepo:    &db_mock.ProjectRepoMock{},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           "invalid",
+					Shkeptncontext: "test-context",
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "project does not exist",
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
 					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
-							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
-								{
-									Services: []*models.ExpandedService{
-										{
-											ServiceName: "test-service",
-										},
-									},
-									StageName: "dev",
-								},
-							},
-						}, nil
+						return nil, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
-						if project.Stages[0].Services[0].LastEventTypes["keptn.sh.some.event"].KeptnContext == "test-context" {
-							return nil
-						}
-						return errors.New("project was not updated correctly")
-					},
-					DeleteProjectFunc: nil,
-					GetProjectsFunc:   nil,
 				},
+				EventRetriever: &db_mock.EventRepoMock{},
 			},
 			args: args{
-				keptnBase:    &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
-				eventType:    "keptn.sh.some.event",
-				keptnContext: "test-context",
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Shkeptncontext: "test-context",
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
-			name: "deployment-finished",
+			name: "error when retrieving project",
+			fields: fields{
+				ProjectRepo: &db_mock.ProjectRepoMock{
+					CreateProjectFunc: nil,
+					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+						return nil, errors.New("oops")
+					},
+				},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Shkeptncontext: "test-context",
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mv := &ProjectsMaterializedView{
+				ProjectRepo:     tt.fields.ProjectRepo,
+				EventsRetriever: tt.fields.EventRetriever,
+			}
+			err := mv.UpdateEventOfService(tt.args.event)
+
+			if tt.wantErr {
+				require.NotNil(t, err)
+			}
+		})
+	}
+}
+
+func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
+	type fields struct {
+		ProjectRepo    ProjectRepo
+		EventRetriever EventRepo
+	}
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "deployment.finished",
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
@@ -991,15 +1058,14 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				},
 			},
 			args: args{
-				keptnBase: &keptnv2.EventData{
-					Project: "test-project",
-					Stage:   "dev",
-					Service: "test-service",
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					Shkeptncontext: "test-context",
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
 				},
-				eventType:    keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
-				keptnContext: "test-context",
 			},
-			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -1008,9 +1074,86 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				ProjectRepo:     tt.fields.ProjectRepo,
 				EventsRetriever: tt.fields.EventRetriever,
 			}
-			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, "test-event-id", "the-triggered-id"); (err != nil) != tt.wantErr {
-				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
+			mv.OnSequenceTaskFinished(tt.args.event)
+
+			projectRepoMock := mv.ProjectRepo.(*db_mock.ProjectRepoMock)
+
+			require.Len(t, projectRepoMock.UpdateProjectCalls(), 1)
+			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages)
+			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages[0].Services)
+			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages[0].Services[0].LastEventTypes[*tt.args.event.Type])
+		})
+	}
+}
+
+func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
+	type fields struct {
+		ProjectRepo    ProjectRepo
+		EventRetriever EventRepo
+	}
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "evaluation.started",
+			fields: fields{
+				ProjectRepo: &db_mock.ProjectRepoMock{
+					CreateProjectFunc: nil,
+					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+						if project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext == "test-context" {
+							return nil
+						}
+						return errors.New("project was not updated correctly")
+					},
+					DeleteProjectFunc: nil,
+					GetProjectsFunc:   nil,
+				},
+			},
+			args: args{
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Type:           common.Stringp(keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)),
+					Shkeptncontext: "test-context",
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mv := &ProjectsMaterializedView{
+				ProjectRepo:     tt.fields.ProjectRepo,
+				EventsRetriever: tt.fields.EventRetriever,
 			}
+			mv.OnSequenceTaskStarted(tt.args.event)
+
+			projectRepoMock := mv.ProjectRepo.(*db_mock.ProjectRepoMock)
+
+			require.Len(t, projectRepoMock.UpdateProjectCalls(), 1)
+			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages)
+			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages[0].Services)
+			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages[0].Services[0].LastEventTypes[*tt.args.event.Type])
 		})
 	}
 }
