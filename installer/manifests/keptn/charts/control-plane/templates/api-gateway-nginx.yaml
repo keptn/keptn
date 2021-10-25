@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}         
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 data:
   nginx.conf: |
     worker_processes  3;
@@ -36,6 +36,9 @@ data:
       access_log /dev/stdout;
       # rewrite_log on;
       absolute_redirect off;
+
+      # remove nginx version
+      server_tokens off;
 
       # https://www.nginx.com/blog/websocket-nginx/
       map $http_upgrade $connection_upgrade {
@@ -277,7 +280,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}   
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:

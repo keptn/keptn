@@ -125,6 +125,9 @@ async function init(): Promise<Express> {
     integrationsPageLink = 'https://get.keptn.sh/integrations.html';
   }
 
+  // Remove the X-Powered-By headers.
+  app.disable('x-powered-by');
+
   // server static files - Images & CSS
   app.use('/static', express.static(join(serverFolder, 'views/static'), { maxAge: oneWeek }));
 
