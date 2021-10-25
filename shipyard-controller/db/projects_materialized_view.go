@@ -424,6 +424,9 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 
 // UpdateEventOfService updates a service event
 func (mv *ProjectsMaterializedView) UpdateEventOfService(e models.Event) error {
+	if e.Type == nil {
+		return errors.New("event type must be set")
+	}
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(e.Data, eventData)
 	if err != nil {
