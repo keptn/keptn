@@ -239,6 +239,15 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, secondEvaluationFinishedID)
 
+	project, err := GetProject(projectName)
+	require.Nil(t, err)
+
+	require.NotEmpty(t, project.Stages)
+	require.NotEmpty(t, project.Stages[0].Services)
+	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)])
+	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
+	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)])
+	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
 }
 
 func performEvaluationSequence(t *testing.T, projectName string, serviceName string) (string, *models.KeptnContextExtendedCE) {
