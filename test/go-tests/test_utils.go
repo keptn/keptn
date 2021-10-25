@@ -407,7 +407,7 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 func GetProject(projectName string) (*scmodels.ExpandedProject, error) {
 	project := &scmodels.ExpandedProject{}
 
-	resp, err := ApiGETRequest("/controlPlane/v1/project/" + projectName)
+	resp, err := ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
 	if err != nil {
 		return nil, err
 	}
