@@ -33,10 +33,9 @@ type IShipyardController interface {
 }
 
 type shipyardController struct {
-	projectRepo                db.ProjectRepo
 	eventRepo                  db.EventRepo
 	taskSequenceRepo           db.TaskSequenceRepo
-	eventsDBOperations         db.EventsDbOperations
+	projectMvRepo              db.IProjectsMaterializedView
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
 	startSequenceChan          chan models.Event
@@ -66,10 +65,9 @@ func GetShipyardControllerInstance(
 		eventDispatcher.Run(context.Background())
 		cbConnectionInstance := db.GetMongoDBConnectionInstance()
 		shipyardControllerInstance = &shipyardController{
-			projectRepo:      db.NewMongoDBProjectsRepo(cbConnectionInstance),
 			eventRepo:        db.NewMongoDBEventsRepo(cbConnectionInstance),
 			taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(cbConnectionInstance),
-			eventsDBOperations: &db.ProjectsMaterializedView{
+			projectMvRepo: &db.ProjectsMaterializedView{
 				ProjectRepo:     db.NewMongoDBProjectsRepo(cbConnectionInstance),
 				EventsRetriever: db.NewMongoDBEventsRepo(cbConnectionInstance),
 			},
@@ -492,7 +490,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		// log the error but continue
 		log.Errorf("could not encode shipyard file of project %s: %s", eventScope.Project, err.Error())
 	}
-	if err := sc.eventsDBOperations.UpdateShipyard(eventScope.Project, string(shipyardContent)); err != nil {
+	if err := sc.projectMvRepo.UpdateShipyard(eventScope.Project, string(shipyardContent)); err != nil {
 		// log the error but continue
 		log.Errorf("could not update shipyard content of project %s: %s", eventScope.Project, err.Error())
 	}
@@ -760,7 +758,7 @@ func (sc *shipyardController) retrieveStartedEventsForTriggeredID(eventScope *mo
 }
 
 func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error) {
-	projects, err := sc.projectRepo.GetProjects()
+	projects, err := sc.projectMvRepo.GetProjects()
 
 	if err != nil {
 		return nil, err
@@ -777,7 +775,7 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 }
 
 func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, filter common.EventFilter) ([]models.Event, error) {
-	project, err := sc.projectRepo.GetProject(projectName)
+	project, err := sc.projectMvRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	} else if project == nil {
@@ -1189,7 +1187,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 // GetCachedShipyard returns the shipyard that is stored for the project in the materialized view, instead of pulling it from the upstream
 // this is done to reduce requests to the upstream and reduce the risk of running into rate limiting problems
 func (sc *shipyardController) getCachedShipyard(projectName string) (*keptnv2.Shipyard, error) {
-	project, err := sc.projectRepo.GetProject(projectName)
+	project, err := sc.projectMvRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}

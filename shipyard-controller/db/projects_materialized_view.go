@@ -35,13 +35,35 @@ type EventsRetriever interface {
 	GetEvents(filter *goutils.EventFilter) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error)
 }
 
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/projectmvrepo_mock.go . IProjectsMaterializedView
+type IProjectsMaterializedView interface {
+	CreateProject(prj *models.ExpandedProject) error
+	UpdateShipyard(projectName string, shipyardContent string) error
+	UpdateProject(prj *models.ExpandedProject) error
+	UpdateUpstreamInfo(projectName string, uri, user string) error
+	UpdatedShipyard(projectName string, shipyard string) error
+	DeleteUpstreamInfo(projectName string) error
+	GetProjects() ([]*models.ExpandedProject, error)
+	GetProject(projectName string) (*models.ExpandedProject, error)
+	DeleteProject(projectName string) error
+	CreateStage(project string, stage string) error
+	DeleteStage(project string, stage string) error
+	CreateService(project string, stage string, service string) error
+	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
+	DeleteService(project string, stage string, service string) error
+	UpdateEventOfService(e models.Event) error
+	CreateRemediation(project, stage, service string, remediation *models.Remediation) error
+	CloseOpenRemediations(project, stage, service, keptnContext string) error
+	OnSequenceTaskStarted(event models.Event)
+	OnSequenceTaskFinished(event models.Event)
+}
+
 type ProjectsMaterializedView struct {
 	ProjectRepo     ProjectRepo
 	EventsRetriever EventRepo
 }
 
 // GetProjectsMaterializedView returns the materialized view
-//TODO:
 func GetProjectsMaterializedView() *ProjectsMaterializedView {
 	if instance == nil {
 		instance = &ProjectsMaterializedView{
