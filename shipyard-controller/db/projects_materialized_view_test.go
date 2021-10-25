@@ -886,6 +886,113 @@ func Test_updateServiceInStage(t *testing.T) {
 	}
 }
 
+func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
+	type fields struct {
+		ProjectRepo    ProjectRepo
+		EventRetriever EventRepo
+	}
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "empty event type",
+			fields: fields{
+				ProjectRepo:    &db_mock.ProjectRepoMock{},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Shkeptncontext: "test-context",
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid data",
+			fields: fields{
+				ProjectRepo:    &db_mock.ProjectRepoMock{},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           "invalid",
+					Shkeptncontext: "test-context",
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "project does not exist",
+			fields: fields{
+				ProjectRepo: &db_mock.ProjectRepoMock{
+					CreateProjectFunc: nil,
+					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+						return nil, nil
+					},
+				},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Shkeptncontext: "test-context",
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "error when retrieving project",
+			fields: fields{
+				ProjectRepo: &db_mock.ProjectRepoMock{
+					CreateProjectFunc: nil,
+					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+						return nil, errors.New("oops")
+					},
+				},
+				EventRetriever: &db_mock.EventRepoMock{},
+			},
+			args: args{
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Shkeptncontext: "test-context",
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mv := &ProjectsMaterializedView{
+				ProjectRepo:     tt.fields.ProjectRepo,
+				EventsRetriever: tt.fields.EventRetriever,
+			}
+			err := mv.UpdateEventOfService(tt.args.event)
+
+			if tt.wantErr {
+				require.NotNil(t, err)
+			}
+		})
+	}
+}
+
 func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 	type fields struct {
 		ProjectRepo    ProjectRepo
