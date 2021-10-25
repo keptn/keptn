@@ -58,7 +58,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 
 	// Scenario 1: Simple API Test (create, read, delete)
 	// register the integration at the shipyard controller
-	resp, err := ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
+	resp, err := ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration, 3)
 
 	require.Nil(t, err)
 	require.Equal(t, http.StatusCreated, resp.Response().StatusCode)
@@ -68,7 +68,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Nil(t, err)
 
 	// retrieve the integration
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations := []models.Integration{}
 	require.Nil(t, err)
@@ -96,12 +96,12 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 		},
 	}
 
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", integrations[0].ID), newSubscription)
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", integrations[0].ID), newSubscription, 3)
 
 	require.Nil(t, err)
 
 	// retrieve the integration again
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations = []models.Integration{}
 	require.Nil(t, err)
@@ -121,11 +121,11 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	newSubscription.Filter.Projects = append(newSubscription.Filter.Projects, "other-project")
 	newSubscription.ID = integrations[0].Subscriptions[1].ID
 
-	resp, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", integrations[0].ID, newSubscription.ID), newSubscription)
+	resp, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", integrations[0].ID, newSubscription.ID), newSubscription, 3)
 	require.Nil(t, err)
 
 	// retrieve the integration again
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations = []models.Integration{}
 	require.Nil(t, err)
@@ -139,11 +139,11 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Equal(t, newSubscription, integrations[0].Subscriptions[1])
 
 	// delete the subscription
-	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", integrations[0].ID, newSubscription.ID))
+	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", integrations[0].ID, newSubscription.ID), 3)
 	require.Nil(t, err)
 
 	// retrieve the integration again
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations = []models.Integration{}
 	require.Nil(t, err)
@@ -159,12 +159,12 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	updatedUniformIntegration := uniformIntegration
 	updatedUniformIntegration.MetaData.DistributorVersion = "0.8.4"
 
-	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration)
+	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// check if distributor version changed for the same integration
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations = []models.Integration{}
 	err = resp.ToJSON(&integrations)
@@ -172,13 +172,13 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Equal(t, "0.8.4", integrations[0].MetaData.DistributorVersion)
 
 	// delete the integration
-	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/" + registrationResponse.ID)
+	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/"+registrationResponse.ID, 3)
 
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// try to retrieve the integration again - should not be available anymore
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations = []models.Integration{}
 	require.Nil(t, err)
@@ -188,11 +188,11 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Empty(t, integrations)
 
 	// Scenario 2: Check automatic TTL expiration of Uniform Integration
-	setShipyardControllerEnvVar(t, "UNIFORM_INTEGRATION_TTL", "1m")
+	SetShipyardControllerEnvVar(t, "UNIFORM_INTEGRATION_TTL", "1m")
 	// re-register the integration
 	// do this in a retry loop since we restarted the shipyard controller pod right before - in some cases it seemed to not be ready at this point
 	require.Eventually(t, func() bool {
-		resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
+		resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration, 3)
 		if err != nil {
 			return false
 		}
@@ -203,7 +203,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	}, 30*time.Second, 5*time.Second)
 
 	// check again if it has been created correctly
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 	integrations = []models.Integration{}
 	require.Nil(t, err)
@@ -215,7 +215,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	// wait for the registration to be removed automatically (TTL index on collection should kick in)
 	require.Eventually(t, func() bool {
 		t.Logf("checking if integration %s is still there", registrationResponse.ID)
-		resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+		resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id="+registrationResponse.ID, 3)
 
 		if err != nil {
 			t.Logf("could not retrieve integration: %s", err.Error())
@@ -330,7 +330,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	fetchedEchoIntegration.Subscriptions[0].Event = keptnv2.GetTriggeredEventType("echo")
 	fetchedEchoIntegration.Subscriptions[0].Filter.Stages = []string{"filtered-stage"}
 
-	_, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", fetchedEchoIntegration.ID, fetchedEchoIntegration.Subscriptions[0].ID), fetchedEchoIntegration.Subscriptions[0])
+	_, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", fetchedEchoIntegration.ID, fetchedEchoIntegration.Subscriptions[0].ID), fetchedEchoIntegration.Subscriptions[0], 3)
 	require.Nil(t, err)
 
 	// wait some time to make sure the echo service has pulled the updated subscription

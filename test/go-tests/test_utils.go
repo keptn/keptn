@@ -41,7 +41,7 @@ func (sender *APIEventSender) Send(ctx context.Context, event v2.Event) error {
 }
 
 func (sender *APIEventSender) SendEvent(event v2.Event) error {
-	_, err := ApiPOSTRequest("/v1/event", event)
+	_, err := ApiPOSTRequest("/v1/event", event, 3)
 	return err
 }
 
@@ -54,7 +54,7 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		if err != nil {
 			<-time.After(5 * time.Second)
 		}
-		resp, err = ApiGETRequest("/controlPlane/v1/project/" + projectName)
+		resp, err = ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
 		if err != nil {
 			continue
 		}
@@ -99,7 +99,7 @@ func TriggerSequence(projectName, serviceName, stageName, sequenceName string, e
 		Source:             &source,
 		Specversion:        "1.0",
 		Type:               &eventType,
-	})
+	}, 3)
 	if err != nil {
 		return "", err
 	}
@@ -113,7 +113,7 @@ func TriggerSequence(projectName, serviceName, stageName, sequenceName string, e
 }
 
 func GetIntegrationWithName(name string) (models.Integration, error) {
-	resp, _ := ApiGETRequest("/controlPlane/v1/uniform/registration")
+	resp, _ := ApiGETRequest("/controlPlane/v1/uniform/registration", 3)
 	integrations := []models.Integration{}
 	if err := resp.ToJSON(&integrations); err != nil {
 		return models.Integration{}, err
@@ -145,7 +145,7 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 		}
 	}
 
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription)
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription, 3)
 	require.Nil(t, err)
 
 	subscriptionResponse := &scmodels.CreateSubscriptionResponse{}
@@ -158,7 +158,7 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	return subscriptionResponse.ID, nil
 }
 
-func ApiDELETERequest(path string) (*req.Resp, error) {
+func ApiDELETERequest(path string, retries int) (*req.Resp, error) {
 	apiToken, keptnAPIURL, err := GetApiCredentials()
 	if err != nil {
 		return nil, err
@@ -166,12 +166,9 @@ func ApiDELETERequest(path string) (*req.Resp, error) {
 
 	authHeader := getAuthHeader(apiToken)
 
-	r, err := req.Delete(keptnAPIURL+path, authHeader)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
+	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Delete(keptnAPIURL+path, authHeader)
+	}, retries)
 }
 
 func getAuthHeader(apiToken string) req.Header {
@@ -182,7 +179,7 @@ func getAuthHeader(apiToken string) req.Header {
 	return authHeader
 }
 
-func ApiGETRequest(path string) (*req.Resp, error) {
+func ApiGETRequest(path string, retries int) (*req.Resp, error) {
 	apiToken, keptnAPIURL, err := GetApiCredentials()
 	if err != nil {
 		return nil, err
@@ -190,31 +187,25 @@ func ApiGETRequest(path string) (*req.Resp, error) {
 
 	authHeader := getAuthHeader(apiToken)
 
-	r, err := req.Get(keptnAPIURL+path, authHeader)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
+	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Get(keptnAPIURL+path, authHeader)
+	}, retries)
 }
 
-func ApiPOSTRequest(path string, payload interface{}) (*req.Resp, error) {
-	apiToken, keptnAPIURL, err := GetApiCredentials()
-	if err != nil {
-		return nil, err
+func doHTTPRequestWithRetry(httpFunc func() (*req.Resp, error), retries int) (*req.Resp, error) {
+	var reqErr error
+	var r *req.Resp
+	for i := 0; i <= retries; i++ {
+		r, reqErr = httpFunc()
+		if reqErr == nil {
+			return r, nil
+		}
+		<-time.After(5 * time.Second)
 	}
-
-	authHeader := getAuthHeader(apiToken)
-
-	r, err := req.Post(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
+	return r, reqErr
 }
 
-func ApiPUTRequest(path string, payload interface{}) (*req.Resp, error) {
+func ApiPOSTRequest(path string, payload interface{}, retries int) (*req.Resp, error) {
 	apiToken, keptnAPIURL, err := GetApiCredentials()
 	if err != nil {
 		return nil, err
@@ -222,12 +213,22 @@ func ApiPUTRequest(path string, payload interface{}) (*req.Resp, error) {
 
 	authHeader := getAuthHeader(apiToken)
 
-	r, err := req.Put(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
+	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Post(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
+	}, retries)
+}
+
+func ApiPUTRequest(path string, payload interface{}, retries int) (*req.Resp, error) {
+	apiToken, keptnAPIURL, err := GetApiCredentials()
 	if err != nil {
 		return nil, err
 	}
 
-	return r, nil
+	authHeader := getAuthHeader(apiToken)
+
+	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Put(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
+	}, retries)
 }
 
 func GetApiCredentials() (string, string, error) {
@@ -311,7 +312,7 @@ func GetKeptnNameSpaceFromEnv() string {
 }
 
 func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*models.KeptnContextExtendedCE, error) {
-	resp, err := ApiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + keptnContext + "&stage=" + stage + "&type=" + eventType)
+	resp, err := ApiGETRequest("/mongodb-datastore/event?project="+projectName+"&keptnContext="+keptnContext+"&stage="+stage+"&type="+eventType, 3)
 	if err != nil {
 		return nil, err
 	}
@@ -326,7 +327,7 @@ func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*
 }
 
 func GetEventsOfType(keptnContext, projectName, stage, eventType string) ([]*models.KeptnContextExtendedCE, error) {
-	resp, err := ApiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + keptnContext + "&stage=" + stage + "&type=" + eventType)
+	resp, err := ApiGETRequest("/mongodb-datastore/event?project="+projectName+"&keptnContext="+keptnContext+"&stage="+stage+"&type="+eventType, 3)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +342,7 @@ func GetEventsOfType(keptnContext, projectName, stage, eventType string) ([]*mod
 }
 
 func GetEventTraceForContext(keptnContext, projectName string) ([]*models.KeptnContextExtendedCE, error) {
-	resp, err := ApiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + keptnContext)
+	resp, err := ApiGETRequest("/mongodb-datastore/event?project="+projectName+"&keptnContext="+keptnContext, 3)
 	if err != nil {
 		return nil, err
 	}
@@ -397,7 +398,7 @@ func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context
 func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	states := &scmodels.SequenceStates{}
 
-	resp, err := ApiGETRequest("/controlPlane/v1/sequence/" + projectName)
+	resp, err := ApiGETRequest("/controlPlane/v1/sequence/"+projectName, 3)
 	err = resp.ToJSON(states)
 
 	return states, resp, err
@@ -456,4 +457,45 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 
 	return fmt.Sprintf("http://%s.%s-%s.%s", serviceName, projectName, stageName, ingressHostnameSuffix), nil
 
+}
+
+func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
+	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
+	if err != nil {
+		return err
+	}
+
+	t.Log("restarting shipyard controller pod")
+	err = RestartPod("shipyard-controller")
+	if err != nil {
+		return err
+	}
+
+	// wait 10s to make sure we wait for the updated pod to be ready
+	<-time.After(10 * time.Second)
+	t.Log("waiting for shipyard controller pod to be ready again")
+	err = WaitForPodOfDeployment("shipyard-controller")
+	if err != nil {
+		return err
+	}
+
+	// check whether the API is reachable again
+	require.Eventually(t, func() bool {
+		t.Log("Verifying API availability")
+		// use the shipyard-controller's project endpoint to check API availability
+		resp, err := ApiGETRequest("/controlPlane/v1/project", 3)
+		if err != nil {
+			t.Logf("got error from API: %s", err.Error())
+			return false
+		}
+
+		if resp.Response().StatusCode != http.StatusOK {
+			t.Logf("API response does not have expected status code")
+			return false
+		}
+
+		return true
+	}, 30*time.Second, 5*time.Second)
+
+	return nil
 }

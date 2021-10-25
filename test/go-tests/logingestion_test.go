@@ -27,12 +27,12 @@ func Test_LogIngestion(t *testing.T) {
 	}}
 
 	// store our error logs via the API
-	resp, err := ApiPOSTRequest("/controlPlane/v1/log", myErrorLogs)
+	resp, err := ApiPOSTRequest("/controlPlane/v1/log", myErrorLogs, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// retrieve the error logs
-	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID))
+	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -44,7 +44,7 @@ func Test_LogIngestion(t *testing.T) {
 	require.Equal(t, int64(3), getLogsResponse.TotalCount)
 
 	// retrieve the error logs - using pagination
-	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s&pageSize=1", myLogID))
+	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s&pageSize=1", myLogID), 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -56,13 +56,13 @@ func Test_LogIngestion(t *testing.T) {
 	require.Equal(t, int64(3), getLogsResponse.TotalCount)
 
 	// delete the logs
-	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID))
+	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
 
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// retrieve the error logs again -should not be there anymore
-	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID))
+	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 

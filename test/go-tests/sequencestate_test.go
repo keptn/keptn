@@ -97,7 +97,7 @@ func Test_SequenceState(t *testing.T) {
 		Source:             &source,
 		Specversion:        "1.0",
 		Type:               &eventType,
-	})
+	}, 3)
 	require.Nil(t, err)
 	body := resp.String()
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
@@ -389,7 +389,7 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 	require.Nil(t, err)
 
 	// delete the shipyard file
-	_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName))
+	_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName), 3)
 	require.Nil(t, err)
 
 	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
@@ -489,7 +489,7 @@ func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {
 
 	for i := len(events) - 1; i >= 0; i-- {
 		events[i].Shkeptncontext = newContext
-		if _, err := ApiPOSTRequest("/mongodb-datastore/event", events[i]); err != nil {
+		if _, err := ApiPOSTRequest("/mongodb-datastore/event", events[i], 3); err != nil {
 			return "", err
 		}
 	}

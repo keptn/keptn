@@ -173,7 +173,7 @@ func Test_Webhook(t *testing.T) {
 		"data": map[string]string{
 			"my-key": "my-value",
 		},
-	})
+	}, 3)
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
@@ -300,7 +300,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 		"data": map[string]string{
 			"my-key": "my-value",
 		},
-	})
+	}, 3)
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
@@ -382,7 +382,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 		"data": map[string]string{
 			"my-key": "my-value",
 		},
-	})
+	}, 3)
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
@@ -453,7 +453,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.AbortSequence,
 		Stage: "",
-	})
+	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
