@@ -892,9 +892,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		EventRetriever EventRepo
 	}
 	type args struct {
-		keptnBase    interface{}
-		eventType    string
-		keptnContext string
+		event models.Event
 	}
 	tests := []struct {
 		name    string
@@ -933,9 +931,13 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				},
 			},
 			args: args{
-				keptnBase:    &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
-				eventType:    "keptn.sh.some.event",
-				keptnContext: "test-context",
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Type:           common.Stringp("keptn.sh.some.event"),
+					Shkeptncontext: "test-context",
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
+				},
 			},
 			wantErr: false,
 		},
@@ -991,13 +993,13 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				},
 			},
 			args: args{
-				keptnBase: &keptnv2.EventData{
-					Project: "test-project",
-					Stage:   "dev",
-					Service: "test-service",
+				event: models.Event{
+					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+					Shkeptncontext: "test-context",
+					ID:             "test-event-id",
+					Triggeredid:    "the-triggered-id",
 				},
-				eventType:    keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
-				keptnContext: "test-context",
 			},
 			wantErr: false,
 		},
@@ -1008,7 +1010,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				ProjectRepo:     tt.fields.ProjectRepo,
 				EventsRetriever: tt.fields.EventRetriever,
 			}
-			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, "test-event-id", "the-triggered-id"); (err != nil) != tt.wantErr {
+			if err := mv.UpdateEventOfService(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
