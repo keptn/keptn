@@ -32,7 +32,7 @@ type IProjectManager interface {
 type ProjectManager struct {
 	ConfigurationStore      common.ConfigurationStore
 	SecretStore             common.SecretStore
-	ProjectMaterializedView db.ProjectsDBOperations
+	ProjectMaterializedView db.ProjectMVRepo
 	TaskSequenceRepository  db.TaskSequenceRepo
 	EventRepository         db.EventRepo
 	SequenceQueueRepo       db.SequenceQueueRepo
@@ -46,7 +46,7 @@ var nilRollback = func() error {
 func NewProjectManager(
 	configurationStore common.ConfigurationStore,
 	secretStore common.SecretStore,
-	dbProjectsOperations db.ProjectsDBOperations,
+	projectMVrepo db.ProjectMVRepo,
 	taskSequenceRepo db.TaskSequenceRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
@@ -54,7 +54,7 @@ func NewProjectManager(
 	projectUpdater := &ProjectManager{
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
-		ProjectMaterializedView: dbProjectsOperations,
+		ProjectMaterializedView: projectMVrepo,
 		TaskSequenceRepository:  taskSequenceRepo,
 		EventRepository:         eventRepo,
 		SequenceQueueRepo:       sequenceQueueRepo,
