@@ -548,14 +548,14 @@ func (mv *ProjectsMaterializedView) CloseOpenRemediations(project, stage, servic
 func (mv *ProjectsMaterializedView) OnSequenceTaskStarted(event models.Event) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
-		log.WithError(err).Errorf("could not update lastEvent property")
+		log.WithError(err).Errorf("could not update lastEvent property for task.started event")
 	}
 }
 
 func (mv *ProjectsMaterializedView) OnSequenceTaskFinished(event models.Event) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
-		log.WithError(err).Errorf("could not update lastEvent property")
+		log.WithError(err).Errorf("could not update lastEvent property for task.finished event")
 	}
 }
 
