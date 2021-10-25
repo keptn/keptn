@@ -112,7 +112,7 @@ spec:
 
 func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	type fields struct {
-		projectRepo        db.IProjectsMaterializedView
+		projectRepo        db.ProjectMVRepo
 		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
@@ -128,7 +128,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &db_mock.IProjectsMaterializedViewMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
 					return []*models.ExpandedProject{{
 						ProjectName: "sockshop",
 					}, {
@@ -171,7 +171,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 
 func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	type fields struct {
-		projectRepo        db.IProjectsMaterializedView
+		projectRepo        db.ProjectMVRepo
 		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
@@ -188,7 +188,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 		{
 			name: "Get triggered events for project",
 			fields: fields{
-				projectRepo: &db_mock.IProjectsMaterializedViewMock{GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 					return &models.ExpandedProject{ProjectName: projectName}, nil
 				}},
 				triggeredEventRepo: &db_mock.EventRepoMock{
@@ -287,7 +287,7 @@ func Test_getEventScope(t *testing.T) {
 
 func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
-		projectMvRepo    db.IProjectsMaterializedView
+		projectMvRepo    db.ProjectMVRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
 		taskStartedHook  *fakehooks.ISequenceTaskStartedHookMock
@@ -399,7 +399,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 
 func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
-		projectMvRepo    db.IProjectsMaterializedView
+		projectMvRepo    db.ProjectMVRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
 		taskFinishedHook *fakehooks.ISequenceTaskFinishedHookMock
@@ -473,7 +473,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 func Test_eventManager_getEvents(t *testing.T) {
 	eventAvailable := false
 	type fields struct {
-		projectRepo db.IProjectsMaterializedView
+		projectRepo db.ProjectMVRepo
 		eventRepo   db.EventRepo
 	}
 	type args struct {
@@ -765,7 +765,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
 
-	eventsDBMock := sc.projectMvRepo.(*db_mock.IProjectsMaterializedViewMock)
+	eventsDBMock := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
 	assert.Equal(t, "test-project", eventsDBMock.UpdateShipyardCalls()[0].ProjectName)
@@ -1310,7 +1310,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.projectMvRepo.(*db_mock.IProjectsMaterializedViewMock)
+	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
@@ -1347,7 +1347,7 @@ func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
 		},
 	}
 
-	eventsOperations := sc.projectMvRepo.(*db_mock.IProjectsMaterializedViewMock)
+	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
@@ -1377,7 +1377,7 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.projectMvRepo.(*db_mock.IProjectsMaterializedViewMock)
+	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	eventsOperations.UpdateEventOfServiceFunc = func(e models.Event) error {
 		return errors.New("updating event of service failed")
@@ -1430,14 +1430,14 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 
 	assert.NotNil(t, err)
 
-	eventsDBMock := sc.projectMvRepo.(*db_mock.IProjectsMaterializedViewMock)
+	eventsDBMock := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	assert.Equal(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
 
 func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 	type fields struct {
-		projectRepo      db.IProjectsMaterializedView
+		projectRepo      db.ProjectMVRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
 	}
@@ -2236,7 +2236,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		shipyardContent = testShipyardFile
 	}
 	em := &shipyardController{
-		projectMvRepo: &db_mock.IProjectsMaterializedViewMock{
+		projectMvRepo: &db_mock.ProjectMVRepoMock{
 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 				return &models.ExpandedProject{
 					ProjectName: "test-project",

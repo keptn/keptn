@@ -24,6 +24,9 @@ const (
 	rootEventCollectionSuffix           = "-rootEvents"
 )
 
+// ErrNoEventFound indicates that no event could be found
+var ErrNoEventFound = errors.New("no matching event found")
+
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
 	DBConnection *MongoDBConnection

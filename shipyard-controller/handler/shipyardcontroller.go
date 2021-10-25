@@ -35,7 +35,7 @@ type IShipyardController interface {
 type shipyardController struct {
 	eventRepo                  db.EventRepo
 	taskSequenceRepo           db.TaskSequenceRepo
-	projectMvRepo              db.IProjectsMaterializedView
+	projectMvRepo              db.ProjectMVRepo
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
 	startSequenceChan          chan models.Event
@@ -67,7 +67,7 @@ func GetShipyardControllerInstance(
 		shipyardControllerInstance = &shipyardController{
 			eventRepo:        db.NewMongoDBEventsRepo(cbConnectionInstance),
 			taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(cbConnectionInstance),
-			projectMvRepo: &db.ProjectsMaterializedView{
+			projectMvRepo: &db.MongoDBProjectMVRepo{
 				ProjectRepo:     db.NewMongoDBProjectsRepo(cbConnectionInstance),
 				EventsRetriever: db.NewMongoDBEventsRepo(cbConnectionInstance),
 			},

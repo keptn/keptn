@@ -8,12 +8,12 @@ import (
 	"sync"
 )
 
-// IProjectsMaterializedViewMock is a mock implementation of db.IProjectsMaterializedView.
+// ProjectMVRepoMock is a mock implementation of db.ProjectMVRepo.
 //
-// 	func TestSomethingThatUsesIProjectsMaterializedView(t *testing.T) {
+// 	func TestSomethingThatUsesProjectMVRepo(t *testing.T) {
 //
-// 		// make and configure a mocked db.IProjectsMaterializedView
-// 		mockedIProjectsMaterializedView := &IProjectsMaterializedViewMock{
+// 		// make and configure a mocked db.ProjectMVRepo
+// 		mockedProjectMVRepo := &ProjectMVRepoMock{
 // 			CloseOpenRemediationsFunc: func(project string, stage string, service string, keptnContext string) error {
 // 				panic("mock out the CloseOpenRemediations method")
 // 			},
@@ -73,11 +73,11 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIProjectsMaterializedView in code that requires db.IProjectsMaterializedView
+// 		// use mockedProjectMVRepo in code that requires db.ProjectMVRepo
 // 		// and then make assertions.
 //
 // 	}
-type IProjectsMaterializedViewMock struct {
+type ProjectMVRepoMock struct {
 	// CloseOpenRemediationsFunc mocks the CloseOpenRemediations method.
 	CloseOpenRemediationsFunc func(project string, stage string, service string, keptnContext string) error
 
@@ -289,9 +289,9 @@ type IProjectsMaterializedViewMock struct {
 }
 
 // CloseOpenRemediations calls CloseOpenRemediationsFunc.
-func (mock *IProjectsMaterializedViewMock) CloseOpenRemediations(project string, stage string, service string, keptnContext string) error {
+func (mock *ProjectMVRepoMock) CloseOpenRemediations(project string, stage string, service string, keptnContext string) error {
 	if mock.CloseOpenRemediationsFunc == nil {
-		panic("IProjectsMaterializedViewMock.CloseOpenRemediationsFunc: method is nil but IProjectsMaterializedView.CloseOpenRemediations was just called")
+		panic("ProjectMVRepoMock.CloseOpenRemediationsFunc: method is nil but ProjectMVRepo.CloseOpenRemediations was just called")
 	}
 	callInfo := struct {
 		Project      string
@@ -312,8 +312,8 @@ func (mock *IProjectsMaterializedViewMock) CloseOpenRemediations(project string,
 
 // CloseOpenRemediationsCalls gets all the calls that were made to CloseOpenRemediations.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.CloseOpenRemediationsCalls())
-func (mock *IProjectsMaterializedViewMock) CloseOpenRemediationsCalls() []struct {
+//     len(mockedProjectMVRepo.CloseOpenRemediationsCalls())
+func (mock *ProjectMVRepoMock) CloseOpenRemediationsCalls() []struct {
 	Project      string
 	Stage        string
 	Service      string
@@ -332,9 +332,9 @@ func (mock *IProjectsMaterializedViewMock) CloseOpenRemediationsCalls() []struct
 }
 
 // CreateProject calls CreateProjectFunc.
-func (mock *IProjectsMaterializedViewMock) CreateProject(prj *models.ExpandedProject) error {
+func (mock *ProjectMVRepoMock) CreateProject(prj *models.ExpandedProject) error {
 	if mock.CreateProjectFunc == nil {
-		panic("IProjectsMaterializedViewMock.CreateProjectFunc: method is nil but IProjectsMaterializedView.CreateProject was just called")
+		panic("ProjectMVRepoMock.CreateProjectFunc: method is nil but ProjectMVRepo.CreateProject was just called")
 	}
 	callInfo := struct {
 		Prj *models.ExpandedProject
@@ -349,8 +349,8 @@ func (mock *IProjectsMaterializedViewMock) CreateProject(prj *models.ExpandedPro
 
 // CreateProjectCalls gets all the calls that were made to CreateProject.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.CreateProjectCalls())
-func (mock *IProjectsMaterializedViewMock) CreateProjectCalls() []struct {
+//     len(mockedProjectMVRepo.CreateProjectCalls())
+func (mock *ProjectMVRepoMock) CreateProjectCalls() []struct {
 	Prj *models.ExpandedProject
 } {
 	var calls []struct {
@@ -363,9 +363,9 @@ func (mock *IProjectsMaterializedViewMock) CreateProjectCalls() []struct {
 }
 
 // CreateRemediation calls CreateRemediationFunc.
-func (mock *IProjectsMaterializedViewMock) CreateRemediation(project string, stage string, service string, remediation *models.Remediation) error {
+func (mock *ProjectMVRepoMock) CreateRemediation(project string, stage string, service string, remediation *models.Remediation) error {
 	if mock.CreateRemediationFunc == nil {
-		panic("IProjectsMaterializedViewMock.CreateRemediationFunc: method is nil but IProjectsMaterializedView.CreateRemediation was just called")
+		panic("ProjectMVRepoMock.CreateRemediationFunc: method is nil but ProjectMVRepo.CreateRemediation was just called")
 	}
 	callInfo := struct {
 		Project     string
@@ -386,8 +386,8 @@ func (mock *IProjectsMaterializedViewMock) CreateRemediation(project string, sta
 
 // CreateRemediationCalls gets all the calls that were made to CreateRemediation.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.CreateRemediationCalls())
-func (mock *IProjectsMaterializedViewMock) CreateRemediationCalls() []struct {
+//     len(mockedProjectMVRepo.CreateRemediationCalls())
+func (mock *ProjectMVRepoMock) CreateRemediationCalls() []struct {
 	Project     string
 	Stage       string
 	Service     string
@@ -406,9 +406,9 @@ func (mock *IProjectsMaterializedViewMock) CreateRemediationCalls() []struct {
 }
 
 // CreateService calls CreateServiceFunc.
-func (mock *IProjectsMaterializedViewMock) CreateService(project string, stage string, service string) error {
+func (mock *ProjectMVRepoMock) CreateService(project string, stage string, service string) error {
 	if mock.CreateServiceFunc == nil {
-		panic("IProjectsMaterializedViewMock.CreateServiceFunc: method is nil but IProjectsMaterializedView.CreateService was just called")
+		panic("ProjectMVRepoMock.CreateServiceFunc: method is nil but ProjectMVRepo.CreateService was just called")
 	}
 	callInfo := struct {
 		Project string
@@ -427,8 +427,8 @@ func (mock *IProjectsMaterializedViewMock) CreateService(project string, stage s
 
 // CreateServiceCalls gets all the calls that were made to CreateService.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.CreateServiceCalls())
-func (mock *IProjectsMaterializedViewMock) CreateServiceCalls() []struct {
+//     len(mockedProjectMVRepo.CreateServiceCalls())
+func (mock *ProjectMVRepoMock) CreateServiceCalls() []struct {
 	Project string
 	Stage   string
 	Service string
@@ -445,9 +445,9 @@ func (mock *IProjectsMaterializedViewMock) CreateServiceCalls() []struct {
 }
 
 // CreateStage calls CreateStageFunc.
-func (mock *IProjectsMaterializedViewMock) CreateStage(project string, stage string) error {
+func (mock *ProjectMVRepoMock) CreateStage(project string, stage string) error {
 	if mock.CreateStageFunc == nil {
-		panic("IProjectsMaterializedViewMock.CreateStageFunc: method is nil but IProjectsMaterializedView.CreateStage was just called")
+		panic("ProjectMVRepoMock.CreateStageFunc: method is nil but ProjectMVRepo.CreateStage was just called")
 	}
 	callInfo := struct {
 		Project string
@@ -464,8 +464,8 @@ func (mock *IProjectsMaterializedViewMock) CreateStage(project string, stage str
 
 // CreateStageCalls gets all the calls that were made to CreateStage.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.CreateStageCalls())
-func (mock *IProjectsMaterializedViewMock) CreateStageCalls() []struct {
+//     len(mockedProjectMVRepo.CreateStageCalls())
+func (mock *ProjectMVRepoMock) CreateStageCalls() []struct {
 	Project string
 	Stage   string
 } {
@@ -480,9 +480,9 @@ func (mock *IProjectsMaterializedViewMock) CreateStageCalls() []struct {
 }
 
 // DeleteProject calls DeleteProjectFunc.
-func (mock *IProjectsMaterializedViewMock) DeleteProject(projectName string) error {
+func (mock *ProjectMVRepoMock) DeleteProject(projectName string) error {
 	if mock.DeleteProjectFunc == nil {
-		panic("IProjectsMaterializedViewMock.DeleteProjectFunc: method is nil but IProjectsMaterializedView.DeleteProject was just called")
+		panic("ProjectMVRepoMock.DeleteProjectFunc: method is nil but ProjectMVRepo.DeleteProject was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -497,8 +497,8 @@ func (mock *IProjectsMaterializedViewMock) DeleteProject(projectName string) err
 
 // DeleteProjectCalls gets all the calls that were made to DeleteProject.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.DeleteProjectCalls())
-func (mock *IProjectsMaterializedViewMock) DeleteProjectCalls() []struct {
+//     len(mockedProjectMVRepo.DeleteProjectCalls())
+func (mock *ProjectMVRepoMock) DeleteProjectCalls() []struct {
 	ProjectName string
 } {
 	var calls []struct {
@@ -511,9 +511,9 @@ func (mock *IProjectsMaterializedViewMock) DeleteProjectCalls() []struct {
 }
 
 // DeleteService calls DeleteServiceFunc.
-func (mock *IProjectsMaterializedViewMock) DeleteService(project string, stage string, service string) error {
+func (mock *ProjectMVRepoMock) DeleteService(project string, stage string, service string) error {
 	if mock.DeleteServiceFunc == nil {
-		panic("IProjectsMaterializedViewMock.DeleteServiceFunc: method is nil but IProjectsMaterializedView.DeleteService was just called")
+		panic("ProjectMVRepoMock.DeleteServiceFunc: method is nil but ProjectMVRepo.DeleteService was just called")
 	}
 	callInfo := struct {
 		Project string
@@ -532,8 +532,8 @@ func (mock *IProjectsMaterializedViewMock) DeleteService(project string, stage s
 
 // DeleteServiceCalls gets all the calls that were made to DeleteService.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.DeleteServiceCalls())
-func (mock *IProjectsMaterializedViewMock) DeleteServiceCalls() []struct {
+//     len(mockedProjectMVRepo.DeleteServiceCalls())
+func (mock *ProjectMVRepoMock) DeleteServiceCalls() []struct {
 	Project string
 	Stage   string
 	Service string
@@ -550,9 +550,9 @@ func (mock *IProjectsMaterializedViewMock) DeleteServiceCalls() []struct {
 }
 
 // DeleteStage calls DeleteStageFunc.
-func (mock *IProjectsMaterializedViewMock) DeleteStage(project string, stage string) error {
+func (mock *ProjectMVRepoMock) DeleteStage(project string, stage string) error {
 	if mock.DeleteStageFunc == nil {
-		panic("IProjectsMaterializedViewMock.DeleteStageFunc: method is nil but IProjectsMaterializedView.DeleteStage was just called")
+		panic("ProjectMVRepoMock.DeleteStageFunc: method is nil but ProjectMVRepo.DeleteStage was just called")
 	}
 	callInfo := struct {
 		Project string
@@ -569,8 +569,8 @@ func (mock *IProjectsMaterializedViewMock) DeleteStage(project string, stage str
 
 // DeleteStageCalls gets all the calls that were made to DeleteStage.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.DeleteStageCalls())
-func (mock *IProjectsMaterializedViewMock) DeleteStageCalls() []struct {
+//     len(mockedProjectMVRepo.DeleteStageCalls())
+func (mock *ProjectMVRepoMock) DeleteStageCalls() []struct {
 	Project string
 	Stage   string
 } {
@@ -585,9 +585,9 @@ func (mock *IProjectsMaterializedViewMock) DeleteStageCalls() []struct {
 }
 
 // DeleteUpstreamInfo calls DeleteUpstreamInfoFunc.
-func (mock *IProjectsMaterializedViewMock) DeleteUpstreamInfo(projectName string) error {
+func (mock *ProjectMVRepoMock) DeleteUpstreamInfo(projectName string) error {
 	if mock.DeleteUpstreamInfoFunc == nil {
-		panic("IProjectsMaterializedViewMock.DeleteUpstreamInfoFunc: method is nil but IProjectsMaterializedView.DeleteUpstreamInfo was just called")
+		panic("ProjectMVRepoMock.DeleteUpstreamInfoFunc: method is nil but ProjectMVRepo.DeleteUpstreamInfo was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -602,8 +602,8 @@ func (mock *IProjectsMaterializedViewMock) DeleteUpstreamInfo(projectName string
 
 // DeleteUpstreamInfoCalls gets all the calls that were made to DeleteUpstreamInfo.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.DeleteUpstreamInfoCalls())
-func (mock *IProjectsMaterializedViewMock) DeleteUpstreamInfoCalls() []struct {
+//     len(mockedProjectMVRepo.DeleteUpstreamInfoCalls())
+func (mock *ProjectMVRepoMock) DeleteUpstreamInfoCalls() []struct {
 	ProjectName string
 } {
 	var calls []struct {
@@ -616,9 +616,9 @@ func (mock *IProjectsMaterializedViewMock) DeleteUpstreamInfoCalls() []struct {
 }
 
 // GetProject calls GetProjectFunc.
-func (mock *IProjectsMaterializedViewMock) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (mock *ProjectMVRepoMock) GetProject(projectName string) (*models.ExpandedProject, error) {
 	if mock.GetProjectFunc == nil {
-		panic("IProjectsMaterializedViewMock.GetProjectFunc: method is nil but IProjectsMaterializedView.GetProject was just called")
+		panic("ProjectMVRepoMock.GetProjectFunc: method is nil but ProjectMVRepo.GetProject was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -633,8 +633,8 @@ func (mock *IProjectsMaterializedViewMock) GetProject(projectName string) (*mode
 
 // GetProjectCalls gets all the calls that were made to GetProject.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.GetProjectCalls())
-func (mock *IProjectsMaterializedViewMock) GetProjectCalls() []struct {
+//     len(mockedProjectMVRepo.GetProjectCalls())
+func (mock *ProjectMVRepoMock) GetProjectCalls() []struct {
 	ProjectName string
 } {
 	var calls []struct {
@@ -647,9 +647,9 @@ func (mock *IProjectsMaterializedViewMock) GetProjectCalls() []struct {
 }
 
 // GetProjects calls GetProjectsFunc.
-func (mock *IProjectsMaterializedViewMock) GetProjects() ([]*models.ExpandedProject, error) {
+func (mock *ProjectMVRepoMock) GetProjects() ([]*models.ExpandedProject, error) {
 	if mock.GetProjectsFunc == nil {
-		panic("IProjectsMaterializedViewMock.GetProjectsFunc: method is nil but IProjectsMaterializedView.GetProjects was just called")
+		panic("ProjectMVRepoMock.GetProjectsFunc: method is nil but ProjectMVRepo.GetProjects was just called")
 	}
 	callInfo := struct {
 	}{}
@@ -661,8 +661,8 @@ func (mock *IProjectsMaterializedViewMock) GetProjects() ([]*models.ExpandedProj
 
 // GetProjectsCalls gets all the calls that were made to GetProjects.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.GetProjectsCalls())
-func (mock *IProjectsMaterializedViewMock) GetProjectsCalls() []struct {
+//     len(mockedProjectMVRepo.GetProjectsCalls())
+func (mock *ProjectMVRepoMock) GetProjectsCalls() []struct {
 } {
 	var calls []struct {
 	}
@@ -673,9 +673,9 @@ func (mock *IProjectsMaterializedViewMock) GetProjectsCalls() []struct {
 }
 
 // GetService calls GetServiceFunc.
-func (mock *IProjectsMaterializedViewMock) GetService(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+func (mock *ProjectMVRepoMock) GetService(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
 	if mock.GetServiceFunc == nil {
-		panic("IProjectsMaterializedViewMock.GetServiceFunc: method is nil but IProjectsMaterializedView.GetService was just called")
+		panic("ProjectMVRepoMock.GetServiceFunc: method is nil but ProjectMVRepo.GetService was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -694,8 +694,8 @@ func (mock *IProjectsMaterializedViewMock) GetService(projectName string, stageN
 
 // GetServiceCalls gets all the calls that were made to GetService.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.GetServiceCalls())
-func (mock *IProjectsMaterializedViewMock) GetServiceCalls() []struct {
+//     len(mockedProjectMVRepo.GetServiceCalls())
+func (mock *ProjectMVRepoMock) GetServiceCalls() []struct {
 	ProjectName string
 	StageName   string
 	ServiceName string
@@ -712,9 +712,9 @@ func (mock *IProjectsMaterializedViewMock) GetServiceCalls() []struct {
 }
 
 // OnSequenceTaskFinished calls OnSequenceTaskFinishedFunc.
-func (mock *IProjectsMaterializedViewMock) OnSequenceTaskFinished(event models.Event) {
+func (mock *ProjectMVRepoMock) OnSequenceTaskFinished(event models.Event) {
 	if mock.OnSequenceTaskFinishedFunc == nil {
-		panic("IProjectsMaterializedViewMock.OnSequenceTaskFinishedFunc: method is nil but IProjectsMaterializedView.OnSequenceTaskFinished was just called")
+		panic("ProjectMVRepoMock.OnSequenceTaskFinishedFunc: method is nil but ProjectMVRepo.OnSequenceTaskFinished was just called")
 	}
 	callInfo := struct {
 		Event models.Event
@@ -729,8 +729,8 @@ func (mock *IProjectsMaterializedViewMock) OnSequenceTaskFinished(event models.E
 
 // OnSequenceTaskFinishedCalls gets all the calls that were made to OnSequenceTaskFinished.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.OnSequenceTaskFinishedCalls())
-func (mock *IProjectsMaterializedViewMock) OnSequenceTaskFinishedCalls() []struct {
+//     len(mockedProjectMVRepo.OnSequenceTaskFinishedCalls())
+func (mock *ProjectMVRepoMock) OnSequenceTaskFinishedCalls() []struct {
 	Event models.Event
 } {
 	var calls []struct {
@@ -743,9 +743,9 @@ func (mock *IProjectsMaterializedViewMock) OnSequenceTaskFinishedCalls() []struc
 }
 
 // OnSequenceTaskStarted calls OnSequenceTaskStartedFunc.
-func (mock *IProjectsMaterializedViewMock) OnSequenceTaskStarted(event models.Event) {
+func (mock *ProjectMVRepoMock) OnSequenceTaskStarted(event models.Event) {
 	if mock.OnSequenceTaskStartedFunc == nil {
-		panic("IProjectsMaterializedViewMock.OnSequenceTaskStartedFunc: method is nil but IProjectsMaterializedView.OnSequenceTaskStarted was just called")
+		panic("ProjectMVRepoMock.OnSequenceTaskStartedFunc: method is nil but ProjectMVRepo.OnSequenceTaskStarted was just called")
 	}
 	callInfo := struct {
 		Event models.Event
@@ -760,8 +760,8 @@ func (mock *IProjectsMaterializedViewMock) OnSequenceTaskStarted(event models.Ev
 
 // OnSequenceTaskStartedCalls gets all the calls that were made to OnSequenceTaskStarted.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.OnSequenceTaskStartedCalls())
-func (mock *IProjectsMaterializedViewMock) OnSequenceTaskStartedCalls() []struct {
+//     len(mockedProjectMVRepo.OnSequenceTaskStartedCalls())
+func (mock *ProjectMVRepoMock) OnSequenceTaskStartedCalls() []struct {
 	Event models.Event
 } {
 	var calls []struct {
@@ -774,9 +774,9 @@ func (mock *IProjectsMaterializedViewMock) OnSequenceTaskStartedCalls() []struct
 }
 
 // UpdateEventOfService calls UpdateEventOfServiceFunc.
-func (mock *IProjectsMaterializedViewMock) UpdateEventOfService(e models.Event) error {
+func (mock *ProjectMVRepoMock) UpdateEventOfService(e models.Event) error {
 	if mock.UpdateEventOfServiceFunc == nil {
-		panic("IProjectsMaterializedViewMock.UpdateEventOfServiceFunc: method is nil but IProjectsMaterializedView.UpdateEventOfService was just called")
+		panic("ProjectMVRepoMock.UpdateEventOfServiceFunc: method is nil but ProjectMVRepo.UpdateEventOfService was just called")
 	}
 	callInfo := struct {
 		E models.Event
@@ -791,8 +791,8 @@ func (mock *IProjectsMaterializedViewMock) UpdateEventOfService(e models.Event) 
 
 // UpdateEventOfServiceCalls gets all the calls that were made to UpdateEventOfService.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.UpdateEventOfServiceCalls())
-func (mock *IProjectsMaterializedViewMock) UpdateEventOfServiceCalls() []struct {
+//     len(mockedProjectMVRepo.UpdateEventOfServiceCalls())
+func (mock *ProjectMVRepoMock) UpdateEventOfServiceCalls() []struct {
 	E models.Event
 } {
 	var calls []struct {
@@ -805,9 +805,9 @@ func (mock *IProjectsMaterializedViewMock) UpdateEventOfServiceCalls() []struct 
 }
 
 // UpdateProject calls UpdateProjectFunc.
-func (mock *IProjectsMaterializedViewMock) UpdateProject(prj *models.ExpandedProject) error {
+func (mock *ProjectMVRepoMock) UpdateProject(prj *models.ExpandedProject) error {
 	if mock.UpdateProjectFunc == nil {
-		panic("IProjectsMaterializedViewMock.UpdateProjectFunc: method is nil but IProjectsMaterializedView.UpdateProject was just called")
+		panic("ProjectMVRepoMock.UpdateProjectFunc: method is nil but ProjectMVRepo.UpdateProject was just called")
 	}
 	callInfo := struct {
 		Prj *models.ExpandedProject
@@ -822,8 +822,8 @@ func (mock *IProjectsMaterializedViewMock) UpdateProject(prj *models.ExpandedPro
 
 // UpdateProjectCalls gets all the calls that were made to UpdateProject.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.UpdateProjectCalls())
-func (mock *IProjectsMaterializedViewMock) UpdateProjectCalls() []struct {
+//     len(mockedProjectMVRepo.UpdateProjectCalls())
+func (mock *ProjectMVRepoMock) UpdateProjectCalls() []struct {
 	Prj *models.ExpandedProject
 } {
 	var calls []struct {
@@ -836,9 +836,9 @@ func (mock *IProjectsMaterializedViewMock) UpdateProjectCalls() []struct {
 }
 
 // UpdateShipyard calls UpdateShipyardFunc.
-func (mock *IProjectsMaterializedViewMock) UpdateShipyard(projectName string, shipyardContent string) error {
+func (mock *ProjectMVRepoMock) UpdateShipyard(projectName string, shipyardContent string) error {
 	if mock.UpdateShipyardFunc == nil {
-		panic("IProjectsMaterializedViewMock.UpdateShipyardFunc: method is nil but IProjectsMaterializedView.UpdateShipyard was just called")
+		panic("ProjectMVRepoMock.UpdateShipyardFunc: method is nil but ProjectMVRepo.UpdateShipyard was just called")
 	}
 	callInfo := struct {
 		ProjectName     string
@@ -855,8 +855,8 @@ func (mock *IProjectsMaterializedViewMock) UpdateShipyard(projectName string, sh
 
 // UpdateShipyardCalls gets all the calls that were made to UpdateShipyard.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.UpdateShipyardCalls())
-func (mock *IProjectsMaterializedViewMock) UpdateShipyardCalls() []struct {
+//     len(mockedProjectMVRepo.UpdateShipyardCalls())
+func (mock *ProjectMVRepoMock) UpdateShipyardCalls() []struct {
 	ProjectName     string
 	ShipyardContent string
 } {
@@ -871,9 +871,9 @@ func (mock *IProjectsMaterializedViewMock) UpdateShipyardCalls() []struct {
 }
 
 // UpdateUpstreamInfo calls UpdateUpstreamInfoFunc.
-func (mock *IProjectsMaterializedViewMock) UpdateUpstreamInfo(projectName string, uri string, user string) error {
+func (mock *ProjectMVRepoMock) UpdateUpstreamInfo(projectName string, uri string, user string) error {
 	if mock.UpdateUpstreamInfoFunc == nil {
-		panic("IProjectsMaterializedViewMock.UpdateUpstreamInfoFunc: method is nil but IProjectsMaterializedView.UpdateUpstreamInfo was just called")
+		panic("ProjectMVRepoMock.UpdateUpstreamInfoFunc: method is nil but ProjectMVRepo.UpdateUpstreamInfo was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -892,8 +892,8 @@ func (mock *IProjectsMaterializedViewMock) UpdateUpstreamInfo(projectName string
 
 // UpdateUpstreamInfoCalls gets all the calls that were made to UpdateUpstreamInfo.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.UpdateUpstreamInfoCalls())
-func (mock *IProjectsMaterializedViewMock) UpdateUpstreamInfoCalls() []struct {
+//     len(mockedProjectMVRepo.UpdateUpstreamInfoCalls())
+func (mock *ProjectMVRepoMock) UpdateUpstreamInfoCalls() []struct {
 	ProjectName string
 	URI         string
 	User        string
@@ -910,9 +910,9 @@ func (mock *IProjectsMaterializedViewMock) UpdateUpstreamInfoCalls() []struct {
 }
 
 // UpdatedShipyard calls UpdatedShipyardFunc.
-func (mock *IProjectsMaterializedViewMock) UpdatedShipyard(projectName string, shipyard string) error {
+func (mock *ProjectMVRepoMock) UpdatedShipyard(projectName string, shipyard string) error {
 	if mock.UpdatedShipyardFunc == nil {
-		panic("IProjectsMaterializedViewMock.UpdatedShipyardFunc: method is nil but IProjectsMaterializedView.UpdatedShipyard was just called")
+		panic("ProjectMVRepoMock.UpdatedShipyardFunc: method is nil but ProjectMVRepo.UpdatedShipyard was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -929,8 +929,8 @@ func (mock *IProjectsMaterializedViewMock) UpdatedShipyard(projectName string, s
 
 // UpdatedShipyardCalls gets all the calls that were made to UpdatedShipyard.
 // Check the length with:
-//     len(mockedIProjectsMaterializedView.UpdatedShipyardCalls())
-func (mock *IProjectsMaterializedViewMock) UpdatedShipyardCalls() []struct {
+//     len(mockedProjectMVRepo.UpdatedShipyardCalls())
+func (mock *ProjectMVRepoMock) UpdatedShipyardCalls() []struct {
 	ProjectName string
 	Shipyard    string
 } {

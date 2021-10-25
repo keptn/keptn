@@ -217,8 +217,8 @@ func main() {
 	}
 }
 
-func createMaterializedView() *db.ProjectsMaterializedView {
-	projectesMaterializedView := &db.ProjectsMaterializedView{
+func createMaterializedView() *db.MongoDBProjectMVRepo {
+	projectesMaterializedView := &db.MongoDBProjectMVRepo{
 		ProjectRepo:     createProjectRepo(),
 		EventsRetriever: createEventsRepo(),
 	}
