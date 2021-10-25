@@ -71,7 +71,7 @@ const evaluationInvalidatedEvent = `{
   }
 }`
 
-func Test_QualityGatesBackwardsCompatibility(t *testing.T) {
+func Test_QualityGates_BackwardsCompatibility(t *testing.T) {
 	evaluationDoneEvent := &models.KeptnContextExtendedCE{}
 
 	err := json.Unmarshal([]byte(evaluationDonePayload), evaluationDoneEvent)

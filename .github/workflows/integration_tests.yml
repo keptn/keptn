@@ -522,16 +522,6 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run Test_QualityGates -v
 
-      - name: Test Quality Gates Backwards compatibility
-        id: test_quality_gates_backwards_compatibility
-        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: test/test_quality_gates_backwards_compatibility.sh
-
       - name: Test Self Healing
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
