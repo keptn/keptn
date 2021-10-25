@@ -287,10 +287,10 @@ func Test_getEventScope(t *testing.T) {
 
 func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo       db.ProjectRepo
-		eventRepo         db.EventRepo
-		taskSequenceRepo  db.TaskSequenceRepo
-		eventDbOperations db.EventsDbOperations
+		projectRepo      db.ProjectRepo
+		eventRepo        db.EventRepo
+		taskSequenceRepo db.TaskSequenceRepo
+		taskStartedHook  *fakehooks.ISequenceTaskStartedHookMock
 	}
 	type args struct {
 		event models.Event
@@ -301,6 +301,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 		args                   args
 		wantErr                bool
 		wantErrNoMatchingEvent bool
+		wantHookCalled         bool
 	}{
 		{
 			name: "received started event with matching triggered event",
@@ -329,14 +330,13 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						{},
 					}, nil
 				}},
-				eventDbOperations: &db_mock.EventsDbOperationsMock{UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
-					return nil
-				}},
+				taskStartedHook: &fakehooks.ISequenceTaskStartedHookMock{OnSequenceTaskStartedFunc: func(event models.Event) {}},
 			},
 			args: args{
 				event: fake.GetTestStartedEvent(),
 			},
-			wantErr: false,
+			wantErr:        false,
+			wantHookCalled: true,
 		},
 		{
 			name: "received started event with no matching triggered event",
@@ -362,25 +362,24 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						{},
 					}, nil
 				}},
-				eventDbOperations: &db_mock.EventsDbOperationsMock{UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
-					return nil
-				}},
+				taskStartedHook: &fakehooks.ISequenceTaskStartedHookMock{OnSequenceTaskStartedFunc: func(event models.Event) {}},
 			},
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
 			},
 			wantErr:                true,
 			wantErrNoMatchingEvent: true,
+			wantHookCalled:         false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo:        tt.fields.projectRepo,
-				eventRepo:          tt.fields.eventRepo,
-				taskSequenceRepo:   tt.fields.taskSequenceRepo,
-				eventsDBOperations: tt.fields.eventDbOperations,
+				projectRepo:      tt.fields.projectRepo,
+				eventRepo:        tt.fields.eventRepo,
+				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
+			em.AddSequenceTaskStartedHook(tt.fields.taskStartedHook)
 			err := em.handleStartedEvent(tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("handleStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
@@ -388,26 +387,32 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			if tt.wantErrNoMatchingEvent && (err != ErrNoMatchingEvent) {
 				t.Errorf("handleStartedEvent() expected ErrNoMatchingEvent but got %v", err)
 			}
+
+			if tt.wantHookCalled {
+				require.Len(t, tt.fields.taskStartedHook.OnSequenceTaskStartedCalls(), 1)
+			} else {
+				require.Empty(t, tt.fields.taskStartedHook.OnSequenceTaskStartedCalls())
+			}
 		})
 	}
 }
 
 func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo        db.ProjectRepo
-		eventRepo          db.EventRepo
-		taskSequenceRepo   db.TaskSequenceRepo
-		eventsDbOperations db.EventsDbOperations
+		projectRepo      db.ProjectRepo
+		eventRepo        db.EventRepo
+		taskSequenceRepo db.TaskSequenceRepo
+		taskFinishedHook *fakehooks.ISequenceTaskFinishedHookMock
 	}
 	type args struct {
 		event models.Event
 	}
 	tests := []struct {
-		name            string
-		fields          fields
-		args            args
-		wantErr         bool
-		wantEventUpdate bool
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantHookCalled bool
 	}{
 		{
 			name: "received finished event with no matching triggered event",
@@ -434,34 +439,32 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 						{},
 					}, nil
 				}},
-				eventsDbOperations: &db_mock.EventsDbOperationsMock{UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
-					return nil
-				}},
+				taskFinishedHook: &fakehooks.ISequenceTaskFinishedHookMock{OnSequenceTaskFinishedFunc: func(event models.Event) {}},
 			},
 			args: args{
 				event: fake.GetTestFinishedEventWithUnmatchedSource(),
 			},
-			wantErr:         true,
-			wantEventUpdate: false,
+			wantErr:        true,
+			wantHookCalled: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo:        tt.fields.projectRepo,
-				eventRepo:          tt.fields.eventRepo,
-				taskSequenceRepo:   tt.fields.taskSequenceRepo,
-				eventsDBOperations: tt.fields.eventsDbOperations,
+				projectRepo:      tt.fields.projectRepo,
+				eventRepo:        tt.fields.eventRepo,
+				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
+
+			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
 			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			dbOperationsMock := tt.fields.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
-			if tt.wantEventUpdate {
-				require.Len(t, dbOperationsMock.UpdateEventOfServiceCalls(), 1)
+			if tt.wantHookCalled {
+				require.Len(t, tt.fields.taskFinishedHook.OnSequenceTaskFinishedCalls(), 1)
 			} else {
-				require.Empty(t, dbOperationsMock.UpdateEventOfServiceCalls())
+				require.Empty(t, tt.fields.taskFinishedHook.OnSequenceTaskFinishedCalls())
 			}
 		})
 	}
@@ -763,8 +766,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
 
 	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
-	// make sure that the UpdateEventOfServiceCalls has been called
-	assert.NotEqual(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
+
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
 	assert.Equal(t, "test-project", eventsDBMock.UpdateShipyardCalls()[0].ProjectName)
 	assert.NotEqual(t, "", eventsDBMock.UpdateShipyardCalls()[0].ShipyardContent)

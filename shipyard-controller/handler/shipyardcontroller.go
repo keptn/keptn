@@ -388,20 +388,6 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 	return nil
 }
 
-func (sc *shipyardController) updateEventOfService(event models.Event, scope models.EventScope) {
-	common.LockProject(scope.Project)
-	defer common.UnlockProject(scope.Project)
-	if err := sc.eventsDBOperations.UpdateEventOfService(
-		event.Data,
-		*event.Type,
-		event.Shkeptncontext,
-		event.ID,
-		event.Triggeredid,
-	); err != nil {
-		log.Errorf("could not update event for project %s: %s", scope.Project, err.Error())
-	}
-}
-
 func (sc *shipyardController) ControlSequence(controlSequence common.SequenceControl) error {
 	switch controlSequence.State {
 	case common.AbortSequence:
@@ -438,9 +424,6 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	} else if taskContext == nil {
 		return fmt.Errorf("no sequence context for event with scope %v found", eventScope)
 	}
-
-	// only update the event for a service when the incoming event actually belongs to a sequence
-	go sc.updateEventOfService(event, *eventScope)
 
 	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
 	if err != nil {
@@ -611,9 +594,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	} else if taskContext == nil {
 		return fmt.Errorf("no sequence context for event with scope %v found", eventScope)
 	}
-
-	// only update the event for a service when the incoming event actually belongs to a sequence
-	go sc.updateEventOfService(event, *eventScope)
 
 	common.LockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
 	defer common.UnlockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")

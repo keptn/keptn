@@ -80,21 +80,23 @@ func main() {
 		log.Fatal(err)
 	}
 
+	projectsMV := createMaterializedView()
+
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		createSecretStore(kubeAPI),
-		createMaterializedView(),
+		projectsMV,
 		createTaskSequenceRepo(),
 		createEventsRepo(),
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
 
 	serviceManager := handler.NewServiceManager(
-		createMaterializedView(),
+		projectsMV,
 		common.NewGitConfigurationStore(csEndpoint.String()),
 	)
 
-	stageManager := handler.NewStageManager(createMaterializedView())
+	stageManager := handler.NewStageManager(projectsMV)
 
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	sequenceDispatcherChannel := make(chan models.Event)
@@ -139,7 +141,7 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	evaluationManager, err := handler.NewEvaluationManager(eventSender, createMaterializedView())
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectsMV)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -156,7 +158,9 @@ func main() {
 	shipyardController.AddSequenceStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTaskStartedHook(projectsMV)
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTaskFinishedHook(projectsMV)
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
