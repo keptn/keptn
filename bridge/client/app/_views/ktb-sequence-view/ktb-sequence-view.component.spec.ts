@@ -122,4 +122,51 @@ describe('KtbEventsListComponent', () => {
     expect(emptyStateContainer).toBeFalsy();
     expect(sequenceList).toBeTruthy();
   });
+
+  it('should show empty list after filter applied', async () => {
+    // given
+    dataService.loadProjects();
+    const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
+    projectsRequest.flush({
+      projects: Projects,
+      totalCount: Projects.length,
+    });
+
+    const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
+    sequencesRequest.flush({
+      states: SequencesData,
+      totalCount: SequencesData.length,
+    });
+
+    httpMock.verify();
+    fixture.detectChanges();
+
+    // when
+    clickFilterCheckbox('carts-db');
+    clickFilterCheckbox('delivery');
+    fixture.detectChanges();
+
+    // then
+    const loadingIndicator = fixture.nativeElement.querySelector('[uitestid=keptn-loadingSequences]');
+    const emptyStateFilteredContainer = fixture.nativeElement.querySelector('[uitestid=keptn-noSequencesFiltered]');
+    const sequenceList = fixture.nativeElement.querySelector('[uitestid=keptn-sequence-view-roots]');
+
+    expect(loadingIndicator).toBeFalsy();
+    expect(emptyStateFilteredContainer).toBeTruthy();
+    expect(sequenceList).toBeFalsy();
+  });
+
+  function clickFilterCheckbox(selector: string): void {
+    const checkboxes = document.evaluate(
+      `//dt-checkbox[contains(., '${selector}')]`,
+      document,
+      null,
+      XPathResult.ANY_TYPE,
+      null
+    );
+    const checkbox = checkboxes.iterateNext();
+    if (checkbox) {
+      checkbox.childNodes[0].childNodes[0].dispatchEvent(new Event('click'));
+    }
+  }
 });
