@@ -28,20 +28,19 @@ type IEvaluationManager interface {
 }
 
 type EvaluationManager struct {
-	EventSender keptn.EventSender
-	ServiceAPI  db.ServicesDbOperations
+	eventSender   keptn.EventSender
+	projectMVRepo db.ProjectMVRepo
 }
 
-func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI db.ServicesDbOperations) (*EvaluationManager, error) {
+func NewEvaluationManager(eventSender keptn.EventSender, projectMVRepo db.ProjectMVRepo) (*EvaluationManager, error) {
 	return &EvaluationManager{
-		EventSender: eventSender,
-		ServiceAPI:  serviceAPI,
+		eventSender:   eventSender,
+		projectMVRepo: projectMVRepo,
 	}, nil
-
 }
 
 func (em *EvaluationManager) CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
-	_, err := em.ServiceAPI.GetService(project, stage, service)
+	_, err := em.projectMVRepo.GetService(project, stage, service)
 	if err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrServiceNotAvailable,
@@ -97,7 +96,7 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 			Message: common.Stringp(err.Error()),
 		}
 	}
-	if err := em.EventSender.SendEvent(ce); err != nil {
+	if err := em.eventSender.SendEvent(ce); err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrSendEventFailed,
 			Message: common.Stringp(err.Error()),
