@@ -27,7 +27,7 @@
             *ngIf="getFilteredSequences(project.sequences).length === 0 && project.sequences.length !== 0"
           >
             <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
-            <p class="m-0 ml-2">No sequences triggered yet that match your filter criteria.</p>
+            <p class="m-0 ml-2">No sequences found that match your filter criteria.</p>
           </div>
           <ktb-root-events-list
             *ngIf="getFilteredSequences(project.sequences).length !== 0"
