@@ -19,8 +19,6 @@ import (
 
 const maxRepoReadRetries = 5
 
-var ErrNoMatchingEvent = errors.New("no matching event found")
-var ErrSequenceNotFound = errors.New("sequence not found")
 var shipyardControllerInstance *shipyardController
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
