@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 const evaluationDonePayload = `{
@@ -87,14 +88,28 @@ func Test_QualityGates_BackwardsCompatibility(t *testing.T) {
 	require.NotNil(t, context.KeptnContext)
 
 	eventsQuery := "/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=shkeptncontext:" + *context.KeptnContext + "%20AND%20data.project:legacy-project&excludeInvalidated=true"
-	resp, err = ApiGETRequest(eventsQuery, 3)
-	require.Nil(t, err)
 
-	events := &models.Events{}
-	err = resp.ToJSON(events)
+	var events *models.Events
+	require.Eventually(t, func() bool {
+		resp, err := ApiGETRequest(eventsQuery, 3)
+		if err != nil {
+			return false
+		}
 
-	require.Nil(t, err)
-	require.Len(t, events.Events, 1)
+		events = &models.Events{}
+		err = resp.ToJSON(events)
+		if err != nil {
+			return false
+		}
+		if events == nil {
+			return false
+		}
+		if len(events.Events) == 0 {
+			return false
+		}
+		return true
+	}, 10*time.Second, 2*time.Second)
+
 	require.Equal(t, "lighthouse-service", *events.Events[0].Source)
 	require.Equal(t, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), *events.Events[0].Type)
 	require.Equal(t, "1.0", events.Events[0].Specversion)
