@@ -9,7 +9,7 @@ import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import admZip from 'adm-zip';
-import { apiRouter } from './api';
+import { apiRouter } from './api/index';
 import { execSync } from 'child_process';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -27,26 +27,28 @@ const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, '../../../');
 const serverFolder = join(rootFolder, 'server');
 
-try {
-  console.log('Installing default Look-and-Feel');
+if (process.env.NODE_ENV !== 'test') {
+  try {
+    console.log('Installing default Look-and-Feel');
 
-  const destDir = join(rootFolder, 'dist/assets/branding');
-  const srcDir = join(
-    rootFolder,
-    `${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`
-  );
-  const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
+    const destDir = join(rootFolder, 'dist/assets/branding');
+    const srcDir = join(
+      rootFolder,
+      `${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`
+    );
+    const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
 
-  if (!existsSync(destDir)) {
-    mkdirSync(destDir, { recursive: true });
+    if (!existsSync(destDir)) {
+      mkdirSync(destDir, { recursive: true });
+    }
+
+    brandingFiles.forEach((file) => {
+      copyFileSync(join(srcDir, file), join(destDir, file));
+    });
+  } catch (e) {
+    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+    process.exit(1);
   }
-
-  brandingFiles.forEach((file) => {
-    copyFileSync(join(srcDir, file), join(destDir, file));
-  });
-} catch (e) {
-  console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
-  process.exit(1);
 }
 if (lookAndFeelUrl) {
   let fl: WriteStream | undefined;
@@ -248,7 +250,7 @@ async function setAuth(): Promise<string> {
     await setBasisAUTH();
   } else {
     authType = 'NONE';
-    console.error('Not installing authentication middleware');
+    console.log('Not installing authentication middleware');
   }
 
   return authType;
