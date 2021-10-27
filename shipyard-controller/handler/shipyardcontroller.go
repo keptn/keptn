@@ -13,7 +13,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"time"
 )
 
@@ -47,6 +46,7 @@ type shipyardController struct {
 	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
 	sequencePausedHooks        []sequencehooks.ISequencePausedHook
 	sequenceResumedHooks       []sequencehooks.ISequenceResumedHook
+	shipyardRetriever          IShipyardRetriever
 }
 
 func GetShipyardControllerInstance(
@@ -54,6 +54,7 @@ func GetShipyardControllerInstance(
 	eventDispatcher IEventDispatcher,
 	sequenceDispatcher ISequenceDispatcher,
 	sequenceTimeoutChannel chan models.SequenceTimeout,
+	shipyardRetriever IShipyardRetriever,
 ) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
@@ -68,6 +69,7 @@ func GetShipyardControllerInstance(
 			eventDispatcher:     eventDispatcher,
 			sequenceDispatcher:  sequenceDispatcher,
 			sequenceTimeoutChan: sequenceTimeoutChannel,
+			shipyardRetriever:   shipyardRetriever,
 		}
 		shipyardControllerInstance.registerToChannels(ctx)
 	}
@@ -462,30 +464,11 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	}
 
 	// fetching cached shipyard file from project git repo
-	shipyard, err := common.GetShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
 		msg := "could not retrieve shipyard: " + err.Error()
 		log.Error(msg)
 
-		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
-	}
-
-	// update the shipyard content of the project
-	shipyardContent, err := yaml.Marshal(shipyard)
-	if err != nil {
-		// log the error but continue
-		log.Errorf("could not encode shipyard file of project %s: %s", eventScope.Project, err.Error())
-	}
-	if err := sc.projectMvRepo.UpdateShipyard(eventScope.Project, string(shipyardContent)); err != nil {
-		// log the error but continue
-		log.Errorf("could not update shipyard content of project %s: %s", eventScope.Project, err.Error())
-	}
-
-	// validate the shipyard version - only shipyard files following the current keptn spec are supported by the shipyard controller
-	err = common.ValidateShipyardVersion(shipyard)
-	if err != nil {
-		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
-		msg := fmt.Sprintf("invalid shipyard version: %s", err.Error())
 		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
 	}
 
@@ -546,7 +529,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 		return err
 	}
 
-	shipyard, err := sc.getCachedShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 	if err != nil {
 		return err
 	}
@@ -646,7 +629,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 		log.Infof("Task sequence related to eventID %s: %s.%s", event.Triggeredid, taskContext.Stage, taskContext.TaskSequenceName)
 		log.Info("Trying to fetch shipyard and get next task")
-		shipyard, err := sc.getCachedShipyard(eventScope.Project)
+		shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 		if err != nil {
 			return err
 		}
@@ -853,7 +836,7 @@ func (sc *shipyardController) getTaskSequenceTriggeredEvent(eventScope models.Ev
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(eventScope *models.EventScope, completedSequence *keptnv2.Sequence, eventHistory []interface{}, inputEvent *models.Event, previousTask string) error {
-	shipyard, err := sc.getCachedShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 	if err != nil {
 		return err
 	}
@@ -1168,20 +1151,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		KeptnContext:     eventScope.KeptnContext,
 		Task:             task,
 	})
-}
-
-// GetCachedShipyard returns the shipyard that is stored for the project in the materialized view, instead of pulling it from the upstream
-// this is done to reduce requests to the upstream and reduce the risk of running into rate limiting problems
-func (sc *shipyardController) getCachedShipyard(projectName string) (*keptnv2.Shipyard, error) {
-	project, err := sc.projectMvRepo.GetProject(projectName)
-	if err != nil {
-		return nil, err
-	}
-	shipyard, err := common.UnmarshalShipyard(project.Shipyard)
-	if err != nil {
-		return nil, err
-	}
-	return shipyard, nil
 }
 
 func printObject(obj interface{}) string {
