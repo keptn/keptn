@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked handler.IEvaluationManager
 // 		mockedIEvaluationManager := &IEvaluationManagerMock{
-// 			CreateEvaluationFunc: func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
+// 			CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
 // 				panic("mock out the CreateEvaluation method")
 // 			},
 // 		}

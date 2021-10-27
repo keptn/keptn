@@ -15,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked handler.IProjectManager
 // 		mockedIProjectManager := &IProjectManagerMock{
-// 			CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+// 			CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 // 				panic("mock out the Create method")
 // 			},
 // 			DeleteFunc: func(projectName string) (string, error) {
@@ -27,7 +27,7 @@ import (
 // 			GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
 // 				panic("mock out the GetByName method")
 // 			},
-// 			UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+// 			UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 // 				panic("mock out the Update method")
 // 			},
 // 		}

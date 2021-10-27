@@ -32,8 +32,8 @@ type ServiceHandler struct {
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project"
-// @Param   service     body    operations.CreateServiceParams     true        "Project"
-// @Success 200 {object} operations.CreateServiceResponse	"ok"
+// @Param   service     body    models.CreateServiceParams     true        "Project"
+// @Success 200 {object} models.CreateServiceResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/service [post]
@@ -91,7 +91,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 // @Produce  json
 // @Param   project     path    string     true        "Project"
 // @Param   service     path    string     true        "Service"
-// @Success 200 {object} operations.DeleteServiceResponse	"ok"
+// @Success 200 {object} models.DeleteServiceResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/service/{service} [delete]

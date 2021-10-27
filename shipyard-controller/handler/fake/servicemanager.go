@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked handler.IServiceManager
 // 		mockedIServiceManager := &IServiceManagerMock{
-// 			CreateServiceFunc: func(projectName string, params *operations.CreateServiceParams) error {
+// 			CreateServiceFunc: func(projectName string, params *models.CreateServiceParams) error {
 // 				panic("mock out the CreateService method")
 // 			},
 // 			DeleteServiceFunc: func(projectName string, serviceName string) error {

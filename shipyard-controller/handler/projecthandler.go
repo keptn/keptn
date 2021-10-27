@@ -117,8 +117,8 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 201 {object} operations.CreateProjectResponse	"ok"
+// @Param   project     body    models.CreateProjectParams     true        "Project"
+// @Success 201 {object} models.CreateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
@@ -170,8 +170,8 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.UpdateProjectParams     true        "Project"
-// @Success 200 {object} operations.UpdateProjectResponse	"ok"
+// @Param   project     body    models.UpdateProjectParams     true        "Project"
+// @Success 200 {object} models.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Bad Request"
 // @Failure 424 {object} models.Error "Failed Dependency"
 // @Failure 403 {object} models.Error "Not Found"
@@ -217,7 +217,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project name"
-// @Success 200 {object} operations.DeleteProjectResponse	"ok"
+// @Success 200 {object} models.DeleteProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project} [delete]

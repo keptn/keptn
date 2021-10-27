@@ -425,7 +425,6 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "git-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitRemoteURI)
 	assert.Equal(t, "git-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitUser)
 	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
-	//TODO//assert.Equal(t, encodedShipyard, projectsDBOperations.CreateProjectCalls()[0].PrjShipyard)
 }
 
 func TestUpdate_GettingOldSecretFails(t *testing.T) {
