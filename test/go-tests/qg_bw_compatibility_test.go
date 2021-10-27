@@ -135,12 +135,23 @@ func Test_QualityGates_BackwardsCompatibility(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	resp, err = ApiGETRequest(eventsQuery, 3)
-	require.Nil(t, err)
+	require.Eventually(t, func() bool {
+		resp, err = ApiGETRequest(eventsQuery, 3)
+		if err != nil {
+			return false
+		}
 
-	events = &models.Events{}
-	err = resp.ToJSON(events)
-
-	require.Nil(t, err)
-	require.Empty(t, events.Events)
+		events = &models.Events{}
+		err = resp.ToJSON(events)
+		if err != nil {
+			return false
+		}
+		if events == nil {
+			return false
+		}
+		if len(events.Events) != 0 {
+			return false
+		}
+		return true
+	}, 10*time.Second, 2*time.Second)
 }
