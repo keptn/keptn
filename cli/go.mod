@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.93.3 // indirect
 	github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
-	github.com/cloudevents/sdk-go/v2 v2.5.0
+	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
