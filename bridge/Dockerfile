@@ -1,9 +1,14 @@
-FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test
+FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test-base
 WORKDIR /usr/src/app
 COPY package.json yarn.lock /usr/src/app/
 RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
-CMD yarn test && yarn test:ui && mv ./coverage/ /shared/coverage
+
+FROM builder-test-base as builder-test-unit
+CMD yarn test && mv ./coverage/ /shared/coverage
+
+FROM builder-test-base as builder-test-ui
+CMD yarn test:ui
 
 FROM node:14-alpine3.14 as builder-base
 
@@ -21,7 +26,7 @@ COPY . /usr/src/app
 FROM builder-base as bridge-builder
 RUN yarn build
 
-FROM node:14-alpine3.14 as bridge-server-builder
+FROM node:14-alpine3.14 as bridge-server-builder-base
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -34,6 +39,12 @@ COPY ./server/package.json ./server/yarn.lock ./
 RUN yarn install --frozen-lockfile
 COPY ./server ./
 COPY ./shared /usr/src/app/shared
+
+FROM bridge-server-builder-base as bridge-server-test
+CMD yarn test && \
+  mv ./coverage/ /shared/coverage
+
+FROM bridge-server-builder-base as bridge-server-builder
 RUN yarn build && \
   yarn install --frozen-lockfile --production
 

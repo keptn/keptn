@@ -13,6 +13,8 @@ BUILD_API=false
 BUILD_CLI=false
 BUILD_OS_ROUTE_SVC=false
 BUILD_BRIDGE=false
+BUILD_BRIDGE_UI_TEST=false
+BUILD_BRIDGE_SERVER=false
 BUILD_JMETER=false
 BUILD_HELM_SVC=false
 BUILD_APPROVAL_SVC=false
@@ -28,6 +30,8 @@ BUILD_WEBHOOK_SVC=false
 
 artifacts=(
   "$BRIDGE_ARTIFACT_PREFIX"
+  "$BRIDGE_UI_TEST_ARTIFACT_PREFIX"
+  "$BRIDGE_SERVER_ARTIFACT_PREFIX"
   "$API_ARTIFACT_PREFIX"
   "$OS_ROUTE_SVC_ARTIFACT_PREFIX"
   "$JMETER_SVC_ARTIFACT_PREFIX"
@@ -48,7 +52,7 @@ echo "Changed files:"
 echo "$CHANGED_FILES"
 matrix_config='{"config":['
 # shellcheck disable=SC2016
-build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run }'
+build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "docker-test-target": $docker_test_target, "should-push-image": $should_push_image }'
 
 echo "Checking changed files against artifacts now"
 echo "::group::Check output"
@@ -72,6 +76,14 @@ for changed_file in $CHANGED_FILES; do
     artifact_fullname="${artifact}_ARTIFACT"
     artifact_folder="${artifact}_FOLDER"
     should_build_artifact="BUILD_${artifact}"
+    docker_test_target="${artifact}_DOCKER_TEST_TARGET"
+    should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
+
+    if [ "${!should_push_image}" != "false" ]; then
+      should_push_image="true"
+    else
+      should_push_image="false"
+    fi
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
@@ -80,6 +92,8 @@ for changed_file in $CHANGED_FILES; do
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "${!should_build_artifact}" \
+        --arg docker_test_target "${!docker_test_target}" \
+        --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
@@ -103,6 +117,8 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "false" \
+        --arg docker_test_target "${!docker_test_target}" \
+        --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
@@ -133,6 +149,8 @@ echo "BUILD_API: $BUILD_API"
 echo "BUILD_CLI: $BUILD_CLI"
 echo "BUILD_OS_ROUTE_SVC: $BUILD_OS_ROUTE_SVC"
 echo "BUILD_BRIDGE: $BUILD_BRIDGE"
+echo "BUILD_BRIDGE_UI_TEST: $BUILD_BRIDGE_UI_TEST"
+echo "BUILD_BRIDGE_SERVER: $BUILD_BRIDGE_SERVER"
 echo "BUILD_JMETER: $BUILD_JMETER"
 echo "BUILD_HELM_SVC: $BUILD_HELM_SVC"
 echo "BUILD_APPROVAL_SVC: $BUILD_APPROVAL_SVC"
