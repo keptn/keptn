@@ -24,7 +24,6 @@ type EventReceiver interface {
 type NATSEventReceiver struct {
 	env                   config.EnvConfig
 	eventSender           EventSender
-	closeChan             chan bool
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
 	ceCache               *Cache
@@ -39,7 +38,6 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 	return &NATSEventReceiver{
 		env:                   env,
 		eventSender:           eventSender,
-		closeChan:             make(chan bool),
 		eventMatcher:          eventMatcher,
 		ceCache:               NewCache(),
 		mutex:                 &sync.Mutex{},
@@ -65,16 +63,9 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 		logger.Info("Disconnected from NATS")
 	}()
 
-	for {
-		select {
-		case <-n.closeChan:
-			return
-		case <-ctx.Done():
-			logger.Info("Terminating NATS event receiver")
-			ctx.Wg.Done()
-			return
-		}
-	}
+	<-ctx.Done()
+	logger.Info("Terminating NATS event receiver")
+	ctx.Wg.Done()
 }
 
 func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubscription) {
