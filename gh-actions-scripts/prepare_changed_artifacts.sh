@@ -110,6 +110,14 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     artifact_fullname="${artifact}_ARTIFACT"
     artifact_folder="${artifact}_FOLDER"
     should_build_artifact="BUILD_${artifact}"
+    docker_test_target="${artifact}_DOCKER_TEST_TARGET"
+    should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
+
+    if [ "${!should_push_image}" != "false" ]; then
+      should_push_image="true"
+    else
+      should_push_image="false"
+    fi
 
     if [[ "${!should_build_artifact}" != 'true' ]]; then
       echo "Adding unchanged artifact $artifact to build matrix since build everything was requested"
