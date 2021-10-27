@@ -170,6 +170,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.refreshFilterDataSource();
         // Set unfinished sequences so that the state updates can be loaded
         this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
+        this._changeDetectorRef.markForCheck();
       }
     });
   }
@@ -228,7 +229,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }, {});
   }
 
-  updateFilterSequence(sequences: Sequence[]): void {
+  updateFilterSequence(sequences?: Sequence[]): void {
     if (sequences) {
       const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Sequence');
       if (filterItem) {
