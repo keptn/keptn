@@ -31,7 +31,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 	}
 }
 
-// GetTriggeredEvents godoc
+// GetAllProjects godoc
 // @Summary Get all projects
 // @Description Get the list of all projects
 // @Tags Projects
@@ -72,9 +72,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			payload.Projects = append(payload.Projects, project)
-		}
+		payload.Projects = append(payload.Projects, allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
 	}
 
 	payload.TotalCount = float64(totalCount)
@@ -82,7 +80,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-// GetTriggeredEvents godoc
+// GetProjectByName godoc
 // @Summary Get a project by name
 // @Description Get a project by its name
 // @Tags Projects
@@ -211,18 +209,18 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-//// DeleteProject godoc
-//// @Summary Delete a project
-//// @Description Delete a project
-//// @Tags Projects
-//// @Security ApiKeyAuth
-//// @Accept  json
-//// @Produce  json
-//// @Param   project     path    string     true        "Project name"
-//// @Success 200 {object} operations.DeleteProjectResponse	"ok"
-//// @Failure 400 {object} models.Error "Invalid payload"
-//// @Failure 500 {object} models.Error "Internal error"
-//// @Router /project/{project} [delete]
+// DeleteProject godoc
+// @Summary Delete a project
+// @Description Delete a project
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     path    string     true        "Project name"
+// @Success 200 {object} operations.DeleteProjectResponse	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project/{project} [delete]
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")

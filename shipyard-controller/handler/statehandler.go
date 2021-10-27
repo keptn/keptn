@@ -24,7 +24,7 @@ func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyar
 	}
 }
 
-// GetState godoc
+// GetSequenceState godoc
 // @Summary Get task sequence execution states
 // @Description Get task sequence execution states
 // @Tags Sequence
