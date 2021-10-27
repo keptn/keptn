@@ -52,7 +52,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should show pause and abort for started sequence', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences[6];
+    component.sequence = project.sequences?.[6];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -60,8 +60,8 @@ describe('KtbSequenceControlsComponent', () => {
     const sequenceAbortButton = fixture.nativeElement.querySelector('button[uitestid=sequenceAbortButton]');
 
     // then
-    expect(component.sequence.isFinished()).toBe(false);
-    expect(component.sequence.isPaused()).toBe(false);
+    expect(component.sequence?.isFinished()).toBe(false);
+    expect(component.sequence?.isPaused()).toBe(false);
 
     expect(sequencePauseButton).toBeTruthy();
     expect(sequenceResumeButton).toBeFalsy();
@@ -74,7 +74,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should pause sequence on click', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences[6];
+    component.sequence = project.sequences?.[6];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -90,7 +90,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should abort sequence on click', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences[6];
+    component.sequence = project.sequences?.[6];
     fixture.detectChanges();
 
     const sequenceAbortButton = fixture.nativeElement.querySelector('button[uitestid=sequenceAbortButton]');
@@ -106,7 +106,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should show resume and abort for paused sequence', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences[3];
+    component.sequence = project.sequences?.[3];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -114,8 +114,8 @@ describe('KtbSequenceControlsComponent', () => {
     const sequenceAbortButton = fixture.nativeElement.querySelector('button[uitestid=sequenceAbortButton]');
 
     // then
-    expect(component.sequence.isFinished()).toBe(false);
-    expect(component.sequence.isPaused()).toBe(true);
+    expect(component.sequence?.isFinished()).toBe(false);
+    expect(component.sequence?.isPaused()).toBe(true);
 
     expect(sequencePauseButton).toBeFalsy();
     expect(sequenceResumeButton).toBeTruthy();
@@ -128,7 +128,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should resume sequence on click', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences[3];
+    component.sequence = project.sequences?.[3];
     fixture.detectChanges();
 
     const sequenceResumeButton = fixture.nativeElement.querySelector('button[uitestid=sequenceResumeButton]');
@@ -144,7 +144,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('buttons should be disabled for finished sequence', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences[0];
+    component.sequence = project.sequences?.[0];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -152,8 +152,8 @@ describe('KtbSequenceControlsComponent', () => {
     const sequenceAbortButton = fixture.nativeElement.querySelector('button[uitestid=sequenceAbortButton]');
 
     // then
-    expect(component.sequence.isFinished()).toBe(true);
-    expect(component.sequence.isPaused()).toBe(false);
+    expect(component.sequence?.isFinished()).toBe(true);
+    expect(component.sequence?.isPaused()).toBe(false);
 
     expect(sequencePauseButton).toBeTruthy();
     expect(sequenceResumeButton).toBeFalsy();

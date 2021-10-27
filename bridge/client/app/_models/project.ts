@@ -15,7 +15,7 @@ export class Project extends pj {
   projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
   stages: Stage[] = [];
   services?: Service[];
-  sequences: Sequence[] = [];
+  sequences?: Sequence[];
 
   static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);

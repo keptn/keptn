@@ -52,7 +52,7 @@ describe('KtbRootEventsListComponent', () => {
   it('should show 25 sequences', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // then
@@ -66,12 +66,12 @@ describe('KtbRootEventsListComponent', () => {
   it('should load old sequences', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // when
     component.loadOldSequences();
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // then
@@ -84,13 +84,13 @@ describe('KtbRootEventsListComponent', () => {
   it('should not show "show older sequences"', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     component.loadOldSequences();
-    component.events = project.sequences;
+    component.events = project.sequences || [];
 
     // when
     component.loadOldSequences();
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // then
@@ -104,8 +104,8 @@ describe('KtbRootEventsListComponent', () => {
     // given
     const selectedSequenceIndex = 1;
     dataService.loadSequences(project);
-    component.events = project.sequences;
-    component.selectedEvent = project.sequences[selectedSequenceIndex];
+    component.events = project.sequences || [];
+    component.selectedEvent = project.sequences?.[selectedSequenceIndex];
     fixture.detectChanges();
 
     // then
@@ -118,12 +118,12 @@ describe('KtbRootEventsListComponent', () => {
     const selectedSequenceIndex = 5;
     const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
-    const eventData = { sequence: project.sequences[selectedSequenceIndex], stage: undefined };
+    const eventData = { sequence: project.sequences?.[selectedSequenceIndex], stage: undefined };
     targetSequence.click();
     fixture.detectChanges();
 
@@ -138,7 +138,7 @@ describe('KtbRootEventsListComponent', () => {
     const selectedSequenceIndex = 8;
     const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     fixture.detectChanges();
 
     // when
@@ -152,7 +152,10 @@ describe('KtbRootEventsListComponent', () => {
     // then
     expect(stageBadges.length).toEqual(2);
     expect(targetSequence.getAttribute('class')).toContain('ktb-tile-selected');
-    expect(changeEvent).toHaveBeenCalledWith({ sequence: project.sequences[selectedSequenceIndex], stage: stageName });
+    expect(changeEvent).toHaveBeenCalledWith({
+      sequence: project.sequences?.[selectedSequenceIndex],
+      stage: stageName,
+    });
   });
 
   it('should have a no specific class when a sequence is running', () => {
@@ -206,13 +209,13 @@ describe('KtbRootEventsListComponent', () => {
 
   function getSequenceTile(index: number): HTMLElement {
     return fixture.nativeElement.querySelector(
-      `ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`
+      `ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences?.[index].shkeptncontext}"]`
     );
   }
 
   function prepareSequenceElement(isFinished: boolean, isFaulty: boolean, hasPendingApproval: boolean): void {
     dataService.loadSequences(project);
-    component.events = project.sequences;
+    component.events = project.sequences || [];
     jest.spyOn(component.events[0], 'isFinished').mockReturnValue(isFinished);
     jest.spyOn(component.events[0], 'isFaulty').mockReturnValue(isFaulty);
     jest.spyOn(component.events[0], 'hasPendingApproval').mockReturnValue(hasPendingApproval);

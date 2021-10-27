@@ -471,7 +471,7 @@ export class DataService {
       .subscribe(([sequences, totalCount]: [Sequence[], number]) => {
         this.addNewSequences(project, sequences, !!beforeTime, oldSequence);
 
-        if (this.allSequencesLoaded(project.sequences.length, totalCount, fromTime, beforeTime)) {
+        if (this.allSequencesLoaded(project.sequences?.length || 0, totalCount, fromTime, beforeTime)) {
           project.allSequencesLoaded = true;
         }
         project.stages.forEach((stage) => {
@@ -536,7 +536,14 @@ export class DataService {
   }
 
   public loadOldSequences(project: Project, fromTime?: Date, oldSequence?: Sequence): void {
-    this.loadSequences(project, fromTime, new Date(project.sequences[project.sequences.length - 1].time), oldSequence);
+    if (project.sequences) {
+      this.loadSequences(
+        project,
+        fromTime,
+        new Date(project.sequences[project.sequences.length - 1].time),
+        oldSequence
+      );
+    }
   }
 
   public getSequenceWithTraces(projectName: string, keptnContext: string): Observable<Sequence | undefined> {
@@ -757,9 +764,11 @@ export class DataService {
 
   protected stageSequenceMapper(stage: Stage, project: Project): void {
     stage.services.forEach((service) => {
-      service.sequences = project.sequences.filter(
-        (s) => s.service === service.serviceName && s.getStages().includes(stage.stageName)
-      );
+      if (project.sequences) {
+        service.sequences = project.sequences.filter(
+          (s) => s.service === service.serviceName && s.getStages().includes(stage.stageName)
+        );
+      }
     });
   }
 
