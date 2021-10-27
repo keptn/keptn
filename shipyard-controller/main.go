@@ -99,7 +99,6 @@ func main() {
 	stageManager := handler.NewStageManager(projectsMV)
 
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
-	sequenceDispatcherChannel := make(chan models.Event)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -109,15 +108,12 @@ func main() {
 		clock.New(),
 	)
 
-	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
-	sequenceControlChannel := make(chan common.SequenceControl)
+	sequenceTimeoutChannel := make(chan models.SequenceTimeout)
 	shipyardController := handler.GetShipyardControllerInstance(
 		context.Background(),
 		eventDispatcher,
 		sequenceDispatcher,
-		sequenceDispatcherChannel,
 		sequenceTimeoutChannel,
-		sequenceControlChannel,
 	)
 	sequenceDispatcher.Run(context.Background(), shipyardController.StartTaskSequence)
 
@@ -217,8 +213,8 @@ func main() {
 	}
 }
 
-func createMaterializedView() *db.ProjectsMaterializedView {
-	projectesMaterializedView := &db.ProjectsMaterializedView{
+func createMaterializedView() *db.MongoDBProjectMVRepo {
+	projectesMaterializedView := &db.MongoDBProjectMVRepo{
 		ProjectRepo:     createProjectRepo(),
 		EventsRetriever: createEventsRepo(),
 	}

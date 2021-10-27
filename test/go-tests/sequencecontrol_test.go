@@ -5,9 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -99,8 +97,8 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.AbortSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
@@ -173,8 +171,8 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 
 	// abort the queued sequence
 	t.Log("aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, secondContextID), operations.SequenceControlCommand{
-		State: common.AbortSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, secondContextID), scmodels.SequenceControlCommand{
+		State: scmodels.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
@@ -223,8 +221,8 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("pausing sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.PauseSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.PauseSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
@@ -244,8 +242,8 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	require.Nil(t, task2TriggeredEvent)
 
 	t.Log("resuming sequence")
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.ResumeSequence,
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.ResumeSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
@@ -266,8 +264,8 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Logf("pausing sequence in stage %s", stageName)
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.PauseSequence,
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.PauseSequence,
 		Stage: stageName,
 	}, 3)
 	require.Nil(t, err)
@@ -287,8 +285,8 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	require.Nil(t, task3TriggeredEvent)
 
 	t.Logf("resuming sequence in stage %s", stageName)
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.ResumeSequence,
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.ResumeSequence,
 		Stage: stageName,
 	}, 3)
 	require.Nil(t, err)
@@ -342,8 +340,8 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("pause sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.PauseSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.PauseSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
@@ -356,8 +354,8 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
 
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.ResumeSequence,
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.ResumeSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)

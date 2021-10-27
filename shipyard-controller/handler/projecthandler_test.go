@@ -9,7 +9,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -248,7 +247,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with invalid payload",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 						return ErrProjectAlreadyExists, func() error {
 
 							return nil
@@ -269,7 +268,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project project already exists",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 						return ErrProjectAlreadyExists, func() error { return nil }
 					},
 				},
@@ -287,7 +286,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project creating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 						return errors.New("whoops"), func() error {
 							rollbackCalled = true
 							return nil
@@ -309,7 +308,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -362,7 +361,7 @@ func TestUpdateProject(t *testing.T) {
 			name: "Update project updating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 						return &common.ConfigurationStoreError{"whops", common.InvalidTokenError}, func() error { return nil }
 					},
 				},
@@ -379,7 +378,7 @@ func TestUpdateProject(t *testing.T) {
 			name: "Update project with invalid payload",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -396,7 +395,7 @@ func TestUpdateProject(t *testing.T) {
 			name: "Update non-existing project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 						return ErrProjectNotFound, func() error { return nil }
 					},
 				},
@@ -413,7 +412,7 @@ func TestUpdateProject(t *testing.T) {
 			name: "Update project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -454,7 +453,7 @@ func TestDeleteProject(t *testing.T) {
 		name               string
 		fields             fields
 		expectHttpStatus   int
-		expectJSONResponse *operations.DeleteProjectResponse
+		expectJSONResponse *models.DeleteProjectResponse
 		projectPathParam   string
 	}{
 		{
@@ -507,7 +506,7 @@ func TestDeleteProject(t *testing.T) {
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectPathParam:   "myproject",
-			expectJSONResponse: &operations.DeleteProjectResponse{Message: "a-message"},
+			expectJSONResponse: &models.DeleteProjectResponse{Message: "a-message"},
 		},
 	}
 
@@ -525,7 +524,7 @@ func TestDeleteProject(t *testing.T) {
 			handler.DeleteProject(c)
 
 			if tt.expectJSONResponse != nil {
-				response := &operations.DeleteProjectResponse{}
+				response := &models.DeleteProjectResponse{}
 				responseBytes, _ := ioutil.ReadAll(w.Body)
 				json.Unmarshal(responseBytes, response)
 				assert.Equal(t, tt.expectJSONResponse, response)

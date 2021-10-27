@@ -6,7 +6,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,26 +15,26 @@ const (
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/servicemanager.go . IServiceManager
 type IServiceManager interface {
-	CreateService(projectName string, params *operations.CreateServiceParams) error
+	CreateService(projectName string, params *models.CreateServiceParams) error
 	DeleteService(projectName, serviceName string) error
 	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
 	GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error)
 }
 
 type serviceManager struct {
-	ServicesDBOperations db.ServicesDbOperations
-	ConfigurationStore   common.ConfigurationStore
+	projectMVRepo      db.ProjectMVRepo
+	configurationStore common.ConfigurationStore
 }
 
-func NewServiceManager(servicesDBOperations db.ServicesDbOperations, configurationStore common.ConfigurationStore) *serviceManager {
+func NewServiceManager(servicesDBOperations db.ProjectMVRepo, configurationStore common.ConfigurationStore) *serviceManager {
 	return &serviceManager{
-		ServicesDBOperations: servicesDBOperations,
-		ConfigurationStore:   configurationStore,
+		projectMVRepo:      servicesDBOperations,
+		configurationStore: configurationStore,
 	}
 }
 
 func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedStage, error) {
-	project, err := sm.ServicesDBOperations.GetProject(projectName)
+	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +47,7 @@ func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedSt
 }
 
 func (sm *serviceManager) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
-	project, err := sm.ServicesDBOperations.GetProject(projectName)
+	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +69,7 @@ func (sm *serviceManager) GetService(projectName, stageName, serviceName string)
 }
 
 func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error) {
-	project, err := sm.ServicesDBOperations.GetProject(projectName)
+	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*mode
 	return nil, ErrStageNotFound
 }
 
-func (sm *serviceManager) CreateService(projectName string, params *operations.CreateServiceParams) error {
+func (sm *serviceManager) CreateService(projectName string, params *models.CreateServiceParams) error {
 	log.Infof("Received request to create service %s in project %s", *params.ServiceName, projectName)
 
 	// check service name length
@@ -111,10 +110,10 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 
 		log.Infof("Creating service %s in project %s", *params.ServiceName, projectName)
 
-		if err := sm.ConfigurationStore.CreateService(projectName, stage.StageName, *params.ServiceName); err != nil {
+		if err := sm.configurationStore.CreateService(projectName, stage.StageName, *params.ServiceName); err != nil {
 			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.ServiceName, stage.StageName, projectName, err.Error()))
 		}
-		if err := sm.ServicesDBOperations.CreateService(projectName, stage.StageName, *params.ServiceName); err != nil {
+		if err := sm.projectMVRepo.CreateService(projectName, stage.StageName, *params.ServiceName); err != nil {
 			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.ServiceName, stage.StageName, projectName, err.Error()))
 		}
 		log.Infof("Created service %s in stage %s of project %s", *params.ServiceName, stage.StageName, projectName)
@@ -133,10 +132,10 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 
 	for _, stage := range stages {
 		log.Infof("Deleting service %s from stage %s", serviceName, stage.StageName)
-		if err := sm.ConfigurationStore.DeleteService(projectName, stage.StageName, serviceName); err != nil {
+		if err := sm.configurationStore.DeleteService(projectName, stage.StageName, serviceName); err != nil {
 			return sm.logAndReturnError(fmt.Sprintf("could not delete service %s from stage %s: %s", serviceName, stage.StageName, err.Error()))
 		}
-		if err := sm.ServicesDBOperations.DeleteService(projectName, stage.StageName, serviceName); err != nil {
+		if err := sm.projectMVRepo.DeleteService(projectName, stage.StageName, serviceName); err != nil {
 			return sm.logAndReturnError(fmt.Sprintf("could not delete service %s from stage %s: %s", serviceName, stage.StageName, err.Error()))
 		}
 	}

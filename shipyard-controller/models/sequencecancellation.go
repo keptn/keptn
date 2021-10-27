@@ -1,10 +1,8 @@
-package common
-
-import "github.com/keptn/keptn/shipyard-controller/models"
+package models
 
 type SequenceTimeout struct {
 	KeptnContext string
-	LastEvent    models.Event
+	LastEvent    Event
 }
 
 type SequenceControlState string

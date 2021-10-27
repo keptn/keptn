@@ -10,10 +10,10 @@ import (
 
 func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 
-	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	instance := NewStageManager(stagesDbOperations)
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	instance := NewStageManager(projectMVRepo)
 
-	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -23,10 +23,10 @@ func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 }
 
 func TestGetAllStages_ProjectNotFound(t *testing.T) {
-	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	instance := NewStageManager(stagesDbOperations)
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	instance := NewStageManager(projectMVRepo)
 
-	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -37,10 +37,10 @@ func TestGetAllStages_ProjectNotFound(t *testing.T) {
 }
 
 func TestGetAllStages(t *testing.T) {
-	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	instance := NewStageManager(stagesDbOperations)
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	instance := NewStageManager(projectMVRepo)
 
-	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
 		s1 := &models.ExpandedStage{
 			StageName: "stage1",
@@ -58,14 +58,14 @@ func TestGetAllStages(t *testing.T) {
 	stages, err := instance.GetAllStages("my-project")
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(stages))
-	assert.Equal(t, "my-project", stagesDbOperations.GetProjectCalls()[0].ProjectName)
+	assert.Equal(t, "my-project", projectMVRepo.GetProjectCalls()[0].ProjectName)
 }
 
 func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
-	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	instance := NewStageManager(stagesDbOperations)
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	instance := NewStageManager(projectMVRepo)
 
-	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -75,10 +75,10 @@ func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
 }
 
 func TestGetStage_ProjectNotFound(t *testing.T) {
-	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	instance := NewStageManager(stagesDbOperations)
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	instance := NewStageManager(projectMVRepo)
 
-	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -89,10 +89,10 @@ func TestGetStage_ProjectNotFound(t *testing.T) {
 }
 
 func TestGetStage_StageNotFound(t *testing.T) {
-	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	instance := NewStageManager(stagesDbOperations)
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	instance := NewStageManager(projectMVRepo)
 
-	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
 		s1 := &models.ExpandedStage{
 			StageName: "stage1",

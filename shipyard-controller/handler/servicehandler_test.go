@@ -9,7 +9,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -28,16 +27,16 @@ func TestServiceHandler_CreateService(t *testing.T) {
 		fields                        fields
 		jsonPayload                   string
 		expectCreateServiceToBeCalled bool
-		expectCreateServiceParams     *operations.CreateServiceParams
+		expectCreateServiceParams     *models.CreateServiceParams
 		expectHttpStatus              int
-		expectJSONResponse            *operations.CreateServiceResponse
+		expectJSONResponse            *models.CreateServiceResponse
 		expectJSONError               *models.Error
 	}{
 		{
 			name: "create service - return 200",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					CreateServiceFunc: func(projectName string, params *operations.CreateServiceParams) error {
+					CreateServiceFunc: func(projectName string, params *models.CreateServiceParams) error {
 						return nil
 					},
 				},
@@ -49,18 +48,18 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			},
 			jsonPayload:                   `{"serviceName":"my-service"}`,
 			expectCreateServiceToBeCalled: true,
-			expectCreateServiceParams: &operations.CreateServiceParams{
+			expectCreateServiceParams: &models.CreateServiceParams{
 				ServiceName: &testServiceName,
 			},
 			expectHttpStatus:   http.StatusOK,
-			expectJSONResponse: &operations.CreateServiceResponse{},
+			expectJSONResponse: &models.CreateServiceResponse{},
 			expectJSONError:    nil,
 		},
 		{
 			name: "service already exists - return 409",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					CreateServiceFunc: func(projectName string, params *operations.CreateServiceParams) error {
+					CreateServiceFunc: func(projectName string, params *models.CreateServiceParams) error {
 						return ErrServiceAlreadyExists
 					},
 				},
@@ -72,11 +71,11 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			},
 			jsonPayload:                   `{"serviceName":"my-service"}`,
 			expectCreateServiceToBeCalled: true,
-			expectCreateServiceParams: &operations.CreateServiceParams{
+			expectCreateServiceParams: &models.CreateServiceParams{
 				ServiceName: &testServiceName,
 			},
 			expectHttpStatus:   http.StatusConflict,
-			expectJSONResponse: &operations.CreateServiceResponse{},
+			expectJSONResponse: &models.CreateServiceResponse{},
 			expectJSONError: &models.Error{
 				Code:    http.StatusConflict,
 				Message: stringp(ErrServiceAlreadyExists.Error()),
@@ -94,11 +93,11 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			},
 			jsonPayload:                   `invalid`,
 			expectCreateServiceToBeCalled: false,
-			expectCreateServiceParams: &operations.CreateServiceParams{
+			expectCreateServiceParams: &models.CreateServiceParams{
 				ServiceName: &testServiceName,
 			},
 			expectHttpStatus:   http.StatusBadRequest,
-			expectJSONResponse: &operations.CreateServiceResponse{},
+			expectJSONResponse: &models.CreateServiceResponse{},
 			expectJSONError: &models.Error{
 				Code:    http.StatusBadRequest,
 				Message: stringp("Invalid request format"),
@@ -116,11 +115,11 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			},
 			jsonPayload:                   `{"serviceName":"my/service"}`,
 			expectCreateServiceToBeCalled: false,
-			expectCreateServiceParams: &operations.CreateServiceParams{
+			expectCreateServiceParams: &models.CreateServiceParams{
 				ServiceName: &testServiceName,
 			},
 			expectHttpStatus:   http.StatusBadRequest,
-			expectJSONResponse: &operations.CreateServiceResponse{},
+			expectJSONResponse: &models.CreateServiceResponse{},
 			expectJSONError: &models.Error{
 				Code:    http.StatusBadRequest,
 				Message: stringp("Service name contains special character(s). \" +\n\t\t\t\"The service name has to be a valid Unix directory name. For details see \" +\n\t\t\t\"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/"),
@@ -130,7 +129,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			name: "internal error - return 500",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					CreateServiceFunc: func(projectName string, params *operations.CreateServiceParams) error {
+					CreateServiceFunc: func(projectName string, params *models.CreateServiceParams) error {
 						return errors.New("internal error")
 					},
 				},
@@ -142,11 +141,11 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			},
 			jsonPayload:                   `{"serviceName":"my-service"}`,
 			expectCreateServiceToBeCalled: false,
-			expectCreateServiceParams: &operations.CreateServiceParams{
+			expectCreateServiceParams: &models.CreateServiceParams{
 				ServiceName: &testServiceName,
 			},
 			expectHttpStatus:   http.StatusInternalServerError,
-			expectJSONResponse: &operations.CreateServiceResponse{},
+			expectJSONResponse: &models.CreateServiceResponse{},
 			expectJSONError: &models.Error{
 				Code:    http.StatusInternalServerError,
 				Message: stringp("internal error"),
@@ -184,7 +183,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			assert.Equal(t, tt.expectHttpStatus, w.Code)
 			responseBytes, _ := ioutil.ReadAll(w.Body)
 			if tt.expectJSONResponse != nil {
-				response := &operations.CreateServiceResponse{}
+				response := &models.CreateServiceResponse{}
 				_ = json.Unmarshal(responseBytes, response)
 
 				assert.Equal(t, tt.expectJSONResponse, response)
@@ -216,7 +215,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 		fields                        fields
 		expectDeleteServiceToBeCalled bool
 		expectHttpStatus              int
-		expectJSONResponse            *operations.DeleteServiceResponse
+		expectJSONResponse            *models.DeleteServiceResponse
 		expectJSONError               *models.Error
 	}{
 		{
@@ -233,7 +232,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 			},
 			expectDeleteServiceToBeCalled: true,
 			expectHttpStatus:              http.StatusOK,
-			expectJSONResponse:            &operations.DeleteServiceResponse{},
+			expectJSONResponse:            &models.DeleteServiceResponse{},
 			expectJSONError:               nil,
 		},
 		{
@@ -290,7 +289,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 			assert.Equal(t, tt.expectHttpStatus, w.Code)
 			responseBytes, _ := ioutil.ReadAll(w.Body)
 			if tt.expectJSONResponse != nil {
-				response := &operations.DeleteServiceResponse{}
+				response := &models.DeleteServiceResponse{}
 				_ = json.Unmarshal(responseBytes, response)
 
 				assert.Equal(t, tt.expectJSONResponse, response)

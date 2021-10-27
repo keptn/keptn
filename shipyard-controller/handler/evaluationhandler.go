@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
 
@@ -30,8 +29,8 @@ func NewEvaluationHandler(evaluationManager IEvaluationManager) *EvaluationHandl
 // @Param project path string true "Project"
 // @Param stage path string true "Stage"
 // @Param service path string true "Service"
-// @Param evaluation body operations.CreateEvaluationParams true "Evaluation"
-// @Success 200 {object} operations.CreateEvaluationResponse "ok"
+// @Param evaluation body models.CreateEvaluationParams true "Evaluation"
+// @Success 200 {object} models.CreateEvaluationResponse "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service}/evaluation [post]
@@ -40,7 +39,7 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 	stage := c.Param("stage")
 	service := c.Param("service")
 
-	evaluation := &operations.CreateEvaluationParams{}
+	evaluation := &models.CreateEvaluationParams{}
 	if err := c.ShouldBindJSON(evaluation); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    http.StatusBadRequest,

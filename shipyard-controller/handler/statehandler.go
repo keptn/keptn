@@ -2,10 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
 
@@ -26,7 +24,7 @@ func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyar
 	}
 }
 
-// GetState godoc
+// GetSequenceState godoc
 // @Summary Get task sequence execution states
 // @Description Get task sequence execution states
 // @Tags Sequence
@@ -74,8 +72,8 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Produce  json
 // @Param   project     		path    string  true   "The project name"
 // @Param   keptnContext		path	string	true	"The keptnContext ID of the sequence"
-// @Param   sequenceControl     body    operations.SequenceControlCommand true "Sequence Control Command"
-// @Success 200 {object} operations.SequenceControlResponse	"ok"
+// @Param   sequenceControl     body    models.SequenceControlCommand true "Sequence Control Command"
+// @Success 200 {object} models.SequenceControlResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /sequence/{project}/{keptnContext}/control [post]
@@ -83,13 +81,13 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 	keptnContext := c.Param("keptnContext")
 	project := c.Param("project")
 
-	params := &operations.SequenceControlCommand{}
+	params := &models.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 
-	err := sh.shipyardController.ControlSequence(common.SequenceControl{
+	err := sh.shipyardController.ControlSequence(models.SequenceControl{
 		State:        params.State,
 		KeptnContext: keptnContext,
 		Stage:        params.Stage,
@@ -103,5 +101,5 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, operations.SequenceControlResponse{})
+	c.JSON(http.StatusOK, models.SequenceControlResponse{})
 }

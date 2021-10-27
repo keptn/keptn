@@ -109,7 +109,7 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
-	cancelSequenceChannel := make(chan common.SequenceTimeout)
+	cancelSequenceChannel := make(chan models.SequenceTimeout)
 
 	watcher := handler.NewSequenceWatcher(
 		cancelSequenceChannel,

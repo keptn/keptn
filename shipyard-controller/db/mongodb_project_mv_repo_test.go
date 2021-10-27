@@ -13,7 +13,7 @@ import (
 func TestGetProjectsMaterializedView(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ProjectsMaterializedView
+		want *MongoDBProjectMVRepo
 	}{
 		{
 			name: "get MV instance",
@@ -111,7 +111,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateProject(tt.args.prj); (err != nil) != tt.wantErr {
@@ -251,7 +251,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.UpdateShipyard(tt.args.projectName, tt.args.shipyardContent); (err != nil) != tt.wantErr {
@@ -406,7 +406,7 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
@@ -508,7 +508,7 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.DeleteStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
@@ -683,7 +683,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
@@ -798,7 +798,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.DeleteService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
@@ -980,7 +980,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo:     tt.fields.ProjectRepo,
 				EventsRetriever: tt.fields.EventRetriever,
 			}
@@ -1070,7 +1070,7 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo:     tt.fields.ProjectRepo,
 				EventsRetriever: tt.fields.EventRetriever,
 			}
@@ -1142,7 +1142,7 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo:     tt.fields.ProjectRepo,
 				EventsRetriever: tt.fields.EventRetriever,
 			}
@@ -1238,7 +1238,7 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateRemediation(tt.args.project, tt.args.stage, tt.args.service, tt.args.remediation); (err != nil) != tt.wantErr {
@@ -1320,7 +1320,7 @@ func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mv := &ProjectsMaterializedView{
+			mv := &MongoDBProjectMVRepo{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CloseOpenRemediations(tt.args.project, tt.args.stage, tt.args.service, tt.args.keptnContext); (err != nil) != tt.wantErr {

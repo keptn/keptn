@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -13,9 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"time"
 )
-
-var errOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
-var errSequencePaused = errors.New("sequence is paused")
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
@@ -73,7 +69,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
 			// we'll add it to the queue and try to send it again later
-			if err != errOtherActiveSequencesRunning && err != errSequencePaused {
+			if err != ErrOtherActiveSequencesRunning && err != ErrSequencePaused {
 				// in all other cases, return the error
 				return err
 			}
@@ -187,7 +183,7 @@ func (e *EventDispatcher) dispatchEvents() {
 func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
 	if e.eventQueueRepo.IsSequenceOfEventPaused(eventScope) {
 		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
-		return errSequencePaused
+		return ErrSequencePaused
 	}
 	runningSequencesInStage, err := e.sequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{
 		Stage:   eventScope.Stage,
@@ -197,7 +193,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return err
 	}
 	if e.isCurrentEventBlockedByOtherTasks(eventScope, runningSequencesInStage, event) {
-		return errOtherActiveSequencesRunning
+		return ErrOtherActiveSequencesRunning
 	}
 
 	return e.eventSender.SendEvent(event.Event)

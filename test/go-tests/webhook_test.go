@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/operations"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -450,8 +449,8 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	require.Nil(t, taskFinishedEvent)
 
 	t.Log("verified desired state, aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
-		State: common.AbortSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
