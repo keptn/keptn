@@ -28,7 +28,7 @@ spec:
         properties:  
           strategy: direct`
 
-const invalidShipyardResourceContent = `apiVersion: 0.1.0
+const shipyardWithInvalidVersion = `apiVersion: 0.1.0
 kind: Shipyard
 metadata:
   name: test-shipyard
@@ -41,6 +41,8 @@ spec:
       - name: deployment
         properties:  
           strategy: direct`
+
+const invalidShipyardContent = "invalid"
 
 func TestShipyardRetriever_GetShipyard(t *testing.T) {
 	type fields struct {
@@ -110,12 +112,12 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "invalid shipyard",
+			name: "invalid shipyard version",
 			fields: fields{
 				configurationStore: &common_mock.ConfigurationStoreMock{
 					GetProjectResourceFunc: func(projectName string, resourceURI string) (*models.Resource, error) {
 						return &models.Resource{
-							ResourceContent: invalidShipyardResourceContent,
+							ResourceContent: shipyardWithInvalidVersion,
 							ResourceURI:     stringp("shipyard.yaml"),
 						}, nil
 					},
@@ -123,6 +125,55 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 				projectRepo: &db_mock.ProjectMVRepoMock{
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return errors.New("oops")
+					},
+					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
+						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid shipyard content",
+			fields: fields{
+				configurationStore: &common_mock.ConfigurationStoreMock{
+					GetProjectResourceFunc: func(projectName string, resourceURI string) (*models.Resource, error) {
+						return &models.Resource{
+							ResourceContent: invalidShipyardContent,
+							ResourceURI:     stringp("shipyard.yaml"),
+						}, nil
+					},
+				},
+				projectRepo: &db_mock.ProjectMVRepoMock{
+					UpdateShipyardFunc: func(projectName string, shipyard string) error {
+						return errors.New("oops")
+					},
+					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
+						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "resource cannot be retrieved",
+			fields: fields{
+				configurationStore: &common_mock.ConfigurationStoreMock{
+					GetProjectResourceFunc: func(projectName string, resourceURI string) (*models.Resource, error) {
+						return nil, errors.New("oops")
+					},
+				},
+				projectRepo: &db_mock.ProjectMVRepoMock{
+					UpdateShipyardFunc: func(projectName string, shipyard string) error {
+						return nil
 					},
 					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
 						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
@@ -146,6 +197,91 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 			}
 
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestShipyardRetriever_GetCachedShipyard(t *testing.T) {
+	type fields struct {
+		configurationStore common.ConfigurationStore
+		projectRepo        db.ProjectMVRepo
+	}
+	type args struct {
+		projectName string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *keptnv2.Shipyard
+		wantErr bool
+	}{
+		{
+			name: "get shipyard from projects MV",
+			fields: fields{
+				projectRepo: &db_mock.ProjectMVRepoMock{
+					UpdateShipyardFunc: func(projectName string, shipyard string) error {
+						return nil
+					},
+					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
+						return &scmodels.ExpandedProject{ProjectName: "my-project", Shipyard: validShipyardResourceContent}, nil
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+			},
+			want:    getTestShipyard(),
+			wantErr: false,
+		},
+		{
+			name: "get shipyard from projects MV - invalid shipyard",
+			fields: fields{
+				projectRepo: &db_mock.ProjectMVRepoMock{
+					UpdateShipyardFunc: func(projectName string, shipyard string) error {
+						return nil
+					},
+					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
+						return &scmodels.ExpandedProject{ProjectName: "my-project", Shipyard: invalidShipyardContent}, nil
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "get shipyard from projects MV - cannot retrieve project",
+			fields: fields{
+				projectRepo: &db_mock.ProjectMVRepoMock{
+					UpdateShipyardFunc: func(projectName string, shipyard string) error {
+						return nil
+					},
+					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
+						return nil, errors.New("oops")
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sr := NewShipyardRetriever(tt.fields.configurationStore, tt.fields.projectRepo)
+			got, err := sr.GetCachedShipyard(tt.args.projectName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetShipyard() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetShipyard() got = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -179,37 +315,5 @@ func getTestShipyard() *keptnv2.Shipyard {
 				},
 			},
 		},
-	}
-}
-
-func TestShipyardRetriever_GetCachedShipyard(t *testing.T) {
-	type fields struct {
-		configurationStore common.ConfigurationStore
-		projectRepo        db.ProjectMVRepo
-	}
-	type args struct {
-		projectName string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *keptnv2.Shipyard
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sr := NewShipyardRetriever(tt.fields.configurationStore, tt.fields.projectRepo)
-			got, err := sr.GetShipyard(tt.args.projectName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetShipyard() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetShipyard() got = %v, want %v", got, tt.want)
-			}
-		})
 	}
 }
