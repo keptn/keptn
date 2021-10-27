@@ -1,5 +1,31 @@
 basePath: /v1
 definitions:
+  models.CreateEvaluationParams:
+    properties:
+      end:
+        description: end
+        example: 2021-01-02T15:10:00
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        description: labels
+        type: object
+      start:
+        description: start
+        example: 2021-01-02T15:00:00
+        type: string
+      timeframe:
+        description: timeframe
+        example: 5m
+        type: string
+    type: object
+  models.CreateEvaluationResponse:
+    properties:
+      keptnContext:
+        description: keptnContext
+        type: string
+    type: object
   models.CreateLogsRequest:
     properties:
       logs:
@@ -8,7 +34,45 @@ definitions:
           $ref: '#/definitions/models.LogEntry'
         type: array
     type: object
+  models.CreateProjectParams:
+    properties:
+      gitRemoteURL:
+        description: git remote URL
+        type: string
+      gitToken:
+        description: git token
+        type: string
+      gitUser:
+        description: git user
+        type: string
+      name:
+        description: name
+        type: string
+      shipyard:
+        description: shipyard
+        type: string
+    type: object
+  models.CreateProjectResponse:
+    type: object
+  models.CreateServiceParams:
+    properties:
+      serviceName:
+        description: name
+        type: string
+    type: object
+  models.CreateServiceResponse:
+    type: object
   models.DeleteLogResponse:
+    type: object
+  models.DeleteProjectResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.DeleteServiceResponse:
+    properties:
+      message:
+        type: string
     type: object
   models.Error:
     properties:
@@ -21,56 +85,37 @@ definitions:
           Required: true
         type: string
     type: object
-  models.Event:
+  models.EventContext:
     properties:
-      contenttype:
-        description: contenttype
-        type: string
-      data:
+      keptnContext:
         description: |-
-          data
-          Required: true
-        type: object
-      extensions:
-        description: extensions
-        type: object
-      id:
-        description: id
-        type: string
-      shkeptncontext:
-        description: shkeptncontext
-        type: string
-      source:
-        description: |-
-          source
-          Required: true
-        type: string
-      specversion:
-        description: specversion
-        type: string
-      time:
-        description: time
-        type: string
-      triggeredid:
-        description: triggeredid
-        type: string
-      type:
-        description: |-
-          type
+          keptn context
           Required: true
         type: string
     type: object
-  models.EventContext:
+  models.EventSubscription:
     properties:
-      eventId:
-        description: ID of the event
+      event:
         type: string
-      keptnContext:
-        description: Keptn Context ID of the event
+      filter:
+        $ref: '#/definitions/models.EventSubscriptionFilter'
+      id:
         type: string
-      time:
-        description: Time of the event
-        type: string
+    type: object
+  models.EventSubscriptionFilter:
+    properties:
+      projects:
+        items:
+          type: string
+        type: array
+      services:
+        items:
+          type: string
+        type: array
+      stages:
+        items:
+          type: string
+        type: array
     type: object
   models.Events:
     properties:
@@ -220,6 +265,13 @@ definitions:
         type: string
       subscription:
         $ref: '#/definitions/models.Subscription'
+        description: |-
+          Deprecated: for backwards compatibility Subscription is populated
+          but new code shall use Subscriptions
+      subscriptions:
+        items:
+          $ref: '#/definitions/models.EventSubscription'
+        type: array
     type: object
   models.KeptnContextExtendedCE:
     properties:
@@ -299,7 +351,14 @@ definitions:
         type: string
       kubernetesmetadata:
         $ref: '#/definitions/models.KubernetesMetaData'
+      lastseen:
+        type: string
       location:
+        type: string
+    type: object
+  models.RegisterResponse:
+    properties:
+      id:
         type: string
     type: object
   models.Remediation:
@@ -319,6 +378,17 @@ definitions:
       type:
         description: Type of the event
         type: string
+    type: object
+  models.SequenceControlCommand:
+    properties:
+      stage:
+        type: string
+      state:
+        type: string
+    required:
+    - state
+    type: object
+  models.SequenceControlResponse:
     type: object
   models.SequenceState:
     properties:
@@ -367,6 +437,8 @@ definitions:
         $ref: '#/definitions/models.SequenceStateEvent'
       name:
         type: string
+      state:
+        type: string
     type: object
   models.SequenceStates:
     properties:
@@ -403,51 +475,14 @@ definitions:
     type: object
   models.Subscription:
     properties:
+      event:
+        type: string
       filter:
-        $ref: '#/definitions/models.SubscriptionFilter'
-      status:
-        type: string
-      topics:
-        items:
-          type: string
-        type: array
-    type: object
-  models.SubscriptionFilter:
-    properties:
-      project:
-        type: string
-      service:
-        type: string
-      stage:
+        $ref: '#/definitions/models.EventSubscriptionFilter'
+      id:
         type: string
     type: object
-  operations.CreateEvaluationParams:
-    properties:
-      end:
-        description: end
-        example: 2021-01-02T15:10:00
-        type: string
-      labels:
-        additionalProperties:
-          type: string
-        description: labels
-        type: object
-      start:
-        description: start
-        example: 2021-01-02T15:00:00
-        type: string
-      timeframe:
-        description: timeframe
-        example: 5m
-        type: string
-    type: object
-  operations.CreateEvaluationResponse:
-    properties:
-      keptnContext:
-        description: keptnContext
-        type: string
-    type: object
-  operations.CreateProjectParams:
+  models.UpdateProjectParams:
     properties:
       gitRemoteURL:
         description: git remote URL
@@ -465,45 +500,7 @@ definitions:
         description: shipyard
         type: string
     type: object
-  operations.CreateProjectResponse:
-    type: object
-  operations.CreateServiceParams:
-    properties:
-      serviceName:
-        description: name
-        type: string
-    type: object
-  operations.CreateServiceResponse:
-    type: object
-  operations.DeleteProjectResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  operations.DeleteServiceResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  operations.UpdateProjectParams:
-    properties:
-      gitRemoteURL:
-        description: git remote URL
-        type: string
-      gitToken:
-        description: git token
-        type: string
-      gitUser:
-        description: git user
-        type: string
-      name:
-        description: name
-        type: string
-      shipyard:
-        description: shipyard
-        type: string
-    type: object
-  operations.UpdateProjectResponse:
+  models.UpdateProjectResponse:
     type: object
 info:
   contact:
@@ -516,36 +513,6 @@ info:
   title: Control Plane API
   version: develop
 paths:
-  /event:
-    post:
-      consumes:
-      - application/json
-      description: Handle incoming cloud event
-      parameters:
-      - description: Event type
-        in: body
-        name: event
-        required: true
-        schema:
-          $ref: '#/definitions/models.Event'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
-        "500":
-          description: Internal error
-          schema:
-            $ref: '#/definitions/models.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Handle event
-      tags:
-      - Events
   /event/triggered/{eventType}:
     get:
       consumes:
@@ -749,14 +716,14 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/operations.CreateProjectParams'
+          $ref: '#/definitions/models.CreateProjectParams'
       produces:
       - application/json
       responses:
         "201":
           description: ok
           schema:
-            $ref: '#/definitions/operations.CreateProjectResponse'
+            $ref: '#/definitions/models.CreateProjectResponse'
         "400":
           description: Invalid payload
           schema:
@@ -780,16 +747,24 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/operations.UpdateProjectParams'
+          $ref: '#/definitions/models.UpdateProjectParams'
       produces:
       - application/json
       responses:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.UpdateProjectResponse'
+            $ref: '#/definitions/models.UpdateProjectResponse'
         "400":
-          description: Invalid payload
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Error'
+        "403":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "424":
+          description: Failed Dependency
           schema:
             $ref: '#/definitions/models.Error'
         "500":
@@ -818,7 +793,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.DeleteProjectResponse'
+            $ref: '#/definitions/models.DeleteProjectResponse'
         "400":
           description: Invalid payload
           schema:
@@ -878,14 +853,14 @@ paths:
         name: service
         required: true
         schema:
-          $ref: '#/definitions/operations.CreateServiceParams'
+          $ref: '#/definitions/models.CreateServiceParams'
       produces:
       - application/json
       responses:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.CreateServiceResponse'
+            $ref: '#/definitions/models.CreateServiceResponse'
         "400":
           description: Invalid payload
           schema:
@@ -921,7 +896,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.DeleteServiceResponse'
+            $ref: '#/definitions/models.DeleteServiceResponse'
         "400":
           description: Invalid payload
           schema:
@@ -1125,14 +1100,14 @@ paths:
         name: evaluation
         required: true
         schema:
-          $ref: '#/definitions/operations.CreateEvaluationParams'
+          $ref: '#/definitions/models.CreateEvaluationParams'
       produces:
       - application/json
       responses:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.CreateEvaluationResponse'
+            $ref: '#/definitions/models.CreateEvaluationResponse'
         "400":
           description: Invalid payload
           schema:
@@ -1206,11 +1181,54 @@ paths:
       summary: Get task sequence execution states
       tags:
       - Sequence
+  /sequence/{project}/{keptnContext}/control:
+    post:
+      consumes:
+      - application/json
+      description: Pause/Resume/Abort a task sequence, either for a specific stage,
+        or for all stages involved in the sequence
+      parameters:
+      - description: The project name
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: The keptnContext ID of the sequence
+        in: path
+        name: keptnContext
+        required: true
+        type: string
+      - description: Sequence Control Command
+        in: body
+        name: sequenceControl
+        required: true
+        schema:
+          $ref: '#/definitions/models.SequenceControlCommand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.SequenceControlResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Pause/Resume/Abort a task sequence
+      tags:
+      - Sequence
   /uniform/registration:
     get:
       consumes:
       - application/json
-      description: Retrieve uniform integrations
+      description: Retrieve uniform integrations matching the provided filter
       parameters:
       - description: id
         in: query
@@ -1251,7 +1269,7 @@ paths:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
-      summary: Retrieve uniform integrations
+      summary: 'BETA: Retrieve uniform integrations matching the provided filter'
       tags:
       - Uniform
     post:
@@ -1269,7 +1287,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: ""
+          description: 'ok: registration already exists'
+          schema:
+            $ref: '#/definitions/models.RegisterResponse'
+        "201":
+          description: 'ok: a new registration has been created'
+          schema:
+            $ref: '#/definitions/models.RegisterResponse'
         "400":
           description: Invalid payload
           schema:
@@ -1280,18 +1304,18 @@ paths:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
-      summary: Register a uniform integration
+      summary: 'BETA: Register a uniform integration'
       tags:
       - Uniform
-  /uniform/registration/{id}:
+  /uniform/registration/{integrationID}:
     delete:
       consumes:
       - application/json
       description: Unregister a uniform integration
       parameters:
-      - description: id
+      - description: integrationID
         in: path
-        name: id
+        name: integrationID
         required: true
         type: string
       produces:
@@ -1309,7 +1333,235 @@ paths:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
-      summary: Unregister a uniform integration
+      summary: 'BETA: Unregister a uniform integration'
+      tags:
+      - Uniform
+  /uniform/registration/{integrationID}/ping:
+    put:
+      consumes:
+      - application/json
+      description: Endpoint for sending heartbeat messages sent from Keptn integrations
+        to the control plane
+      parameters:
+      - description: integrationID
+        in: path
+        name: integrationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.Integration'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: 'BETA: Endpoint for sending heartbeat messages sent from Keptn integrations
+        to the control plane'
+      tags:
+      - Uniform
+  /uniform/registration/{integrationID}/subscription:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all subscriptions of a uniform integration
+      parameters:
+      - description: integrationID
+        in: path
+        name: integrationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/models.Subscription'
+            type: array
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: 'BETA: Retrieve all subscriptions of a uniform integration'
+      tags:
+      - Uniform
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription
+      parameters:
+      - description: integrationID
+        in: path
+        name: integrationID
+        required: true
+        type: string
+      - description: Subscription
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: 'BETA: Create a new subscription'
+      tags:
+      - Uniform
+  /uniform/registration/{integrationID}/subscription/{subscriptionID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a subscription
+      parameters:
+      - description: integrationID
+        in: path
+        name: integrationID
+        required: true
+        type: string
+      - description: subscriptionID
+        in: path
+        name: subscriptionID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: 'BETA: Delete a subscription'
+      tags:
+      - Uniform
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an already existing subscription
+      parameters:
+      - description: integrationID
+        in: path
+        name: integrationID
+        required: true
+        type: string
+      - description: subscriptionID
+        in: path
+        name: subscriptionID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.Subscription'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: 'BETA: Retrieve an already existing subscription'
+      tags:
+      - Uniform
+    put:
+      consumes:
+      - application/json
+      description: Update or create a subscription
+      parameters:
+      - description: integrationID
+        in: path
+        name: integrationID
+        required: true
+        type: string
+      - description: subscriptionID
+        in: path
+        name: subscriptionID
+        required: true
+        type: string
+      - description: Subscription
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: 'BETA: Update or create a subscription'
       tags:
       - Uniform
 securityDefinitions:

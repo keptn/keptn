@@ -1,4 +1,4 @@
-package operations
+package models
 
 // NewGetTriggeredEventsParams creates a new GetTriggeredEventsParams object
 // with the default values initialized.

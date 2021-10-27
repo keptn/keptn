@@ -30,54 +30,6 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/event": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Handle incoming cloud event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Events"
-                ],
-                "summary": "Handle event",
-                "parameters": [
-                    {
-                        "description": "Event type",
-                        "name": "event",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Event"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok"
-                    },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/event/triggered/{eventType}": {
             "get": {
                 "security": [
@@ -404,7 +356,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/operations.UpdateProjectParams"
+                            "$ref": "#/definitions/models.UpdateProjectParams"
                         }
                     }
                 ],
@@ -412,11 +364,23 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.UpdateProjectResponse"
+                            "$ref": "#/definitions/models.UpdateProjectResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid payload",
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "424": {
+                        "description": "Failed Dependency",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -453,7 +417,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateProjectParams"
+                            "$ref": "#/definitions/models.CreateProjectParams"
                         }
                     }
                 ],
@@ -461,7 +425,7 @@ var doc = `{
                     "201": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateProjectResponse"
+                            "$ref": "#/definitions/models.CreateProjectResponse"
                         }
                     },
                     "400": {
@@ -557,7 +521,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.DeleteProjectResponse"
+                            "$ref": "#/definitions/models.DeleteProjectResponse"
                         }
                     },
                     "400": {
@@ -607,7 +571,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateServiceParams"
+                            "$ref": "#/definitions/models.CreateServiceParams"
                         }
                     }
                 ],
@@ -615,7 +579,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateServiceResponse"
+                            "$ref": "#/definitions/models.CreateServiceResponse"
                         }
                     },
                     "400": {
@@ -671,7 +635,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.DeleteServiceResponse"
+                            "$ref": "#/definitions/models.DeleteServiceResponse"
                         }
                     },
                     "400": {
@@ -989,7 +953,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateEvaluationParams"
+                            "$ref": "#/definitions/models.CreateEvaluationParams"
                         }
                     }
                 ],
@@ -997,7 +961,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateEvaluationResponse"
+                            "$ref": "#/definitions/models.CreateEvaluationResponse"
                         }
                     },
                     "400": {
@@ -1105,6 +1069,71 @@ var doc = `{
                 }
             }
         },
+        "/sequence/{project}/{keptnContext}/control": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Pause/Resume/Abort a task sequence, either for a specific stage, or for all stages involved in the sequence",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sequence"
+                ],
+                "summary": "Pause/Resume/Abort a task sequence",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The project name",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The keptnContext ID of the sequence",
+                        "name": "keptnContext",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Sequence Control Command",
+                        "name": "sequenceControl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SequenceControlCommand"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.SequenceControlResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/uniform/registration": {
             "get": {
                 "security": [
@@ -1112,7 +1141,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieve uniform integrations",
+                "description": "Retrieve uniform integrations matching the provided filter",
                 "consumes": [
                     "application/json"
                 ],
@@ -1122,7 +1151,7 @@ var doc = `{
                 "tags": [
                     "Uniform"
                 ],
-                "summary": "Retrieve uniform integrations",
+                "summary": "BETA: Retrieve uniform integrations matching the provided filter",
                 "parameters": [
                     {
                         "type": "string",
@@ -1195,7 +1224,7 @@ var doc = `{
                 "tags": [
                     "Uniform"
                 ],
-                "summary": "Register a uniform integration",
+                "summary": "BETA: Register a uniform integration",
                 "parameters": [
                     {
                         "description": "Integration",
@@ -1209,7 +1238,16 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "ok: registration already exists",
+                        "schema": {
+                            "$ref": "#/definitions/models.RegisterResponse"
+                        }
+                    },
+                    "201": {
+                        "description": "ok: a new registration has been created",
+                        "schema": {
+                            "$ref": "#/definitions/models.RegisterResponse"
+                        }
                     },
                     "400": {
                         "description": "Invalid payload",
@@ -1226,7 +1264,7 @@ var doc = `{
                 }
             }
         },
-        "/uniform/registration/{id}": {
+        "/uniform/registration/{integrationID}": {
             "delete": {
                 "security": [
                     {
@@ -1243,12 +1281,12 @@ var doc = `{
                 "tags": [
                     "Uniform"
                 ],
-                "summary": "Unregister a uniform integration",
+                "summary": "BETA: Unregister a uniform integration",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "id",
-                        "name": "id",
+                        "description": "integrationID",
+                        "name": "integrationID",
                         "in": "path",
                         "required": true
                     }
@@ -1271,9 +1309,396 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/uniform/registration/{integrationID}/ping": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uniform"
+                ],
+                "summary": "BETA: Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationID",
+                        "name": "integrationID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.Integration"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/uniform/registration/{integrationID}/subscription": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve all subscriptions of a uniform integration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uniform"
+                ],
+                "summary": "BETA: Retrieve all subscriptions of a uniform integration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationID",
+                        "name": "integrationID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Subscription"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uniform"
+                ],
+                "summary": "BETA: Create a new subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationID",
+                        "name": "integrationID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Subscription",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/uniform/registration/{integrationID}/subscription/{subscriptionID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve an already existing subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uniform"
+                ],
+                "summary": "BETA: Retrieve an already existing subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationID",
+                        "name": "integrationID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "subscriptionID",
+                        "name": "subscriptionID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update or create a subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uniform"
+                ],
+                "summary": "BETA: Update or create a subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationID",
+                        "name": "integrationID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "subscriptionID",
+                        "name": "subscriptionID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Subscription",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uniform"
+                ],
+                "summary": "BETA: Delete a subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationID",
+                        "name": "integrationID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "subscriptionID",
+                        "name": "subscriptionID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.CreateEvaluationParams": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "description": "end",
+                    "type": "string",
+                    "example": "2021-01-02T15:10:00"
+                },
+                "labels": {
+                    "description": "labels",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "start": {
+                    "description": "start",
+                    "type": "string",
+                    "example": "2021-01-02T15:00:00"
+                },
+                "timeframe": {
+                    "description": "timeframe",
+                    "type": "string",
+                    "example": "5m"
+                }
+            }
+        },
+        "models.CreateEvaluationResponse": {
+            "type": "object",
+            "properties": {
+                "keptnContext": {
+                    "description": "keptnContext",
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateLogsRequest": {
             "type": "object",
             "properties": {
@@ -1286,8 +1711,64 @@ var doc = `{
                 }
             }
         },
+        "models.CreateProjectParams": {
+            "type": "object",
+            "properties": {
+                "gitRemoteURL": {
+                    "description": "git remote URL",
+                    "type": "string"
+                },
+                "gitToken": {
+                    "description": "git token",
+                    "type": "string"
+                },
+                "gitUser": {
+                    "description": "git user",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "name",
+                    "type": "string"
+                },
+                "shipyard": {
+                    "description": "shipyard",
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateProjectResponse": {
+            "type": "object"
+        },
+        "models.CreateServiceParams": {
+            "type": "object",
+            "properties": {
+                "serviceName": {
+                    "description": "name",
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateServiceResponse": {
+            "type": "object"
+        },
         "models.DeleteLogResponse": {
             "type": "object"
+        },
+        "models.DeleteProjectResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DeleteServiceResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
         },
         "models.Error": {
             "type": "object",
@@ -1302,65 +1783,49 @@ var doc = `{
                 }
             }
         },
-        "models.Event": {
+        "models.EventContext": {
             "type": "object",
             "properties": {
-                "contenttype": {
-                    "description": "contenttype",
-                    "type": "string"
-                },
-                "data": {
-                    "description": "data\nRequired: true",
-                    "type": "object"
-                },
-                "extensions": {
-                    "description": "extensions",
-                    "type": "object"
-                },
-                "id": {
-                    "description": "id",
-                    "type": "string"
-                },
-                "shkeptncontext": {
-                    "description": "shkeptncontext",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "source\nRequired: true",
-                    "type": "string"
-                },
-                "specversion": {
-                    "description": "specversion",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "time",
-                    "type": "string"
-                },
-                "triggeredid": {
-                    "description": "triggeredid",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "type\nRequired: true",
+                "keptnContext": {
+                    "description": "keptn context\nRequired: true",
                     "type": "string"
                 }
             }
         },
-        "models.EventContext": {
+        "models.EventSubscription": {
             "type": "object",
             "properties": {
-                "eventId": {
-                    "description": "ID of the event",
+                "event": {
                     "type": "string"
                 },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
+                "filter": {
+                    "$ref": "#/definitions/models.EventSubscriptionFilter"
                 },
-                "time": {
-                    "description": "Time of the event",
+                "id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.EventSubscriptionFilter": {
+            "type": "object",
+            "properties": {
+                "projects": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "stages": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1571,7 +2036,14 @@ var doc = `{
                     "type": "string"
                 },
                 "subscription": {
+                    "description": "Deprecated: for backwards compatibility Subscription is populated\nbut new code shall use Subscriptions",
                     "$ref": "#/definitions/models.Subscription"
+                },
+                "subscriptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.EventSubscription"
+                    }
                 }
             }
         },
@@ -1676,7 +2148,18 @@ var doc = `{
                 "kubernetesmetadata": {
                     "$ref": "#/definitions/models.KubernetesMetaData"
                 },
+                "lastseen": {
+                    "type": "string"
+                },
                 "location": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }
@@ -1705,6 +2188,23 @@ var doc = `{
                     "type": "string"
                 }
             }
+        },
+        "models.SequenceControlCommand": {
+            "type": "object",
+            "required": [
+                "state"
+            ],
+            "properties": {
+                "stage": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SequenceControlResponse": {
+            "type": "object"
         },
         "models.SequenceState": {
             "type": "object",
@@ -1777,6 +2277,9 @@ var doc = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "state": {
+                    "type": "string"
                 }
             }
         },
@@ -1830,71 +2333,18 @@ var doc = `{
         "models.Subscription": {
             "type": "object",
             "properties": {
+                "event": {
+                    "type": "string"
+                },
                 "filter": {
-                    "$ref": "#/definitions/models.SubscriptionFilter"
+                    "$ref": "#/definitions/models.EventSubscriptionFilter"
                 },
-                "status": {
-                    "type": "string"
-                },
-                "topics": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "models.SubscriptionFilter": {
-            "type": "object",
-            "properties": {
-                "project": {
-                    "type": "string"
-                },
-                "service": {
-                    "type": "string"
-                },
-                "stage": {
+                "id": {
                     "type": "string"
                 }
             }
         },
-        "operations.CreateEvaluationParams": {
-            "type": "object",
-            "properties": {
-                "end": {
-                    "description": "end",
-                    "type": "string",
-                    "example": "2021-01-02T15:10:00"
-                },
-                "labels": {
-                    "description": "labels",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "start": {
-                    "description": "start",
-                    "type": "string",
-                    "example": "2021-01-02T15:00:00"
-                },
-                "timeframe": {
-                    "description": "timeframe",
-                    "type": "string",
-                    "example": "5m"
-                }
-            }
-        },
-        "operations.CreateEvaluationResponse": {
-            "type": "object",
-            "properties": {
-                "keptnContext": {
-                    "description": "keptnContext",
-                    "type": "string"
-                }
-            }
-        },
-        "operations.CreateProjectParams": {
+        "models.UpdateProjectParams": {
             "type": "object",
             "properties": {
                 "gitRemoteURL": {
@@ -1919,63 +2369,7 @@ var doc = `{
                 }
             }
         },
-        "operations.CreateProjectResponse": {
-            "type": "object"
-        },
-        "operations.CreateServiceParams": {
-            "type": "object",
-            "properties": {
-                "serviceName": {
-                    "description": "name",
-                    "type": "string"
-                }
-            }
-        },
-        "operations.CreateServiceResponse": {
-            "type": "object"
-        },
-        "operations.DeleteProjectResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "operations.DeleteServiceResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "operations.UpdateProjectParams": {
-            "type": "object",
-            "properties": {
-                "gitRemoteURL": {
-                    "description": "git remote URL",
-                    "type": "string"
-                },
-                "gitToken": {
-                    "description": "git token",
-                    "type": "string"
-                },
-                "gitUser": {
-                    "description": "git user",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "name",
-                    "type": "string"
-                },
-                "shipyard": {
-                    "description": "shipyard",
-                    "type": "string"
-                }
-            }
-        },
-        "operations.UpdateProjectResponse": {
+        "models.UpdateProjectResponse": {
             "type": "object"
         }
     },

@@ -1,4 +1,4 @@
-package operations
+package models
 
 // CreateEvaluationParams contains all parameters for starting a new evaluation
 //

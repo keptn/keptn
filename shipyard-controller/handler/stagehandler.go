@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 	"sort"
 )
@@ -42,7 +41,7 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 func (sh *StageHandler) GetAllStages(c *gin.Context) {
 	project := c.Param("project")
 
-	params := &operations.GetStagesParams{}
+	params := &models.GetStagesParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -74,9 +73,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 	paginationInfo := common.Paginate(len(allStages), params.PageSize, params.NextPageKey)
 	totalCount := len(allStages)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, stg := range allStages[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			payload.Stages = append(payload.Stages, stg)
-		}
+		payload.Stages = append(payload.Stages, allStages[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
 	}
 
 	payload.TotalCount = float64(totalCount)

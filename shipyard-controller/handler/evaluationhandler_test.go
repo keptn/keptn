@@ -7,7 +7,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -24,9 +23,9 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 		fields                           fields
 		jsonPayload                      string
 		expectCreateEvaluationToBeCalled bool
-		expectCreateEvaluationParams     *operations.CreateEvaluationParams
+		expectCreateEvaluationParams     *models.CreateEvaluationParams
 		expectHttpStatus                 int
-		expectJSONResponse               *operations.CreateEvaluationResponse
+		expectJSONResponse               *models.CreateEvaluationResponse
 		expectJSONError                  *models.Error
 	}{
 		{
@@ -34,22 +33,22 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectCreateEvaluationToBeCalled: true,
 			fields: fields{
 				EvaluationManager: &fake.IEvaluationManagerMock{
-					CreateEvaluationFunc: func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
-						return &operations.CreateEvaluationResponse{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
 							KeptnContext: "test-context",
 						}, nil
 					},
 				},
 			},
 			jsonPayload: `{"start":"2021-01-02T15:00:00", "end":"2021-01-02T15:10:00"}`,
-			expectCreateEvaluationParams: &operations.CreateEvaluationParams{
+			expectCreateEvaluationParams: &models.CreateEvaluationParams{
 				Labels:    nil,
 				Start:     "2021-01-02T15:00:00",
 				End:       "2021-01-02T15:10:00",
 				Timeframe: "",
 			},
 			expectHttpStatus:   http.StatusOK,
-			expectJSONResponse: &operations.CreateEvaluationResponse{KeptnContext: "test-context"},
+			expectJSONResponse: &models.CreateEvaluationResponse{KeptnContext: "test-context"},
 			expectJSONError:    nil,
 		},
 		{
@@ -57,8 +56,8 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectCreateEvaluationToBeCalled: false,
 			fields: fields{
 				EvaluationManager: &fake.IEvaluationManagerMock{
-					CreateEvaluationFunc: func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
-						return &operations.CreateEvaluationResponse{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
 							KeptnContext: "test-context",
 						}, nil
 					},
@@ -76,7 +75,7 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectCreateEvaluationToBeCalled: false,
 			fields: fields{
 				EvaluationManager: &fake.IEvaluationManagerMock{
-					CreateEvaluationFunc: func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
 						return nil, &models.Error{
 							Code:    evaluationErrSendEventFailed,
 							Message: common.Stringp("failed to send event"),
@@ -123,7 +122,7 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 
 			responseBytes, _ := ioutil.ReadAll(w.Body)
 			if tt.expectJSONResponse != nil {
-				response := &operations.CreateEvaluationResponse{}
+				response := &models.CreateEvaluationResponse{}
 				_ = json.Unmarshal(responseBytes, response)
 
 				assert.Equal(t, tt.expectJSONResponse, response)

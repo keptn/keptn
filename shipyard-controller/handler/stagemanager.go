@@ -12,17 +12,17 @@ type IStageManager interface {
 }
 
 type StageManager struct {
-	StagesDbOperations db.StagesDbOperations
+	projectMVRepo db.ProjectMVRepo
 }
 
-func NewStageManager(dbOperations db.StagesDbOperations) *StageManager {
+func NewStageManager(projectMVRepo db.ProjectMVRepo) *StageManager {
 	return &StageManager{
-		StagesDbOperations: dbOperations,
+		projectMVRepo: projectMVRepo,
 	}
 }
 
 func (sm *StageManager) GetAllStages(projectName string) ([]*models.ExpandedStage, error) {
-	project, err := sm.StagesDbOperations.GetProject(projectName)
+	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (sm *StageManager) GetAllStages(projectName string) ([]*models.ExpandedStag
 }
 
 func (sm *StageManager) GetStage(projectName, stageName string) (*models.ExpandedStage, error) {
-	project, err := sm.StagesDbOperations.GetProject(projectName)
+	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}

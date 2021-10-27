@@ -6,7 +6,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sort"
@@ -32,7 +31,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 	}
 }
 
-// GetTriggeredEvents godoc
+// GetAllProjects godoc
 // @Summary Get all projects
 // @Description Get the list of all projects
 // @Tags Projects
@@ -47,7 +46,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 
-	params := &operations.GetProjectParams{}
+	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -73,9 +72,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			payload.Projects = append(payload.Projects, project)
-		}
+		payload.Projects = append(payload.Projects, allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
 	}
 
 	payload.TotalCount = float64(totalCount)
@@ -83,7 +80,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-// GetTriggeredEvents godoc
+// GetProjectByName godoc
 // @Summary Get a project by name
 // @Description Get a project by its name
 // @Tags Projects
@@ -120,15 +117,15 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 201 {object} operations.CreateProjectResponse	"ok"
+// @Param   project     body    models.CreateProjectParams     true        "Project"
+// @Success 201 {object} models.CreateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
-	createProjectParams := &operations.CreateProjectParams{}
+	createProjectParams := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(createProjectParams); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -173,16 +170,16 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.UpdateProjectParams     true        "Project"
-// @Success 200 {object} operations.UpdateProjectResponse	"ok"
+// @Param   project     body    models.UpdateProjectParams     true        "Project"
+// @Success 200 {object} models.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Bad Request"
 // @Failure 424 {object} models.Error "Failed Dependency"
 // @Failure 403 {object} models.Error "Not Found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
-	//validate the input
-	params := &operations.UpdateProjectParams{}
+	// validate the input
+	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -212,18 +209,18 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-//// DeleteProject godoc
-//// @Summary Delete a project
-//// @Description Delete a project
-//// @Tags Projects
-//// @Security ApiKeyAuth
-//// @Accept  json
-//// @Produce  json
-//// @Param   project     path    string     true        "Project name"
-//// @Success 200 {object} operations.DeleteProjectResponse	"ok"
-//// @Failure 400 {object} models.Error "Invalid payload"
-//// @Failure 500 {object} models.Error "Internal error"
-//// @Router /project/{project} [delete]
+// DeleteProject godoc
+// @Summary Delete a project
+// @Description Delete a project
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     path    string     true        "Project name"
+// @Success 200 {object} models.DeleteProjectResponse	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project/{project} [delete]
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
@@ -244,12 +241,12 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		log.Errorf("failed to send finished event: %s", err.Error())
 	}
 
-	c.JSON(http.StatusOK, operations.DeleteProjectResponse{
+	c.JSON(http.StatusOK, models.DeleteProjectResponse{
 		Message: responseMessage,
 	})
 }
 
-func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *models.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
@@ -260,7 +257,7 @@ func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, par
 
 }
 
-func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *models.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
@@ -278,7 +275,7 @@ func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext str
 	return ph.EventSender.SendEvent(ce)
 }
 
-func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *models.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,

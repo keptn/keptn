@@ -6,22 +6,21 @@ import (
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateService_GettingStagesFails(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -30,15 +29,15 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 }
 
 func TestCreateService_ServiceAlreadyExists(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
 		}
@@ -63,15 +62,15 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 }
 
 func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
 		stage1 := &models.ExpandedStage{
 			Services:  []*models.ExpandedService{},
@@ -96,19 +95,19 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 	err := instance.CreateService("my-project", params)
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.CreateServiceCalls()))
-	assert.Equal(t, 0, len(servicesDBOperations.CreateServiceCalls()))
+	assert.Equal(t, 0, len(projectMVRepo.CreateServiceCalls()))
 }
 
 func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
 		stage1 := &models.ExpandedStage{
 			Services:  []*models.ExpandedService{},
@@ -130,26 +129,26 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 		return nil
 	}
 
-	servicesDBOperations.CreateServiceFunc = func(project string, stage string, service string) error {
+	projectMVRepo.CreateServiceFunc = func(project string, stage string, service string) error {
 		return errors.New("whoops")
 	}
 
 	err := instance.CreateService("my-project", params)
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.CreateServiceCalls()))
-	assert.Equal(t, 1, len(servicesDBOperations.CreateServiceCalls()))
+	assert.Equal(t, 1, len(projectMVRepo.CreateServiceCalls()))
 }
 
 func TestCreateService(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
 		stage1 := &models.ExpandedStage{
 			Services:  []*models.ExpandedService{},
@@ -171,7 +170,7 @@ func TestCreateService(t *testing.T) {
 		return nil
 	}
 
-	servicesDBOperations.CreateServiceFunc = func(project string, stage string, service string) error {
+	projectMVRepo.CreateServiceFunc = func(project string, stage string, service string) error {
 		return nil
 	}
 
@@ -186,22 +185,22 @@ func TestCreateService(t *testing.T) {
 	assert.Equal(t, "prod", configurationStore.CreateServiceCalls()[1].StageName)
 	assert.Equal(t, "service-name", configurationStore.CreateServiceCalls()[1].ServiceName)
 
-	assert.Equal(t, "my-project", servicesDBOperations.CreateServiceCalls()[0].Project)
-	assert.Equal(t, "dev", servicesDBOperations.CreateServiceCalls()[0].Stage)
-	assert.Equal(t, "service-name", servicesDBOperations.CreateServiceCalls()[0].Service)
+	assert.Equal(t, "my-project", projectMVRepo.CreateServiceCalls()[0].Project)
+	assert.Equal(t, "dev", projectMVRepo.CreateServiceCalls()[0].Stage)
+	assert.Equal(t, "service-name", projectMVRepo.CreateServiceCalls()[0].Service)
 
-	assert.Equal(t, "my-project", servicesDBOperations.CreateServiceCalls()[1].Project)
-	assert.Equal(t, "prod", servicesDBOperations.CreateServiceCalls()[1].Stage)
-	assert.Equal(t, "service-name", servicesDBOperations.CreateServiceCalls()[1].Service)
+	assert.Equal(t, "my-project", projectMVRepo.CreateServiceCalls()[1].Project)
+	assert.Equal(t, "prod", projectMVRepo.CreateServiceCalls()[1].Stage)
+	assert.Equal(t, "service-name", projectMVRepo.CreateServiceCalls()[1].Service)
 
 }
 
 func TestDeleteService_GettingAllStagesFails(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -211,11 +210,11 @@ func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 }
 
 func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
 		}
@@ -242,15 +241,15 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 	err := instance.DeleteService("my-project", "my-service")
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.DeleteServiceCalls()))
-	assert.Equal(t, 0, len(servicesDBOperations.DeleteServiceCalls()))
+	assert.Equal(t, 0, len(projectMVRepo.DeleteServiceCalls()))
 }
 
 func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
 		}
@@ -274,22 +273,22 @@ func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 		return nil
 	}
 
-	servicesDBOperations.DeleteServiceFunc = func(project string, stage string, service string) error {
+	projectMVRepo.DeleteServiceFunc = func(project string, stage string, service string) error {
 		return errors.New("Whoops..")
 	}
 
 	err := instance.DeleteService("my-project", "my-service")
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.DeleteServiceCalls()))
-	assert.Equal(t, 1, len(servicesDBOperations.DeleteServiceCalls()))
+	assert.Equal(t, 1, len(projectMVRepo.DeleteServiceCalls()))
 }
 
 func TestDeleteService(t *testing.T) {
-	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	instance := NewServiceManager(servicesDBOperations, configurationStore)
+	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
 			ServiceName: "service-name",
 		}
@@ -312,7 +311,7 @@ func TestDeleteService(t *testing.T) {
 	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
 		return nil
 	}
-	servicesDBOperations.DeleteServiceFunc = func(project string, stage string, service string) error {
+	projectMVRepo.DeleteServiceFunc = func(project string, stage string, service string) error {
 		return nil
 	}
 
@@ -320,22 +319,22 @@ func TestDeleteService(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, len(configurationStore.DeleteServiceCalls()))
-	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[0].Project)
-	assert.Equal(t, "dev", servicesDBOperations.DeleteServiceCalls()[0].Stage)
-	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[0].Service)
+	assert.Equal(t, "my-project", projectMVRepo.DeleteServiceCalls()[0].Project)
+	assert.Equal(t, "dev", projectMVRepo.DeleteServiceCalls()[0].Stage)
+	assert.Equal(t, "my-service", projectMVRepo.DeleteServiceCalls()[0].Service)
 
-	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[1].Project)
-	assert.Equal(t, "prod", servicesDBOperations.DeleteServiceCalls()[1].Stage)
-	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[1].Service)
+	assert.Equal(t, "my-project", projectMVRepo.DeleteServiceCalls()[1].Project)
+	assert.Equal(t, "prod", projectMVRepo.DeleteServiceCalls()[1].Stage)
+	assert.Equal(t, "my-service", projectMVRepo.DeleteServiceCalls()[1].Service)
 
-	assert.Equal(t, 2, len(servicesDBOperations.DeleteServiceCalls()))
-	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[0].Project)
-	assert.Equal(t, "dev", servicesDBOperations.DeleteServiceCalls()[0].Stage)
-	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[0].Service)
+	assert.Equal(t, 2, len(projectMVRepo.DeleteServiceCalls()))
+	assert.Equal(t, "my-project", projectMVRepo.DeleteServiceCalls()[0].Project)
+	assert.Equal(t, "dev", projectMVRepo.DeleteServiceCalls()[0].Stage)
+	assert.Equal(t, "my-service", projectMVRepo.DeleteServiceCalls()[0].Service)
 
-	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[1].Project)
-	assert.Equal(t, "prod", servicesDBOperations.DeleteServiceCalls()[1].Stage)
-	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[1].Service)
+	assert.Equal(t, "my-project", projectMVRepo.DeleteServiceCalls()[1].Project)
+	assert.Equal(t, "prod", projectMVRepo.DeleteServiceCalls()[1].Stage)
+	assert.Equal(t, "my-service", projectMVRepo.DeleteServiceCalls()[1].Service)
 }
 
 func Test_validateServiceName(t *testing.T) {

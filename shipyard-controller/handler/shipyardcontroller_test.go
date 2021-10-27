@@ -112,7 +112,7 @@ spec:
 
 func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	type fields struct {
-		projectRepo        db.ProjectRepo
+		projectRepo        db.ProjectMVRepo
 		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
@@ -128,7 +128,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &db_mock.ProjectRepoMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
 					return []*models.ExpandedProject{{
 						ProjectName: "sockshop",
 					}, {
@@ -154,8 +154,8 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo: tt.fields.projectRepo,
-				eventRepo:   tt.fields.triggeredEventRepo,
+				projectMvRepo: tt.fields.projectRepo,
+				eventRepo:     tt.fields.triggeredEventRepo,
 			}
 			got, err := em.GetAllTriggeredEvents(tt.args.filter)
 			if (err != nil) != tt.wantErr {
@@ -171,7 +171,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 
 func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	type fields struct {
-		projectRepo        db.ProjectRepo
+		projectRepo        db.ProjectMVRepo
 		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
@@ -188,7 +188,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 		{
 			name: "Get triggered events for project",
 			fields: fields{
-				projectRepo: &db_mock.ProjectRepoMock{GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 					return &models.ExpandedProject{ProjectName: projectName}, nil
 				}},
 				triggeredEventRepo: &db_mock.EventRepoMock{
@@ -209,8 +209,8 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo: tt.fields.projectRepo,
-				eventRepo:   tt.fields.triggeredEventRepo,
+				projectMvRepo: tt.fields.projectRepo,
+				eventRepo:     tt.fields.triggeredEventRepo,
 			}
 			got, err := em.GetTriggeredEventsOfProject(tt.args.project, tt.args.filter)
 			if (err != nil) != tt.wantErr {
@@ -287,7 +287,7 @@ func Test_getEventScope(t *testing.T) {
 
 func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo      db.ProjectRepo
+		projectMvRepo    db.ProjectMVRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
 		taskStartedHook  *fakehooks.ISequenceTaskStartedHookMock
@@ -306,7 +306,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 		{
 			name: "received started event with matching triggered event",
 			fields: fields{
-				projectRepo: nil,
+				projectMvRepo: nil,
 				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if status[0] == common.TriggeredEvent {
@@ -341,7 +341,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 		{
 			name: "received started event with no matching triggered event",
 			fields: fields{
-				projectRepo: nil,
+				projectMvRepo: nil,
 				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if status[0] == common.TriggeredEvent {
@@ -375,7 +375,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo:      tt.fields.projectRepo,
+				projectMvRepo:    tt.fields.projectMvRepo,
 				eventRepo:        tt.fields.eventRepo,
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
@@ -399,7 +399,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 
 func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo      db.ProjectRepo
+		projectMvRepo    db.ProjectMVRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
 		taskFinishedHook *fakehooks.ISequenceTaskFinishedHookMock
@@ -417,7 +417,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 		{
 			name: "received finished event with no matching triggered event",
 			fields: fields{
-				projectRepo: nil,
+				projectMvRepo: nil,
 				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if status[0] == common.TriggeredEvent {
@@ -451,7 +451,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo:      tt.fields.projectRepo,
+				projectMvRepo:    tt.fields.projectMvRepo,
 				eventRepo:        tt.fields.eventRepo,
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
@@ -473,7 +473,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 func Test_eventManager_getEvents(t *testing.T) {
 	eventAvailable := false
 	type fields struct {
-		projectRepo db.ProjectRepo
+		projectRepo db.ProjectMVRepo
 		eventRepo   db.EventRepo
 	}
 	type args struct {
@@ -532,8 +532,8 @@ func Test_eventManager_getEvents(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo: tt.fields.projectRepo,
-				eventRepo:   tt.fields.eventRepo,
+				projectMvRepo: tt.fields.projectRepo,
+				eventRepo:     tt.fields.eventRepo,
 			}
 			got, err := em.getEvents(tt.args.project, tt.args.filter, tt.args.status, 1)
 			if (err != nil) != tt.wantErr {
@@ -765,7 +765,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
 
-	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
+	eventsDBMock := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
 	assert.Equal(t, "test-project", eventsDBMock.UpdateShipyardCalls()[0].ProjectName)
@@ -1310,7 +1310,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
@@ -1347,7 +1347,7 @@ func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
 		},
 	}
 
-	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
@@ -1377,9 +1377,9 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
-	eventsOperations.UpdateEventOfServiceFunc = func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+	eventsOperations.UpdateEventOfServiceFunc = func(e models.Event) error {
 		return errors.New("updating event of service failed")
 	}
 
@@ -1430,14 +1430,14 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 
 	assert.NotNil(t, err)
 
-	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
+	eventsDBMock := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	assert.Equal(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
 
 func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 	type fields struct {
-		projectRepo      db.ProjectRepo
+		projectRepo      db.ProjectMVRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
 	}
@@ -1548,7 +1548,7 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &shipyardController{
-				projectRepo:      tt.fields.projectRepo,
+				projectMvRepo:    tt.fields.projectRepo,
 				eventRepo:        tt.fields.eventRepo,
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
@@ -2236,12 +2236,18 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		shipyardContent = testShipyardFile
 	}
 	em := &shipyardController{
-		projectRepo: &db_mock.ProjectRepoMock{
+		projectMvRepo: &db_mock.ProjectMVRepoMock{
 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 				return &models.ExpandedProject{
 					ProjectName: "test-project",
 					Shipyard:    shipyardContent,
 				}, nil
+			},
+			UpdateEventOfServiceFunc: func(e models.Event) error {
+				return nil
+			},
+			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
+				return nil
 			},
 		},
 		eventRepo: &db_mock.EventRepoMock{
@@ -2325,14 +2331,6 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 					newTaskSequenceCollection = append(newTaskSequenceCollection, taskSequenceCollection[index])
 				}
 				taskSequenceCollection = newTaskSequenceCollection
-				return nil
-			},
-		},
-		eventsDBOperations: &db_mock.EventsDbOperationsMock{
-			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
-				return nil
-			},
-			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
 				return nil
 			},
 		},
@@ -2421,7 +2419,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 	})
 
 	// invoke the CancelSequence function
-	err := sc.timeoutSequence(common.SequenceTimeout{
+	err := sc.timeoutSequence(models.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
 		LastEvent: models.Event{
 			Data: keptnv2.EventData{
@@ -2492,7 +2490,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	_ = sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", taskSequenceMapping)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceControl{
+	err := sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -2540,7 +2538,7 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	}, common.TriggeredEvent)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceControl{
+	err := sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -2589,7 +2587,7 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	}, common.TriggeredEvent)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceControl{
+	err := sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -2607,9 +2605,6 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 }
 
 func TestGetShipyardControllerInstance(t *testing.T) {
-	sequenceStartChannel := make(chan models.Event)
-	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
-	sequenceControlChannel := make(chan common.SequenceControl)
 	ctx, cancel := context.WithCancel(context.TODO())
 	sc := GetShipyardControllerInstance(
 		ctx,
@@ -2618,9 +2613,7 @@ func TestGetShipyardControllerInstance(t *testing.T) {
 			},
 		},
 		&fake.ISequenceDispatcherMock{},
-		sequenceStartChannel,
-		sequenceTimeoutChannel,
-		sequenceControlChannel,
+		make(chan models.SequenceTimeout),
 	)
 	require.NotNil(t, sc)
 	cancel()

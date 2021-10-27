@@ -6,9 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -323,8 +321,8 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 			return false
 		}, 15*time.Second, 2*time.Second)
 
-		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), operations.SequenceControlCommand{
-			State: common.AbortSequence,
+		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), scmodels.SequenceControlCommand{
+			State: scmodels.AbortSequence,
 			Stage: "",
 		}, 3)
 		require.Nil(t, err)

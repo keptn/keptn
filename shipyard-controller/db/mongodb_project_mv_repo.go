@@ -28,23 +28,45 @@ var ErrServiceNotFound = errors.New("service not found")
 // ErrOpenRemediationNotFound indicates that no open remediation has been found
 var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
-var instance *ProjectsMaterializedView
+var instance *MongoDBProjectMVRepo
 
 // EventsRetriever defines the interface for fetching events from the data store
 type EventsRetriever interface {
 	GetEvents(filter *goutils.EventFilter) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error)
 }
 
-type ProjectsMaterializedView struct {
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/projectmvrepo_mock.go . ProjectMVRepo
+type ProjectMVRepo interface {
+	CreateProject(prj *models.ExpandedProject) error
+	UpdateShipyard(projectName string, shipyardContent string) error
+	UpdateProject(prj *models.ExpandedProject) error
+	UpdateUpstreamInfo(projectName string, uri, user string) error
+	UpdatedShipyard(projectName string, shipyard string) error
+	DeleteUpstreamInfo(projectName string) error
+	GetProjects() ([]*models.ExpandedProject, error)
+	GetProject(projectName string) (*models.ExpandedProject, error)
+	DeleteProject(projectName string) error
+	CreateStage(project string, stage string) error
+	DeleteStage(project string, stage string) error
+	CreateService(project string, stage string, service string) error
+	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
+	DeleteService(project string, stage string, service string) error
+	UpdateEventOfService(e models.Event) error
+	CreateRemediation(project, stage, service string, remediation *models.Remediation) error
+	CloseOpenRemediations(project, stage, service, keptnContext string) error
+	OnSequenceTaskStarted(event models.Event)
+	OnSequenceTaskFinished(event models.Event)
+}
+
+type MongoDBProjectMVRepo struct {
 	ProjectRepo     ProjectRepo
 	EventsRetriever EventRepo
 }
 
 // GetProjectsMaterializedView returns the materialized view
-//TODO:
-func GetProjectsMaterializedView() *ProjectsMaterializedView {
+func GetProjectsMaterializedView() *MongoDBProjectMVRepo {
 	if instance == nil {
-		instance = &ProjectsMaterializedView{
+		instance = &MongoDBProjectMVRepo{
 			ProjectRepo:     NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()),
 			EventsRetriever: nil, //TODO
 		}
@@ -53,7 +75,7 @@ func GetProjectsMaterializedView() *ProjectsMaterializedView {
 }
 
 // CreateProject creates a project
-func (mv *ProjectsMaterializedView) CreateProject(prj *models.ExpandedProject) error {
+func (mv *MongoDBProjectMVRepo) CreateProject(prj *models.ExpandedProject) error {
 	existingProject, err := mv.GetProject(prj.ProjectName)
 	if existingProject != nil {
 		return nil
@@ -67,7 +89,7 @@ func (mv *ProjectsMaterializedView) CreateProject(prj *models.ExpandedProject) e
 }
 
 // UpdatedShipyard updates the shipyard of a project
-func (mv *ProjectsMaterializedView) UpdateShipyard(projectName string, shipyardContent string) error {
+func (mv *MongoDBProjectMVRepo) UpdateShipyard(projectName string, shipyardContent string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
 		return err
@@ -134,7 +156,7 @@ func getParentStages(stageName string, shipyard *keptnv2.Shipyard) []string {
 }
 
 // UpdateProject updates a project
-func (mv *ProjectsMaterializedView) UpdateProject(prj *models.ExpandedProject) error {
+func (mv *MongoDBProjectMVRepo) UpdateProject(prj *models.ExpandedProject) error {
 	return mv.ProjectRepo.UpdateProject(prj)
 }
 
@@ -158,7 +180,7 @@ func setShipyardVersion(existingProject *models.ExpandedProject) error {
 }
 
 // UpdateUpstreamInfo updates the Upstream Repository URL and git user of a project
-func (mv *ProjectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, user string) error {
+func (mv *MongoDBProjectMVRepo) UpdateUpstreamInfo(projectName string, uri, user string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
 		return err
@@ -177,7 +199,7 @@ func (mv *ProjectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	return nil
 }
 
-func (mv *ProjectsMaterializedView) UpdatedShipyard(projectName string, shipyard string) error {
+func (mv *MongoDBProjectMVRepo) UpdatedShipyard(projectName string, shipyard string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
 		return err
@@ -202,7 +224,7 @@ func (mv *ProjectsMaterializedView) UpdatedShipyard(projectName string, shipyard
 }
 
 // DeleteUpstreamInfo deletes the Upstream Repository URL and git user of a project
-func (mv *ProjectsMaterializedView) DeleteUpstreamInfo(projectName string) error {
+func (mv *MongoDBProjectMVRepo) DeleteUpstreamInfo(projectName string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
 		return err
@@ -220,7 +242,7 @@ func (mv *ProjectsMaterializedView) DeleteUpstreamInfo(projectName string) error
 }
 
 // GetProjects returns all projects
-func (mv *ProjectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
+func (mv *MongoDBProjectMVRepo) GetProjects() ([]*models.ExpandedProject, error) {
 	projects, err := mv.ProjectRepo.GetProjects()
 	if err != nil {
 		return nil, err
@@ -235,7 +257,7 @@ func (mv *ProjectsMaterializedView) GetProjects() ([]*models.ExpandedProject, er
 }
 
 // GetProject returns a project by its name
-func (mv *ProjectsMaterializedView) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (mv *MongoDBProjectMVRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
 	project, err := mv.ProjectRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -250,12 +272,12 @@ func (mv *ProjectsMaterializedView) GetProject(projectName string) (*models.Expa
 }
 
 // DeleteProject deletes a project
-func (mv *ProjectsMaterializedView) DeleteProject(projectName string) error {
+func (mv *MongoDBProjectMVRepo) DeleteProject(projectName string) error {
 	return mv.ProjectRepo.DeleteProject(projectName)
 }
 
 // CreateStage creates a stage
-func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) error {
+func (mv *MongoDBProjectMVRepo) CreateStage(project string, stage string) error {
 	log.Infof("Adding stage %s to project %s ", stage, project)
 	prj, err := mv.GetProject(project)
 
@@ -291,7 +313,7 @@ func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) er
 	return nil
 }
 
-func (mv *ProjectsMaterializedView) createProject(project *models.ExpandedProject) error {
+func (mv *MongoDBProjectMVRepo) createProject(project *models.ExpandedProject) error {
 
 	err := mv.ProjectRepo.CreateProject(project)
 	if err != nil {
@@ -302,7 +324,7 @@ func (mv *ProjectsMaterializedView) createProject(project *models.ExpandedProjec
 }
 
 // DeleteStage deletes a stage
-func (mv *ProjectsMaterializedView) DeleteStage(project string, stage string) error {
+func (mv *MongoDBProjectMVRepo) DeleteStage(project string, stage string) error {
 	log.Infof("Deleting stage %s from project %s", stage, project)
 	prj, err := mv.GetProject(project)
 
@@ -332,7 +354,7 @@ func (mv *ProjectsMaterializedView) DeleteStage(project string, stage string) er
 }
 
 // CreateService creates a service
-func (mv *ProjectsMaterializedView) CreateService(project string, stage string, service string) error {
+func (mv *MongoDBProjectMVRepo) CreateService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not add service %s to stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
@@ -365,7 +387,7 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 	return nil
 }
 
-func (mv *ProjectsMaterializedView) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
+func (mv *MongoDBProjectMVRepo) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
 	project, err := mv.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -388,7 +410,7 @@ func (mv *ProjectsMaterializedView) GetService(projectName, stageName, serviceNa
 }
 
 // DeleteService deletes a service
-func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, service string) error {
+func (mv *MongoDBProjectMVRepo) DeleteService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not delete service %s from stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
@@ -423,7 +445,7 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 }
 
 // UpdateEventOfService updates a service event
-func (mv *ProjectsMaterializedView) UpdateEventOfService(e models.Event) error {
+func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e models.Event) error {
 	if e.Type == nil {
 		return errors.New("event type must be set")
 	}
@@ -494,7 +516,7 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(e models.Event) error {
 }
 
 // CreateRemediation creates a remediation action
-func (mv *ProjectsMaterializedView) CreateRemediation(project, stage, service string, remediation *models.Remediation) error {
+func (mv *MongoDBProjectMVRepo) CreateRemediation(project, stage, service string, remediation *models.Remediation) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not create remediation for service %s in stage %s in project%s. Could not load project: %s", service, stage, project, err.Error())
@@ -512,7 +534,7 @@ func (mv *ProjectsMaterializedView) CreateRemediation(project, stage, service st
 }
 
 // CloseOpenRemediations closes a open remediation actions for a given keptnContext
-func (mv *ProjectsMaterializedView) CloseOpenRemediations(project, stage, service, keptnContext string) error {
+func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, keptnContext string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not close remediation for service %s in stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
@@ -548,21 +570,21 @@ func (mv *ProjectsMaterializedView) CloseOpenRemediations(project, stage, servic
 	return mv.ProjectRepo.UpdateProject(existingProject)
 }
 
-func (mv *ProjectsMaterializedView) OnSequenceTaskStarted(event models.Event) {
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskStarted(event models.Event) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
 		log.WithError(err).Errorf("could not update lastEvent property for task.started event")
 	}
 }
 
-func (mv *ProjectsMaterializedView) OnSequenceTaskFinished(event models.Event) {
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskFinished(event models.Event) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
 		log.WithError(err).Errorf("could not update lastEvent property for task.finished event")
 	}
 }
 
-func (mv *ProjectsMaterializedView) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]models.Event, error) {
+func (mv *MongoDBProjectMVRepo) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]models.Event, error) {
 	stage := eventData.GetStage()
 	service := eventData.GetService()
 	events, errObj := mv.EventsRetriever.GetEvents(eventData.GetProject(), common.EventFilter{

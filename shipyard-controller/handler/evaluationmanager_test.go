@@ -8,7 +8,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -16,13 +15,13 @@ import (
 func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 	type fields struct {
 		EventSender *keptnfake.EventSender
-		ServiceAPI  db.ServicesDbOperations
+		ServiceAPI  db.ProjectMVRepo
 	}
 	type args struct {
 		project string
 		stage   string
 		service string
-		params  *operations.CreateEvaluationParams
+		params  *models.CreateEvaluationParams
 	}
 	type eventTypeWithPayload struct {
 		eventType string
@@ -40,7 +39,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "everything ok - send evaluation.triggered event",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -48,7 +47,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00.000Z",
 					End:       "2020-01-02T16:00:00.000Z",
@@ -79,7 +78,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "invalid timeframe",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -87,7 +86,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2030-01-02T15:00:00.000Z",
 					End:       "2020-01-02T16:00:00.000Z",
@@ -108,7 +107,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 						},
 					},
 				},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -116,7 +115,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00.000Z",
 					End:       "2020-01-02T16:00:00.000Z",
@@ -131,7 +130,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/ timezone w/o millis",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -139,7 +138,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00Z",
 					End:       "2020-01-02T16:00:00Z",
@@ -154,7 +153,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/ timezone w/o millis",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -162,7 +161,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00Z",
 					End:       "2020-01-02T16:00:00Z",
@@ -177,7 +176,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/ timezone w/o millis w/ offset",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -185,7 +184,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00Z-0700",
 					End:       "2020-01-02T16:00:00Z-0700",
@@ -200,7 +199,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/o timezone w/o millis",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
 			},
@@ -208,7 +207,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00",
 					End:       "2020-01-02T16:00:00",

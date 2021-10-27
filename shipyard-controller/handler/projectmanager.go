@@ -10,7 +10,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"strconv"
@@ -24,15 +23,15 @@ const shipyardVersion = "spec.keptn.sh/0.2.0"
 type IProjectManager interface {
 	Get() ([]*models.ExpandedProject, error)
 	GetByName(projectName string) (*models.ExpandedProject, error)
-	Create(params *operations.CreateProjectParams) (error, common.RollbackFunc)
-	Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc)
+	Create(params *models.CreateProjectParams) (error, common.RollbackFunc)
+	Update(params *models.UpdateProjectParams) (error, common.RollbackFunc)
 	Delete(projectName string) (string, error)
 }
 
 type ProjectManager struct {
 	ConfigurationStore      common.ConfigurationStore
 	SecretStore             common.SecretStore
-	ProjectMaterializedView db.ProjectsDBOperations
+	ProjectMaterializedView db.ProjectMVRepo
 	TaskSequenceRepository  db.TaskSequenceRepo
 	EventRepository         db.EventRepo
 	SequenceQueueRepo       db.SequenceQueueRepo
@@ -46,7 +45,7 @@ var nilRollback = func() error {
 func NewProjectManager(
 	configurationStore common.ConfigurationStore,
 	secretStore common.SecretStore,
-	dbProjectsOperations db.ProjectsDBOperations,
+	projectMVrepo db.ProjectMVRepo,
 	taskSequenceRepo db.TaskSequenceRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
@@ -54,7 +53,7 @@ func NewProjectManager(
 	projectUpdater := &ProjectManager{
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
-		ProjectMaterializedView: dbProjectsOperations,
+		ProjectMaterializedView: projectMVrepo,
 		TaskSequenceRepository:  taskSequenceRepo,
 		EventRepository:         eventRepo,
 		SequenceQueueRepo:       sequenceQueueRepo,
@@ -82,7 +81,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 	return project, err
 }
 
-func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 
 	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
@@ -170,7 +169,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	return nil, nilRollback
 }
 
-func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 	// old secret for rollback
 	oldSecret, err := pm.getGITRepositorySecret(*params.Name)
 	if err != nil {
@@ -356,7 +355,7 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 	}
 }
 
-func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
+func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
 
 	var expandedStages []*models.ExpandedStage
 
