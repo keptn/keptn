@@ -8,7 +8,6 @@ import (
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -129,7 +128,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -159,7 +158,7 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -198,7 +197,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		Name: common.Stringp("my-project"),
 	}
 	err, rollback := instance.Create(params)
@@ -243,7 +242,7 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -301,7 +300,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMvRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -340,7 +339,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -408,7 +407,7 @@ func TestCreate(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.CreateProjectParams{
+	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -444,7 +443,7 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -474,7 +473,7 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -504,7 +503,7 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -538,7 +537,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 		return &models.ExpandedProject{}, nil
 	}
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -600,7 +599,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -678,7 +677,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -771,7 +770,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -876,7 +875,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -964,7 +963,7 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
@@ -1029,7 +1028,7 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	params := &operations.UpdateProjectParams{
+	params := &models.UpdateProjectParams{
 		GitRemoteURL: "",
 		GitToken:     "",
 		GitUser:      "",

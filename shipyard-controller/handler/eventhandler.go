@@ -6,7 +6,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
 
@@ -42,7 +41,7 @@ type NextTaskSequence struct {
 // @Router /event/triggered/{eventType} [get]
 func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	eventType := c.Param("eventType")
-	params := &operations.GetTriggeredEventsParams{}
+	params := &models.GetTriggeredEventsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,

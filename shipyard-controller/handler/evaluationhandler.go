@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
 
@@ -40,7 +39,7 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 	stage := c.Param("stage")
 	service := c.Param("service")
 
-	evaluation := &operations.CreateEvaluationParams{}
+	evaluation := &models.CreateEvaluationParams{}
 	if err := c.ShouldBindJSON(evaluation); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    http.StatusBadRequest,

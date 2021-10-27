@@ -13,6 +13,7 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -107,7 +108,7 @@ func main() {
 		clock.New(),
 	)
 
-	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
+	sequenceTimeoutChannel := make(chan models.SequenceTimeout)
 	shipyardController := handler.GetShipyardControllerInstance(
 		context.Background(),
 		eventDispatcher,

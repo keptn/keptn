@@ -11,7 +11,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 )
 
 const userFriendlyTimeFormat = "2006-01-02T15:04:05"
@@ -24,7 +23,7 @@ const (
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/evaluationmanager.go . IEvaluationManager
 type IEvaluationManager interface {
-	CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error)
+	CreateEvaluation(project, stage, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error)
 }
 
 type EvaluationManager struct {
@@ -39,7 +38,7 @@ func NewEvaluationManager(eventSender keptn.EventSender, projectMVRepo db.Projec
 	}, nil
 }
 
-func (em *EvaluationManager) CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
+func (em *EvaluationManager) CreateEvaluation(project, stage, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
 	_, err := em.projectMVRepo.GetService(project, stage, service)
 	if err != nil {
 		return nil, &models.Error{
@@ -74,7 +73,7 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 		}
 	}
 
-	eventContext := &operations.CreateEvaluationResponse{KeptnContext: keptnContext}
+	eventContext := &models.CreateEvaluationResponse{KeptnContext: keptnContext}
 
 	evaluationTriggeredEvent := keptnv2.EvaluationTriggeredEventData{
 		EventData: keptnv2.EventData{

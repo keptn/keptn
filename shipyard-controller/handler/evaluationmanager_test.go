@@ -8,7 +8,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -22,7 +21,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 		project string
 		stage   string
 		service string
-		params  *operations.CreateEvaluationParams
+		params  *models.CreateEvaluationParams
 	}
 	type eventTypeWithPayload struct {
 		eventType string
@@ -48,7 +47,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00.000Z",
 					End:       "2020-01-02T16:00:00.000Z",
@@ -87,7 +86,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2030-01-02T15:00:00.000Z",
 					End:       "2020-01-02T16:00:00.000Z",
@@ -116,7 +115,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00.000Z",
 					End:       "2020-01-02T16:00:00.000Z",
@@ -139,7 +138,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00Z",
 					End:       "2020-01-02T16:00:00Z",
@@ -162,7 +161,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00Z",
 					End:       "2020-01-02T16:00:00Z",
@@ -185,7 +184,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00Z-0700",
 					End:       "2020-01-02T16:00:00Z-0700",
@@ -208,7 +207,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				project: "test-project",
 				stage:   "test-stage",
 				service: "test-service",
-				params: &operations.CreateEvaluationParams{
+				params: &models.CreateEvaluationParams{
 					Labels:    map[string]string{"foo": "bar"},
 					Start:     "2020-01-02T15:00:00",
 					End:       "2020-01-02T16:00:00",

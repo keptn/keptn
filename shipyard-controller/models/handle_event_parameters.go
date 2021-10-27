@@ -1,8 +1,4 @@
-package operations
-
-import (
-	models "github.com/keptn/keptn/shipyard-controller/models"
-)
+package models
 
 // NewHandleEventParams creates a new HandleEventParams object
 // no default values defined in spec.
@@ -16,5 +12,5 @@ func NewHandleEventParams() HandleEventParams {
 //
 // swagger:parameters handle event
 type HandleEventParams struct {
-	models.Event
+	Event
 }

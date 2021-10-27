@@ -7,7 +7,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sort"
@@ -46,7 +45,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 	// validate the input
-	createServiceParams := &operations.CreateServiceParams{}
+	createServiceParams := &models.CreateServiceParams{}
 	if err := c.ShouldBindJSON(createServiceParams); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -80,7 +79,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		log.Errorf("could not send service.create.finished event: %s", err.Error())
 	}
 
-	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
+	c.JSON(http.StatusOK, &models.DeleteServiceResponse{})
 }
 
 // DeleteService godoc
@@ -128,7 +127,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 		log.Errorf("could not send service.delete.finished event: %s", err.Error())
 	}
 
-	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
+	c.JSON(http.StatusOK, &models.DeleteServiceResponse{})
 }
 
 // GetService godoc
@@ -182,7 +181,7 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	projectName := c.Param("project")
 	stageName := c.Param("stage")
 
-	params := &operations.GetServiceParams{}
+	params := &models.GetServiceParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -227,7 +226,7 @@ func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventS
 	}
 }
 
-func (sh *ServiceHandler) sendServiceCreateStartedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
+func (sh *ServiceHandler) sendServiceCreateStartedEvent(keptnContext string, projectName string, params *models.CreateServiceParams) error {
 	eventPayload := keptnv2.ServiceCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -243,7 +242,7 @@ func (sh *ServiceHandler) sendServiceCreateStartedEvent(keptnContext string, pro
 	return nil
 }
 
-func (sh *ServiceHandler) sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
+func (sh *ServiceHandler) sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName string, params *models.CreateServiceParams) error {
 	eventPayload := keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -259,7 +258,7 @@ func (sh *ServiceHandler) sendServiceCreateSuccessFinishedEvent(keptnContext str
 	return nil
 }
 
-func (sh *ServiceHandler) sendServiceCreateFailedFinishedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
+func (sh *ServiceHandler) sendServiceCreateFailedFinishedEvent(keptnContext string, projectName string, params *models.CreateServiceParams) error {
 	eventPayload := keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,

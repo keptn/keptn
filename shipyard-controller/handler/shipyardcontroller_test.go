@@ -2419,7 +2419,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 	})
 
 	// invoke the CancelSequence function
-	err := sc.timeoutSequence(common.SequenceTimeout{
+	err := sc.timeoutSequence(models.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
 		LastEvent: models.Event{
 			Data: keptnv2.EventData{
@@ -2490,7 +2490,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	_ = sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", taskSequenceMapping)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceControl{
+	err := sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -2538,7 +2538,7 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	}, common.TriggeredEvent)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceControl{
+	err := sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -2587,7 +2587,7 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	}, common.TriggeredEvent)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceControl{
+	err := sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -2613,7 +2613,7 @@ func TestGetShipyardControllerInstance(t *testing.T) {
 			},
 		},
 		&fake.ISequenceDispatcherMock{},
-		make(chan common.SequenceTimeout),
+		make(chan models.SequenceTimeout),
 	)
 	require.NotNil(t, sc)
 	cancel()

@@ -6,7 +6,6 @@ import (
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -17,7 +16,7 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
@@ -34,7 +33,7 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
@@ -67,7 +66,7 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
@@ -104,7 +103,7 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 
@@ -145,7 +144,7 @@ func TestCreateService(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore)
 
-	params := &operations.CreateServiceParams{
+	params := &models.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
 	}
 

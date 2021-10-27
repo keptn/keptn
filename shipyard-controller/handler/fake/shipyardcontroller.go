@@ -38,7 +38,7 @@ import (
 // 	}
 type IShipyardControllerMock struct {
 	// ControlSequenceFunc mocks the ControlSequence method.
-	ControlSequenceFunc func(controlSequence common.SequenceControl) error
+	ControlSequenceFunc func(controlSequence models.SequenceControl) error
 
 	// GetAllTriggeredEventsFunc mocks the GetAllTriggeredEvents method.
 	GetAllTriggeredEventsFunc func(filter common.EventFilter) ([]models.Event, error)
@@ -57,7 +57,7 @@ type IShipyardControllerMock struct {
 		// ControlSequence holds details about calls to the ControlSequence method.
 		ControlSequence []struct {
 			// ControlSequence is the controlSequence argument value.
-			ControlSequence common.SequenceControl
+			ControlSequence models.SequenceControl
 		}
 		// GetAllTriggeredEvents holds details about calls to the GetAllTriggeredEvents method.
 		GetAllTriggeredEvents []struct {
@@ -92,12 +92,12 @@ type IShipyardControllerMock struct {
 }
 
 // ControlSequence calls ControlSequenceFunc.
-func (mock *IShipyardControllerMock) ControlSequence(controlSequence common.SequenceControl) error {
+func (mock *IShipyardControllerMock) ControlSequence(controlSequence models.SequenceControl) error {
 	if mock.ControlSequenceFunc == nil {
 		panic("IShipyardControllerMock.ControlSequenceFunc: method is nil but IShipyardController.ControlSequence was just called")
 	}
 	callInfo := struct {
-		ControlSequence common.SequenceControl
+		ControlSequence models.SequenceControl
 	}{
 		ControlSequence: controlSequence,
 	}
@@ -111,10 +111,10 @@ func (mock *IShipyardControllerMock) ControlSequence(controlSequence common.Sequ
 // Check the length with:
 //     len(mockedIShipyardController.ControlSequenceCalls())
 func (mock *IShipyardControllerMock) ControlSequenceCalls() []struct {
-	ControlSequence common.SequenceControl
+	ControlSequence models.SequenceControl
 } {
 	var calls []struct {
-		ControlSequence common.SequenceControl
+		ControlSequence models.SequenceControl
 	}
 	mock.lockControlSequence.RLock()
 	calls = mock.calls.ControlSequence

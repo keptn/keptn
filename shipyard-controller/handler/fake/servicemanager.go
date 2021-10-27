@@ -5,7 +5,6 @@ package fake
 
 import (
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"sync"
 )
 
@@ -35,7 +34,7 @@ import (
 // 	}
 type IServiceManagerMock struct {
 	// CreateServiceFunc mocks the CreateService method.
-	CreateServiceFunc func(projectName string, params *operations.CreateServiceParams) error
+	CreateServiceFunc func(projectName string, params *models.CreateServiceParams) error
 
 	// DeleteServiceFunc mocks the DeleteService method.
 	DeleteServiceFunc func(projectName string, serviceName string) error
@@ -53,7 +52,7 @@ type IServiceManagerMock struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 			// Params is the params argument value.
-			Params *operations.CreateServiceParams
+			Params *models.CreateServiceParams
 		}
 		// DeleteService holds details about calls to the DeleteService method.
 		DeleteService []struct {
@@ -86,13 +85,13 @@ type IServiceManagerMock struct {
 }
 
 // CreateService calls CreateServiceFunc.
-func (mock *IServiceManagerMock) CreateService(projectName string, params *operations.CreateServiceParams) error {
+func (mock *IServiceManagerMock) CreateService(projectName string, params *models.CreateServiceParams) error {
 	if mock.CreateServiceFunc == nil {
 		panic("IServiceManagerMock.CreateServiceFunc: method is nil but IServiceManager.CreateService was just called")
 	}
 	callInfo := struct {
 		ProjectName string
-		Params      *operations.CreateServiceParams
+		Params      *models.CreateServiceParams
 	}{
 		ProjectName: projectName,
 		Params:      params,
@@ -108,11 +107,11 @@ func (mock *IServiceManagerMock) CreateService(projectName string, params *opera
 //     len(mockedIServiceManager.CreateServiceCalls())
 func (mock *IServiceManagerMock) CreateServiceCalls() []struct {
 	ProjectName string
-	Params      *operations.CreateServiceParams
+	Params      *models.CreateServiceParams
 } {
 	var calls []struct {
 		ProjectName string
-		Params      *operations.CreateServiceParams
+		Params      *models.CreateServiceParams
 	}
 	mock.lockCreateService.RLock()
 	calls = mock.calls.CreateService

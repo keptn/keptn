@@ -6,7 +6,6 @@ package fake
 import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	"sync"
 )
 
@@ -39,7 +38,7 @@ import (
 // 	}
 type IProjectManagerMock struct {
 	// CreateFunc mocks the Create method.
-	CreateFunc func(params *operations.CreateProjectParams) (error, common.RollbackFunc)
+	CreateFunc func(params *models.CreateProjectParams) (error, common.RollbackFunc)
 
 	// DeleteFunc mocks the Delete method.
 	DeleteFunc func(projectName string) (string, error)
@@ -51,14 +50,14 @@ type IProjectManagerMock struct {
 	GetByNameFunc func(projectName string) (*models.ExpandedProject, error)
 
 	// UpdateFunc mocks the Update method.
-	UpdateFunc func(params *operations.UpdateProjectParams) (error, common.RollbackFunc)
+	UpdateFunc func(params *models.UpdateProjectParams) (error, common.RollbackFunc)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// Create holds details about calls to the Create method.
 		Create []struct {
 			// Params is the params argument value.
-			Params *operations.CreateProjectParams
+			Params *models.CreateProjectParams
 		}
 		// Delete holds details about calls to the Delete method.
 		Delete []struct {
@@ -76,7 +75,7 @@ type IProjectManagerMock struct {
 		// Update holds details about calls to the Update method.
 		Update []struct {
 			// Params is the params argument value.
-			Params *operations.UpdateProjectParams
+			Params *models.UpdateProjectParams
 		}
 	}
 	lockCreate    sync.RWMutex
@@ -87,12 +86,12 @@ type IProjectManagerMock struct {
 }
 
 // Create calls CreateFunc.
-func (mock *IProjectManagerMock) Create(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
+func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 	if mock.CreateFunc == nil {
 		panic("IProjectManagerMock.CreateFunc: method is nil but IProjectManager.Create was just called")
 	}
 	callInfo := struct {
-		Params *operations.CreateProjectParams
+		Params *models.CreateProjectParams
 	}{
 		Params: params,
 	}
@@ -106,10 +105,10 @@ func (mock *IProjectManagerMock) Create(params *operations.CreateProjectParams) 
 // Check the length with:
 //     len(mockedIProjectManager.CreateCalls())
 func (mock *IProjectManagerMock) CreateCalls() []struct {
-	Params *operations.CreateProjectParams
+	Params *models.CreateProjectParams
 } {
 	var calls []struct {
-		Params *operations.CreateProjectParams
+		Params *models.CreateProjectParams
 	}
 	mock.lockCreate.RLock()
 	calls = mock.calls.Create
@@ -206,12 +205,12 @@ func (mock *IProjectManagerMock) GetByNameCalls() []struct {
 }
 
 // Update calls UpdateFunc.
-func (mock *IProjectManagerMock) Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
+func (mock *IProjectManagerMock) Update(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 	if mock.UpdateFunc == nil {
 		panic("IProjectManagerMock.UpdateFunc: method is nil but IProjectManager.Update was just called")
 	}
 	callInfo := struct {
-		Params *operations.UpdateProjectParams
+		Params *models.UpdateProjectParams
 	}{
 		Params: params,
 	}
@@ -225,10 +224,10 @@ func (mock *IProjectManagerMock) Update(params *operations.UpdateProjectParams) 
 // Check the length with:
 //     len(mockedIProjectManager.UpdateCalls())
 func (mock *IProjectManagerMock) UpdateCalls() []struct {
-	Params *operations.UpdateProjectParams
+	Params *models.UpdateProjectParams
 } {
 	var calls []struct {
-		Params *operations.UpdateProjectParams
+		Params *models.UpdateProjectParams
 	}
 	mock.lockUpdate.RLock()
 	calls = mock.calls.Update

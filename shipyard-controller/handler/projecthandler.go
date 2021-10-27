@@ -6,7 +6,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sort"
@@ -47,7 +46,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 
-	params := &operations.GetProjectParams{}
+	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -128,7 +127,7 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
-	createProjectParams := &operations.CreateProjectParams{}
+	createProjectParams := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(createProjectParams); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -182,7 +181,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	//validate the input
-	params := &operations.UpdateProjectParams{}
+	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
@@ -244,12 +243,12 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		log.Errorf("failed to send finished event: %s", err.Error())
 	}
 
-	c.JSON(http.StatusOK, operations.DeleteProjectResponse{
+	c.JSON(http.StatusOK, models.DeleteProjectResponse{
 		Message: responseMessage,
 	})
 }
 
-func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *models.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
@@ -260,7 +259,7 @@ func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, par
 
 }
 
-func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *models.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
@@ -278,7 +277,7 @@ func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext str
 	return ph.EventSender.SendEvent(ce)
 }
 
-func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *models.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,

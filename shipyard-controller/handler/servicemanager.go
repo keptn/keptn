@@ -6,7 +6,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,7 +15,7 @@ const (
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/servicemanager.go . IServiceManager
 type IServiceManager interface {
-	CreateService(projectName string, params *operations.CreateServiceParams) error
+	CreateService(projectName string, params *models.CreateServiceParams) error
 	DeleteService(projectName, serviceName string) error
 	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
 	GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error)
@@ -86,7 +85,7 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*mode
 	return nil, ErrStageNotFound
 }
 
-func (sm *serviceManager) CreateService(projectName string, params *operations.CreateServiceParams) error {
+func (sm *serviceManager) CreateService(projectName string, params *models.CreateServiceParams) error {
 	log.Infof("Received request to create service %s in project %s", *params.ServiceName, projectName)
 
 	// check service name length

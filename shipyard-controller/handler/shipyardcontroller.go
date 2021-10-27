@@ -28,7 +28,7 @@ type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
-	ControlSequence(controlSequence common.SequenceControl) error
+	ControlSequence(controlSequence models.SequenceControl) error
 	StartTaskSequence(event models.Event) error
 }
 
@@ -38,7 +38,7 @@ type shipyardController struct {
 	projectMvRepo              db.ProjectMVRepo
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
-	sequenceTimeoutChan        chan common.SequenceTimeout
+	sequenceTimeoutChan        chan models.SequenceTimeout
 	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
 	sequenceStartedHooks       []sequencehooks.ISequenceStartedHook
 	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
@@ -55,7 +55,7 @@ func GetShipyardControllerInstance(
 	ctx context.Context,
 	eventDispatcher IEventDispatcher,
 	sequenceDispatcher ISequenceDispatcher,
-	sequenceTimeoutChannel chan common.SequenceTimeout,
+	sequenceTimeoutChannel chan models.SequenceTimeout,
 ) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
@@ -195,7 +195,7 @@ func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
 	}
 }
 
-func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) error {
+func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
 	sequences, err := sc.taskSequenceRepo.GetTaskSequences(cancel.Project,
 		models.TaskSequenceEvent{
 			KeptnContext: cancel.KeptnContext,
@@ -249,7 +249,7 @@ func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent
 	return sc.completeTaskSequence(scope, taskSequenceName, sequenceTriggeredEvent.ID)
 }
 
-func (sc *shipyardController) cancelQueuedSequence(cancel common.SequenceControl) error {
+func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl) error {
 	// first, remove the sequence from the queue
 	err := sc.sequenceDispatcher.Remove(
 		models.EventScope{
@@ -291,7 +291,7 @@ func (sc *shipyardController) cancelQueuedSequence(cancel common.SequenceControl
 	return sc.forceTaskSequenceCompletion(&sequenceTriggeredEvent, sequenceName)
 }
 
-func (sc *shipyardController) timeoutSequence(timeout common.SequenceTimeout) error {
+func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) error {
 	log.Infof("sequence %s has been timed out", timeout.KeptnContext)
 	eventScope, err := models.NewEventScope(timeout.LastEvent)
 	if err != nil {
@@ -374,12 +374,12 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 	return nil
 }
 
-func (sc *shipyardController) ControlSequence(controlSequence common.SequenceControl) error {
+func (sc *shipyardController) ControlSequence(controlSequence models.SequenceControl) error {
 	switch controlSequence.State {
-	case common.AbortSequence:
+	case models.AbortSequence:
 		log.Info("Processing ABORT sequence control")
 		return sc.cancelSequence(controlSequence)
-	case common.PauseSequence:
+	case models.PauseSequence:
 		log.Info("Processing PAUSE sequence control")
 		sc.onSequencePaused(models.EventScope{
 			EventData: keptnv2.EventData{
@@ -388,7 +388,7 @@ func (sc *shipyardController) ControlSequence(controlSequence common.SequenceCon
 			},
 			KeptnContext: controlSequence.KeptnContext,
 		})
-	case common.ResumeSequence:
+	case models.ResumeSequence:
 		log.Info("Processing RESUME sequence control")
 		sc.onSequenceResumed(models.EventScope{
 			EventData: keptnv2.EventData{
