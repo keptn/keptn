@@ -178,7 +178,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
-	//validate the input
+	// validate the input
 	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")

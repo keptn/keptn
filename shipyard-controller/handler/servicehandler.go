@@ -209,9 +209,7 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	paginationInfo := common.Paginate(len(services), params.PageSize, params.NextPageKey)
 	totalCount := len(services)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, svc := range services[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			payload.Services = append(payload.Services, svc)
-		}
+		payload.Services = append(payload.Services, services[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
 	}
 	payload.TotalCount = float64(totalCount)
 	payload.NextPageKey = paginationInfo.NewNextPageKey

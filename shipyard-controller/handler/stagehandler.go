@@ -73,9 +73,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 	paginationInfo := common.Paginate(len(allStages), params.PageSize, params.NextPageKey)
 	totalCount := len(allStages)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, stg := range allStages[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			payload.Stages = append(payload.Stages, stg)
-		}
+		payload.Stages = append(payload.Stages, allStages[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
 	}
 
 	payload.TotalCount = float64(totalCount)
