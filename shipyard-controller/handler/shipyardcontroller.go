@@ -466,8 +466,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	// fetching cached shipyard file from project git repo
 	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
-		msg := "could not retrieve shipyard: " + err.Error()
-		log.Error(msg)
+		log.Errorf(could not retrieve shipyard: %v, err)
 
 		return sc.onTriggerSequenceFailed(event, eventScope, msg, taskSequenceName)
 	}
