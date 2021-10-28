@@ -67,7 +67,7 @@ env:
 
   APPROVAL_SVC_ARTIFACT: "approval-service"
   APPROVAL_SVC_FOLDER: "approval-service/"
-  APPROVAL_DOCKER_TEST_TARGET: "builder-test"
+  APPROVAL_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   DISTRIBUTOR_ARTIFACT: "distributor"
   DISTRIBUTOR_FOLDER: "distributor/"
@@ -87,7 +87,7 @@ env:
 
   REMEDIATION_SVC_ARTIFACT: "remediation-service"
   REMEDIATION_SVC_FOLDER: "remediation-service/"
-  REMEDIATION_DOCKER_TEST_TARGET: "builder-test"
+  REMEDIATION_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
   LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"

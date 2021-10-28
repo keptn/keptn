@@ -145,6 +145,10 @@ matrix_config="${matrix_config//'%'/'%25'}"
 matrix_config="${matrix_config//$'\n'/'%0A'}"
 matrix_config="${matrix_config//$'\r'/'%0D'}"
 
+echo "::group::Build Matrix"
+echo "$matrix_config"
+echo "::endgroup::"
+
 # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
 echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"
 echo "::set-output name=BUILD_CLI::$BUILD_CLI"
