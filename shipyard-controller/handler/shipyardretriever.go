@@ -67,6 +67,7 @@ func (sr *ShipyardRetriever) GetCachedShipyard(projectName string) (*keptnv2.Shi
 	if err != nil {
 		return nil, err
 	}
+
 	shipyard, err := common.UnmarshalShipyard(project.Shipyard)
 	if err != nil {
 		return nil, err
