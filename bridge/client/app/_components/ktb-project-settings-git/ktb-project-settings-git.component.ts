@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -6,7 +6,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
   templateUrl: './ktb-project-settings-git.component.html',
   styleUrls: ['./ktb-project-settings-git.component.scss'],
 })
-export class KtbProjectSettingsGitComponent implements OnInit {
+export class KtbProjectSettingsGitComponent implements OnInit, OnChanges {
   private originalGitData: GitData | undefined;
 
   @Input()
@@ -14,6 +14,9 @@ export class KtbProjectSettingsGitComponent implements OnInit {
 
   @Input()
   public isCreateMode = false;
+
+  @Input()
+  public isLoading?: boolean;
 
   @Input()
   set gitData(gitData: GitData) {
@@ -50,12 +53,26 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     }
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.isCreateMode && !!changes.isLoading?.currentValue) {
+      this.gitUrlControl.disable();
+      this.gitUserControl.disable();
+      this.gitTokenControl.disable();
+    } else {
+      this.gitUrlControl.enable();
+      this.gitUserControl.enable();
+      this.gitTokenControl.enable();
+    }
+  }
+
   public setGitUpstream(): void {
     this.gitUpstreamSubmit.emit({
       remoteURI: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
       gitToken: this.gitTokenControl.value,
     });
+    this.gitTokenControl.markAsUntouched();
+    this.gitTokenControl.markAsPristine();
   }
 
   public onGitUpstreamFormChange(): void {

@@ -29,7 +29,7 @@ const routes: Routes = [
   {
     path: 'create',
     component: ProjectBoardComponent,
-    children: [{ path: 'project', component: KtbProjectSettingsComponent, data: { isCreateMode: true } }],
+    children: [{ path: 'project', component: KtbProjectSettingsComponent }],
   },
   {
     path: 'project/:projectName',
@@ -57,7 +57,7 @@ const routes: Routes = [
         path: 'settings',
         component: KtbSettingsViewComponent,
         children: [
-          { path: 'project', component: KtbProjectSettingsComponent, data: { isCreateMode: false } },
+          { path: 'project', component: KtbProjectSettingsComponent },
           {
             path: 'services',
             component: KtbServiceSettingsComponent,

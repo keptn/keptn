@@ -288,6 +288,10 @@ export class DataService {
     return this.apiService.deleteProject(projectName);
   }
 
+  public loadPlainProject(projectName: string): Observable<Project> {
+    return this.apiService.getProject(projectName).pipe(map((project) => Project.fromJSON(project)));
+  }
+
   public loadProject(projectName: string): void {
     this.apiService
       .getProject(projectName)
@@ -320,14 +324,11 @@ export class DataService {
       );
   }
 
-  public loadProjects(): void {
-    this.apiService
-      .getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50)
-      .pipe(
-        map((result) => result.projects),
-        map((projects) => projects.map((project) => Project.fromJSON(project)))
-      )
-      .subscribe(
+  public loadProjects(): Observable<Project[]> {
+    const projects$ = this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
+      map((result) => result.projects),
+      map((projects) => projects.map((project) => Project.fromJSON(project))),
+      tap(
         (projects: Project[]) => {
           const existingProjects = this._projects.getValue();
           projects = projects.map((project) => {
@@ -337,12 +338,19 @@ export class DataService {
             }
             return project;
           });
-          this._projects.next(projects);
+          return projects;
         },
         () => {
-          this._projects.next([]);
+          return of([]);
         }
-      );
+      )
+    );
+
+    projects$.subscribe((projects) => {
+      this._projects.next(projects);
+    });
+
+    return projects$;
   }
 
   public loadOpenRemediations(project: Project): void {

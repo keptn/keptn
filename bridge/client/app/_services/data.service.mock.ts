@@ -33,12 +33,18 @@ export class DataServiceMock extends DataService {
     this._keptnInfo.next(KeptnInfo);
   }
 
-  public loadProjects(): void {
-    this._projects.next(Projects.map((project) => Project.fromJSON(project)));
+  public loadProjects(): Observable<Project[]> {
+    const projects = Projects.map((project) => Project.fromJSON(project));
+    this._projects.next(projects);
+    return of(projects);
   }
 
   public loadProject(projectName: string): void {
     this._projects.next([...Projects]);
+  }
+
+  public loadPlainProject(projectName: string): Observable<Project> {
+    return of(Projects[0]);
   }
 
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
@@ -68,6 +74,16 @@ export class DataServiceMock extends DataService {
       this.loadProjects();
     }
     return this._projects.pipe(map((projects) => projects?.find((project) => project.projectName === projectName)));
+  }
+
+  public createProject(
+    projectName: string,
+    shipyard: string,
+    gitRemoteUrl?: string,
+    gitToken?: string,
+    gitUser?: string
+  ): Observable<unknown> {
+    return of(undefined);
   }
 
   public deleteProject(projectName: string): Observable<Record<string, unknown>> {

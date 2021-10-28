@@ -12,9 +12,12 @@ describe('KtbProjectSettingsComponent', () => {
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
   const UNSAVED_DIALOG_STATE = 'unsaved';
   let dataService: DataService;
-  const routeDataSubject = new BehaviorSubject<{ isCreateMode: boolean }>({ isCreateMode: false });
+  let routeParamsSubject: BehaviorSubject<{ projectName: string } | Record<string, never>>;
 
   beforeEach(async () => {
+    routeParamsSubject = new BehaviorSubject<{ projectName: string } | Record<string, never>>({
+      projectName: 'sockshop',
+    });
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
@@ -22,8 +25,7 @@ describe('KtbProjectSettingsComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            params: of({ projectName: 'sockshop' }),
-            data: routeDataSubject.asObservable(),
+            params: routeParamsSubject.asObservable(),
             queryParams: of({}),
           },
         },
@@ -49,9 +51,9 @@ describe('KtbProjectSettingsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have create mode enabled when routed to route data contains {isCreateMode: true}', () => {
+  it('should have create mode enabled when projectName param is not set', () => {
     // given
-    routeDataSubject.next({ isCreateMode: true });
+    routeParamsSubject.next({});
     fixture.detectChanges();
 
     // then
@@ -60,12 +62,16 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should have a validation error if project name already exists in projects', async () => {
     // given
+    routeParamsSubject.next({});
     component.isCreateMode = true;
     fixture.detectChanges();
 
     // when
     await dataService.loadProjects();
+    fixture.detectChanges();
     component.projectNameControl.setValue('sockshop');
+    component.projectNameControl.updateValueAndValidity();
+    fixture.detectChanges();
 
     // then
     expect(component.projectNameControl.hasError('duplicate')).toBe(true);
@@ -73,14 +79,16 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should navigate to created project', async () => {
     // given
+    routeParamsSubject.next({});
     component.isCreateMode = true;
-    component.projectName = 'sockshop';
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['test content'], 'test1.yaml');
     fixture.detectChanges();
 
     // when
     const router = TestBed.inject(Router);
     const routeSpy = jest.spyOn(router, 'navigate');
-    await dataService.loadProjects();
+    await component.createProject();
 
     // then
     expect(routeSpy).toHaveBeenCalled();
@@ -104,20 +112,19 @@ describe('KtbProjectSettingsComponent', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it('should have create mode disabled when routed to route data contains {isCreateMode: false}', () => {
-    // given
-    routeDataSubject.next({ isCreateMode: false });
-    fixture.detectChanges();
-
+  it('should have create mode disabled when projectName param is set', () => {
+    routeParamsSubject.next({ projectName: 'sockshop' });
     expect(component.isCreateMode).toBe(false);
   });
 
   it('should set project name to projectName retrieved by route', () => {
+    routeParamsSubject.next({ projectName: 'sockshop' });
     expect(component.projectName).toEqual('sockshop');
   });
 
   it('should have an pattern validation error when project name does not match: first letter lowercase, only lowercase, numbers and hyphens allowed', () => {
     // given
+    routeParamsSubject.next({});
     component.isCreateMode = true;
     fixture.detectChanges();
 
@@ -159,16 +166,6 @@ describe('KtbProjectSettingsComponent', () => {
     // when
     const router = TestBed.inject(Router);
     const routeSpy = jest.spyOn(router, 'navigate');
-
-    dataService.loadProjects = jest.fn().mockImplementation(() => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      dataService._projects.next(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        dataService._projects.getValue().filter((project) => project.projectName !== 'sockshop')
-      );
-    });
     component.deleteProject('sockshop');
 
     // then
@@ -218,6 +215,7 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should not show a notification for unsaved changes when git data is changed in create mode', () => {
     // given
+    routeParamsSubject.next({});
     component.isCreateMode = true;
     fixture.detectChanges();
 
