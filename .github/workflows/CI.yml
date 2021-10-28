@@ -67,7 +67,7 @@ env:
 
   APPROVAL_SVC_ARTIFACT: "approval-service"
   APPROVAL_SVC_FOLDER: "approval-service/"
-  APPROVAL_DOCKER_TEST_TARGET: "builder-test"
+  APPROVAL_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   DISTRIBUTOR_ARTIFACT: "distributor"
   DISTRIBUTOR_FOLDER: "distributor/"
@@ -87,7 +87,7 @@ env:
 
   REMEDIATION_SVC_ARTIFACT: "remediation-service"
   REMEDIATION_SVC_FOLDER: "remediation-service/"
-  REMEDIATION_DOCKER_TEST_TARGET: "builder-test"
+  REMEDIATION_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
   LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
@@ -510,7 +510,7 @@ jobs:
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
-        uses: marocchino/sticky-pull-request-comment@v2.1.1
+        uses: marocchino/sticky-pull-request-comment@v2.2.0
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -670,7 +670,7 @@ jobs:
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
-        uses: marocchino/sticky-pull-request-comment@v2.1.1
+        uses: marocchino/sticky-pull-request-comment@v2.2.0
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -682,7 +682,7 @@ jobs:
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
-        uses: marocchino/sticky-pull-request-comment@v2.1.1
+        uses: marocchino/sticky-pull-request-comment@v2.2.0
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

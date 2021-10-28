@@ -110,6 +110,14 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     artifact_fullname="${artifact}_ARTIFACT"
     artifact_folder="${artifact}_FOLDER"
     should_build_artifact="BUILD_${artifact}"
+    docker_test_target="${artifact}_DOCKER_TEST_TARGET"
+    should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
+
+    if [ "${!should_push_image}" != "false" ]; then
+      should_push_image="true"
+    else
+      should_push_image="false"
+    fi
 
     if [[ "${!should_build_artifact}" != 'true' ]]; then
       echo "Adding unchanged artifact $artifact to build matrix since build everything was requested"
@@ -136,6 +144,10 @@ matrix_config="${matrix_config%,}]}"
 matrix_config="${matrix_config//'%'/'%25'}"
 matrix_config="${matrix_config//$'\n'/'%0A'}"
 matrix_config="${matrix_config//$'\r'/'%0D'}"
+
+echo "::group::Build Matrix"
+echo "$matrix_config"
+echo "::endgroup::"
 
 # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
 echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"

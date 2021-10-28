@@ -522,16 +522,6 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run Test_QualityGates -v
 
-      - name: Test Quality Gates Backwards compatibility
-        id: test_quality_gates_backwards_compatibility
-        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: test/test_quality_gates_backwards_compatibility.sh
-
       - name: Test Self Healing
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
@@ -715,7 +705,7 @@ jobs:
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
           # please check with headings in print_test_report task roughly 50 lines below
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -760,8 +750,8 @@ jobs:
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
           # please check with output in write_test_report task roughly 50 lines above
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | -------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
@@ -868,7 +858,7 @@ jobs:
         # Only run if not on master branch and we have a PR number
         # Also, only run in original repo and not on forks since the github token secret is not accessible in that case
         if: always() && github.event.inputs.branch != 'master' && steps.find_pr_for_build.outputs.number && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: marocchino/sticky-pull-request-comment@v2.1.1
+        uses: marocchino/sticky-pull-request-comment@v2.2.0
         with:
           path: integration-tests-failed.md
           recreate: true
