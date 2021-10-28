@@ -2,6 +2,8 @@ package events
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -44,25 +46,28 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 	}
 }
 
-func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
+func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 	if n.env.PubSubRecipient == "" {
-		logger.Warn("No pubsub recipient defined")
-		return
+		return errors.New("unable to start NatsEventReceiver: no pubsub recipient defined")
+	}
+
+	if err := n.natsConnectionHandler.Connect(); err != nil {
+		return fmt.Errorf("unable to Start NatsEventReceiver: %w", err)
 	}
 	n.natsConnectionHandler.messageHandler = n.handleMessage
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.GetPubSubTopics(), n.env.PubSubGroup)
 	if err != nil {
-		logger.Fatalf("Unable to subscribe to events: %v", err)
+		return fmt.Errorf("unable to subscribe to events: %w", err)
 	}
 
 	defer func() {
+		ctx.Wg.Done()
 		n.natsConnectionHandler.RemoveAllSubscriptions()
-		logger.Info("Disconnected from NATS")
+		logger.Info("Terminating NATS event receiver")
 	}()
 
 	<-ctx.Done()
-	logger.Info("Terminating NATS event receiver")
-	ctx.Wg.Done()
+	return nil
 }
 
 func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubscription) {

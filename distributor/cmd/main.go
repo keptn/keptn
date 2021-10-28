@@ -73,12 +73,16 @@ func _main(env config.EnvConfig) int {
 		logger.Info("Starting HTTP event poller")
 		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
 		uniformWatch.RegisterListener(httpEventPoller)
-		httpEventPoller.Start(executionContext)
+		if err := httpEventPoller.Start(executionContext); err != nil {
+			logger.Errorf("Unable to start HTTP event poller: %v", err)
+		}
 	} else {
 		logger.Info("Starting NATS event Receiver")
 		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
 		uniformWatch.RegisterListener(natsEventReceiver)
-		natsEventReceiver.Start(executionContext)
+		if err := natsEventReceiver.Start(executionContext); err != nil {
+			logger.Errorf("Unable to start NATS event receiver: %v", err)
+		}
 	}
 	executionContext.Wg.Wait()
 	return 0
@@ -150,7 +154,7 @@ func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.Uniform
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
 }
 
-func setupUniformWatch(controlPlane *controlplane.ControlPlane) *events.UniformWatch {
+func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {
 	return events.NewUniformWatch(controlPlane)
 }
 

@@ -42,10 +42,9 @@ func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *
 	}
 }
 
-func (p *Poller) Start(ctx *ExecutionContext) {
+func (p *Poller) Start(ctx *ExecutionContext) error {
 	if p.env.PubSubRecipient == "" {
-		logger.Error("No pubsub recipient defined")
-		return
+		return errors.New("unable to start NatsEventReceiver: no pubsub recipient defined")
 	}
 
 	eventEndpoint := p.env.GetHTTPPollingEndpoint()
@@ -63,7 +62,7 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 		case <-ctx.Done():
 			logger.Info("Terminating HTTP event poller")
 			ctx.Wg.Done()
-			return
+			return nil
 		}
 	}
 }

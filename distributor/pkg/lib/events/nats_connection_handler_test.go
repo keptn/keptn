@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"sync"
 	"testing"
 	"time"
 
@@ -26,9 +25,16 @@ func RunServerWithOptions(opts *server.Options) *server.Server {
 	return natsserver.RunServer(opts)
 }
 
+func TestUsingNatsConnectionHandlerWithoutConnectingToNATS(t *testing.T) {
+	nch := NewNatsConnectionHandler("1.2.3.4")
+	assert.NotNil(t, nch.RemoveAllSubscriptions())
+	assert.NotNil(t, nch.QueueSubscribeToTopics([]string{}, ""))
+	assert.NotNil(t, nch.SubscribeToTopics([]string{}))
+}
+
 func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
-	_, shutdown := RunServerOnPort(TEST_PORT)
-	defer shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 
@@ -40,6 +46,8 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 	nch.messageHandler = func(m *nats.Msg) {
 		messagesReceived <- 1
 	}
+	require.Nil(t, nch.Connect())
+
 	err := nch.SubscribeToTopics([]string{"test-topic"})
 	require.Nil(t, err)
 
@@ -79,8 +87,8 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 }
 
 func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
-	_, shutdown := RunServerOnPort(TEST_PORT)
-	defer shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 
@@ -95,7 +103,6 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 		Topics         []string
 		NatsURL        string
 		MessageHandler func(m *nats.Msg)
-		mux            sync.Mutex
 	}
 	tests := []struct {
 		name         string
@@ -106,8 +113,6 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 		{
 			name: "Connect with single topic",
 			fields: fields{
-				NatsConnection: nil,
-				Subscriptions:  nil,
 				Topics: []string{
 					"test-topic",
 				},
@@ -115,24 +120,8 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				MessageHandler: func(m *nats.Msg) {
 					messagesReceived <- 1
 				},
-				mux: sync.Mutex{},
 			},
 			wantErr:      false,
-			sendMessages: []string{"test-message"},
-		},
-		{
-			name: "Empty NATS URL",
-			fields: fields{
-				NatsConnection: nil,
-				Subscriptions:  nil,
-				Topics:         []string{},
-				NatsURL:        "",
-				MessageHandler: func(m *nats.Msg) {
-					messagesReceived <- 1
-				},
-				mux: sync.Mutex{},
-			},
-			wantErr:      true,
 			sendMessages: []string{"test-message"},
 		},
 	}
@@ -143,8 +132,8 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				subscriptions:  tt.fields.Subscriptions,
 				natsURL:        tt.fields.NatsURL,
 				messageHandler: tt.fields.MessageHandler,
-				mux:            tt.fields.mux,
 			}
+			require.Nil(t, nch.Connect())
 			err := nch.SubscribeToTopics(tt.fields.Topics)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SubscribeToTopics() error = %v, wantErr %v", err, tt.wantErr)
@@ -186,8 +175,8 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 }
 
 func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
-	_, shutdown := RunServerOnPort(TEST_PORT)
-	defer shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 	natsPublisher, _ := nats.Connect(natsURL)
 
@@ -202,6 +191,7 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 			firstSubscriber <- struct{}{}
 		},
 	}
+	require.Nil(t, nch1.Connect())
 	err := nch1.QueueSubscribeToTopics(topics, "a-group")
 	require.Nil(t, err)
 
@@ -213,6 +203,7 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 			secondSubscriber <- struct{}{}
 		},
 	}
+	require.Nil(t, nch2.Connect())
 	err = nch2.QueueSubscribeToTopics(topics, "a-group")
 	require.Nil(t, err)
 
@@ -237,5 +228,4 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 	}
 	// assert that only one of the two subscriber has processed/received a message
 	assert.Equal(t, 1, totalNumberOfDeliveries)
-
 }
