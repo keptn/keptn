@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -32,29 +31,29 @@ func NewShipyardRetriever(configurationStore common.ConfigurationStore, projectR
 func (sr *ShipyardRetriever) GetShipyard(projectName string) (*keptnv2.Shipyard, error) {
 	resource, err := sr.configurationStore.GetProjectResource(projectName, "shipyard.yaml")
 	if err != nil {
-		return nil, errors.New("Could not retrieve shipyard.yaml for project " + projectName + ": " + err.Error())
+		return nil, fmt.Errorf("could not retrieve shipyard.yaml for project %s: %w", projectName, err)
 	}
 
 	shipyard, err := common.UnmarshalShipyard(resource.ResourceContent)
 	if err != nil {
-		return nil, errors.New("Could not unmarshal shipyard.yaml of project " + projectName + ": " + err.Error())
+		return nil, fmt.Errorf("could not unmarshal shipyard.yaml of project %s: %w", projectName, err)
 	}
 
 	// update the shipyard content of the project
 	shipyardContent, err := yaml.Marshal(shipyard)
 	if err != nil {
 		// log the error but continue
-		log.Errorf("could not encode shipyard file of project %s: %s", projectName, err.Error())
+		log.Errorf("could not encode shipyard file of project %s: %v", projectName, err)
 	}
 	if err := sr.projectRepo.UpdateShipyard(projectName, string(shipyardContent)); err != nil {
 		// log the error but continue
-		log.Errorf("could not update shipyard content of project %s: %s", projectName, err.Error())
+		log.Errorf("could not update shipyard content of project %s: %v", projectName, err)
 	}
 
 	// validate the shipyard version - only shipyard files following the current keptn spec are supported by the shipyard controller
 	if err = common.ValidateShipyardVersion(shipyard); err != nil {
 		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
-		return nil, fmt.Errorf("invalid shipyard version: %s", err.Error())
+		return nil, fmt.Errorf("invalid shipyard version: %w", err)
 	}
 
 	return shipyard, nil
