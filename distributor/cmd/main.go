@@ -73,12 +73,12 @@ func _main(env config.EnvConfig) int {
 		logger.Info("Starting HTTP event poller")
 		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
 		uniformWatch.RegisterListener(httpEventPoller)
-		go httpEventPoller.Start(executionContext)
+		httpEventPoller.Start(executionContext)
 	} else {
 		logger.Info("Starting NATS event Receiver")
 		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
 		uniformWatch.RegisterListener(natsEventReceiver)
-		go natsEventReceiver.Start(executionContext)
+		natsEventReceiver.Start(executionContext)
 	}
 	executionContext.Wg.Wait()
 	return 0
