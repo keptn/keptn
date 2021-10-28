@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+const task1TriggerEvent = `{"data": {"project" : "my-project","stage" : "stage1","service" : "service"},"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b","source": "shipyard-controller","specversion": "1.0","type": "sh.keptn.event.task.triggered","shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"}`
+const task2TriggerEvent = `{"data": {"project" : "sockshop","stage" : "dev","service" : "service"},"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b","source": "shipyard-controller","specversion": "1.0","type": "sh.keptn.event.task2.triggered","shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fc"}`
+
 func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 	_, shutdownNats := RunServerOnPort(TEST_PORT)
@@ -21,10 +24,9 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 
 	eventSender := &keptnv2.TestSender{}
 	config := config.EnvConfig{
-		PubSubRecipient:     "http://127.0.0.1",
-		PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
-		PubSubURL:           natsURL,
-		HTTPPollingInterval: "1",
+		PubSubRecipient: "http://127.0.0.1",
+		PubSubTopic:     "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
+		PubSubURL:       natsURL,
 	}
 	receiver := NewNATSEventReceiver(config, eventSender)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
@@ -48,31 +50,9 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 		},
 	})
 	time.Sleep(5 * time.Second)
-	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
-					"data": {
-						"project" : "sockshop",
-                        "stage" : "dev",
-						"service" : "service"
-					},
-					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
-					"source": "shipyard-controller",
-					"specversion": "1.0",
-					"type": "sh.keptn.event.task.triggered",
-					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
-				}`))
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 	time.Sleep(100 * time.Millisecond)
-	natsPublisher.Publish("sh.keptn.event.task2.triggered", []byte(`{
-					"data": {
-						"project" : "sockshop",
-                        "stage" : "dev",
-						"service" : "service"
-					},
-					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
-					"source": "shipyard-controller",
-					"specversion": "1.0",
-					"type": "sh.keptn.event.task2.triggered",
-					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fc"
-				}`))
+	natsPublisher.Publish("sh.keptn.event.task2.triggered", []byte(task2TriggerEvent))
 
 	assert.Eventually(t, func() bool {
 		if len(eventSender.SentEvents) != 2 {
@@ -105,10 +85,9 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 
 	eventSender := &keptnv2.TestSender{}
 	config := config.EnvConfig{
-		PubSubRecipient:     "http://127.0.0.1",
-		PubSubTopic:         "sh.keptn.event.task.triggered",
-		PubSubURL:           natsURL,
-		HTTPPollingInterval: "1",
+		PubSubRecipient: "http://127.0.0.1",
+		PubSubTopic:     "sh.keptn.event.task.triggered",
+		PubSubURL:       natsURL,
 	}
 	receiver := NewNATSEventReceiver(config, eventSender)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
@@ -139,18 +118,7 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 	})
 	time.Sleep(5 * time.Second)
 	// send an event that matches both subscriptions
-	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
-					"data": {
-						"project" : "my-project",
-                        "stage" : "stage1",
-						"service" : "service"
-					},
-					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
-					"source": "shipyard-controller",
-					"specversion": "1.0",
-					"type": "sh.keptn.event.task.triggered",
-					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
-				}`))
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 
 	assert.Eventually(t, func() bool {
 		if len(eventSender.SentEvents) != 2 {
@@ -238,18 +206,7 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 		return natsPublisher.IsConnected()
 	}, time.Second*time.Duration(15), time.Second)
 
-	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
-					"data": {
-						"project" : "sockshop",
-                       "stage" : "dev",
-						"service" : "service"
-					},
-					"id": "id1",
-					"source": "shipyard-controller",
-					"specversion": "1.0",
-					"type": "sh.keptn.event.task.triggered",
-					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
-				}`))
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 
 	assert.Eventually(t, func() bool {
 		return len(eventSender.SentEvents) == 1
@@ -267,10 +224,9 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 
 	eventSender := &keptnv2.TestSender{}
 	config := config.EnvConfig{
-		PubSubRecipient:     "http://127.0.0.1",
-		PubSubTopic:         "sh.keptn.event.task.triggered",
-		PubSubURL:           natsURL,
-		HTTPPollingInterval: "1",
+		PubSubRecipient: "http://127.0.0.1",
+		PubSubTopic:     "sh.keptn.event.task.triggered",
+		PubSubURL:       natsURL,
 	}
 	receiver := NewNATSEventReceiver(config, eventSender)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
@@ -287,7 +243,7 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 			Event: "sh.keptn.event.task.triggered",
 			Filter: models.EventSubscriptionFilter{
 				Projects: []string{"my-project"},
-				Stages:   []string{"stage1"},
+				Stages:   []string{"stage0"},
 			},
 		},
 		{
@@ -295,24 +251,13 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 			Event: "sh.keptn.event.task.triggered",
 			Filter: models.EventSubscriptionFilter{
 				Projects: []string{"my-project"},
-				Stages:   []string{"stage1", "stage2"},
+				Stages:   []string{"stage0", "stage1"},
 			},
 		},
 	})
 	time.Sleep(5 * time.Second)
 	// send an event that matches both subscriptions
-	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
-					"data": {
-						"project" : "my-project",
-                        "stage" : "stage2",
-						"service" : "service"
-					},
-					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
-					"source": "shipyard-controller",
-					"specversion": "1.0",
-					"type": "sh.keptn.event.task.triggered",
-					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
-				}`))
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 
 	assert.Eventually(t, func() bool {
 		if len(eventSender.SentEvents) != 1 {
