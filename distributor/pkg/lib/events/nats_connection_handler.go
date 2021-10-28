@@ -2,6 +2,7 @@ package events
 
 import (
 	"errors"
+	"fmt"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
@@ -49,18 +50,13 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 	}
 
 	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
+		logger.Infof("(Re)connecting to NATS server at %s", nch.natsURL)
 		var err error
-		nch.RemoveAllSubscriptions()
-
-		nch.natsConnection.Close()
-		logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
 		nch.natsConnection, err = nats.Connect(nch.natsURL)
-
 		if err != nil {
-			return errors.New("failed to create NATS connection: " + err.Error())
+			return fmt.Errorf("failed to create NATS connection: %w", err)
 		}
 	}
-
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
 		nch.RemoveAllSubscriptions()
 		nch.topics = topics

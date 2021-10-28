@@ -14,7 +14,6 @@ import (
 )
 
 func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
-	fmt.Println("BEGIN")
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 	natsServer := RunServerOnPort(TEST_PORT)
 	defer natsServer.Shutdown()
@@ -171,6 +170,89 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 
 		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2"
 	}, time.Second*time.Duration(5), time.Second)
+
+	cancelReceiver()
+	executionContext.Wg.Wait()
+}
+
+func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	eventSender := &keptnv2.TestSender{}
+	config := config.EnvConfig{
+		PubSubRecipient: "http://127.0.0.1",
+		PubSubTopic:     "sh.keptn.event.task.triggered",
+		PubSubURL:       natsURL,
+	}
+	receiver := NewNATSEventReceiver(config, eventSender)
+	ctx, cancelReceiver := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go receiver.Start(executionContext)
+
+	// make sure the message handler of the receiver is set before continuing with the test
+	require.Eventually(t, func() bool {
+		return receiver.natsConnectionHandler.messageHandler != nil
+	}, 5*time.Second, time.Second)
+
+	receiver.UpdateSubscriptions([]models.EventSubscription{
+		{
+			ID:    "id1",
+			Event: "sh.keptn.event.task.triggered",
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{"my-project"},
+				Stages:   []string{"stage1"},
+			},
+		},
+	})
+
+	natsServer.Shutdown()
+	natsServer.WaitForShutdown()
+	fmt.Println("NATS SHUT DOWN")
+	receiver.UpdateSubscriptions([]models.EventSubscription{
+		{
+			ID:    "id1",
+			Event: "sh.keptn.event.task.triggered",
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{"my-project"},
+				Stages:   []string{"stage1"},
+			},
+		},
+	})
+	RunServerOnPort(TEST_PORT)
+	receiver.UpdateSubscriptions([]models.EventSubscription{
+		{
+			ID:    "id1",
+			Event: "sh.keptn.event.task.triggered",
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{"my-project"},
+				Stages:   []string{"stage1"},
+			},
+		},
+	})
+
+	require.Eventually(t, func() bool {
+		return natsPublisher.IsConnected()
+	}, time.Second*time.Duration(15), time.Second)
+
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
+					"data": {
+						"project" : "sockshop",
+                        "stage" : "dev",
+						"service" : "service"
+					},
+					"id": "id1",
+					"source": "shipyard-controller",
+					"specversion": "1.0",
+					"type": "sh.keptn.event.task.triggered",
+					"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
+				}`))
+
+	assert.Eventually(t, func() bool {
+		return len(eventSender.SentEvents) == 1
+	}, time.Second*time.Duration(15), time.Second)
 
 	cancelReceiver()
 	executionContext.Wg.Wait()

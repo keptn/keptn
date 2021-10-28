@@ -2,7 +2,6 @@ package events
 
 import (
 	"context"
-	"os"
 	"sync"
 	"time"
 
@@ -52,10 +51,8 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 	}
 	n.natsConnectionHandler.messageHandler = n.handleMessage
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.GetPubSubTopics(), n.env.PubSubGroup)
-
 	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
+		logger.Fatalf("Unable to subscribe to events: %v", err)
 	}
 
 	defer func() {
@@ -70,7 +67,7 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 
 func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubscription) {
 	n.currentSubscriptions = subscriptions
-	var topics []string
+	topics := []string{}
 	for _, s := range subscriptions {
 		topics = append(topics, s.Event)
 	}
@@ -103,6 +100,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 
 		if len(subscriptions) > 0 {
 			err = n.sendEventForSubscriptions(subscriptions, keptnEvent, err)
+			logger.Errorf("Could not send CloudEvent: %v", err)
 		} else {
 			// forward keptn event
 			err = n.sendEvent(keptnEvent, nil)
@@ -110,7 +108,6 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
 		}
-
 	}()
 }
 
