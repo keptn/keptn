@@ -24,12 +24,14 @@ type IServiceManager interface {
 type serviceManager struct {
 	projectMVRepo      db.ProjectMVRepo
 	configurationStore common.ConfigurationStore
+	uniformRepo        db.UniformRepo
 }
 
-func NewServiceManager(servicesDBOperations db.ProjectMVRepo, configurationStore common.ConfigurationStore) *serviceManager {
+func NewServiceManager(servicesDBOperations db.ProjectMVRepo, configurationStore common.ConfigurationStore, uniformRepo db.UniformRepo) *serviceManager {
 	return &serviceManager{
 		projectMVRepo:      servicesDBOperations,
 		configurationStore: configurationStore,
+		uniformRepo:        uniformRepo,
 	}
 }
 
