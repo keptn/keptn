@@ -13,10 +13,9 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
 	"reflect"
 	"testing"
-	time "time"
+	"time"
 )
 
 const testShipyardResourceWithInvalidVersion = `{
@@ -554,12 +553,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
 	done := false
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
@@ -764,12 +758,6 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
-
-	eventsDBMock := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
-
-	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
-	assert.Equal(t, "test-project", eventsDBMock.UpdateShipyardCalls()[0].ProjectName)
-	assert.NotEqual(t, "", eventsDBMock.UpdateShipyardCalls()[0].ShipyardContent)
 }
 
 // Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
@@ -780,12 +768,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
 	done := false
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
@@ -851,12 +834,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController("")
 
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
 	done := false
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -928,12 +906,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController("")
 
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
 	done := false
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -1051,12 +1024,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController("")
 
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
 	done := false
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -1132,12 +1100,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController("")
 
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
 	done := false
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -1216,12 +1179,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 func Test_shipyardController_Scenario5(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController("")
-
-	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
-	defer mockCS.Close()
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+	sc := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -1243,11 +1201,6 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 6 (duplicate tasks) with shipyard file %s", testShipyardFileWithDuplicateTasks)
 	sc := getTestShipyardController(testShipyardFileWithDuplicateTasks)
-
-	mockCS := fake.NewConfigurationService(testShipyardResourceWithDuplicateTasks)
-	defer mockCS.Close()
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -1304,39 +1257,6 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 	)
 }
 
-// Updating shipyard content fails -> event handling should still happen
-func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
-
-	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController("")
-
-	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
-
-	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
-		return errors.New("updating shipyard failed")
-	}
-
-	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
-	defer mockCS.Close()
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
-
-	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
-
-	// STEP 1
-	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
-	if err != nil {
-		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
-		return
-	}
-
-	require.Equal(t, 1, len(mockDispatcher.AddCalls()))
-	verifyEvent := mockDispatcher.AddCalls()[0].Event
-	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), verifyEvent.Event.Type())
-
-}
-
 func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
@@ -1352,11 +1272,6 @@ func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
 	}
-
-	mockCS := fake.NewConfigurationService(testShipyardResource)
-	defer mockCS.Close()
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockEventDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 	mockSequenceDispatcher := sc.sequenceDispatcher.(*fake.ISequenceDispatcherMock)
@@ -1375,18 +1290,13 @@ func Test_shipyardController_SequenceForUnavailableStage(t *testing.T) {
 func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController("")
+	sc := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	eventsOperations := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
 
 	eventsOperations.UpdateEventOfServiceFunc = func(e models.Event) error {
 		return errors.New("updating event of service failed")
 	}
-
-	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
-	defer mockCS.Close()
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -1411,11 +1321,6 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
-
-	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
-	defer mockCS.Close()
-
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	event := getArtifactDeliveryTriggeredEvent("dev")
 
@@ -2235,21 +2140,24 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	if shipyardContent == "" {
 		shipyardContent = testShipyardFile
 	}
-	em := &shipyardController{
-		projectMvRepo: &db_mock.ProjectMVRepoMock{
-			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
-				return &models.ExpandedProject{
-					ProjectName: "test-project",
-					Shipyard:    shipyardContent,
-				}, nil
-			},
-			UpdateEventOfServiceFunc: func(e models.Event) error {
-				return nil
-			},
-			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
-				return nil
-			},
+
+	projectMVRepo := &db_mock.ProjectMVRepoMock{
+		GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+			return &models.ExpandedProject{
+				ProjectName: "test-project",
+				Shipyard:    shipyardContent,
+			}, nil
 		},
+		UpdateEventOfServiceFunc: func(e models.Event) error {
+			return nil
+		},
+		UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
+			return nil
+		},
+	}
+
+	em := &shipyardController{
+		projectMvRepo: projectMVRepo,
 		eventRepo: &db_mock.EventRepoMock{
 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 				switch {
@@ -2340,6 +2248,14 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 			},
 			RunFunc: func(ctx context.Context) {
 
+			},
+		},
+		shipyardRetriever: &fake.IShipyardRetrieverMock{
+			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
+				return common.UnmarshalShipyard(shipyardContent)
+			},
+			GetCachedShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
+				return common.UnmarshalShipyard(shipyardContent)
 			},
 		},
 	}
@@ -2602,19 +2518,4 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-sequence-triggered-id")
 
 	require.Len(t, sequenceDispatcherMock.RemoveCalls(), 1)
-}
-
-func TestGetShipyardControllerInstance(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.TODO())
-	sc := GetShipyardControllerInstance(
-		ctx,
-		&fake.IEventDispatcherMock{
-			RunFunc: func(ctx context.Context) {
-			},
-		},
-		&fake.ISequenceDispatcherMock{},
-		make(chan models.SequenceTimeout),
-	)
-	require.NotNil(t, sc)
-	cancel()
 }
