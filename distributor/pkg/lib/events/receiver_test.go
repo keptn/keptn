@@ -15,8 +15,8 @@ import (
 
 func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnv2.TestSender{}
@@ -99,8 +99,8 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 
 func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T) {
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnv2.TestSender{}
@@ -177,8 +177,8 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 
 func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnv2.TestSender{}
@@ -208,9 +208,7 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 		},
 	})
 
-	natsServer.Shutdown()
-	natsServer.WaitForShutdown()
-	fmt.Println("NATS SHUT DOWN")
+	shutdownNats()
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
 			ID:    "id1",
@@ -221,7 +219,10 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 			},
 		},
 	})
-	RunServerOnPort(TEST_PORT)
+
+	_, shutdownNats = RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
+
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
 			ID:    "id1",
@@ -240,7 +241,7 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
 					"data": {
 						"project" : "sockshop",
-                        "stage" : "dev",
+                       "stage" : "dev",
 						"service" : "service"
 					},
 					"id": "id1",
@@ -260,8 +261,8 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 
 func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnv2.TestSender{}

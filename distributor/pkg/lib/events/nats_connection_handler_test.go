@@ -15,10 +15,11 @@ import (
 
 const TEST_PORT = 8369
 
-func RunServerOnPort(port int) *server.Server {
+func RunServerOnPort(port int) (*server.Server, func()) {
 	opts := natsserver.DefaultTestOptions
 	opts.Port = port
-	return RunServerWithOptions(&opts)
+	svr := RunServerWithOptions(&opts)
+	return svr, func() { svr.Shutdown() }
 }
 
 func RunServerWithOptions(opts *server.Options) *server.Server {
@@ -26,8 +27,8 @@ func RunServerWithOptions(opts *server.Options) *server.Server {
 }
 
 func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdown := RunServerOnPort(TEST_PORT)
+	defer shutdown()
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 
@@ -75,13 +76,11 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 	if count != 1 {
 		t.Error("SubscribeToTopics(): did not receive messages for subscribed topic")
 	}
-
 }
 
 func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
-
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdown := RunServerOnPort(TEST_PORT)
+	defer shutdown()
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 
@@ -187,8 +186,8 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 }
 
 func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
+	_, shutdown := RunServerOnPort(TEST_PORT)
+	defer shutdown()
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 	natsPublisher, _ := nats.Connect(natsURL)
 

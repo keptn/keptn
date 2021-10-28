@@ -38,8 +38,8 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	expectedReceivedMessageCount := 0
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	s := RunServerOnPort(TEST_PORT)
-	defer s.Shutdown()
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
 
 	envconfig.Process("", &config.Global)
 	config.Global.PubSubURL = natsURL
