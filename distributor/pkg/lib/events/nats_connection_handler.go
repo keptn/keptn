@@ -30,8 +30,18 @@ func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 // Connect will try to establish a connection to the NATS broker.
 // Note that this will automatically indefinitely handle reconnection attempts
 func (nch *NatsConnectionHandler) Connect() error {
+	disconnectLogger := func(con *nats.Conn, err error) {
+		if err != nil {
+			logger.Errorf("Disconnected from NATS due to an error: %v", err)
+		} else {
+			logger.Info("Disconnected from NATS")
+		}
+	}
+	reconnectLogger := func(*nats.Conn) {
+		logger.Info("Reconnected to NATS")
+	}
 	var err error
-	nch.natsConnection, err = nats.Connect(nch.natsURL, nats.MaxReconnects(-1))
+	nch.natsConnection, err = nats.Connect(nch.natsURL, nats.ReconnectHandler(reconnectLogger), nats.DisconnectErrHandler(disconnectLogger), nats.RetryOnFailedConnect(true), nats.MaxReconnects(-1))
 	if err != nil {
 		return fmt.Errorf("failed to create NATS connection: %w", err)
 	}
@@ -40,8 +50,8 @@ func (nch *NatsConnectionHandler) Connect() error {
 
 // RemoveAllSubscriptions removes all current subscriptions from the NATS handler
 func (nch *NatsConnectionHandler) RemoveAllSubscriptions() error {
-	if nch.natsConnection == nil {
-		return fmt.Errorf("unable to remove all subscriptions, because no connection to nats was established")
+	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
+		return fmt.Errorf("unable to remove all subscriptions, because not connected to NATS")
 	}
 	for _, sub := range nch.subscriptions {
 		_ = sub.Unsubscribe()
@@ -63,8 +73,8 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueGroup string) error {
 	nch.mux.Lock()
 	defer nch.mux.Unlock()
-	if nch.natsConnection == nil {
-		return errors.New("unable to remove all subscriptions, because no connection to nats was established")
+	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
+		return errors.New("unable to remove all subscriptions, because not connected to NATS")
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {

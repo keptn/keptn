@@ -78,7 +78,7 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubs
 	}
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(topics, n.env.PubSubGroup)
 	if err != nil {
-		logger.Errorf("Unable to subscribe to topics %v\nError: %v", topics, err)
+		logger.Errorf("Unable to subscribe to topics %v: %v", topics, err)
 	}
 }
 
