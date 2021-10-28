@@ -326,7 +326,7 @@ export class DataService {
 
   public loadProjects(): Observable<Project[]> {
     const projects$ = this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
-      map((result) => result.projects),
+      map((result) => (result ? result.projects : [])),
       map((projects) => projects.map((project) => Project.fromJSON(project))),
       tap(
         (projects: Project[]) => {
