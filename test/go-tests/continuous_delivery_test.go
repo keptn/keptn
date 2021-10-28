@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const onboardServiceShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
+const onboardServiceShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
 kind: "Shipyard"
 metadata:
   name: "shipyard-sockshop"
@@ -121,19 +121,12 @@ spec:
 
 func Test_ContinuousDelivery(t *testing.T) {
 
-	gitExamplesRepositoryURL := "https://github.com/keptn/examples"
-	gitExamplesBranchName := "master"
-	gitExampleRepositoryLocalDir, _ := CreateTmpDir()
-	keptnProjectName := "sockshop"
-	cartsServiceName := "carts"
-	cartsChartLocalDir := path.Join(gitExampleRepositoryLocalDir, "onboarding-carts", "carts")
-	cartsJmeterDir := path.Join(gitExampleRepositoryLocalDir, "onboarding-carts", "jmeter")
-	cartsDBServiceName := "carts-db"
-	cartsDBChartLocalDir := path.Join(gitExampleRepositoryLocalDir, "onboarding-carts", "carts-db")
-
-	t.Logf("Cloning Keptn examples GIT repository %s from branch %s", gitExamplesRepositoryURL, gitExamplesBranchName)
-	_, err := ExecuteCommandf("git clone --branch %s %s --single-branch %s", gitExamplesBranchName, gitExamplesRepositoryURL, gitExampleRepositoryLocalDir)
-	require.Nil(t, err)
+	repoLocalDir := "../assets/podtato-head"
+	keptnProjectName := "podtato-head"
+	serviceName := "helloservice"
+	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
+	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
+	serviceHealthCheckEndpoint := "/metrics"
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(onboardServiceShipyard)
@@ -141,85 +134,110 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("Onboarding service %s in project %s with chart %s", cartsServiceName, keptnProjectName, cartsChartLocalDir)
-	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", cartsServiceName, keptnProjectName, cartsChartLocalDir)
+	t.Logf("Onboarding service %s in project %s with chart %s", serviceName, keptnProjectName, serviceChartLocalDir)
+	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
 	require.Nil(t, err)
 
-	t.Log("Adding functional test resources for jmeter")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, cartsServiceName, "dev", cartsJmeterDir+"/basiccheck.jmx", "jmeter/basiccheck.jmx")
+	t.Log("Adding jmeter config in staging")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
 	require.Nil(t, err)
 
-	t.Log("Adding performance test resources for jmeter")
-	// Note: in order to speed up the tests we use basiccheck also for performance test
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, cartsServiceName, "staging", cartsJmeterDir+"/basiccheck.jmx", "jmeter/basiccheck.jmx")
+	t.Log("Adding load test resources for jmeter in staging")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
 	require.Nil(t, err)
 
-	t.Logf("Onboarding service %s in project %s with chart %s", cartsDBServiceName, keptnProjectName, cartsDBChartLocalDir)
-	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", cartsDBServiceName, keptnProjectName, cartsDBChartLocalDir)
+	///////////////////////////////////////
+	// Deploy v0.1.0
+	///////////////////////////////////////
+
+	t.Logf("Trigger delivery of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+
+	t.Log("Verify Direct delivery of helloservice in stage dev")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Logf("Trigger delivery of carts db")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=mongo:latest --sequence=delivery-direct", keptnProjectName, cartsDBServiceName)
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Logf("Trigger delivery of carts")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, cartsServiceName, "docker.io/keptnexamples/carts", "0.10.1", "delivery")
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify direct delivery of carts db in stage dev")
-	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "dev", "mongo", "latest")
+	t.Log("Verify network access to public URI of helloservice in stage staging")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Log("Verify Direct delivery of carts in stage dev")
-	err = VerifyDirectDeployment(cartsServiceName, keptnProjectName, "dev", "docker.io/keptnexamples/carts", "0.10.1")
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage prod-a")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "prod-a", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify network access to public URI of carts in stage dev")
-	cartPubURL, err := GetPublicURLOfService(cartsServiceName, keptnProjectName, "dev")
+	t.Log("Verify network access to public URI of helloservice in stage prod-a")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod-a")
 	require.Nil(t, err)
-	err = WaitForURL(cartPubURL+"/health", time.Minute)
-	require.Nil(t, err)
-
-	t.Log("Verify direct delivery of carts db in stage staging")
-	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "staging", "mongo", "latest")
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Log("Verify delivery of carts in stage staging")
-	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "staging", "docker.io/keptnexamples/carts", "0.10.1")
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage prod-b")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "prod-b", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify network access to public URI of carts in stage staging")
-	cartPubURL, err = GetPublicURLOfService(cartsServiceName, keptnProjectName, "staging")
+	t.Log("Verify network access to public URI of helloservice in stage prod-b")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod-b")
 	require.Nil(t, err)
-	err = WaitForURL(cartPubURL+"/health", time.Minute)
-	require.Nil(t, err)
-
-	t.Log("Verify direct delivery of carts db in stage prod-a")
-	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "prod-a", "mongo", "latest")
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Log("Verify delivery of carts in stage prod-a")
-	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "prod-a", "docker.io/keptnexamples/carts", "0.10.1")
+	///////////////////////////////////////
+	// Deploy v0.1.1
+	///////////////////////////////////////
+
+	t.Logf("Trigger delivery of helloservice:v0.1.1")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
 	require.Nil(t, err)
 
-	t.Log("Verify network access to public URI of carts in stage prod-a")
-	cartPubURL, err = GetPublicURLOfService(cartsServiceName, keptnProjectName, "prod-a")
-	require.Nil(t, err)
-	err = WaitForURL(cartPubURL+"/health", time.Minute)
+	t.Log("Verify Direct delivery of helloservice in stage dev")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
 	require.Nil(t, err)
 
-	t.Log("Verify direct delivery of carts db in stage prod-b")
-	err = VerifyDirectDeployment(cartsDBServiceName, keptnProjectName, "prod-b", "mongo", "latest")
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Log("Verify delivery of carts in stage prod-b")
-	err = VerifyBlueGreenDeployment(cartsServiceName, keptnProjectName, "prod-b", "docker.io/keptnexamples/carts", "0.10.1")
+	t.Log("Verify delivery of helloservice:v0.1.1 in stage staging")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
 	require.Nil(t, err)
 
-	t.Log("Verify network access to public URI of carts in stage prod-b")
-	cartPubURL, err = GetPublicURLOfService(cartsServiceName, keptnProjectName, "prod-b")
+	t.Log("Verify network access to public URI of helloservice in stage staging")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
 	require.Nil(t, err)
-	err = WaitForURL(cartPubURL+"/health", time.Minute)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
+	t.Log("Verify delivery of helloservice:v0.1.1 in stage prod-a")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "prod-a", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage prod-a")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod-a")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	require.Nil(t, err)
+
+	t.Log("Verify delivery of helloservice:v0.1.1 in stage prod-b")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "prod-b", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage prod-b")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod-b")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	require.Nil(t, err)
 }

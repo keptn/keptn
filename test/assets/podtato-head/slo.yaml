@@ -1,0 +1,26 @@
+---
+spec_version: '0.1.0'
+comparison:
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  aggregate_function: avg
+objectives:
+  - sli: http_response_time_seconds_main_page_sum
+    pass:
+      - criteria:
+          - "<=1"
+    warning:
+      - criteria:
+          - "<=0.5"
+  - sli: request_throughput
+    pass:
+      - criteria:
+          - "<=+100%"
+          - ">=-80%"
+  - sli: go_routines
+    pass:
+      - criteria:
+          - "<=100"
+total_score:
+  pass: "90%"
+  warning: "75%"
