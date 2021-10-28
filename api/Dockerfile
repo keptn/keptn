@@ -1,7 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.16.2-alpine as builder-base
-ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 
@@ -27,13 +26,13 @@ FROM builder-base as builder-test
 CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
+ARG version=develop
 ARG debugBuild
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-ENV REPLACE="version: ${version}"
-RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 
 
 # Build the command inside the container.
@@ -43,12 +42,14 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-ser
 
 
 FROM alpine:3.14 as production
+ARG version=develop
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn API" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0"
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.version="${version}"
 
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
