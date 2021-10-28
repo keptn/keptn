@@ -1,7 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.16.2-alpine as builder-base
-ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/configuration-service
 
@@ -23,13 +22,13 @@ RUN go mod download
 COPY . .
 
 FROM builder-base as builder-test
+ARG version=develop
 
 CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 
-ENV REPLACE="version: ${version}"
-RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
@@ -41,13 +40,14 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.14 as production
+ARG version=develop
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn Configuration Service" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0"
-
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.version="${version}"
 
 ENV env=production
 
