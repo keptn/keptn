@@ -291,7 +291,6 @@ func TestDeleteService(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
-	uniformRepo := &db_mock.UniformRepoMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{

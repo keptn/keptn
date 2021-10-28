@@ -6,7 +6,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/operations"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,14 +24,14 @@ type IServiceManager interface {
 type serviceManager struct {
 	projectMVRepo      db.ProjectMVRepo
 	configurationStore common.ConfigurationStore
-	uniformRepo          db.UniformRepo
+	uniformRepo        db.UniformRepo
 }
 
 func NewServiceManager(servicesDBOperations db.ProjectMVRepo, configurationStore common.ConfigurationStore, uniformRepo db.UniformRepo) *serviceManager {
 	return &serviceManager{
 		projectMVRepo:      servicesDBOperations,
 		configurationStore: configurationStore,
-		uniformRepo:          uniformRepo,
+		uniformRepo:        uniformRepo,
 	}
 }
 
