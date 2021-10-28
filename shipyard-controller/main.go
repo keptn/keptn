@@ -116,11 +116,17 @@ func main() {
 	)
 
 	sequenceTimeoutChannel := make(chan models.SequenceTimeout)
+
+	shipyardRetriever := handler.NewShipyardRetriever(
+		common.NewGitConfigurationStore(csEndpoint.String()),
+		projectsMV,
+	)
 	shipyardController := handler.GetShipyardControllerInstance(
 		context.Background(),
 		eventDispatcher,
 		sequenceDispatcher,
 		sequenceTimeoutChannel,
+		shipyardRetriever,
 	)
 	sequenceDispatcher.Run(context.Background(), shipyardController.StartTaskSequence)
 
