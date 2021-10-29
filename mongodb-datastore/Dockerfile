@@ -2,7 +2,6 @@
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
 FROM golang:1.16.2-alpine as builder-base
-ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
@@ -28,14 +27,13 @@ FROM builder-base as builder-test
 CMD go test -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
-
+ARG version=develop
 ARG debugBuild
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-ENV REPLACE="version: ${version}"
-RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
@@ -44,12 +42,14 @@ RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=e
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.14 as production
+ARG version=develop
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn MongoDB Datastore" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0"
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.version="${version}"
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat

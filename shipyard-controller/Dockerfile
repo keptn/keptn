@@ -1,7 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.16.2-alpine as builder-base
-ARG version=develop
 
 # install additional dependencies
 RUN apk add --no-cache gcc libc-dev git
@@ -27,7 +26,6 @@ RUN go mod download
 COPY . .
 
 FROM golang:1.16.2 as builder-test
-ARG version=develop
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
@@ -55,8 +53,7 @@ COPY . .
 CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
-
-ENV REPLACE="version: ${version}"
+ARG version=develop
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
@@ -67,7 +64,7 @@ RUN GOOS=linux swag init --parseDependency
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 # replace version "develop" with actual version
-RUN sed -i "s/version: develop/${REPLACE}/g" docs/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
@@ -76,12 +73,14 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.14 as production
+ARG version=develop
 LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.url = "https://keptn.sh" \
     org.opencontainers.image.title="Keptn Shipyard Controller" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0"
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.version="${version}"
 
 
 ENV env=production
