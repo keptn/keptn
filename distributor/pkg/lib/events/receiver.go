@@ -102,21 +102,20 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 
 		// determine subscription for the received message
 		subscriptions := n.getSubscriptionsFromReceivedMessage(m, *cloudEvent)
-
 		if len(subscriptions) > 0 {
-			err = n.sendEventForSubscriptions(subscriptions, keptnEvent, err)
-			logger.Errorf("Could not send CloudEvent: %v", err)
+			if err := n.sendEventForSubscriptions(subscriptions, keptnEvent); err != nil {
+				logger.Errorf("Could not send CloudEvent: %v", err)
+			}
 		} else {
 			// forward keptn event
-			err = n.sendEvent(keptnEvent, nil)
-			if err != nil {
+			if err := n.sendEvent(keptnEvent, nil); err != nil {
 				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
 		}
 	}()
 }
 
-func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.EventSubscription, keptnEvent models.KeptnContextExtendedCE, err error) error {
+func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.EventSubscription, keptnEvent models.KeptnContextExtendedCE) error {
 	for i, subscription := range subscriptions {
 		// check if the event with the given ID has already been sent for the subscription
 		if n.ceCache.Contains(subscription.ID, keptnEvent.ID) {
@@ -140,12 +139,9 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 			logger.WithError(err).Error("Unable to add temporary information about subscriptions to event")
 		}
 		// forward keptn event
-		err = n.sendEvent(keptnEvent, &subscriptions[i])
-		if err != nil {
-			logger.Errorf("Could not send CloudEvent: %v", err)
-		}
+		return n.sendEvent(keptnEvent, &subscriptions[i])
 	}
-	return err
+	return nil
 }
 
 func (n *NATSEventReceiver) getSubscriptionsFromReceivedMessage(m *nats.Msg, event cloudevents.Event) []models.EventSubscription {
@@ -182,7 +178,5 @@ func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscript
 		logger.WithError(err).Error("Unable to send event")
 		return err
 	}
-
-	logger.Infof("sent event %s", event.ID())
 	return nil
 }
