@@ -5,8 +5,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 5
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -16,8 +14,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -27,8 +23,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -38,8 +32,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -49,8 +41,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -60,8 +50,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -71,8 +59,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -82,8 +68,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -93,8 +77,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -104,8 +86,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -115,8 +95,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -126,8 +104,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -137,8 +113,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -148,8 +122,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -159,8 +131,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -170,8 +140,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -187,6 +155,15 @@ updates:
 
   - package-ecosystem: npm
     directory: "/bridge/server"
+    schedule:
+      interval: weekly
+      day: "wednesday"
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: gomod
+    directory: "/webhook-service"
     schedule:
       interval: weekly
       day: "wednesday"
