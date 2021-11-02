@@ -1,7 +1,7 @@
 import { EventTypes } from '../interfaces/event-types';
 import { ResultTypes } from './result-types';
 import { IndicatorResult } from '../interfaces/indicator-result';
-import { SloConfig } from '../../client/app/_interfaces/slo-config';
+import { SloConfig } from '../interfaces/slo-config';
 
 export interface TraceData {
   project?: string;

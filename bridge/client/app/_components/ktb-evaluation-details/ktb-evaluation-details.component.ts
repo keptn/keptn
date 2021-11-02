@@ -27,7 +27,7 @@ import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
 import Yaml from 'yaml';
-import { SloConfig } from '../../_interfaces/slo-config';
+import { SloConfig } from '../../../../shared/interfaces/slo-config';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;

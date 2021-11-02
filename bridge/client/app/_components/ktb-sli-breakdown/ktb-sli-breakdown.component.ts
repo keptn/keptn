@@ -4,7 +4,7 @@ import { SliResult } from '../../_models/sli-result';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { AppUtils } from '../../_utils/app.utils';
-import { SloConfig } from '../../_interfaces/slo-config';
+import { SloConfig } from '../../../../shared/interfaces/slo-config';
 
 @Component({
   selector: 'ktb-sli-breakdown',
