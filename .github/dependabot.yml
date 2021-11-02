@@ -5,7 +5,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -15,7 +14,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -25,7 +23,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -35,7 +32,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -45,7 +41,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -55,7 +50,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -65,7 +59,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -75,7 +68,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -85,7 +77,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -95,7 +86,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -105,7 +95,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -115,7 +104,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -125,7 +113,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -135,7 +122,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -145,7 +131,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
@@ -155,7 +140,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    rebase-strategy: "disabled"
     commit-message:
       prefix: build
       include: scope
