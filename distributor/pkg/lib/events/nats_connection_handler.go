@@ -2,6 +2,7 @@ package events
 
 import (
 	"errors"
+	"fmt"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
@@ -17,6 +18,8 @@ type NatsConnectionHandler struct {
 	mux            sync.Mutex
 }
 
+// NewNatsConnectionHandler creates a new NATS connection handler to a NATS
+// broker at the gieven URL
 func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 	nch := &NatsConnectionHandler{
 		natsURL: natsURL,
@@ -24,12 +27,38 @@ func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 	return nch
 }
 
-func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
+// Connect will try to establish a connection to the NATS broker.
+// Note that this will automatically indefinitely handle reconnection attempts
+func (nch *NatsConnectionHandler) Connect() error {
+	disconnectLogger := func(con *nats.Conn, err error) {
+		if err != nil {
+			logger.Errorf("Disconnected from NATS due to an error: %v", err)
+		} else {
+			logger.Info("Disconnected from NATS")
+		}
+	}
+	reconnectLogger := func(*nats.Conn) {
+		logger.Info("Reconnected to NATS")
+	}
+	var err error
+	nch.natsConnection, err = nats.Connect(nch.natsURL, nats.ReconnectHandler(reconnectLogger), nats.DisconnectErrHandler(disconnectLogger), nats.RetryOnFailedConnect(true), nats.MaxReconnects(-1))
+	if err != nil {
+		return fmt.Errorf("failed to create NATS connection: %w", err)
+	}
+	return nil
+}
+
+// RemoveAllSubscriptions removes all current subscriptions from the NATS handler
+func (nch *NatsConnectionHandler) RemoveAllSubscriptions() error {
+	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
+		return fmt.Errorf("unable to remove all subscriptions, because not connected to NATS")
+	}
 	for _, sub := range nch.subscriptions {
 		_ = sub.Unsubscribe()
 		logger.Infof("Unsubscribed from NATS topic: %s", sub.Subject)
 	}
 	nch.subscriptions = nch.subscriptions[:0]
+	return nil
 }
 
 // SubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
@@ -44,21 +73,8 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueGroup string) error {
 	nch.mux.Lock()
 	defer nch.mux.Unlock()
-	if nch.natsURL == "" {
-		return errors.New("no PubSub URL defined")
-	}
-
 	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
-		var err error
-		nch.RemoveAllSubscriptions()
-
-		nch.natsConnection.Close()
-		logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
-		nch.natsConnection, err = nats.Connect(nch.natsURL)
-
-		if err != nil {
-			return errors.New("failed to create NATS connection: " + err.Error())
-		}
+		return errors.New("unable to remove all subscriptions, because not connected to NATS")
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
