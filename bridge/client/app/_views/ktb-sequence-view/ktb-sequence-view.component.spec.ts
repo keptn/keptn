@@ -3,7 +3,7 @@ import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Projects } from '../../_services/_mockData/projects.mock';
 import { SequencesData } from '../../_services/_mockData/sequences.mock';
