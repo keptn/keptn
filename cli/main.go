@@ -24,8 +24,6 @@ func init() {
 }
 
 func main() {
-	cmd.SetVersion(Version)
-
 	if len(KubeServerVersionConstraints) > 0 {
 		if _, err := version.NewConstraint(KubeServerVersionConstraints); err != nil {
 			cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints

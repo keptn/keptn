@@ -75,7 +75,7 @@ func NewInstallCmd(helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespac
 		Short: "Installs Keptn on a Kubernetes cluster",
 		Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
-For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
+For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/operate/install/#install-keptn)
 `,
 		Example: `keptn install                                                          # install on Kubernetes
 
@@ -140,7 +140,7 @@ keptn install --hide-sensitive-data                                    # install
 			if *installParams.PlatformIdentifier != platform.OpenShiftIdentifier {
 				if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/"+getReleaseDocsURL()+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 				} else if isNewerVersion {
 					logging.PrintLog("The Kubernetes server version is higher than the one officially supported. This is not recommended and could have negative impacts on the stability of Keptn - use at your own risk.", logging.InfoLevel)
@@ -314,12 +314,12 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 		endpoint, err := getAPIEndpoint(keptnNamespace, installParams.EndPointServiceType.String())
 		if err == nil {
 			showFallbackConnectMessage = false
-			common.PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL, endpoint)
+			common.PrintQuickAccessInstructions(keptnNamespace, getReleaseDocsURL(), endpoint)
 		}
 	}
 
 	if showFallbackConnectMessage {
-		common.PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL, "http://localhost:8080/api")
+		common.PrintQuickAccessInstructions(keptnNamespace, getReleaseDocsURL(), "http://localhost:8080/api")
 	}
 
 	return nil

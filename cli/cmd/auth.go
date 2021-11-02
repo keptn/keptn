@@ -122,7 +122,7 @@ func verifyAuthParams(authParams *authCmdParams) error {
 
 		err = smartFetchKeptnAuthParameters()
 		if err != nil {
-			return fmt.Errorf(err.Error()+parametersRequiredMessage, keptnReleaseDocsURL, namespace, namespace)
+			return fmt.Errorf(err.Error()+parametersRequiredMessage, getReleaseDocsURL(), namespace, namespace)
 		}
 	}
 	return nil
