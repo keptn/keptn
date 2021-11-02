@@ -29,6 +29,10 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     this._isLoading = isLoading;
   }
 
+  get isLoading(): boolean | undefined {
+    return this._isLoading;
+  }
+
   @Input()
   set gitData(gitData: GitData) {
     if (!this.originalGitData && gitData.remoteURI && gitData.gitUser) {
