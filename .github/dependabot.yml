@@ -5,7 +5,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 5
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -16,7 +15,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -27,7 +25,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -38,7 +35,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -49,7 +45,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -60,7 +55,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -71,7 +65,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -82,7 +75,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -93,7 +85,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -104,7 +95,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -115,7 +105,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -126,7 +115,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -137,7 +125,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -148,7 +135,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -159,7 +145,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -170,7 +155,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
     commit-message:
       prefix: build
@@ -199,7 +183,6 @@ updates:
     schedule:
       interval: weekly
       day: "wednesday"
-    open-pull-requests-limit: 4
     commit-message:
       prefix: build
       include: scope
