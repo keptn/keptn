@@ -1,11 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": [
-    "node_modules",
-    "dist"
-  ],
-  "include": [
-    ".jest/*",
-    "test/*"
-  ]
+  "exclude": ["node_modules", "dist"],
+  "include": [".jest/*", "test/*"]
 }

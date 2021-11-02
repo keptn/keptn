@@ -16,6 +16,24 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   public isCreateMode = false;
 
   @Input()
+  set isLoading(isLoading: boolean | undefined) {
+    if (!this.isCreateMode && !!isLoading) {
+      this.gitUrlControl.disable();
+      this.gitUserControl.disable();
+      this.gitTokenControl.disable();
+    } else {
+      this.gitUrlControl.enable();
+      this.gitUserControl.enable();
+      this.gitTokenControl.enable();
+    }
+    this._isLoading = isLoading;
+  }
+
+  get isLoading(): boolean | undefined {
+    return this._isLoading;
+  }
+
+  @Input()
   set gitData(gitData: GitData) {
     if (!this.originalGitData && gitData.remoteURI && gitData.gitUser) {
       this.originalGitData = {
@@ -41,6 +59,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     gitUser: this.gitUserControl,
     gitToken: this.gitTokenControl,
   });
+  private _isLoading: boolean | undefined;
 
   ngOnInit(): void {
     if (!this.isCreateMode) {
@@ -56,6 +75,8 @@ export class KtbProjectSettingsGitComponent implements OnInit {
       gitUser: this.gitUserControl.value,
       gitToken: this.gitTokenControl.value,
     });
+    this.gitTokenControl.markAsUntouched();
+    this.gitTokenControl.markAsPristine();
   }
 
   public onGitUpstreamFormChange(): void {
