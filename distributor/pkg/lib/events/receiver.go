@@ -2,7 +2,8 @@ package events
 
 import (
 	"context"
-	"os"
+	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -24,7 +25,6 @@ type EventReceiver interface {
 type NATSEventReceiver struct {
 	env                   config.EnvConfig
 	eventSender           EventSender
-	closeChan             chan bool
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
 	ceCache               *Cache
@@ -39,7 +39,6 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 	return &NATSEventReceiver{
 		env:                   env,
 		eventSender:           eventSender,
-		closeChan:             make(chan bool),
 		eventMatcher:          eventMatcher,
 		ceCache:               NewCache(),
 		mutex:                 &sync.Mutex{},
@@ -47,45 +46,39 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 	}
 }
 
-func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
+func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 	if n.env.PubSubRecipient == "" {
-		logger.Warn("No pubsub recipient defined")
-		return
+		return errors.New("unable to start NatsEventReceiver: no pubsub recipient defined")
+	}
+
+	if err := n.natsConnectionHandler.Connect(); err != nil {
+		return fmt.Errorf("unable to Start NatsEventReceiver: %w", err)
 	}
 	n.natsConnectionHandler.messageHandler = n.handleMessage
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.GetPubSubTopics(), n.env.PubSubGroup)
-
 	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
+		return fmt.Errorf("unable to subscribe to events: %w", err)
 	}
 
 	defer func() {
+		ctx.Wg.Done()
 		n.natsConnectionHandler.RemoveAllSubscriptions()
-		logger.Info("Disconnected from NATS")
+		logger.Info("Terminating NATS event receiver")
 	}()
 
-	for {
-		select {
-		case <-n.closeChan:
-			return
-		case <-ctx.Done():
-			logger.Info("Terminating NATS event receiver")
-			ctx.Wg.Done()
-			return
-		}
-	}
+	<-ctx.Done()
+	return nil
 }
 
 func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubscription) {
 	n.currentSubscriptions = subscriptions
-	var topics []string
+	topics := []string{}
 	for _, s := range subscriptions {
 		topics = append(topics, s.Event)
 	}
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(topics, n.env.PubSubGroup)
 	if err != nil {
-		logger.Errorf("Unable to subscribe to topics %v\nError: %v", topics, err)
+		logger.Errorf("Unable to subscribe to topics %v: %v", topics, err)
 	}
 }
 
@@ -109,21 +102,20 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 
 		// determine subscription for the received message
 		subscriptions := n.getSubscriptionsFromReceivedMessage(m, *cloudEvent)
-
 		if len(subscriptions) > 0 {
-			err = n.sendEventForSubscriptions(subscriptions, keptnEvent, err)
+			if err := n.sendEventForSubscriptions(subscriptions, keptnEvent); err != nil {
+				logger.Errorf("Could not send CloudEvent: %v", err)
+			}
 		} else {
 			// forward keptn event
-			err = n.sendEvent(keptnEvent, nil)
-			if err != nil {
+			if err := n.sendEvent(keptnEvent, nil); err != nil {
 				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
 		}
-
 	}()
 }
 
-func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.EventSubscription, keptnEvent models.KeptnContextExtendedCE, err error) error {
+func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.EventSubscription, keptnEvent models.KeptnContextExtendedCE) error {
 	for i, subscription := range subscriptions {
 		// check if the event with the given ID has already been sent for the subscription
 		if n.ceCache.Contains(subscription.ID, keptnEvent.ID) {
@@ -147,12 +139,9 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 			logger.WithError(err).Error("Unable to add temporary information about subscriptions to event")
 		}
 		// forward keptn event
-		err = n.sendEvent(keptnEvent, &subscriptions[i])
-		if err != nil {
-			logger.Errorf("Could not send CloudEvent: %v", err)
-		}
+		return n.sendEvent(keptnEvent, &subscriptions[i])
 	}
-	return err
+	return nil
 }
 
 func (n *NATSEventReceiver) getSubscriptionsFromReceivedMessage(m *nats.Msg, event cloudevents.Event) []models.EventSubscription {
@@ -189,7 +178,5 @@ func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscript
 		logger.WithError(err).Error("Unable to send event")
 		return err
 	}
-
-	logger.Infof("sent event %s", event.ID())
 	return nil
 }
