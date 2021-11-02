@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -6,7 +6,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
   templateUrl: './ktb-project-settings-git.component.html',
   styleUrls: ['./ktb-project-settings-git.component.scss'],
 })
-export class KtbProjectSettingsGitComponent implements OnInit, OnChanges {
+export class KtbProjectSettingsGitComponent implements OnInit {
   private originalGitData: GitData | undefined;
 
   @Input()
@@ -16,7 +16,18 @@ export class KtbProjectSettingsGitComponent implements OnInit, OnChanges {
   public isCreateMode = false;
 
   @Input()
-  public isLoading?: boolean;
+  set isLoading(isLoading: boolean | undefined) {
+    if (!this.isCreateMode && !!isLoading) {
+      this.gitUrlControl.disable();
+      this.gitUserControl.disable();
+      this.gitTokenControl.disable();
+    } else {
+      this.gitUrlControl.enable();
+      this.gitUserControl.enable();
+      this.gitTokenControl.enable();
+    }
+    this._isLoading = isLoading;
+  }
 
   @Input()
   set gitData(gitData: GitData) {
@@ -44,24 +55,13 @@ export class KtbProjectSettingsGitComponent implements OnInit, OnChanges {
     gitUser: this.gitUserControl,
     gitToken: this.gitTokenControl,
   });
+  public _isLoading: boolean | undefined;
 
   ngOnInit(): void {
     if (!this.isCreateMode) {
       this.gitUrlControl.setValidators([Validators.required]);
       this.gitUserControl.setValidators([Validators.required]);
       this.gitTokenControl.setValidators([Validators.required]);
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (!this.isCreateMode && !!changes.isLoading?.currentValue) {
-      this.gitUrlControl.disable();
-      this.gitUserControl.disable();
-      this.gitTokenControl.disable();
-    } else {
-      this.gitUrlControl.enable();
-      this.gitUserControl.enable();
-      this.gitTokenControl.enable();
     }
   }
 

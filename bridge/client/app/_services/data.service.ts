@@ -285,7 +285,16 @@ export class DataService {
   }
 
   public deleteProject(projectName: string): Observable<Record<string, unknown>> {
-    return this.apiService.deleteProject(projectName);
+    return this.apiService.deleteProject(projectName).pipe(
+      tap(() => {
+        const projects = this._projects.getValue();
+        const projectIdx = projects?.findIndex((p) => p.projectName === projectName) ?? -1;
+        if (projectIdx >= 0) {
+          projects?.splice(projectIdx, 1);
+          this._projects.next(projects);
+        }
+      })
+    );
   }
 
   public loadPlainProject(projectName: string): Observable<Project> {

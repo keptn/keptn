@@ -82,16 +82,6 @@ describe('KtbProjectSettingsGitComponent', () => {
     // given, when
     component.isCreateMode = false;
     component.isLoading = true;
-    component.ngOnChanges({
-      isLoading: {
-        previousValue: undefined,
-        currentValue: true,
-        firstChange: true,
-        isFirstChange(): boolean {
-          return true;
-        },
-      },
-    });
 
     // then
     assertDisabledInputs(true);
@@ -101,16 +91,6 @@ describe('KtbProjectSettingsGitComponent', () => {
     // given, when
     component.isCreateMode = false;
     component.isLoading = undefined;
-    component.ngOnChanges({
-      isLoading: {
-        previousValue: undefined,
-        currentValue: undefined,
-        firstChange: true,
-        isFirstChange(): boolean {
-          return true;
-        },
-      },
-    });
 
     // then
     assertDisabledInputs(false);
@@ -118,18 +98,8 @@ describe('KtbProjectSettingsGitComponent', () => {
 
   it('should not disable the inputs when isLoading is given but createMode is true', () => {
     // given, when
-    component.isLoading = true;
     component.isCreateMode = true;
-    component.ngOnChanges({
-      isLoading: {
-        previousValue: undefined,
-        currentValue: true,
-        firstChange: true,
-        isFirstChange(): boolean {
-          return true;
-        },
-      },
-    });
+    component.isLoading = true;
 
     // then
     assertDisabledInputs(false);
@@ -139,32 +109,12 @@ describe('KtbProjectSettingsGitComponent', () => {
     // given, when
     component.isCreateMode = false;
     component.isLoading = true;
-    component.ngOnChanges({
-      isLoading: {
-        previousValue: undefined,
-        currentValue: true,
-        firstChange: true,
-        isFirstChange(): boolean {
-          return true;
-        },
-      },
-    });
 
     // then
     assertDisabledInputs(true);
 
     // given, when
     component.isLoading = false;
-    component.ngOnChanges({
-      isLoading: {
-        previousValue: true,
-        currentValue: false,
-        firstChange: false,
-        isFirstChange(): boolean {
-          return false;
-        },
-      },
-    });
 
     // then
     assertDisabledInputs(false);

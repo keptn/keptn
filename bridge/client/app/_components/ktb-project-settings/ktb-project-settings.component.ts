@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { combineLatest, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import {
   GitData,
@@ -7,7 +7,7 @@ import {
 } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { NotificationsService } from '../../_services/notifications.service';
@@ -58,31 +58,31 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    combineLatest([this.route.params, this.route.queryParams])
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(([params, queryParams]: [Params, Params]) => {
-        if (!params.projectName) {
-          this.isCreateMode = true;
-          this.loadProjectsAndSetValidator();
-        }
+    this.route.params.subscribe((params) => {
+      if (!params.projectName) {
+        this.isCreateMode = true;
+        this.loadProjectsAndSetValidator();
+      }
 
-        if (params.projectName) {
-          this.isProjectLoading = true;
-          this.isCreateMode = false;
-          this.projectName = params.projectName;
+      if (params.projectName) {
+        this.isProjectLoading = true;
+        this.isCreateMode = false;
+        this.projectName = params.projectName;
 
-          this.projectDeletionData = {
-            type: DeleteType.PROJECT,
-            name: this.projectName || '',
-          };
+        this.projectDeletionData = {
+          type: DeleteType.PROJECT,
+          name: this.projectName || '',
+        };
 
-          this.loadProject(params.projectName);
-        }
+        this.loadProject(params.projectName);
+      }
+    });
 
-        if (queryParams.created) {
-          this.showCreateNotificationAndRedirect();
-        }
-      });
+    this.route.queryParams.subscribe((queryParams) => {
+      if (queryParams.created) {
+        this.showCreateNotificationAndRedirect();
+      }
+    });
 
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.PROJECT) {
@@ -232,10 +232,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
 
     this.dataService.deleteProject(projectName).subscribe(
       () => {
-        this.dataService.loadProjects().subscribe(() => {
-          this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
-          this.router.navigate(['/', 'dashboard']);
-        });
+        this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
+        this.router.navigate(['/', 'dashboard']);
       },
       (err) => {
         const deletionError = 'Project could not be deleted: ' + err.message;

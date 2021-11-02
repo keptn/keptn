@@ -63,12 +63,9 @@ describe('KtbProjectSettingsComponent', () => {
   it('should have a validation error if project name already exists in projects', async () => {
     // given
     routeParamsSubject.next({});
-    component.isCreateMode = true;
     fixture.detectChanges();
 
     // when
-    await dataService.loadProjects();
-    fixture.detectChanges();
     component.projectNameControl.setValue('sockshop');
     component.projectNameControl.updateValueAndValidity();
     fixture.detectChanges();
@@ -80,7 +77,6 @@ describe('KtbProjectSettingsComponent', () => {
   it('should navigate to created project', async () => {
     // given
     routeParamsSubject.next({});
-    component.isCreateMode = true;
     component.projectNameControl.setValue('sockshop');
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     fixture.detectChanges();
