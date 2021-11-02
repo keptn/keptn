@@ -333,7 +333,9 @@ export class DataService {
           projects = projects.map((project) => {
             const existingProject = existingProjects?.find((p) => p.projectName === project.projectName);
             if (existingProject) {
-              project = Object.assign(existingProject, project.reduced);
+              project = existingProject.projectDetailsLoaded
+                ? existingProject
+                : Object.assign(existingProject, project.reduced);
             }
             return project;
           });
