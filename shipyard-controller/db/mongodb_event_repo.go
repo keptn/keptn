@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jeremywohl/flatten"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
+
+const maxRepoReadRetries = 5
 
 const (
 	triggeredEventsCollectionNameSuffix = "-triggeredEvents"
@@ -219,6 +222,96 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 		log.Error(err.Error())
 	}
 	return nil
+}
+
+func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope *models.EventScope) ([]models.Event, error) {
+	startedEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.StartedEvent))
+	if err != nil {
+		return nil, err
+	}
+	// get corresponding 'started' event for the incoming 'finished' event
+	filter := common.EventFilter{
+		Type:        startedEventType,
+		TriggeredID: &eventScope.TriggeredID,
+	}
+	return e.GetEventsWithRetry(eventScope.Project, filter, common.StartedEvent, maxRepoReadRetries)
+}
+
+func (e *MongoDBEventsRepo) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+	log.Info(string("Trying to get " + status + " events"))
+	for i := 0; i <= nrRetries; i++ {
+		startedEvents, err := e.GetEvents(project, filter, status)
+		if err != nil && err == ErrNoEventFound {
+			log.Info(string("No matching " + status + " events found. Retrying in 2s."))
+			<-time.After(2 * time.Second)
+		} else {
+			return startedEvents, err
+		}
+	}
+	return nil, nil
+}
+
+func (e *MongoDBEventsRepo) GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+	events, err := e.GetEvents(eventScope.Project, common.EventFilter{
+		Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequenceName),
+		Stage:        &eventScope.Stage,
+		KeptnContext: &eventScope.KeptnContext,
+	}, common.TriggeredEvent)
+
+	if err != nil {
+		log.Errorf("Could not load event that triggered task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequenceName, eventScope.KeptnContext)
+		return nil, err
+	}
+
+	if len(events) > 0 {
+		return &events[0], nil
+	}
+	return nil, nil
+}
+
+func (e *MongoDBEventsRepo) DeleteAllFinishedEvents(eventScope models.EventScope) error {
+	// delete all finished events of this sequence //TODO: replace with GetFinishedEvents
+	finishedEvents, err := e.GetEvents(eventScope.Project, common.EventFilter{
+		Stage:        &eventScope.Stage,
+		KeptnContext: &eventScope.KeptnContext,
+	}, common.FinishedEvent)
+
+	if err != nil && err != ErrNoEventFound {
+		log.Errorf("could not retrieve task.finished events: %s", err.Error())
+		return err
+	}
+
+	for _, event := range finishedEvents {
+		err = e.DeleteEvent(eventScope.Project, event.ID, common.FinishedEvent)
+		if err != nil {
+			log.Errorf("could not delete %s event with ID %s: %s", *event.Type, event.ID, err.Error())
+			return err
+		}
+	}
+
+	triggeredEvents, err := e.GetEvents(eventScope.Project, common.EventFilter{
+		Stage:        &eventScope.Stage,
+		KeptnContext: &eventScope.KeptnContext,
+	}, common.TriggeredEvent)
+	if err != nil {
+		return err
+	}
+
+	for _, event := range triggeredEvents {
+		err = e.DeleteEvent(eventScope.Project, event.ID, common.TriggeredEvent)
+		if err != nil {
+			log.Errorf("could not delete %s event with ID %s: %s", *event.Type, event.ID, err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *MongoDBEventsRepo) GetFinishedEvents(eventScope models.EventScope) ([]models.Event, error) {
+	return e.GetEvents(eventScope.Project, common.EventFilter{
+		Stage:        &eventScope.Stage,
+		KeptnContext: &eventScope.KeptnContext,
+	}, common.FinishedEvent)
 }
 
 func (mdbrepo *MongoDBEventsRepo) deleteCollection(collection *mongo.Collection) error {

@@ -15,20 +15,32 @@ import (
 //
 // 		// make and configure a mocked db.EventRepo
 // 		mockedEventRepo := &EventRepoMock{
+// 			DeleteAllFinishedEventsFunc: func(eventScope models.EventScope) error {
+// 				panic("mock out the DeleteAllFinishedEvents method")
+// 			},
 // 			DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 // 				panic("mock out the DeleteEvent method")
 // 			},
 // 			DeleteEventCollectionsFunc: func(project string) error {
 // 				panic("mock out the DeleteEventCollections method")
 // 			},
-// 			GetEventTraceFunc: func(project string, keptnContext string) (*models.GetEventsResult, error) {
-// 				panic("mock out the GetEventTrace method")
-// 			},
 // 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 // 				panic("mock out the GetEvents method")
 // 			},
+// 			GetEventsWithRetryFunc: func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+// 				panic("mock out the GetEventsWithRetry method")
+// 			},
+// 			GetFinishedEventsFunc: func(eventScope models.EventScope) ([]models.Event, error) {
+// 				panic("mock out the GetFinishedEvents method")
+// 			},
 // 			GetRootEventsFunc: func(params models.GetRootEventParams) (*models.GetEventsResult, error) {
 // 				panic("mock out the GetRootEvents method")
+// 			},
+// 			GetStartedEventsForTriggeredIDFunc: func(eventScope *models.EventScope) ([]models.Event, error) {
+// 				panic("mock out the GetStartedEventsForTriggeredID method")
+// 			},
+// 			GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+// 				panic("mock out the GetTaskSequenceTriggeredEvent method")
 // 			},
 // 			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
 // 				panic("mock out the InsertEvent method")
@@ -40,26 +52,43 @@ import (
 //
 // 	}
 type EventRepoMock struct {
+	// DeleteAllFinishedEventsFunc mocks the DeleteAllFinishedEvents method.
+	DeleteAllFinishedEventsFunc func(eventScope models.EventScope) error
+
 	// DeleteEventFunc mocks the DeleteEvent method.
 	DeleteEventFunc func(project string, eventID string, status common.EventStatus) error
 
 	// DeleteEventCollectionsFunc mocks the DeleteEventCollections method.
 	DeleteEventCollectionsFunc func(project string) error
 
-	// GetEventTraceFunc mocks the GetEventTrace method.
-	GetEventTraceFunc func(project string, keptnContext string) (*models.GetEventsResult, error)
-
 	// GetEventsFunc mocks the GetEvents method.
 	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
 
+	// GetEventsWithRetryFunc mocks the GetEventsWithRetry method.
+	GetEventsWithRetryFunc func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error)
+
+	// GetFinishedEventsFunc mocks the GetFinishedEvents method.
+	GetFinishedEventsFunc func(eventScope models.EventScope) ([]models.Event, error)
+
 	// GetRootEventsFunc mocks the GetRootEvents method.
 	GetRootEventsFunc func(params models.GetRootEventParams) (*models.GetEventsResult, error)
+
+	// GetStartedEventsForTriggeredIDFunc mocks the GetStartedEventsForTriggeredID method.
+	GetStartedEventsForTriggeredIDFunc func(eventScope *models.EventScope) ([]models.Event, error)
+
+	// GetTaskSequenceTriggeredEventFunc mocks the GetTaskSequenceTriggeredEvent method.
+	GetTaskSequenceTriggeredEventFunc func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error)
 
 	// InsertEventFunc mocks the InsertEvent method.
 	InsertEventFunc func(project string, event models.Event, status common.EventStatus) error
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// DeleteAllFinishedEvents holds details about calls to the DeleteAllFinishedEvents method.
+		DeleteAllFinishedEvents []struct {
+			// EventScope is the eventScope argument value.
+			EventScope models.EventScope
+		}
 		// DeleteEvent holds details about calls to the DeleteEvent method.
 		DeleteEvent []struct {
 			// Project is the project argument value.
@@ -74,13 +103,6 @@ type EventRepoMock struct {
 			// Project is the project argument value.
 			Project string
 		}
-		// GetEventTrace holds details about calls to the GetEventTrace method.
-		GetEventTrace []struct {
-			// Project is the project argument value.
-			Project string
-			// KeptnContext is the keptnContext argument value.
-			KeptnContext string
-		}
 		// GetEvents holds details about calls to the GetEvents method.
 		GetEvents []struct {
 			// Project is the project argument value.
@@ -90,10 +112,38 @@ type EventRepoMock struct {
 			// Status is the status argument value.
 			Status []common.EventStatus
 		}
+		// GetEventsWithRetry holds details about calls to the GetEventsWithRetry method.
+		GetEventsWithRetry []struct {
+			// Project is the project argument value.
+			Project string
+			// Filter is the filter argument value.
+			Filter common.EventFilter
+			// Status is the status argument value.
+			Status common.EventStatus
+			// NrRetries is the nrRetries argument value.
+			NrRetries int
+		}
+		// GetFinishedEvents holds details about calls to the GetFinishedEvents method.
+		GetFinishedEvents []struct {
+			// EventScope is the eventScope argument value.
+			EventScope models.EventScope
+		}
 		// GetRootEvents holds details about calls to the GetRootEvents method.
 		GetRootEvents []struct {
 			// Params is the params argument value.
 			Params models.GetRootEventParams
+		}
+		// GetStartedEventsForTriggeredID holds details about calls to the GetStartedEventsForTriggeredID method.
+		GetStartedEventsForTriggeredID []struct {
+			// EventScope is the eventScope argument value.
+			EventScope *models.EventScope
+		}
+		// GetTaskSequenceTriggeredEvent holds details about calls to the GetTaskSequenceTriggeredEvent method.
+		GetTaskSequenceTriggeredEvent []struct {
+			// EventScope is the eventScope argument value.
+			EventScope models.EventScope
+			// TaskSequenceName is the taskSequenceName argument value.
+			TaskSequenceName string
 		}
 		// InsertEvent holds details about calls to the InsertEvent method.
 		InsertEvent []struct {
@@ -105,12 +155,47 @@ type EventRepoMock struct {
 			Status common.EventStatus
 		}
 	}
-	lockDeleteEvent            sync.RWMutex
-	lockDeleteEventCollections sync.RWMutex
-	lockGetEventTrace          sync.RWMutex
-	lockGetEvents              sync.RWMutex
-	lockGetRootEvents          sync.RWMutex
-	lockInsertEvent            sync.RWMutex
+	lockDeleteAllFinishedEvents        sync.RWMutex
+	lockDeleteEvent                    sync.RWMutex
+	lockDeleteEventCollections         sync.RWMutex
+	lockGetEvents                      sync.RWMutex
+	lockGetEventsWithRetry             sync.RWMutex
+	lockGetFinishedEvents              sync.RWMutex
+	lockGetRootEvents                  sync.RWMutex
+	lockGetStartedEventsForTriggeredID sync.RWMutex
+	lockGetTaskSequenceTriggeredEvent  sync.RWMutex
+	lockInsertEvent                    sync.RWMutex
+}
+
+// DeleteAllFinishedEvents calls DeleteAllFinishedEventsFunc.
+func (mock *EventRepoMock) DeleteAllFinishedEvents(eventScope models.EventScope) error {
+	if mock.DeleteAllFinishedEventsFunc == nil {
+		panic("EventRepoMock.DeleteAllFinishedEventsFunc: method is nil but EventRepo.DeleteAllFinishedEvents was just called")
+	}
+	callInfo := struct {
+		EventScope models.EventScope
+	}{
+		EventScope: eventScope,
+	}
+	mock.lockDeleteAllFinishedEvents.Lock()
+	mock.calls.DeleteAllFinishedEvents = append(mock.calls.DeleteAllFinishedEvents, callInfo)
+	mock.lockDeleteAllFinishedEvents.Unlock()
+	return mock.DeleteAllFinishedEventsFunc(eventScope)
+}
+
+// DeleteAllFinishedEventsCalls gets all the calls that were made to DeleteAllFinishedEvents.
+// Check the length with:
+//     len(mockedEventRepo.DeleteAllFinishedEventsCalls())
+func (mock *EventRepoMock) DeleteAllFinishedEventsCalls() []struct {
+	EventScope models.EventScope
+} {
+	var calls []struct {
+		EventScope models.EventScope
+	}
+	mock.lockDeleteAllFinishedEvents.RLock()
+	calls = mock.calls.DeleteAllFinishedEvents
+	mock.lockDeleteAllFinishedEvents.RUnlock()
+	return calls
 }
 
 // DeleteEvent calls DeleteEventFunc.
@@ -183,41 +268,6 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 	return calls
 }
 
-// GetEventTrace calls GetEventTraceFunc.
-func (mock *EventRepoMock) GetEventTrace(project string, keptnContext string) (*models.GetEventsResult, error) {
-	if mock.GetEventTraceFunc == nil {
-		panic("EventRepoMock.GetEventTraceFunc: method is nil but EventRepo.GetEventTrace was just called")
-	}
-	callInfo := struct {
-		Project      string
-		KeptnContext string
-	}{
-		Project:      project,
-		KeptnContext: keptnContext,
-	}
-	mock.lockGetEventTrace.Lock()
-	mock.calls.GetEventTrace = append(mock.calls.GetEventTrace, callInfo)
-	mock.lockGetEventTrace.Unlock()
-	return mock.GetEventTraceFunc(project, keptnContext)
-}
-
-// GetEventTraceCalls gets all the calls that were made to GetEventTrace.
-// Check the length with:
-//     len(mockedEventRepo.GetEventTraceCalls())
-func (mock *EventRepoMock) GetEventTraceCalls() []struct {
-	Project      string
-	KeptnContext string
-} {
-	var calls []struct {
-		Project      string
-		KeptnContext string
-	}
-	mock.lockGetEventTrace.RLock()
-	calls = mock.calls.GetEventTrace
-	mock.lockGetEventTrace.RUnlock()
-	return calls
-}
-
 // GetEvents calls GetEventsFunc.
 func (mock *EventRepoMock) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 	if mock.GetEventsFunc == nil {
@@ -257,6 +307,80 @@ func (mock *EventRepoMock) GetEventsCalls() []struct {
 	return calls
 }
 
+// GetEventsWithRetry calls GetEventsWithRetryFunc.
+func (mock *EventRepoMock) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+	if mock.GetEventsWithRetryFunc == nil {
+		panic("EventRepoMock.GetEventsWithRetryFunc: method is nil but EventRepo.GetEventsWithRetry was just called")
+	}
+	callInfo := struct {
+		Project   string
+		Filter    common.EventFilter
+		Status    common.EventStatus
+		NrRetries int
+	}{
+		Project:   project,
+		Filter:    filter,
+		Status:    status,
+		NrRetries: nrRetries,
+	}
+	mock.lockGetEventsWithRetry.Lock()
+	mock.calls.GetEventsWithRetry = append(mock.calls.GetEventsWithRetry, callInfo)
+	mock.lockGetEventsWithRetry.Unlock()
+	return mock.GetEventsWithRetryFunc(project, filter, status, nrRetries)
+}
+
+// GetEventsWithRetryCalls gets all the calls that were made to GetEventsWithRetry.
+// Check the length with:
+//     len(mockedEventRepo.GetEventsWithRetryCalls())
+func (mock *EventRepoMock) GetEventsWithRetryCalls() []struct {
+	Project   string
+	Filter    common.EventFilter
+	Status    common.EventStatus
+	NrRetries int
+} {
+	var calls []struct {
+		Project   string
+		Filter    common.EventFilter
+		Status    common.EventStatus
+		NrRetries int
+	}
+	mock.lockGetEventsWithRetry.RLock()
+	calls = mock.calls.GetEventsWithRetry
+	mock.lockGetEventsWithRetry.RUnlock()
+	return calls
+}
+
+// GetFinishedEvents calls GetFinishedEventsFunc.
+func (mock *EventRepoMock) GetFinishedEvents(eventScope models.EventScope) ([]models.Event, error) {
+	if mock.GetFinishedEventsFunc == nil {
+		panic("EventRepoMock.GetFinishedEventsFunc: method is nil but EventRepo.GetFinishedEvents was just called")
+	}
+	callInfo := struct {
+		EventScope models.EventScope
+	}{
+		EventScope: eventScope,
+	}
+	mock.lockGetFinishedEvents.Lock()
+	mock.calls.GetFinishedEvents = append(mock.calls.GetFinishedEvents, callInfo)
+	mock.lockGetFinishedEvents.Unlock()
+	return mock.GetFinishedEventsFunc(eventScope)
+}
+
+// GetFinishedEventsCalls gets all the calls that were made to GetFinishedEvents.
+// Check the length with:
+//     len(mockedEventRepo.GetFinishedEventsCalls())
+func (mock *EventRepoMock) GetFinishedEventsCalls() []struct {
+	EventScope models.EventScope
+} {
+	var calls []struct {
+		EventScope models.EventScope
+	}
+	mock.lockGetFinishedEvents.RLock()
+	calls = mock.calls.GetFinishedEvents
+	mock.lockGetFinishedEvents.RUnlock()
+	return calls
+}
+
 // GetRootEvents calls GetRootEventsFunc.
 func (mock *EventRepoMock) GetRootEvents(params models.GetRootEventParams) (*models.GetEventsResult, error) {
 	if mock.GetRootEventsFunc == nil {
@@ -285,6 +409,72 @@ func (mock *EventRepoMock) GetRootEventsCalls() []struct {
 	mock.lockGetRootEvents.RLock()
 	calls = mock.calls.GetRootEvents
 	mock.lockGetRootEvents.RUnlock()
+	return calls
+}
+
+// GetStartedEventsForTriggeredID calls GetStartedEventsForTriggeredIDFunc.
+func (mock *EventRepoMock) GetStartedEventsForTriggeredID(eventScope *models.EventScope) ([]models.Event, error) {
+	if mock.GetStartedEventsForTriggeredIDFunc == nil {
+		panic("EventRepoMock.GetStartedEventsForTriggeredIDFunc: method is nil but EventRepo.GetStartedEventsForTriggeredID was just called")
+	}
+	callInfo := struct {
+		EventScope *models.EventScope
+	}{
+		EventScope: eventScope,
+	}
+	mock.lockGetStartedEventsForTriggeredID.Lock()
+	mock.calls.GetStartedEventsForTriggeredID = append(mock.calls.GetStartedEventsForTriggeredID, callInfo)
+	mock.lockGetStartedEventsForTriggeredID.Unlock()
+	return mock.GetStartedEventsForTriggeredIDFunc(eventScope)
+}
+
+// GetStartedEventsForTriggeredIDCalls gets all the calls that were made to GetStartedEventsForTriggeredID.
+// Check the length with:
+//     len(mockedEventRepo.GetStartedEventsForTriggeredIDCalls())
+func (mock *EventRepoMock) GetStartedEventsForTriggeredIDCalls() []struct {
+	EventScope *models.EventScope
+} {
+	var calls []struct {
+		EventScope *models.EventScope
+	}
+	mock.lockGetStartedEventsForTriggeredID.RLock()
+	calls = mock.calls.GetStartedEventsForTriggeredID
+	mock.lockGetStartedEventsForTriggeredID.RUnlock()
+	return calls
+}
+
+// GetTaskSequenceTriggeredEvent calls GetTaskSequenceTriggeredEventFunc.
+func (mock *EventRepoMock) GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+	if mock.GetTaskSequenceTriggeredEventFunc == nil {
+		panic("EventRepoMock.GetTaskSequenceTriggeredEventFunc: method is nil but EventRepo.GetTaskSequenceTriggeredEvent was just called")
+	}
+	callInfo := struct {
+		EventScope       models.EventScope
+		TaskSequenceName string
+	}{
+		EventScope:       eventScope,
+		TaskSequenceName: taskSequenceName,
+	}
+	mock.lockGetTaskSequenceTriggeredEvent.Lock()
+	mock.calls.GetTaskSequenceTriggeredEvent = append(mock.calls.GetTaskSequenceTriggeredEvent, callInfo)
+	mock.lockGetTaskSequenceTriggeredEvent.Unlock()
+	return mock.GetTaskSequenceTriggeredEventFunc(eventScope, taskSequenceName)
+}
+
+// GetTaskSequenceTriggeredEventCalls gets all the calls that were made to GetTaskSequenceTriggeredEvent.
+// Check the length with:
+//     len(mockedEventRepo.GetTaskSequenceTriggeredEventCalls())
+func (mock *EventRepoMock) GetTaskSequenceTriggeredEventCalls() []struct {
+	EventScope       models.EventScope
+	TaskSequenceName string
+} {
+	var calls []struct {
+		EventScope       models.EventScope
+		TaskSequenceName string
+	}
+	mock.lockGetTaskSequenceTriggeredEvent.RLock()
+	calls = mock.calls.GetTaskSequenceTriggeredEvent
+	mock.lockGetTaskSequenceTriggeredEvent.RUnlock()
 	return calls
 }
 
