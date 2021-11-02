@@ -4,6 +4,9 @@ COPY package.json yarn.lock /usr/src/app/
 RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
 
+FROM builder-test-base as builder-code-style
+CMD yarn prettier:check && yarn lint:check
+
 FROM builder-test-base as builder-test-unit
 CMD yarn test && mv ./coverage/ /shared/coverage
 
