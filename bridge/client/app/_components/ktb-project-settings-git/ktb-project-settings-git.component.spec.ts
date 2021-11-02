@@ -78,6 +78,48 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(button).toBeTruthy();
   });
 
+  it('should disable the inputs when loading in edit mode', () => {
+    // given, when
+    component.isCreateMode = false;
+    component.isLoading = true;
+
+    // then
+    assertDisabledInputs(true);
+  });
+
+  it('should not disable the inputs when isLoading is not given', () => {
+    // given, when
+    component.isCreateMode = false;
+    component.isLoading = undefined;
+
+    // then
+    assertDisabledInputs(false);
+  });
+
+  it('should not disable the inputs when isLoading is given but createMode is true', () => {
+    // given, when
+    component.isCreateMode = true;
+    component.isLoading = true;
+
+    // then
+    assertDisabledInputs(false);
+  });
+
+  it('should enable the buttons when onChange isLoading is false', () => {
+    // given, when
+    component.isCreateMode = false;
+    component.isLoading = true;
+
+    // then
+    assertDisabledInputs(true);
+
+    // given, when
+    component.isLoading = false;
+
+    // then
+    assertDisabledInputs(false);
+  });
+
   it('should be an invalid form when no fields are set', () => {
     expect(component.gitUpstreamForm.invalid).toBe(true);
   });
@@ -196,4 +238,10 @@ describe('KtbProjectSettingsGitComponent', () => {
       gitUser: 'username',
     });
   });
+
+  function assertDisabledInputs(isDisabled: boolean): void {
+    expect(component.gitUrlControl.disabled).toBe(isDisabled);
+    expect(component.gitUserControl.disabled).toBe(isDisabled);
+    expect(component.gitTokenControl.disabled).toBe(isDisabled);
+  }
 });

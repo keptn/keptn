@@ -285,7 +285,20 @@ export class DataService {
   }
 
   public deleteProject(projectName: string): Observable<Record<string, unknown>> {
-    return this.apiService.deleteProject(projectName);
+    return this.apiService.deleteProject(projectName).pipe(
+      tap(() => {
+        const projects = this._projects.getValue();
+        const projectIdx = projects?.findIndex((p) => p.projectName === projectName) ?? -1;
+        if (projectIdx >= 0) {
+          projects?.splice(projectIdx, 1);
+          this._projects.next(projects);
+        }
+      })
+    );
+  }
+
+  public loadPlainProject(projectName: string): Observable<Project> {
+    return this.apiService.getProject(projectName).pipe(map((project) => Project.fromJSON(project)));
   }
 
   public loadProject(projectName: string): void {
@@ -320,14 +333,11 @@ export class DataService {
       );
   }
 
-  public loadProjects(): void {
-    this.apiService
-      .getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50)
-      .pipe(
-        map((result) => result.projects),
-        map((projects) => projects.map((project) => Project.fromJSON(project)))
-      )
-      .subscribe(
+  public loadProjects(): Observable<Project[]> {
+    const projects$ = this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
+      map((result) => (result ? result.projects : [])),
+      map((projects) => projects.map((project) => Project.fromJSON(project))),
+      tap(
         (projects: Project[]) => {
           const existingProjects = this._projects.getValue();
           projects = projects.map((project) => {
@@ -337,12 +347,19 @@ export class DataService {
             }
             return project;
           });
-          this._projects.next(projects);
+          return projects;
         },
         () => {
-          this._projects.next([]);
+          return of([]);
         }
-      );
+      )
+    );
+
+    projects$.subscribe((projects) => {
+      this._projects.next(projects);
+    });
+
+    return projects$;
   }
 
   public loadOpenRemediations(project: Project): void {

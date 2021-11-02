@@ -29,6 +29,8 @@ describe('Project delete test', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
+    cy.wait('@initProjects');
+    cy.wait(500);
     basePage.clickProjectTile('dynatrace');
     basePage.gotoSettingsPage().clickDeleteProjectButton().typeProjectNameToDelete('dynatrace').submitDelete();
   });

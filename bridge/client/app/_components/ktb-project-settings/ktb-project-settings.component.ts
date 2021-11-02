@@ -12,7 +12,7 @@ import { DataService } from '../../_services/data.service';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { NotificationsService } from '../../_services/notifications.service';
 import { EventService } from '../../_services/event.service';
-import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
@@ -20,7 +20,7 @@ import { NotificationType, TemplateRenderedNotifications } from '../../_models/n
 @Component({
   selector: 'ktb-project-settings',
   templateUrl: './ktb-project-settings.component.html',
-  styleUrls: [],
+  styleUrls: ['./ktb-project-settings.component.scss'],
   providers: [NotificationsService],
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
@@ -35,6 +35,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public unsavedDialogState: string | null = null;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
+  public isProjectLoading: boolean | undefined;
   public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
@@ -57,70 +58,29 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.route.data.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
-      if (data) {
-        this.isCreateMode = data.isCreateMode;
+    this.route.params.subscribe((params) => {
+      if (!params.projectName) {
+        this.isCreateMode = true;
+        this.loadProjectsAndSetValidator();
+      }
+
+      if (params.projectName) {
+        this.isProjectLoading = true;
+        this.isCreateMode = false;
+        this.projectName = params.projectName;
+
+        this.projectDeletionData = {
+          type: DeleteType.PROJECT,
+          name: this.projectName || '',
+        };
+
+        this.loadProject(params.projectName);
       }
     });
 
-    this.dataService.projects
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        filter((projects: Project[] | undefined): projects is Project[] => !!projects),
-        map((projects: Project[]) => projects.map((project) => project.projectName))
-      )
-      .subscribe((projectNames) => {
-        if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
-          this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
-            queryParams: { created: true },
-          });
-        }
-        this.projectNameControl.setValidators([
-          Validators.required,
-          FormUtils.nameExistsValidator(projectNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-        ]);
-      });
-
-    this.route.params
-      .pipe(
-        map((params) => params.projectName),
-        switchMap((projectName) => this.dataService.getProject(projectName)),
-        takeUntil(this.unsubscribe$),
-        filter((project: Project | undefined): project is Project => !!project)
-      )
-      .subscribe((project) => {
-        if (project.projectName !== this.projectName) {
-          this.unsavedDialogState = null;
-          this.projectName = project.projectName;
-
-          this.gitData = {
-            remoteURI: project.gitRemoteURI,
-            gitUser: project.gitUser,
-          };
-
-          this.projectDeletionData = {
-            type: DeleteType.PROJECT,
-            name: this.projectName,
-          };
-        }
-      });
-
-    this.route.queryParams.pipe(takeUntil(this.unsubscribe$)).subscribe((queryParams) => {
+    this.route.queryParams.subscribe((queryParams) => {
       if (queryParams.created) {
-        this.unsavedDialogState = null;
-        this.notificationsService.addNotification(
-          NotificationType.SUCCESS,
-          TemplateRenderedNotifications.CREATE_PROJECT,
-          undefined,
-          true,
-          {
-            projectName: this.projectName,
-            routerLink: `/project/${this.projectName}/settings/services/create`,
-          }
-        );
-        // Remove query param for not showing notification on reload
-        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
+        this.showCreateNotificationAndRedirect();
       }
     });
 
@@ -135,6 +95,52 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
     this.notificationsService.clearNotifications();
+  }
+
+  private loadProjectsAndSetValidator(): void {
+    this.dataService
+      .loadProjects()
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter((projects: Project[] | undefined): projects is Project[] => !!projects),
+        map((projects: Project[]) => projects.map((project) => project.projectName))
+      )
+      .subscribe((projectNames) => {
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.nameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+        ]);
+      });
+  }
+
+  private loadProject(projectName: string): void {
+    this.dataService.loadPlainProject(projectName).subscribe((project) => {
+      this.unsavedDialogState = null;
+
+      this.gitData = {
+        remoteURI: project.gitRemoteURI,
+        gitUser: project.gitUser,
+      };
+
+      this.isProjectLoading = false;
+    });
+  }
+
+  private showCreateNotificationAndRedirect(): void {
+    this.unsavedDialogState = null;
+    this.notificationsService.addNotification(
+      NotificationType.SUCCESS,
+      TemplateRenderedNotifications.CREATE_PROJECT,
+      undefined,
+      true,
+      {
+        projectName: this.projectName,
+        routerLink: `/project/${this.projectName}/settings/services/create`,
+      }
+    );
+    // Remove query param for not showing notification on reload
+    this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
   }
 
   public updateGitData(gitData: GitData): void {
@@ -200,8 +206,13 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
           .subscribe(
             () => {
               this.projectName = projectName;
-              this.dataService.loadProjects();
-              this.isCreatingProjectInProgress = false;
+              this.dataService.loadProjects().subscribe(() => {
+                this.isCreatingProjectInProgress = false;
+
+                this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
+                  queryParams: { created: true },
+                });
+              });
             },
             () => {
               this.notificationsService.addNotification(
@@ -219,20 +230,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public deleteProject(projectName: string): void {
     this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
-    this.dataService
-      .projectExists(projectName)
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        filter((status) => status === false)
-      )
-      .subscribe(() => {
-        this.router.navigate(['/', 'dashboard']);
-      });
-
     this.dataService.deleteProject(projectName).subscribe(
       () => {
-        this.dataService.loadProjects();
         this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
+        this.router.navigate(['/', 'dashboard']);
       },
       (err) => {
         const deletionError = 'Project could not be deleted: ' + err.message;
