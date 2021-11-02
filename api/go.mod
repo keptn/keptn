@@ -3,7 +3,7 @@ module github.com/keptn/keptn/api
 go 1.16
 
 require (
-	github.com/benbjohnson/clock v1.1.0
+	github.com/benbjohnson/clock v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/loads v0.20.3
