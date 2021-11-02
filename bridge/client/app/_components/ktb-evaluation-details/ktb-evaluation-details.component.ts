@@ -26,6 +26,8 @@ import { IndicatorResult, Target } from '../../../../shared/interfaces/indicator
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
+import Yaml from 'yaml';
+import { SloConfig } from '../../_interfaces/slo-config';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
@@ -391,29 +393,17 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private parseSloFile(evaluationTraces: Trace[]): void {
     for (const evaluationData of evaluationTraces) {
       if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
-        evaluationData.data.evaluation.sloFileContentParsed = atob(evaluationData.data.evaluation.sloFileContent);
-        evaluationData.data.evaluation.score_pass = evaluationData.data.evaluation.sloFileContentParsed
-          .split('total_score:')[1]
-          ?.split('pass:')[1]
-          ?.split(' ')[1]
-          ?.replace(/"/g, '')
-          ?.split('%')[0];
-        evaluationData.data.evaluation.score_warning = evaluationData.data.evaluation.sloFileContentParsed
-          .split('total_score:')[1]
-          ?.split('warning:')[1]
-          ?.split(' ')[1]
-          ?.replace(/"/g, '')
-          ?.split('%')[0];
-        evaluationData.data.evaluation.compare_with = evaluationData.data.evaluation.sloFileContentParsed
-          .split('comparison:')[1]
-          ?.split('compare_with:')[1]
-          ?.split(' ')[1]
-          ?.replace(/"/g, '');
-        evaluationData.data.evaluation.include_result_with_score = evaluationData.data.evaluation.sloFileContentParsed
-          .split('comparison:')[1]
-          ?.split('include_result_with_score:')[1]
-          ?.split(' ')[1]
-          ?.replace(/"/g, '');
+        evaluationData.data.evaluation.sloFileContentParsed = Yaml.parse(
+          atob(evaluationData.data.evaluation.sloFileContent)
+        ) as SloConfig;
+        evaluationData.data.evaluation.score_pass =
+          evaluationData.data.evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
+        evaluationData.data.evaluation.score_warning =
+          evaluationData.data.evaluation.sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
+        evaluationData.data.evaluation.compare_with =
+          evaluationData.data.evaluation.sloFileContentParsed.comparison.compare_with ?? '';
+        evaluationData.data.evaluation.include_result_with_score =
+          evaluationData.data.evaluation.sloFileContentParsed.comparison.include_result_with_score;
         if (evaluationData.data.evaluation.comparedEvents) {
           evaluationData.data.evaluation.number_of_comparison_results =
             evaluationData.data.evaluation.comparedEvents?.length;
@@ -872,7 +862,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   showSloDialog(): void {
     if (this.sloDialog && this._selectedEvaluationData) {
       this.sloDialogRef = this.dialog.open(this.sloDialog, {
-        data: this._selectedEvaluationData.data.evaluation?.sloFileContentParsed,
+        data: atob(this._selectedEvaluationData.data.evaluation?.sloFileContent ?? ''),
       });
     }
   }

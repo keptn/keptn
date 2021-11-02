@@ -1,6 +1,7 @@
 import { EventTypes } from '../interfaces/event-types';
 import { ResultTypes } from './result-types';
 import { IndicatorResult } from '../interfaces/indicator-result';
+import { SloConfig } from '../../client/app/_interfaces/slo-config';
 
 export interface TraceData {
   project?: string;
@@ -64,7 +65,7 @@ export interface TraceData {
     number_of_comparison_results: number;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     number_of_missing_comparison_results: number;
-    sloFileContentParsed: string;
+    sloFileContentParsed?: SloConfig;
   };
 
   evaluationHistory?: Trace[];
