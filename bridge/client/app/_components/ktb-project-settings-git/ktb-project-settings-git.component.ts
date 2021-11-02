@@ -59,7 +59,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     gitUser: this.gitUserControl,
     gitToken: this.gitTokenControl,
   });
-  public _isLoading: boolean | undefined;
+  private _isLoading: boolean | undefined;
 
   ngOnInit(): void {
     if (!this.isCreateMode) {
