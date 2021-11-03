@@ -4,6 +4,7 @@ import { SliResult } from '../../_models/sli-result';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { AppUtils } from '../../_utils/app.utils';
+import { SloConfig } from '../../../../shared/interfaces/slo-config';
 
 @Component({
   selector: 'ktb-sli-breakdown',
@@ -49,6 +50,8 @@ export class KtbSliBreakdownComponent implements OnInit {
       this._changeDetectorRef.markForCheck();
     }
   }
+
+  @Input() objectives?: SloConfig['objectives'];
 
   @Input()
   get comparedIndicatorResults(): IndicatorResult[][] {
@@ -122,7 +125,8 @@ export class KtbSliBreakdownComponent implements OnInit {
         keySli: indicatorResult.keySli,
         success: indicatorResult.value.success,
         expanded: false,
-        weight: indicatorResult.score,
+        weight:
+          this.objectives?.find((obj) => obj.sli === indicatorResult.value.metric)?.weight ?? indicatorResult.score,
         ...compared,
       };
     });

@@ -300,6 +300,7 @@
       <ktb-sli-breakdown
         *ngIf="evaluation.indicatorResults"
         [comparedIndicatorResults]="comparedIndicatorResults"
+        [objectives]="evaluation.sloFileContentParsed?.objectives"
         [score]="evaluation.score"
         [indicatorResults]="evaluation.indicatorResults"
       >
