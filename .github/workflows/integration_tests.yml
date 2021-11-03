@@ -103,7 +103,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Check out code.
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
 
       - name: Create downloads folder
         run: mkdir ~/downloads
@@ -734,7 +734,7 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
 
       - name: Debug - Output Branch
         run: echo $BRANCH
@@ -1035,7 +1035,7 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
