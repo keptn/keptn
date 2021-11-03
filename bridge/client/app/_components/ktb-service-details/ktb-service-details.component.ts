@@ -24,10 +24,6 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   /* eslint-enable @typescript-eslint/no-explicit-any */
   public projectName?: string;
   public isLoading = false;
-  public serviceName?: string;
-  public keptnContext?: string;
-
-  @Input() image?: string;
 
   @Input()
   get deploymentInfo(): DeploymentSelection | undefined {
@@ -36,21 +32,6 @@ export class KtbServiceDetailsComponent implements OnDestroy {
 
   set deploymentInfo(info: DeploymentSelection | undefined) {
     this._deploymentInfo = info;
-    // if (info && this._deploymentInfo !== info) {
-    //   if (this.deploymentInfo?.deployment. !== info.deployment.shkeptncontext) {
-    //     this._deploymentInfo = undefined;
-    //     if (!info.deployment.sequence) {
-    //       this.isLoading = true;
-    //     }
-    //   }
-    //   if (!info.deployment.sequence) {
-    //     this.loadSequence(info);
-    //   } else {
-    //     this.isLoading = false;
-    //     this.validateStage(info);
-    //     this._deploymentInfo = info;
-    //   }
-    // }
   }
 
   constructor(
@@ -63,8 +44,6 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   ) {
     this.route.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
       this.projectName = params.get('projectName') ?? undefined;
-      this.serviceName = params.get('serviceName') ?? undefined;
-      this.keptnContext = params.get('keptnContext') ?? undefined;
     });
   }
 
@@ -75,9 +54,9 @@ export class KtbServiceDetailsComponent implements OnDestroy {
         '/project',
         this.projectName,
         'service',
-        this.serviceName,
+        this.deploymentInfo.deployment.service,
         'context',
-        this.keptnContext,
+        this.deploymentInfo.deployment.keptnContext,
         'stage',
         stageName,
       ]);
@@ -95,12 +74,11 @@ export class KtbServiceDetailsComponent implements OnDestroy {
     return true;
   }
 
-  public showRemediationConfigDialog(): void {
-    if (this.remediationDialog && this.deploymentInfo) {
-      // TODO: Return remediation config
-      // this.remediationDialogRef = this.dialog.open(this.remediationDialog, {
-      //   data: this.deploymentInfo.deployment.getStage(this.deploymentInfo.stage)?.config,
-      // });
+  public showRemediationConfigDialog(config: string): void {
+    if (this.remediationDialog) {
+      this.remediationDialogRef = this.dialog.open(this.remediationDialog, {
+        data: config,
+      });
     }
   }
 

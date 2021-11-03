@@ -4,6 +4,8 @@ import { ResultTypes } from '../models/result-types';
 
 export interface Deployment {
   stages: IStageDeployment[];
+  keptnContext: string;
+  service: string;
   image?: string;
   labels: { [key: string]: string };
   state: SequenceState; // useful for polling; if finished then just fetch/update openRemediations
@@ -25,6 +27,7 @@ export interface IStageDeployment {
   hasEvaluation: boolean;
   latestEvaluation?: Trace;
   openRemediations: Sequence[];
+  remediationConfig?: string;
   approvalInformation?: {
     trace: Trace;
     latestImage?: string;

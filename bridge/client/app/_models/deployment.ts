@@ -12,6 +12,7 @@ export class StageDeployment implements IStageDeployment {
   evaluationResult?: EvaluationResult;
   latestEvaluation?: Trace;
   openRemediations!: Sequence[];
+  remediationConfig?: string;
   approvalInformation?: {
     trace: Trace;
     latestImage?: string;
@@ -46,6 +47,8 @@ export class StageDeployment implements IStageDeployment {
 export class Deployment implements dp {
   stages!: StageDeployment[];
   image?: string;
+  keptnContext!: string;
+  service!: string;
   labels!: { [p: string]: string };
   state!: SequenceState;
 

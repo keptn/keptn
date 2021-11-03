@@ -503,7 +503,7 @@ export class DataService {
       };
 
       do {
-        const resourceRes = await this.apiService.getServiceResource(
+        const resourceRes = await this.apiService.getServiceResources(
           projectName,
           stage.stageName,
           serviceName,
@@ -933,13 +933,15 @@ export class DataService {
     const iSequence = sequenceResponse.data.states[0];
     if (iSequence) {
       const sequence = Sequence.fromJSON(iSequence);
-      const openRemediations = await this.getOpenRemediations(projectName, false, sequence.service);
+      let openRemediations: Remediation[] | undefined;
       const projectResponse = await this.apiService.getProject(projectName);
       const project = Project.fromJSON(projectResponse.data);
       const traceResponse = await this.apiService.getTracesByContext(keptnContext, projectName);
       const traces = Trace.traceMapper(traceResponse.data.events);
       deployment = {
         state: sequence.state,
+        keptnContext: sequence.shkeptncontext,
+        service: sequence.service,
         stages: [],
         labels:
           traces[traces.length - 1]?.getFinishedEvent()?.data.labels ??
@@ -961,8 +963,10 @@ export class DataService {
           (event: Trace | undefined, trace) => event || trace.getEvaluationFinishedEvent(),
           undefined
         );
+        let openRemediationsForStage: Sequence[] = [];
         let deploymentURL: string | undefined;
         let approvalInformation: IStageDeployment['approvalInformation'];
+        let remediationConfig: string | undefined;
         deployment.image ??= service?.getShortImage();
 
         if (latestDeploymentContext === sequence.shkeptncontext) {
@@ -971,21 +975,48 @@ export class DataService {
               url || tc.findTrace((t) => t.type === EventTypes.DEPLOYMENT_FINISHED)?.getDeploymentUrl(),
             undefined
           );
+          if (!openRemediations) {
+            openRemediations = await this.getOpenRemediations(projectName, false, sequence.service);
+          }
+          openRemediationsForStage = openRemediations
+            .filter((seq) => seq.stages.some((st) => st.name === stage.name))
+            .map((seq) => {
+              const { stages, ...rest } = seq;
+              return Sequence.fromJSON({
+                ...rest,
+                stages: stages.filter((st) => st.name === stage.name),
+              });
+            });
+          if (openRemediations.length) {
+            const resourceResponse = await this.apiService.getServiceResource(
+              project.projectName,
+              stage.name,
+              sequence.service,
+              'remediation.yaml'
+            );
+            remediationConfig = resourceResponse.data.resourceContent;
+          }
         }
         if (approvalTrace?.isApprovalPending()) {
-          const deploymentInformation = await this.getDeploymentInformation(sequence.service, projectName, stage.name);
+          let image = stageTraces.reduce((img: undefined | string, tr) => img ?? tr.getShortImageName(), undefined);
+          if (!image) {
+            const deploymentInformation = await this.getDeploymentInformation(
+              sequence.service,
+              projectName,
+              stage.name
+            );
+            image = deploymentInformation?.image;
+          }
           approvalTrace.traces = [];
           approvalInformation = {
             trace: approvalTrace,
-            latestImage: deploymentInformation?.image,
+            latestImage: image,
           };
         }
         deployment.stages.push({
           name: stage.name,
-          openRemediations: openRemediations.map((seq) => {
-            seq.stages = seq.stages.filter((st) => st.name === stage.name);
-            return seq;
-          }),
+          openRemediations: openRemediationsForStage,
+          remediationConfig,
           approvalInformation,
           subSequences: subSequences
             .map((seq) => {

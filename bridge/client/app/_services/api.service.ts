@@ -254,16 +254,6 @@ export class ApiService {
     return this.http.get<Resource[]>(url);
   }
 
-  public getServiceResource(
-    projectName: string,
-    stageName: string,
-    serviceName: string,
-    resourceUri: string
-  ): Observable<Resource> {
-    const url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceUri}`;
-    return this.http.get<Resource>(url);
-  }
-
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
     const url = `${this._baseUrl}/project/${projectName}/service/${serviceName}/files`;
     return this.http.get<FileTree[]>(url).pipe(shareReplay());

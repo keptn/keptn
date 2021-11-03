@@ -304,7 +304,7 @@ export class ApiService {
     );
   }
 
-  public getServiceResource(
+  public getServiceResources(
     projectName: string,
     stageName: string,
     serviceName: string,
@@ -317,6 +317,17 @@ export class ApiService {
     }
 
     return this.axios.get<ResourceResponse>(url, params);
+  }
+
+  public getServiceResource(
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    resourceURI: string
+  ): Promise<AxiosResponse<Resource>> {
+    const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceURI}`;
+
+    return this.axios.get<Resource>(url);
   }
 
   public getSecrets(): Promise<AxiosResponse<{ Secrets: Secret[] }>> {

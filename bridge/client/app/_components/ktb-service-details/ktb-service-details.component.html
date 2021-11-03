@@ -26,17 +26,17 @@
   ></ktb-deployment-timeline>
   <ng-container *ngIf="getDeploymentStage(deploymentInfo) as deploymentStage">
     <ktb-sequence-list
-      [shkeptncontext]="keptnContext"
+      [shkeptncontext]="deploymentInfo.deployment.keptnContext"
       [sequences]="deploymentStage.subSequences"
       [stage]="deploymentInfo.stage"
       [remediations]="deploymentStage.openRemediations"
     ></ktb-sequence-list>
     <button
-      *ngIf="deploymentStage.openRemediations.length"
+      *ngIf="deploymentStage.remediationConfig"
       class="mt-1"
       dt-button
       variant="secondary"
-      (click)="showRemediationConfigDialog()"
+      (click)="showRemediationConfigDialog(deploymentStage.remediationConfig)"
     >
       <dt-icon name="services"></dt-icon>
       Show remediation config
