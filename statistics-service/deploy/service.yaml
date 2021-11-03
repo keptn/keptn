@@ -43,7 +43,7 @@ spec:
                 secretKeyRef:
                   name: mongodb-credentials
                   key: password
-            - name: MONGO_DB_NAME
+            - name: MONGODB_DATABASE
               value: 'keptn'
         - name: distributor
           image: keptn/distributor:latest

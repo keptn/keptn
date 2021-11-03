@@ -30,7 +30,7 @@ func GetMongoDBConnectionInstance() *MongoDBConnection {
 }
 
 func getDatabaseName() string {
-	return os.Getenv("MONGO_DB_NAME")
+	return os.Getenv("MONGODB_DATABASE")
 }
 
 // EnsureDBConnection makes sure a connection to the mongodb is established

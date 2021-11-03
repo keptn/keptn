@@ -32,7 +32,7 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 
 	randomDbName := memongo.RandomDatabase()
 
-	os.Setenv("MONGO_DB_NAME", randomDbName)
+	os.Setenv("MONGODB_DATABASE", randomDbName)
 	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
 
 	var mongoClient *mongo.Client

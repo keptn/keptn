@@ -359,7 +359,7 @@ spec:
                 secretKeyRef:
                   name: mongodb-credentials
                   key: mongodb-password
-            - name: MONGO_DB_NAME
+            - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
@@ -766,7 +766,7 @@ spec:
                 secretKeyRef:
                   name: mongodb-credentials
                   key: mongodb-password
-            - name: MONGO_DB_NAME
+            - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
