@@ -142,9 +142,9 @@
               [textContent]="subTask.time | amDateFormat: dateUtil.getTimeFormat()"
             ></span>
             <span class="italic" [textContent]="subTask.source"></span>
-            <ng-container *ngIf="!subTask.isFinished() && !subTask.isChanged()"> started</ng-container>
-            <ng-container *ngIf="subTask.isChanged()"> changed</ng-container>
-            <ng-container *ngIf="subTask.isFinished()">
+            <ng-container *ngIf="subTask.isStartedEvent()"> started</ng-container>
+            <ng-container *ngIf="subTask.isChangedEvent()"> changed</ng-container>
+            <ng-container *ngIf="subTask.isFinishedEvent()">
               finished with result <span class="italic" [textContent]="subTask.data.result"></span
             ></ng-container>
           </p>
