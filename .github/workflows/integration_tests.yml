@@ -406,7 +406,7 @@ jobs:
           fi
 
           # verify the datastore deployments
-          verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "mongo" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
 
       - name: Authenticate Keptn CLI with API
