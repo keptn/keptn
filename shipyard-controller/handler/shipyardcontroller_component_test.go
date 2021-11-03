@@ -1124,7 +1124,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	}
 
 	em := &shipyardController{
-		projectMvRepo:    db.GetProjectsMaterializedView(),
+		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
 		eventRepo:        db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()),
 		taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance()),
 		eventDispatcher: &fake.IEventDispatcherMock{

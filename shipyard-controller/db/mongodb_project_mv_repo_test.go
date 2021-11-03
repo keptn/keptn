@@ -17,13 +17,13 @@ func TestGetProjectsMaterializedView(t *testing.T) {
 	}{
 		{
 			name: "get MV instance",
-			want: GetProjectsMaterializedView(),
+			want: NewProjectMVRepo(NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetProjectsMaterializedView(); got != tt.want {
-				t.Errorf("GetProjectsMaterializedView() = %v, want %v", got, tt.want)
+			if got := NewProjectMVRepo(NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())); got != tt.want {
+				t.Errorf("NewProjectMVRepo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -112,7 +112,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateProject(tt.args.prj); (err != nil) != tt.wantErr {
 				t.Errorf("CreateProject() error = %v, wantErr %v", err, tt.wantErr)
@@ -252,13 +252,13 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.UpdateShipyard(tt.args.projectName, tt.args.shipyardContent); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateShipyard() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			mockRepo := mv.ProjectRepo.(*db_mock.ProjectRepoMock)
+			mockRepo := mv.projectRepo.(*db_mock.ProjectRepoMock)
 
 			if tt.expectProject != nil {
 				require.Equal(t, 1, len(mockRepo.UpdateProjectCalls()))
@@ -407,7 +407,7 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
 				t.Errorf("CreateStage() error = %v, wantErr %v", err, tt.wantErr)
@@ -509,7 +509,7 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.DeleteStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteStage() error = %v, wantErr %v", err, tt.wantErr)
@@ -684,7 +684,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
 				t.Errorf("CreateService() error = %v, wantErr %v", err, tt.wantErr)
@@ -799,7 +799,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.DeleteService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteService() error = %v, wantErr %v", err, tt.wantErr)
@@ -981,8 +981,8 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo:     tt.fields.ProjectRepo,
-				EventsRetriever: tt.fields.EventRetriever,
+				projectRepo: tt.fields.ProjectRepo,
+				eventRepo:   tt.fields.EventRetriever,
 			}
 			err := mv.UpdateEventOfService(tt.args.event)
 
@@ -1071,12 +1071,12 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo:     tt.fields.ProjectRepo,
-				EventsRetriever: tt.fields.EventRetriever,
+				projectRepo: tt.fields.ProjectRepo,
+				eventRepo:   tt.fields.EventRetriever,
 			}
 			mv.OnSequenceTaskFinished(tt.args.event)
 
-			projectRepoMock := mv.ProjectRepo.(*db_mock.ProjectRepoMock)
+			projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
 
 			require.Len(t, projectRepoMock.UpdateProjectCalls(), 1)
 			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages)
@@ -1143,12 +1143,12 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo:     tt.fields.ProjectRepo,
-				EventsRetriever: tt.fields.EventRetriever,
+				projectRepo: tt.fields.ProjectRepo,
+				eventRepo:   tt.fields.EventRetriever,
 			}
 			mv.OnSequenceTaskStarted(tt.args.event)
 
-			projectRepoMock := mv.ProjectRepo.(*db_mock.ProjectRepoMock)
+			projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
 
 			require.Len(t, projectRepoMock.UpdateProjectCalls(), 1)
 			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages)
@@ -1239,7 +1239,7 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CreateRemediation(tt.args.project, tt.args.stage, tt.args.service, tt.args.remediation); (err != nil) != tt.wantErr {
 				t.Errorf("CreateRemediation() error = %v, wantErr %v", err, tt.wantErr)
@@ -1321,7 +1321,7 @@ func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				ProjectRepo: tt.fields.ProjectRepo,
+				projectRepo: tt.fields.ProjectRepo,
 			}
 			if err := mv.CloseOpenRemediations(tt.args.project, tt.args.stage, tt.args.service, tt.args.keptnContext); (err != nil) != tt.wantErr {
 				t.Errorf("CloseOpenRemediations() error = %v, wantErr %v", err, tt.wantErr)
