@@ -52,10 +52,9 @@
               </p>
             </ng-container>
             <ng-container *ngIf="!isQualityGatesOnly">
-              <p class="m-0 mb-1 mt-1" *ngIf="getLatestImage(serviceState) as image; else noDeployment">
-                <!--TODO: fix ngIf-->
-                <span class="bold">Last processed artifact: </span><span *ngIf="image" [textContent]="image"></span
-                ><span *ngIf="!image">unknown</span>
+              <p class="m-0 mb-1 mt-1" *ngIf="serviceState.deploymentInformation.length; else noDeployment">
+                <span class="bold">Last processed artifact: </span>
+                <span [textContent]="getLatestImage(serviceState)"></span>
               </p>
             </ng-container>
           </dt-info-group>
