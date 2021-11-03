@@ -896,12 +896,6 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
-
-	//fakeEventRepo := sc.eventRepo.(*db_mock.EventRepoMock)
-	//
-	//require.Len(t, fakeEventRepo.DeleteEventCalls(), 2)
-	//require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-sequence-triggered-id")
-	//require.Equal(t, fakeEventRepo.DeleteEventCalls()[1].EventID, "my-deployment-triggered-id")
 }
 
 func Test_shipyardController_CancelSequence(t *testing.T) {
@@ -952,12 +946,6 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
-
-	//fakeEventRepo := sc.eventRepo.(*db_mock.EventRepoMock)
-	//
-	//require.Len(t, fakeEventRepo.DeleteEventCalls(), 2)
-	//require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-deployment-triggered-id")
-	//require.Equal(t, fakeEventRepo.DeleteEventCalls()[1].EventID, "my-sequence-triggered-id")
 }
 
 func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
@@ -995,13 +983,6 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
-
-	//fakeEventRepo := sc.eventRepo.(*db_mock.EventRepoMock)
-	//
-	//require.Len(t, fakeEventRepo.DeleteEventCalls(), 1)
-	//require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-sequence-triggered-id")
-	//
-	//require.Len(t, sequenceDispatcherMock.RemoveCalls(), 1)
 }
 
 func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testing.T) {
@@ -1039,11 +1020,6 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
-
-	//fakeEventRepo := sc.eventRepo.(*db_mock.EventRepoMock)
-	//require.Len(t, fakeEventRepo.DeleteEventCalls(), 1)
-	//require.Equal(t, fakeEventRepo.DeleteEventCalls()[0].EventID, "my-sequence-triggered-id")
-	//require.Len(t, sequenceDispatcherMock.RemoveCalls(), 1)
 }
 
 func Test_SequenceForUnavailableStage(t *testing.T) {
@@ -1113,9 +1089,6 @@ func Test_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
 	err := sc.HandleIncomingEvent(event, true)
 
 	assert.NotNil(t, err)
-
-	//eventsDBMock := sc.projectMvRepo.(*db_mock.ProjectMVRepoMock)
-	//assert.Equal(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
 
 func getTestShipyardController(shipyardContent string) *shipyardController {
