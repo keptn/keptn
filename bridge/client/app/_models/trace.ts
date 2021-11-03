@@ -293,30 +293,38 @@ class Trace extends tc {
 
   isStarted(): boolean {
     if (!this.started && this.traces) {
-      this.started = this.traces.some((t) => t.type.endsWith('.started') || t.isStarted());
+      this.started = this.traces.some((t) => t.isStartedEvent() || t.isStarted());
     }
 
     return !!this.started;
   }
 
-  isChanged(): boolean {
+  public isStartedEvent(): boolean {
+    return this.type.endsWith('.started');
+  }
+
+  public isChangedEvent(): boolean {
     return this.type.endsWith('.changed');
   }
 
-  isFinished(): boolean {
+  public isFinished(): boolean {
     if (!this.finished) {
       if (!this.traces || this.traces.length === 0) {
-        this.finished = this.type.endsWith('.finished');
+        this.finished = this.isFinishedEvent();
       } else if (this.isProblem()) {
         this.finished = this.isProblemResolvedOrClosed();
       } else {
-        const countStarted = this.traces.filter((t) => t.type.endsWith('.started')).length;
-        const countFinished = this.traces.filter((t) => t.type.endsWith('.finished')).length;
+        const countStarted = this.traces.filter((t) => t.isStartedEvent()).length;
+        const countFinished = this.traces.filter((t) => t.isFinishedEvent()).length;
         this.finished = countFinished >= countStarted && countFinished !== 0;
       }
     }
 
     return this.finished;
+  }
+
+  public isFinishedEvent(): boolean {
+    return this.type.endsWith('.finished');
   }
 
   isTriggered(): boolean {
@@ -332,7 +340,7 @@ class Trace extends tc {
   }
 
   getFinishedEvent(): Trace | undefined {
-    return this.type.endsWith('.finished') ? this : this.traces.find((t) => t.type.endsWith('.finished'));
+    return this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent());
   }
 
   getRemediationAction(): Trace | undefined {
