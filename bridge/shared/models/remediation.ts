@@ -1,6 +1,6 @@
-import { Sequence } from './sequence';
-import { SequenceStage } from '../../shared/models/sequence';
-import { IRemediationAction } from '../../shared/models/remediation-action';
+import { Sequence } from '../../server/models/sequence';
+import { SequenceStage } from './sequence';
+import { IRemediationAction } from './remediation-action';
 
 export class Remediation extends Sequence {
   stages: (SequenceStage & {

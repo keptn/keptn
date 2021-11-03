@@ -5,7 +5,7 @@ import { Trace } from '../models/trace';
 import { DeploymentInformation, Service } from '../models/service';
 import { Project } from '../models/project';
 import { EventState } from '../../shared/models/event-state';
-import { Remediation } from '../models/remediation';
+import { Remediation } from '../../shared/models/remediation';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
@@ -26,6 +26,9 @@ import { IRemediationAction } from '../../shared/models/remediation-action';
 import { SecretScope } from '../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/models/sequence';
+import { ServiceState } from '../../shared/models/service-state';
+import { Deployment, IStageDeployment } from '../../shared/interfaces/deployment';
+import semver from 'semver';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -54,7 +57,7 @@ export class DataService {
     let remediations: Remediation[] = [];
 
     if (includeRemediation) {
-      remediations = await this.getOpenRemediations(projectName);
+      remediations = await this.getOpenRemediations(projectName, true);
     }
     const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
@@ -98,7 +101,7 @@ export class DataService {
         : await this.getSequence(projectName, stageName, keptnContext, true);
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(stageName);
-    service.deploymentInformation = await this.getDeploymentInformation(service, projectName, stageName);
+    service.deploymentInformation = await this.getDeploymentInformation(service.serviceName, projectName, stageName);
 
     const serviceRemediations = remediations.filter(
       (remediation) =>
@@ -155,7 +158,7 @@ export class DataService {
   }
 
   public async getDeploymentInformation(
-    service: Service,
+    serviceName: string,
     projectName: string,
     stageName: string
   ): Promise<DeploymentInformation | undefined> {
@@ -164,7 +167,7 @@ export class DataService {
       1,
       projectName,
       stageName,
-      service.serviceName,
+      serviceName,
       ResultTypes.PASSED
     );
     const traceData = result.data.events[0];
@@ -234,7 +237,11 @@ export class DataService {
     return sequences.map((sequence) => Sequence.fromJSON(sequence));
   }
 
-  public async getOpenRemediations(projectName: string): Promise<Remediation[]> {
+  public async getOpenRemediations(
+    projectName: string,
+    includeActions: boolean,
+    serviceName?: string
+  ): Promise<Remediation[]> {
     const sequences = await this.getSequences(
       projectName,
       SequenceTypes.REMEDIATION,
@@ -246,7 +253,7 @@ export class DataService {
     for (const sequence of sequences) {
       const stageName = sequence.stages[0]?.name;
       // there could be invalid sequences that don't have a stage because the triggered sequence was not present in the shipyard file
-      if (stageName) {
+      if (stageName && (!serviceName || sequence.service === serviceName)) {
         const response = await this.apiService.getTraces(
           this.buildRemediationEvent(stageName),
           this.MAX_TRACE_PAGE_SIZE,
@@ -257,10 +264,11 @@ export class DataService {
         const traces = response.data.events;
         const stage = { ...sequence.stages[0], actions: [] };
         const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
-        const actions = this.getRemediationActions(traces);
-
         remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
-        remediation.stages[0].actions.push(...actions);
+        if (includeActions) {
+          const actions = this.getRemediationActions(traces);
+          remediation.stages[0].actions.push(...actions);
+        }
         remediations.push(remediation);
       }
     }
@@ -328,8 +336,8 @@ export class DataService {
       const evaluationTrace = await this.getTrace(
         trace.shkeptncontext,
         projectName,
-        stageName,
-        serviceName,
+        trace.data.stage,
+        trace.data.service,
         EventTypes.EVALUATION_FINISHED,
         KeptnService.LIGHTHOUSE_SERVICE
       );
@@ -855,5 +863,150 @@ export class DataService {
     files.sort((a, b) => a.fileName.localeCompare(b.fileName));
     tree.children = [...folders, ...files];
     return tree;
+  }
+
+  public async getServiceStates(projectName: string, fromTime?: string): Promise<ServiceState[]> {
+    const fromDate = fromTime ? new Date(fromTime) : undefined;
+    const projectResponse = await this.apiService.getProject(projectName);
+    const project = Project.fromJSON(projectResponse.data);
+    const openRemediations = await this.getOpenRemediations(projectName, false);
+    const serviceStates: ServiceState[] = [];
+    for (const stage of project.stages) {
+      for (const service of stage.services) {
+        const latestDeploymentEvent = service.latestDeploymentEvent;
+        let serviceState = serviceStates.find((s) => s.name === service.serviceName);
+        if (!serviceState) {
+          serviceState = new ServiceState(service.serviceName);
+          serviceStates.push(serviceState);
+        }
+
+        if (latestDeploymentEvent && (!fromDate || fromDate < new Date(latestDeploymentEvent.time))) {
+          let deploymentInformation = serviceState.deployments.find(
+            (deployment) => deployment.keptnContext === latestDeploymentEvent.keptnContext
+          );
+          if (!deploymentInformation) {
+            deploymentInformation = {
+              stages: [],
+              name: service.serviceName,
+              image: service.getShortImageName(),
+              version: service.getImageVersion(),
+              keptnContext: latestDeploymentEvent.keptnContext,
+            };
+            serviceState.deployments.push(deploymentInformation);
+          }
+          const deploymentStage = {
+            name: stage.stageName,
+            hasOpenRemediations: openRemediations.some((remediation) =>
+              remediation.stages.some((remediationStage) => remediationStage.name === stage.stageName)
+            ),
+            time: new Date(+latestDeploymentEvent.time / 1_000_000).toISOString(),
+          };
+          deploymentInformation.stages.push(deploymentStage);
+        }
+      }
+    }
+    for (const serviceState of serviceStates) {
+      serviceState.deployments.sort((a, b) =>
+        a.version &&
+        b.version &&
+        semver.valid(a.version) != null &&
+        semver.valid(b.version) != null &&
+        semver.gt(a.version, b.version, true)
+          ? -1
+          : 1
+      );
+    }
+    return serviceStates;
+  }
+
+  public async getServiceDeployment(projectName: string, keptnContext: string): Promise<Deployment | undefined> {
+    const sequenceResponse = await this.apiService.getSequences(
+      projectName,
+      1,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      keptnContext
+    );
+    let deployment: Deployment | undefined;
+    const iSequence = sequenceResponse.data.states[0];
+    if (iSequence) {
+      const sequence = Sequence.fromJSON(iSequence);
+      const openRemediations = await this.getOpenRemediations(projectName, false, sequence.service);
+      const projectResponse = await this.apiService.getProject(projectName);
+      const project = Project.fromJSON(projectResponse.data);
+      const traceResponse = await this.apiService.getTracesByContext(keptnContext, projectName);
+      const traces = Trace.traceMapper(traceResponse.data.events);
+      deployment = {
+        state: sequence.state,
+        image: service.getShortImageName(),
+        stages: [],
+        labels:
+          traces[traces.length - 1]?.getFinishedEvent()?.data.labels ??
+          traces[0]?.getFinishedEvent()?.data.labels ??
+          {},
+      };
+      for (const stage of sequence.stages) {
+        const stageTraces = traces.filter((trace) => trace.data.stage === stage.name);
+        const subSequences = stageTraces.filter((trace) => trace.type.startsWith(`${EventTypes.PREFIX}${stage.name}.`));
+        const approvalTrace = stageTraces.reduce(
+          (approval: Trace | undefined, trace) => approval || trace.findTrace((t) => !!t.isApproval()),
+          undefined
+        );
+        const service = project.stages
+          .find((st) => st.stageName === stage.name)
+          ?.services.find((sv) => sv.serviceName === sequence.service);
+        const latestDeploymentContext = service?.deploymentEvent?.keptnContext;
+        const evaluationTrace = stageTraces.reduce(
+          (event: Trace | undefined, trace) => event || trace.getEvaluationFinishedEvent(),
+          undefined
+        );
+        let deploymentURL: string | undefined;
+        let approvalInformation: IStageDeployment['approvalInformation'];
+
+        if (latestDeploymentContext === sequence.shkeptncontext) {
+          deploymentURL = stageTraces.reduce(
+            (url: string | undefined, tc) =>
+              url || tc.findTrace((t) => t.type === EventTypes.DEPLOYMENT_FINISHED)?.getDeploymentUrl(),
+            undefined
+          );
+        }
+        if (approvalTrace?.isApprovalPending()) {
+          const deploymentInformation = await this.getDeploymentInformation(sequence.service, projectName, stage.name);
+          approvalTrace.traces = [];
+          approvalInformation = {
+            trace: approvalTrace,
+            latestImage: deploymentInformation?.image,
+          };
+        }
+        deployment.stages.push({
+          name: stage.name,
+          openRemediations: openRemediations.map((seq) => {
+            seq.stages = seq.stages.filter((st) => st.name === stage.name);
+            return seq;
+          }),
+          approvalInformation,
+          subSequences: subSequences.map((seq) => {
+            return {
+              name: seq.getLabel(),
+              type: seq.type,
+              result: seq.isFaulty() ? ResultTypes.FAILED : seq.isWarning() ? ResultTypes.WARNING : ResultTypes.PASSED,
+              time: seq.time ? new Date(seq.time).getTime() : 0,
+              state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
+              id: seq.id,
+              message: seq.getMessage(),
+              hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
+            };
+          }),
+          deploymentURL,
+          hasEvaluation: !!evaluationTrace,
+          latestEvaluation:
+            evaluationTrace ??
+            (await this.apiService.getEvaluationResults(projectName, sequence.service, stage.name, 1)).data.events[0],
+        });
+      }
+    }
+    return deployment;
   }
 }

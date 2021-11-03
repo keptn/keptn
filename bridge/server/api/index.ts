@@ -104,6 +104,24 @@ const apiRouter = (params: {
     }
   });
 
+  router.get('/project/:projectName/serviceStates', async (req, res, next) => {
+    try {
+      const serviceStates = await dataService.getServiceStates(req.params.projectName, req.query.fromTime?.toString());
+      return res.json(serviceStates);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.get('/project/:projectName/deployment/:keptnContext', async (req, res, next) => {
+    try {
+      const deployment = await dataService.getServiceDeployment(req.params.projectName, req.params.keptnContext);
+      return res.json(deployment);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.get('/project/:projectName/tasks', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectName = req.params.projectName;

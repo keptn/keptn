@@ -27,7 +27,7 @@
       </p>
       <div class="mb-2">
         <button
-          *ngIf="evaluation.data.stage && getDeployment(evaluation.data.stage)?.shkeptncontext as shkeptncontext"
+          *ngIf="serviceKeptnContext as shkeptncontext"
           dt-button
           variant="secondary"
           [routerLink]="getServiceDetailsLink(shkeptncontext, evaluation.data.stage)"

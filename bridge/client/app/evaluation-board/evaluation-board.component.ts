@@ -8,7 +8,6 @@ import { Trace } from '../_models/trace';
 import { ApiService } from '../_services/api.service';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { DataService } from '../_services/data.service';
-import { Deployment } from '../_models/deployment';
 import { environment } from '../../environments/environment';
 import { DateUtil } from '../_utils/date.utils';
 import { Project } from '../_models/project';
@@ -22,7 +21,7 @@ import { KeptnService } from '../../../shared/models/keptn-service';
 })
 export class EvaluationBoardComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
-  private deployments: Deployment[] = [];
+  public serviceKeptnContext?: string;
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public error?: string;
   public contextId?: string;
@@ -73,8 +72,8 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
                 );
                 if (this.root.project) {
                   this.dataService.setProjectName(this.root.project);
-                  if (this.root.service) {
-                    this.setDeployments(this.root.project, this.root.service);
+                  if (this.root.service && this.root.stage) {
+                    this.setServiceKeptnContext(this.root.project, this.root.service, this.root.stage);
                   }
                 }
               } else {
@@ -90,7 +89,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setDeployments(projectName: string, serviceName: string): void {
+  private setServiceKeptnContext(projectName: string, serviceName: string, stageName: string): void {
     this.dataService
       .getProject(projectName)
       .pipe(
@@ -98,13 +97,11 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
         filter((project: Project | undefined): project is Project => !!project)
       )
       .subscribe((project) => {
-        this.deployments = project.getService(serviceName)?.deployments ?? [];
+        this.serviceKeptnContext = project
+          .getServices(stageName)
+          .find((service) => service.serviceName === serviceName)?.deploymentContext;
         this._changeDetectorRef.markForCheck();
       });
-  }
-
-  public getDeployment(stage: string): Deployment | undefined {
-    return this.deployments.find((deployment) => deployment.stages.find((s) => s.stageName === stage));
   }
 
   public getServiceDetailsLink(shkeptncontext: string, stage: string | undefined): string[] {

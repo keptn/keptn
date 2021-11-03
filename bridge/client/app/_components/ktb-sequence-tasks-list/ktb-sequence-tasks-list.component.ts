@@ -84,8 +84,8 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     });
   }
 
-  identifyEvent(index: number, item: Trace): Date | undefined | null {
-    return item ? item.time : null;
+  identifyEvent(index: number, item: Trace): Date | undefined {
+    return item?.time ? new Date(item.time) : undefined;
   }
 
   scrollIntoView(element: HTMLDivElement): boolean {

@@ -25,6 +25,8 @@ import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../../shared/models/keptn-service';
+import { ServiceState } from '../../../shared/models/service-state';
+import { Deployment } from '../../../shared/interfaces/deployment';
 
 @Injectable({
   providedIn: 'root',
@@ -364,15 +366,6 @@ export class ApiService {
     return this.http.get<EventResult>(url, { params });
   }
 
-  public getEvaluationResult(shkeptncontext: string): Observable<EventResult> {
-    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
-    const params = {
-      filter: `shkeptncontext:${shkeptncontext} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
-      limit: '1',
-    };
-    return this.http.get<EventResult>(url, { params });
-  }
-
   public sendGitUpstreamUrl(
     projectName: string,
     gitUrl: string,
@@ -474,5 +467,18 @@ export class ApiService {
     return this.http.post<unknown>(url, {
       config,
     });
+  }
+
+  public getServiceStates(projectName: string, fromTime?: string): Observable<ServiceState[]> {
+    const params = {
+      ...(fromTime && { fromTime }),
+    };
+    return this.http.get<ServiceState[]>(`${this._baseUrl}/project/${projectName}/serviceStates`, {
+      params,
+    });
+  }
+
+  public getServiceDeployment(projectName: string, keptnContext: string): Observable<Deployment> {
+    return this.http.get<Deployment>(`${this._baseUrl}/project/${projectName}/deployment/${keptnContext}`);
   }
 }

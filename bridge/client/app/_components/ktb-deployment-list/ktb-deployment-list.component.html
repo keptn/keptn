@@ -2,7 +2,7 @@
   <ng-container dtColumnDef="version" dtColumnProportion="1">
     <dt-cell *dtCellDef="let row" uitestid="keptn-deployment-list-serviceVersion">
       <ng-container *ngIf="row | toType: DeploymentClass as deployment">
-        <span [textContent]="deployment.name"></span>
+        <span [textContent]="deployment.version || deployment.name"></span>
       </ng-container>
     </dt-cell>
   </ng-container>
@@ -16,10 +16,10 @@
           uitestid="keptn-deployment-list-stages"
         >
           <dt-tag>
-            <a href="javascript:void(0)" (click)="selectStage(deployment, stage.stageName, $event)">
-              <span [textContent]="stage.stageName"></span>
+            <a href="javascript:void(0)" (click)="selectStage(deployment, stage.name, $event)">
+              <span [textContent]="stage.name"></span>
               <dt-icon
-                *ngIf="deployment.hasRemediation(stage.stageName)"
+                *ngIf="stage.hasOpenRemediations"
                 name="criticalevent"
                 class="event-icon error tag-icon"
               ></dt-icon>
@@ -33,8 +33,6 @@
   <dt-row
     *dtRowDef="let row; columns: ['version', 'stages']"
     (click)="selectDeployment(row)"
-    [class.active]="
-      selectedDeploymentInfo?.deployment?.shkeptncontext === (row | toType: DeploymentClass).shkeptncontext
-    "
+    [class.active]="selectedDeploymentInfo?.deployment?.keptnContext === (row | toType: DeploymentClass).keptnContext"
   ></dt-row>
 </dt-table>

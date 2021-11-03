@@ -3,13 +3,10 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ResultTypes } from '../../../shared/models/result-types';
 import { ApprovalStates } from './approval-states';
 import { EVENT_ICONS } from './event-icons';
-import { ProblemStates } from './problem-states';
-import { DateUtil } from '../_utils/date.utils';
-import { Trace as tc, TraceData } from '../../../shared/models/trace';
+import { Trace as ts, TraceData } from '../../../shared/models/trace';
 import { DtIconType } from '@dynatrace/barista-icons';
-import { KeptnService } from '../../../shared/models/keptn-service';
 
-class Trace extends tc {
+class Trace extends ts {
   traces: Trace[] = [];
   triggeredid?: string;
   type!: EventTypes | string;
@@ -24,7 +21,7 @@ class Trace extends tc {
   icon?: DtIconType;
   image?: string;
   plainEvent?: string;
-  time?: Date;
+  time?: string;
   labelMap?: Map<string, string>;
 
   static fromJSON(data: unknown): Trace {
@@ -43,43 +40,8 @@ class Trace extends tc {
   }
 
   static traceMapper(traces: Trace[]): Trace[] {
-    traces = traces.map((trace) => Trace.fromJSON(trace)).sort(DateUtil.compareTraceTimesDesc);
-
-    return traces.reduce((seq: Trace[], trace: Trace) => {
-      let trigger: Trace | undefined;
-      if (trace.triggeredid) {
-        trigger = traces.reduce(
-          (acc: Trace | undefined, r: Trace) => acc || r.findTrace((t) => t.id === trace.triggeredid),
-          undefined
-        );
-      } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-        trigger = traces.reduce(
-          (acc: Trace | undefined, r: Trace) =>
-            acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()),
-          undefined
-        );
-      } else if (trace.isFinished()) {
-        trigger = traces.reduce(
-          (acc: Trace | undefined, r: Trace) =>
-            acc || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)),
-          undefined
-        );
-      }
-
-      if (trigger) {
-        trigger.traces.push(trace);
-      } else if (trace.isSequence()) {
-        seq.push(trace);
-      } else if (seq.length > 0) {
-        seq
-          .reduce((lastSeq: Trace | undefined, s: Trace) => (s.stage === trace.stage ? s : lastSeq), undefined)
-          ?.traces.push(trace);
-      } else {
-        seq.push(trace);
-      }
-
-      return seq;
-    }, []);
+    traces = traces.map((trace) => Trace.fromJSON(trace));
+    return ts.traceMapperGlobal(traces);
   }
 
   get project(): string | undefined {
@@ -108,29 +70,6 @@ class Trace extends tc {
     return this.labelMap;
   }
 
-  isFaulty(stageName?: string): boolean {
-    let result = false;
-    if (this.data) {
-      if (
-        this.isFailed() ||
-        (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
-        (this.isRemediation() && !this.isSuccessfulRemediation()) ||
-        this.traces.some((t) => t.isFaulty())
-      ) {
-        result = stageName ? this.data.stage === stageName : true;
-      }
-    }
-    return result;
-  }
-
-  isWarning(stageName?: string): boolean {
-    let result = false;
-    if (this.getFinishedEvent()?.data.result === ResultTypes.WARNING) {
-      result = stageName ? this.data.stage === stageName : true;
-    }
-    return result;
-  }
-
   isSuccessful(stageName?: string): boolean {
     let result = false;
     if (
@@ -142,20 +81,6 @@ class Trace extends tc {
       result = stageName ? this.data.stage === stageName : true;
     }
     return !this.isFaulty() && result;
-  }
-
-  public isFailed(): boolean {
-    return (
-      this.getFinishedEvent()?.data.result === ResultTypes.FAILED || (this.isApprovalFinished() && this.isDeclined())
-    );
-  }
-
-  public isProblem(): boolean {
-    return this.type === EventTypes.PROBLEM_DETECTED || this.type === EventTypes.PROBLEM_OPEN;
-  }
-
-  public isRemediation(): boolean {
-    return this.type.endsWith(EventTypes.REMEDIATION_TRIGGERED_SUFFIX);
   }
 
   public isRemediationAction(): boolean {
@@ -170,44 +95,8 @@ class Trace extends tc {
     return this.data.action?.name;
   }
 
-  public isProblemResolvedOrClosed(): boolean {
-    if (!this.traces || this.traces.length === 0) {
-      return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
-    } else {
-      return this.traces.some((t) => t.isProblem() && t.isProblemResolvedOrClosed());
-    }
-  }
-
-  public isSuccessfulRemediation(): boolean {
-    if (!this.traces || this.traces.length === 0) {
-      return this.type.endsWith(EventTypes.REMEDIATION_FINISHED_SUFFIX) && this.data.result !== ResultTypes.FAILED;
-    } else {
-      return this.traces.some((t) => t.isSuccessfulRemediation());
-    }
-  }
-
-  public isApproval(): string | undefined {
-    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED
-      ? this.data.stage
-      : undefined;
-  }
-
   public isApprovalTriggered(): boolean {
     return this.type === EventTypes.APPROVAL_TRIGGERED;
-  }
-
-  public isApprovalPending(): boolean {
-    let pending = true;
-    for (let i = 0; i < this.traces.length && pending; ++i) {
-      if (this.traces[i].isApprovalFinished()) {
-        pending = false;
-      }
-    }
-    return pending;
-  }
-
-  private isApprovalFinished(): boolean {
-    return this.type === EventTypes.APPROVAL_FINISHED;
   }
 
   public isDirectDeployment(): boolean {
@@ -218,55 +107,20 @@ class Trace extends tc {
     return this.data.approval?.result === ApprovalStates.APPROVED;
   }
 
-  private isDeclined(): boolean {
-    return this.data.approval?.result === ApprovalStates.DECLINED;
-  }
-
   public isDeployment(): string | undefined {
     return this.type === EventTypes.DEPLOYMENT_TRIGGERED ? this.data.stage : undefined;
-  }
-
-  public isEvaluation(): string | undefined {
-    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) && !this.isSequence()
-      ? this.data.stage
-      : undefined;
   }
 
   public isEvaluationInvalidation(): boolean {
     return this.type === EventTypes.EVALUATION_INVALIDATED;
   }
 
-  public getEvaluationFinishedEvent(): Trace | undefined {
-    return this.findTrace(
-      (trace) => trace.source === KeptnService.LIGHTHOUSE_SERVICE && trace.type.endsWith(EventTypes.EVALUATION_FINISHED)
-    );
-  }
-
   hasLabels(): boolean {
     return Object.keys(this.data.labels || {}).length > 0;
   }
 
-  getLabel(): string {
-    if (!this.label) {
-      this.label = this.getShortType();
-    }
-
-    return this.label;
-  }
-
   getProblemTitle(): string | undefined {
     return this.data.problem?.ProblemTitle;
-  }
-
-  getShortType(): string {
-    const parts = this.type.split('.');
-    if (parts.length === 6) {
-      return parts[4];
-    } else if (parts.length === 5) {
-      return parts[3];
-    } else {
-      return this.type;
-    }
   }
 
   getIcon(): DtIconType {
@@ -299,34 +153,6 @@ class Trace extends tc {
     return !!this.started;
   }
 
-  public isStartedEvent(): boolean {
-    return this.type.endsWith('.started');
-  }
-
-  public isChangedEvent(): boolean {
-    return this.type.endsWith('.changed');
-  }
-
-  public isFinished(): boolean {
-    if (!this.finished) {
-      if (!this.traces || this.traces.length === 0) {
-        this.finished = this.isFinishedEvent();
-      } else if (this.isProblem()) {
-        this.finished = this.isProblemResolvedOrClosed();
-      } else {
-        const countStarted = this.traces.filter((t) => t.isStartedEvent()).length;
-        const countFinished = this.traces.filter((t) => t.isFinishedEvent()).length;
-        this.finished = countFinished >= countStarted && countFinished !== 0;
-      }
-    }
-
-    return this.finished;
-  }
-
-  public isFinishedEvent(): boolean {
-    return this.type.endsWith('.finished');
-  }
-
   isTriggered(): boolean {
     return this.type.endsWith('.triggered');
   }
@@ -339,31 +165,12 @@ class Trace extends tc {
     return !!this.traces.find((e) => e.isEvaluationInvalidation() && e.triggeredid === this.id);
   }
 
-  getFinishedEvent(): Trace | undefined {
-    return this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent());
-  }
-
   getRemediationAction(): Trace | undefined {
     return this.findTrace((t) => t.isRemediationAction());
   }
 
-  getEvaluation(stageName: string): Trace | undefined {
-    return this.findTrace((t) => !!t.isEvaluation() && t.stage === stageName);
-  }
-
   getDeploymentUrl(): string | undefined {
     return this.data.deployment?.deploymentURIsPublic?.find(() => true);
-  }
-
-  findTrace(comp: (args: Trace) => boolean): Trace | undefined {
-    if (comp(this)) {
-      return this;
-    } else {
-      return this.traces.reduce(
-        (result: Trace | undefined, trace: Trace) => result || trace.findTrace(comp),
-        undefined
-      );
-    }
   }
 
   findLastTrace(comp: (args: Trace) => boolean): Trace | undefined {
@@ -376,10 +183,6 @@ class Trace extends tc {
 
   getLastTrace(): Trace {
     return this.traces.length ? this.traces[this.traces.length - 1].getLastTrace() : this;
-  }
-
-  isSequence(): boolean {
-    return this.type.split('.').length === 6 && !!this.stage && this.type.includes(this.stage);
   }
 
   getProblemDetails(): string | undefined {

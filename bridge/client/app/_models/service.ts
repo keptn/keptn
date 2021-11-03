@@ -1,4 +1,3 @@
-import { Deployment } from './deployment';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Sequence } from './sequence';
 import { Trace } from './trace';
@@ -9,8 +8,6 @@ import { ResultTypes } from '../../../shared/models/result-types';
 export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service extends sv {
-  allDeploymentsLoaded = false;
-  deployments: Deployment[] = [];
   sequences: Sequence[] = [];
   openApprovals: Approval[] = [];
   openRemediations: Sequence[] = [];
@@ -45,7 +42,7 @@ export class Service extends sv {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.evaluationContext;
   }
 
-  get deploymentTime(): number | undefined {
+  get deploymentTime(): string | undefined {
     return (
       this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time ||
       this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time
@@ -56,20 +53,8 @@ export class Service extends sv {
     return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }
 
-  public getShortImageName(): string | undefined {
-    return this.deployedImage
-      ?.split('/')
-      .pop()
-      ?.split(':')
-      .find(() => true);
-  }
-
   getImageName(): string | undefined {
     return this.deployedImage?.split('/').pop();
-  }
-
-  getImageVersion(): string | undefined {
-    return this.deployedImage?.split(':').pop();
   }
 
   getOpenApprovals(): Approval[] {

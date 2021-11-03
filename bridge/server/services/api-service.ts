@@ -156,6 +156,15 @@ export class ApiService {
     );
   }
 
+  public getEvaluationResult(keptnContext: string): Promise<AxiosResponse<EventResult>> {
+    const url = `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
+    const params = {
+      filter: `shkeptncontext:${keptnContext} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
+      limit: '1',
+    };
+    return this.axios.get<EventResult>(url, { params });
+  }
+
   public getOpenTriggeredEvents(
     projectName: string,
     stageName: string,
