@@ -38,10 +38,12 @@ export class Service {
   }
 
   public getShortImageName(): string | undefined {
-    return this.deployedImage
-      ?.split('/')
-      .pop()
+    return this.getShortImage()
       ?.split(':')
       .find(() => true);
+  }
+
+  public getShortImage(): string | undefined {
+    return this.deployedImage?.split('/').pop();
   }
 }

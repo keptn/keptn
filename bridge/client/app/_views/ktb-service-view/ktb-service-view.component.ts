@@ -253,7 +253,6 @@ export class KtbServiceViewComponent implements OnDestroy {
       (deployment) => {
         this.selectedDeployment = {
           deployment,
-          selectedImage: deploymentInfo.deployment.image,
           stage: deploymentInfo.stage,
         };
         this.deploymentLoading = false;

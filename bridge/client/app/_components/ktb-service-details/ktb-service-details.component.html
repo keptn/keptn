@@ -3,13 +3,11 @@
     <dt-info-group-title>
       <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
         <div fxLayout="row" fxLayoutAlign="start center" class="service-title mt-1 mb-1">
-          <!--          TODO: Short image name-->
-          <span class="bold" [textContent]="image"></span>
+          <span class="bold" [textContent]="deploymentInfo.deployment.image"></span>
           <dt-tag-list
             aria-label="deploymentInfo.deployment-labels"
             uitestid="keptn-service-details-deploymentInfo.deploymentTags"
           >
-            <!--            TODO: fix-->
             <dt-tag *ngFor="let label of deploymentInfo.deployment.labels | keyvalue">
               <p *ngIf="!isUrl(label.value)">
                 <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>

@@ -45,6 +45,7 @@ export class StageDeployment implements IStageDeployment {
 
 export class Deployment implements dp {
   stages!: StageDeployment[];
+  image?: string;
   labels!: { [p: string]: string };
   state!: SequenceState;
 

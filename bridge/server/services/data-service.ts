@@ -940,7 +940,6 @@ export class DataService {
       const traces = Trace.traceMapper(traceResponse.data.events);
       deployment = {
         state: sequence.state,
-        image: service.getShortImageName(),
         stages: [],
         labels:
           traces[traces.length - 1]?.getFinishedEvent()?.data.labels ??
@@ -964,6 +963,7 @@ export class DataService {
         );
         let deploymentURL: string | undefined;
         let approvalInformation: IStageDeployment['approvalInformation'];
+        deployment.image ??= service?.getShortImage();
 
         if (latestDeploymentContext === sequence.shkeptncontext) {
           deploymentURL = stageTraces.reduce(
@@ -987,18 +987,24 @@ export class DataService {
             return seq;
           }),
           approvalInformation,
-          subSequences: subSequences.map((seq) => {
-            return {
-              name: seq.getLabel(),
-              type: seq.type,
-              result: seq.isFaulty() ? ResultTypes.FAILED : seq.isWarning() ? ResultTypes.WARNING : ResultTypes.PASSED,
-              time: seq.time ? new Date(seq.time).getTime() : 0,
-              state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
-              id: seq.id,
-              message: seq.getMessage(),
-              hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
-            };
-          }),
+          subSequences: subSequences
+            .map((seq) => {
+              return {
+                name: seq.getLabel(),
+                type: seq.type,
+                result: seq.isFaulty()
+                  ? ResultTypes.FAILED
+                  : seq.isWarning()
+                  ? ResultTypes.WARNING
+                  : ResultTypes.PASSED,
+                time: seq.time ? new Date(seq.time).getTime() : 0,
+                state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
+                id: seq.id,
+                message: seq.getMessage(),
+                hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
+              };
+            })
+            .reverse(),
           deploymentURL,
           hasEvaluation: !!evaluationTrace,
           latestEvaluation:

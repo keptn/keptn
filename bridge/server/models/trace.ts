@@ -23,9 +23,9 @@ export class Trace extends ts {
       let eventState;
 
       if (failedEvent) {
-        if (!failedEvent.isFinished() && !failedEvent.isChanged()) {
+        if (failedEvent.isStartedEvent()) {
           eventState = 'started';
-        } else if (failedEvent.isChanged()) {
+        } else if (failedEvent.isChangedEvent()) {
           eventState = 'changed';
         } else if (failedEvent.isFinished()) {
           eventState = `finished with result ${failedEvent.data.result}`;

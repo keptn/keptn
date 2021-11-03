@@ -78,7 +78,9 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   }
 
   public getEventIcon(subSequence: SubSequence): DtIconType {
-    return subSequence.state === 'finished' ? EVENT_ICONS[subSequence.name] : EVENT_ICONS.approval;
+    return subSequence.state === 'finished'
+      ? EVENT_ICONS[subSequence.name] ?? EVENT_ICONS.default
+      : EVENT_ICONS.approval;
   }
 
   public ngOnDestroy(): void {
