@@ -33,6 +33,8 @@
   <dt-row
     *dtRowDef="let row; columns: ['version', 'stages']"
     (click)="selectDeployment(row)"
-    [class.active]="selectedDeploymentInfo?.deployment?.keptnContext === (row | toType: DeploymentClass).keptnContext"
+    [class.active]="
+      selectedDeploymentInfo?.deploymentInformation?.keptnContext === (row | toType: DeploymentClass).keptnContext
+    "
   ></dt-row>
 </dt-table>

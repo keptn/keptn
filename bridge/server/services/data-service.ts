@@ -881,7 +881,7 @@ export class DataService {
         }
 
         if (latestDeploymentEvent && (!fromDate || fromDate < new Date(latestDeploymentEvent.time))) {
-          let deploymentInformation = serviceState.deployments.find(
+          let deploymentInformation = serviceState.deploymentInformation.find(
             (deployment) => deployment.keptnContext === latestDeploymentEvent.keptnContext
           );
           if (!deploymentInformation) {
@@ -892,7 +892,7 @@ export class DataService {
               version: service.getImageVersion(),
               keptnContext: latestDeploymentEvent.keptnContext,
             };
-            serviceState.deployments.push(deploymentInformation);
+            serviceState.deploymentInformation.push(deploymentInformation);
           }
           const deploymentStage = {
             name: stage.stageName,
@@ -906,7 +906,7 @@ export class DataService {
       }
     }
     for (const serviceState of serviceStates) {
-      serviceState.deployments.sort((a, b) =>
+      serviceState.deploymentInformation.sort((a, b) =>
         a.version &&
         b.version &&
         semver.valid(a.version) != null &&

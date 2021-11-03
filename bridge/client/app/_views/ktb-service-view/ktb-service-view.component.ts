@@ -5,9 +5,10 @@ import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
-import { DeploymentInformation, ServiceState } from '../../../../shared/models/service-state';
+import { ServiceState } from '../../../../shared/models/service-state';
 import { AppUtils } from '../../_utils/app.utils';
-import { DeploymentInformationSelection, DeploymentSelection } from '../../_interfaces/deployment-selection';
+import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
+import { DeploymentInformation } from '../../_models/service-state';
 
 @Component({
   selector: 'ktb-service-view',
@@ -20,12 +21,11 @@ export class KtbServiceViewComponent implements OnDestroy {
   @HostBinding('class') cls = 'ktb-service-view';
   private readonly unsubscribe$ = new Subject<void>();
   public serviceName?: string;
-  public selectedDeploymentInfo?: DeploymentInformationSelection;
   public isQualityGatesOnly = false;
   public serviceStates?: ServiceState[];
   public deploymentInterval = 30_000;
   public projectName?: string;
-  public selectedDeployment?: DeploymentSelection;
+  public selectedDeployment?: DeploymentInformationSelection;
   public deploymentLoading = false;
 
   constructor(
@@ -80,21 +80,23 @@ export class KtbServiceViewComponent implements OnDestroy {
         const keptnContext = params.get('shkeptncontext');
         const serviceName = params.get('serviceName');
         if (keptnContext && serviceName) {
-          const paramDeployment = serviceStates
+          const selectedDeploymentInformation = serviceStates
             .find((state) => state.name === serviceName)
-            ?.deployments.find((deployment) => deployment.keptnContext === keptnContext);
-          // const changedDeployments =
-          //   (this.selectedDeploymentInfo &&
-          //     service?.deployments.filter(
-          //       (deployment) => deployment.name === this.selectedDeploymentInfo?.deployment.name
-          //     )) ??
-          //   []; // the context of a deployment may change
-          this.setDeploymentInfo(
-            project.projectName,
-            serviceName,
-            this.getSelectedDeployment(project.projectName, serviceName, paramDeployment),
-            params.get('stage') ?? undefined
-          );
+            ?.deploymentInformation.find((deployment) => deployment.keptnContext === keptnContext);
+          if (selectedDeploymentInformation) {
+            const stage = this.validateStage(
+              selectedDeploymentInformation,
+              project.projectName,
+              serviceName,
+              params.get('stage')
+            );
+
+            const selection = {
+              deploymentInformation: selectedDeploymentInformation,
+              stage,
+            };
+            this.deploymentSelected(selection, project.projectName);
+          }
         }
       });
 
@@ -103,19 +105,42 @@ export class KtbServiceViewComponent implements OnDestroy {
     });
   }
 
+  private validateStage(
+    selectedDeploymentInformation: DeploymentInformation,
+    projectName: string,
+    serviceName: string,
+    stage: string | null
+  ): string {
+    if (!stage || selectedDeploymentInformation.stages.some((s) => s.name === stage)) {
+      stage = selectedDeploymentInformation.stages[selectedDeploymentInformation.stages.length - 1].name;
+      const routeUrl = this.router.createUrlTree([
+        '/project',
+        projectName,
+        'service',
+        serviceName,
+        'context',
+        selectedDeploymentInformation.keptnContext,
+        'stage',
+        stage,
+      ]);
+      this.location.go(routeUrl.toString());
+    }
+    return stage;
+  }
+
   private updateServiceStates(serviceStates: ServiceState[]): void {
     if (!this.serviceStates) {
       this.serviceStates = serviceStates;
     } else {
       for (const serviceState of serviceStates) {
         // deployments.length === 0 means that there aren't any updates for a service
-        if (serviceState.deployments.length) {
+        if (serviceState.deploymentInformation.length) {
           const serviceStateOriginal = this.serviceStates.find(
             (serviceStateO) => serviceStateO.name === serviceState.name
           );
           if (serviceStateOriginal) {
-            for (const deploymentNew of serviceState.deployments) {
-              const deploymentOriginal = serviceStateOriginal.deployments.find(
+            for (const deploymentNew of serviceState.deploymentInformation) {
+              const deploymentOriginal = serviceStateOriginal.deploymentInformation.find(
                 (deployment) => deployment.keptnContext === deploymentNew.keptnContext
               );
               if (deploymentOriginal) {
@@ -123,21 +148,21 @@ export class KtbServiceViewComponent implements OnDestroy {
                 deploymentOriginal.stages = [...deploymentOriginal.stages, ...deploymentNew.stages];
 
                 // update other deployments (remove the stages)
-                for (let i = 0; i < serviceStateOriginal.deployments.length; ++i) {
-                  const deployment = serviceStateOriginal.deployments[i];
+                for (let i = 0; i < serviceStateOriginal.deploymentInformation.length; ++i) {
+                  const deployment = serviceStateOriginal.deploymentInformation[i];
                   if (deployment !== deploymentOriginal) {
                     deployment.stages = deployment.stages.filter((stage) =>
                       deploymentNew.stages.some((st) => st.name === stage.name)
                     );
                     // delete deployment if it does not exist anymore
                     if (deployment.stages.length === 0) {
-                      serviceStateOriginal.deployments.splice(i, 1);
+                      serviceStateOriginal.deploymentInformation.splice(i, 1);
                     }
                   }
                 }
               } else {
                 // add new deployment
-                serviceStateOriginal.deployments.push(deploymentNew);
+                serviceStateOriginal.deploymentInformation.push(deploymentNew);
               }
             }
           } else {
@@ -159,51 +184,6 @@ export class KtbServiceViewComponent implements OnDestroy {
     }
   }
 
-  private getSelectedDeployment(
-    projectName: string,
-    serviceName: string,
-    paramDeployment?: DeploymentInformation
-  ): DeploymentInformation | undefined {
-    let selectedDeployment;
-    if (paramDeployment) {
-      selectedDeployment = paramDeployment;
-    } else {
-      const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', serviceName]);
-      this.location.go(routeUrl.toString());
-    }
-    return selectedDeployment;
-  }
-
-  private setDeploymentInfo(
-    projectName: string,
-    serviceName: string,
-    selectedDeployment?: DeploymentInformation,
-    paramStage?: string
-  ): void {
-    if (selectedDeployment) {
-      let stage;
-      if (paramStage) {
-        stage = paramStage;
-      } else {
-        stage = selectedDeployment.stages[selectedDeployment.stages.length - 1].name;
-        const routeUrl = this.router.createUrlTree([
-          '/project',
-          projectName,
-          'service',
-          serviceName,
-          'context',
-          selectedDeployment.keptnContext,
-          'stage',
-          stage,
-        ]);
-        this.location.go(routeUrl.toString());
-      }
-      this.selectedDeploymentInfo = { deployment: selectedDeployment, stage };
-    } else {
-      this.selectedDeploymentInfo = undefined;
-    }
-  }
-
   public selectService(projectName: string, serviceName: string): void {
     if (this.serviceName !== serviceName) {
       this.serviceName = serviceName;
@@ -214,7 +194,7 @@ export class KtbServiceViewComponent implements OnDestroy {
     let latestTime: undefined | Date;
     if (this.serviceStates) {
       for (const serviceState of this.serviceStates) {
-        for (const deployment of serviceState.deployments) {
+        for (const deployment of serviceState.deploymentInformation) {
           for (const stage of deployment.stages) {
             const date = new Date(stage.time);
             if (!latestTime || date < latestTime) {
@@ -228,13 +208,15 @@ export class KtbServiceViewComponent implements OnDestroy {
   }
 
   public hasServiceRemediations(serviceState: ServiceState): boolean {
-    return serviceState.deployments.some((deployment) => deployment.stages.some((stage) => stage.hasOpenRemediations));
+    return serviceState.deploymentInformation.some((deployment) =>
+      deployment.stages.some((stage) => stage.hasOpenRemediations)
+    );
   }
 
   public getLatestImage(serviceState: ServiceState): string | undefined {
     let latestTime: Date | undefined;
     let image: string | undefined;
-    for (const deployment of serviceState.deployments) {
+    for (const deployment of serviceState.deploymentInformation) {
       const latestStageTime = deployment.stages.reduce((max: undefined | Date, stage) => {
         const date = new Date(stage.time);
         return max && max > date ? max : date;
@@ -248,19 +230,22 @@ export class KtbServiceViewComponent implements OnDestroy {
   }
 
   public deploymentSelected(deploymentInfo: DeploymentInformationSelection, projectName: string): void {
-    this.deploymentLoading = true;
-    this.dataService.getServiceDeployment(projectName, deploymentInfo.deployment.keptnContext).subscribe(
-      (deployment) => {
-        this.selectedDeployment = {
-          deployment,
-          stage: deploymentInfo.stage,
-        };
-        this.deploymentLoading = false;
-      },
-      () => {
-        this.deploymentLoading = false;
-      }
-    );
+    if (!deploymentInfo.deploymentInformation.deployment) {
+      this.deploymentLoading = true;
+      this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext).subscribe(
+        (deployment) => {
+          deploymentInfo.deploymentInformation.deployment = deployment;
+          this.selectedDeployment = deploymentInfo;
+          this.deploymentLoading = false;
+        },
+        () => {
+          this.deploymentLoading = false;
+        }
+      );
+    } else {
+      // TODO: update
+      this.selectedDeployment = deploymentInfo;
+    }
   }
 
   public ngOnDestroy(): void {

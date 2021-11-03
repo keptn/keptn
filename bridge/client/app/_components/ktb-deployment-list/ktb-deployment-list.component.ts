@@ -73,24 +73,28 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   }
 
   private updateDataSource(count = -1): void {
-    this.dataSource.data = (count !== -1 ? this.service?.deployments.slice(0, count) : this.service?.deployments) ?? [];
+    this.dataSource.data =
+      (count !== -1 ? this.service?.deploymentInformation.slice(0, count) : this.service?.deploymentInformation) ?? [];
   }
 
-  public selectDeployment(deployment: DeploymentInformation, stageName?: string): void {
-    if (this.selectedDeploymentInfo?.deployment.keptnContext !== deployment.keptnContext || stageName) {
-      stageName ??= deployment.stages[deployment.stages.length - 1].name;
+  public selectDeployment(deploymentInformation: DeploymentInformation, stageName?: string): void {
+    if (
+      this.selectedDeploymentInfo?.deploymentInformation.keptnContext !== deploymentInformation.keptnContext ||
+      stageName
+    ) {
+      stageName ??= deploymentInformation.stages[deploymentInformation.stages.length - 1].name;
       const routeUrl = this.router.createUrlTree([
         '/project',
         this.projectName,
         'service',
         this.service?.name,
         'context',
-        deployment.keptnContext,
+        deploymentInformation.keptnContext,
         'stage',
         stageName,
       ]);
       this.location.go(routeUrl.toString());
-      this.selectedDeploymentInfo = { deployment, stage: stageName };
+      this.selectedDeploymentInfo = { deploymentInformation, stage: stageName };
       this.selectedDeploymentInfoChange.emit(this.selectedDeploymentInfo);
     }
   }

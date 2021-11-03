@@ -12,7 +12,7 @@ export interface DeploymentInformation {
 
 export class ServiceState {
   name: string;
-  deployments: DeploymentInformation[] = [];
+  deploymentInformation: DeploymentInformation[] = [];
 
   constructor(name: string) {
     this.name = name;

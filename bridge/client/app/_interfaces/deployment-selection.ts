@@ -1,8 +1,8 @@
-import { DeploymentInformation } from '../../../shared/models/service-state';
+import { DeploymentInformation } from '../_models/service-state';
 import { Deployment } from '../_models/deployment';
 
 export interface DeploymentInformationSelection {
-  deployment: DeploymentInformation;
+  deploymentInformation: DeploymentInformation;
   stage: string;
 }
 
