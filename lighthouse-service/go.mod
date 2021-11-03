@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/go-test/deep v1.0.8
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0
+	github.com/keptn/go-utils v0.10.1-0.20211103140516-b6f48452063e
 	github.com/nats-io/nats-server/v2 v2.6.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

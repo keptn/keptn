@@ -8,7 +8,7 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0
+	github.com/keptn/go-utils v0.10.1-0.20211103140516-b6f48452063e
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/stretchr/testify v1.7.0
