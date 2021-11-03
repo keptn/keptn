@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -1146,66 +1147,136 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		},
 	}
 
+	eventRepo := &db_mock.EventRepoMock{
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+			switch {
+			case status[0] == common.TriggeredEvent:
+				if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
+					return nil, db.ErrNoEventFound
+				}
+				return filterEvents(triggeredEventsCollection, filter)
+			case status[0] == common.StartedEvent:
+				if startedEventsCollection == nil || len(startedEventsCollection) == 0 {
+					return nil, db.ErrNoEventFound
+				}
+				return filterEvents(startedEventsCollection, filter)
+			case status[0] == common.FinishedEvent:
+				if finishedEventsCollection == nil || len(finishedEventsCollection) == 0 {
+					return nil, db.ErrNoEventFound
+				}
+				return filterEvents(finishedEventsCollection, filter)
+			}
+			return nil, nil
+		},
+		InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
+			if status == common.TriggeredEvent {
+				triggeredEventsCollection = append(triggeredEventsCollection, event)
+			} else if status == common.StartedEvent {
+				startedEventsCollection = append(startedEventsCollection, event)
+			} else if status == common.FinishedEvent {
+				finishedEventsCollection = append(finishedEventsCollection, event)
+			}
+			return nil
+		},
+		GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+			eventType := keptnv2.GetTriggeredEventType(fmt.Sprintf("%s.%s", eventScope.Stage, taskSequenceName))
+			for _, event := range triggeredEventsCollection {
+				if event.Shkeptncontext == eventScope.KeptnContext && *event.Type == eventType {
+					return &event, nil
+				}
+			}
+			return nil, db.ErrNoEventFound
+		},
+		DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
+			switch {
+			case status == common.TriggeredEvent:
+				for index, event := range triggeredEventsCollection {
+					if event.ID == eventID {
+						triggeredEventsCollection = append(triggeredEventsCollection[:index], triggeredEventsCollection[index+1:]...)
+						return nil
+					}
+				}
+			case status == common.StartedEvent:
+				for index, event := range startedEventsCollection {
+					if event.ID == eventID {
+						startedEventsCollection = append(startedEventsCollection[:index], startedEventsCollection[index+1:]...)
+						return nil
+					}
+				}
+			case status == common.FinishedEvent:
+				for index, event := range finishedEventsCollection {
+					if event.ID == eventID {
+						finishedEventsCollection = append(finishedEventsCollection[:index], finishedEventsCollection[index+1:]...)
+						return nil
+					}
+				}
+			}
+			return nil
+		},
+	}
+
+	eventRepo.GetEventsWithRetryFunc = func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+		for i := 0; i <= nrRetries; i++ {
+			startedEvents, err := eventRepo.GetEvents(project, filter, status)
+			if err != nil && err == db.ErrNoEventFound {
+				<-time.After(2 * time.Second)
+			} else {
+				return startedEvents, err
+			}
+		}
+		return nil, nil
+	}
+
+	eventRepo.GetStartedEventsForTriggeredIDFunc = func(eventScope *models.EventScope) ([]models.Event, error) {
+		startedEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.StartedEvent))
+		if err != nil {
+			return nil, err
+		}
+		// get corresponding 'started' event for the incoming 'finished' event
+		filter := common.EventFilter{
+			Type:        startedEventType,
+			TriggeredID: &eventScope.TriggeredID,
+		}
+		return eventRepo.GetEventsWithRetry(eventScope.Project, filter, common.StartedEvent, maxRepoReadRetries)
+	}
+
+	eventRepo.DeleteAllFinishedEventsFunc = func(eventScope models.EventScope) error {
+		finishedEvents, err := eventRepo.GetEvents(eventScope.Project, common.EventFilter{
+			Stage:        &eventScope.Stage,
+			KeptnContext: &eventScope.KeptnContext,
+		}, common.FinishedEvent)
+
+		if err != nil && err != db.ErrNoEventFound {
+			return err
+		}
+
+		for _, event := range finishedEvents {
+			err = eventRepo.DeleteEvent(eventScope.Project, event.ID, common.FinishedEvent)
+			if err != nil {
+				return err
+			}
+		}
+
+		triggeredEvents, err := eventRepo.GetEvents(eventScope.Project, common.EventFilter{
+			Stage:        &eventScope.Stage,
+			KeptnContext: &eventScope.KeptnContext,
+		}, common.TriggeredEvent)
+		if err != nil {
+			return err
+		}
+
+		for _, event := range triggeredEvents {
+			err = eventRepo.DeleteEvent(eventScope.Project, event.ID, common.TriggeredEvent)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
 	em := &shipyardController{
 		projectMvRepo: projectMVRepo,
-		eventRepo: &db_mock.EventRepoMock{
-			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-				switch {
-				case status[0] == common.TriggeredEvent:
-					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
-						return nil, db.ErrNoEventFound
-					}
-					return filterEvents(triggeredEventsCollection, filter)
-				case status[0] == common.StartedEvent:
-					if startedEventsCollection == nil || len(startedEventsCollection) == 0 {
-						return nil, db.ErrNoEventFound
-					}
-					return filterEvents(startedEventsCollection, filter)
-				case status[0] == common.FinishedEvent:
-					if finishedEventsCollection == nil || len(finishedEventsCollection) == 0 {
-						return nil, db.ErrNoEventFound
-					}
-					return filterEvents(finishedEventsCollection, filter)
-				}
-				return nil, nil
-			},
-			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
-				if status == common.TriggeredEvent {
-					triggeredEventsCollection = append(triggeredEventsCollection, event)
-				} else if status == common.StartedEvent {
-					startedEventsCollection = append(startedEventsCollection, event)
-				} else if status == common.FinishedEvent {
-					finishedEventsCollection = append(finishedEventsCollection, event)
-				}
-				return nil
-			},
-			DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
-				switch {
-				case status == common.TriggeredEvent:
-					for index, event := range triggeredEventsCollection {
-						if event.ID == eventID {
-							triggeredEventsCollection = append(triggeredEventsCollection[:index], triggeredEventsCollection[index+1:]...)
-							return nil
-						}
-					}
-				case status == common.StartedEvent:
-					for index, event := range startedEventsCollection {
-						if event.ID == eventID {
-							startedEventsCollection = append(startedEventsCollection[:index], startedEventsCollection[index+1:]...)
-							return nil
-						}
-					}
-				case status == common.FinishedEvent:
-					for index, event := range finishedEventsCollection {
-						if event.ID == eventID {
-							finishedEventsCollection = append(finishedEventsCollection[:index], finishedEventsCollection[index+1:]...)
-							return nil
-						}
-					}
-				}
-				return nil
-			},
-		},
+		eventRepo:     eventRepo,
 		taskSequenceRepo: &db_mock.TaskSequenceRepoMock{
 			GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
 				for _, ts := range taskSequenceCollection {
