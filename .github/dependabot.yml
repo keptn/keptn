@@ -2,6 +2,7 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: "/"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -11,6 +12,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/test/go-tests"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -20,6 +22,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/approval-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -29,6 +32,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/cli"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -38,6 +42,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/api"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -47,6 +52,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/distributor"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -56,6 +62,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/configuration-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -65,6 +72,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/helm-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -74,6 +82,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/jmeter-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -83,6 +92,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/lighthouse-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -92,6 +102,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/mongodb-datastore"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -101,6 +112,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/platform-support/openshift-route-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -110,6 +122,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/remediation-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -119,6 +132,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/secret-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -128,6 +142,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/shipyard-controller"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -137,6 +152,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/statistics-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -146,6 +162,7 @@ updates:
 
   - package-ecosystem: npm
     directory: "/bridge"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -155,6 +172,7 @@ updates:
 
   - package-ecosystem: npm
     directory: "/bridge/server"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
@@ -164,6 +182,7 @@ updates:
 
   - package-ecosystem: gomod
     directory: "/webhook-service"
+    rebase-strategy: disabled
     schedule:
       interval: weekly
       day: "wednesday"
