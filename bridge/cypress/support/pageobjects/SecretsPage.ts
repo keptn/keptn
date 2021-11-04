@@ -2,7 +2,7 @@
 
 class SecretsPage {
   clickAddSecret(): void {
-    cy.get('.dt-button > .dt-button-label').contains('Add secret').forceClick();
+    cy.get('.dt-button > .dt-button-label').contains('Add secret').click();
   }
 
   addSecret(SECRET_NAME: string, SECRET_KEY: string, SECRET_VALUE: string): void {
@@ -15,12 +15,12 @@ class SecretsPage {
       .type(SECRET_VALUE)
       .get('button > span')
       .contains('Add secret')
-      .forceClick();
+      .click();
   }
 
   deleteSecret(SECRET_NAME: string | number | RegExp): void {
-    cy.get('dt-row.dt-row > dt-cell > p').contains(SECRET_NAME).parent().next().children('button').forceClick();
-    cy.get('span.dt-button-label').contains('Delete').forceClick();
+    cy.get('dt-row.dt-row > dt-cell > p').contains(SECRET_NAME).parent().next().children('button').click();
+    cy.get('span.dt-button-label').contains('Delete').click();
   }
 }
 

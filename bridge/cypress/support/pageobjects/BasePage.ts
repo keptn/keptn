@@ -17,32 +17,32 @@ class BasePage {
 
   login(username: string, password: string): void {
     cy.get('#email_verify').type(username);
-    cy.get('#next_button').forceClick();
+    cy.get('#next_button').click();
     cy.get('#password_login').type(password);
-    cy.get('#no_captcha_submit').forceClick();
+    cy.get('#no_captcha_submit').click();
   }
 
   // go to Uniform page
 
   goToUniformPage(): this {
-    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'uniform')).forceClick();
+    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'uniform')).click();
     return this;
   }
 
   // go to Secrets page
   goToSecretsPage(): void {
-    cy.get('[aria-label="Open uniform secrets"]').forceClick();
+    cy.get('[aria-label="Open uniform secrets"]').click();
   }
 
   // go to Services page
   goToServicesPage(): ServicesPage {
-    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'services')).forceClick();
+    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'services')).click();
     return new ServicesPage();
   }
 
   // go to Settings page
   gotoSettingsPage(): SettingsPage {
-    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'settings')).forceClick();
+    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'settings')).click();
     return new SettingsPage();
   }
 
@@ -50,24 +50,24 @@ class BasePage {
     cy.get('dt-tile-title[uitestid="keptn-project-tile-title"]')
       .should('contain.text', projectName)
       .get('#projectSelect')
-      .forceClick()
+      .click()
       .get('dt-option')
       .contains(projectName)
-      .forceClick();
+      .click();
   }
 
   clickProjectTile(projectName: string): EnvironmentPage {
-    cy.get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).forceClick();
+    cy.get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click({ force: true });
     return new EnvironmentPage();
   }
 
   clickCreateNewProjectButton(): NewProjectCreatePage {
-    cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').forceClick();
+    cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').click();
     return new NewProjectCreatePage();
   }
 
   clickMainHeaderKeptn(): void {
-    cy.get('.brand > p').contains('keptn').forceClick();
+    cy.get('.brand > p').contains('keptn').click();
   }
 }
 

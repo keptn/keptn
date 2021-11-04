@@ -22,7 +22,7 @@ class NewProjectCreatePage {
   }
 
   clickCreateProject(): void {
-    cy.get('span.dt-button-label').contains('Create project').forceClick();
+    cy.get('span.dt-button-label').contains('Create project').click();
   }
 }
 
