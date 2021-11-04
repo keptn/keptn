@@ -1,6 +1,7 @@
 <div fxLayout="column">
   <div class="container settings-section">
     <h2>Create service</h2>
+    <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
     <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field>
