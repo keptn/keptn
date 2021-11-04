@@ -40,7 +40,7 @@
         "imagePullSecrets": {
           "$ref": "#/definitions/pullSecrets"
         },
-        "registry": {
+        "imageRegistry": {
           "$ref": "#/definitions/hostname"
         }
       }

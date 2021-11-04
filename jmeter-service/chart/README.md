@@ -11,14 +11,18 @@ The following table lists the configurable parameters of the Jmeter-service char
 
 | Parameter                | Description             | Default        |
 | ------------------------ | ----------------------- | -------------- |
-| `jmeterservice.image.repository` | Container image name | `"docker.io/keptn/jmeter-service"` |
+| `global.imagePullSecrets` | An array of image registry secrets | `[]` |
+| `global.imageRegistry` | Registry where all images are located |  |
+| `jmeterservice.image.registry` | Registry where the image is located |  |
+| `jmeterservice.image.repository` | Container image name | `"keptn/jmeter-service"` |
 | `jmeterservice.image.pullPolicy` | Kubernetes image pull policy | `"IfNotPresent"` |
 | `jmeterservice.image.tag` | Container tag | `""` |
 | `jmeterservice.service.enabled` | Creates a kubernetes service for the jmeter-service | `true` |
 | `distributor.stageFilter` | Sets the stage this helm service belongs to | `""` |
 | `distributor.serviceFilter` | Sets the service this helm service belongs to | `""` |
 | `distributor.projectFilter` | Sets the project this helm service belongs to | `""` |
-| `distributor.image.repository` | Container image name | `"docker.io/keptn/distributor"` |
+| `distributor.image.registry` | Registry where the image is located |  |
+| `distributor.image.repository` | Container image name | `"keptn/distributor"` |
 | `distributor.image.pullPolicy` | Kubernetes image pull policy | `"IfNotPresent"` |
 | `distributor.image.tag` | Container tag | `""` |
 | `remoteControlPlane.enabled` | Enables remote execution plane mode | `false` |
