@@ -1,4 +1,7 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import 'cypress-file-upload';
+import 'cypress-wait-until';
+/* eslint-enable import/no-extraneous-dependencies */
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -12,7 +15,19 @@ declare global {
 }
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 const byTestId = (testId: string) => cy.get(`[uitestid="${testId}"]`);
-const forceClick = (selector: HTMLElement) => cy.wrap(Cypress.$(selector)).should('be.visible').click(); // cy.wrap automatically retries when the .should assertion passes
+const forceClick = (selector: HTMLElement) =>
+  cy
+    .waitUntil(
+      () =>
+        cy
+          .wrap(Cypress.$(selector))
+          .as('clickSubject')
+          .wait(10) // for some reason this is needed, otherwise next line returns `true` even if click() fails due to detached element in the next step
+          .then(($el) => Cypress.dom.isAttached($el)),
+      { timeout: 1000, interval: 1 }
+    )
+    .get('@clickSubject')
+    .click();
 /* eslint-enable @typescript-eslint/explicit-function-return-type */
 // Commands have to be added by hooking them to Cypress
 Cypress.Commands.add('byTestId', byTestId);
