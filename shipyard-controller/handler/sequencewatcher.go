@@ -71,7 +71,7 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent)
 	if err != nil {
 		if err == db.ErrNoEventFound {
-			log.Infof("no open .triggered events for project %s found", project)
+			log.Debugf("no open .triggered events for project %s found", project)
 			return nil
 		}
 		return fmt.Errorf("could not retrieve open triggered events: %s", err.Error())
