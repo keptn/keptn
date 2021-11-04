@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
-import { Observable, Subject } from 'rxjs';
+import { filter, map, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { EventService } from '../../_services/event.service';
 import { DataService } from '../../_services/data.service';
@@ -18,10 +18,10 @@ import { FileTree } from '../../../../shared/interfaces/resourceFileTree';
 })
 export class KtbEditServiceComponent implements OnDestroy {
   public serviceName?: string;
-  public project$?: Observable<Project | undefined>;
+  public project: Project | undefined;
+  public fileTree: FileTree[] | undefined;
   private projectName?: string;
   private unsubscribe$: Subject<void> = new Subject<void>();
-  public fileTree$: Observable<FileTree[]>;
 
   constructor(
     private route: ActivatedRoute,
@@ -30,26 +30,31 @@ export class KtbEditServiceComponent implements OnDestroy {
     private router: Router,
     private notificationsService: NotificationsService
   ) {
-    const params$ = this.route.paramMap.pipe(
-      map((params) => ({
-        serviceName: params.get('serviceName'),
-        projectName: params.get('projectName'),
-      })),
-      filter(
-        (params): params is { serviceName: string; projectName: string } => !!params.serviceName && !!params.projectName
+    this.route.paramMap
+      .pipe(
+        map((params) => ({
+          serviceName: params.get('serviceName'),
+          projectName: params.get('projectName'),
+        })),
+        filter(
+          (params): params is { serviceName: string; projectName: string } =>
+            !!params.serviceName && !!params.projectName
+        )
       )
-    );
+      .subscribe((params) => {
+        this.serviceName = params.serviceName;
+        this.projectName = params.projectName;
 
-    params$.subscribe((params) => {
-      this.serviceName = params.serviceName;
-      this.projectName = params.projectName;
-    });
+        this.dataService.loadPlainProject(params.projectName).subscribe((project) => {
+          this.project = project;
 
-    this.fileTree$ = params$.pipe(
-      switchMap((params) => this.dataService.getFileTreeForService(params.projectName, params.serviceName))
-    );
-
-    this.project$ = params$.pipe(switchMap((params) => this.dataService.getProject(params.projectName)));
+          if (project?.gitRemoteURI) {
+            this.dataService.getFileTreeForService(params.projectName, params.serviceName).subscribe((fileTree) => {
+              this.fileTree = fileTree;
+            });
+          }
+        });
+      });
 
     this.eventService.deletionTriggeredEvent
       .pipe(

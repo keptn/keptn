@@ -298,7 +298,7 @@ export class DataService {
   }
 
   public loadPlainProject(projectName: string): Observable<Project> {
-    return this.apiService.getProject(projectName).pipe(map((project) => Project.fromJSON(project)));
+    return this.apiService.getPlainProject(projectName).pipe(map((project) => Project.fromJSON(project)));
   }
 
   public loadProject(projectName: string): void {
