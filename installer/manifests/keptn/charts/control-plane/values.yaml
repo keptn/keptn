@@ -31,19 +31,16 @@ apiGatewayNginx:
   port: 80
   nodePort: 31090
   image:
-    registry: docker.io
     repository: nginxinc/nginx-unprivileged
     tag: 1.21.3-alpine
 
 remediationService:
   image:
-    registry: docker.io
     repository: keptn/remediation-service
     tag: ''
 
 apiService:
   image:
-    registry: docker.io
     repository: keptn/api
     tag: ''
   config:
@@ -52,7 +49,6 @@ apiService:
 
 bridge:
   image:
-    registry: docker.io
     repository: keptn/bridge2
     tag: ''
   cliDownloadLink:
@@ -77,13 +73,11 @@ distributor:
     hostname:
     namespace:
   image:
-    registry: docker.io
     repository: keptn/distributor
     tag: ''
 
 shipyardController:
   image:
-    registry: docker.io
     repository: keptn/shipyard-controller
     tag: ''
   config:
@@ -92,13 +86,11 @@ shipyardController:
 
 secretService:
   image:
-    registry: docker.io
     repository: keptn/secret-service
     tag: ''
 
 configurationService:
   image:
-    registry: docker.io
     repository: keptn/configuration-service
     tag: ''
   # storage and storageClass are the settings for the PVC used by the configuration-storage
@@ -107,38 +99,32 @@ configurationService:
 
 mongodbDatastore:
   image:
-    registry: docker.io
     repository: keptn/mongodb-datastore
     tag: ''
 
 lighthouseService:
   image:
-    registry: docker.io
     repository: keptn/lighthouse-service
     tag: ''
 
 statisticsService:
   image:
-    registry: docker.io
     repository: keptn/statistics-service
     tag: ''
 
 approvalService:
   image:
-    registry: docker.io
     repository: keptn/approval-service
     tag: ''
 
 webhookService:
   enabled: true
   image:
-    registry: docker.io
     repository: keptn/webhook-service
     tag: ''
 
 alpine:
   image:
-    registry: docker.io
     repository: alpine
     tag: '3.13'
 

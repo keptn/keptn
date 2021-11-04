@@ -3,7 +3,6 @@ global:
 
 jmeterservice:
   image:
-    registry: docker.io
     repository: keptn/jmeter-service # Container Image Name
     pullPolicy: IfNotPresent                   # Kubernetes Image Pull Policy
     tag: ""                                    # Container Tag
@@ -15,7 +14,6 @@ distributor:
   serviceFilter: ""                          # Sets the service this helm service belongs to
   projectFilter: ""                          # Sets the project this helm service belongs to
   image:
-    registry: docker.io
     repository: keptn/distributor  # Container Image Name
     pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
     tag: ""                                  # Container Tag
