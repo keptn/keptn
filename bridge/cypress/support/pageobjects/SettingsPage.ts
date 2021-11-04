@@ -17,7 +17,7 @@ class SettingsPage {
   }
 
   clickSaveChanges(): this {
-    cy.get('.dt-button-primary > span.dt-button-label').contains('Save changes').click();
+    cy.get('.dt-button-primary > span.dt-button-label').contains('Save changes').forceClick();
     return this;
   }
 
@@ -26,18 +26,18 @@ class SettingsPage {
   }
 
   clickDeleteProjectButton(): this {
-    cy.get('span.dt-button-label').contains('Delete this project').click();
+    cy.get('span.dt-button-label').contains('Delete this project').forceClick();
     return this;
   }
 
   typeProjectNameToDelete(projectName: string): this {
     const projectInputLoc = 'input[placeholder=proj_pattern]';
-    cy.get(projectInputLoc.replace('proj_pattern', projectName)).click().type(projectName);
+    cy.get(projectInputLoc.replace('proj_pattern', projectName)).forceClick().type(projectName);
     return this;
   }
 
   submitDelete(): void {
-    cy.get('span.dt-button-label').contains('I understand the consequences, delete this project').click();
+    cy.get('span.dt-button-label').contains('I understand the consequences, delete this project').forceClick();
   }
 }
 
