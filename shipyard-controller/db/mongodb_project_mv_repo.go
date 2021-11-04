@@ -59,16 +59,15 @@ type ProjectMVRepo interface {
 }
 
 type MongoDBProjectMVRepo struct {
-	ProjectRepo     ProjectRepo
-	EventsRetriever EventRepo
+	projectRepo ProjectRepo
+	eventRepo   EventRepo
 }
 
-// GetProjectsMaterializedView returns the materialized view
-func GetProjectsMaterializedView() *MongoDBProjectMVRepo {
+func NewProjectMVRepo(projectRepo ProjectRepo, eventRepo EventRepo) *MongoDBProjectMVRepo {
 	if instance == nil {
 		instance = &MongoDBProjectMVRepo{
-			ProjectRepo:     NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()),
-			EventsRetriever: nil, //TODO
+			projectRepo: projectRepo,
+			eventRepo:   eventRepo,
 		}
 	}
 	return instance
@@ -105,7 +104,7 @@ func (mv *MongoDBProjectMVRepo) UpdateShipyard(projectName string, shipyardConte
 		log.Errorf("could not update stage information of project %s: %s"+projectName, err.Error())
 	}
 
-	return mv.ProjectRepo.UpdateProject(&updatedProject)
+	return mv.projectRepo.UpdateProject(&updatedProject)
 }
 
 func generateStageInfo(project models.ExpandedProject) (models.ExpandedProject, error) {
@@ -157,7 +156,7 @@ func getParentStages(stageName string, shipyard *keptnv2.Shipyard) []string {
 
 // UpdateProject updates a project
 func (mv *MongoDBProjectMVRepo) UpdateProject(prj *models.ExpandedProject) error {
-	return mv.ProjectRepo.UpdateProject(prj)
+	return mv.projectRepo.UpdateProject(prj)
 }
 
 func setShipyardVersion(existingProject *models.ExpandedProject) error {
@@ -191,7 +190,7 @@ func (mv *MongoDBProjectMVRepo) UpdateUpstreamInfo(projectName string, uri, user
 	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
-		if err := mv.ProjectRepo.UpdateProject(existingProject); err != nil {
+		if err := mv.projectRepo.UpdateProject(existingProject); err != nil {
 			log.Errorf("could not update upstream credentials of project %s: %s", projectName, err.Error())
 			return err
 		}
@@ -210,7 +209,7 @@ func (mv *MongoDBProjectMVRepo) UpdatedShipyard(projectName string, shipyard str
 
 	if existingProject.Shipyard != shipyard {
 		existingProject.Shipyard = shipyard
-		err = mv.ProjectRepo.UpdateProject(existingProject)
+		err = mv.projectRepo.UpdateProject(existingProject)
 		if err != nil {
 			return err
 		}
@@ -234,7 +233,7 @@ func (mv *MongoDBProjectMVRepo) DeleteUpstreamInfo(projectName string) error {
 	}
 	existingProject.GitUser = ""
 	existingProject.GitRemoteURI = ""
-	if err := mv.ProjectRepo.UpdateProject(existingProject); err != nil {
+	if err := mv.projectRepo.UpdateProject(existingProject); err != nil {
 		log.Errorf("could not delete upstream credentials of project %s: %s", projectName, err.Error())
 		return err
 	}
@@ -243,7 +242,7 @@ func (mv *MongoDBProjectMVRepo) DeleteUpstreamInfo(projectName string) error {
 
 // GetProjects returns all projects
 func (mv *MongoDBProjectMVRepo) GetProjects() ([]*models.ExpandedProject, error) {
-	projects, err := mv.ProjectRepo.GetProjects()
+	projects, err := mv.projectRepo.GetProjects()
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +257,7 @@ func (mv *MongoDBProjectMVRepo) GetProjects() ([]*models.ExpandedProject, error)
 
 // GetProject returns a project by its name
 func (mv *MongoDBProjectMVRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
-	project, err := mv.ProjectRepo.GetProject(projectName)
+	project, err := mv.projectRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +272,7 @@ func (mv *MongoDBProjectMVRepo) GetProject(projectName string) (*models.Expanded
 
 // DeleteProject deletes a project
 func (mv *MongoDBProjectMVRepo) DeleteProject(projectName string) error {
-	return mv.ProjectRepo.DeleteProject(projectName)
+	return mv.projectRepo.DeleteProject(projectName)
 }
 
 // CreateStage creates a stage
@@ -304,7 +303,7 @@ func (mv *MongoDBProjectMVRepo) CreateStage(project string, stage string) error 
 		StageName: stage,
 	})
 
-	err = mv.ProjectRepo.UpdateProject(prj)
+	err = mv.projectRepo.UpdateProject(prj)
 	if err != nil {
 		return err
 	}
@@ -315,7 +314,7 @@ func (mv *MongoDBProjectMVRepo) CreateStage(project string, stage string) error 
 
 func (mv *MongoDBProjectMVRepo) createProject(project *models.ExpandedProject) error {
 
-	err := mv.ProjectRepo.CreateProject(project)
+	err := mv.projectRepo.CreateProject(project)
 	if err != nil {
 		log.Errorf("Could not create project %s: %s", project.ProjectName, err.Error())
 		return err
@@ -349,7 +348,7 @@ func (mv *MongoDBProjectMVRepo) DeleteStage(project string, stage string) error 
 	prj.Stages[len(prj.Stages)-1] = nil
 	prj.Stages = prj.Stages[:len(prj.Stages)-1]
 
-	err = mv.ProjectRepo.UpdateProject(prj)
+	err = mv.projectRepo.UpdateProject(prj)
 	return nil
 }
 
@@ -375,7 +374,7 @@ func (mv *MongoDBProjectMVRepo) CreateService(project string, stage string, serv
 				ServiceName:   service,
 			})
 			log.Infof("Adding %s to stage %s in project %s in database", service, stage, project)
-			err := mv.ProjectRepo.UpdateProject(existingProject)
+			err := mv.projectRepo.UpdateProject(existingProject)
 			if err != nil {
 				log.Errorf("Could not add service %s to stage %s in project %s. Could not update project: %s", service, stage, project, err.Error())
 				return err
@@ -435,7 +434,7 @@ func (mv *MongoDBProjectMVRepo) DeleteService(project string, stage string, serv
 			break
 		}
 	}
-	err = mv.ProjectRepo.UpdateProject(existingProject)
+	err = mv.projectRepo.UpdateProject(existingProject)
 	if err != nil {
 		log.Errorf("Could not delete service %s from stage %s in project %s: %s", service, stage, project, err.Error())
 		return err
@@ -507,7 +506,7 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e models.Event) error {
 		log.Errorf("Could not update image of service %s: %s", eventData.Service, err.Error())
 		return err
 	}
-	err = mv.ProjectRepo.UpdateProject(existingProject)
+	err = mv.projectRepo.UpdateProject(existingProject)
 	if err != nil {
 		log.Errorf("Could not update project %s: %s", eventData.Project, err.Error())
 		return err
@@ -530,7 +529,7 @@ func (mv *MongoDBProjectMVRepo) CreateRemediation(project, stage, service string
 		service.OpenRemediations = append(service.OpenRemediations, remediation)
 		return nil
 	})
-	return mv.ProjectRepo.UpdateProject(existingProject)
+	return mv.projectRepo.UpdateProject(existingProject)
 }
 
 // CloseOpenRemediations closes a open remediation actions for a given keptnContext
@@ -567,7 +566,7 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 		return err
 	}
 
-	return mv.ProjectRepo.UpdateProject(existingProject)
+	return mv.projectRepo.UpdateProject(existingProject)
 }
 
 func (mv *MongoDBProjectMVRepo) OnSequenceTaskStarted(event models.Event) {
@@ -587,7 +586,7 @@ func (mv *MongoDBProjectMVRepo) OnSequenceTaskFinished(event models.Event) {
 func (mv *MongoDBProjectMVRepo) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]models.Event, error) {
 	stage := eventData.GetStage()
 	service := eventData.GetService()
-	events, errObj := mv.EventsRetriever.GetEvents(eventData.GetProject(), common.EventFilter{
+	events, errObj := mv.eventRepo.GetEvents(eventData.GetProject(), common.EventFilter{
 		Type:         keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
 		Stage:        &stage,
 		Service:      &service,

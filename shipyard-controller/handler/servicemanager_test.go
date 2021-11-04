@@ -318,9 +318,6 @@ func TestDeleteService(t *testing.T) {
 	projectMVRepo.DeleteServiceFunc = func(project string, stage string, service string) error {
 		return nil
 	}
-	uniformRepo.DeleteServiceFromSubscriptionsFunc = func(serviceName string) error {
-		return nil
-	}
 
 	err := instance.DeleteService("my-project", "my-service")
 	assert.Nil(t, err)
