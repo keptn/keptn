@@ -24,7 +24,7 @@ const forceClick = (selector: HTMLElement) =>
           .as('clickSubject')
           .wait(10) // for some reason this is needed, otherwise next line returns `true` even if click() fails due to detached element in the next step
           .then(($el) => Cypress.dom.isAttached($el)),
-      { timeout: 1000, interval: 1 }
+      { timeout: 1000, interval: 100 }
     )
     .get('@clickSubject')
     .click();
