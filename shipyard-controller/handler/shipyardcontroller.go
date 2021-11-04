@@ -174,23 +174,23 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 }
 
 func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.Warnf("Unable to determine eventScope of event: %v", err)
+		return err
+	}
+
 	// ignore events from shipyard-controller
-	if *event.Source == "shipyard-controller" && !keptnv2.IsSequenceEventType(*event.Type) {
+	if eventScope.EventSource == "shipyard-controller" && !keptnv2.IsSequenceEventType(eventScope.EventType) {
 		log.Debug("Received event from myself. Ignoring...")
 		return nil
 	}
 
-	// if we don't have a valid EventScope the next action can not be determined
-	eventScope, err := models.NewEventScope(event)
-	if err != nil {
-		log.Warnf("Could not determine eventScope of event: %v", err)
-		return err
-	}
 	log.Infof("Checking if .triggered event should start a sequence in project %s", eventScope.Project)
 
-	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
+	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(eventScope.EventType)
 	if err != nil {
-		log.Errorf("Unable to parse sequence event of type %s", *event.Type)
+		log.Errorf("Unable to parse sequence event of type %s", eventScope.EventType)
 		return err
 	}
 
@@ -199,7 +199,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	if err != nil {
 		msg := fmt.Sprintf("Unable to retrieve Shipyard file: %v", err)
 		log.Errorf(msg)
-		return sc.triggerSequenceFailed(event, eventScope, msg, taskSequenceName)
+		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 
 	// check if the sequence is available in the given stage
@@ -207,59 +207,71 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	if err != nil {
 		msg := fmt.Sprintf("Unable to start sequence %s: %v", taskSequenceName, err)
 		log.Error(msg)
-		return sc.triggerSequenceFailed(event, eventScope, msg, taskSequenceName)
+		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 
-	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
+	if err := sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.TriggeredEvent); err != nil {
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
 
-	sc.onSequenceTriggered(event)
+	sc.onSequenceTriggered(eventScope.WrappedEvent)
 	return sc.sequenceDispatcher.Add(models.QueueItem{
 		Scope:     *eventScope,
-		EventID:   event.ID,
-		Timestamp: common.ParseTimestamp(event.Time, nil),
+		EventID:   eventScope.WrappedEvent.ID,
+		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
 	})
 }
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
-	eventScope, taskContext, err := sc.getOpenTaskContextFromEvent(event)
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.Warnf("Unable to determine eventScope of event: %v", err)
+		return err
+	}
+
+	_, taskContext, err := sc.getOpenTaskContextFromEvent(*eventScope)
 	if err != nil {
 		return err
 	} else if taskContext == nil {
 		return fmt.Errorf("no sequence context for event with scope %v found", eventScope)
 	}
 
-	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
+	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.TriggeredEvent))
 	if err != nil {
 		return err
 	}
 
 	// get corresponding 'triggered' event for the incoming 'started' event
-	events, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &event.Triggeredid}, common.TriggeredEvent, maxRepoReadRetries)
+	events, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &eventScope.TriggeredID}, common.TriggeredEvent, maxRepoReadRetries)
 
 	if err != nil {
-		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
+		msg := "error while retrieving matching '.triggered' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID + ": " + err.Error()
 		log.Error(msg)
 		return errors.New(msg)
 	} else if len(events) == 0 {
-		msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+		msg := "no matching '.triggered' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID
 		log.Error(msg)
 		return ErrNoMatchingEvent
 	}
 
-	sc.onSequenceTaskStarted(event)
+	sc.onSequenceTaskStarted(eventScope.WrappedEvent)
 
-	return sc.eventRepo.InsertEvent(eventScope.Project, event, common.StartedEvent)
+	return sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.StartedEvent)
 }
 
 func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
-	if *event.Source == "shipyard-controller" {
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.Warnf("Unable to determine eventScope of event: %v", err)
+		return err
+	}
+
+	if eventScope.EventSource == "shipyard-controller" {
 		log.Info("Received event from myself. Ignoring.")
 		return nil
 	}
 
-	eventScope, taskContext, err := sc.getOpenTaskContextFromEvent(event)
+	_, taskContext, err := sc.getOpenTaskContextFromEvent(*eventScope)
 	if err != nil {
 		return err
 	} else if taskContext == nil {
@@ -272,17 +284,17 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	startedEvents, err := sc.eventRepo.GetStartedEventsForTriggeredID(eventScope)
 
 	if err != nil {
-		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
+		msg := "error while retrieving matching '.started' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID + ": " + err.Error()
 		log.Error(msg)
 		return errors.New(msg)
 	} else if len(startedEvents) == 0 {
-		msg := "no matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+		msg := "no matching '.started' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID
 		log.Error(msg)
 		return ErrNoMatchingEvent
 	}
 
 	// persist the .finished event
-	err = sc.eventRepo.InsertEvent(eventScope.Project, event, common.FinishedEvent)
+	err = sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.FinishedEvent)
 	if err != nil {
 		log.Error("Could not store .finished event: " + err.Error())
 	}
@@ -296,19 +308,19 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
-		triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
+		triggeredEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.TriggeredEvent))
 		if err != nil {
 			return err
 		}
 
-		triggeredEvents, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &event.Triggeredid}, common.TriggeredEvent, maxRepoReadRetries)
+		triggeredEvents, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &eventScope.TriggeredID}, common.TriggeredEvent, maxRepoReadRetries)
 		if err != nil {
-			msg := "could not retrieve '.triggered' event with ID " + event.Triggeredid + ": " + err.Error()
+			msg := "could not retrieve '.triggered' event with ID " + eventScope.TriggeredID + ": " + err.Error()
 			log.Error(msg)
 			return errors.New(msg)
 		}
 		if len(triggeredEvents) == 0 {
-			msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+			msg := "no matching '.triggered' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID
 			log.Error(msg)
 			return ErrNoMatchingEvent
 		}
@@ -316,7 +328,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		log.Info("triggered event will be deleted")
 		err = sc.eventRepo.DeleteEvent(eventScope.Project, triggeredEvents[0].ID, common.TriggeredEvent)
 		if err != nil {
-			msg := "Could not delete .triggered event with ID " + event.Triggeredid + ": " + err.Error()
+			msg := "Could not delete .triggered event with ID " + eventScope.TriggeredID + ": " + err.Error()
 			log.Error(msg)
 			return errors.New(msg)
 		}
@@ -327,7 +339,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return err
 		}
 
-		log.Infof("Task sequence related to eventID %s: %s.%s", event.Triggeredid, taskContext.Stage, taskContext.TaskSequenceName)
+		log.Infof("Task sequence related to eventID %s: %s.%s", eventScope.TriggeredID, taskContext.Stage, taskContext.TaskSequenceName)
 		log.Info("Trying to fetch shipyard and get next task")
 		shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 		if err != nil {
@@ -341,7 +353,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return errors.New(msg)
 		}
 
-		sc.onSequenceTaskFinished(event)
+		sc.onSequenceTaskFinished(eventScope.WrappedEvent)
 
 		return sc.proceedTaskSequence(eventScope, sequence, finishedEventsData, taskContext)
 	}
@@ -482,7 +494,8 @@ func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) er
 	return nil
 }
 
-func (sc *shipyardController) triggerSequenceFailed(event models.Event, eventScope *models.EventScope, msg string, taskSequenceName string) error {
+func (sc *shipyardController) triggerSequenceFailed(eventScope models.EventScope, msg string, taskSequenceName string) error {
+	event := eventScope.WrappedEvent
 	sc.onSequenceTriggered(event) //TODO: remove?
 	finishedEvent := event
 	finishedEventData := keptnv2.EventData{
@@ -522,32 +535,27 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	taskSequence, err := GetTaskSequenceInStage(eventScope.Stage, taskSequenceName, shipyard)
 	if err != nil {
 		msg := fmt.Sprintf("could not get definition of task sequence %s: %s", taskSequenceName, err.Error())
-		return sc.triggerSequenceFailed(event, eventScope, msg, taskSequenceName)
+		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 	sc.onSequenceStarted(event)
 
 	return sc.proceedTaskSequence(eventScope, taskSequence, []interface{}{}, nil)
 }
 
-func (sc *shipyardController) getOpenTaskContextFromEvent(event models.Event) (*models.EventScope, *models.TaskSequenceEvent, error) {
-	eventScope, err := models.NewEventScope(event)
-	if err != nil {
-		return nil, nil, fmt.Errorf("Could not determine eventScope of event: %s", err.Error())
-	}
-	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
+func (sc *shipyardController) getOpenTaskContextFromEvent(eventScope models.EventScope) (*models.EventScope, *models.TaskSequenceEvent, error) {
 
 	// get the taskSequence related to the triggeredID and proceed with the next task
-	log.Debugf("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
+	log.Debugf("Retrieving task sequence related to triggeredID %s", eventScope.WrappedEvent.Triggeredid)
 	taskContext, err := sc.getOpenTaskContext(eventScope)
 	if err != nil {
 		return nil, nil, err
 	} else if taskContext == nil {
 		return nil, nil, fmt.Errorf("no task sequence context for event with scope %v found", eventScope)
 	}
-	return eventScope, taskContext, nil
+	return &eventScope, taskContext, nil
 }
 
-func (sc *shipyardController) getOpenTaskContext(eventScope *models.EventScope) (*models.TaskSequenceEvent, error) {
+func (sc *shipyardController) getOpenTaskContext(eventScope models.EventScope) (*models.TaskSequenceEvent, error) {
 	for i := 0; i <= maxRepoReadRetries; i++ {
 		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: eventScope.TriggeredID})
 		if err != nil {

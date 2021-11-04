@@ -25,7 +25,10 @@ func Test_NewEventScope(t *testing.T) {
 					Type: common.Stringp("my-type"),
 				},
 			},
-			want:    &EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type"},
+			want: &EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type", WrappedEvent: Event{
+				Data: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"},
+				Type: common.Stringp("my-type"),
+			}},
 			wantErr: false,
 		},
 		{
