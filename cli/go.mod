@@ -32,7 +32,7 @@ require (
 	k8s.io/apimachinery v0.22.3
 	k8s.io/cli-runtime v0.22.3
 	k8s.io/client-go v0.22.3
-	k8s.io/kubectl v0.22.1
+	k8s.io/kubectl v0.22.3
 )
 
 // required as per https://github.com/helm/helm/issues/9354
