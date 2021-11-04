@@ -1,6 +1,10 @@
+global:
+  imagePullSecrets: []                         # Secrets to use for container registry credentials
+
 helmservice:
   image:
-    repository: docker.io/keptn/helm-service # Container Image Name
+    registry: docker.io
+    repository: keptn/helm-service # Container Image Name
     pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
     tag: ""                                  # Container Tag
   service:
@@ -11,7 +15,8 @@ distributor:
   serviceFilter: ""                          # Sets the service this helm service belongs to
   projectFilter: ""                          # Sets the project this helm service belongs to
   image:
-    repository: docker.io/keptn/distributor  # Container Image Name
+    registry: docker.io
+    repository: keptn/distributor  # Container Image Name
     pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
     tag: ""                                  # Container Tag
 
@@ -22,8 +27,6 @@ remoteControlPlane:
     hostname: ""                             # Hostname of the control plane cluster (and Port)
     apiValidateTls: true                     # Defines if the control plane certificate should be validated
     token: ""                                # Keptn API Token
-
-imagePullSecrets: []                         # Secrets to use for container registry credentials
 
 serviceAccount:
   create: true                               # Enables the service account creation
