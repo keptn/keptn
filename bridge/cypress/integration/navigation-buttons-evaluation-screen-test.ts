@@ -16,7 +16,9 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       fixture: 'get.project.json',
     }).as('initProjects');
 
-    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?*', { fixture: 'project.sequences.json' });
+    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?*', { fixture: 'project.sequences.json' }).as(
+      'getSequence'
+    );
 
     cy.intercept('PUT', 'api/controlPlane/v1/project', {
       statusCode: 200,
@@ -66,7 +68,9 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
     ).as('getEventEvalFinishedWithProject');
 
     cy.visit('/');
+    cy.wait(500);
     basePage.clickProjectTile('dynatrace');
+
     basePage
       .goToServicesPage()
       .clickOnServicePanelByName('items')

@@ -1,6 +1,9 @@
 /// <reference types="cypress" />
 
 class SettingsPage {
+  GIT_USER_LOC = 'input[formcontrolname="gitUser"]';
+  GIT_URL_INPUT_LOC = 'input[formcontrolname="gitUrl"]';
+
   inputGitUrl(GIT_URL: string): this {
     cy.get('input[formcontrolname="gitUrl"]').type(GIT_URL);
     return this;
