@@ -127,7 +127,6 @@ func main() {
 		sequenceTimeoutChannel,
 		shipyardRetriever,
 	)
-	sequenceDispatcher.Run(context.Background(), shipyardController.StartTaskSequence)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")

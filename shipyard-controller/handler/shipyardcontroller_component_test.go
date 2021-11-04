@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -1095,10 +1096,14 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	if shipyardContent == "" {
 		shipyardContent = testShipyardFile
 	}
-
-	em := &shipyardController{
+	eventRepo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+	eventQueueRepo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
+	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
+	sequenceRepo := db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
+	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, time.Second, clock.New())
+	sc := &shipyardController{
 		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
-		eventRepo:        db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()),
+		eventRepo:        eventRepo,
 		taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance()),
 		eventDispatcher: &fake.IEventDispatcherMock{
 			AddFunc: func(event models.DispatcherEvent) error {
@@ -1108,6 +1113,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 
 			},
 		},
+		sequenceDispatcher: sequenceDispatcher,
 		shipyardRetriever: &fake.IShipyardRetrieverMock{
 			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 				return common.UnmarshalShipyard(shipyardContent)
@@ -1117,17 +1123,17 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 			},
 		},
 	}
-
-	em.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
+	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
 		ev := &models.Event{}
 		err := keptnv2.Decode(&event.Event, ev)
 		if err != nil {
 			return err
 		}
-		_ = em.HandleIncomingEvent(*ev, true)
+		_ = sc.HandleIncomingEvent(*ev, true)
 		return nil
 	}
-	return em
+	sc.init(context.Background())
+	return sc
 }
 
 func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([]models.Event, error) {
