@@ -112,7 +112,7 @@ func GetTaskSequencesByTrigger(eventScope *models.EventScope, completedTaskSeque
 	return result
 }
 
-func (sc *shipyardController) GetMergedPayloadForSequenceTriggeredEvent(inputEvent *models.Event, eventPayload map[string]interface{}, eventHistory []interface{}) (interface{}, error) {
+func GetMergedPayloadForSequenceTriggeredEvent(inputEvent *models.Event, eventPayload map[string]interface{}, eventHistory []interface{}) (interface{}, error) {
 	var mergedPayload interface{}
 	if inputEvent != nil {
 		marshal, err := json.Marshal(inputEvent.Data)
