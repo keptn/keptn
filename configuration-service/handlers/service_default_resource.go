@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
+	logger "github.com/sirupsen/logrus"
 )
 
 // GetProjectProjectNameServiceServiceNameResourceHandlerFunc get list of default resources for the service
@@ -23,7 +23,6 @@ func GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 // PostProjectProjectNameServiceServiceNameResourceHandlerFunc creates a list of new default resources
 func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -84,7 +83,6 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 
 // PutProjectProjectNameServiceServiceNameResourceHandlerFunc updates a list of default resources
 func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -145,7 +143,6 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 
 // PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc updates the specified resource for the service
 func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -203,7 +200,6 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 // DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource from the service
 func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}

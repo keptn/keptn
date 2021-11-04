@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
+	logger "github.com/sirupsen/logrus"
 )
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
 	}

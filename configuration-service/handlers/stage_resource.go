@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -20,7 +20,6 @@ import (
 
 // GetProjectProjectNameStageStageNameResourceHandlerFunc get list of stage resources
 func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -43,7 +42,6 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
 func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -95,7 +93,6 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage
 func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -137,7 +134,6 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 
 // PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
 func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -179,7 +175,6 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
 func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -217,7 +212,6 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc deletes the specified stage resource
 func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 

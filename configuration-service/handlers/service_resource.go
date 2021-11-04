@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -10,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -26,7 +26,6 @@ import (
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc get list of resources for the service
 func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -53,7 +52,6 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -136,7 +134,6 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 // DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource
 func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -186,7 +183,6 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
@@ -223,7 +219,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 
 		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
-			if resp := untarHelm(res, logger, filePath); resp != nil {
+			if resp := untarHelm(res, filePath); resp != nil {
 				return resp
 			}
 		}
@@ -245,7 +241,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		WithPayload(metadata)
 }
 
-func untarHelm(res *models.Resource, logger *keptncommon.Logger, filePath string) middleware.Responder {
+func untarHelm(res *models.Resource, filePath string) middleware.Responder {
 	// unarchive the Helm chart
 	logger.Debug("Unarchive the Helm chart: " + *res.ResourceURI)
 	tmpDir, err := ioutil.TempDir("", "")
@@ -311,7 +307,7 @@ func untarHelm(res *models.Resource, logger *keptncommon.Logger, filePath string
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
+
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
@@ -346,7 +342,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		logger.Debug("Updating resource: " + filePath)
 		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
-			if resp := untarHelm(res, logger, filePath); resp != nil {
+			if resp := untarHelm(res, filePath); resp != nil {
 				return resp
 			}
 		}
@@ -378,7 +374,6 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc updates a specified resource
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)

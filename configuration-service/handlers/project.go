@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/google/martian/log"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
@@ -27,7 +27,6 @@ type projectMetadata struct {
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -109,8 +108,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	projectName := params.Project.ProjectName
 
 	if common.ProjectExists(projectName) {
@@ -140,8 +137,6 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 

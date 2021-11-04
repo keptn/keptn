@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	logger "github.com/sirupsen/logrus"
 	"os"
 	"time"
 
@@ -22,8 +22,6 @@ type serviceMetadata struct {
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -73,8 +71,6 @@ func PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc deletes a service
 func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
