@@ -29,6 +29,8 @@ import (
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
 
+const envVarLogLevel = "LOG_LEVEL"
+
 type EnvConfig struct {
 	AuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	AuthRequestMaxBurst   int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
@@ -104,6 +106,14 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	log.SetLevel(log.InfoLevel)
+
+	logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+	if err != nil {
+		log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+	} else {
+		log.SetLevel(logLevel)
+	}
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

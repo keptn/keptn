@@ -144,7 +144,6 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 
 			h := &metadataHandler{
 				k8sClient:       tt.fields.k8sClient,
-				logger:          tt.fields.logger,
 				swaggerFilePath: tmpSwaggerFileName,
 			}
 			require.Equal(t, tt.want, h.getMetadata())

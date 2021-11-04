@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"os"
 	"time"
 
@@ -26,7 +27,7 @@ func GetDatastoreURL() string {
 }
 
 // SendEvent godoc
-func SendEvent(keptnContext, triggeredID, eventType, source string, data interface{}, l keptnutils.LoggerInterface) error {
+func SendEvent(keptnContext, triggeredID, eventType, source string, data interface{}) error {
 	if source == "" {
 		source = "https://github.com/keptn/keptn/api"
 	}
@@ -44,12 +45,12 @@ func SendEvent(keptnContext, triggeredID, eventType, source string, data interfa
 		EventBrokerURL: GetEventBrokerURL(),
 	})
 	if err != nil {
-		l.Error(fmt.Sprintf("Error initializing Keptn Handler %s", err.Error()))
+		logger.Error(fmt.Sprintf("Error initializing Keptn Handler %s", err.Error()))
 		return err
 	}
 	err = k.SendCloudEvent(ev)
 	if err != nil {
-		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
+		logger.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return err
 	}
 	return nil
