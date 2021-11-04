@@ -20,7 +20,7 @@ describe('verify Page data update when project is switched', () => {
     const SERVICE_TEST_PROJ = 'newService';
     const UNIFORM_REMEDIATION = 'remediation-service';
     const UNIFORM_APPROVAL_SERVICE = 'approval-service';
-    const UNIOFORM_DYNATRACE_SERVICE = 'dynatrace-service';
+    const UNIFORM_DYNATRACE_SERVICE = 'dynatrace-service';
 
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
     cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
@@ -67,12 +67,12 @@ describe('verify Page data update when project is switched', () => {
     basePage.goToUniformPage();
     cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIFORM_APPROVAL_SERVICE);
     cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIFORM_REMEDIATION);
-    cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIOFORM_DYNATRACE_SERVICE);
+    cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIFORM_DYNATRACE_SERVICE);
 
     basePage.chooseProjectFromHeaderMenu(PROJECT_TEST);
     cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIFORM_APPROVAL_SERVICE);
     cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIFORM_REMEDIATION);
-    cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIOFORM_DYNATRACE_SERVICE);
+    cy.get(uniformPage.UNIFORM_NAME_LOC).contains(UNIFORM_DYNATRACE_SERVICE);
 
     basePage.gotoSettingsPage();
     cy.get(settingsPage.GIT_USER_LOC).should('have.value', 'carpe-github-testproj');
