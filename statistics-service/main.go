@@ -35,11 +35,13 @@ func main() {
 
 	log.SetLevel(log.InfoLevel)
 
-	logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
-	if err != nil {
-		log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
-	} else {
-		log.SetLevel(logLevel)
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			log.SetLevel(logLevel)
+		}
 	}
 
 	_ = controller.GetStatisticsBucketInstance()

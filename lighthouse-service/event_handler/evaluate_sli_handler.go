@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -56,7 +57,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	if err != nil {
 		msg := "Could not parse event payload: " + err.Error()
-		eh.KeptnHandler.Logger.Error(msg)
+		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 
@@ -76,17 +77,17 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, 
 	})
 	if err2 != nil {
 		msg := fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2)
-		eh.KeptnHandler.Logger.Error(msg)
+		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 	if triggeredEvents == nil || len(triggeredEvents) == 0 {
 		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
-		eh.KeptnHandler.Logger.Error(msg)
+		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 	triggeredID := triggeredEvents[0].ID
 
-	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
+	logger.Debug("Start to evaluate SLIs")
 	// compare the results based on the evaluation strategy
 	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
@@ -120,7 +121,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, 
 	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
 	sloFileContent, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
 	if err != nil {
-		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation.finished event.")
+		logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation.finished event.")
 		sloFileContent, _ = yaml.Marshal(sloConfig)
 	}
 
@@ -153,7 +154,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, 
 	if err != nil {
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
 	}
-	eh.KeptnHandler.Logger.Debug("Evaluation result: " + string(evaluationResult.Result))
+	logger.Debug("Evaluation result: " + string(evaluationResult.Result))
 
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
