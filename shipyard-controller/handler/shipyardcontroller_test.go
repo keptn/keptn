@@ -276,7 +276,7 @@ func TestHandleFinishedEvent(t *testing.T) {
 					DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 						return nil
 					},
-					GetStartedEventsForTriggeredIDFunc: func(eventScope *models.EventScope) ([]models.Event, error) {
+					GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]models.Event, error) {
 						return nil, nil
 					},
 				},

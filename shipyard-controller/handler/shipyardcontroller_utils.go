@@ -78,7 +78,7 @@ func GetNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask *models.
 	return nil
 }
 
-func GetTaskSequencesByTrigger(eventScope *models.EventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard, previousTask string) []NextTaskSequence {
+func GetTaskSequencesByTrigger(eventScope models.EventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard, previousTask string) []NextTaskSequence {
 	var result []NextTaskSequence
 
 	for _, stage := range shipyard.Spec.Stages {

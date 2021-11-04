@@ -23,9 +23,6 @@ import (
 // 			CreateUniformIntegrationFunc: func(integration models.Integration) error {
 // 				panic("mock out the CreateUniformIntegration method")
 // 			},
-// 			DeleteServiceFromSubscriptionsFunc: func(subscriptionName string) error {
-// 				panic("mock out the DeleteServiceFromSubscriptions method")
-// 			},
 // 			DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
 // 				panic("mock out the DeleteSubscription method")
 // 			},
@@ -59,9 +56,6 @@ type UniformRepoMock struct {
 
 	// CreateUniformIntegrationFunc mocks the CreateUniformIntegration method.
 	CreateUniformIntegrationFunc func(integration models.Integration) error
-
-	// DeleteServiceFromSubscriptionsFunc mocks the DeleteServiceFromSubscriptions method.
-	DeleteServiceFromSubscriptionsFunc func(subscriptionName string) error
 
 	// DeleteSubscriptionFunc mocks the DeleteSubscription method.
 	DeleteSubscriptionFunc func(integrationID string, subscriptionID string) error

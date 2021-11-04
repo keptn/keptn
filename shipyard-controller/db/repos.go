@@ -62,7 +62,7 @@ type EventRepo interface {
 	InsertEvent(project string, event models.Event, status common.EventStatus) error
 	DeleteEvent(project string, eventID string, status common.EventStatus) error
 	DeleteEventCollections(project string) error
-	GetStartedEventsForTriggeredID(eventScope *models.EventScope) ([]models.Event, error)
+	GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error)
 	GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error)
 	GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error)
 	DeleteAllFinishedEvents(eventScope models.EventScope) error
