@@ -57,7 +57,7 @@ class BasePage {
   }
 
   clickProjectTile(projectName: string): EnvironmentPage {
-    cy.get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click({ force: true });
+    cy.wait(200).get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click();
     return new EnvironmentPage();
   }
 

@@ -2,12 +2,12 @@
 
 class ServicesPage {
   clickOnServicePanelByName(serviceName: string): this {
-    cy.get('div.dt-info-group-content').get('h2').contains(serviceName).click({ force: true });
+    cy.wait(200).get('div.dt-info-group-content').get('h2').contains(serviceName).click();
     return this;
   }
 
   clickOnServiceInnerPanelByName(serviceName: string): this {
-    cy.get('span.ng-star-inserted').contains(serviceName).click({ force: true });
+    cy.wait(200).get('span.ng-star-inserted').contains(serviceName).click();
     return this;
   }
 
