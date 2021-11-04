@@ -238,14 +238,12 @@ func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope *models.Ev
 }
 
 func (e *MongoDBEventsRepo) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
-	log.Info(string("Trying to get " + status + " events"))
 	for i := 0; i <= nrRetries; i++ {
-		startedEvents, err := e.GetEvents(project, filter, status)
+		events, err := e.GetEvents(project, filter, status)
 		if err != nil && err == ErrNoEventFound {
-			log.Info(string("No matching " + status + " events found. Retrying in 2s."))
 			<-time.After(2 * time.Second)
 		} else {
-			return startedEvents, err
+			return events, err
 		}
 	}
 	return nil, nil
@@ -270,7 +268,7 @@ func (e *MongoDBEventsRepo) GetTaskSequenceTriggeredEvent(eventScope models.Even
 }
 
 func (e *MongoDBEventsRepo) DeleteAllFinishedEvents(eventScope models.EventScope) error {
-	// delete all finished events of this sequence //TODO: replace with GetFinishedEvents
+	// delete all finished events of this sequence
 	finishedEvents, err := e.GetEvents(eventScope.Project, common.EventFilter{
 		Stage:        &eventScope.Stage,
 		KeptnContext: &eventScope.KeptnContext,
@@ -377,7 +375,6 @@ func getSearchOptions(filter common.EventFilter) bson.M {
 }
 
 func flattenRecursively(i interface{}) (interface{}, error) {
-
 	if _, ok := i.(bson.D); ok {
 		d := i.(bson.D)
 		myMap := d.Map()
