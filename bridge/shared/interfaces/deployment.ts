@@ -30,7 +30,7 @@ export interface IStageDeployment {
   remediationConfig?: string;
   approvalInformation?: {
     trace: Trace;
-    latestImage?: string;
+    deployedImage?: string;
   };
   subSequences: SubSequence[];
   deploymentURL?: string;

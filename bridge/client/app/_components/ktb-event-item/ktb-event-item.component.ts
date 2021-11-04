@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Directive, Input, Output, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable, of } from 'rxjs';
 import { Project } from '../../_models/project';
@@ -6,6 +6,7 @@ import { Trace } from '../../_models/trace';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
+import { EventEmitter } from 'puppeteer';
 
 @Directive({
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
@@ -14,7 +15,7 @@ import { DateUtil } from '../../_utils/date.utils';
 export class KtbEventItemDetailDirective {}
 
 @Component({
-  selector: 'ktb-event-item',
+  selector: 'ktb-event-item[event]',
   templateUrl: './ktb-event-item.component.html',
   styleUrls: ['./ktb-event-item.component.scss'],
 })
@@ -31,6 +32,9 @@ export class KtbEventItemComponent {
   @Input() public showChartLink = false;
   @Input() public showTime = true;
   @Input() public showLabels = true;
+  @Input() public image?: string;
+  @Input() public evaluation?: Trace;
+  @Output() public approvalSent = new EventEmitter();
 
   @Input()
   get event(): Trace | undefined {

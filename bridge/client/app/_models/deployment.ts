@@ -15,7 +15,7 @@ export class StageDeployment implements IStageDeployment {
   remediationConfig?: string;
   approvalInformation?: {
     trace: Trace;
-    latestImage?: string;
+    deployedImage?: string;
   };
   subSequences!: SubSequence[];
 

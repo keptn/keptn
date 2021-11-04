@@ -568,36 +568,32 @@ export class DataService {
     }
   }
 
-  public sendApprovalEvent(approval: Trace, approve: boolean): void {
-    this.apiService
-      .sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished')
-      .subscribe(() => {
-        const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
-        if (project?.projectName) {
-          const stage = project.stages.find((st) => st.stageName === approval.data.stage);
-          const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
-          const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
-          // const deployment = service?.deployments.find((dep) => dep.shkeptncontext === approval.shkeptncontext);
+  public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {
+    const approval$ = this.apiService.sendApprovalEvent(
+      approval,
+      approve,
+      EventTypes.APPROVAL_FINISHED,
+      'approval.finished'
+    );
 
-          if (sequence) {
-            // update data of sequence screen
-            this.loadTraces(sequence);
-          }
-          // TODO: update service screen
-          // if (deployment) {
-          //   // update data of service screen
-          //   this.getRoot(project.projectName, deployment.shkeptncontext).subscribe((root) => {
-          //     if (deployment.sequence) {
-          //       deployment.sequence = root;
-          //     }
-          //   });
-          // }
-          if (service) {
-            // update data of environment screen
-            this.updateServiceApproval(service, approval);
-          }
+    approval$.subscribe(() => {
+      const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
+      if (project?.projectName) {
+        const stage = project.stages.find((st) => st.stageName === approval.data.stage);
+        const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
+        const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
+
+        if (sequence) {
+          // update data of sequence screen
+          this.loadTraces(sequence);
         }
-      });
+        if (service) {
+          // update data of environment screen
+          this.updateServiceApproval(service, approval);
+        }
+      }
+    });
+    return approval$;
   }
 
   private updateServiceApproval(service: Service, approval: Trace): void {

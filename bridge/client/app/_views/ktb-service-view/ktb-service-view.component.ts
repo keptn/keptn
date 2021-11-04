@@ -1,12 +1,12 @@
-import { Component, HostBinding, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { filter, map, skip, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
 import { ServiceState } from '../../../../shared/models/service-state';
-import { AppUtils } from '../../_utils/app.utils';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
 import { DeploymentInformation } from '../../_models/service-state';
 
@@ -23,7 +23,6 @@ export class KtbServiceViewComponent implements OnDestroy {
   public serviceName?: string;
   public isQualityGatesOnly = false;
   public serviceStates?: ServiceState[];
-  public deploymentInterval = 30_000;
   public projectName?: string;
   public selectedDeployment?: DeploymentInformationSelection;
   public deploymentLoading = false;
@@ -32,7 +31,8 @@ export class KtbServiceViewComponent implements OnDestroy {
     private dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
-    public location: Location
+    public location: Location,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
@@ -50,28 +50,18 @@ export class KtbServiceViewComponent implements OnDestroy {
       takeUntil(this.unsubscribe$)
     );
 
-    const serviceStates$ = projectName$.pipe(
-      switchMap((projectName) => this.dataService.getServiceStates(projectName))
-    );
-
     params$.pipe(take(1)).subscribe((params) => {
       this.serviceName = params.get('serviceName') ?? undefined;
     });
 
-    projectName$
-      .pipe(
-        switchMap((projectName) =>
-          AppUtils.createTimer(this.deploymentInterval, this.deploymentInterval).pipe(map(() => projectName))
-        ),
-        takeUntil(this.unsubscribe$),
-        switchMap((projectName) =>
-          this.dataService.getServiceStates(projectName, this.getLatestDeploymentTime()?.toISOString())
-        ),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe((serviceStates) => {
-        this.updateServiceStates(serviceStates);
-      });
+    const serviceStates$ = projectName$.pipe(
+      switchMap((projectName) => AppUtils.createTimer(0, this.initialDelayMillis).pipe(map(() => projectName))),
+      takeUntil(this.unsubscribe$),
+      switchMap((projectName) =>
+        this.dataService.getServiceStates(projectName, this.getLatestDeploymentTime()?.toISOString())
+      ),
+      takeUntil(this.unsubscribe$)
+    );
 
     combineLatest([params$, project$, serviceStates$])
       .pipe(take(1))
@@ -99,6 +89,9 @@ export class KtbServiceViewComponent implements OnDestroy {
           }
         }
       });
+    serviceStates$.pipe(skip(1)).subscribe((serviceStates) => {
+      this.updateServiceStates(serviceStates);
+    });
 
     project$.subscribe((project) => {
       this.projectName = project.projectName;

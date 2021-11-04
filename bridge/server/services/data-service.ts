@@ -169,14 +169,24 @@ export class DataService {
       stageName,
       serviceName,
       ResultTypes.PASSED
-    );
+    ); // the finished trace does not have the image
+
     const traceData = result.data.events[0];
     let deploymentInformation: DeploymentInformation | undefined;
     if (traceData) {
+      const triggeredTraceResponse = await this.apiService.getTraces(
+        EventTypes.DEPLOYMENT_TRIGGERED,
+        1,
+        projectName,
+        stageName,
+        serviceName,
+        traceData.shkeptncontext
+      );
+      const triggeredTrace = Trace.fromJSON(triggeredTraceResponse.data.events[0]);
       const trace = Trace.fromJSON(traceData);
       deploymentInformation = {
         deploymentUrl: trace.getDeploymentUrl(),
-        image: trace.getShortImageName(),
+        image: triggeredTrace.getShortImageName(),
       };
     }
     return deploymentInformation;
@@ -998,44 +1008,43 @@ export class DataService {
           }
         }
         if (approvalTrace?.isApprovalPending()) {
-          let image = stageTraces.reduce((img: undefined | string, tr) => img ?? tr.getShortImageName(), undefined);
-          if (!image) {
-            const deploymentInformation = await this.getDeploymentInformation(
-              sequence.service,
-              projectName,
-              stage.name
-            );
-            image = deploymentInformation?.image;
-          }
+          const deploymentInformation = await this.getDeploymentInformation(sequence.service, projectName, stage.name);
+
           approvalTrace.traces = [];
           approvalInformation = {
             trace: approvalTrace,
-            latestImage: image,
+            deployedImage: deploymentInformation?.image,
           };
         }
+        const subSequencesForStage = subSequences
+          .map((seq) => {
+            let subSequenceResult: ResultTypes;
+            if (seq.isFaulty()) {
+              subSequenceResult = ResultTypes.FAILED;
+            } else if (seq.isWarning()) {
+              subSequenceResult = ResultTypes.WARNING;
+            } else {
+              subSequenceResult = ResultTypes.PASSED;
+            }
+            return {
+              name: seq.getLabel(),
+              type: seq.type,
+              result: subSequenceResult,
+              time: seq.time ? new Date(seq.time).getTime() : 0,
+              state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
+              id: seq.id,
+              message: seq.getMessage(),
+              hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
+            };
+          })
+          .reverse();
+
         deployment.stages.push({
           name: stage.name,
           openRemediations: openRemediationsForStage,
           remediationConfig,
           approvalInformation,
-          subSequences: subSequences
-            .map((seq) => {
-              return {
-                name: seq.getLabel(),
-                type: seq.type,
-                result: seq.isFaulty()
-                  ? ResultTypes.FAILED
-                  : seq.isWarning()
-                  ? ResultTypes.WARNING
-                  : ResultTypes.PASSED,
-                time: seq.time ? new Date(seq.time).getTime() : 0,
-                state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
-                id: seq.id,
-                message: seq.getMessage(),
-                hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
-              };
-            })
-            .reverse(),
+          subSequences: subSequencesForStage,
           deploymentURL,
           hasEvaluation: !!evaluationTrace,
           latestEvaluation:

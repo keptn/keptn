@@ -46,9 +46,15 @@
       [class]="{ 'animation-pulse': deploymentInfo.stage }"
       fxLayout="column"
       fxLayoutGap="15px"
-      *ngIf="deploymentStage.approvalInformation?.trace as approval"
+      *ngIf="deploymentStage.approvalInformation as approvalInformation"
     >
-      <ktb-event-item [event]="approval"> </ktb-event-item>
+      <ktb-event-item
+        [event]="approvalInformation.trace"
+        [evaluation]="deploymentStage.hasEvaluation ? deploymentStage.latestEvaluation : undefined"
+        [image]="approvalInformation.deployedImage"
+        (approvalSent)="approvalSent(deploymentStage)"
+      >
+      </ktb-event-item>
     </div>
 
     <div *ngIf="!deploymentStage.hasEvaluation" fxLayout="row" fxLayoutAlign="start start" class="mt-2">
