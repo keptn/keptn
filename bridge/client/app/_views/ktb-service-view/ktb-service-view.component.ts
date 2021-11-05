@@ -143,23 +143,13 @@ export class KtbServiceViewComponent implements OnDestroy {
     let latestTime: undefined | Date;
     if (this.serviceStates) {
       for (const serviceState of this.serviceStates) {
-        for (const deployment of serviceState.deploymentInformation) {
-          for (const stage of deployment.stages) {
-            const date = new Date(stage.time);
-            if (!latestTime || date < latestTime) {
-              latestTime = date;
-            }
-          }
+        const date = serviceState.getLatestDeploymentTime();
+        if (!latestTime || (date && date < latestTime)) {
+          latestTime = date;
         }
       }
     }
     return latestTime;
-  }
-
-  public hasServiceRemediations(serviceState: ServiceState): boolean {
-    return serviceState.deploymentInformation.some((deployment) =>
-      deployment.stages.some((stage) => stage.hasOpenRemediations)
-    );
   }
 
   public getLatestImage(serviceState: ServiceState): string {

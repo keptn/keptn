@@ -92,4 +92,23 @@ export class ServiceState extends svs {
       ++i;
     }
   }
+
+  public hasRemediations(): boolean {
+    return this.deploymentInformation.some((deployment) =>
+      deployment.stages.some((stage) => stage.hasOpenRemediations)
+    );
+  }
+
+  public getLatestDeploymentTime(): Date | undefined {
+    let latestTime: Date | undefined;
+    for (const deployment of this.deploymentInformation) {
+      for (const stage of deployment.stages) {
+        const date = new Date(stage.time);
+        if (!latestTime || date < latestTime) {
+          latestTime = date;
+        }
+      }
+    }
+    return latestTime;
+  }
 }

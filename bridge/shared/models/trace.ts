@@ -137,28 +137,10 @@ export class Trace {
     return this.data.deployment?.deploymentURIsPublic?.find(() => true);
   }
 
-  protected static traceMapperGlobal<T extends Trace>(traces: Trace[]): T[] {
+  protected static traceMapperGlobal<T extends Trace>(traces: T[]): T[] {
     traces.sort(DateUtil.compareTraceTimesDesc);
-    return traces.reduce((seq: Trace[], trace: Trace) => {
-      let trigger: Trace | undefined;
-      if (trace.triggeredid) {
-        trigger = traces.reduce(
-          (acc: Trace | undefined, r: Trace) => acc || r.findTrace((t) => t.id === trace.triggeredid),
-          undefined
-        );
-      } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-        trigger = traces.reduce(
-          (acc: Trace | undefined, r: Trace) =>
-            acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()),
-          undefined
-        );
-      } else if (trace.isFinished()) {
-        trigger = traces.reduce(
-          (acc: Trace | undefined, r: Trace) =>
-            acc || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)),
-          undefined
-        );
-      }
+    return traces.reduce((seq: T[], trace: T) => {
+      const trigger = this.getTriggeredTrace(trace, traces);
 
       if (trigger) {
         trigger.traces.push(trace);
@@ -176,7 +158,29 @@ export class Trace {
       }
 
       return seq;
-    }, []) as T[];
+    }, []);
+  }
+
+  private static getTriggeredTrace<T extends Trace>(trace: T, traces: T[]): T | undefined {
+    let trigger: T | undefined;
+    if (trace.triggeredid) {
+      trigger = traces.reduce(
+        (acc: T | undefined, r: T) => acc || r.findTrace((t) => t.id === trace.triggeredid),
+        undefined
+      );
+    } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
+      trigger = traces.reduce(
+        (acc: T | undefined, r: T) => acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()),
+        undefined
+      );
+    } else if (trace.isFinished()) {
+      trigger = traces.reduce(
+        (acc: T | undefined, r: T) =>
+          acc || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)),
+        undefined
+      );
+    }
+    return trigger;
   }
 
   public findTrace<T extends Trace>(this: T, comp: (args: T) => boolean): T | undefined {
