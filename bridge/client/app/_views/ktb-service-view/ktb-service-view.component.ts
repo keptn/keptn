@@ -1,14 +1,16 @@
 import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Subject } from 'rxjs';
+import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { filter, map, skip, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
-import { DeploymentInformation, ServiceState } from '../../_models/service-state';
+import { ServiceDeploymentInformation, ServiceState } from '../../_models/service-state';
 import { SequenceState } from '../../../../shared/models/sequence';
+import { ServiceRemediationInformation } from '../../_interfaces/service-remediation-information';
+import { Deployment } from '../../_models/deployment';
 
 @Component({
   selector: 'ktb-service-view',
@@ -25,6 +27,7 @@ export class KtbServiceViewComponent implements OnDestroy {
   public serviceStates?: ServiceState[];
   public projectName?: string;
   public selectedDeployment?: DeploymentInformationSelection;
+  public updateDeploymentSubscription$?: Subscription;
   public deploymentLoading = false;
 
   constructor(
@@ -100,7 +103,7 @@ export class KtbServiceViewComponent implements OnDestroy {
 
   // checks if the given stage exists in the deployment and returns the latest one if not
   private validateStage(
-    selectedDeploymentInformation: DeploymentInformation,
+    selectedDeploymentInformation: ServiceDeploymentInformation,
     projectName: string,
     serviceName: string,
     stage: string | null
@@ -176,52 +179,63 @@ export class KtbServiceViewComponent implements OnDestroy {
   }
 
   public deploymentSelected(deploymentInfo: DeploymentInformationSelection, projectName: string): void {
-    if (!deploymentInfo.deploymentInformation.deployment) {
-      this.deploymentLoading = true;
-      this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext).subscribe(
-        (deployment) => {
-          deploymentInfo.deploymentInformation.deployment = deployment;
-          this.selectedDeployment = deploymentInfo;
-          this.deploymentLoading = false;
+    this.updateDeploymentSubscription$?.unsubscribe();
+    this.updateDeploymentSubscription$ = AppUtils.createTimer(0, this.initialDelayMillis)
+      .pipe(switchMap(() => this.updateDeployment(deploymentInfo, projectName)))
+      .subscribe(
+        (update) => {
+          const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+          if (update instanceof Deployment) {
+            if (!originalDeployment) {
+              deploymentInfo.deploymentInformation.deployment = update;
+            } else {
+              originalDeployment.update(update);
+            }
+            this.deploymentLoading = false;
+          } else if (originalDeployment) {
+            originalDeployment.updateRemediations(update);
+          }
         },
         () => {
           this.deploymentLoading = false;
         }
       );
+  }
+
+  private updateDeployment(
+    deploymentInfo: DeploymentInformationSelection,
+    projectName: string
+  ): Observable<Deployment | ServiceRemediationInformation> {
+    const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+    this.selectedDeployment = deploymentInfo;
+    let update$: Observable<Deployment | ServiceRemediationInformation>;
+
+    if (!originalDeployment) {
+      // initially fetch deployment
+      this.deploymentLoading = true;
+      update$ = this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
     } else {
-      const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+      // update deployment
       if (
         this.projectName &&
         (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT)
       ) {
-        this.dataService
-          .getOpenRemediationsOfService(this.projectName, originalDeployment.service)
-          .subscribe((remediations) => {
-            originalDeployment.updateRemediations(remediations);
-          });
+        // deployment is finished. Just update open remediations
+        update$ = this.dataService.getOpenRemediationsOfService(this.projectName, originalDeployment.service);
       } else {
-        this.dataService
-          .getServiceDeployment(
-            projectName,
-            deploymentInfo.deploymentInformation.keptnContext,
-            new Date(originalDeployment.latestTimeUpdated).toISOString()
-          )
-          .subscribe(
-            (deployment) => {
-              originalDeployment.update(deployment);
-              this.selectedDeployment = deploymentInfo;
-              this.deploymentLoading = false;
-            },
-            () => {
-              this.deploymentLoading = false;
-            }
-          );
+        update$ = this.dataService.getServiceDeployment(
+          projectName,
+          deploymentInfo.deploymentInformation.keptnContext,
+          new Date(originalDeployment.latestTimeUpdated).toISOString()
+        );
       }
     }
+    return update$;
   }
 
   public ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    this.updateDeploymentSubscription$?.unsubscribe();
   }
 }

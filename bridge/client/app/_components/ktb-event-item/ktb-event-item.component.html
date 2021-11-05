@@ -3,7 +3,7 @@
   [warning]="_event.isWarning()"
   [success]="_event.isSuccessful()"
   [highlight]="!!_event.isApproval()"
-  *ngIf="_event && (project$ | async) as project"
+  *ngIf="_event"
 >
   <div fxLayout="row">
     <div fxFlex>

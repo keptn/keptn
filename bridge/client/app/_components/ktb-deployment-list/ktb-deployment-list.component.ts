@@ -5,10 +5,10 @@ import { combineLatest, Subject } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Location } from '@angular/common';
-import { DeploymentInformation as di, ServiceState } from '../../../../shared/models/service-state';
+import { ServiceDeploymentInformation as sdi, ServiceState } from '../../../../shared/models/service-state';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
 
-class DeploymentInformation implements di {
+class DeploymentInformation implements sdi {
   keptnContext!: string;
   name!: string;
   stages!: { name: string; hasOpenRemediations: boolean; time: string }[];

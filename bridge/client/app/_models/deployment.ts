@@ -92,7 +92,6 @@ export class Deployment implements dp {
   }
 
   public update(deployment: Deployment): void {
-    // TODO: check if update works
     this.image = deployment.image;
     this.labels = deployment.labels;
     this.state = deployment.state;
@@ -104,30 +103,38 @@ export class Deployment implements dp {
       } else {
         // update existing stage
         originalStage.lastTimeUpdated = stage.lastTimeUpdated;
-        originalStage.deploymentURL = stage.deploymentURL;
         originalStage.approvalInformation = stage.approvalInformation;
         originalStage.remediationConfig = stage.remediationConfig;
-        originalStage.hasEvaluation = stage.hasEvaluation;
-        originalStage.evaluationResult ??= stage.evaluationResult;
         originalStage.openRemediations = stage.openRemediations;
+        originalStage.deploymentURL ??= stage.deploymentURL;
+        originalStage.evaluationResult ??= stage.evaluationResult;
 
-        if (!originalStage.subSequences.length) {
-          originalStage.subSequences = stage.subSequences;
+        if ((stage.hasEvaluation && !originalStage.hasEvaluation) || !originalStage.latestEvaluation) {
+          originalStage.latestEvaluation = stage.latestEvaluation;
+        }
+        originalStage.hasEvaluation = stage.hasEvaluation;
+
+        this.updateSubSequences(originalStage, stage);
+      }
+    }
+  }
+
+  private updateSubSequences(originalStage: StageDeployment, newStage: StageDeployment): void {
+    if (!originalStage.subSequences.length) {
+      originalStage.subSequences = newStage.subSequences;
+    } else {
+      for (let i = newStage.subSequences.length - 1; i >= 0; i--) {
+        const subSequence = newStage.subSequences[i];
+        const originalSubSequence = originalStage.subSequences.find((seq) => seq.id === subSequence.id);
+        if (originalSubSequence) {
+          // update existing subSequence
+          originalSubSequence.state = subSequence.state;
+          originalSubSequence.result = subSequence.result;
+          originalSubSequence.hasPendingApproval = subSequence.hasPendingApproval;
+          originalSubSequence.message = subSequence.message;
         } else {
-          for (let i = stage.subSequences.length - 1; i >= 0; i--) {
-            const subSequence = stage.subSequences[i];
-            const originalSubSequence = originalStage.subSequences.find((seq) => seq.id === subSequence.id);
-            if (originalSubSequence) {
-              // update existing subSequence
-              originalSubSequence.state = subSequence.state;
-              originalSubSequence.result = subSequence.result;
-              originalSubSequence.hasPendingApproval = subSequence.hasPendingApproval;
-              originalSubSequence.message = subSequence.message;
-            } else {
-              // add new subSequences
-              originalStage.subSequences.unshift(subSequence);
-            }
-          }
+          // add new subSequences
+          originalStage.subSequences.unshift(subSequence);
         }
       }
     }

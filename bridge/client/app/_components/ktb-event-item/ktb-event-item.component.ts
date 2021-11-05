@@ -1,7 +1,5 @@
 import { Component, Directive, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { Observable, of } from 'rxjs';
-import { Project } from '../../_models/project';
 import { Trace } from '../../_models/trace';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
@@ -19,7 +17,6 @@ export class KtbEventItemDetailDirective {}
   styleUrls: ['./ktb-event-item.component.scss'],
 })
 export class KtbEventItemComponent {
-  public project$: Observable<Project | undefined> = of(undefined);
   public _event?: Trace;
 
   @ViewChild('eventPayloadDialog')

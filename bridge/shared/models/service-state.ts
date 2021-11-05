@@ -1,4 +1,4 @@
-export interface DeploymentInformation {
+export interface ServiceDeploymentInformation {
   version?: string;
   name: string;
   image?: string;
@@ -12,7 +12,7 @@ export interface DeploymentInformation {
 
 export class ServiceState {
   name: string;
-  deploymentInformation: DeploymentInformation[] = [];
+  deploymentInformation: ServiceDeploymentInformation[] = [];
 
   constructor(name: string) {
     this.name = name;

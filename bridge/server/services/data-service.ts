@@ -26,13 +26,18 @@ import { IRemediationAction } from '../../shared/models/remediation-action';
 import { SecretScope } from '../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/models/sequence';
-import { ServiceState } from '../../shared/models/service-state';
-import { Deployment, IStageDeployment } from '../../shared/interfaces/deployment';
+import { ServiceDeploymentInformation, ServiceState } from '../../shared/models/service-state';
+import { Deployment, IStageDeployment, SubSequence } from '../../shared/interfaces/deployment';
 import semver from 'semver';
 import { ServiceRemediationInformation } from '../../shared/interfaces/service-remediation-information';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
+type StageRemediationInformation = {
+  remediations: Remediation[];
+  remediationsForStage: Sequence[];
+  config?: string;
+};
 
 export class DataService {
   private apiService: ApiService;
@@ -892,19 +897,11 @@ export class DataService {
         }
 
         if (latestDeploymentEvent && (!fromDate || fromDate < new Date(latestDeploymentEvent.time))) {
-          let deploymentInformation = serviceState.deploymentInformation.find(
-            (deployment) => deployment.keptnContext === latestDeploymentEvent.keptnContext
+          const deploymentInformation = this.getOrCreateDeploymentInformation(
+            serviceState,
+            service,
+            latestDeploymentEvent.keptnContext
           );
-          if (!deploymentInformation) {
-            deploymentInformation = {
-              stages: [],
-              name: service.serviceName,
-              image: service.getShortImageName(),
-              version: service.getImageVersion(),
-              keptnContext: latestDeploymentEvent.keptnContext,
-            };
-            serviceState.deploymentInformation.push(deploymentInformation);
-          }
           const deploymentStage = {
             name: stage.stageName,
             hasOpenRemediations: openRemediations.some((remediation) =>
@@ -916,6 +913,11 @@ export class DataService {
         }
       }
     }
+    this.sortServiceStates(serviceStates);
+    return serviceStates;
+  }
+
+  private sortServiceStates(serviceStates: ServiceState[]): void {
     for (const serviceState of serviceStates) {
       serviceState.deploymentInformation.sort((a, b) =>
         a.version &&
@@ -927,7 +929,27 @@ export class DataService {
           : 1
       );
     }
-    return serviceStates;
+  }
+
+  private getOrCreateDeploymentInformation(
+    serviceState: ServiceState,
+    service: Service,
+    latestDeploymentContext: string
+  ): ServiceDeploymentInformation {
+    let deploymentInformation = serviceState.deploymentInformation.find(
+      (deployment) => deployment.keptnContext === latestDeploymentContext
+    );
+    if (!deploymentInformation) {
+      deploymentInformation = {
+        stages: [],
+        name: service.serviceName,
+        image: service.getShortImageName(),
+        version: service.getImageVersion(),
+        keptnContext: latestDeploymentContext,
+      };
+      serviceState.deploymentInformation.push(deploymentInformation);
+    }
+    return deploymentInformation;
   }
 
   public async getServiceDeployment(
@@ -966,18 +988,6 @@ export class DataService {
       };
       for (const stage of sequence.stages) {
         const stageTraces = traces.filter((trace) => trace.data.stage === stage.name);
-        const subSequences = stageTraces.filter((trace) => {
-          let status = trace.type.startsWith(`${EventTypes.PREFIX}${stage.name}.`);
-          if (status && fromTime) {
-            const lastTraceTime = trace.getLastTrace().time;
-            status = !!lastTraceTime && new Date(lastTraceTime) > fromTime;
-          }
-          return status;
-        });
-        const approvalTrace = stageTraces.reduce(
-          (approval: Trace | undefined, trace) => approval || trace.findTrace((t) => !!t.isApproval()),
-          undefined
-        );
         const service = project.stages
           .find((st) => st.stageName === stage.name)
           ?.services.find((sv) => sv.serviceName === sequence.service);
@@ -987,10 +997,14 @@ export class DataService {
           undefined
         );
         const lastTimeUpdated = stageTraces[stageTraces.length - 1]?.getLastTrace()?.time;
-        let openRemediationsForStage: Sequence[] = [];
+        const approvalInformation = await this.getApprovalInformation(
+          stageTraces,
+          projectName,
+          stage.name,
+          sequence.service
+        );
         let deploymentURL: string | undefined;
-        let approvalInformation: IStageDeployment['approvalInformation'];
-        let remediationConfig: string | undefined;
+        let stageRemediationInformation: StageRemediationInformation | undefined;
         deployment.image ??= service?.getShortImage();
 
         if (latestDeploymentContext === sequence.shkeptncontext) {
@@ -999,67 +1013,22 @@ export class DataService {
               url || tc.findTrace((t) => t.type === EventTypes.DEPLOYMENT_FINISHED)?.getDeploymentUrl(),
             undefined
           );
-          if (!openRemediations) {
-            openRemediations = await this.getOpenRemediations(projectName, false, sequence.service);
-          }
-          openRemediationsForStage = openRemediations
-            .filter((seq) => seq.stages.some((st) => st.name === stage.name))
-            .map((seq) => {
-              const { stages, ...rest } = seq;
-              return Sequence.fromJSON({
-                ...rest,
-                stages: stages.filter((st) => st.name === stage.name),
-              });
-            });
-          if (openRemediations.length) {
-            const resourceResponse = await this.apiService.getServiceResource(
-              project.projectName,
-              stage.name,
-              sequence.service,
-              'remediation.yaml'
-            );
-            remediationConfig = resourceResponse.data.resourceContent;
-          }
+          stageRemediationInformation = await this.getStageRemediationInformation(
+            projectName,
+            stage.name,
+            sequence.service,
+            openRemediations
+          );
+          openRemediations = stageRemediationInformation.remediations;
         }
-        if (approvalTrace?.isApprovalPending()) {
-          const deploymentInformation = await this.getDeploymentInformation(sequence.service, projectName, stage.name);
-
-          approvalTrace.traces = []; // remove child traces
-          approvalInformation = {
-            trace: approvalTrace,
-            deployedImage: deploymentInformation?.image,
-          };
-        }
-        const subSequencesForStage = subSequences
-          .map((seq) => {
-            let subSequenceResult: ResultTypes;
-            if (seq.isFaulty()) {
-              subSequenceResult = ResultTypes.FAILED;
-            } else if (seq.isWarning()) {
-              subSequenceResult = ResultTypes.WARNING;
-            } else {
-              subSequenceResult = ResultTypes.PASSED;
-            }
-            return {
-              name: seq.getLabel(),
-              type: seq.type,
-              result: subSequenceResult,
-              time: seq.time ? new Date(seq.time).getTime() : 0,
-              state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
-              id: seq.id,
-              message: seq.getMessage(),
-              hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
-            };
-          })
-          .reverse();
 
         deployment.stages.push({
           name: stage.name,
           lastTimeUpdated: lastTimeUpdated ? new Date(lastTimeUpdated).getTime() : 0,
-          openRemediations: openRemediationsForStage,
-          remediationConfig,
+          openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
+          remediationConfig: stageRemediationInformation?.config,
           approvalInformation,
-          subSequences: subSequencesForStage,
+          subSequences: this.getSubSequencesForStage(stageTraces, stage.name, fromTime),
           deploymentURL,
           hasEvaluation: !!evaluationTrace,
           latestEvaluation:
@@ -1069,6 +1038,97 @@ export class DataService {
       }
     }
     return deployment;
+  }
+
+  private async getApprovalInformation(
+    traces: Trace[],
+    projectName: string,
+    stageName: string,
+    serviceName: string
+  ): Promise<IStageDeployment['approvalInformation']> {
+    let approvalInformation: IStageDeployment['approvalInformation'];
+    const approvalTrace = traces.reduce(
+      (approval: Trace | undefined, trace) => approval || trace.findTrace((t) => !!t.isApproval()),
+      undefined
+    );
+    if (approvalTrace?.isApprovalPending()) {
+      const deploymentInformation = await this.getDeploymentInformation(serviceName, projectName, stageName);
+
+      approvalTrace.traces = []; // remove child traces
+      approvalInformation = {
+        trace: approvalTrace,
+        deployedImage: deploymentInformation?.image,
+      };
+    }
+    return approvalInformation;
+  }
+
+  private getSubSequencesForStage(stageTraces: Trace[], stageName: string, fromTime?: Date): SubSequence[] {
+    const subSequences = stageTraces.filter((trace) => {
+      let status = trace.type.startsWith(`${EventTypes.PREFIX}${stageName}.`);
+      if (status && fromTime) {
+        const lastTraceTime = trace.getLastTrace().time;
+        status = !!lastTraceTime && new Date(lastTraceTime) > fromTime;
+      }
+      return status;
+    });
+    return subSequences
+      .map((seq) => {
+        let subSequenceResult: ResultTypes;
+        if (seq.isFaulty()) {
+          subSequenceResult = ResultTypes.FAILED;
+        } else if (seq.isWarning()) {
+          subSequenceResult = ResultTypes.WARNING;
+        } else {
+          subSequenceResult = ResultTypes.PASSED;
+        }
+        return {
+          name: seq.getLabel(),
+          type: seq.type,
+          result: subSequenceResult,
+          time: seq.time ? new Date(seq.time).getTime() : 0,
+          state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
+          id: seq.id,
+          message: seq.getMessage(),
+          hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
+        };
+      })
+      .reverse();
+  }
+
+  private async getStageRemediationInformation(
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    openRemediations?: Remediation[]
+  ): Promise<StageRemediationInformation> {
+    if (!openRemediations) {
+      openRemediations = await this.getOpenRemediations(projectName, false, serviceName);
+    }
+    let remediationConfig: string | undefined;
+    const openRemediationsForStage = openRemediations
+      .filter((seq) => seq.stages.some((st) => st.name === stageName))
+      .map((seq) => {
+        const { stages, ...rest } = seq;
+        return Sequence.fromJSON({
+          ...rest,
+          stages: stages.filter((st) => st.name === stageName),
+        });
+      });
+    if (openRemediations.length) {
+      const resourceResponse = await this.apiService.getServiceResource(
+        projectName,
+        stageName,
+        serviceName,
+        'remediation.yaml'
+      );
+      remediationConfig = resourceResponse.data.resourceContent;
+    }
+    return {
+      remediations: openRemediations,
+      remediationsForStage: openRemediationsForStage,
+      config: remediationConfig,
+    };
   }
 
   public async getServiceRemediationInformation(
