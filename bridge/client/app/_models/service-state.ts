@@ -104,7 +104,7 @@ export class ServiceState extends svs {
     for (const deployment of this.deploymentInformation) {
       for (const stage of deployment.stages) {
         const date = new Date(stage.time);
-        if (!latestTime || date < latestTime) {
+        if (!latestTime || date > latestTime) {
           latestTime = date;
         }
       }

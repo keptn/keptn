@@ -144,7 +144,7 @@ export class KtbServiceViewComponent implements OnDestroy {
     if (this.serviceStates) {
       for (const serviceState of this.serviceStates) {
         const date = serviceState.getLatestDeploymentTime();
-        if (!latestTime || (date && date < latestTime)) {
+        if (!latestTime || (date && date > latestTime)) {
           latestTime = date;
         }
       }
