@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 
@@ -11,26 +11,23 @@ import { DtTableDataSource } from '@dynatrace/barista-components/table';
 })
 export class KtbServiceSettingsListComponent implements OnDestroy {
   public projectName?: string;
+  public isLoading = false;
   public dataSource: DtTableDataSource<string> = new DtTableDataSource<string>();
   private unsubscribe$: Subject<void> = new Subject<void>();
 
   constructor(private router: ActivatedRoute, private dataService: DataService) {
-    const projectName$ = this.router.paramMap.pipe(
-      map((params) => params.get('projectName')),
-      filter((projectName): projectName is string => !!projectName)
-    );
-
-    projectName$
+    this.router.paramMap
       .pipe(
-        switchMap((projectName) => {
-          this.projectName = projectName;
-          return this.dataService.getProject(projectName);
-        }),
-        takeUntil(this.unsubscribe$)
+        map((params) => params.get('projectName')),
+        filter((projectName): projectName is string => !!projectName)
       )
-      .subscribe((project) => {
-        const services: string[] = project?.getServices()?.map((service) => service.serviceName) ?? [];
-        this.dataSource = new DtTableDataSource<string>(services);
+      .subscribe((projectName) => {
+        this.projectName = projectName;
+        this.isLoading = true;
+        this.dataService.getServiceNames(this.projectName).subscribe((services) => {
+          this.dataSource = new DtTableDataSource<string>(services);
+          this.isLoading = false;
+        });
       });
   }
 
