@@ -36,7 +36,7 @@ func GetTaskSequenceInStage(stageName, taskSequenceName string, shipyard *keptnv
 	return nil, fmt.Errorf("no stage with name %s", stageName)
 }
 
-func GetNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask *models.TaskSequenceEvent, eventScope *models.EventScope, eventHistory []interface{}) *models.Task {
+func GetNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask *models.TaskExecution, eventScope *models.EventScope, eventHistory []interface{}) *models.Task {
 	if previousTask != nil {
 		for _, e := range eventHistory {
 			eventData := keptnv2.EventData{}

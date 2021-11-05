@@ -11,10 +11,10 @@ func Test_MongoDBTaskSequenceRepoInsertAndRetrieve(t *testing.T) {
 	project := "my-project"
 	mdbrepo := NewTaskSequenceMongoDBRepo(GetMongoDBConnectionInstance())
 
-	err := mdbrepo.DeleteTaskSequenceCollection(project)
+	err := mdbrepo.DeleteRepo(project)
 	require.Nil(t, err)
 
-	taskSequence := models.TaskSequenceEvent{
+	taskSequence := models.TaskExecution{
 		TaskSequenceName: "my-sequence",
 		TriggeredEventID: "my-triggered-id",
 		Task: models.Task{
@@ -27,18 +27,18 @@ func Test_MongoDBTaskSequenceRepoInsertAndRetrieve(t *testing.T) {
 		KeptnContext: "my-context",
 	}
 
-	err = mdbrepo.CreateTaskSequenceMapping(project, taskSequence)
+	err = mdbrepo.CreateTaskExecution(project, taskSequence)
 	require.Nil(t, err)
 
-	sequences, err := mdbrepo.GetTaskSequences(project, taskSequence)
+	sequences, err := mdbrepo.GetTaskExecutions(project, taskSequence)
 	require.Nil(t, err)
 	require.Len(t, sequences, 1)
 	require.Equal(t, taskSequence, sequences[0])
 
-	err = mdbrepo.DeleteTaskSequenceMapping("my-context", project, "my-stage", "my-sequence")
+	err = mdbrepo.DeleteTaskExecution("my-context", project, "my-stage", "my-sequence")
 	require.Nil(t, err)
 
-	sequences, err = mdbrepo.GetTaskSequences(project, models.TaskSequenceEvent{TaskSequenceName: "my-sequence"})
+	sequences, err = mdbrepo.GetTaskExecutions(project, models.TaskExecution{TaskSequenceName: "my-sequence"})
 	require.Nil(t, err)
 	require.Len(t, sequences, 0)
 }

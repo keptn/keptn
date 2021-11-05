@@ -872,7 +872,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", models.TaskSequenceEvent{
+	sc.taskSequenceRepo.CreateTaskExecution("my-project", models.TaskExecution{
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-task-triggered-id",
 		Task:             models.Task{},
@@ -929,14 +929,14 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	taskSequenceMapping := models.TaskSequenceEvent{
+	taskSequenceMapping := models.TaskExecution{
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-deployment-triggered-id",
 		Task:             models.Task{},
 		Stage:            "my-stage",
 		KeptnContext:     "my-keptn-context-id",
 	}
-	sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", taskSequenceMapping)
+	sc.taskSequenceRepo.CreateTaskExecution("my-project", taskSequenceMapping)
 
 	// invoke the CancelSequence function
 	err := sc.cancelSequence(models.SequenceControl{

@@ -168,8 +168,8 @@ func Test_HandleStartedEvents(t *testing.T) {
 						return nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-					return []models.TaskSequenceEvent{
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+					return []models.TaskExecution{
 						{},
 					}, nil
 				}},
@@ -200,8 +200,8 @@ func Test_HandleStartedEvents(t *testing.T) {
 						return nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-					return []models.TaskSequenceEvent{
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+					return []models.TaskExecution{
 						{},
 					}, nil
 				}},
@@ -280,8 +280,8 @@ func TestHandleFinishedEvent(t *testing.T) {
 						return nil, nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-					return []models.TaskSequenceEvent{
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+					return []models.TaskExecution{
 						{},
 					}, nil
 				}},

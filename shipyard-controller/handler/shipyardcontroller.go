@@ -360,21 +360,21 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
-	sequences, err := sc.taskSequenceRepo.GetTaskSequences(cancel.Project,
-		models.TaskSequenceEvent{
+	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(cancel.Project,
+		models.TaskExecution{
 			KeptnContext: cancel.KeptnContext,
 			Stage:        cancel.Stage,
 		})
 	if err != nil {
-		return fmt.Errorf("unable to get active sequences for project %s in stage %s for keptn context %s", cancel.Project, cancel.Stage, cancel.KeptnContext)
+		return fmt.Errorf("unable to get active task executions for project %s in stage %s for keptn context %s", cancel.Project, cancel.Stage, cancel.KeptnContext)
 	}
-	if len(sequences) == 0 {
-		log.Infof("no active sequence for context %s found. Trying to remove it from the queue", cancel.KeptnContext)
+	if len(taskExecutions) == 0 {
+		log.Infof("no active task execution for context %s found. Trying to remove it from the queue", cancel.KeptnContext)
 		return sc.cancelQueuedSequence(cancel)
 	}
 
 	// delete all open .triggered events for the task sequence
-	for _, sequenceEvent := range sequences {
+	for _, sequenceEvent := range taskExecutions {
 		err := sc.eventRepo.DeleteEvent(cancel.Project, sequenceEvent.TriggeredEventID, common.TriggeredEvent)
 		if err != nil {
 			// log the error, but continue
@@ -382,7 +382,7 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 		}
 	}
 
-	lastTaskOfSequence := getLastTaskOfSequence(sequences)
+	lastTaskOfSequence := getLastTaskOfSequence(taskExecutions)
 	sequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(models.EventScope{
 		EventData: keptnv2.EventData{
 			Project: cancel.Project,
@@ -466,16 +466,16 @@ func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) er
 	eventScope.Result = keptnv2.ResultFailed
 	eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *timeout.LastEvent.Type)
 
-	taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: timeout.LastEvent.ID})
+	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(eventScope.Project, models.TaskExecution{TriggeredEventID: timeout.LastEvent.ID})
 	if err != nil {
-		return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", timeout.LastEvent.ID, err.Error())
+		return fmt.Errorf("Could not retrieve task executions associated to eventID %s: %s", timeout.LastEvent.ID, err.Error())
 	}
 
-	if len(taskContexts) == 0 {
-		log.Infof("No task event associated with eventID %s found", timeout.LastEvent.ID)
+	if len(taskExecutions) == 0 {
+		log.Infof("No task executions associated with eventID %s found", timeout.LastEvent.ID)
 		return nil
 	}
-	taskContext := taskContexts[0]
+	taskContext := taskExecutions[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
 	taskSequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(*eventScope, taskContext.TaskSequenceName)
 	if err != nil {
@@ -537,7 +537,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	return sc.proceedTaskSequence(*eventScope, taskSequence, []interface{}{}, nil)
 }
 
-func (sc *shipyardController) getOpenTaskContextFromEvent(eventScope models.EventScope) (*models.EventScope, *models.TaskSequenceEvent, error) {
+func (sc *shipyardController) getOpenTaskContextFromEvent(eventScope models.EventScope) (*models.EventScope, *models.TaskExecution, error) {
 	// get the taskSequence related to the triggeredID and proceed with the next task
 	log.Debugf("Retrieving task sequence related to triggeredID %s", eventScope.WrappedEvent.Triggeredid)
 	taskContext, err := sc.getOpenTaskContext(eventScope)
@@ -549,20 +549,20 @@ func (sc *shipyardController) getOpenTaskContextFromEvent(eventScope models.Even
 	return &eventScope, taskContext, nil
 }
 
-func (sc *shipyardController) getOpenTaskContext(eventScope models.EventScope) (*models.TaskSequenceEvent, error) {
+func (sc *shipyardController) getOpenTaskContext(eventScope models.EventScope) (*models.TaskExecution, error) {
 	for i := 0; i <= maxRepoReadRetries; i++ {
-		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: eventScope.TriggeredID})
+		taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(eventScope.Project, models.TaskExecution{TriggeredEventID: eventScope.TriggeredID})
 		if err != nil {
-			msg := "Could not retrieve task sequence associated to eventID " + eventScope.TriggeredID + ": " + err.Error()
+			msg := "Could not retrieve task executions associated to eventID " + eventScope.TriggeredID + ": " + err.Error()
 			log.Error(msg)
 			return nil, errors.New(msg)
 		}
 
-		if len(taskContexts) == 0 {
-			log.Infof("No task event associated with eventID %s found", eventScope.TriggeredID)
+		if len(taskExecutions) == 0 {
+			log.Infof("No task executions associated with eventID %s found", eventScope.TriggeredID)
 			<-time.After(2 * time.Second)
 		} else {
-			taskContext := taskContexts[0]
+			taskContext := taskExecutions[0]
 			return &taskContext, nil
 		}
 	}
@@ -626,7 +626,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 	return events, nil
 }
 
-func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, taskSequence *keptnv2.Sequence, eventHistory []interface{}, previousTask *models.TaskSequenceEvent) error {
+func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, taskSequence *keptnv2.Sequence, eventHistory []interface{}, previousTask *models.TaskExecution) error {
 	// get the input for the .triggered event that triggered the previous sequence and append it to the list of previous events to gather all required data for the next stage
 	inputEvent, eventHistory, err := sc.appendTriggerEventProperties(eventScope, taskSequence, eventHistory)
 	if err != nil {
@@ -702,7 +702,7 @@ func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventSc
 }
 
 func (sc *shipyardController) completeTaskSequence(eventScope models.EventScope, taskSequenceName, triggeredID string) error {
-	err := sc.taskSequenceRepo.DeleteTaskSequenceMapping(eventScope.KeptnContext, eventScope.Project, eventScope.Stage, taskSequenceName)
+	err := sc.taskSequenceRepo.DeleteTaskExecution(eventScope.KeptnContext, eventScope.Project, eventScope.Stage, taskSequenceName)
 	if err != nil {
 		return err
 	}
@@ -820,7 +820,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope models.EventScop
 		return err
 	}
 
-	return sc.taskSequenceRepo.CreateTaskSequenceMapping(eventScope.Project, models.TaskSequenceEvent{
+	return sc.taskSequenceRepo.CreateTaskExecution(eventScope.Project, models.TaskExecution{
 		TaskSequenceName: taskSequenceName,
 		TriggeredEventID: event.ID(),
 		Stage:            eventScope.Stage,

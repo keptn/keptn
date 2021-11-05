@@ -14,17 +14,17 @@ import (
 //
 // 		// make and configure a mocked db.TaskSequenceRepo
 // 		mockedTaskSequenceRepo := &TaskSequenceRepoMock{
-// 			CreateTaskSequenceMappingFunc: func(project string, taskSequenceEvent models.TaskSequenceEvent) error {
-// 				panic("mock out the CreateTaskSequenceMapping method")
+// 			CreateTaskExecutionFunc: func(project string, taskExecution models.TaskExecution) error {
+// 				panic("mock out the CreateTaskExecution method")
 // 			},
-// 			DeleteTaskSequenceCollectionFunc: func(project string) error {
-// 				panic("mock out the DeleteTaskSequenceCollection method")
+// 			DeleteRepoFunc: func(project string) error {
+// 				panic("mock out the DeleteRepo method")
 // 			},
-// 			DeleteTaskSequenceMappingFunc: func(keptnContext string, project string, stage string, taskSequenceName string) error {
-// 				panic("mock out the DeleteTaskSequenceMapping method")
+// 			DeleteTaskExecutionFunc: func(keptnContext string, project string, stage string, taskSequenceName string) error {
+// 				panic("mock out the DeleteTaskExecution method")
 // 			},
-// 			GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-// 				panic("mock out the GetTaskSequences method")
+// 			GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+// 				panic("mock out the GetTaskExecutions method")
 // 			},
 // 		}
 //
@@ -33,34 +33,34 @@ import (
 //
 // 	}
 type TaskSequenceRepoMock struct {
-	// CreateTaskSequenceMappingFunc mocks the CreateTaskSequenceMapping method.
-	CreateTaskSequenceMappingFunc func(project string, taskSequenceEvent models.TaskSequenceEvent) error
+	// CreateTaskExecutionFunc mocks the CreateTaskExecution method.
+	CreateTaskExecutionFunc func(project string, taskExecution models.TaskExecution) error
 
-	// DeleteTaskSequenceCollectionFunc mocks the DeleteTaskSequenceCollection method.
-	DeleteTaskSequenceCollectionFunc func(project string) error
+	// DeleteRepoFunc mocks the DeleteRepo method.
+	DeleteRepoFunc func(project string) error
 
-	// DeleteTaskSequenceMappingFunc mocks the DeleteTaskSequenceMapping method.
-	DeleteTaskSequenceMappingFunc func(keptnContext string, project string, stage string, taskSequenceName string) error
+	// DeleteTaskExecutionFunc mocks the DeleteTaskExecution method.
+	DeleteTaskExecutionFunc func(keptnContext string, project string, stage string, taskSequenceName string) error
 
-	// GetTaskSequencesFunc mocks the GetTaskSequences method.
-	GetTaskSequencesFunc func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error)
+	// GetTaskExecutionsFunc mocks the GetTaskExecutions method.
+	GetTaskExecutionsFunc func(project string, filter models.TaskExecution) ([]models.TaskExecution, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// CreateTaskSequenceMapping holds details about calls to the CreateTaskSequenceMapping method.
-		CreateTaskSequenceMapping []struct {
+		// CreateTaskExecution holds details about calls to the CreateTaskExecution method.
+		CreateTaskExecution []struct {
 			// Project is the project argument value.
 			Project string
-			// TaskSequenceEvent is the taskSequenceEvent argument value.
-			TaskSequenceEvent models.TaskSequenceEvent
+			// TaskExecution is the taskExecution argument value.
+			TaskExecution models.TaskExecution
 		}
-		// DeleteTaskSequenceCollection holds details about calls to the DeleteTaskSequenceCollection method.
-		DeleteTaskSequenceCollection []struct {
+		// DeleteRepo holds details about calls to the DeleteRepo method.
+		DeleteRepo []struct {
 			// Project is the project argument value.
 			Project string
 		}
-		// DeleteTaskSequenceMapping holds details about calls to the DeleteTaskSequenceMapping method.
-		DeleteTaskSequenceMapping []struct {
+		// DeleteTaskExecution holds details about calls to the DeleteTaskExecution method.
+		DeleteTaskExecution []struct {
 			// KeptnContext is the keptnContext argument value.
 			KeptnContext string
 			// Project is the project argument value.
@@ -70,90 +70,90 @@ type TaskSequenceRepoMock struct {
 			// TaskSequenceName is the taskSequenceName argument value.
 			TaskSequenceName string
 		}
-		// GetTaskSequences holds details about calls to the GetTaskSequences method.
-		GetTaskSequences []struct {
+		// GetTaskExecutions holds details about calls to the GetTaskExecutions method.
+		GetTaskExecutions []struct {
 			// Project is the project argument value.
 			Project string
 			// Filter is the filter argument value.
-			Filter models.TaskSequenceEvent
+			Filter models.TaskExecution
 		}
 	}
-	lockCreateTaskSequenceMapping    sync.RWMutex
-	lockDeleteTaskSequenceCollection sync.RWMutex
-	lockDeleteTaskSequenceMapping    sync.RWMutex
-	lockGetTaskSequences             sync.RWMutex
+	lockCreateTaskExecution sync.RWMutex
+	lockDeleteRepo          sync.RWMutex
+	lockDeleteTaskExecution sync.RWMutex
+	lockGetTaskExecutions   sync.RWMutex
 }
 
-// CreateTaskSequenceMapping calls CreateTaskSequenceMappingFunc.
-func (mock *TaskSequenceRepoMock) CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error {
-	if mock.CreateTaskSequenceMappingFunc == nil {
-		panic("TaskSequenceRepoMock.CreateTaskSequenceMappingFunc: method is nil but TaskSequenceRepo.CreateTaskSequenceMapping was just called")
+// CreateTaskExecution calls CreateTaskExecutionFunc.
+func (mock *TaskSequenceRepoMock) CreateTaskExecution(project string, taskExecution models.TaskExecution) error {
+	if mock.CreateTaskExecutionFunc == nil {
+		panic("TaskSequenceRepoMock.CreateTaskExecutionFunc: method is nil but TaskSequenceRepo.CreateTaskExecution was just called")
 	}
 	callInfo := struct {
-		Project           string
-		TaskSequenceEvent models.TaskSequenceEvent
+		Project       string
+		TaskExecution models.TaskExecution
 	}{
-		Project:           project,
-		TaskSequenceEvent: taskSequenceEvent,
+		Project:       project,
+		TaskExecution: taskExecution,
 	}
-	mock.lockCreateTaskSequenceMapping.Lock()
-	mock.calls.CreateTaskSequenceMapping = append(mock.calls.CreateTaskSequenceMapping, callInfo)
-	mock.lockCreateTaskSequenceMapping.Unlock()
-	return mock.CreateTaskSequenceMappingFunc(project, taskSequenceEvent)
+	mock.lockCreateTaskExecution.Lock()
+	mock.calls.CreateTaskExecution = append(mock.calls.CreateTaskExecution, callInfo)
+	mock.lockCreateTaskExecution.Unlock()
+	return mock.CreateTaskExecutionFunc(project, taskExecution)
 }
 
-// CreateTaskSequenceMappingCalls gets all the calls that were made to CreateTaskSequenceMapping.
+// CreateTaskExecutionCalls gets all the calls that were made to CreateTaskExecution.
 // Check the length with:
-//     len(mockedTaskSequenceRepo.CreateTaskSequenceMappingCalls())
-func (mock *TaskSequenceRepoMock) CreateTaskSequenceMappingCalls() []struct {
-	Project           string
-	TaskSequenceEvent models.TaskSequenceEvent
+//     len(mockedTaskSequenceRepo.CreateTaskExecutionCalls())
+func (mock *TaskSequenceRepoMock) CreateTaskExecutionCalls() []struct {
+	Project       string
+	TaskExecution models.TaskExecution
 } {
 	var calls []struct {
-		Project           string
-		TaskSequenceEvent models.TaskSequenceEvent
+		Project       string
+		TaskExecution models.TaskExecution
 	}
-	mock.lockCreateTaskSequenceMapping.RLock()
-	calls = mock.calls.CreateTaskSequenceMapping
-	mock.lockCreateTaskSequenceMapping.RUnlock()
+	mock.lockCreateTaskExecution.RLock()
+	calls = mock.calls.CreateTaskExecution
+	mock.lockCreateTaskExecution.RUnlock()
 	return calls
 }
 
-// DeleteTaskSequenceCollection calls DeleteTaskSequenceCollectionFunc.
-func (mock *TaskSequenceRepoMock) DeleteTaskSequenceCollection(project string) error {
-	if mock.DeleteTaskSequenceCollectionFunc == nil {
-		panic("TaskSequenceRepoMock.DeleteTaskSequenceCollectionFunc: method is nil but TaskSequenceRepo.DeleteTaskSequenceCollection was just called")
+// DeleteRepo calls DeleteRepoFunc.
+func (mock *TaskSequenceRepoMock) DeleteRepo(project string) error {
+	if mock.DeleteRepoFunc == nil {
+		panic("TaskSequenceRepoMock.DeleteRepoFunc: method is nil but TaskSequenceRepo.DeleteRepo was just called")
 	}
 	callInfo := struct {
 		Project string
 	}{
 		Project: project,
 	}
-	mock.lockDeleteTaskSequenceCollection.Lock()
-	mock.calls.DeleteTaskSequenceCollection = append(mock.calls.DeleteTaskSequenceCollection, callInfo)
-	mock.lockDeleteTaskSequenceCollection.Unlock()
-	return mock.DeleteTaskSequenceCollectionFunc(project)
+	mock.lockDeleteRepo.Lock()
+	mock.calls.DeleteRepo = append(mock.calls.DeleteRepo, callInfo)
+	mock.lockDeleteRepo.Unlock()
+	return mock.DeleteRepoFunc(project)
 }
 
-// DeleteTaskSequenceCollectionCalls gets all the calls that were made to DeleteTaskSequenceCollection.
+// DeleteRepoCalls gets all the calls that were made to DeleteRepo.
 // Check the length with:
-//     len(mockedTaskSequenceRepo.DeleteTaskSequenceCollectionCalls())
-func (mock *TaskSequenceRepoMock) DeleteTaskSequenceCollectionCalls() []struct {
+//     len(mockedTaskSequenceRepo.DeleteRepoCalls())
+func (mock *TaskSequenceRepoMock) DeleteRepoCalls() []struct {
 	Project string
 } {
 	var calls []struct {
 		Project string
 	}
-	mock.lockDeleteTaskSequenceCollection.RLock()
-	calls = mock.calls.DeleteTaskSequenceCollection
-	mock.lockDeleteTaskSequenceCollection.RUnlock()
+	mock.lockDeleteRepo.RLock()
+	calls = mock.calls.DeleteRepo
+	mock.lockDeleteRepo.RUnlock()
 	return calls
 }
 
-// DeleteTaskSequenceMapping calls DeleteTaskSequenceMappingFunc.
-func (mock *TaskSequenceRepoMock) DeleteTaskSequenceMapping(keptnContext string, project string, stage string, taskSequenceName string) error {
-	if mock.DeleteTaskSequenceMappingFunc == nil {
-		panic("TaskSequenceRepoMock.DeleteTaskSequenceMappingFunc: method is nil but TaskSequenceRepo.DeleteTaskSequenceMapping was just called")
+// DeleteTaskExecution calls DeleteTaskExecutionFunc.
+func (mock *TaskSequenceRepoMock) DeleteTaskExecution(keptnContext string, project string, stage string, taskSequenceName string) error {
+	if mock.DeleteTaskExecutionFunc == nil {
+		panic("TaskSequenceRepoMock.DeleteTaskExecutionFunc: method is nil but TaskSequenceRepo.DeleteTaskExecution was just called")
 	}
 	callInfo := struct {
 		KeptnContext     string
@@ -166,16 +166,16 @@ func (mock *TaskSequenceRepoMock) DeleteTaskSequenceMapping(keptnContext string,
 		Stage:            stage,
 		TaskSequenceName: taskSequenceName,
 	}
-	mock.lockDeleteTaskSequenceMapping.Lock()
-	mock.calls.DeleteTaskSequenceMapping = append(mock.calls.DeleteTaskSequenceMapping, callInfo)
-	mock.lockDeleteTaskSequenceMapping.Unlock()
-	return mock.DeleteTaskSequenceMappingFunc(keptnContext, project, stage, taskSequenceName)
+	mock.lockDeleteTaskExecution.Lock()
+	mock.calls.DeleteTaskExecution = append(mock.calls.DeleteTaskExecution, callInfo)
+	mock.lockDeleteTaskExecution.Unlock()
+	return mock.DeleteTaskExecutionFunc(keptnContext, project, stage, taskSequenceName)
 }
 
-// DeleteTaskSequenceMappingCalls gets all the calls that were made to DeleteTaskSequenceMapping.
+// DeleteTaskExecutionCalls gets all the calls that were made to DeleteTaskExecution.
 // Check the length with:
-//     len(mockedTaskSequenceRepo.DeleteTaskSequenceMappingCalls())
-func (mock *TaskSequenceRepoMock) DeleteTaskSequenceMappingCalls() []struct {
+//     len(mockedTaskSequenceRepo.DeleteTaskExecutionCalls())
+func (mock *TaskSequenceRepoMock) DeleteTaskExecutionCalls() []struct {
 	KeptnContext     string
 	Project          string
 	Stage            string
@@ -187,43 +187,43 @@ func (mock *TaskSequenceRepoMock) DeleteTaskSequenceMappingCalls() []struct {
 		Stage            string
 		TaskSequenceName string
 	}
-	mock.lockDeleteTaskSequenceMapping.RLock()
-	calls = mock.calls.DeleteTaskSequenceMapping
-	mock.lockDeleteTaskSequenceMapping.RUnlock()
+	mock.lockDeleteTaskExecution.RLock()
+	calls = mock.calls.DeleteTaskExecution
+	mock.lockDeleteTaskExecution.RUnlock()
 	return calls
 }
 
-// GetTaskSequences calls GetTaskSequencesFunc.
-func (mock *TaskSequenceRepoMock) GetTaskSequences(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-	if mock.GetTaskSequencesFunc == nil {
-		panic("TaskSequenceRepoMock.GetTaskSequencesFunc: method is nil but TaskSequenceRepo.GetTaskSequences was just called")
+// GetTaskExecutions calls GetTaskExecutionsFunc.
+func (mock *TaskSequenceRepoMock) GetTaskExecutions(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+	if mock.GetTaskExecutionsFunc == nil {
+		panic("TaskSequenceRepoMock.GetTaskExecutionsFunc: method is nil but TaskSequenceRepo.GetTaskExecutions was just called")
 	}
 	callInfo := struct {
 		Project string
-		Filter  models.TaskSequenceEvent
+		Filter  models.TaskExecution
 	}{
 		Project: project,
 		Filter:  filter,
 	}
-	mock.lockGetTaskSequences.Lock()
-	mock.calls.GetTaskSequences = append(mock.calls.GetTaskSequences, callInfo)
-	mock.lockGetTaskSequences.Unlock()
-	return mock.GetTaskSequencesFunc(project, filter)
+	mock.lockGetTaskExecutions.Lock()
+	mock.calls.GetTaskExecutions = append(mock.calls.GetTaskExecutions, callInfo)
+	mock.lockGetTaskExecutions.Unlock()
+	return mock.GetTaskExecutionsFunc(project, filter)
 }
 
-// GetTaskSequencesCalls gets all the calls that were made to GetTaskSequences.
+// GetTaskExecutionsCalls gets all the calls that were made to GetTaskExecutions.
 // Check the length with:
-//     len(mockedTaskSequenceRepo.GetTaskSequencesCalls())
-func (mock *TaskSequenceRepoMock) GetTaskSequencesCalls() []struct {
+//     len(mockedTaskSequenceRepo.GetTaskExecutionsCalls())
+func (mock *TaskSequenceRepoMock) GetTaskExecutionsCalls() []struct {
 	Project string
-	Filter  models.TaskSequenceEvent
+	Filter  models.TaskExecution
 } {
 	var calls []struct {
 		Project string
-		Filter  models.TaskSequenceEvent
+		Filter  models.TaskExecution
 	}
-	mock.lockGetTaskSequences.RLock()
-	calls = mock.calls.GetTaskSequences
-	mock.lockGetTaskSequences.RUnlock()
+	mock.lockGetTaskExecutions.RLock()
+	calls = mock.calls.GetTaskExecutions
+	mock.lockGetTaskExecutions.RUnlock()
 	return calls
 }

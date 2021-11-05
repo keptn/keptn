@@ -22,7 +22,7 @@ func NewTaskSequenceMongoDBRepo(dbConnection *MongoDBConnection) *TaskSequenceMo
 const taskSequenceCollectionNameSuffix = "-taskSequences"
 
 // GetTaskSequence godoc
-func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequences(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskExecutions(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -36,10 +36,10 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequences(project string, filter 
 		return nil, err
 	}
 
-	result := []models.TaskSequenceEvent{}
+	result := []models.TaskExecution{}
 
 	for cur.Next(ctx) {
-		taskSequenceMapping := &models.TaskSequenceEvent{}
+		taskSequenceMapping := &models.TaskExecution{}
 		if err := cur.Decode(taskSequenceMapping); err != nil {
 			log.WithError(err).Errorf("could not decode task sequence mapping")
 			continue
@@ -51,7 +51,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequences(project string, filter 
 }
 
 // CreateTaskSequenceMapping godoc
-func (mdbrepo *TaskSequenceMongoDBRepo) CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error {
+func (mdbrepo *TaskSequenceMongoDBRepo) CreateTaskExecution(project string, taskExecution models.TaskExecution) error {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -61,16 +61,16 @@ func (mdbrepo *TaskSequenceMongoDBRepo) CreateTaskSequenceMapping(project string
 
 	collection := mdbrepo.getTaskSequenceCollection(project)
 
-	_, err = collection.InsertOne(ctx, taskSequenceEvent)
+	_, err = collection.InsertOne(ctx, taskExecution)
 	if err != nil {
-		log.Errorf("Could not store mapping %s -> %s: %s", taskSequenceEvent.TriggeredEventID, taskSequenceEvent.TaskSequenceName, err.Error())
+		log.Errorf("Could not store task execution %s -> %s: %s", taskExecution.TriggeredEventID, taskExecution.TaskSequenceName, err.Error())
 		return err
 	}
 	return nil
 }
 
 // DeleteTaskSequenceMapping godoc
-func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error {
+func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskExecution(keptnContext, project, stage, taskSequenceName string) error {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, 
 }
 
 // DeleteTaskSequenceCollection godoc
-func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceCollection(project string) error {
+func (mdbrepo *TaskSequenceMongoDBRepo) DeleteRepo(project string) error {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceCollection(project string
 	return projectCollection
 }
 
-func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceMappingSearchOptions(filter models.TaskSequenceEvent) bson.M {
+func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceMappingSearchOptions(filter models.TaskExecution) bson.M {
 	searchOptions := bson.M{}
 
 	if filter.TriggeredEventID != "" {
