@@ -277,6 +277,11 @@ export class ApiService {
     return this.http.get<string[]>(url);
   }
 
+  public getServiceNames(projectName: string): Observable<string[]> {
+    const url = `${this._baseUrl}/project/${projectName}/services`;
+    return this.http.get<string[]>(url);
+  }
+
   public getStages(projectName: string): Observable<Stage[]> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.http.get<Stage[]>(url);

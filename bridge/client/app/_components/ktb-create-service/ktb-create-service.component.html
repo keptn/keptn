@@ -2,7 +2,7 @@
   <div class="container settings-section">
     <h2>Create service</h2>
     <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
-    <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName">
+    <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName && !isLoading">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field>
           <dt-label class="required">Service name</dt-label>
@@ -35,7 +35,7 @@
           <button dt-button variant="secondary" type="reset" (click)="cancel()">Cancel</button>
         </div>
       </div>
+      <div class="mt-2 required-info">fields are required</div>
     </form>
-    <div class="mt-2 required-info">fields are required</div>
   </div>
 </div>
