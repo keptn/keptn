@@ -223,12 +223,12 @@ func Test_HandleStartedEvents(t *testing.T) {
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
 			em.AddSequenceTaskStartedHook(tt.fields.taskStartedHook)
-			err := em.handleStartedEvent(tt.args.event)
+			err := em.handleTaskStarted(tt.args.event)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("handleStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("handleTaskStarted() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.wantErrNoMatchingEvent && (err != ErrNoMatchingEvent) {
-				t.Errorf("handleStartedEvent() expected ErrNoMatchingEvent but got %v", err)
+				t.Errorf("handleTaskStarted() expected ErrNoMatchingEvent but got %v", err)
 			}
 
 			if tt.wantHookCalled {
@@ -303,8 +303,8 @@ func TestHandleFinishedEvent(t *testing.T) {
 			}
 
 			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
-			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
+			if err := em.handleTaskFinished(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("handleTaskFinished() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantHookCalled {
