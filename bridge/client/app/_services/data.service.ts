@@ -746,6 +746,12 @@ export class DataService {
       .pipe(map((taskNames) => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))));
   }
 
+  public getServiceNames(projectName: string): Observable<string[]> {
+    return this.apiService
+      .getServiceNames(projectName)
+      .pipe(map((serviceNames) => serviceNames.sort((serviceA, serviceB) => serviceA.localeCompare(serviceB))));
+  }
+
   public getWebhookConfig(
     subscriptionId: string,
     projectName: string,

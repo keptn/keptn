@@ -114,6 +114,15 @@ const apiRouter = (params: {
     }
   });
 
+  router.get('/project/:projectName/services', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const services = await dataService.getServiceNames(req.params.projectName);
+      return res.json(services);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.post('/uniform/registration', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const uniformDates: { [key: string]: string } = req.body;
