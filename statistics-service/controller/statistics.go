@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 	"time"
@@ -21,7 +21,6 @@ type StatisticsBucket struct {
 	// Statistics in-memory statistics
 	Statistics      operations.Statistics
 	uniqueSequences map[string]bool
-	logger          keptncommon.LoggerInterface
 	lock            sync.Mutex
 	cutoffTime      time.Time
 	nextGenEvents   bool
@@ -33,7 +32,6 @@ func GetStatisticsBucketInstance() *StatisticsBucket {
 		env := config.GetConfig()
 		statisticsBucketInstance = &StatisticsBucket{
 			StatisticsRepo: &db.StatisticsMongoDBRepo{},
-			logger:         keptncommon.NewLogger("", "", "statistics service"),
 			nextGenEvents:  env.NextGenEvents,
 		}
 
@@ -45,7 +43,7 @@ func GetStatisticsBucketInstance() *StatisticsBucket {
 			for {
 				bucketTimer.Reset(bucketInterval)
 				<-bucketTimer.C
-				statisticsBucketInstance.logger.Info(fmt.Sprintf("%d seconds have passed. Creating a new statistics bucket\n", env.AggregationIntervalSeconds))
+				log.Info(fmt.Sprintf("%d seconds have passed. Creating a new statistics bucket\n", env.AggregationIntervalSeconds))
 				statisticsBucketInstance.storeCurrentBucket()
 				statisticsBucketInstance.createNewBucket()
 			}
@@ -77,7 +75,7 @@ func (sb *StatisticsBucket) AddEvent(event operations.Event) {
 	if event.Data.Project == "" || event.Data.Service == "" || event.Type == "" || event.Source == "" {
 		return
 	}
-	sb.logger.Info("updating statistics for service " + event.Data.Service + " in project " + event.Data.Project)
+	log.Info("updating statistics for service " + event.Data.Service + " in project " + event.Data.Project)
 	sb.uniqueSequences[event.Shkeptncontext] = true
 
 	sb.Statistics.IncreaseEventTypeCount(event.Data.Project, event.Data.Service, event.Type, 1)
@@ -111,12 +109,12 @@ func (sb *StatisticsBucket) AddEvent(event operations.Event) {
 func (sb *StatisticsBucket) storeCurrentBucket() {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
-	sb.logger.Info(fmt.Sprintf("Storing statistics for time frame %s - %s\n\n", sb.Statistics.From.String(), sb.Statistics.To.String()))
+	log.Info(fmt.Sprintf("Storing statistics for time frame %s - %s\n\n", sb.Statistics.From.String(), sb.Statistics.To.String()))
 	sb.Statistics.To = time.Now().Round(time.Second)
 	if err := sb.StatisticsRepo.StoreStatistics(sb.Statistics); err != nil {
-		sb.logger.Error(fmt.Sprintf("Could not store statistics: " + err.Error()))
+		log.Error(fmt.Sprintf("Could not store statistics: " + err.Error()))
 	}
-	sb.logger.Info(fmt.Sprintf("Statistics stored successfully"))
+	log.Info(fmt.Sprintf("Statistics stored successfully"))
 }
 
 func (sb *StatisticsBucket) createNewBucket() {

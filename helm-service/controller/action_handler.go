@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	logger "github.com/sirupsen/logrus"
 	"strconv"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -20,7 +21,7 @@ type ActionTriggeredHandler struct {
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(keptnHandler Handler, configChanger configurationchanger.IConfigurationChanger, configServiceURL string) *ActionTriggeredHandler {
+func NewActionTriggeredHandler(keptnHandler Handler, configChanger configurationchanger.IConfigurationChanger) *ActionTriggeredHandler {
 
 	return &ActionTriggeredHandler{
 		Handler:       keptnHandler,
@@ -43,7 +44,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {
 		// Send action.started event
-		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Start action scaling for service %s in stage %s of project %s",
+		logger.Info(fmt.Sprintf("Start action scaling for service %s in stage %s of project %s",
 			actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 		if sendErr := h.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.ActionTaskName),
 			h.getStartedEventData(actionTriggeredEvent.EventData)); sendErr != nil {
@@ -53,9 +54,9 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 
 		resp := h.handleScaling(actionTriggeredEvent)
 		if resp.Status == keptnv2.StatusErrored {
-			h.getKeptnHandler().Logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
+			logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
 		} else {
-			h.getKeptnHandler().Logger.Info(fmt.Sprintf("Finished action %s for service %s in stage %s of project %s",
+			logger.Info(fmt.Sprintf("Finished action %s for service %s in stage %s of project %s",
 				actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 		}
 
@@ -65,7 +66,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 			return
 		}
 	} else {
-		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Received unhandled action %s for service %s in stage %s of project %s",
+		logger.Info(fmt.Sprintf("Received unhandled action %s for service %s in stage %s of project %s",
 			actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 	}
 

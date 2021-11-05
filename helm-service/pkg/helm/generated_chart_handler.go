@@ -3,12 +3,11 @@ package helm
 import (
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
@@ -29,15 +28,13 @@ type ChartGenerator interface {
 
 // GeneratedChartGenerator allows to generate the generated-chart
 type GeneratedChartGenerator struct {
-	mesh   mesh.Mesh
-	logger keptncommon.LoggerInterface
+	mesh mesh.Mesh
 }
 
 // NewGeneratedChartGenerator creates a new GeneratedChartGenerator
-func NewGeneratedChartGenerator(mesh mesh.Mesh, logger keptncommon.LoggerInterface) *GeneratedChartGenerator {
+func NewGeneratedChartGenerator(mesh mesh.Mesh) *GeneratedChartGenerator {
 	return &GeneratedChartGenerator{
-		mesh:   mesh,
-		logger: logger,
+		mesh: mesh,
 	}
 }
 
@@ -112,7 +109,7 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	serviceCanary := svc.DeepCopy()
 	serviceCanary.Name = serviceCanary.Name + "-canary"
 
-	c.logger.Info("Generating canary service for " + svc.Name + ": " + serviceCanary.Name)
+	logger.Info("Generating canary service for " + svc.Name + ": " + serviceCanary.Name)
 	resetService(serviceCanary)
 	data, err := yaml.Marshal(serviceCanary)
 	if err != nil {
@@ -121,11 +118,11 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for canary service
-	c.logger.Info("Generating destination rule for canary service " + serviceCanary.Name)
+	logger.Info("Generating destination rule for canary service " + serviceCanary.Name)
 	hostCanary := serviceCanary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
 	destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 	if err != nil {
-		c.logger.Error("Error while generating destination rule for canary service " + serviceCanary.Name + ": " + err.Error())
+		logger.Error("Error while generating destination rule for canary service " + serviceCanary.Name + ": " + err.Error())
 		return nil, err
 	}
 	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
@@ -152,11 +149,11 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for primary service
-	c.logger.Info("Generating destination rule for primary service " + svc.Name)
+	logger.Info("Generating destination rule for primary service " + svc.Name)
 	hostPrimary := servicePrimary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
 	destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 	if err != nil {
-		c.logger.Error("Error while generating destination rule for primary service " + svc.Name + ": " + err.Error())
+		logger.Error("Error while generating destination rule for primary service " + svc.Name + ": " + err.Error())
 		return nil, err
 	}
 	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
@@ -177,11 +174,11 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
 
-	c.logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + mesh.GetIngressProtocol() +
+	logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + mesh.GetIngressProtocol() +
 		"://" + hosts[0] + ":" + mesh.GetIngressPort())
 	vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 	if err != nil {
-		c.logger.Error("Error while generating VirtualService for service " + svc.Name + ": " + err.Error())
+		logger.Error("Error while generating VirtualService for service " + svc.Name + ": " + err.Error())
 		return nil, err
 	}
 
