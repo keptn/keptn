@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 describe('KtbServiceSettingsListComponent', () => {
   let component: KtbServiceSettingsListComponent;
@@ -16,6 +17,7 @@ describe('KtbServiceSettingsListComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         { provide: DataService, useClass: DataServiceMock },
+        { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
         {
           provide: ActivatedRoute,
           useValue: {
