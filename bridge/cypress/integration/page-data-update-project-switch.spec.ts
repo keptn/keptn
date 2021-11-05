@@ -52,6 +52,7 @@ describe('verify Page data update when project is switched', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
+    cy.wait(500);
     basePage.clickProjectTile(PROJECT_DYNATRACE);
     cy.get(envPage.STAGE_HEADER_LOC).contains(QG_DYNATRACE);
 
