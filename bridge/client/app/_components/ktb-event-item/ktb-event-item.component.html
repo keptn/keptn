@@ -106,20 +106,7 @@
       <tr>
         <td><p class="m-0">Currently deployed artifact:</p></td>
         <td>
-          <!-- TODO: change behavior to be less project-independent; provide image via input params -->
-          <p
-            class="m-0"
-            [textContent]="
-              image ||
-              (_event.data.service &&
-                _event.data.stage &&
-                project.getLatestDeployment(
-                  project.getService(_event.data.service),
-                  project.getStage(_event.data.stage)
-                )?.image) ||
-              'N/A'
-            "
-          ></p>
+          <p class="m-0" [textContent]="image || 'N/A'"></p>
         </td>
       </tr>
       <tr>

@@ -339,4 +339,8 @@ export class Trace {
   public isStartedEvent(): boolean {
     return this.type.endsWith('.started');
   }
+
+  public getLastTrace<T extends Trace>(this: T): T {
+    return this.traces.length ? (this.traces[this.traces.length - 1] as T).getLastTrace() : this;
+  }
 }

@@ -100,9 +100,4 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   public getDeploymentStage(deploymentSelection: DeploymentSelection): StageDeployment | undefined {
     return deploymentSelection.deployment.stages.find((stage) => stage.name === deploymentSelection.stage);
   }
-
-  public approvalSent(deploymentStage: StageDeployment): void {
-    deploymentStage.approvalInformation = undefined;
-    // TODO: update deployment
-  }
 }

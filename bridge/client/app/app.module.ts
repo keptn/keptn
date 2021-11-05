@@ -42,7 +42,6 @@ import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter'
 import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
 import { MomentModule } from 'ngx-moment';
-import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import {
   KtbExpandableTileComponent,
   KtbExpandableTileHeaderDirective,
@@ -169,7 +168,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbRootEventsListComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
-    KtbEventsListComponent,
     KtbEventItemComponent,
     KtbEventItemDetailDirective,
     KtbSequenceTasksListComponent,

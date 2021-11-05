@@ -115,7 +115,11 @@ const apiRouter = (params: {
 
   router.get('/project/:projectName/deployment/:keptnContext', async (req, res, next) => {
     try {
-      const deployment = await dataService.getServiceDeployment(req.params.projectName, req.params.keptnContext);
+      const deployment = await dataService.getServiceDeployment(
+        req.params.projectName,
+        req.params.keptnContext,
+        req.query.fromTime?.toString()
+      );
       return res.json(deployment);
     } catch (err) {
       next(err);
@@ -236,6 +240,23 @@ const apiRouter = (params: {
           req.params.serviceName
         );
         return res.json(serviceResources);
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/project/:projectName/service/:serviceName/openRemediations',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const serviceRemediationInformation = await dataService.getServiceRemediationInformation(
+          req.params.projectName,
+          req.params.serviceName,
+          req.query.config?.toString() === 'true'
+        );
+
+        return res.json(serviceRemediationInformation);
       } catch (error) {
         return next(error);
       }

@@ -25,8 +25,9 @@ import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
 import { Service } from '../_models/service';
-import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../_models/deployment';
+import { ServiceState } from '../_models/service-state';
+import { ServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 
 @Injectable({
   providedIn: 'root',
@@ -694,13 +695,29 @@ export class DataService {
   }
 
   public getServiceStates(projectName: string, fromTime?: string): Observable<ServiceState[]> {
-    return this.apiService.getServiceStates(projectName, fromTime);
+    return this.apiService
+      .getServiceStates(projectName, fromTime)
+      .pipe(map((serviceStates) => serviceStates.map((state) => ServiceState.fromJSON(state))));
   }
 
-  public getServiceDeployment(projectName: string, keptnContext: string): Observable<Deployment> {
-    return this.apiService.getServiceDeployment(projectName, keptnContext).pipe(
+  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
+    return this.apiService.getServiceDeployment(projectName, keptnContext, fromTime).pipe(
       map((deployment) => {
         return Deployment.fromJSON(deployment);
+      })
+    );
+  }
+
+  public getOpenRemediationsOfService(
+    projectName: string,
+    serviceName: string
+  ): Observable<ServiceRemediationInformation> {
+    return this.apiService.getOpenRemediationsOfService(projectName, serviceName).pipe(
+      map((serviceRemediationInformation) => {
+        for (const stage of serviceRemediationInformation.stages) {
+          stage.remediations = stage.remediations.map((remediation) => Sequence.fromJSON(remediation));
+        }
+        return serviceRemediationInformation;
       })
     );
   }

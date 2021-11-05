@@ -5,10 +5,10 @@ import { filter, map, skip, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
-import { ServiceState } from '../../../../shared/models/service-state';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
-import { DeploymentInformation } from '../../_models/service-state';
+import { DeploymentInformation, ServiceState } from '../../_models/service-state';
+import { SequenceState } from '../../../../shared/models/sequence';
 
 @Component({
   selector: 'ktb-service-view',
@@ -98,6 +98,7 @@ export class KtbServiceViewComponent implements OnDestroy {
     });
   }
 
+  // checks if the given stage exists in the deployment and returns the latest one if not
   private validateStage(
     selectedDeploymentInformation: DeploymentInformation,
     projectName: string,
@@ -125,55 +126,7 @@ export class KtbServiceViewComponent implements OnDestroy {
     if (!this.serviceStates) {
       this.serviceStates = serviceStates;
     } else {
-      for (const serviceState of serviceStates) {
-        // deployments.length === 0 means that there aren't any updates for a service
-        if (serviceState.deploymentInformation.length) {
-          const serviceStateOriginal = this.serviceStates.find(
-            (serviceStateO) => serviceStateO.name === serviceState.name
-          );
-          if (serviceStateOriginal) {
-            for (const deploymentNew of serviceState.deploymentInformation) {
-              const deploymentOriginal = serviceStateOriginal.deploymentInformation.find(
-                (deployment) => deployment.keptnContext === deploymentNew.keptnContext
-              );
-              if (deploymentOriginal) {
-                // update existing deployment
-                deploymentOriginal.stages = [...deploymentOriginal.stages, ...deploymentNew.stages];
-
-                // update other deployments (remove the stages)
-                for (let i = 0; i < serviceStateOriginal.deploymentInformation.length; ++i) {
-                  const deployment = serviceStateOriginal.deploymentInformation[i];
-                  if (deployment !== deploymentOriginal) {
-                    deployment.stages = deployment.stages.filter((stage) =>
-                      deploymentNew.stages.some((st) => st.name === stage.name)
-                    );
-                    // delete deployment if it does not exist anymore
-                    if (deployment.stages.length === 0) {
-                      serviceStateOriginal.deploymentInformation.splice(i, 1);
-                    }
-                  }
-                }
-              } else {
-                // add new deployment
-                serviceStateOriginal.deploymentInformation.push(deploymentNew);
-              }
-            }
-          } else {
-            // new service with deployments
-            this.serviceStates.push(serviceState);
-          }
-        } else if (!this.serviceStates.some((s) => s.name === serviceState.name)) {
-          // new service
-          this.serviceStates.push(serviceState);
-        }
-        // remove deleted services
-        for (let i = 0; i < this.serviceStates.length; ++i) {
-          const serviceStateOriginal = this.serviceStates[i];
-          if (!serviceStates.some((state) => state.name === serviceStateOriginal.name)) {
-            this.serviceStates.splice(i, 1);
-          }
-        }
-      }
+      ServiceState.update(this.serviceStates, serviceStates);
     }
   }
 
@@ -236,8 +189,34 @@ export class KtbServiceViewComponent implements OnDestroy {
         }
       );
     } else {
-      // TODO: update
-      this.selectedDeployment = deploymentInfo;
+      const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+      if (
+        this.projectName &&
+        (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT)
+      ) {
+        this.dataService
+          .getOpenRemediationsOfService(this.projectName, originalDeployment.service)
+          .subscribe((remediations) => {
+            originalDeployment.updateRemediations(remediations);
+          });
+      } else {
+        this.dataService
+          .getServiceDeployment(
+            projectName,
+            deploymentInfo.deploymentInformation.keptnContext,
+            new Date(originalDeployment.latestTimeUpdated).toISOString()
+          )
+          .subscribe(
+            (deployment) => {
+              originalDeployment.update(deployment);
+              this.selectedDeployment = deploymentInfo;
+              this.deploymentLoading = false;
+            },
+            () => {
+              this.deploymentLoading = false;
+            }
+          );
+      }
     }
   }
 

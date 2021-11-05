@@ -181,10 +181,6 @@ class Trace extends ts {
     }
   }
 
-  getLastTrace(): Trace {
-    return this.traces.length ? this.traces[this.traces.length - 1].getLastTrace() : this;
-  }
-
   getProblemDetails(): string | undefined {
     return this.data.problem?.ImpactedEntity || this.data.problem?.ProblemTitle;
   }

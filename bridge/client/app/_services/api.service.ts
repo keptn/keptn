@@ -27,6 +27,7 @@ import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../../shared/models/keptn-service';
 import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../../../shared/interfaces/deployment';
+import { ServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 
 @Injectable({
   providedIn: 'root',
@@ -468,7 +469,23 @@ export class ApiService {
     });
   }
 
-  public getServiceDeployment(projectName: string, keptnContext: string): Observable<Deployment> {
-    return this.http.get<Deployment>(`${this._baseUrl}/project/${projectName}/deployment/${keptnContext}`);
+  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
+    const params = {
+      ...(fromTime && { fromTime }),
+    };
+    return this.http.get<Deployment>(`${this._baseUrl}/project/${projectName}/deployment/${keptnContext}`, { params });
+  }
+
+  public getOpenRemediationsOfService(
+    projectName: string,
+    serviceName: string
+  ): Observable<ServiceRemediationInformation> {
+    const params = {
+      config: 'true',
+    };
+    return this.http.get<ServiceRemediationInformation>(
+      `${this._baseUrl}/project/${projectName}/service/${serviceName}/openRemediations`,
+      { params }
+    );
   }
 }

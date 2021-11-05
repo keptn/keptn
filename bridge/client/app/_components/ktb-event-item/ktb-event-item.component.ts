@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Directive, Input, Output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Directive, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable, of } from 'rxjs';
 import { Project } from '../../_models/project';
@@ -6,7 +6,6 @@ import { Trace } from '../../_models/trace';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
-import { EventEmitter } from 'puppeteer';
 
 @Directive({
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
@@ -34,7 +33,7 @@ export class KtbEventItemComponent {
   @Input() public showLabels = true;
   @Input() public image?: string;
   @Input() public evaluation?: Trace;
-  @Output() public approvalSent = new EventEmitter();
+  @Output() public approvalSent: EventEmitter<void> = new EventEmitter<void>();
 
   @Input()
   get event(): Trace | undefined {
@@ -44,15 +43,10 @@ export class KtbEventItemComponent {
   set event(value: Trace | undefined) {
     if (this._event !== value) {
       this._event = value;
-      if (this._event?.project) {
-        this.project$ = this.dataService.getProject(this._event.project);
-      }
-      this.changeDetectorRef.markForCheck();
     }
   }
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private dialog: MatDialog,
     private clipboard: ClipboardService,

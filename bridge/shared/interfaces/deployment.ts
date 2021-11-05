@@ -24,6 +24,7 @@ export interface SubSequence {
 
 export interface IStageDeployment {
   name: string;
+  lastTimeUpdated: number;
   hasEvaluation: boolean;
   latestEvaluation?: Trace;
   openRemediations: Sequence[];

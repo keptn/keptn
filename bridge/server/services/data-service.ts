@@ -29,6 +29,7 @@ import { SequenceState } from '../../shared/models/sequence';
 import { ServiceState } from '../../shared/models/service-state';
 import { Deployment, IStageDeployment } from '../../shared/interfaces/deployment';
 import semver from 'semver';
+import { ServiceRemediationInformation } from '../../shared/interfaces/service-remediation-information';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -929,7 +930,12 @@ export class DataService {
     return serviceStates;
   }
 
-  public async getServiceDeployment(projectName: string, keptnContext: string): Promise<Deployment | undefined> {
+  public async getServiceDeployment(
+    projectName: string,
+    keptnContext: string,
+    fromTimeString?: string
+  ): Promise<Deployment | undefined> {
+    const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
     const sequenceResponse = await this.apiService.getSequences(
       projectName,
       1,
@@ -960,7 +966,14 @@ export class DataService {
       };
       for (const stage of sequence.stages) {
         const stageTraces = traces.filter((trace) => trace.data.stage === stage.name);
-        const subSequences = stageTraces.filter((trace) => trace.type.startsWith(`${EventTypes.PREFIX}${stage.name}.`));
+        const subSequences = stageTraces.filter((trace) => {
+          let status = trace.type.startsWith(`${EventTypes.PREFIX}${stage.name}.`);
+          if (status && fromTime) {
+            const lastTraceTime = trace.getLastTrace().time;
+            status = !!lastTraceTime && new Date(lastTraceTime) > fromTime;
+          }
+          return status;
+        });
         const approvalTrace = stageTraces.reduce(
           (approval: Trace | undefined, trace) => approval || trace.findTrace((t) => !!t.isApproval()),
           undefined
@@ -973,6 +986,7 @@ export class DataService {
           (event: Trace | undefined, trace) => event || trace.getEvaluationFinishedEvent(),
           undefined
         );
+        const lastTimeUpdated = stageTraces[stageTraces.length - 1]?.getLastTrace()?.time;
         let openRemediationsForStage: Sequence[] = [];
         let deploymentURL: string | undefined;
         let approvalInformation: IStageDeployment['approvalInformation'];
@@ -1010,7 +1024,7 @@ export class DataService {
         if (approvalTrace?.isApprovalPending()) {
           const deploymentInformation = await this.getDeploymentInformation(sequence.service, projectName, stage.name);
 
-          approvalTrace.traces = [];
+          approvalTrace.traces = []; // remove child traces
           approvalInformation = {
             trace: approvalTrace,
             deployedImage: deploymentInformation?.image,
@@ -1041,6 +1055,7 @@ export class DataService {
 
         deployment.stages.push({
           name: stage.name,
+          lastTimeUpdated: lastTimeUpdated ? new Date(lastTimeUpdated).getTime() : 0,
           openRemediations: openRemediationsForStage,
           remediationConfig,
           approvalInformation,
@@ -1054,5 +1069,36 @@ export class DataService {
       }
     }
     return deployment;
+  }
+
+  public async getServiceRemediationInformation(
+    projectName: string,
+    serviceName: string,
+    includeConfig: boolean
+  ): Promise<ServiceRemediationInformation> {
+    const serviceRemediationInformation: ServiceRemediationInformation = { stages: [] };
+    const openRemediations = await this.getOpenRemediations(projectName, false, serviceName);
+    const stageRemediations = openRemediations.reduce((stagesAcc: { [key: string]: Sequence[] }, remediation) => {
+      const stageName = remediation.stages[0].name;
+      if (!stagesAcc[stageName]) {
+        stagesAcc[stageName] = [];
+      }
+      stagesAcc[stageName].push(remediation);
+      return stagesAcc;
+    }, {});
+    for (const stage in stageRemediations) {
+      let config: string | undefined;
+      if (includeConfig) {
+        const configResponse = await this.apiService.getServiceResource(
+          projectName,
+          stage,
+          serviceName,
+          'remediation.yaml'
+        );
+        config = configResponse.data.resourceContent;
+      }
+      serviceRemediationInformation.stages.push({ name: stage, remediations: stageRemediations[stage], config });
+    }
+    return serviceRemediationInformation;
   }
 }
