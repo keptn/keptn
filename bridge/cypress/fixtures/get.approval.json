@@ -72,7 +72,7 @@
             "state": "finished",
             "stages": [
               {
-                "name": "quality-gate",
+                "name": "prj-quality-gate",
                 "state": "finished",
                 "latestEvaluation": {
                   "result": "pass",

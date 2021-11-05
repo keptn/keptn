@@ -1,8 +1,11 @@
 {
-  "apiUrl": "http://example.com/api",
-  "apiToken": "123456789qwertzuiopasdfghjkl",
-  "cliDownloadLink": "https://github.com/keptn/keptn/releases",
+  "bridgeVersion": "0.10.0-next.1",
+  "keptnInstallationType": "QUALITY_GATES",
+  "apiUrl": "",
+  "apiToken": "",
+  "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.10.0-next.1",
   "enableVersionCheckFeature": false,
   "showApiToken": true,
-  "authType": "NONE"
+  "authType": "OAUTH",
+  "user": "claus.keptn-dev@ruxitlabs.com"
 }

@@ -1,0 +1,113 @@
+[
+  {
+    "id": "d410b1578c8814bcd0fcdcae81a60c8f95510083",
+    "name": "remediation-service",
+    "metadata": {
+      "hostname": "Cloud Automation",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "Cloud Automation",
+        "podname": "remediation-service-766ffbb654-whk6j",
+        "deploymentname": "remediation-service"
+      },
+      "lastseen": "2021-10-07T12:10:11.115Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "e9057389-62f9-4ee9-b088-68f37989330a",
+        "event": "sh.keptn.event.get-action.triggered",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "574e7d9723714e94e009b91d52e773b360964f23",
+    "name": "approval-service",
+    "metadata": {
+      "hostname": "Cloud Automation",
+      "integrationversion": "0.9.0",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "Cloud Automation",
+        "podname": "approval-service-855c6746b-p85fg",
+        "deploymentname": "approval-service"
+      },
+      "lastseen": "2021-10-07T12:10:05.463Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "a24bb6ad-ff67-4298-ac54-0e4648a88ad9",
+        "event": "sh.keptn.event.approval.>",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  },
+  {
+    "id": "4b4d28a8f3bf811aa735f9531bae6bebf0df0f78",
+    "name": "dynatrace-service",
+    "metadata": {
+      "hostname": "Cloud Automation",
+      "integrationversion": "0.16.1-dev-PR-497.202109231206",
+      "distributorversion": "0.9.0",
+      "location": "control-plane",
+      "kubernetesmetadata": {
+        "namespace": "Cloud Automation",
+        "podname": "dynatrace-service-584bffcc69-28wmr",
+        "deploymentname": "dynatrace-service"
+      },
+      "lastseen": "2021-10-07T12:10:13.008Z"
+    },
+    "subscription": {
+      "topics": null,
+      "status": "",
+      "filter": {
+        "project": "",
+        "stage": "",
+        "service": ""
+      }
+    },
+    "subscriptions": [
+      {
+        "id": "40552a94-badf-4bae-82ff-afc6c26d078e",
+        "event": "sh.keptn.>",
+        "filter": {
+          "projects": [],
+          "stages": [],
+          "services": []
+        }
+      }
+    ],
+    "unreadEventsCount": 0
+  }
+]
