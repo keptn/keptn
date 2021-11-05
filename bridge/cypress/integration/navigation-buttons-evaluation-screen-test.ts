@@ -68,7 +68,6 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
     ).as('getEventEvalFinishedWithProject');
 
     cy.visit('/');
-    cy.wait(500);
     basePage.clickProjectTile('dynatrace');
     basePage
       .goToServicesPage()

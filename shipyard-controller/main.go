@@ -80,12 +80,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	projectsMV := createMaterializedView()
-
+	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		createSecretStore(kubeAPI),
-		projectsMV,
+		projectMVRepo,
 		createTaskSequenceRepo(),
 		createEventsRepo(),
 		createSequenceQueueRepo(),
@@ -98,12 +97,12 @@ func main() {
 	}
 
 	serviceManager := handler.NewServiceManager(
-		projectsMV,
+		projectMVRepo,
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		uniformRepo,
 	)
 
-	stageManager := handler.NewStageManager(projectsMV)
+	stageManager := handler.NewStageManager(projectMVRepo)
 
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
@@ -119,7 +118,7 @@ func main() {
 
 	shipyardRetriever := handler.NewShipyardRetriever(
 		common.NewGitConfigurationStore(csEndpoint.String()),
-		projectsMV,
+		projectMVRepo,
 	)
 	shipyardController := handler.GetShipyardControllerInstance(
 		context.Background(),
@@ -150,7 +149,7 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectsMV)
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectMVRepo)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -167,9 +166,9 @@ func main() {
 	shipyardController.AddSequenceStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceTaskStartedHook(projectsMV)
+	shipyardController.AddSequenceTaskStartedHook(projectMVRepo)
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceTaskFinishedHook(projectsMV)
+	shipyardController.AddSequenceTaskFinishedHook(projectMVRepo)
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
@@ -220,12 +219,8 @@ func main() {
 	}
 }
 
-func createMaterializedView() *db.MongoDBProjectMVRepo {
-	projectesMaterializedView := &db.MongoDBProjectMVRepo{
-		ProjectRepo:     createProjectRepo(),
-		EventsRetriever: createEventsRepo(),
-	}
-	return projectesMaterializedView
+func createProjectMVRepo() *db.MongoDBProjectMVRepo {
+	return db.NewProjectMVRepo(db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()))
 }
 
 func createUniformRepo() *db.MongoDBUniformRepo {

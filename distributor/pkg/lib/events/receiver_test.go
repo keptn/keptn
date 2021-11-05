@@ -49,9 +49,9 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 			Filter: models.EventSubscriptionFilter{},
 		},
 	})
-	time.Sleep(5 * time.Second)
+	//TODO: refactor test/implementation to get rid of sleep
+	time.Sleep(time.Second)
 	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
-	time.Sleep(100 * time.Millisecond)
 	natsPublisher.Publish("sh.keptn.event.task2.triggered", []byte(task2TriggerEvent))
 
 	assert.Eventually(t, func() bool {
@@ -70,7 +70,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 		event.GetTemporaryData("distributor", &event2TmpData)
 		subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
 
-		return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2"
+		return subscriptionIDInFirstEvent != "" && subscriptionIDInSecondEvent != ""
 	}, time.Second*time.Duration(5), time.Second)
 
 	cancelReceiver()
@@ -116,7 +116,8 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 			},
 		},
 	})
-	time.Sleep(5 * time.Second)
+	//TODO: refactor test/implementation to get rid of sleep
+	time.Sleep(time.Second)
 	// send an event that matches both subscriptions
 	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 
@@ -177,40 +178,19 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 	})
 
 	shutdownNats()
-	receiver.UpdateSubscriptions([]models.EventSubscription{
-		{
-			ID:    "id1",
-			Event: "sh.keptn.event.task.triggered",
-			Filter: models.EventSubscriptionFilter{
-				Projects: []string{"my-project"},
-				Stages:   []string{"stage1"},
-			},
-		},
-	})
-
 	_, shutdownNats = RunServerOnPort(TEST_PORT)
 	defer shutdownNats()
-
-	receiver.UpdateSubscriptions([]models.EventSubscription{
-		{
-			ID:    "id1",
-			Event: "sh.keptn.event.task.triggered",
-			Filter: models.EventSubscriptionFilter{
-				Projects: []string{"my-project"},
-				Stages:   []string{"stage1"},
-			},
-		},
-	})
-
 	require.Eventually(t, func() bool {
 		return natsPublisher.IsConnected()
-	}, time.Second*time.Duration(15), time.Second)
+	}, time.Second*time.Duration(5), time.Second)
 
+	//TODO: refactor test/implementation to get rid of sleep
+	time.Sleep(time.Second)
 	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 
 	assert.Eventually(t, func() bool {
 		return len(eventSender.SentEvents) == 1
-	}, time.Second*time.Duration(15), time.Second)
+	}, time.Second*time.Duration(5), time.Second)
 
 	cancelReceiver()
 	executionContext.Wg.Wait()
@@ -255,7 +235,8 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 			},
 		},
 	})
-	time.Sleep(5 * time.Second)
+	//TODO: refactor test/implementation to get rid of sleep
+	time.Sleep(time.Second)
 	// send an event that matches both subscriptions
 	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
 

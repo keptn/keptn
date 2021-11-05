@@ -5,6 +5,7 @@ import { ProblemStates } from '../../client/app/_models/problem-states';
 import { ApprovalStates } from '../../client/app/_models/approval-states';
 import { KeptnService } from './keptn-service';
 import { DateUtil } from '../utils/date.utils';
+import { SloConfig } from '../interfaces/slo-config';
 
 export interface TraceData {
   project?: string;
@@ -68,7 +69,7 @@ export interface TraceData {
     number_of_comparison_results: number;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     number_of_missing_comparison_results: number;
-    sloFileContentParsed: string;
+    sloFileContentParsed?: SloConfig;
   };
 
   evaluationHistory?: Trace[];

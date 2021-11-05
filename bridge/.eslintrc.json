@@ -4,6 +4,16 @@
   "overrides": [
     {
       "files": ["*.ts", "*.js"],
+      "parserOptions": {
+        "project": [
+          "./tsconfig.json",
+          "./tsconfig.app.json",
+          "./tsconfig.spec.json",
+          "./server/tsconfig.json",
+          "./server/tsconfig.spec.json",
+          "./cypress/tsconfig.json"
+        ]
+      },
       "extends": [
         "plugin:@angular-eslint/recommended",
         "plugin:@angular-eslint/template/process-inline-templates",

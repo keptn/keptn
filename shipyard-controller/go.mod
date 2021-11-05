@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
-	github.com/benbjohnson/clock v1.1.0
+	github.com/benbjohnson/clock v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/swag v0.19.14 // indirect
