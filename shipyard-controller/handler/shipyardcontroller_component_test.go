@@ -1132,7 +1132,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		_ = sc.HandleIncomingEvent(*ev, true)
 		return nil
 	}
-	sc.init(context.Background())
+	sc.run(context.Background())
 	return sc
 }
 

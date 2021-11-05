@@ -57,7 +57,6 @@ func GetShipyardControllerInstance(
 	shipyardRetriever IShipyardRetriever,
 ) *shipyardController {
 	if shipyardControllerInstance == nil {
-		eventDispatcher.Run(context.Background())
 		cbConnectionInstance := db.GetMongoDBConnectionInstance()
 		shipyardControllerInstance = &shipyardController{
 			eventRepo:        db.NewMongoDBEventsRepo(cbConnectionInstance),
@@ -70,12 +69,12 @@ func GetShipyardControllerInstance(
 			sequenceTimeoutChan: sequenceTimeoutChannel,
 			shipyardRetriever:   shipyardRetriever,
 		}
-		shipyardControllerInstance.init(ctx)
+		shipyardControllerInstance.run(ctx)
 	}
 	return shipyardControllerInstance
 }
 
-func (sc *shipyardController) init(ctx context.Context) {
+func (sc *shipyardController) run(ctx context.Context) {
 	go func() {
 		for {
 			select {
@@ -91,6 +90,7 @@ func (sc *shipyardController) init(ctx context.Context) {
 			}
 		}
 	}()
+	sc.eventDispatcher.Run(context.Background())
 	sc.sequenceDispatcher.Run(context.Background(), sc.StartTaskSequence)
 }
 
@@ -786,7 +786,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope models.EventScop
 	// make sure the result from the previous event is used
 	eventPayload["result"] = eventScope.Result
 	eventPayload["status"] = eventScope.Status
-
 	// make sure the 'message' property from the previous event is set to ""
 	eventPayload["message"] = ""
 
