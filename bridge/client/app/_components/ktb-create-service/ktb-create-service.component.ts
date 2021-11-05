@@ -42,14 +42,12 @@ export class KtbCreateServiceComponent implements OnDestroy {
 
     this.route.paramMap
       .pipe(
-        map((params) => ({
-          projectName: params.get('projectName'),
-        })),
-        filter((params): params is { projectName: string } => !!params.projectName),
+        map((params) => params.get('projectName')),
+        filter((projectName): projectName is string => !!projectName),
         takeUntil(this.unsubscribe$)
       )
-      .subscribe((params) => {
-        this.projectName = params.projectName;
+      .subscribe((projectName) => {
+        this.projectName = projectName;
         this.isLoading = true;
 
         this.dataService.getServiceNames(this.projectName).subscribe((serviceNames) => {
