@@ -1,7 +1,7 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
@@ -15,7 +15,6 @@ export class KtbServiceSettingsListComponent implements OnDestroy {
   public isLoading = false;
   public dataSource: DtTableDataSource<string> = new DtTableDataSource<string>();
   private _timer: Subscription = Subscription.EMPTY;
-  private unsubscribe$: Subject<void> = new Subject<void>();
 
   constructor(
     private router: ActivatedRoute,
@@ -31,21 +30,22 @@ export class KtbServiceSettingsListComponent implements OnDestroy {
         this.projectName = projectName;
         this.isLoading = true;
 
-        this._timer = AppUtils.createTimer(0, this.initialDelayMillis)
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(() => {
-            if (this.projectName) {
-              this.dataService.getServiceNames(this.projectName).subscribe((services) => {
-                this.dataSource = new DtTableDataSource<string>(services);
-                this.isLoading = false;
-              });
-            }
-          });
+        if (this._timer) {
+          this._timer.unsubscribe();
+        }
+
+        this._timer = AppUtils.createTimer(0, initialDelayMillis).subscribe(() => {
+          if (this.projectName) {
+            this.dataService.getServiceNames(this.projectName).subscribe((services) => {
+              this.dataSource = new DtTableDataSource<string>(services);
+              this.isLoading = false;
+            });
+          }
+        });
       });
   }
 
   public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
+    this._timer.unsubscribe();
   }
 }
