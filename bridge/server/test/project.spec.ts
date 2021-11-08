@@ -1,6 +1,6 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { StagesResponse } from '../fixtures/stages';
+import { StagesResponse } from '../fixtures/stages.mock';
 
 let axiosMock: MockAdapter;
 
@@ -19,5 +19,12 @@ describe('Test project resources', () => {
     const response = await request(global.app).get(`/api/project/${projectName}/services`);
     expect(response.body).toEqual(['carts', 'carts-db']);
     expect(response.statusCode).toBe(200);
+  });
+
+  it('should return an error', async () => {
+    const projectName = 'sockshop';
+    axiosMock.onGet(global.baseUrl + `/controlPlane/v1/project/${projectName}/stage`).reply(502);
+    const response = await request(global.app).get(`/api/project/${projectName}/services`);
+    expect(response.statusCode).toBe(502);
   });
 });
