@@ -1,6 +1,6 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { ShipyardResponse } from '../fixtures/shipyard-response';
+import { ShipyardResponse } from '../fixtures/shipyard-response.mock';
 
 let axiosMock: MockAdapter;
 
