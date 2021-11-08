@@ -57,7 +57,7 @@ class BasePage {
   }
 
   clickProjectTile(projectName: string): EnvironmentPage {
-    cy.get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click();
+    cy.wait(500).get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click();
     return new EnvironmentPage();
   }
 
@@ -68,6 +68,12 @@ class BasePage {
 
   clickMainHeaderKeptn(): void {
     cy.get('.brand > p').contains('keptn').click();
+  }
+
+  chooseProjectFromHeaderMenu(projectName: string): this {
+    cy.get('dt-select[aria-label="Choose project"]').click();
+    cy.get('dt-option[id^="dt-option"]').contains(projectName).click();
+    return this;
   }
 }
 

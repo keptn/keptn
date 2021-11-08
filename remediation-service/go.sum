@@ -24,8 +24,14 @@ github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa
 github.com/keptn/go-utils v0.9.1-0.20210927081802-47257796192b/go.mod h1:YOzlxekwyR8WTXiMg9V8mEX+aZIoztAZpMFMwF5iyng=
 github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0 h1:4fqrfSXOz09iejZD06lPANC3ZNomKYmRoV5M6iw8qgo=
 github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
+github.com/keptn/go-utils v0.10.1-0.20211103140516-b6f48452063e h1:oQoaZpLa1ce9fxaaEvaACzqRdthuGmSCEzNNr19dy4Q=
+github.com/keptn/go-utils v0.10.1-0.20211103140516-b6f48452063e/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
+github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a h1:fEYctrKZ4KMze22xs7tdNagR402V6kfhC3vLigSGGGE=
+github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
 github.com/keptn/keptn/go-sdk v0.0.0-20211004094531-157ce0514700 h1:XCSpCy9dbfIwSGupZ63AohtbCLipTlCRdDBEtscs4zY=
 github.com/keptn/keptn/go-sdk v0.0.0-20211004094531-157ce0514700/go.mod h1:5hi+fZN+8WNL/Sj6lyupZzjhJ12/ZjB4REf2sewBPKc=
+github.com/keptn/keptn/go-sdk v0.0.0-20211102091047-cb9394f33dee h1:G3zQNv5xxamheO29MyZnCh+gW+bjh22IguvI3DzQIqs=
+github.com/keptn/keptn/go-sdk v0.0.0-20211102091047-cb9394f33dee/go.mod h1:nYNCQzPBWFFWPB2ljoO1xj41PeudLpLG6sA1FQAV8OM=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=

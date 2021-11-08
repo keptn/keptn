@@ -1,10 +1,17 @@
-mongodb:
-  dbName: keptn
+mongo:
   enabled: true
   host: mongodb:27017
-  user:
-  password:
-  adminPassword:
+  architecture: standalone
+  service:
+    nameOverride: 'mongo'
+    port: 27017
+  auth:
+    database: 'keptn'
+    existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
+    username: 'keptn'
+    password: null
+    rootUser: 'admin'
+    rootPassword: null
   external:
     connectionString:
 

@@ -70,6 +70,7 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
     cy.visit('/');
     cy.wait(500);
     basePage.clickProjectTile('dynatrace');
+
     basePage
       .goToServicesPage()
       .clickOnServicePanelByName('items')

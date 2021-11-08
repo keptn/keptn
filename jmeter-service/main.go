@@ -49,8 +49,6 @@ func main() {
 			logger.SetLevel(logLevel)
 		}
 	}
-
-	go keptnapi.RunHealthEndpoint("10998")
 	os.Exit(_main(os.Args[1:], env))
 }
 
@@ -377,7 +375,7 @@ func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
@@ -395,7 +393,6 @@ func sendEvent(event cloudevents.Event) error {
 		log.Println("LOCALLY: Sending Event")
 		return nil
 	}
-
 	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {

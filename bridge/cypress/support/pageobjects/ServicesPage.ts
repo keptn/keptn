@@ -1,13 +1,15 @@
 /// <reference types="cypress" />
 
 class ServicesPage {
+  SERVICE_PANEL_TEXT_LOC = 'dt-info-group-title.dt-info-group-title > div > h2';
+
   clickOnServicePanelByName(serviceName: string): this {
-    cy.get('div.dt-info-group-content').get('h2').contains(serviceName).click();
+    cy.wait(500).get('div.dt-info-group-content').get('h2').contains(serviceName).click();
     return this;
   }
 
   clickOnServiceInnerPanelByName(serviceName: string): this {
-    cy.get('span.ng-star-inserted').contains(serviceName).click();
+    cy.wait(500).get('span.ng-star-inserted').contains(serviceName).click();
     return this;
   }
 

@@ -81,11 +81,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -349,19 +350,19 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Values.mongodb.host }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: user
+                  key: mongodb-user
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: password
-            - name: MONGO_DB_NAME
-              value: {{ .Values.mongodb.dbName | default "keptn"}}
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
@@ -507,7 +508,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
@@ -570,7 +571,6 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  creationTimestamp: null
   name: configuration-volume
   labels:
     app.kubernetes.io/name: configuration-volume
@@ -641,13 +641,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
           imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
@@ -763,19 +763,19 @@ spec:
             - name: NEXT_GEN_EVENTS
               value: 'true'
             - name: MONGODB_HOST
-              value: 'mongodb:27017'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: user
+                  key: mongodb-user
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: password
-            - name: MONGO_DB_NAME
-              value: {{ .Values.mongodb.dbName | default "keptn"}}
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
@@ -881,11 +881,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -996,11 +997,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
