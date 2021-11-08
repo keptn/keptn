@@ -191,7 +191,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 					return
 				}
 				if result == nil {
-					log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
+					log.Infof("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
 				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
 					if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
 						log.Errorf("unable to Send .finished event: %v", err)
