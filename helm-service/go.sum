@@ -498,6 +498,8 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.10.0 h1:ViYtBqcO6yf8pBkAUKWhCOkWDXdhBjzyP7xu3fFTwtI=
 github.com/keptn/go-utils v0.10.0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
+github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a h1:fEYctrKZ4KMze22xs7tdNagR402V6kfhC3vLigSGGGE=
+github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
 github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b h1:L+1m9DuYPfQCEv82/u05jj7EgeeZ/8tDkwf4JoRzMbw=
 github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b/go.mod h1:vSj1n58CWHBrh4DzMhODGU1Z6BKYl9wEFzsg4XmuaJ0=
 github.com/kinbiko/jsonassert v1.0.2 h1:UzNDYv5K8UsSHXS3Opsf0ZNz2NQCHl96OC3dlTytUtE=

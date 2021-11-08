@@ -53,7 +53,7 @@ spec:
               secretKeyRef:
                 name: mongodb-credentials
                 key: password
-          - name: MONGO_DB_NAME
+          - name: MONGODB_DATABASE
             value: 'keptn'
           - name: KEPTN_SPEC_VERSION
             value: "0.2.3"
