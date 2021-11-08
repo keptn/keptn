@@ -136,12 +136,12 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
 func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool) (bool, error) {
 	err := os.RemoveAll(resultsDir)
 	if err != nil {
-		return false, fmt.Errorf("Unable to remove path %s: %s", resultsDir, err.Error())
+		return false, fmt.Errorf("unable to remove path %s: %w", resultsDir, err)
 	}
 
 	err = os.MkdirAll(resultsDir, 0644)
 	if err != nil && resultsDir != "" {
-		return false, fmt.Errorf("Unable to create path %s: %s", resultsDir, err.Error())
+		return false, fmt.Errorf("unable to create path %s: %w", resultsDir, err)
 	}
 
 	// Step 1: Lets download all files that match /jmeter/ into a local temp directory
@@ -150,12 +150,12 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	localTempDir := testInfo.Context
 	err = os.RemoveAll(localTempDir)
 	if err != nil {
-		return false, fmt.Errorf("Unable to remove path %s: %s", localTempDir, err.Error())
+		return false, fmt.Errorf("unable to remove path %s: %w", localTempDir, err)
 	}
 
 	err = os.MkdirAll(localTempDir, 0644)
 	if err != nil && resultsDir != "" {
-		return false, fmt.Errorf("Unable to create path %s: %s", localTempDir, err.Error())
+		return false, fmt.Errorf("unable to create path %s: %w", localTempDir, err)
 	}
 
 	fileMatchPattern := JMeterConfigDirectory
@@ -189,7 +189,7 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 		if removeTempFiles {
 			err := os.RemoveAll(localTempDir)
 			if err != nil {
-				return false, fmt.Errorf("Unable to remove path %s: %s", localTempDir, err.Error())
+				return false, fmt.Errorf("unable to remove path %s: %w", localTempDir, err)
 			}
 		}
 		return false, err
@@ -219,7 +219,7 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	if removeTempFiles {
 		err = os.RemoveAll(localTempDir)
 		if err != nil {
-			return false, fmt.Errorf("Unable to remove path %s: %s", localTempDir, err.Error())
+			return false, fmt.Errorf("Unable to remove path %s: %w", localTempDir, err)
 		}
 	}
 

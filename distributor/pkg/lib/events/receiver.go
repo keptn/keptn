@@ -64,7 +64,7 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 		ctx.Wg.Done()
 		err :=  n.natsConnectionHandler.RemoveAllSubscriptions()
 		if err != nil {
-			logger.Errorf("unable to remove all subscriptions: " + err.Error())
+			logger.Warnf("Unable to remove all subscriptions: %s", err)
 		}
 		logger.Info("Terminating NATS event receiver")
 	}()

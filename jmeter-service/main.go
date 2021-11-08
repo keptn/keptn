@@ -84,7 +84,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 //
 func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData) {
 	if err := sendTestsStartedEvent(shkeptncontext, event); err != nil {
-		logger.Error(fmt.Sprintf("Error sending test started event: %s", err.Error()))
+		logger.Error(fmt.Sprintf("unable to send test .started event: %s", err))
 	}
 
 	testInfo := getTestInfo(data, shkeptncontext)
