@@ -60,9 +60,7 @@ export class KtbServiceViewComponent implements OnDestroy {
     const serviceStates$ = projectName$.pipe(
       switchMap((projectName) => AppUtils.createTimer(0, this.initialDelayMillis).pipe(map(() => projectName))),
       takeUntil(this.unsubscribe$),
-      switchMap((projectName) =>
-        this.dataService.getServiceStates(projectName, this.getLatestDeploymentTime()?.toISOString())
-      ),
+      switchMap((projectName) => this.dataService.getServiceStates(projectName)),
       takeUntil(this.unsubscribe$)
     );
 
@@ -137,19 +135,6 @@ export class KtbServiceViewComponent implements OnDestroy {
     if (this.serviceName !== serviceName) {
       this.serviceName = serviceName;
     }
-  }
-
-  private getLatestDeploymentTime(): Date | undefined {
-    let latestTime: undefined | Date;
-    if (this.serviceStates) {
-      for (const serviceState of this.serviceStates) {
-        const date = serviceState.getLatestDeploymentTime();
-        if (!latestTime || (date && date > latestTime)) {
-          latestTime = date;
-        }
-      }
-    }
-    return latestTime;
   }
 
   public getLatestImage(serviceState: ServiceState): string {

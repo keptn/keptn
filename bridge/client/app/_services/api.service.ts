@@ -460,13 +460,8 @@ export class ApiService {
     });
   }
 
-  public getServiceStates(projectName: string, fromTime?: string): Observable<ServiceState[]> {
-    const params = {
-      ...(fromTime && { fromTime }),
-    };
-    return this.http.get<ServiceState[]>(`${this._baseUrl}/project/${projectName}/serviceStates`, {
-      params,
-    });
+  public getServiceStates(projectName: string): Observable<ServiceState[]> {
+    return this.http.get<ServiceState[]>(`${this._baseUrl}/project/${projectName}/serviceStates`);
   }
 
   public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {

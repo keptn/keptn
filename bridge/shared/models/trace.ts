@@ -261,7 +261,7 @@ export class Trace {
   }
 
   public getFinishedEvent<T extends Trace>(this: T): T | undefined {
-    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.type.endsWith('.finished'))) as T;
+    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent())) as T;
   }
 
   private isDeclined(): boolean {
@@ -347,5 +347,9 @@ export class Trace {
 
   public getLastTrace<T extends Trace>(this: T): T {
     return this.traces.length ? (this.traces[this.traces.length - 1] as T).getLastTrace() : this;
+  }
+
+  public isDeployment(): string | undefined {
+    return this.type === EventTypes.DEPLOYMENT_TRIGGERED ? this.data.stage : undefined;
   }
 }

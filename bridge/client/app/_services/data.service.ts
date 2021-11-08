@@ -694,9 +694,9 @@ export class DataService {
     );
   }
 
-  public getServiceStates(projectName: string, fromTime?: string): Observable<ServiceState[]> {
+  public getServiceStates(projectName: string): Observable<ServiceState[]> {
     return this.apiService
-      .getServiceStates(projectName, fromTime)
+      .getServiceStates(projectName)
       .pipe(map((serviceStates) => serviceStates.map((state) => ServiceState.fromJSON(state))));
   }
 

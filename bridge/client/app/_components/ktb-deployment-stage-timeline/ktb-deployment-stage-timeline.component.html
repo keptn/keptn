@@ -4,7 +4,7 @@
       <ktb-stage-badge
         class="pointer"
         [stage]="stage.name"
-        [evaluation]="stage.latestEvaluation"
+        [evaluation]="stage.hasEvaluation ? stage.latestEvaluation : undefined"
         [isSelected]="selectedStage === stage.name"
         [success]="stage.isSuccessful()"
         [error]="stage.isFaulty()"

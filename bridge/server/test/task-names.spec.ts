@@ -1,10 +1,10 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { ShipyardResponse } from '../fixtures/shipyard-response';
+import { ShipyardResponse } from '../fixtures/shipyard-response.mock';
 
 let axiosMock: MockAdapter;
 
-describe('Test the root path', () => {
+describe('Test /project/:projectName/tasks', () => {
   beforeAll(() => {
     axiosMock = new MockAdapter(global.axiosInstance);
   });

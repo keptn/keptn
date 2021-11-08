@@ -63,7 +63,7 @@ export class DataService {
     let remediations: Remediation[] = [];
 
     if (includeRemediation) {
-      remediations = await this.getOpenRemediations(projectName, true);
+      remediations = await this.getOpenRemediations(projectName, true, true);
     }
     const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
@@ -218,73 +218,49 @@ export class DataService {
   public async getSequences(
     projectName: string,
     sequenceName: string,
-    stageName?: string,
-    keptnContext?: string,
     sequenceState?: SequenceState
   ): Promise<Sequence[]> {
     const response = await this.apiService.getSequences(
       projectName,
       this.MAX_SEQUENCE_PAGE_SIZE,
       sequenceName,
-      sequenceState,
-      undefined,
-      undefined,
-      keptnContext
+      sequenceState
     );
-    const sequences = response.data.states;
-    for (const sequence of sequences) {
-      if (stageName) {
-        // we just need the result of a stage
-        if (sequence.name === SequenceTypes.REMEDIATION) {
-          // if the sequence is a remediation also return the problemTitle
-          const traceResponse = await this.apiService.getTraces(
-            this.buildRemediationEvent(stageName),
-            1,
-            projectName,
-            stageName,
-            sequence.service
-          );
-          const trace = traceResponse.data.events[0];
-          sequence.problemTitle = trace?.data.problem?.ProblemTitle;
-        }
-        sequence.stages = sequence.stages.filter((stage) => stage.name === stageName);
-      }
-    }
-    return sequences.map((sequence) => Sequence.fromJSON(sequence));
+
+    return response.data.states.map((sequence) => Sequence.fromJSON(sequence));
   }
 
   public async getOpenRemediations(
     projectName: string,
+    includeProblemTitle: boolean,
     includeActions: boolean,
     serviceName?: string
   ): Promise<Remediation[]> {
-    const sequences = await this.getSequences(
-      projectName,
-      SequenceTypes.REMEDIATION,
-      undefined,
-      undefined,
-      SequenceState.STARTED
-    );
+    const sequences = await this.getSequences(projectName, SequenceTypes.REMEDIATION, SequenceState.STARTED);
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
       const stageName = sequence.stages[0]?.name;
       // there could be invalid sequences that don't have a stage because the triggered sequence was not present in the shipyard file
       if (stageName && (!serviceName || sequence.service === serviceName)) {
-        const response = await this.apiService.getTraces(
-          this.buildRemediationEvent(stageName),
-          this.MAX_TRACE_PAGE_SIZE,
-          projectName,
-          stageName,
-          sequence.service
-        );
-        const traces = response.data.events;
         const stage = { ...sequence.stages[0], actions: [] };
         const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
-        remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
-        if (includeActions) {
-          const actions = this.getRemediationActions(traces);
-          remediation.stages[0].actions.push(...actions);
+        if (includeProblemTitle) {
+          const response = await this.apiService.getTraces(
+            undefined,
+            includeActions ? this.MAX_TRACE_PAGE_SIZE : 1,
+            projectName,
+            stageName,
+            sequence.service,
+            sequence.shkeptncontext
+          );
+          const traces = response.data.events;
+          remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
+          if (includeActions) {
+            const actions = this.getRemediationActions(Trace.traceMapper(traces));
+            remediation.stages[0].actions.push(...actions);
+          }
         }
+
         remediations.push(remediation);
       }
     }
@@ -294,9 +270,14 @@ export class DataService {
   private getRemediationActions(traces: Trace[]): IRemediationAction[] {
     const actions: IRemediationAction[] = [];
     for (const trace of traces) {
-      if (trace.type === EventTypes.ACTION_TRIGGERED && trace.data.action) {
-        const finishedAction = traces.find((t) => t.triggeredid === trace.id && t.type === EventTypes.ACTION_FINISHED);
-        const startedAction = traces.find((t) => t.triggeredid === trace.id && t.type === EventTypes.ACTION_STARTED);
+      const actionTriggeredTrace = trace.findTrace((t) => t.type === EventTypes.ACTION_TRIGGERED && !!t.data.action);
+      if (actionTriggeredTrace && actionTriggeredTrace.data.action) {
+        const finishedAction = actionTriggeredTrace.traces.find((t) =>
+          t.findTrace((tt) => tt.type === EventTypes.ACTION_FINISHED)
+        );
+        const startedAction = actionTriggeredTrace.traces.find((t) =>
+          t.findTrace((tt) => tt.type === EventTypes.ACTION_STARTED)
+        );
         let state: EventState;
         if (finishedAction) {
           state = EventState.FINISHED;
@@ -306,7 +287,7 @@ export class DataService {
           state = EventState.TRIGGERED;
         }
 
-        actions.push({ ...trace.data.action, state, result: finishedAction?.data.result });
+        actions.push({ ...actionTriggeredTrace.data.action, state, result: finishedAction?.data.result });
       }
     }
     return actions;
@@ -740,10 +721,6 @@ export class DataService {
     };
   }
 
-  private buildRemediationEvent(stageName: string): string {
-    return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
-  }
-
   private generateWebhookConfigCurl(webhookConfig: WebhookConfig): string {
     let params = '';
     for (const header of webhookConfig?.header || []) {
@@ -881,22 +858,26 @@ export class DataService {
     return tree;
   }
 
-  public async getServiceStates(projectName: string, fromTime?: string): Promise<ServiceState[]> {
-    const fromDate = fromTime ? new Date(fromTime) : undefined;
+  public async getServiceStates(projectName: string): Promise<ServiceState[]> {
     const projectResponse = await this.apiService.getProject(projectName);
     const project = Project.fromJSON(projectResponse.data);
-    const openRemediations = await this.getOpenRemediations(projectName, false);
+    const openRemediations = await this.getOpenRemediations(projectName, false, false);
     const serviceStates: ServiceState[] = [];
     for (const stage of project.stages) {
       for (const service of stage.services) {
         const latestDeploymentEvent = service.latestDeploymentEvent;
+        const serviceRemediations = openRemediations.filter(
+          (remediation) =>
+            remediation.service === service.serviceName &&
+            remediation.stages.some((remediationStage) => remediationStage.name === stage.stageName)
+        );
         let serviceState = serviceStates.find((s) => s.name === service.serviceName);
         if (!serviceState) {
           serviceState = new ServiceState(service.serviceName);
           serviceStates.push(serviceState);
         }
 
-        if (latestDeploymentEvent && (!fromDate || fromDate < new Date(latestDeploymentEvent.time))) {
+        if (latestDeploymentEvent) {
           const deploymentInformation = this.getOrCreateDeploymentInformation(
             serviceState,
             service,
@@ -904,9 +885,7 @@ export class DataService {
           );
           const deploymentStage = {
             name: stage.stageName,
-            hasOpenRemediations: openRemediations.some((remediation) =>
-              remediation.stages.some((remediationStage) => remediationStage.name === stage.stageName)
-            ),
+            hasOpenRemediations: serviceRemediations.length !== 0,
             time: new Date(+latestDeploymentEvent.time / 1_000_000).toISOString(),
           };
           deploymentInformation.stages.push(deploymentStage);
@@ -1001,7 +980,8 @@ export class DataService {
           stageTraces,
           projectName,
           stage.name,
-          sequence.service
+          sequence.service,
+          latestDeploymentContext
         );
         let deploymentURL: string | undefined;
         let stageRemediationInformation: StageRemediationInformation | undefined;
@@ -1044,7 +1024,8 @@ export class DataService {
     traces: Trace[],
     projectName: string,
     stageName: string,
-    serviceName: string
+    serviceName: string,
+    latestDeploymentContext?: string
   ): Promise<IStageDeployment['approvalInformation']> {
     let approvalInformation: IStageDeployment['approvalInformation'];
     const approvalTrace = traces.reduce(
@@ -1052,12 +1033,20 @@ export class DataService {
       undefined
     );
     if (approvalTrace?.isApprovalPending()) {
-      const deploymentInformation = await this.getDeploymentInformation(serviceName, projectName, stageName);
+      let image: string | undefined;
+      if (latestDeploymentContext === approvalTrace.shkeptncontext) {
+        image = traces
+          .reduce((t: Trace | undefined, trace) => t || trace.findTrace((tt) => !!tt.isDeployment()), undefined)
+          ?.getShortImageName();
+      } else {
+        const deploymentInformation = await this.getDeploymentInformation(serviceName, projectName, stageName);
+        image = deploymentInformation?.image;
+      }
 
       approvalTrace.traces = []; // remove child traces
       approvalInformation = {
         trace: approvalTrace,
-        deployedImage: deploymentInformation?.image,
+        deployedImage: image,
       };
     }
     return approvalInformation;
@@ -1103,7 +1092,7 @@ export class DataService {
     openRemediations?: Remediation[]
   ): Promise<StageRemediationInformation> {
     if (!openRemediations) {
-      openRemediations = await this.getOpenRemediations(projectName, false, serviceName);
+      openRemediations = await this.getOpenRemediations(projectName, true, false, serviceName);
     }
     let remediationConfig: string | undefined;
     const openRemediationsForStage = openRemediations
@@ -1137,7 +1126,7 @@ export class DataService {
     includeConfig: boolean
   ): Promise<ServiceRemediationInformation> {
     const serviceRemediationInformation: ServiceRemediationInformation = { stages: [] };
-    const openRemediations = await this.getOpenRemediations(projectName, false, serviceName);
+    const openRemediations = await this.getOpenRemediations(projectName, true, false, serviceName);
     const stageRemediations = openRemediations.reduce((stagesAcc: { [key: string]: Sequence[] }, remediation) => {
       const stageName = remediation.stages[0].name;
       if (!stagesAcc[stageName]) {

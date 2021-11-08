@@ -15,17 +15,11 @@ export class ServiceState extends svs {
 
   public static update(serviceStates: ServiceState[], newServiceStates: ServiceState[]): void {
     for (const newServiceState of newServiceStates) {
-      // deployments.length === 0 means that there aren't any updates for a service
-      if (newServiceState.deploymentInformation.length) {
-        const serviceStateOriginal = serviceStates.find((serviceStateO) => serviceStateO.name === newServiceState.name);
-        if (serviceStateOriginal) {
-          serviceStateOriginal.update(newServiceState);
-        } else {
-          // new service with deployments
-          serviceStates.push(newServiceState);
-        }
-      } else if (!serviceStates.some((s) => s.name === newServiceState.name)) {
-        // new service
+      const serviceStateOriginal = serviceStates.find((serviceStateO) => serviceStateO.name === newServiceState.name);
+      if (serviceStateOriginal) {
+        serviceStateOriginal.update(newServiceState);
+      } else {
+        // new service with deployments
         serviceStates.push(newServiceState);
       }
     }
@@ -38,7 +32,7 @@ export class ServiceState extends svs {
       const serviceStateOriginal = serviceStates[i];
       if (!newServiceStates.some((state) => state.name === serviceStateOriginal.name)) {
         serviceStates.splice(i, 1);
-        i--;
+        --i;
       }
       ++i;
     }
@@ -50,7 +44,7 @@ export class ServiceState extends svs {
         (deployment) => deployment.keptnContext === deploymentNew.keptnContext
       );
       if (deploymentOriginal) {
-        this.updateDeploymentInformation(deploymentOriginal, deploymentNew);
+        deploymentOriginal.stages = deploymentNew.stages;
       } else {
         // add new deployment
         this.deploymentInformation.push(deploymentNew);
@@ -58,28 +52,6 @@ export class ServiceState extends svs {
     }
 
     this.deleteOldDeployments(serviceState.deploymentInformation);
-  }
-
-  private updateDeploymentInformation(
-    deploymentOriginal: ServiceDeploymentInformation,
-    deploymentNew: ServiceDeploymentInformation
-  ): void {
-    // update existing deployment
-    deploymentOriginal.stages = [...deploymentOriginal.stages, ...deploymentNew.stages];
-
-    // update other deployments (remove the stages)
-    for (let i = 0; i < this.deploymentInformation.length; ++i) {
-      const deployment = this.deploymentInformation[i];
-      if (deployment !== deploymentOriginal) {
-        deployment.stages = deployment.stages.filter((stage) =>
-          deploymentNew.stages.some((st) => st.name === stage.name)
-        );
-        // delete deployment if it does not exist anymore
-        if (deployment.stages.length === 0) {
-          this.deploymentInformation.splice(i, 1);
-        }
-      }
-    }
   }
 
   private deleteOldDeployments(deploymentInformation: ServiceDeploymentInformation[]): void {
@@ -97,18 +69,5 @@ export class ServiceState extends svs {
     return this.deploymentInformation.some((deployment) =>
       deployment.stages.some((stage) => stage.hasOpenRemediations)
     );
-  }
-
-  public getLatestDeploymentTime(): Date | undefined {
-    let latestTime: Date | undefined;
-    for (const deployment of this.deploymentInformation) {
-      for (const stage of deployment.stages) {
-        const date = new Date(stage.time);
-        if (!latestTime || date > latestTime) {
-          latestTime = date;
-        }
-      }
-    }
-    return latestTime;
   }
 }

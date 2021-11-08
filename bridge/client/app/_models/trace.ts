@@ -107,10 +107,6 @@ class Trace extends ts {
     return this.data.approval?.result === ApprovalStates.APPROVED;
   }
 
-  public isDeployment(): string | undefined {
-    return this.type === EventTypes.DEPLOYMENT_TRIGGERED ? this.data.stage : undefined;
-  }
-
   public isEvaluationInvalidation(): boolean {
     return this.type === EventTypes.EVALUATION_INVALIDATED;
   }

@@ -1,0 +1,12 @@
+const remediationConfigResponseMock = {
+  metadata: {
+    branch: 'staging',
+    upstreamURL: 'https://github.com/Kirdock/keptn-dynatrace-v1',
+    version: '90ca4b359ecae50f4504ce8984d068fa3a9da20f',
+  },
+  resourceContent:
+    'YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuNApraW5kOiBSZW1lZGlhdGlvbgptZXRhZGF0YToKICBuYW1lOiBjYXJ0cy1yZW1lZGlhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczoKICAgIC0gcHJvYmxlbVR5cGU6IFJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24KICAgICAgYWN0aW9uc09uT3BlbjoKICAgICAgICAtIGFjdGlvbjogc2NhbGluZwogICAgICAgICAgbmFtZTogc2NhbGluZwogICAgICAgICAgZGVzY3JpcHRpb246IFNjYWxlIHVwCiAgICAgICAgICB2YWx1ZTogIjEiCiAgICAtIHByb2JsZW1UeXBlOiByZXNwb25zZV90aW1lX3A5MAogICAgICBhY3Rpb25zT25PcGVuOgogICAgICAgIC0gYWN0aW9uOiBzY2FsaW5nCiAgICAgICAgICBuYW1lOiBzY2FsaW5nCiAgICAgICAgICBkZXNjcmlwdGlvbjogU2NhbGUgdXAKICAgICAgICAgIHZhbHVlOiAiMSI=',
+  resourceURI: 'slo.yaml',
+};
+
+export { remediationConfigResponseMock as RemediationConfigResponse };

@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-describe('Test the root path', () => {
+describe('Test /bridgeInfo', () => {
   it('should return bridgeInfo', async () => {
     const response = await request(global.app).get('/api/bridgeInfo');
     expect(response.body).toEqual({

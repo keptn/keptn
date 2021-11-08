@@ -106,7 +106,7 @@ const apiRouter = (params: {
 
   router.get('/project/:projectName/serviceStates', async (req, res, next) => {
     try {
-      const serviceStates = await dataService.getServiceStates(req.params.projectName, req.query.fromTime?.toString());
+      const serviceStates = await dataService.getServiceStates(req.params.projectName);
       return res.json(serviceStates);
     } catch (err) {
       next(err);
