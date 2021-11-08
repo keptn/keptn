@@ -293,10 +293,6 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0 h1:4fqrfSXOz09iejZD06lPANC3ZNomKYmRoV5M6iw8qgo=
-github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
-github.com/keptn/go-utils v0.10.1-0.20211103140516-b6f48452063e h1:oQoaZpLa1ce9fxaaEvaACzqRdthuGmSCEzNNr19dy4Q=
-github.com/keptn/go-utils v0.10.1-0.20211103140516-b6f48452063e/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
 github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a h1:fEYctrKZ4KMze22xs7tdNagR402V6kfhC3vLigSGGGE=
 github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
