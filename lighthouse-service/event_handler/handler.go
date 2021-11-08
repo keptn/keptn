@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 )
 
 type EvaluationEventHandler interface {
-	HandleEvent() error
+	HandleEvent(ctx context.Context) error
 }
 
 func NewEventHandler(event cloudevents.Event, logger *keptncommon.Logger) (EvaluationEventHandler, error) {
