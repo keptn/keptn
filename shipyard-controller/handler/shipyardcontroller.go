@@ -143,7 +143,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 		go func() {
 			err := sc.handleSequenceTriggered(event)
 			if err != nil {
-				log.Error(err)
+				log.WithError(err).Error("Unable to handle sequence '.triggered' event")
 			}
 			done <- err
 		}()
@@ -151,7 +151,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 		go func() {
 			err := sc.handleTaskStarted(event)
 			if err != nil {
-				log.Error(err)
+				log.WithError(err).Error("Unable to handle task '.started' event")
 			}
 			done <- err
 		}()
@@ -159,7 +159,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 		go func() {
 			err := sc.handleTaskFinished(event)
 			if err != nil {
-				log.Error(err)
+				log.WithError(err).Error("Unable to handle task '.finished' event")
 			}
 			done <- err
 		}()
@@ -175,7 +175,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 func (sc *shipyardController) handleSequenceTriggered(event models.Event) error {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		return fmt.Errorf("unable to handle sequence '.triggered' event: %w", err)
+		return fmt.Errorf("unable to create event scope: %w", err)
 	}
 
 	// only process 'sequence.triggered' events
@@ -183,12 +183,10 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		return nil
 	}
 
-	log.Infof("Checking if .triggered event should start a sequence in project %s", eventScope.Project)
-
+	log.Infof("Checking if sequence '.triggered' event should start a sequence in project %s", eventScope.Project)
 	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(eventScope.EventType)
 	if err != nil {
-		log.Errorf("Unable to parse sequence event of type %s", eventScope.EventType)
-		return err
+		return fmt.Errorf("unable to parse seuqnce event of type %s: %w", eventScope.EventType, err)
 	}
 
 	// fetching cached shipyard file from project git repo
@@ -235,27 +233,9 @@ func (sc *shipyardController) handleTaskStarted(event models.Event) error {
 	}
 
 	if !wasTriggered {
-		log.Infof("The received %s event keptn context %s is not accociated with a task that was triggered",
+		log.Infof("The received %s event keptn context %s is not accociated with a task that was previously triggered",
 			eventScope.EventType, eventScope.KeptnContext)
 		return nil
-	}
-
-	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.TriggeredEvent))
-	if err != nil {
-		return fmt.Errorf("unable to handle %s event: %w", eventScope.EventType, err)
-	}
-
-	// get corresponding 'triggered' event for the incoming 'started' event
-	events, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &eventScope.TriggeredID}, common.TriggeredEvent, maxRepoReadRetries)
-
-	if err != nil {
-		msg := "error while retrieving matching '.triggered' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID + ": " + err.Error()
-		log.Error(msg)
-		return errors.New(msg)
-	} else if len(events) == 0 {
-		msg := "no matching '.triggered' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID
-		log.Error(msg)
-		return ErrNoMatchingEvent
 	}
 
 	sc.onSequenceTaskStarted(eventScope.WrappedEvent)
@@ -278,7 +258,7 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 	}
 
 	if !wasTriggered {
-		log.Infof("The received %s event with keptn context %s is not accociated with a task that was triggered",
+		log.Infof("The received %s event with keptn context %s is not accociated with a task that was previously triggered",
 			eventScope.EventType, eventScope.KeptnContext)
 		return nil
 	}
@@ -287,31 +267,24 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 	defer common.UnlockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
 
 	startedEvents, err := sc.eventRepo.GetStartedEventsForTriggeredID(*eventScope)
-
 	if err != nil {
-		msg := "error while retrieving matching '.started' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID + ": " + err.Error()
-		log.Error(msg)
-		return errors.New(msg)
-	} else if len(startedEvents) == 0 {
-		msg := "no matching '.started' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID
-		log.Error(msg)
-		return ErrNoMatchingEvent
+		return fmt.Errorf("error while retrieving matching '.started' eent for event %s with triggered ID %s: %w", eventScope.WrappedEvent.ID, eventScope.TriggeredID, err)
+	}
+	if len(startedEvents) == 0 {
+		return fmt.Errorf("no matching '.started' event found for event %s with triggered ID %s", eventScope.WrappedEvent.ID, eventScope.TriggeredID)
 	}
 
-	// persist the .finished event
 	err = sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.FinishedEvent)
 	if err != nil {
-		log.Errorf("Could not store %s event: %v ", eventScope.EventType, err.Error())
+		log.Errorf("unable to store %s event: %v ", eventScope.EventType, err.Error())
 	}
 
 	err = sc.eventRepo.DeleteEvent(eventScope.Project, startedEvents[0].ID, common.StartedEvent)
 	if err != nil {
-		msg := "Could not delete associated task '.started' event with ID " + startedEvents[0].ID + ": " + err.Error()
-		log.Error(msg)
-		return errors.New(msg)
+		return fmt.Errorf("unable to delete associated task '.started' event with ID %s: %w", startedEvents[0].ID, err)
 	}
 
-	// check if this was the last '.started' event
+	// if this was the last '.started' event
 	if len(startedEvents) == 1 {
 		triggeredEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.TriggeredEvent))
 		if err != nil {
@@ -320,45 +293,36 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 
 		triggeredEvents, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &eventScope.TriggeredID}, common.TriggeredEvent, maxRepoReadRetries)
 		if err != nil {
-			msg := "Could not retrieve associated '.triggered' event with ID " + eventScope.TriggeredID + ": " + err.Error()
-			log.Error(msg)
-			return errors.New(msg)
+			return fmt.Errorf("unable to retrieve associated task '.triggered' event with ID %s: %w", eventScope.TriggeredID, err)
 		}
 		if len(triggeredEvents) == 0 {
-			msg := "no matching '.triggered' event for event " + eventScope.WrappedEvent.ID + " with triggeredid " + eventScope.TriggeredID
-			log.Error(msg)
-			return ErrNoMatchingEvent
+			return fmt.Errorf("no matching task '.triggered' event found for event %s with triggered ID %s", eventScope.WrappedEvent.ID, eventScope.TriggeredID)
 		}
+
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
 		err = sc.eventRepo.DeleteEvent(eventScope.Project, triggeredEvents[0].ID, common.TriggeredEvent)
 		if err != nil {
-			msg := "Could not delete associated .triggered event with ID " + eventScope.TriggeredID + ": " + err.Error()
-			log.Error(msg)
-			return errors.New(msg)
+			return fmt.Errorf("unable to delete associated task '.triggered' event with ID %s: %w", eventScope.TriggeredID, err)
 		}
 
-		taskExecution, err := sc.getOpentTaskExecution(*eventScope)
+		taskExecution, err := sc.getOpenTaskExecution(*eventScope)
 		if err != nil {
-			return fmt.Errorf("unable to handle %s event: %w", eventScope.EventType, err)
+			return fmt.Errorf("unable to get open task execution: %w", err)
 		}
 
-		log.Info("Trying to fetch shipyard and get next task")
 		shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to fetch shipyard: %w", err)
 		}
 
 		sequence, err := GetTaskSequenceInStage(taskExecution.Stage, taskExecution.TaskSequenceName, shipyard)
 		if err != nil {
-			msg := "No task " + taskExecution.Stage + "." + taskExecution.TaskSequenceName + " found in shipyard: " + err.Error()
-			log.Error(msg)
-			return errors.New(msg)
+			return fmt.Errorf("unable to find task %s.%s found in shipyard: %w", taskExecution.Stage, taskExecution.TaskSequenceName, err)
 		}
 
 		finishedEventsData, err := sc.getFinishedEventData(*eventScope)
 		if err != nil {
-			log.WithError(err).Error("could not gather .finished events data")
-			return err
+			return fmt.Errorf("unable to gather task '.finished' event data: %w", err)
 		}
 
 		sc.onSequenceTaskFinished(eventScope.WrappedEvent)
@@ -368,7 +332,7 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 }
 
 func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bool, error) {
-	taskContext, err := sc.getOpentTaskExecution(eventScope)
+	taskContext, err := sc.getOpenTaskExecution(eventScope)
 	if err != nil {
 		return false, err
 	}
@@ -556,7 +520,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	return sc.proceedTaskSequence(*eventScope, taskSequence, []interface{}{}, nil)
 }
 
-func (sc *shipyardController) getOpentTaskExecution(eventScope models.EventScope) (*models.TaskExecution, error) {
+func (sc *shipyardController) getOpenTaskExecution(eventScope models.EventScope) (*models.TaskExecution, error) {
 	for i := 0; i <= maxRepoReadRetries; i++ {
 		taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(eventScope.Project, models.TaskExecution{TriggeredEventID: eventScope.TriggeredID})
 		if err != nil {
@@ -634,6 +598,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 }
 
 func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, taskSequence *keptnv2.Sequence, eventHistory []interface{}, previousTask *models.TaskExecution) error {
+
 	// get the input for the .triggered event that triggered the previous sequence and append it to the list of previous events to gather all required data for the next stage
 	inputEvent, eventHistory, err := sc.appendTriggerEventProperties(eventScope, taskSequence, eventHistory)
 	if err != nil {
@@ -657,24 +622,21 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 // this function retrieves the .triggered event for the task sequence and appends its properties to the existing .finished events
 // this ensures that all parameters set in the .triggered event are received by all execution plane services, instead of just the first one
 func (sc *shipyardController) appendTriggerEventProperties(eventScope models.EventScope, taskSequence *keptnv2.Sequence, eventHistory []interface{}) (*models.Event, []interface{}, error) {
-	inputEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(eventScope, taskSequence.Name)
-
+	triggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(eventScope, taskSequence.Name)
 	if err != nil {
-		log.Errorf("Could not load event that triggered task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("unable to load event that triggered task sequence %s.%s with KeptnContext %s: %w", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext, err)
 	}
-	if inputEvent != nil {
-		marshal, err := json.Marshal(inputEvent.Data)
+	if triggeredEvent != nil {
+		marshal, err := json.Marshal(triggeredEvent.Data)
 		if err != nil {
-			log.Errorf("Could not marshal input event: %s", err.Error())
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("unable to marshal triggered event: %w", err)
 		}
 		var tmp interface{}
 		_ = json.Unmarshal(marshal, &tmp)
 		eventHistory = append(eventHistory, tmp)
 	}
 
-	return inputEvent, eventHistory, nil
+	return triggeredEvent, eventHistory, nil
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventScope, completedSequence *keptnv2.Sequence, eventHistory []interface{}, inputEvent *models.Event, previousTask string) error {
