@@ -59,7 +59,7 @@ func WriteFile(path string, content []byte) error {
 
 	// save changes
 	err = file.Sync()
-	return nil
+	return err
 }
 
 // DeleteFile deletes a file
