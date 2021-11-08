@@ -19,4 +19,5 @@ const setup = async () => {
   global.app = await init();
 };
 
+const exports = {};
 export default setup();
