@@ -63,7 +63,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 
 	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
 	if err != nil {
-		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch)
+		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -108,7 +108,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
 	if err != nil {
-		logger.WithError(err).Error("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
+		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
