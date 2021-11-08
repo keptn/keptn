@@ -112,9 +112,9 @@ func (sb *StatisticsBucket) storeCurrentBucket() {
 	log.Info(fmt.Sprintf("Storing statistics for time frame %s - %s\n\n", sb.Statistics.From.String(), sb.Statistics.To.String()))
 	sb.Statistics.To = time.Now().Round(time.Second)
 	if err := sb.StatisticsRepo.StoreStatistics(sb.Statistics); err != nil {
-		log.Error(fmt.Sprintf("Could not store statistics: " + err.Error()))
+		log.WithError(err).Error("Could not store statistics")
 	}
-	log.Info(fmt.Sprintf("Statistics stored successfully"))
+	log.Infof("Statistics stored successfully")
 }
 
 func (sb *StatisticsBucket) createNewBucket() {

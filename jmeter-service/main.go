@@ -58,7 +58,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	data := &keptnv2.TestTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
+		logger.WithError(err).Error("Got Data Error")
 		return err
 	}
 
@@ -100,7 +100,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		msg := fmt.Sprintf("Error getting service url to run test against: %s", err.Error())
 		logger.Error(msg)
 		if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg); err != nil {
-			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 		}
 		return
 	}
@@ -116,7 +116,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", serviceUrl, err.Error())
 			logger.Error(msg)
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed); err != nil {
-				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+				logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 			}
 			return
 		}
@@ -126,7 +126,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 			msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 			logger.Error(msg)
 			if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg); err != nil {
-				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+				logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 			}
 			return
 		}
@@ -134,7 +134,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		if !res {
 			msg := fmt.Sprintf("Tests for %s with status = %s.%s", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo.ToString())
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed); err != nil {
-				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+				logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 			}
 			return
 		}
@@ -161,16 +161,16 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 				msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 				logger.Error(msg)
 				if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg); err != nil {
-					logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+					logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 				}
 				return
 			} else {
-				logger.Info(fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString()))
+				logger.Infof("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
 			}
 		} else {
 			// no workload for that test strategy!!
 			res = false
-			logger.Error(fmt.Sprintf("No workload definition found for testStrategy %s", testStrategy))
+			logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
 		}
 	}
 
@@ -178,13 +178,13 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	msg := fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
 	if !res {
 		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 		}
 		return
 	}
 
 	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultPass); err != nil {
-		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+		logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 	}
 }
 
@@ -230,9 +230,9 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload) (b
 	// for testStrategy functional we enforce a 0% error policy!
 	breakOnFunctionalIssues := workload.TestStrategy == TestStrategy_Functional
 
-	logger.Info(
-		fmt.Sprintf("Running workload testStrategy=%s, vuser=%d, loopcount=%d, thinktime=%d, funcvalidation=%t, acceptederrors=%f, avgrtvalidation=%d, script=%s",
-			workload.TestStrategy, workload.VUser, workload.LoopCount, workload.ThinkTime, breakOnFunctionalIssues, workload.AcceptedErrorRate, workload.AvgRtValidation, workload.Script))
+	logger.Infof(
+		"Running workload testStrategy=%s, vuser=%d, loopcount=%d, thinktime=%d, funcvalidation=%t, acceptederrors=%f, avgrtvalidation=%d, script=%s",
+		workload.TestStrategy, workload.VUser, workload.LoopCount, workload.ThinkTime, breakOnFunctionalIssues, workload.AcceptedErrorRate, workload.AvgRtValidation, workload.Script)
 	if runlocal {
 		logger.Info("LOCALLY: not executing actual tests!")
 		return true, nil
@@ -290,7 +290,7 @@ func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Even
 	testTriggeredEventData := keptnv2.TestTriggeredEventData{}
 	// fill in data from incoming event (e.g., project, service, stage)
 	if err := incomingEvent.DataAs(&testTriggeredEventData); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
+		logger.WithError(err).Error("Got Data Error")
 		return err
 	}
 	testStartedEventData.EventData = testTriggeredEventData.EventData
@@ -314,7 +314,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	testTriggeredEventData := keptnv2.TestTriggeredEventData{}
 	// fill in data from incoming event (e.g., project, service, stage)
 	if err := incomingEvent.DataAs(&testTriggeredEventData); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
+		logger.WithError(err).Error("Got Data Error")
 		return err
 	}
 	testFinishedData.EventData = testTriggeredEventData.EventData
@@ -344,7 +344,7 @@ func sendErroredTestsFinishedEvent(shkeptncontext string, incomingEvent cloudeve
 	testTriggeredEventData := keptnv2.TestTriggeredEventData{}
 	// fill in data from incoming event (e.g., project, service, stage)
 	if err := incomingEvent.DataAs(&testTriggeredEventData); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
+		logger.WithError(err).Error("Got Data Error")
 		return err
 	}
 	testFinishedData.EventData = testTriggeredEventData.EventData

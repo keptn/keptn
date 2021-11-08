@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	logger "github.com/sirupsen/logrus"
 	"os"
 	"time"
@@ -45,12 +44,12 @@ func SendEvent(keptnContext, triggeredID, eventType, source string, data interfa
 		EventBrokerURL: GetEventBrokerURL(),
 	})
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error initializing Keptn Handler %s", err.Error()))
+		logger.Errorf("Error initializing Keptn Handler %s", err.Error())
 		return err
 	}
 	err = k.SendCloudEvent(ev)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
+		logger.WithError(err).Errorf("Error sending CloudEvent")
 		return err
 	}
 	return nil

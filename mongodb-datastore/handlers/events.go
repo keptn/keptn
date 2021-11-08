@@ -474,7 +474,7 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline) (*getEvents
 	cur, err := collection.Aggregate(ctx, pipeline)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		logger.WithError(err).Error("error finding elements in events collection")
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
@@ -519,13 +519,13 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
+		logger.WithError(err).Error("error counting elements in events collection")
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		logger.WithError(err).Error("error finding elements in events collection")
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
@@ -552,12 +552,12 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 		var outputEvent interface{}
 		err := cur.Decode(&outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to decode event %v", err))
+			logger.WithError(err).Error("failed to decode event")
 			continue
 		}
 		outputEvent, err = flattenRecursively(outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to flatten %v", err))
+			logger.WithError(err).Error("failed to flatten")
 			continue
 		}
 
@@ -566,7 +566,7 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 		var keptnEvent models.KeptnContextExtendedCE
 		err = keptnEvent.UnmarshalJSON(data)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			logger.WithError(err).Error("failed to unmarshal")
 			continue
 		}
 
@@ -618,7 +618,7 @@ func getCollectionNameForQuery(searchOptions bson.M) (string, error) {
 				logger.Info("no project found for shkeptncontext")
 				return unmappedEventsCollectionName, nil
 			}
-			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			logger.WithError(err).Error("error loading project for shkeptncontext")
 			return "", err
 		}
 	}
@@ -706,7 +706,7 @@ func flattenRecursively(i interface{}) (interface{}, error) {
 		myMap := d.Map()
 		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
 		if err != nil {
-			logger.Error(fmt.Sprintf("could not flatten element: %v", err))
+			logger.WithError(err).Error("could not flatten element")
 			return nil, err
 		}
 		for k, v := range flat {

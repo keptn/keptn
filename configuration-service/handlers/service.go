@@ -40,7 +40,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
+		logger.WithError(err).Errorf(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
@@ -89,7 +89,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", params.StageName, params.ProjectName, err.Error()))
+		logger.WithError(err).Error("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 

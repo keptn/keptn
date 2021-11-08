@@ -54,10 +54,10 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 
 		resp := h.handleScaling(actionTriggeredEvent)
 		if resp.Status == keptnv2.StatusErrored {
-			logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
+			logger.Errorf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message)
 		} else {
-			logger.Info(fmt.Sprintf("Finished action %s for service %s in stage %s of project %s",
-				actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
+			logger.Infof("Finished action %s for service %s in stage %s of project %s",
+				actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project)
 		}
 
 		// Send action.finished event

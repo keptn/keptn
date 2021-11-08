@@ -43,7 +43,7 @@ func getResult(data keptnv2.ApprovalTriggeredEventData, event cloudevents.Event)
 func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn) {
 	data := &keptnv2.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
-		logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
+		logger.WithError(err).Error("failed to parse ApprovalTriggeredEventData")
 		return
 	}
 

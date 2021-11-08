@@ -33,7 +33,7 @@ func newMetadataHandler() metadataHandler {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		logger.Debug(fmt.Sprintf("Could not get InClusterConfig, will skip k8s-deployments: %s", err.Error()))
+		logger.Debugf("Could not get InClusterConfig, will skip k8s-deployments: %s", err.Error())
 	} else {
 		// creates the clientset
 		clientSet, err = kubernetes.NewForConfig(config)
@@ -75,7 +75,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 		bridgeDeployment, err := deploymentsClient.Get(context.TODO(), "bridge", metav1.GetOptions{})
 		if err != nil {
 			// log the error, but continue
-			logger.Error(fmt.Sprintf("Error getting deployment info: %s", err.Error()))
+			logger.WithError(err).Error("Error getting deployment info")
 		} else {
 			payload.Bridgeversion = strings.TrimPrefix(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, "keptn/")
 		}

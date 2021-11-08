@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"keptn/approval-service/pkg/handler"
 	"log"
 	"os"
@@ -70,7 +69,7 @@ func switchEvent(event cloudevents.Event) {
 	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {
-		logger.Error("failed to initialize Keptn handler: " + err.Error())
+		logger.WithError(err).Error("failed to initialize Keptn handler")
 		return
 	}
 
@@ -87,6 +86,6 @@ func switchEvent(event cloudevents.Event) {
 	}
 
 	if unhandled {
-		logger.Error(fmt.Sprintf("Received unexpected keptn event type %s", event.Type()))
+		logger.Debugf("Received unexpected keptn event type %s", event.Type())
 	}
 }

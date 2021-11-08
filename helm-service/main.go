@@ -77,13 +77,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	configServiceURL, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error when getting configServiceURL: %s", err.Error()))
+		logger.WithError(err).Error("Error when getting configServiceURL")
 		return err
 	}
 
 	shipyardControllerURL, err := serviceutils.GetShipyardControllerURL()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error when getting shipyardControllerURL: %s", err.Error()))
+		logger.WithError(err).Error("Error when getting shipyardControllerURL")
 		return err
 	}
 
