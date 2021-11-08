@@ -139,12 +139,11 @@ func Test_HandleStartedEvents(t *testing.T) {
 		event models.Event
 	}
 	tests := []struct {
-		name                   string
-		fields                 fields
-		args                   args
-		wantErr                bool
-		wantErrNoMatchingEvent bool
-		wantHookCalled         bool
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantHookCalled bool
 	}{
 		{
 			name: "received started event with matching triggered event",
@@ -201,18 +200,15 @@ func Test_HandleStartedEvents(t *testing.T) {
 					},
 				},
 				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-					return []models.TaskExecution{
-						{},
-					}, nil
+					return []models.TaskExecution{}, nil
 				}},
 				taskStartedHook: &fakehooks.ISequenceTaskStartedHookMock{OnSequenceTaskStartedFunc: func(event models.Event) {}},
 			},
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
 			},
-			wantErr:                true,
-			wantErrNoMatchingEvent: true,
-			wantHookCalled:         false,
+			wantErr:        false,
+			wantHookCalled: false,
 		},
 	}
 	for _, tt := range tests {
@@ -226,9 +222,6 @@ func Test_HandleStartedEvents(t *testing.T) {
 			err := em.handleTaskStarted(tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("handleTaskStarted() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.wantErrNoMatchingEvent && (err != ErrNoMatchingEvent) {
-				t.Errorf("handleTaskStarted() expected ErrNoMatchingEvent but got %v", err)
 			}
 
 			if tt.wantHookCalled {
