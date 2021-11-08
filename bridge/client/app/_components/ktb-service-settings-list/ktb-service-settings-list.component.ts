@@ -30,9 +30,7 @@ export class KtbServiceSettingsListComponent implements OnDestroy {
         this.projectName = projectName;
         this.isLoading = true;
 
-        if (this._timer) {
-          this._timer.unsubscribe();
-        }
+        this._timer.unsubscribe();
 
         this._timer = AppUtils.createTimer(0, initialDelayMillis).subscribe(() => {
           if (this.projectName) {
