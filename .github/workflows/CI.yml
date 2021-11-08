@@ -299,32 +299,15 @@ jobs:
         with:
           install: true
 
-      - name: Docker Cache
-        id: docker_cache
-        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-test-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-test-
-
       - name: Build ${{ matrix.config.artifact }} test image
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         uses: docker/build-push-action@v2
         with:
           context: ${{ matrix.config.working-dir }}
           tags: ${{ matrix.config.artifact }}-test
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           target: ${{ matrix.config.docker-test-target }}
           load: true
           push: false
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
