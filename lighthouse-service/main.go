@@ -4,6 +4,9 @@ import (
 	"context"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
@@ -38,8 +41,7 @@ func main() {
 }
 
 func _main(args []string, env envConfig) int {
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
@@ -51,6 +53,7 @@ func _main(args []string, env envConfig) int {
 	}
 	logger.Fatal(c.StartReceiver(ctx, gotEvent))
 
+	ctx.Value("Wg").(*sync.WaitGroup).Wait()
 	return 0
 }
 
@@ -65,8 +68,25 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 	if handler != nil {
-		return handler.HandleEvent()
+		return handler.HandleEvent(ctx)
 	}
 
 	return nil
+}
+
+// storing wait group into context to sync before shutdown
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+
+	go func() {
+		<-ch
+		logger.Fatal("Container termination triggered, waiting for graceful shutdown")
+		cancel()
+	}()
+
+	return ctx
 }

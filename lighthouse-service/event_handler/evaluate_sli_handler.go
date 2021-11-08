@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"gopkg.in/yaml.v3"
@@ -48,7 +50,7 @@ type EvaluateSLIHandler struct {
 	EventStore       EventStore
 }
 
-func (eh *EvaluateSLIHandler) HandleEvent() error {
+func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 	e := &keptnv2.GetSLIFinishedEventData{}
 
 	var shkeptncontext string
@@ -60,13 +62,17 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
-
-	go eh.processGetSliFinishedEvent(shkeptncontext, e)
+	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	go eh.processGetSliFinishedEvent(ctx, shkeptncontext, e)
 
 	return nil
 }
 
-func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
+func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
+	defer func() {
+		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		eh.KeptnHandler.Logger.Info("Terminating Evaluate-SLI handler")
+	}()
 
 	triggeredEvents, err2 := eh.EventStore.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,

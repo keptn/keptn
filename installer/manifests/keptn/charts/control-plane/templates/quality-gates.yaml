@@ -80,6 +80,13 @@ spec:
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/bash
+                  - -c
+                  - sleep 30
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -97,6 +104,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 60
       serviceAccountName: keptn-lighthouse-service
 ---
 apiVersion: v1
