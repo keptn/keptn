@@ -89,7 +89,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.WithError(err).Error("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
+		logger.WithError(err).Errorf("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 

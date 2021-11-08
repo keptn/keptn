@@ -181,7 +181,7 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.WithError(err).Error("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 

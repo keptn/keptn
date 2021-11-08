@@ -63,7 +63,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 
 	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
 	if err != nil {
-		logger.WithError(err).Error("Could not check out %s branch of project %s", defaultBranch)
+		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch)
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -102,7 +102,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.WithError(err).Error("Could not determine default branch of project %s:", params.ProjectName)
+		logger.WithError(err).Errorf("Could not determine default branch of project %s:", params.ProjectName)
 		return project_resource.NewPostProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -197,7 +197,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.WithError(err).Error("Could not determine default branch of project %s", params.ProjectName)
+		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -207,7 +207,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
 	if err != nil {
-		logger.WithError(err).Error("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
+		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
