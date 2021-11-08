@@ -14,6 +14,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.4
 	github.com/ugorji/go v1.1.8 // indirect
-	go.mongodb.org/mongo-driver v1.7.3
+	go.mongodb.org/mongo-driver v1.7.4
 	google.golang.org/protobuf v1.25.0 // indirect
 )
+
+replace golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 => golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
