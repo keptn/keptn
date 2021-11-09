@@ -863,11 +863,6 @@ export class DataService {
     for (const stage of project.stages) {
       for (const service of stage.services) {
         const latestDeploymentEvent = service.latestDeploymentEvent;
-        const serviceRemediations = openRemediations.filter(
-          (remediation) =>
-            remediation.service === service.serviceName &&
-            remediation.stages.some((remediationStage) => remediationStage.name === stage.stageName)
-        );
         let serviceState = serviceStates.find((s) => s.name === service.serviceName);
         if (!serviceState) {
           serviceState = new ServiceState(service.serviceName);
@@ -875,6 +870,11 @@ export class DataService {
         }
 
         if (latestDeploymentEvent) {
+          const serviceRemediations = openRemediations.filter(
+            (remediation) =>
+              remediation.service === service.serviceName &&
+              remediation.stages.some((remediationStage) => remediationStage.name === stage.stageName)
+          );
           const deploymentInformation = this.getOrCreateDeploymentInformation(
             serviceState,
             service,

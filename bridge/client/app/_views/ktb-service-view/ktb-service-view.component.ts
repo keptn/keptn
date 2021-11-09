@@ -51,15 +51,6 @@ export class KtbServiceViewComponent implements OnDestroy {
       takeUntil(this.unsubscribe$)
     );
 
-    const serviceStateInterval$ = projectName$.pipe(
-      switchMap((projectName) =>
-        AppUtils.createTimer(this.initialDelayMillis, this.initialDelayMillis).pipe(map(() => projectName))
-      ),
-      takeUntil(this.unsubscribe$),
-      switchMap((projectName) => this.dataService.getServiceStates(projectName)),
-      takeUntil(this.unsubscribe$)
-    );
-
     combineLatest([params$, projectName$, serviceStatesInitial$])
       .pipe(take(1))
       .subscribe(([params, projectName, serviceStates]) => {
@@ -94,6 +85,14 @@ export class KtbServiceViewComponent implements OnDestroy {
     });
 
     if (this.initialDelayMillis !== 0) {
+      const serviceStateInterval$ = projectName$.pipe(
+        switchMap((projectName) =>
+          AppUtils.createTimer(this.initialDelayMillis, this.initialDelayMillis).pipe(map(() => projectName))
+        ),
+        takeUntil(this.unsubscribe$),
+        switchMap((projectName) => this.dataService.getServiceStates(projectName)),
+        takeUntil(this.unsubscribe$)
+      );
       serviceStateInterval$.subscribe((serviceStates) => {
         this.updateServiceStates(serviceStates);
       });

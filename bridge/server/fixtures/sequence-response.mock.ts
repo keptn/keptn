@@ -59,7 +59,7 @@ const sequenceDeliveryTillStagingResponseMock = {
       project: 'sockshop',
       time: '2021-10-13T10:45:06.621Z',
       shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
-      state: 'finished',
+      state: 'started',
       stages: [
         {
           name: 'dev',
@@ -78,14 +78,14 @@ const sequenceDeliveryTillStagingResponseMock = {
         {
           name: 'staging',
           image: 'docker.io/keptnexamples/carts:0.12.1',
-          state: 'finished',
+          state: 'triggered',
           latestEvaluation: {
             result: 'pass',
             score: 100,
           },
           latestEvent: {
-            type: 'sh.keptn.event.staging.delivery.finished',
-            id: 'f622d9ac-e673-4e72-b115-7926cc4a137f',
+            type: 'sh.keptn.event.approval.started',
+            id: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
             time: '2021-10-13T10:59:45.002Z',
           },
         },

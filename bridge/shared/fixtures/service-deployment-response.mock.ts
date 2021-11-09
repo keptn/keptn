@@ -7,7 +7,6 @@ const serviceDeploymentMock = {
   stages: [
     {
       name: 'dev',
-      deploymentURL: 'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
       lastTimeUpdated: 1634122170005,
       openRemediations: [],
       subSequences: [
@@ -231,14 +230,13 @@ const serviceDeploymentMock = {
   image: 'carts:0.12.3',
 };
 
-const serviceDeploymenWithFromTimetMock = {
+const serviceDeploymentWithFromTimeMock = {
   state: 'finished',
   keptnContext: '2c0e568b-8bd3-4726-a188-e528423813ed',
   service: 'carts',
   stages: [
     {
       name: 'dev',
-      deploymentURL: 'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
       lastTimeUpdated: 1634122170005,
       openRemediations: [],
       subSequences: [],
@@ -441,13 +439,12 @@ const serviceDeploymenWithFromTimetMock = {
 };
 
 const serviceDeploymentWithApprovalMock = {
-  state: 'finished',
+  state: 'started',
   keptnContext: '2c0e568b-8bd3-4726-a188-e528423813ed',
   service: 'carts',
   stages: [
     {
       name: 'dev',
-      deploymentURL: 'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
       lastTimeUpdated: 1634122170005,
       openRemediations: [],
       subSequences: [
@@ -628,4 +625,4 @@ const serviceDeploymentWithApprovalMock = {
 
 export { serviceDeploymentMock as ServiceDeploymentMock };
 export { serviceDeploymentWithApprovalMock as ServiceDeploymentWithApprovalMock };
-export { serviceDeploymenWithFromTimetMock as ServiceDeploymenWithFromTimetMock };
+export { serviceDeploymentWithFromTimeMock as ServiceDeploymentWithFromTimeMock };

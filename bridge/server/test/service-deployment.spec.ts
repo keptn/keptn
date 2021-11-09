@@ -12,7 +12,7 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
-  ServiceDeploymenWithFromTimetMock,
+  ServiceDeploymentWithFromTimeMock,
 } from '../../shared/fixtures/service-deployment-response.mock';
 import {
   SequenceDeliveryResponseMock,
@@ -67,7 +67,7 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
     const response = await request(global.app).get(
       `/api/project/${projectName}/deployment/${keptnContext}?fromTime=2021-10-13T10:59:45.104Z`
     );
-    expect(response.body).toEqual(ServiceDeploymenWithFromTimetMock);
+    expect(response.body).toEqual(ServiceDeploymentWithFromTimeMock);
     expect(response.statusCode).toBe(200);
   });
 

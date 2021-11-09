@@ -1,4 +1,4 @@
-const keptnContextDeploymentDev = '2c0e568b-8bd3-4726-a188-e528423813ed';
+const keptnContextDeploymentDev = '2e21574c-dcf7-4275-b677-6bc19214acd5';
 const keptnContextDeploymentStaging = '29af69cc-ea85-4358-b169-ce29034d9c81';
 
 const projectResponseMock = {

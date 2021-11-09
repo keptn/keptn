@@ -6,9 +6,13 @@ import { BehaviorSubject } from 'rxjs';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ServiceStateResponse } from '../../../../shared/fixtures/service-state-response.mock';
-import { ServiceDeploymentMock } from '../../../../shared/fixtures/service-deployment-response.mock';
+import {
+  ServiceDeploymentMock,
+  ServiceDeploymentWithApprovalMock,
+} from '../../../../shared/fixtures/service-deployment-response.mock';
 import { Deployment } from '../../_models/deployment';
 import { Location } from '@angular/common';
+import { ServiceState } from '../../_models/service-state';
 
 describe('KtbEventsListComponent', () => {
   let component: KtbServiceViewComponent;
@@ -144,9 +148,46 @@ describe('KtbEventsListComponent', () => {
     expect(updateRemediationSpy).toHaveBeenCalled();
   });
 
-  it('should update service states', () => {});
+  it('should update service states', () => {
+    const serviceStateUpdateSpy = jest.spyOn(ServiceState, 'update');
+    component.serviceStates = ServiceStateResponse.map((st) => ServiceState.fromJSON(st));
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    component.updateServiceStates(ServiceStateResponse.map((st) => ServiceState.fromJSON(st)));
+    expect(serviceStateUpdateSpy).toHaveBeenCalled();
+  });
 
-  it('should update deployment', () => {});
+  it('should update deployment', () => {
+    const selectedDeployment = ServiceStateResponse[0].deploymentInformation[2];
+    const deployment = Deployment.fromJSON(ServiceDeploymentWithApprovalMock);
+    const updateDeploymentSpy = jest.spyOn(deployment, 'update');
+
+    component.selectedDeployment = {
+      deploymentInformation: {
+        ...selectedDeployment,
+        deployment,
+      },
+      stage: 'production',
+    };
+
+    component.deploymentSelected(
+      {
+        deploymentInformation: {
+          ...selectedDeployment,
+          deployment: deployment,
+        },
+        stage: 'production',
+      },
+      'sockshop'
+    );
+
+    httpMock
+      .expectOne(
+        `./api/project/${projectName}/deployment/${selectedDeployment.keptnContext}?fromTime=2021-10-13T10:54:43.315Z`
+      )
+      .flush(AppUtils.copyObject(ServiceDeploymentWithApprovalMock));
+    expect(updateDeploymentSpy).toHaveBeenCalled();
+  });
 
   function loadDeployment(keptnContext: string): void {
     httpMock.expectOne(`./api/project/${projectName}/serviceStates`).flush(AppUtils.copyObject(ServiceStateResponse));
