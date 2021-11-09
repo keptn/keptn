@@ -115,6 +115,28 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
 }
 
 /**
+ * Removes the whole path of the directory, returns error if error occures
+ */
+func removeAllDirPath(dir string) error {
+	err := os.RemoveAll(dir)
+	if err != nil {
+		return fmt.Errorf("unable to remove path %s: %w", dir, err)
+	}
+	return nil
+}
+
+/**
+ * Makes the whole path of the directory, returns error if directory is defined error occures
+ */
+ func makeAllDirPath(dir string, mode os.FileMode) error {
+	err := os.MkdirAll(dir, mode)
+	if err != nil && dir != "" {
+		return fmt.Errorf("unable to create path %s: %w", dir, err)
+	}
+	return nil
+}
+
+/**
  * Executes the actual JMeter script
  * Step 1: Downloads all resources from the jmeter subfolder in the local container in a temporary folder and validates the referenced jmeter file was there
  * Step 2: Executes the JMeter script that is referenced in the workload definition
@@ -134,28 +156,28 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  * Error: error details if status was false
  */
 func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool) (bool, error) {
-	err := os.RemoveAll(resultsDir)
+	err := removeAllDirPath(resultsDir)
 	if err != nil {
-		return false, fmt.Errorf("unable to remove path %s: %w", resultsDir, err)
+		return false, err
 	}
 
-	err = os.MkdirAll(resultsDir, 0644)
-	if err != nil && resultsDir != "" {
-		return false, fmt.Errorf("unable to create path %s: %w", resultsDir, err)
+	err = makeAllDirPath(resultsDir, 0644)
+	if err != nil {
+		return false, err
 	}
 
 	// Step 1: Lets download all files that match /jmeter/ into a local temp directory
 	// Due to current limitations of the REST API we also fall-back and always load a specific file referenced in workload on service, stage or project level
 	// Implementing https://github.com/keptn/keptn/issues/2756
 	localTempDir := testInfo.Context
-	err = os.RemoveAll(localTempDir)
+	err = removeAllDirPath(localTempDir)
 	if err != nil {
-		return false, fmt.Errorf("unable to remove path %s: %w", localTempDir, err)
+		return false, err
 	}
 
-	err = os.MkdirAll(localTempDir, 0644)
-	if err != nil && resultsDir != "" {
-		return false, fmt.Errorf("unable to create path %s: %w", localTempDir, err)
+	err = makeAllDirPath(localTempDir, 0644)
+	if err != nil {
+		return false, err
 	}
 
 	fileMatchPattern := JMeterConfigDirectory
@@ -187,9 +209,9 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	if !FileExists(mainScriptFileName) {
 		err = fmt.Errorf("JMeter script %s not found locally at %s for %s.%s.%s", workload.Script, mainScriptFileName, testInfo.Project, testInfo.Stage, testInfo.Service)
 		if removeTempFiles {
-			err := os.RemoveAll(localTempDir)
+			err := removeAllDirPath(localTempDir)
 			if err != nil {
-				return false, fmt.Errorf("unable to remove path %s: %w", localTempDir, err)
+				return false, err
 			}
 		}
 		return false, err
@@ -217,9 +239,9 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 
 	// now lets remove all downloaded files
 	if removeTempFiles {
-		err = os.RemoveAll(localTempDir)
+		err = removeAllDirPath(localTempDir)
 		if err != nil {
-			return false, fmt.Errorf("Unable to remove path %s: %w", localTempDir, err)
+			return false, err
 		}
 	}
 
