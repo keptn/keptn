@@ -18,7 +18,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/otiai10/copy"
 )
 
