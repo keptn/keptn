@@ -99,24 +99,6 @@ func NewVersionCommand(vChecker *version.VersionChecker) *cobra.Command {
 	return versionCmd
 }
 
-// SetVersion sets version, versionCheckInfo and extracts and sets {Major} and {Minor} version for keptnReleaseDocsURL
-func SetVersion(vers string) {
-	Version = vers
-	v, err := versionCheck.NewSemver(vers)
-	keptnReleaseDocsURL = "0.8.x" //fallback version if provided doc version is invalid
-	if err == nil {
-		segments := v.Segments()
-		if len(segments) == 3 {
-			keptnReleaseDocsURL = strconv.Itoa(segments[0]) + "." + strconv.Itoa(segments[1]) + ".x"
-		}
-	}
-
-	versionCheckInfo = `Daily version check is %s. 
-Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/` + keptnReleaseDocsURL + `/reference/version_check
----------------------------------------------------
-`
-}
-
 func init() {
 	rootCmd.AddCommand(versionCmd)
 }
