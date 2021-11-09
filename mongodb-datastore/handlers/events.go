@@ -746,6 +746,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 		logger.Error(err.Error())
 		return nil, err
 	}
+	// TODO: this will be moved
 
 	if params.Filter == nil {
 		return nil, MinimumFilterNotProvided
