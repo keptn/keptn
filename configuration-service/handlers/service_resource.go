@@ -18,7 +18,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
-	"github.com/mholt/archiver/v3"
+	archive "github.com/mholt/archiver/v3"
 	"github.com/otiai10/copy"
 )
 
@@ -83,7 +83,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 			return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().
 				WithPayload(&models.Error{Code: 404, Message: swag.String("Service resource not found")})
 		}
-		if err := archiver.Archive([]string{chartDir}, resourcePath); err != nil {
+		if err := archive.Archive([]string{chartDir}, resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 				WithPayload(&models.Error{Code: 400, Message: swag.String("Could not archive the Helm chart directory")})
@@ -243,7 +243,7 @@ func untarHelm(res *models.Resource, filePath string) middleware.Responder {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	tarGz := archiver.NewTarGz()
+	tarGz := archive.NewTarGz()
 	tarGz.OverwriteExisting = true
 	if err := tarGz.Unarchive(filePath, tmpDir); err != nil {
 		logger.Error(err.Error())
