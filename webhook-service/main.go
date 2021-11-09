@@ -4,16 +4,26 @@ import (
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/handler"
 	"github.com/keptn/keptn/webhook-service/lib"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"log"
 	"os"
 )
 
 const eventTypeWildcard = "*"
 const serviceName = "webhook-service"
 
+const envVarLogLevel = "LOG_LEVEL"
+
 func main() {
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			log.SetLevel(logLevel)
+		}
+	}
 	kubeAPI, err := createKubeAPI()
 	if err != nil {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())

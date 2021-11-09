@@ -1,4 +1,4 @@
-<dt-table [dataSource]="dataSource" class="settings-section">
+<dt-table *ngIf="dataSource.data.length > 0; else noServices" [dataSource]="dataSource" class="settings-section">
   <ng-container dtColumnDef="serviceName" dtColumnAlign="text">
     <dt-header-cell *dtHeaderCellDef>Service name</dt-header-cell>
     <dt-cell *dtCellDef="let row" [textContent]="row"> </dt-cell>
@@ -21,3 +21,14 @@
   <dt-header-row *dtHeaderRowDef="['serviceName', 'edit']"></dt-header-row>
   <dt-row *dtRowDef="let row; columns: ['serviceName', 'edit']"> </dt-row>
 </dt-table>
+
+<ng-template #noServices>
+  <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+  <p *ngIf="!isLoading">
+    There are no services for this project yet. Use the button "Create service" or the
+    <a [href]="'/reference/cli/commands/keptn_create_service/' | keptnUrl" target="_blank" rel="noopener noreferrer"
+      >keptn create service</a
+    >
+    command to create a service.
+  </p>
+</ng-template>

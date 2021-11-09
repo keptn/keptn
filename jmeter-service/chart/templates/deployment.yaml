@@ -43,6 +43,8 @@ spec:
             value: "http://localhost:8081/configuration-service"
           - name: env
             value: 'production'
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | default "info" }}
           livenessProbe:
             httpGet:
               path: /health

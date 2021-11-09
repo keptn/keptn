@@ -314,7 +314,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ${{ matrix.config.working-dir }}
-          tags: ${{ matrix.config.artifact }}-test
+          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           target: ${{ matrix.config.docker-test-target }}
@@ -329,7 +329,7 @@ jobs:
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         env:
-          IMAGE_NAME: ${{ matrix.config.artifact }}-test
+          IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
         run: |
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
@@ -575,13 +575,13 @@ jobs:
 
       - id: docker_cache
         name: Docker Cache
-        if: matrix.config.should-push-image == 'true' && (matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' ))
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' || needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' ) )
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' || needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
@@ -613,7 +613,7 @@ jobs:
       - name: "Download Build Config from last successful build"
         uses: dawidd6/action-download-artifact@v2.15.0
         id: download_last_build_config
-        if: matrix.config.should-push-image == 'true' && matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING != 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null' && matrix.config.should-push-image == 'true'
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -625,7 +625,7 @@ jobs:
 
       - id: docker_retag_image
         name: "Docker Retag keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null' && matrix.config.should-push-image == 'true'
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING != 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null' && matrix.config.should-push-image == 'true'
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}

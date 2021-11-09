@@ -2,8 +2,8 @@ package models
 
 import keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
-// TaskSequenceEvent godoc
-type TaskSequenceEvent struct {
+// TaskExecution godoc
+type TaskExecution struct {
 	TaskSequenceName string `json:"taskSequenceName" bson:"taskSequenceName"`
 	TriggeredEventID string `json:"triggeredEventID" bson:"triggeredEventID"`
 	Task             Task   `json:"task" bson:"task"`

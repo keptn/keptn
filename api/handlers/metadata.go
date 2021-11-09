@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -13,7 +14,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
@@ -30,10 +30,10 @@ func GetMetadataHandlerFunc(params metadata.MetadataParams, principal *models.Pr
 
 func newMetadataHandler() metadataHandler {
 	var clientSet kubernetes.Interface
-	logger := keptnutils.NewLogger("", "", "api")
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		logger.Debug(fmt.Sprintf("Could not get InClusterConfig, will skip k8s-deployments: %s", err.Error()))
+		logger.Debugf("Could not get InClusterConfig, will skip k8s-deployments: %s", err.Error())
 	} else {
 		// creates the clientset
 		clientSet, err = kubernetes.NewForConfig(config)
@@ -43,7 +43,6 @@ func newMetadataHandler() metadataHandler {
 	}
 	return metadataHandler{
 		k8sClient:       clientSet,
-		logger:          logger,
 		swaggerFilePath: "/swagger-ui/swagger.yaml",
 	}
 }
@@ -55,12 +54,11 @@ type swaggerFileProvider interface {
 type metadataHandler struct {
 	k8sClient kubernetes.Interface
 	swaggerFileProvider
-	logger          keptnutils.LoggerInterface
 	swaggerFilePath string
 }
 
 func (h *metadataHandler) getMetadata() middleware.Responder {
-	h.logger.Info("API received a GET metadata event")
+	logger.Info("API received a GET metadata event")
 
 	var namespace string
 	namespace = os.Getenv("POD_NAMESPACE")
@@ -77,7 +75,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 		bridgeDeployment, err := deploymentsClient.Get(context.TODO(), "bridge", metav1.GetOptions{})
 		if err != nil {
 			// log the error, but continue
-			h.logger.Error(fmt.Sprintf("Error getting deployment info: %s", err.Error()))
+			logger.WithError(err).Error("Error getting deployment info")
 		} else {
 			payload.Bridgeversion = strings.TrimPrefix(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, "keptn/")
 		}

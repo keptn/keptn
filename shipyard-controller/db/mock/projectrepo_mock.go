@@ -103,7 +103,7 @@ type ProjectRepoMock struct {
 // CreateProject calls CreateProjectFunc.
 func (mock *ProjectRepoMock) CreateProject(project *models.ExpandedProject) error {
 	if mock.CreateProjectFunc == nil {
-		panic("ProjectRepoMock.CreateProjectFunc: method is nil but projectRepo.CreateProject was just called")
+		panic("ProjectRepoMock.CreateProjectFunc: method is nil but ProjectRepo.CreateProject was just called")
 	}
 	callInfo := struct {
 		Project *models.ExpandedProject
@@ -134,7 +134,7 @@ func (mock *ProjectRepoMock) CreateProjectCalls() []struct {
 // DeleteProject calls DeleteProjectFunc.
 func (mock *ProjectRepoMock) DeleteProject(projectName string) error {
 	if mock.DeleteProjectFunc == nil {
-		panic("ProjectRepoMock.DeleteProjectFunc: method is nil but projectRepo.DeleteProject was just called")
+		panic("ProjectRepoMock.DeleteProjectFunc: method is nil but ProjectRepo.DeleteProject was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -165,7 +165,7 @@ func (mock *ProjectRepoMock) DeleteProjectCalls() []struct {
 // GetProject calls GetProjectFunc.
 func (mock *ProjectRepoMock) GetProject(projectName string) (*models.ExpandedProject, error) {
 	if mock.GetProjectFunc == nil {
-		panic("ProjectRepoMock.GetProjectFunc: method is nil but projectRepo.GetProject was just called")
+		panic("ProjectRepoMock.GetProjectFunc: method is nil but ProjectRepo.GetProject was just called")
 	}
 	callInfo := struct {
 		ProjectName string
@@ -196,7 +196,7 @@ func (mock *ProjectRepoMock) GetProjectCalls() []struct {
 // GetProjects calls GetProjectsFunc.
 func (mock *ProjectRepoMock) GetProjects() ([]*models.ExpandedProject, error) {
 	if mock.GetProjectsFunc == nil {
-		panic("ProjectRepoMock.GetProjectsFunc: method is nil but projectRepo.GetProjects was just called")
+		panic("ProjectRepoMock.GetProjectsFunc: method is nil but ProjectRepo.GetProjects was just called")
 	}
 	callInfo := struct {
 	}{}
@@ -222,7 +222,7 @@ func (mock *ProjectRepoMock) GetProjectsCalls() []struct {
 // UpdateProject calls UpdateProjectFunc.
 func (mock *ProjectRepoMock) UpdateProject(project *models.ExpandedProject) error {
 	if mock.UpdateProjectFunc == nil {
-		panic("ProjectRepoMock.UpdateProjectFunc: method is nil but projectRepo.UpdateProject was just called")
+		panic("ProjectRepoMock.UpdateProjectFunc: method is nil but ProjectRepo.UpdateProject was just called")
 	}
 	callInfo := struct {
 		Project *models.ExpandedProject
@@ -253,7 +253,7 @@ func (mock *ProjectRepoMock) UpdateProjectCalls() []struct {
 // UpdateProjectUpstream calls UpdateProjectUpstreamFunc.
 func (mock *ProjectRepoMock) UpdateProjectUpstream(projectName string, uri string, user string) error {
 	if mock.UpdateProjectUpstreamFunc == nil {
-		panic("ProjectRepoMock.UpdateProjectUpstreamFunc: method is nil but projectRepo.UpdateProjectUpstream was just called")
+		panic("ProjectRepoMock.UpdateProjectUpstreamFunc: method is nil but ProjectRepo.UpdateProjectUpstream was just called")
 	}
 	callInfo := struct {
 		ProjectName string

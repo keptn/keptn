@@ -98,12 +98,81 @@ func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) err
 	return nil
 }
 
-func (mr *MongoDBEventRepo) DropProjectCollections(project string) error {
-	panic("implement me")
+func (mr *MongoDBEventRepo) DropProjectCollections(projectName string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mongoDBName := getDatabaseName()
+	projectCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(projectName)
+	rootEventsCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(projectName + rootEventCollectionSuffix)
+	invalidatedEventsCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(getInvalidatedCollectionName(projectName))
+
+	for _, indexName := range projectEventsIndexes {
+		mr.skipCreateIndex[getIndexIDForCollection(projectCollection.Name(), indexName)] = false
+	}
+	for _, indexName := range rootEventsIndexes {
+		mr.skipCreateIndex[getIndexIDForCollection(rootEventsCollection.Name(), indexName)] = false
+	}
+	for _, indexName := range invalidatedEventsIndexes {
+		mr.skipCreateIndex[getIndexIDForCollection(invalidatedEventsCollection.Name(), indexName)] = false
+	}
+
+	logger.Debug(fmt.Sprintf("Delete all events of project %s", projectName))
+
+	err := projectCollection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", projectCollection.Name(), err)
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Debug(fmt.Sprintf("Delete all root events of project %s", projectName))
+
+	err = rootEventsCollection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", rootEventsCollection.Name(), err)
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Debug(fmt.Sprintf("Delete all invalidated events of project %s", projectName))
+
+	mr.skipCreateIndex[invalidatedEventsCollection.Name()+"-triggeredid"] = false
+	err = invalidatedEventsCollection.Drop(ctx)
+	if err != nil {
+		// log the error but continue
+		err := fmt.Errorf("failed to drop collection %s: %v", invalidatedEventsCollection.Name(), err)
+		logger.Error(err.Error())
+	}
+
+	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", projectName))
+	contextToProjectCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(contextToProjectCollection)
+	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": projectName}); err != nil {
+		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", projectName, err)
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
-func (mr *MongoDBEventRepo) GetEvents(params event.GetEventParams) (*EventsResult, error) {
-	panic("implement me")
+func (mr *MongoDBEventRepo) GetEvents(params event.GetEventsParams) (*EventsResult, error) {
+	searchOptions := getSearchOptions(params)
+
+	onlyRootEvents := params.Root != nil
+	collectionName, err := mr.getCollectionNameForQuery(searchOptions)
+	if err != nil {
+		return nil, err
+	} else if collectionName == "" {
+		return &EventsResult{
+			Events:      nil,
+			NextPageKey: "0",
+			PageSize:    0,
+			TotalCount:  0,
+		}, nil
+	}
+
+	return mr.findInDB(collectionName, *params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions)
 }
 
 func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) (*EventsResult, error) {

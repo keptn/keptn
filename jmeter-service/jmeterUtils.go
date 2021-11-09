@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"os"
 	"regexp"
@@ -10,7 +11,6 @@ import (
 	"strings"
 
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 const maxAcceptedErrorRate = 0.1
@@ -69,7 +69,7 @@ func addJMeterCommandLineArguments(testInfo *TestInfo, initialList []string) []s
 /**
  * Parses the output of the JMEter test and returns true or false
  */
-func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload *Workload, funcValidation bool, logger *keptncommon.Logger) (bool, error) {
+func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload *Workload, funcValidation bool) (bool, error) {
 
 	logger.Debug(jmeterCommandResult)
 
@@ -133,7 +133,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  * Status: true or false
  * Error: error details if status was false
  */
-func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptncommon.Logger) (bool, error) {
+func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool) (bool, error) {
 	os.RemoveAll(resultsDir)
 
 	os.MkdirAll(resultsDir, 0644)
@@ -147,7 +147,7 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	os.MkdirAll(localTempDir, 0644)
 
 	fileMatchPattern := JMeterConfigDirectory
-	primaryScriptDownloaded, downloadedFileCount, err := GetAllKeptnResources(testInfo.Project, testInfo.Stage, testInfo.Service, true, fileMatchPattern, workload.Script, localTempDir, logger)
+	primaryScriptDownloaded, downloadedFileCount, err := GetAllKeptnResources(testInfo.Project, testInfo.Stage, testInfo.Service, true, fileMatchPattern, workload.Script, localTempDir)
 
 	if err != nil {
 		if err == ErrPrimaryFileNotAvailable {
@@ -212,7 +212,7 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 		return false, err
 	}
 
-	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation, logger)
+	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation)
 	if result && err != nil {
 		logger.Debug("Successfully executed JMeter test. " + testInfo.ToString())
 	} else {

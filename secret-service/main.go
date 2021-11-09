@@ -29,7 +29,20 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @BasePath /v1
+
+const envVarLogLevel = "LOG_LEVEL"
+
 func main() {
+	log.SetLevel(log.InfoLevel)
+
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			log.SetLevel(logLevel)
+		}
+	}
 
 	if _, err := os.Stat(repository.ScopesConfigurationFile); os.IsNotExist(err) {
 		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)

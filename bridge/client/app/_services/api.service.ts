@@ -152,6 +152,11 @@ export class ApiService {
     return this.http.get<Project>(url, { params });
   }
 
+  public getPlainProject(projectName: string): Observable<Project> {
+    const url = `${this._baseUrl}/project/${projectName}`;
+    return this.http.get<Project>(url);
+  }
+
   public getProjects(pageSize?: number): Observable<ProjectResult> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     const params = {
@@ -269,6 +274,11 @@ export class ApiService {
 
   public getTaskNames(projectName: string): Observable<string[]> {
     const url = `${this._baseUrl}/project/${projectName}/tasks`;
+    return this.http.get<string[]>(url);
+  }
+
+  public getServiceNames(projectName: string): Observable<string[]> {
+    const url = `${this._baseUrl}/project/${projectName}/services`;
     return this.http.get<string[]>(url);
   }
 

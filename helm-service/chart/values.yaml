@@ -53,3 +53,5 @@ nodeSelector: {}                             # Node selector configuration
 tolerations: []                              # Tolerations for the pods
 
 affinity: {}                                 # Affinity rules
+
+logLevel: info

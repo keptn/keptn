@@ -122,7 +122,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 		return ErrSequenceBlocked
 	}
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
-	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
+	taskExecutions, err := sd.sequenceRepo.GetTaskExecutions(queuedSequence.Scope.Project, models.TaskExecution{
 		Stage:   queuedSequence.Scope.Stage,
 		Service: queuedSequence.Scope.Service,
 	})
@@ -131,7 +131,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	// if there is a sequence running in the stage, we cannot trigger this sequence yet
-	if sd.areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
+	if sd.areActiveSequencesBlockingQueuedSequences(taskExecutions) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
 		return ErrSequenceBlocked
 	}
@@ -157,7 +157,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
 }
 
-func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
+func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskExecution) bool {
 	if len(sequenceTasks) == 0 {
 		// if there is no sequence currently running, we do not need to block
 		return false
@@ -185,16 +185,16 @@ func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequence
 	return false
 }
 
-func groupSequenceMappingsByContext(sequenceTasks []models.TaskSequenceEvent) map[string][]models.TaskSequenceEvent {
-	result := map[string][]models.TaskSequenceEvent{}
+func groupSequenceMappingsByContext(sequenceTasks []models.TaskExecution) map[string][]models.TaskExecution {
+	result := map[string][]models.TaskExecution{}
 	for index := range sequenceTasks {
 		result[sequenceTasks[index].KeptnContext] = append(result[sequenceTasks[index].KeptnContext], sequenceTasks[index])
 	}
 	return result
 }
 
-func getLastTaskOfSequence(sequenceTasks []models.TaskSequenceEvent) models.TaskSequenceEvent {
-	lastTask := models.TaskSequenceEvent{
+func getLastTaskOfSequence(sequenceTasks []models.TaskExecution) models.TaskExecution {
+	lastTask := models.TaskExecution{
 		Task: models.Task{TaskIndex: -1},
 	}
 	for index := range sequenceTasks {

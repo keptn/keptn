@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"github.com/stretchr/testify/assert"
 
@@ -15,9 +14,7 @@ import (
 )
 
 func TestGenerateDuplicateChart(t *testing.T) {
-
-	logger := keptn.NewLogger("", "", "test")
-	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh(), logger)
+	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh())
 
 	ch, err := generator.GenerateDuplicateChart(userService+renderedUserDeployment, "sockshop", "dev", "carts")
 
@@ -48,9 +45,7 @@ func TestGenerateDuplicateChart(t *testing.T) {
 }
 
 func TestGenerateDuplicateChartWithTwoServices(t *testing.T) {
-
-	logger := keptn.NewLogger("", "", "test")
-	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh(), logger)
+	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh())
 
 	ch, err := generator.GenerateDuplicateChart(userService+userService+renderedUserDeployment, "sockshop", "dev", "carts")
 
@@ -59,9 +54,7 @@ func TestGenerateDuplicateChartWithTwoServices(t *testing.T) {
 }
 
 func TestGenerateDuplicateChartWithTwoDeployments(t *testing.T) {
-
-	logger := keptn.NewLogger("", "", "test")
-	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh(), logger)
+	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh())
 
 	ch, err := generator.GenerateDuplicateChart(userService+renderedUserDeployment+renderedUserDeployment, "sockshop", "dev", "carts")
 

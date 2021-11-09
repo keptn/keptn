@@ -411,6 +411,20 @@ export class DataService {
     return tasks;
   }
 
+  public async getServiceNames(projectName: string): Promise<string[]> {
+    const resp = await this.apiService.getStages(projectName);
+    const stages = resp.data.stages;
+    const services: { [serviceName: string]: boolean | undefined } = {};
+
+    for (const stage of stages) {
+      for (const service of stage.services) {
+        services[service.serviceName] = true;
+      }
+    }
+
+    return Object.keys(services);
+  }
+
   public async getRoots(
     projectName: string | undefined,
     pageSize: string | undefined,
