@@ -107,7 +107,12 @@ export class DataService {
         : await this.getSequence(projectName, stageName, keptnContext, true);
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(stageName);
-    service.deploymentInformation = await this.getDeploymentInformation(service.serviceName, projectName, stageName);
+    service.deploymentInformation = await this.getDeploymentInformation(
+      service.serviceName,
+      projectName,
+      stageName,
+      service.getShortImage()
+    );
 
     const serviceRemediations = remediations.filter(
       (remediation) =>
@@ -166,7 +171,8 @@ export class DataService {
   public async getDeploymentInformation(
     serviceName: string,
     projectName: string,
-    stageName: string
+    stageName: string,
+    deployedImage?: string
   ): Promise<DeploymentInformation | undefined> {
     const result = await this.apiService.getTracesWithResult(
       EventTypes.DEPLOYMENT_FINISHED,
@@ -180,19 +186,10 @@ export class DataService {
     const traceData = result.data.events[0];
     let deploymentInformation: DeploymentInformation | undefined;
     if (traceData) {
-      const triggeredTraceResponse = await this.apiService.getTraces(
-        EventTypes.DEPLOYMENT_TRIGGERED,
-        1,
-        projectName,
-        stageName,
-        serviceName,
-        traceData.shkeptncontext
-      );
-      const triggeredTrace = Trace.fromJSON(triggeredTraceResponse.data.events[0]);
       const trace = Trace.fromJSON(traceData);
       deploymentInformation = {
         deploymentUrl: trace.getDeploymentUrl(),
-        image: triggeredTrace.getShortImageName(),
+        image: deployedImage,
       };
     }
     return deploymentInformation;

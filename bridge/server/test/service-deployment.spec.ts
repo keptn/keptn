@@ -1,7 +1,6 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { ProjectResponse } from '../fixtures/project-response.mock';
-import { RemediationConfigResponse } from '../fixtures/remediation-config-response.mock';
 import {
   DeploymentTracesResponseMock,
   DeploymentTracesWithPendingApprovalResponseMock,
@@ -15,11 +14,11 @@ import {
   ServiceDeploymentWithApprovalMock,
   ServiceDeploymenWithFromTimetMock,
 } from '../fixtures/service-deployment.mock';
-import { OpenRemediationsResponse, RemediationTraceResponse } from '../fixtures/open-remediations-response.mock';
 import {
   SequenceDeliveryResponseMock,
   SequenceDeliveryTillStagingResponseMock,
 } from '../fixtures/sequence-response.mock';
+import { TestUtils } from '../.jest/test.utils';
 
 let axiosMock: MockAdapter;
 
@@ -119,23 +118,7 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
       totalCount: 0,
     });
 
-    axiosMock
-      .onGet(
-        `${global.baseUrl}/configuration-service/v1/project/${projectName}/stage/production/service/carts/resource/remediation.yaml`
-      )
-      .reply(200, RemediationConfigResponse);
-
-    axiosMock
-      .onGet(`${global.baseUrl}/mongodb-datastore/event`, {
-        params: {
-          project: 'sockshop',
-          service: 'carts',
-          stage: 'production',
-          keptnContext: '35383737-3630-4639-b037-353138323631',
-          pageSize: '1',
-        },
-      })
-      .reply(200, RemediationTraceResponse);
+    TestUtils.mockOpenRemediations(axiosMock, projectName);
 
     axiosMock
       .onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`, {
@@ -145,15 +128,5 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
         },
       })
       .reply(200, sequenceMock);
-
-    axiosMock
-      .onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`, {
-        params: {
-          pageSize: '100',
-          name: 'remediation',
-          state: 'started',
-        },
-      })
-      .reply(200, OpenRemediationsResponse);
   }
 });
