@@ -3,6 +3,9 @@ WORKDIR /usr/src/app
 COPY package.json yarn.lock /usr/src/app/
 RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
+RUN apt-get install -y tree
+RUN ls -ls
+RUN tree
 CMD yarn test:ui
 
 FROM node:14-alpine3.14 as builder-test-base
