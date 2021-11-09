@@ -314,7 +314,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ${{ matrix.config.working-dir }}
-          tags: ${{ matrix.config.artifact }}-test
+          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           target: ${{ matrix.config.docker-test-target }}
@@ -329,7 +329,7 @@ jobs:
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         env:
-          IMAGE_NAME: ${{ matrix.config.artifact }}-test
+          IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
         run: |
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 

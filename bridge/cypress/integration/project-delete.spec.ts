@@ -27,6 +27,10 @@ describe('Project delete test', () => {
       statusCode: 200,
     });
 
+    cy.intercept('GET', 'api/project/dynatrace', {
+      statusCode: 200,
+    });
+
     cy.visit('/');
     cy.wait('@metadataCmpl');
     cy.wait('@initProjects');
