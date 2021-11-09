@@ -13,7 +13,7 @@ import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
   ServiceDeploymenWithFromTimetMock,
-} from '../fixtures/service-deployment.mock';
+} from '../../shared/fixtures/service-deployment-response.mock';
 import {
   SequenceDeliveryResponseMock,
   SequenceDeliveryTillStagingResponseMock,

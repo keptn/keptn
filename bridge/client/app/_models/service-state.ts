@@ -70,4 +70,20 @@ export class ServiceState extends svs {
       deployment.stages.some((stage) => stage.hasOpenRemediations)
     );
   }
+
+  public getLatestImage(): string {
+    let latestTime: Date | undefined;
+    let image = 'unknown';
+    for (const deployment of this.deploymentInformation) {
+      const latestStageTime = deployment.stages.reduce((max: undefined | Date, stage) => {
+        const date = new Date(stage.time);
+        return max && max > date ? max : date;
+      }, undefined);
+      if (deployment.image && latestStageTime && (!latestTime || latestStageTime > latestTime)) {
+        image = `${deployment.image}:${deployment.version}`;
+        latestTime = latestStageTime;
+      }
+    }
+    return image;
+  }
 }

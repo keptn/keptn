@@ -61,7 +61,7 @@ export class Deployment implements dp {
   labels!: { [p: string]: string };
   state!: SequenceState;
 
-  public static fromJSON(data: dp): Deployment {
+  public static fromJSON(data: unknown): Deployment {
     const deployment: Deployment = Object.assign(new this(), data);
     deployment.stages = deployment.stages.map((stage) => StageDeployment.fromJSON(stage));
     return deployment;

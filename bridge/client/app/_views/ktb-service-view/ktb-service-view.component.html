@@ -24,8 +24,8 @@
       <ktb-expandable-tile
         *ngFor="let serviceState of serviceStates"
         [disabled]="serviceState.deploymentInformation.length === 0"
-        [expanded]="serviceState.name == serviceName"
-        (click)="selectService(projectName, serviceState.name)"
+        [expanded]="serviceState.name === serviceName"
+        (click)="serviceName = serviceState.name"
       >
         <ktb-expandable-tile-header [attr.uitestid]="'keptn-service-view-service-' + serviceState.name">
           <dt-info-group>
@@ -50,7 +50,7 @@
             <ng-container *ngIf="!isQualityGatesOnly">
               <p class="m-0 mb-1 mt-1" *ngIf="serviceState.deploymentInformation.length; else noDeployment">
                 <span class="bold">Last processed artifact: </span>
-                <span [textContent]="getLatestImage(serviceState)"></span>
+                <span [textContent]="serviceState.getLatestImage()"></span>
               </p>
             </ng-container>
           </dt-info-group>

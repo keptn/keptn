@@ -1,13 +1,12 @@
 import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { filter, map, skip, switchMap, take, takeUntil } from 'rxjs/operators';
-import { Project } from '../../_models/project';
+import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
-import { ServiceDeploymentInformation, ServiceState } from '../../_models/service-state';
+import { ServiceState } from '../../_models/service-state';
 import { SequenceState } from '../../../../shared/models/sequence';
 import { ServiceRemediationInformation } from '../../_interfaces/service-remediation-information';
 import { Deployment } from '../../_models/deployment';
@@ -47,74 +46,71 @@ export class KtbServiceViewComponent implements OnDestroy {
       filter((projectName: string | null): projectName is string => !!projectName)
     );
 
-    const project$ = projectName$.pipe(
-      switchMap((projectName) => this.dataService.getProject(projectName)),
-      filter((project: Project | undefined): project is Project => !!project?.projectDetailsLoaded),
+    const serviceStatesInitial$ = projectName$.pipe(
+      switchMap((projectName) => this.dataService.getServiceStates(projectName)),
       takeUntil(this.unsubscribe$)
     );
 
-    params$.pipe(take(1)).subscribe((params) => {
-      this.serviceName = params.get('serviceName') ?? undefined;
-    });
-
-    const serviceStates$ = projectName$.pipe(
-      switchMap((projectName) => AppUtils.createTimer(0, this.initialDelayMillis).pipe(map(() => projectName))),
+    const serviceStateInterval$ = projectName$.pipe(
+      switchMap((projectName) =>
+        AppUtils.createTimer(this.initialDelayMillis, this.initialDelayMillis).pipe(map(() => projectName))
+      ),
       takeUntil(this.unsubscribe$),
       switchMap((projectName) => this.dataService.getServiceStates(projectName)),
       takeUntil(this.unsubscribe$)
     );
 
-    combineLatest([params$, project$, serviceStates$])
+    combineLatest([params$, projectName$, serviceStatesInitial$])
       .pipe(take(1))
-      .subscribe(([params, project, serviceStates]) => {
+      .subscribe(([params, projectName, serviceStates]) => {
         this.updateServiceStates(serviceStates);
         const keptnContext = params.get('shkeptncontext');
-        const serviceName = params.get('serviceName');
-        if (keptnContext && serviceName) {
-          const selectedDeploymentInformation = serviceStates
-            .find((state) => state.name === serviceName)
-            ?.deploymentInformation.find((deployment) => deployment.keptnContext === keptnContext);
+        this.serviceName = params.get('serviceName') ?? undefined;
+        if (keptnContext && this.serviceName) {
+          const serviceState = serviceStates.find((state) => state.name === this.serviceName);
+          const selectedDeploymentInformation = serviceState?.deploymentInformation.find(
+            (deployment) => deployment.keptnContext === keptnContext
+          );
           if (selectedDeploymentInformation) {
-            const stage = this.validateStage(
-              selectedDeploymentInformation,
-              project.projectName,
-              serviceName,
-              params.get('stage')
-            );
-
             const selection = {
               deploymentInformation: selectedDeploymentInformation,
-              stage,
+              stage: params.get('stage') ?? '',
             };
-            this.deploymentSelected(selection, project.projectName);
+            this.deploymentSelected(selection, projectName);
+          } else if (serviceState) {
+            // remove context and stage parameter if it does not exist
+            const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', serviceState.name]);
+            this.location.go(routeUrl.toString());
+          } else {
+            // remove service parameter, if it does not exist
+            const routeUrl = this.router.createUrlTree(['/project', projectName, 'service']);
+            this.location.go(routeUrl.toString());
           }
         }
       });
-    serviceStates$.pipe(skip(1)).subscribe((serviceStates) => {
-      this.updateServiceStates(serviceStates);
+
+    projectName$.subscribe((projectName) => {
+      this.projectName = projectName;
     });
 
-    project$.subscribe((project) => {
-      this.projectName = project.projectName;
-    });
+    if (this.initialDelayMillis !== 0) {
+      serviceStateInterval$.subscribe((serviceStates) => {
+        this.updateServiceStates(serviceStates);
+      });
+    }
   }
 
   // checks if the given stage exists in the deployment and returns the latest one if not
-  private validateStage(
-    selectedDeploymentInformation: ServiceDeploymentInformation,
-    projectName: string,
-    serviceName: string,
-    stage: string | null
-  ): string {
-    if (!stage || selectedDeploymentInformation.stages.some((s) => s.name === stage)) {
-      stage = selectedDeploymentInformation.stages[selectedDeploymentInformation.stages.length - 1].name;
+  private validateStage(deployment: Deployment, projectName: string, stage: string): string {
+    if (!stage || !deployment.getStage(stage)) {
+      stage = deployment.stages[deployment.stages.length - 1].name;
       const routeUrl = this.router.createUrlTree([
         '/project',
         projectName,
         'service',
-        serviceName,
+        deployment.service,
         'context',
-        selectedDeploymentInformation.keptnContext,
+        deployment.keptnContext,
         'stage',
         stage,
       ]);
@@ -131,28 +127,6 @@ export class KtbServiceViewComponent implements OnDestroy {
     }
   }
 
-  public selectService(projectName: string, serviceName: string): void {
-    if (this.serviceName !== serviceName) {
-      this.serviceName = serviceName;
-    }
-  }
-
-  public getLatestImage(serviceState: ServiceState): string {
-    let latestTime: Date | undefined;
-    let image = 'unknown';
-    for (const deployment of serviceState.deploymentInformation) {
-      const latestStageTime = deployment.stages.reduce((max: undefined | Date, stage) => {
-        const date = new Date(stage.time);
-        return max && max > date ? max : date;
-      }, undefined);
-      if (deployment.image && latestStageTime && (!latestTime || latestStageTime > latestTime)) {
-        image = `${deployment.image}:${deployment.version}`;
-        latestTime = latestStageTime;
-      }
-    }
-    return image;
-  }
-
   public deploymentSelected(deploymentInfo: DeploymentInformationSelection, projectName: string): void {
     this.updateDeploymentSubscription$?.unsubscribe();
     this.updateDeploymentSubscription$ = AppUtils.createTimer(0, this.initialDelayMillis)
@@ -162,6 +136,7 @@ export class KtbServiceViewComponent implements OnDestroy {
           const originalDeployment = deploymentInfo.deploymentInformation.deployment;
           if (update instanceof Deployment) {
             if (!originalDeployment) {
+              deploymentInfo.stage = this.validateStage(update, projectName, deploymentInfo.stage);
               deploymentInfo.deploymentInformation.deployment = update;
             } else {
               originalDeployment.update(update);
@@ -191,12 +166,9 @@ export class KtbServiceViewComponent implements OnDestroy {
       update$ = this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
     } else {
       // update deployment
-      if (
-        this.projectName &&
-        (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT)
-      ) {
+      if (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT) {
         // deployment is finished. Just update open remediations
-        update$ = this.dataService.getOpenRemediationsOfService(this.projectName, originalDeployment.service);
+        update$ = this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
       } else {
         update$ = this.dataService.getServiceDeployment(
           projectName,

@@ -1,4 +1,4 @@
-import { EvaluationFinishedStagingResponse } from './traces-response.mock';
+import { EvaluationFinishedStagingResponse } from '../../server/fixtures/traces-response.mock';
 
 const serviceDeploymentMock = {
   state: 'finished',
