@@ -42,7 +42,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 	// determine next action
 	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.ActionIndex)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "No more actions defined for problem type " + getActionTriggeredData.Problem.ProblemTitle + " " + getActionTriggeredData.Problem.RootCause + " in remediation.yaml file."}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "No more actions defined " + err.Error() + " in remediation.yaml file."}
 	}
 
 	finishedEventData := keptnv2.GetActionFinishedEventData{
@@ -84,6 +84,15 @@ func ParseRemediationResource(resource *models.Resource) (*v0_1_4.Remediation, e
 func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.ProblemDetails, actionIndex int) (*keptnv2.ActionInfo, error) {
 	rootCause := problemDetails.RootCause
 	problemTitle := problemDetails.ProblemTitle
+	var problem string
+
+	if rootCause != nil {
+		problem = "root cause " + rootCause
+	} else if problemTitle != nil {
+		problem = "problem title " + problemTitle
+	} else {
+		problem = "root cause or problem title not found"
+	}
 
 	var actions []v0_1_4.RemediationActionsOnOpen
 	// search problem type matching root cause
@@ -116,12 +125,12 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 
 	// we did not find an action
 	if actions == nil {
-		return nil, fmt.Errorf("unable to find actions for root cause %s", rootCause)
+		return nil, fmt.Errorf(problem)
 	}
 
 	// the required action does not exist
 	if actionIndex >= len(actions) {
-		return nil, fmt.Errorf("failed to get action for root cause %s. There is no action with index %d", rootCause, actionIndex)
+		return nil, fmt.Errorf("%s. There is no action with index %d", problem, actionIndex)
 	}
 
 	action := actions[actionIndex]
