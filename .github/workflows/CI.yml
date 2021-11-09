@@ -10,6 +10,7 @@ on:
     branches:
       - 'master'
       - 'release-*'
+      - 'fix/ci-test-cache'
   workflow_dispatch: # run CI when triggered manually
 env:
   GO_VERSION: "^1.16"
