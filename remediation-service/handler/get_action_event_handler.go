@@ -86,9 +86,9 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 	problemTitle := problemDetails.ProblemTitle
 	var problem string
 
-	if rootCause != nil {
+	if rootCause != "" {
 		problem = "root cause " + rootCause
-	} else if problemTitle != nil {
+	} else if problemTitle != "" {
 		problem = "problem title " + problemTitle
 	} else {
 		problem = "root cause or problem title not found"
