@@ -8,6 +8,9 @@ FROM builder-test-base as builder-test-unit
 CMD yarn test && mv ./coverage/ /shared/coverage
 
 FROM builder-test-base as builder-test-ui
+RUN apt-get install -y tree
+RUN ls -ls
+RUN tree
 CMD yarn test:ui
 
 FROM node:14-alpine3.14 as builder-base
