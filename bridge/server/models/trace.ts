@@ -13,6 +13,18 @@ export class Trace extends ts {
     return ts.traceMapperGlobal(traces);
   }
 
+  public getStatus(): ResultTypes {
+    let status: ResultTypes;
+    if (this.isFaulty()) {
+      status = ResultTypes.FAILED;
+    } else if (this.isWarning()) {
+      status = ResultTypes.WARNING;
+    } else {
+      status = ResultTypes.PASSED;
+    }
+    return status;
+  }
+
   public getMessage(): string {
     let message = '';
     const finishedEvent = this.getFinishedEvent();

@@ -976,13 +976,7 @@ export class DataService {
           undefined
         );
         const lastTimeUpdated = stageTraces[stageTraces.length - 1]?.getLastTrace()?.time;
-        const approvalInformation = await this.getApprovalInformation(
-          stageTraces,
-          projectName,
-          stage.name,
-          sequence.service,
-          latestDeploymentContext
-        );
+        const approvalInformation = this.getApprovalInformation(stageTraces, service?.getShortImage());
         let deploymentURL: string | undefined;
         let stageRemediationInformation: StageRemediationInformation | undefined;
         deployment.image ??= service?.getShortImage();
@@ -1020,33 +1014,17 @@ export class DataService {
     return deployment;
   }
 
-  private async getApprovalInformation(
-    traces: Trace[],
-    projectName: string,
-    stageName: string,
-    serviceName: string,
-    latestDeploymentContext?: string
-  ): Promise<IStageDeployment['approvalInformation']> {
+  private getApprovalInformation(traces: Trace[], deployedImage?: string): IStageDeployment['approvalInformation'] {
     let approvalInformation: IStageDeployment['approvalInformation'];
     const approvalTrace = traces.reduce(
       (approval: Trace | undefined, trace) => approval || trace.findTrace((t) => !!t.isApproval()),
       undefined
     );
     if (approvalTrace?.isApprovalPending()) {
-      let image: string | undefined;
-      if (latestDeploymentContext === approvalTrace.shkeptncontext) {
-        image = traces
-          .reduce((t: Trace | undefined, trace) => t || trace.findTrace((tt) => !!tt.isDeployment()), undefined)
-          ?.getShortImageName();
-      } else {
-        const deploymentInformation = await this.getDeploymentInformation(serviceName, projectName, stageName);
-        image = deploymentInformation?.image;
-      }
-
       approvalTrace.traces = []; // remove child traces
       approvalInformation = {
         trace: approvalTrace,
-        deployedImage: image,
+        deployedImage,
       };
     }
     return approvalInformation;
@@ -1054,7 +1032,7 @@ export class DataService {
 
   private getSubSequencesForStage(stageTraces: Trace[], stageName: string, fromTime?: Date): SubSequence[] {
     const subSequences = stageTraces.filter((trace) => {
-      let status = trace.type.startsWith(`${EventTypes.PREFIX}${stageName}.`);
+      let status = trace.data.stage === stageName;
       if (status && fromTime) {
         const lastTraceTime = trace.getLastTrace().time;
         status = !!lastTraceTime && new Date(lastTraceTime) > fromTime;
@@ -1063,18 +1041,10 @@ export class DataService {
     });
     return subSequences
       .map((seq) => {
-        let subSequenceResult: ResultTypes;
-        if (seq.isFaulty()) {
-          subSequenceResult = ResultTypes.FAILED;
-        } else if (seq.isWarning()) {
-          subSequenceResult = ResultTypes.WARNING;
-        } else {
-          subSequenceResult = ResultTypes.PASSED;
-        }
         return {
           name: seq.getLabel(),
           type: seq.type,
-          result: subSequenceResult,
+          result: seq.getStatus(),
           time: seq.time ? new Date(seq.time).getTime() : 0,
           state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
           id: seq.id,
@@ -1104,7 +1074,7 @@ export class DataService {
           stages: stages.filter((st) => st.name === stageName),
         });
       });
-    if (openRemediations.length) {
+    if (openRemediationsForStage.length) {
       const resourceResponse = await this.apiService.getServiceResource(
         projectName,
         stageName,

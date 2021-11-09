@@ -1,3 +1,6 @@
+const keptnContextDeploymentDev = '2c0e568b-8bd3-4726-a188-e528423813ed';
+const keptnContextDeploymentStaging = '29af69cc-ea85-4358-b169-ce29034d9c81';
+
 const projectResponseMock = {
   creationDate: '1632999780800366280',
   gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace-v1',
@@ -30,17 +33,17 @@ const projectResponseMock = {
             },
             'sh.keptn.event.deployment.finished': {
               eventId: '88c5b44b-9b97-4ffb-9349-f0e431efe519',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
+              keptnContext: keptnContextDeploymentDev,
               time: '1636114893991052283',
             },
             'sh.keptn.event.deployment.started': {
               eventId: '06c24857-a010-4bdd-bcac-639e6ae7d3ed',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
+              keptnContext: keptnContextDeploymentDev,
               time: '1636114806860574185',
             },
             'sh.keptn.event.deployment.triggered': {
               eventId: 'ff94e27d-4309-4fa2-8cf3-20f266f9e244',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
+              keptnContext: keptnContextDeploymentDev,
               time: '1636114806657239737',
             },
             'sh.keptn.event.dev.delivery.finished': {
@@ -231,17 +234,17 @@ const projectResponseMock = {
             },
             'sh.keptn.event.deployment.finished': {
               eventId: 'cd2bed17-388d-4771-a95e-0548093ae8b8',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
+              keptnContext: keptnContextDeploymentStaging,
               time: '1636109341288361706',
             },
             'sh.keptn.event.deployment.started': {
               eventId: '7b473f05-e61e-452a-ba78-4501941a16c6',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
+              keptnContext: keptnContextDeploymentStaging,
               time: '1636109246055285536',
             },
             'sh.keptn.event.deployment.triggered': {
               eventId: 'baaf784a-34b7-4cc9-bdc5-1b80669b3dde',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
+              keptnContext: keptnContextDeploymentStaging,
               time: '1636109245959499928',
             },
             'sh.keptn.event.evaluation.finished': {

@@ -16,7 +16,7 @@ describe('Test /project/:projectName/tasks', () => {
   it('should retrieve task names', async () => {
     const projectName = 'sockshop';
     axiosMock
-      .onGet(global.baseUrl + `/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
+      .onGet(`${global.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
       .reply(200, ShipyardResponse);
     const response = await request(global.app).get(`/api/project/${projectName}/tasks`);
     expect(response.body).toEqual(['evaluation', 'deployment', 'test', 'release', 'rollback', 'get-action', 'action']);
