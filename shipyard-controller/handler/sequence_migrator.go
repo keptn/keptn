@@ -181,24 +181,24 @@ func getSequenceStageStates(stageEvents []stageEventTrace) ([]*models.SequenceSt
 		}
 
 		for _, event := range stageEventTrace.events {
-			scope, err := models.NewEventScope(event)
+			eventScope, err := models.NewEventScope(event)
 			if err != nil {
 				return nil, err
 			}
 			latestEvent := &models.SequenceStateEvent{
-				Type: scope.EventType,
+				Type: eventScope.EventType,
 				ID:   event.ID,
 				Time: event.Time,
 			}
 			if shouldAddLatestEvent(*stageState) {
 				stageState.LatestEvent = latestEvent
 			}
-			if shouldAddLatestFailedEvent(*scope, *stageState) {
+			if shouldAddLatestFailedEvent(*eventScope, *stageState) {
 				stageState.LatestFailedEvent = latestEvent
 			}
-			if keptnv2.IsTaskEventType(scope.EventType) {
+			if keptnv2.IsTaskEventType(eventScope.EventType) {
 				// not a <stage>.<sequence>.(triggered|finished), but a task event
-				stageState, err = processTaskEventTaskEvent(*scope, event, *stageState)
+				stageState, err = processTaskEventTaskEvent(*eventScope, event, *stageState)
 				if err != nil {
 					log.WithError(err).Error("could not process task event")
 					continue

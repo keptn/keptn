@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -871,7 +872,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", models.TaskSequenceEvent{
+	sc.taskSequenceRepo.CreateTaskExecution("my-project", models.TaskExecution{
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-task-triggered-id",
 		Task:             models.Task{},
@@ -928,14 +929,14 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	taskSequenceMapping := models.TaskSequenceEvent{
+	taskSequenceMapping := models.TaskExecution{
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-deployment-triggered-id",
 		Task:             models.Task{},
 		Stage:            "my-stage",
 		KeptnContext:     "my-keptn-context-id",
 	}
-	sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", taskSequenceMapping)
+	sc.taskSequenceRepo.CreateTaskExecution("my-project", taskSequenceMapping)
 
 	// invoke the CancelSequence function
 	err := sc.cancelSequence(models.SequenceControl{
@@ -1095,10 +1096,14 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	if shipyardContent == "" {
 		shipyardContent = testShipyardFile
 	}
-
-	em := &shipyardController{
+	eventRepo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+	eventQueueRepo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
+	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
+	sequenceRepo := db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
+	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, time.Second, clock.New())
+	sc := &shipyardController{
 		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
-		eventRepo:        db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()),
+		eventRepo:        eventRepo,
 		taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance()),
 		eventDispatcher: &fake.IEventDispatcherMock{
 			AddFunc: func(event models.DispatcherEvent) error {
@@ -1108,6 +1113,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 
 			},
 		},
+		sequenceDispatcher: sequenceDispatcher,
 		shipyardRetriever: &fake.IShipyardRetrieverMock{
 			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 				return common.UnmarshalShipyard(shipyardContent)
@@ -1117,17 +1123,17 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 			},
 		},
 	}
-
-	em.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
+	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
 		ev := &models.Event{}
 		err := keptnv2.Decode(&event.Event, ev)
 		if err != nil {
 			return err
 		}
-		_ = em.HandleIncomingEvent(*ev, true)
+		_ = sc.HandleIncomingEvent(*ev, true)
 		return nil
 	}
-	return em
+	sc.run(context.Background())
+	return sc
 }
 
 func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([]models.Event, error) {

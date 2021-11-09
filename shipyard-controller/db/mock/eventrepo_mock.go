@@ -36,7 +36,7 @@ import (
 // 			GetRootEventsFunc: func(params models.GetRootEventParams) (*models.GetEventsResult, error) {
 // 				panic("mock out the GetRootEvents method")
 // 			},
-// 			GetStartedEventsForTriggeredIDFunc: func(eventScope *models.EventScope) ([]models.Event, error) {
+// 			GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]models.Event, error) {
 // 				panic("mock out the GetStartedEventsForTriggeredID method")
 // 			},
 // 			GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
@@ -74,7 +74,7 @@ type EventRepoMock struct {
 	GetRootEventsFunc func(params models.GetRootEventParams) (*models.GetEventsResult, error)
 
 	// GetStartedEventsForTriggeredIDFunc mocks the GetStartedEventsForTriggeredID method.
-	GetStartedEventsForTriggeredIDFunc func(eventScope *models.EventScope) ([]models.Event, error)
+	GetStartedEventsForTriggeredIDFunc func(eventScope models.EventScope) ([]models.Event, error)
 
 	// GetTaskSequenceTriggeredEventFunc mocks the GetTaskSequenceTriggeredEvent method.
 	GetTaskSequenceTriggeredEventFunc func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error)
@@ -136,7 +136,7 @@ type EventRepoMock struct {
 		// GetStartedEventsForTriggeredID holds details about calls to the GetStartedEventsForTriggeredID method.
 		GetStartedEventsForTriggeredID []struct {
 			// EventScope is the eventScope argument value.
-			EventScope *models.EventScope
+			EventScope models.EventScope
 		}
 		// GetTaskSequenceTriggeredEvent holds details about calls to the GetTaskSequenceTriggeredEvent method.
 		GetTaskSequenceTriggeredEvent []struct {
@@ -413,12 +413,12 @@ func (mock *EventRepoMock) GetRootEventsCalls() []struct {
 }
 
 // GetStartedEventsForTriggeredID calls GetStartedEventsForTriggeredIDFunc.
-func (mock *EventRepoMock) GetStartedEventsForTriggeredID(eventScope *models.EventScope) ([]models.Event, error) {
+func (mock *EventRepoMock) GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error) {
 	if mock.GetStartedEventsForTriggeredIDFunc == nil {
 		panic("EventRepoMock.GetStartedEventsForTriggeredIDFunc: method is nil but EventRepo.GetStartedEventsForTriggeredID was just called")
 	}
 	callInfo := struct {
-		EventScope *models.EventScope
+		EventScope models.EventScope
 	}{
 		EventScope: eventScope,
 	}
@@ -432,10 +432,10 @@ func (mock *EventRepoMock) GetStartedEventsForTriggeredID(eventScope *models.Eve
 // Check the length with:
 //     len(mockedEventRepo.GetStartedEventsForTriggeredIDCalls())
 func (mock *EventRepoMock) GetStartedEventsForTriggeredIDCalls() []struct {
-	EventScope *models.EventScope
+	EventScope models.EventScope
 } {
 	var calls []struct {
-		EventScope *models.EventScope
+		EventScope models.EventScope
 	}
 	mock.lockGetStartedEventsForTriggeredID.RLock()
 	calls = mock.calls.GetStartedEventsForTriggeredID

@@ -138,7 +138,7 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 
 func Test_GetTaskSequencesByTrigger(t *testing.T) {
 	type args struct {
-		eventScope            *models.EventScope
+		eventScope            models.EventScope
 		completedTaskSequence string
 		shipyard              *keptnv2.Shipyard
 		previousTask          string
@@ -151,7 +151,7 @@ func Test_GetTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "default behavior - get sequence triggered by result=pass,warning",
 			args: args{
-				eventScope: &models.EventScope{EventData: keptnv2.EventData{
+				eventScope: models.EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultPass,
 					Stage:  "dev",
 				}},
@@ -215,7 +215,7 @@ func Test_GetTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "get sequence triggered by result=fail",
 			args: args{
-				eventScope: &models.EventScope{EventData: keptnv2.EventData{
+				eventScope: models.EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultFailed,
 					Stage:  "dev",
 				}},
@@ -338,7 +338,7 @@ func Test_GetTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "get sequence triggered by result=fail of specific task",
 			args: args{
-				eventScope: &models.EventScope{EventData: keptnv2.EventData{
+				eventScope: models.EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultFailed,
 					Stage:  "dev",
 				}},

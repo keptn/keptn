@@ -185,21 +185,21 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
 		return ErrSequencePaused
 	}
-	runningSequencesInStage, err := e.sequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{
+	taskExecutions, err := e.sequenceRepo.GetTaskExecutions(eventScope.Project, models.TaskExecution{
 		Stage:   eventScope.Stage,
 		Service: eventScope.Service,
 	})
 	if err != nil {
 		return err
 	}
-	if e.isCurrentEventBlockedByOtherTasks(eventScope, runningSequencesInStage, event) {
+	if e.isCurrentEventBlockedByOtherTasks(eventScope, taskExecutions, event) {
 		return ErrOtherActiveSequencesRunning
 	}
 
 	return e.eventSender.SendEvent(event.Event)
 }
 
-func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
+func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskExecution, queuedEvent models.DispatcherEvent) bool {
 	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
 	// if there is another sequence running in the stage, we cannot send the event
 	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
@@ -227,7 +227,7 @@ func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.Ev
 	return false
 }
 
-func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
+func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence models.TaskExecution, queuedEvent models.DispatcherEvent) bool {
 	otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 	if err != nil {
 		log.Debugf("could not fetch event queue: %s", err.Error())
@@ -256,8 +256,8 @@ func (e *EventDispatcher) cleanupQueueOfSequence(event models.Event) {
 	}
 }
 
-func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {
-	result := []models.TaskSequenceEvent{}
+func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskExecution) []models.TaskExecution {
+	result := []models.TaskExecution{}
 	for index := range sequenceTasks {
 		if sequenceTasks[index].KeptnContext != keptnContext {
 			result = append(result, sequenceTasks[index])

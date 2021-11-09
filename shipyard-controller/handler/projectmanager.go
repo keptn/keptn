@@ -334,7 +334,7 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
-	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
+	if err := pm.TaskSequenceRepository.DeleteRepo(projectName); err != nil {
 		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 

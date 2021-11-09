@@ -30,8 +30,8 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-			return []models.TaskSequenceEvent{
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return []models.TaskExecution{
 				{
 					TaskSequenceName: "delivery",
 					TriggeredEventID: "my-triggered-id",
@@ -89,8 +89,8 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-			return []models.TaskSequenceEvent{
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return []models.TaskExecution{
 				{
 					TaskSequenceName: "delivery",
 					TriggeredEventID: "my-triggered-id",
@@ -156,8 +156,8 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-			return []models.TaskSequenceEvent{
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return []models.TaskExecution{
 				{
 					TaskSequenceName: "delivery",
 					TriggeredEventID: "my-triggered-id",
@@ -242,8 +242,8 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-			return []models.TaskSequenceEvent{
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return []models.TaskExecution{
 				{
 					TaskSequenceName: "delivery",
 					TriggeredEventID: "my-triggered-id",
@@ -355,8 +355,8 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	}
 	eventSender := &fake.EventSender{}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-			return []models.TaskSequenceEvent{}, nil
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return []models.TaskExecution{}, nil
 		},
 	}
 	clock := clock.NewMock()
@@ -446,8 +446,8 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	}
 	eventSender := &fake.EventSender{}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-			return []models.TaskSequenceEvent{}, nil
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return []models.TaskExecution{}, nil
 		},
 	}
 	clock := clock.NewMock()
