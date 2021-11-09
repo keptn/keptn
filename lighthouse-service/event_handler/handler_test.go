@@ -21,14 +21,10 @@ func TestNewEventHandler(t *testing.T) {
 	incomingEvent.SetID("my-id")
 	incomingEvent.SetSource("my-source")
 
-	serviceName := "lighthouse-service"
-	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
-		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
-	})
+	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{})
 
 	type args struct {
-		event  cloudevents.Event
-		logger *keptncommon.Logger
+		event cloudevents.Event
 	}
 	tests := []struct {
 		name      string
@@ -40,8 +36,7 @@ func TestNewEventHandler(t *testing.T) {
 		{
 			name: "evaluation.triggered -> start-evaluation handler",
 			args: args{
-				event:  incomingEvent,
-				logger: nil,
+				event: incomingEvent,
 			},
 			eventType: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 			want: &StartEvaluationHandler{
@@ -54,8 +49,7 @@ func TestNewEventHandler(t *testing.T) {
 		{
 			name: "get-sli.done -> evaluate-sli handler",
 			args: args{
-				event:  incomingEvent,
-				logger: nil,
+				event: incomingEvent,
 			},
 			eventType: keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName),
 			want: &EvaluateSLIHandler{
@@ -69,8 +63,7 @@ func TestNewEventHandler(t *testing.T) {
 		{
 			name: "configure-monitoring -> configure monitoring handler",
 			args: args{
-				event:  incomingEvent,
-				logger: nil,
+				event: incomingEvent,
 			},
 			eventType: keptn.ConfigureMonitoringEventType,
 			want: &ConfigureMonitoringHandler{
@@ -83,8 +76,7 @@ func TestNewEventHandler(t *testing.T) {
 		{
 			name: "invalid event type -> error",
 			args: args{
-				event:  incomingEvent,
-				logger: nil,
+				event: incomingEvent,
 			},
 			eventType: "nonsense-event",
 			want:      nil,
@@ -99,7 +91,7 @@ func TestNewEventHandler(t *testing.T) {
 			}
 			tt.args.event.SetType(tt.eventType)
 			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
-			got, err := NewEventHandler(tt.args.event, tt.args.logger)
+			got, err := NewEventHandler(tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return

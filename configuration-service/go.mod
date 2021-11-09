@@ -15,12 +15,13 @@ require (
 	github.com/go-openapi/validate v0.20.3
 	github.com/google/martian v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a
+	github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a // indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.6.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023

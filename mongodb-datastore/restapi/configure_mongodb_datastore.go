@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -22,6 +23,8 @@ import (
 )
 
 //go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
+
+const envVarLogLevel = "LOG_LEVEL"
 
 func configureFlags(api *operations.MongodbDatastoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -82,6 +85,16 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	log.SetLevel(log.InfoLevel)
+
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			log.SetLevel(logLevel)
+		}
+	}
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

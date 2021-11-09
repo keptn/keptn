@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -11,9 +10,12 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	logger "github.com/sirupsen/logrus"
+
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
+
+const envVarLogLevel = "LOG_LEVEL"
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
@@ -22,12 +24,19 @@ type envConfig struct {
 }
 
 func main() {
-	var env envConfig
-	if err := envconfig.Process("", &env); err != nil {
-		log.Fatalf("Failed to process env var: %s", err)
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := logger.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			logger.SetLevel(logLevel)
+		}
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		logger.Fatalf("Failed to process env var: %s", err)
+	}
 	os.Exit(_main(os.Args[1:], env))
 }
 
@@ -36,13 +45,14 @@ func _main(args []string, env envConfig) int {
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		logger.Fatalf("failed to create client, %v", err)
 	}
 	c, err := cloudevents.NewClient(p)
 	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		logger.Fatalf("failed to create client, %v", err)
 	}
-	log.Fatal(c.StartReceiver(ctx, gotEvent))
+	logger.Fatal(c.StartReceiver(ctx, gotEvent))
+
 	ctx.Value("Wg").(*sync.WaitGroup).Wait()
 	return 0
 }
@@ -51,9 +61,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	_ = event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptncommon.NewLogger(shkeptncontext, event.Context.GetID(), "lighthouse-service")
-
-	handler, err := event_handler.NewEventHandler(event, logger)
+	handler, err := event_handler.NewEventHandler(event)
 
 	if err != nil {
 		logger.Error("Received unknown event type: " + event.Type())
@@ -76,7 +84,7 @@ func getGracefulContext() context.Context {
 
 	go func() {
 		<-ch
-		log.Fatal("Container termination triggered, waiting for graceful shutdown")
+		logger.Fatal("Container termination triggered, waiting for graceful shutdown")
 		cancel()
 	}()
 

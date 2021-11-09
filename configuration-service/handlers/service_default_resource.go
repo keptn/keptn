@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
+	logger "github.com/sirupsen/logrus"
 )
 
 // GetProjectProjectNameServiceServiceNameResourceHandlerFunc get list of default resources for the service
@@ -23,7 +22,6 @@ func GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 // PostProjectProjectNameServiceServiceNameResourceHandlerFunc creates a list of new default resources
 func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -39,7 +37,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 	if defaultBranch == "" {
@@ -58,8 +56,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		logger.Debug("Checking out branch: " + branch)
 		err := common.CheckoutBranch(params.ProjectName, branch, false)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 		}
 
@@ -72,8 +69,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		logger.Debug("Staging Changes")
 		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 		}
 		logger.Debug("Successfully added resources")
@@ -84,7 +80,6 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 
 // PutProjectProjectNameServiceServiceNameResourceHandlerFunc updates a list of default resources
 func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -100,7 +95,7 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 	if defaultBranch == "" {
@@ -119,8 +114,7 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 		logger.Debug("Checking out branch: " + branch)
 		err := common.CheckoutBranch(params.ProjectName, branch, false)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 		}
 
@@ -133,8 +127,7 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 		logger.Debug("Staging Changes")
 		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 		}
 		logger.Debug("Successfully added resources")
@@ -145,7 +138,6 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 
 // PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc updates the specified resource for the service
 func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -161,7 +153,7 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 	if defaultBranch == "" {
@@ -180,8 +172,7 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 		logger.Debug("Checking out branch: " + branch)
 		err := common.CheckoutBranch(params.ProjectName, branch, false)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 		}
 
@@ -191,8 +182,7 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 		logger.Debug("Staging Changes")
 		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 		}
 		logger.Debug("Successfully added resources")
@@ -203,7 +193,6 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 // DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource from the service
 func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})
 	}
@@ -219,7 +208,7 @@ func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(pa
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 	if defaultBranch == "" {
@@ -238,8 +227,7 @@ func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(pa
 		logger.Debug("Checking out branch: " + branch)
 		err := common.CheckoutBranch(params.ProjectName, branch, false)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 		}
 
@@ -252,8 +240,7 @@ func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(pa
 		logger.Debug("Staging Changes")
 		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", branch, params.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 		}
 		logger.Debug("Successfully deletes resource")

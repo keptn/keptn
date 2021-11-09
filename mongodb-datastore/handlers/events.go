@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,7 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
@@ -69,7 +69,7 @@ type ProjectEventData struct {
 	Project *string `json:"project,omitempty"`
 }
 
-func ensureDBConnection(logger *keptncommon.Logger) error {
+func ensureDBConnection() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 	var err error
@@ -111,23 +111,22 @@ func connectMongoDBClient() error {
 
 // ProcessEvent processes the passed event.
 func ProcessEvent(event *models.KeptnContextExtendedCE) error {
-	logger := keptncommon.NewLogger("", "", serviceName)
 	logger.Debug("save event to data store")
 
-	if err := ensureDBConnection(logger); err != nil {
+	if err := ensureDBConnection(); err != nil {
 		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
 
 	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
-		return dropProjectEvents(logger, event)
+		return dropProjectEvents(event)
 	}
 
-	return insertEvent(logger, event)
+	return insertEvent(event)
 }
 
-func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE) error {
+func insertEvent(event *models.KeptnContextExtendedCE) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -158,7 +157,6 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 			ctx,
 			invalidatedCollection,
 			"triggeredid",
-			logger,
 		)
 		_, err = invalidatedCollection.InsertOne(ctx, eventInterface)
 		if err != nil {
@@ -173,7 +171,6 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 			ctx,
 			collection,
 			indexName,
-			logger,
 		)
 	}
 
@@ -185,12 +182,12 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 	}
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 
-	err = storeContextToProjectMapping(logger, event, ctx, collectionName)
+	err = storeContextToProjectMapping(event, ctx, collectionName)
 	if err != nil {
 		return err
 	}
 
-	err = storeRootEvent(logger, collectionName, ctx, event)
+	err = storeRootEvent(collectionName, ctx, event)
 	if err != nil {
 		return err
 	}
@@ -199,7 +196,7 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 	return nil
 }
 
-func ensureIndexExistsOnCollection(ctx context.Context, collection *mongo.Collection, indexName string, logger *keptncommon.Logger) {
+func ensureIndexExistsOnCollection(ctx context.Context, collection *mongo.Collection, indexName string) {
 	logger.Debug("ensuring index for " + collection.Name() + " exists")
 	indexID := getIndexIDForCollection(collection.Name(), indexName)
 
@@ -234,7 +231,7 @@ func getInvalidatedCollectionName(collectionName string) string {
 	return invalidatedCollectionName
 }
 
-func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
+func storeRootEvent(collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
 	if collectionName == eventsCollectionName {
 		logger.Debug("Will not store root event because no project has been set in the event")
 		return nil
@@ -247,7 +244,6 @@ func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx conte
 			ctx,
 			rootEventsForProjectCollection,
 			indexName,
-			logger,
 		)
 	}
 
@@ -305,7 +301,7 @@ func storeEventInCollection(event *models.KeptnContextExtendedCE, collection *mo
 	return nil
 }
 
-func storeContextToProjectMapping(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE, ctx context.Context, collectionName string) error {
+func storeContextToProjectMapping(event *models.KeptnContextExtendedCE, ctx context.Context, collectionName string) error {
 	if collectionName == eventsCollectionName {
 		logger.Debug("Will not store mapping between context and project because no project has been set in the event")
 		return nil
@@ -332,7 +328,7 @@ func storeContextToProjectMapping(logger *keptncommon.Logger, event *models.Kept
 	return nil
 }
 
-func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE) error {
+func dropProjectEvents(event *models.KeptnContextExtendedCE) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -424,10 +420,9 @@ func getProjectOfEvent(event *models.KeptnContextExtendedCE) string {
 
 // GetEvents returns all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
-	logger := keptncommon.NewLogger("", "", serviceName)
 	logger.Debug("getting events from the data store")
 
-	if err := ensureDBConnection(logger); err != nil {
+	if err := ensureDBConnection(); err != nil {
 		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
 		logger.Error(err.Error())
 		return nil, err
@@ -436,7 +431,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	searchOptions := getSearchOptions(params)
 
 	onlyRootEvents := params.Root != nil
-	collectionName, err := getCollectionNameForQuery(searchOptions, logger)
+	collectionName, err := getCollectionNameForQuery(searchOptions)
 	if err != nil {
 		return nil, err
 	} else if collectionName == "" {
@@ -447,7 +442,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 			TotalCount:  0,
 		}, nil
 	}
-	result, err := findInDB(collectionName, *params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions, logger)
+	result, err := findInDB(collectionName, *params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -466,7 +461,7 @@ type getEventsResult struct {
 	TotalCount int64 `json:"totalCount,omitempty"`
 }
 
-func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *keptncommon.Logger) (*getEventsResult, error) {
+func aggregateFromDB(collectionName string, pipeline mongo.Pipeline) (*getEventsResult, error) {
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	result := &getEventsResult{
@@ -479,17 +474,21 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *kep
 	cur, err := collection.Aggregate(ctx, pipeline)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		logger.WithError(err).Error("error finding elements in events collection")
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
-	defer cur.Close(ctx)
-	result.Events = formatEventResults(ctx, cur, logger)
+	defer func() {
+		if err := cur.Close(ctx); err != nil {
+			logger.WithError(err).Error("could not close cursor")
+		}
+	}()
+	result.Events = formatEventResults(ctx, cur)
 
 	return result, nil
 }
 
-func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptncommon.Logger) (*getEventsResult, error) {
+func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M) (*getEventsResult, error) {
 	var newNextPageKey int64
 	var nextPageKey int64 = 0
 	if nextPageKeyStr != nil {
@@ -520,18 +519,22 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
+		logger.WithError(err).Error("error counting elements in events collection")
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		logger.WithError(err).Error("error finding elements in events collection")
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
-	defer cur.Close(ctx)
-	result.Events = formatEventResults(ctx, cur, logger)
+	defer func() {
+		if err := cur.Close(ctx); err != nil {
+			logger.WithError(err).Error("could not close cursor")
+		}
+	}()
+	result.Events = formatEventResults(ctx, cur)
 
 	result.PageSize = pageSize
 	result.TotalCount = totalCount
@@ -543,18 +546,18 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 	return &result, nil
 }
 
-func formatEventResults(ctx context.Context, cur *mongo.Cursor, logger *keptncommon.Logger) []*models.KeptnContextExtendedCE {
+func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnContextExtendedCE {
 	events := []*models.KeptnContextExtendedCE{}
 	for cur.Next(ctx) {
 		var outputEvent interface{}
 		err := cur.Decode(&outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to decode event %v", err))
+			logger.WithError(err).Error("failed to decode event")
 			continue
 		}
-		outputEvent, err = flattenRecursively(outputEvent, logger)
+		outputEvent, err = flattenRecursively(outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to flatten %v", err))
+			logger.WithError(err).Error("failed to flatten")
 			continue
 		}
 
@@ -563,7 +566,7 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor, logger *keptncom
 		var keptnEvent models.KeptnContextExtendedCE
 		err = keptnEvent.UnmarshalJSON(data)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			logger.WithError(err).Error("failed to unmarshal")
 			continue
 		}
 
@@ -602,7 +605,7 @@ func transformEvaluationDonEvent(keptnEvent *models.KeptnContextExtendedCE) erro
 	return nil
 }
 
-func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger) (string, error) {
+func getCollectionNameForQuery(searchOptions bson.M) (string, error) {
 	collectionName := eventsCollectionName
 	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
 		// if a project has been specified, query the collection for that project
@@ -615,7 +618,7 @@ func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger)
 				logger.Info("no project found for shkeptncontext")
 				return unmappedEventsCollectionName, nil
 			}
-			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			logger.WithError(err).Error("error loading project for shkeptncontext")
 			return "", err
 		}
 	}
@@ -697,17 +700,17 @@ func setEventTypeMatchCriteria(eventType string, searchOptions bson.M) bson.M {
 	return searchOptions
 }
 
-func flattenRecursively(i interface{}, logger *keptncommon.Logger) (interface{}, error) {
+func flattenRecursively(i interface{}) (interface{}, error) {
 	if _, ok := i.(bson.D); ok {
 		d := i.(bson.D)
 		myMap := d.Map()
 		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
 		if err != nil {
-			logger.Error(fmt.Sprintf("could not flatten element: %v", err))
+			logger.WithError(err).Error("could not flatten element")
 			return nil, err
 		}
 		for k, v := range flat {
-			res, err := flattenRecursively(v, logger)
+			res, err := flattenRecursively(v)
 			if err != nil {
 				return nil, err
 			}
@@ -721,7 +724,7 @@ func flattenRecursively(i interface{}, logger *keptncommon.Logger) (interface{},
 	} else if _, ok := i.(bson.A); ok {
 		a := i.(bson.A)
 		for i := 0; i < len(a); i++ {
-			res, err := flattenRecursively(a[i], logger)
+			res, err := flattenRecursively(a[i])
 			if err != nil {
 				return nil, err
 			}
@@ -738,10 +741,9 @@ var MinimumFilterNotProvided = errors.New("must provide a filter containing at l
 
 // GetEventsByTypeHandlerFunc gets events by their type
 func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByTypeOKBody, error) {
-	logger := keptncommon.NewLogger("", "", serviceName)
 	logger.Debug(fmt.Sprintf("getting %s events from the data store", params.EventType))
 
-	if err := ensureDBConnection(logger); err != nil {
+	if err := ensureDBConnection(); err != nil {
 		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
 		logger.Error(err.Error())
 		return nil, err
@@ -764,7 +766,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 		}
 	}
 
-	collectionName, err := getCollectionNameForQuery(matchFields, logger)
+	collectionName, err := getCollectionNameForQuery(matchFields)
 	if err != nil {
 		return nil, err
 	} else if collectionName == "" {
@@ -777,9 +779,9 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 
 	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated {
 		aggregationPipeline := getAggregationPipeline(params, collectionName, matchFields)
-		allEvents, err = aggregateFromDB(collectionName, aggregationPipeline, logger)
+		allEvents, err = aggregateFromDB(collectionName, aggregationPipeline)
 	} else {
-		allEvents, err = findInDB(collectionName, *params.Limit, nil, false, matchFields, logger)
+		allEvents, err = findInDB(collectionName, *params.Limit, nil, false, matchFields)
 	}
 
 	if err != nil {

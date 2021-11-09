@@ -2,20 +2,20 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"keptn/approval-service/pkg/handler"
 	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	logger "github.com/sirupsen/logrus"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
-const ServiceName = "approval-service"
+const envVarLogLevel = "LOG_LEVEL"
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
@@ -24,6 +24,17 @@ type envConfig struct {
 }
 
 func main() {
+	logger.SetLevel(logger.InfoLevel)
+
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := logger.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			logger.SetLevel(logLevel)
+		}
+	}
+
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
@@ -55,14 +66,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 func switchEvent(event cloudevents.Event) {
-	serviceName := ServiceName
-	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
-	})
+	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {
-		l := keptncommon.NewLogger("", event.Context.GetID(), serviceName)
-		l.Error("failed to initialize Keptn handler: " + err.Error())
+		logger.WithError(err).Error("failed to initialize Keptn handler")
 		return
 	}
 
@@ -79,6 +86,6 @@ func switchEvent(event cloudevents.Event) {
 	}
 
 	if unhandled {
-		keptnHandlerV2.Logger.Error(fmt.Sprintf("Received unexpected keptn event type %s", event.Type()))
+		logger.Debugf("Received unexpected keptn event type %s", event.Type())
 	}
 }

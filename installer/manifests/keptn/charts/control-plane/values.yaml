@@ -136,3 +136,5 @@ ingress:
   pathType: Prefix
   tls:
     []
+
+logLevel: info
