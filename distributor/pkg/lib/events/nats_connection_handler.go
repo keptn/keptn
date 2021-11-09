@@ -78,7 +78,10 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
-		nch.RemoveAllSubscriptions()
+		err := nch.RemoveAllSubscriptions()
+		if err != nil {
+			return errors.New("unable to remove all subscriptions: " + err.Error())
+		}
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
