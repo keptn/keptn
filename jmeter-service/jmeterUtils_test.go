@@ -40,7 +40,7 @@ func Test_executeJMeter(t *testing.T) {
 	os.Setenv("env", "production")
 
 	type args struct {
-		testInfo       *TestInfo
+		testInfo       TestInfo
 		workload       *Workload
 		resultsDir     string
 		url            *url.URL
@@ -59,7 +59,7 @@ func Test_executeJMeter(t *testing.T) {
 		{
 			name: "Skip tests if 404 is returned by configuration service and mark as success",
 			args: args{
-				testInfo: &TestInfo{
+				testInfo: TestInfo{
 					Project:      "sockshop",
 					Stage:        "dev",
 					Service:      "carts",
@@ -88,7 +88,7 @@ func Test_executeJMeter(t *testing.T) {
 		{
 			name: "Skip tests if error code is returned by configuration service and return error",
 			args: args{
-				testInfo: &TestInfo{
+				testInfo: TestInfo{
 					Project:      "sockshop",
 					Stage:        "dev",
 					Service:      "carts",

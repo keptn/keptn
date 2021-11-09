@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"os"
@@ -20,11 +21,14 @@ const JMeterConfigDirectory = "/jmeter"
 
 // TestInfo contains information about which test to execute
 type TestInfo struct {
-	Project      string
-	Stage        string
-	Service      string
-	TestStrategy string
-	Context      string
+	Project           string
+	Stage             string
+	Service           string
+	TestStrategy      string
+	Context           string
+	TriggeredID       string
+	TestTriggeredData v0_2_0.TestTriggeredEventData
+	ServiceURL        *url.URL
 }
 
 // DoRemoveTempFiles Returns true if temp files should be removed. This is default - but can be changed through env variable DEBUG_KEEP_TEMP_FILES == true
@@ -54,7 +58,7 @@ func getConfigurationServiceURL() string {
 /**
  * Returns additional JMeter Command Line Parameters including additional params passed to the JMeter script
  */
-func addJMeterCommandLineArguments(testInfo *TestInfo, initialList []string) []string {
+func addJMeterCommandLineArguments(testInfo TestInfo, initialList []string) []string {
 	dtTenant := fmt.Sprintf("-JDT_TENANT=%s", os.Getenv("DT_TENANT"))
 	dtAPIToken := fmt.Sprintf("-JDT_API_TOKEN=%s", os.Getenv("DT_API_TOKEN"))
 
@@ -69,7 +73,7 @@ func addJMeterCommandLineArguments(testInfo *TestInfo, initialList []string) []s
 /**
  * Parses the output of the JMEter test and returns true or false
  */
-func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload *Workload, funcValidation bool) (bool, error) {
+func parseJMeterResult(jmeterCommandResult string, testInfo TestInfo, workload *Workload, funcValidation bool) (bool, error) {
 
 	logger.Debug(jmeterCommandResult)
 
@@ -133,7 +137,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  * Status: true or false
  * Error: error details if status was false
  */
-func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool) (bool, error) {
+func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool) (bool, error) {
 	os.RemoveAll(resultsDir)
 
 	os.MkdirAll(resultsDir, 0644)

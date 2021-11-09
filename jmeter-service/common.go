@@ -261,24 +261,24 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 //
 // Loads jmeter.conf for the current service
 //
-func getJMeterConf(project string, stage string, service string) (*JMeterConf, error) {
+func getJMeterConf(testInfo TestInfo) (*JMeterConf, error) {
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	var fileContent []byte
 	var err error
 	if runlocal {
 		fileContent, err = ioutil.ReadFile(JMeterConfFilename)
 		if err != nil {
-			logMessage := fmt.Sprintf("No %s file found LOCALLY for service %s in stage %s in project %s", JMeterConfFilename, service, stage, project)
+			logMessage := fmt.Sprintf("No %s file found LOCALLY for service %s in stage %s in project %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project)
 			logger.Info(logMessage)
 			return nil, errors.New(logMessage)
 		}
 	} else {
-		logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, project, stage, service))
+		logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, testInfo.Project, testInfo.Stage, testInfo.Service))
 
-		keptnResourceContent, err := GetKeptnResource(project, stage, service, JMeterConfFilename)
+		keptnResourceContent, err := GetKeptnResource(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfFilename)
 
 		if err != nil {
-			logMessage := fmt.Sprintf("error when trying to load %s file for service %s on stage %s or project-level %s", JMeterConfFilename, service, stage, project)
+			logMessage := fmt.Sprintf("error when trying to load %s file for service %s on stage %s or project-level %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project)
 			logger.Info(logMessage)
 			return nil, errors.New(logMessage)
 		}
@@ -293,7 +293,7 @@ func getJMeterConf(project string, stage string, service string) (*JMeterConf, e
 	var jmeterConf *JMeterConf
 	jmeterConf, err = parseJMeterConf(fileContent)
 	if err != nil {
-		logMessage := fmt.Sprintf("Couldn't parse %s file found for service %s in stage %s in project %s. Error: %s", JMeterConfFilename, service, stage, project, err.Error())
+		logMessage := fmt.Sprintf("Couldn't parse %s file found for service %s in stage %s in project %s. Error: %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project, err.Error())
 		logger.Error(logMessage)
 		return nil, errors.New(logMessage)
 	}
