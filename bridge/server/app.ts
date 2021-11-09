@@ -157,6 +157,7 @@ async function init(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
+
   app.use(helmet.contentSecurityPolicy());
   app.use(helmet.hidePoweredBy());
   app.use(helmet.noSniff());
