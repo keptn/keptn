@@ -101,17 +101,14 @@ func NewVersionCommand(vChecker *version.VersionChecker) *cobra.Command {
 
 // SetVersion sets version, versionCheckInfo and extracts and sets {Major} and {Minor} version for keptnReleaseDocsURL
 func SetVersion(vers string) {
-	fmt.Println("SetVersion(): " + vers)
 	Version = vers
 	v, err := versionCheck.NewSemver(vers)
 	keptnReleaseDocsURL = "0.8.x" //fallback version if provided doc version is invalid
 	if err == nil {
 		segments := v.Segments()
-		fmt.Println(fmt.Sprintf("segments =  %v", segments))
 		if len(segments) == 3 {
 			keptnReleaseDocsURL = strconv.Itoa(segments[0]) + "." + strconv.Itoa(segments[1]) + ".x"
 		}
-		fmt.Println("keptnReleaseDocsURL =  " + keptnReleaseDocsURL)
 	}
 
 	versionCheckInfo = `Daily version check is %s. 
