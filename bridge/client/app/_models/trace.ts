@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ResultTypes } from '../../../shared/models/result-types';
-import { ApprovalStates } from './approval-states';
+import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EVENT_ICONS } from './event-icons';
 import { Trace as ts, TraceData } from '../../../shared/models/trace';
 import { DtIconType } from '@dynatrace/barista-icons';

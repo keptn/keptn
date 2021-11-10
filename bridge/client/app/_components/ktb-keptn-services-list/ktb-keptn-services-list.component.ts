@@ -4,7 +4,7 @@ import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
-import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../../shared/interfaces/uniform-registration-log';
 import { UniformRegistration } from '../../_models/uniform-registration';
 import { Location } from '@angular/common';
 import { UniformSubscription } from '../../_models/uniform-subscription';

@@ -5,7 +5,7 @@ import { ResultTypes } from '../../shared/models/result-types';
 import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
 import { UniformRegistration } from '../models/uniform-registration';
-import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
+import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-registration-log';
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';

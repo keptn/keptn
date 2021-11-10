@@ -8,7 +8,7 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ApiService } from './api.service';
 import moment from 'moment';
 import { Sequence } from '../_models/sequence';
-import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { Root } from '../_models/root';
 import { HttpResponse } from '@angular/common/http';

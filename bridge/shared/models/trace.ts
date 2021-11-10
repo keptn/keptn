@@ -1,8 +1,8 @@
 import { EventTypes } from '../interfaces/event-types';
 import { ResultTypes } from './result-types';
 import { IndicatorResult } from '../interfaces/indicator-result';
-import { ProblemStates } from '../../client/app/_models/problem-states';
-import { ApprovalStates } from '../../client/app/_models/approval-states';
+import { ProblemStates } from './problem-states';
+import { ApprovalStates } from './approval-states';
 import { KeptnService } from './keptn-service';
 import { DateUtil } from '../utils/date.utils';
 import { SloConfig } from '../interfaces/slo-config';
