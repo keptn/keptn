@@ -72,15 +72,16 @@ export class ServiceState extends svs {
   }
 
   public getLatestImage(): string {
+    const unknownImage = 'unknown';
     let latestTime: Date | undefined;
-    let image = 'unknown';
+    let image = unknownImage;
     for (const deployment of this.deploymentInformation) {
       const latestStageTime = deployment.stages.reduce((max: undefined | Date, stage) => {
         const date = new Date(stage.time);
         return max && max > date ? max : date;
       }, undefined);
-      if (deployment.image && latestStageTime && (!latestTime || latestStageTime > latestTime)) {
-        image = `${deployment.image}:${deployment.version}`;
+      if (latestStageTime && (!latestTime || latestStageTime > latestTime)) {
+        image = deployment.image ? `${deployment.image}:${deployment.version}` : unknownImage;
         latestTime = latestStageTime;
       }
     }

@@ -4,13 +4,13 @@ import { Trace } from './trace';
 import { SequenceState } from '../../../shared/models/sequence';
 import { ResultTypes } from '../../../shared/models/result-types';
 import { Sequence } from './sequence';
-import { ServiceRemediationInformation } from '../_interfaces/service-remediation-information';
+import { ServiceRemediationInformation } from './service-remediation-information';
 
 export class StageDeployment implements IStageDeployment {
   name!: string;
   deploymentURL?: string;
   hasEvaluation!: boolean;
-  lastTimeUpdated!: number;
+  lastTimeUpdated!: string;
   evaluationResult?: EvaluationResult;
   latestEvaluation?: Trace;
   openRemediations!: Sequence[];
@@ -51,6 +51,43 @@ export class StageDeployment implements IStageDeployment {
       subSequence.hasPendingApproval = false;
     }
   }
+
+  public update(stage: StageDeployment): void {
+    this.lastTimeUpdated = stage.lastTimeUpdated;
+    this.approvalInformation = stage.approvalInformation;
+    this.remediationConfig = stage.remediationConfig;
+    this.openRemediations = stage.openRemediations;
+    this.deploymentURL ??= stage.deploymentURL;
+    this.evaluationResult ??= stage.evaluationResult;
+
+    if ((stage.hasEvaluation && !this.hasEvaluation) || !this.latestEvaluation) {
+      this.latestEvaluation = stage.latestEvaluation;
+    }
+    this.hasEvaluation = stage.hasEvaluation;
+
+    this.updateSubSequences(stage.subSequences);
+  }
+
+  private updateSubSequences(subSequences: SubSequence[]): void {
+    if (!this.subSequences.length) {
+      this.subSequences = subSequences;
+    } else {
+      for (let i = subSequences.length - 1; i >= 0; i--) {
+        const subSequence = subSequences[i];
+        const originalSubSequence = this.subSequences.find((seq) => seq.id === subSequence.id);
+        if (originalSubSequence) {
+          // update existing subSequence
+          originalSubSequence.state = subSequence.state;
+          originalSubSequence.result = subSequence.result;
+          originalSubSequence.hasPendingApproval = subSequence.hasPendingApproval;
+          originalSubSequence.message = subSequence.message;
+        } else {
+          // add new subSequences
+          this.subSequences.unshift(subSequence);
+        }
+      }
+    }
+  }
 }
 
 export class Deployment implements dp {
@@ -71,11 +108,14 @@ export class Deployment implements dp {
     return this.stages.find((stage) => stage.name === stageName);
   }
 
-  public get latestTimeUpdated(): number {
-    return this.stages.reduce(
-      (maxTime, stage) => (maxTime > stage.lastTimeUpdated ? maxTime : stage.lastTimeUpdated),
-      0
-    );
+  public get latestTimeUpdated(): Date | undefined {
+    return this.stages.reduce((maxTime: undefined | Date, stage) => {
+      const stageDate = new Date(stage.lastTimeUpdated);
+      if (!maxTime || maxTime < stageDate) {
+        maxTime = stageDate;
+      }
+      return maxTime;
+    }, undefined);
   }
 
   public updateRemediations(remediationInfo: ServiceRemediationInformation): void {
@@ -96,46 +136,13 @@ export class Deployment implements dp {
     this.labels = deployment.labels;
     this.state = deployment.state;
     for (const stage of deployment.stages) {
-      const originalStage = this.stages.find((s) => s.name === stage.name);
+      const originalStage = this.getStage(stage.name);
       if (!originalStage) {
         // new stage
         this.stages.push(stage);
       } else {
         // update existing stage
-        originalStage.lastTimeUpdated = stage.lastTimeUpdated;
-        originalStage.approvalInformation = stage.approvalInformation;
-        originalStage.remediationConfig = stage.remediationConfig;
-        originalStage.openRemediations = stage.openRemediations;
-        originalStage.deploymentURL ??= stage.deploymentURL;
-        originalStage.evaluationResult ??= stage.evaluationResult;
-
-        if ((stage.hasEvaluation && !originalStage.hasEvaluation) || !originalStage.latestEvaluation) {
-          originalStage.latestEvaluation = stage.latestEvaluation;
-        }
-        originalStage.hasEvaluation = stage.hasEvaluation;
-
-        this.updateSubSequences(originalStage, stage);
-      }
-    }
-  }
-
-  private updateSubSequences(originalStage: StageDeployment, newStage: StageDeployment): void {
-    if (!originalStage.subSequences.length) {
-      originalStage.subSequences = newStage.subSequences;
-    } else {
-      for (let i = newStage.subSequences.length - 1; i >= 0; i--) {
-        const subSequence = newStage.subSequences[i];
-        const originalSubSequence = originalStage.subSequences.find((seq) => seq.id === subSequence.id);
-        if (originalSubSequence) {
-          // update existing subSequence
-          originalSubSequence.state = subSequence.state;
-          originalSubSequence.result = subSequence.result;
-          originalSubSequence.hasPendingApproval = subSequence.hasPendingApproval;
-          originalSubSequence.message = subSequence.message;
-        } else {
-          // add new subSequences
-          originalStage.subSequences.unshift(subSequence);
-        }
+        originalStage.update(stage);
       }
     }
   }

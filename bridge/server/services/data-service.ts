@@ -995,7 +995,7 @@ export class DataService {
 
         deployment.stages.push({
           name: stage.name,
-          lastTimeUpdated: lastTimeUpdated ? new Date(lastTimeUpdated).getTime() : 0,
+          lastTimeUpdated: (lastTimeUpdated ? new Date(lastTimeUpdated) : new Date()).toISOString(),
           openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
           remediationConfig: stageRemediationInformation?.config,
           approvalInformation,
@@ -1042,7 +1042,7 @@ export class DataService {
           name: seq.getLabel(),
           type: seq.type,
           result: seq.getStatus(),
-          time: seq.time ? new Date(seq.time).getTime() : 0,
+          time: (seq.time ? new Date(seq.time) : new Date()).toISOString(),
           state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
           id: seq.id,
           message: seq.getMessage(),

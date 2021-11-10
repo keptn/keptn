@@ -8,8 +8,8 @@ import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
 import { ServiceState } from '../../_models/service-state';
 import { SequenceState } from '../../../../shared/models/sequence';
-import { ServiceRemediationInformation } from '../../_interfaces/service-remediation-information';
 import { Deployment } from '../../_models/deployment';
+import { ServiceRemediationInformation } from '../../_models/service-remediation-information';
 
 @Component({
   selector: 'ktb-service-view',
@@ -172,7 +172,7 @@ export class KtbServiceViewComponent implements OnDestroy {
         update$ = this.dataService.getServiceDeployment(
           projectName,
           deploymentInfo.deploymentInformation.keptnContext,
-          new Date(originalDeployment.latestTimeUpdated).toISOString()
+          originalDeployment.latestTimeUpdated?.toISOString()
         );
       }
     }

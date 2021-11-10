@@ -27,7 +27,7 @@ import { EvaluationHistory } from '../_interfaces/evaluation-history';
 import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
-import { ServiceRemediationInformation } from '../_interfaces/service-remediation-information';
+import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 
 @Injectable({
   providedIn: 'root',
@@ -714,10 +714,7 @@ export class DataService {
   ): Observable<ServiceRemediationInformation> {
     return this.apiService.getOpenRemediationsOfService(projectName, serviceName).pipe(
       map((serviceRemediationInformation) => {
-        for (const stage of serviceRemediationInformation.stages) {
-          stage.remediations = stage.remediations.map((remediation) => Sequence.fromJSON(remediation));
-        }
-        return serviceRemediationInformation;
+        return ServiceRemediationInformation.fromJSON(serviceRemediationInformation);
       })
     );
   }

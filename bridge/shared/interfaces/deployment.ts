@@ -13,7 +13,7 @@ export interface Deployment {
 
 export interface SubSequence {
   name: string;
-  time: number;
+  time: string;
   state: SequenceState;
   type: string;
   result: ResultTypes;
@@ -24,7 +24,7 @@ export interface SubSequence {
 
 export interface IStageDeployment {
   name: string;
-  lastTimeUpdated: number;
+  lastTimeUpdated: string;
   hasEvaluation: boolean;
   latestEvaluation?: Trace;
   openRemediations: Sequence[];

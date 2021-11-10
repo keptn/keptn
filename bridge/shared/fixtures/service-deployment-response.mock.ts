@@ -7,14 +7,14 @@ const serviceDeploymentMock = {
   stages: [
     {
       name: 'dev',
-      lastTimeUpdated: 1634122170005,
+      lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [
         {
           name: 'delivery',
           type: 'sh.keptn.event.dev.delivery.triggered',
           result: 'pass',
-          time: 1634121903780,
+          time: '2021-10-13T10:45:03.780Z',
           state: 'finished',
           id: '08e89fdb-02db-4fc7-a5fd-386d03e1c4a9',
           message: 'Finished release',
@@ -61,14 +61,14 @@ const serviceDeploymentMock = {
     },
     {
       name: 'staging',
-      lastTimeUpdated: 1634122785104,
+      lastTimeUpdated: '2021-10-13T10:59:45.104Z',
       openRemediations: [],
       subSequences: [
         {
           name: 'delivery',
           type: 'sh.keptn.event.staging.delivery.triggered',
           result: 'pass',
-          time: 1634122170202,
+          time: '2021-10-13T10:49:30.202Z',
           state: 'finished',
           id: '3cbb5949-3852-4073-a70d-27ec52e04b93',
           message: 'Finished release',
@@ -147,7 +147,7 @@ const serviceDeploymentMock = {
     },
     {
       name: 'production',
-      lastTimeUpdated: 1634122992215,
+      lastTimeUpdated: '2021-10-13T11:03:12.215Z',
       openRemediations: [
         {
           name: 'remediation',
@@ -178,7 +178,7 @@ const serviceDeploymentMock = {
           name: 'delivery',
           type: 'sh.keptn.event.production.delivery.triggered',
           result: 'pass',
-          time: 1634122785304,
+          time: '2021-10-13T10:59:45.304Z',
           state: 'finished',
           id: '61a2d8f9-7368-4097-b469-2fb81af50eb3',
           message: 'Finished release',
@@ -237,7 +237,7 @@ const serviceDeploymentWithFromTimeMock = {
   stages: [
     {
       name: 'dev',
-      lastTimeUpdated: 1634122170005,
+      lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [],
       hasEvaluation: true,
@@ -280,7 +280,7 @@ const serviceDeploymentWithFromTimeMock = {
     },
     {
       name: 'staging',
-      lastTimeUpdated: 1634122785104,
+      lastTimeUpdated: '2021-10-13T10:59:45.104Z',
       openRemediations: [],
       subSequences: [],
       hasEvaluation: true,
@@ -355,7 +355,7 @@ const serviceDeploymentWithFromTimeMock = {
     },
     {
       name: 'production',
-      lastTimeUpdated: 1634122992215,
+      lastTimeUpdated: '2021-10-13T11:03:12.215Z',
       openRemediations: [
         {
           name: 'remediation',
@@ -386,7 +386,7 @@ const serviceDeploymentWithFromTimeMock = {
           name: 'delivery',
           type: 'sh.keptn.event.production.delivery.triggered',
           result: 'pass',
-          time: 1634122785304,
+          time: '2021-10-13T10:59:45.304Z',
           state: 'finished',
           id: '61a2d8f9-7368-4097-b469-2fb81af50eb3',
           message: 'Finished release',
@@ -445,14 +445,14 @@ const serviceDeploymentWithApprovalMock = {
   stages: [
     {
       name: 'dev',
-      lastTimeUpdated: 1634122170005,
+      lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [
         {
           name: 'delivery',
           type: 'sh.keptn.event.dev.delivery.triggered',
           result: 'pass',
-          time: 1634121903780,
+          time: '2021-10-13T10:45:03.780Z',
           state: 'finished',
           id: '08e89fdb-02db-4fc7-a5fd-386d03e1c4a9',
           message: 'Finished release',
@@ -499,14 +499,14 @@ const serviceDeploymentWithApprovalMock = {
     },
     {
       name: 'staging',
-      lastTimeUpdated: 1634122483315,
+      lastTimeUpdated: '2021-10-13T10:54:43.315Z',
       openRemediations: [],
       subSequences: [
         {
           name: 'delivery',
           type: 'sh.keptn.event.staging.delivery.triggered',
           result: 'pass',
-          time: 1634122170202,
+          time: '2021-10-13T10:49:30.202Z',
           state: 'started',
           id: '3cbb5949-3852-4073-a70d-27ec52e04b93',
           message: '',
