@@ -76,7 +76,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return nil
 	}
 	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
-	go runTests(event, shkeptncontext, *data)
+	go runTests(ctx, event, shkeptncontext, *data)
 
 	return nil
 }
@@ -85,9 +85,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // This method executes the correct tests based on the passed testStrategy in the deployment finished event
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
-func runTests(ctx context.Context,event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData) {
+func runTests(ctx context.Context, event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData) {
 	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
-	sendTestsStartedEvent(shkeptncontext, event, logger)
+	sendTestsStartedEvent(shkeptncontext, event)
 
 	testInfo := getTestInfo(data, shkeptncontext)
 	startedAt := time.Now()
@@ -95,7 +95,7 @@ func runTests(ctx context.Context,event cloudevents.Event, shkeptncontext string
 	go func() {
 		<-ctx.Done()
 		logger.Error("Error sending test finished event" + testInfo.ToString())
-		if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test", logger); err != nil {
+		if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		ctx.Value("Wg").(*sync.WaitGroup).Done()
