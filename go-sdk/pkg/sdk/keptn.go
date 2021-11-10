@@ -7,7 +7,11 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
 )
 
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
@@ -117,8 +121,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) Start() error {
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 	return k.eventReceiver.StartReceiver(ctx, k.gotEvent)
 }
 
@@ -313,4 +316,20 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, commonEventData)
 	return c
+}
+
+// storing wait group into context to sync before shutdown
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+
+	go func() {
+		<-ch
+		cancel()
+	}()
+
+	return ctx
 }
