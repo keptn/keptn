@@ -9,10 +9,15 @@
             uitestid="keptn-service-details-deploymentInfo.deploymentTags"
           >
             <dt-tag *ngFor="let label of deploymentInfo.deployment.labels | keyvalue">
-              <p *ngIf="!isUrl(label.value)">
-                <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>
-              </p>
-              <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
+              <a
+                *ngIf="isUrl(label.value); else displayText"
+                [href]="label.value"
+                target="_blank"
+                [textContent]="label.key"
+              ></a>
+              <ng-template #displayText>
+                <p><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+              </ng-template>
             </dt-tag>
           </dt-tag-list>
         </div>
@@ -24,7 +29,7 @@
     [(selectedStage)]="deploymentInfo.stage"
     (selectedStageChange)="selectStage($event)"
   ></ktb-deployment-timeline>
-  <ng-container *ngIf="getDeploymentStage(deploymentInfo) as deploymentStage">
+  <ng-container *ngIf="deploymentInfo.deployment.getStage(deploymentInfo.stage) as deploymentStage">
     <ktb-sequence-list
       [shkeptncontext]="deploymentInfo.deployment.keptnContext"
       [sequences]="deploymentStage.subSequences"
@@ -36,6 +41,7 @@
       class="mt-1"
       dt-button
       variant="secondary"
+      uitestid="show-remediation-config-button"
       (click)="showRemediationConfigDialog(deploymentStage.remediationConfig)"
     >
       <dt-icon name="services"></dt-icon>
@@ -84,7 +90,7 @@
   </ng-container>
   <ng-template #remediationDialog let-data>
     <h1 mat-dialog-title>Remediation</h1>
-    <div mat-dialog-content>
+    <div mat-dialog-content uitestid="remediation-config-content">
       <pre [textContent]="data"></pre>
     </div>
     <div mat-dialog-actions>

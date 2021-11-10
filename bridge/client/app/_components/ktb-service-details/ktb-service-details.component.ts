@@ -7,7 +7,6 @@ import { Subject } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DeploymentSelection } from '../../_interfaces/deployment-selection';
-import { StageDeployment } from '../../_models/deployment';
 
 @Component({
   selector: 'ktb-service-details',
@@ -83,9 +82,7 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   }
 
   public closeRemediationConfigDialog(): void {
-    if (this.remediationDialogRef) {
-      this.remediationDialogRef.close();
-    }
+    this.remediationDialogRef?.close();
   }
 
   public copyPayload(plainEvent: string): void {
@@ -95,9 +92,5 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   public ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-  }
-
-  public getDeploymentStage(deploymentSelection: DeploymentSelection): StageDeployment | undefined {
-    return deploymentSelection.deployment.stages.find((stage) => stage.name === deploymentSelection.stage);
   }
 }

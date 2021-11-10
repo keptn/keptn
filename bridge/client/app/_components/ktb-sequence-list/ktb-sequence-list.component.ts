@@ -1,11 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { DataService } from '../../_services/data.service';
 import { SubSequence } from '../../../../shared/interfaces/deployment';
 import { EVENT_ICONS } from '../../_models/event-icons';
 import { DtIconType } from '@dynatrace/barista-icons';
@@ -15,7 +14,7 @@ import { DtIconType } from '@dynatrace/barista-icons';
   templateUrl: './ktb-sequence-list.component.html',
   styleUrls: [],
 })
-export class KtbSequenceListComponent implements OnInit, OnDestroy {
+export class KtbSequenceListComponent implements OnDestroy {
   public dataSource: DtTableDataSource<SubSequence | Sequence> = new DtTableDataSource();
   private unsubscribe$: Subject<void> = new Subject<void>();
   private _sequences: SubSequence[] = [];
@@ -44,11 +43,9 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
       this.updateDataSource();
     }
   }
-  constructor(public dateUtil: DateUtil, private route: ActivatedRoute, private dataService: DataService) {}
-
-  public ngOnInit(): void {
-    this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
-      this.projectName = params.projectName;
+  constructor(public dateUtil: DateUtil, private route: ActivatedRoute) {
+    this.route.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
+      this.projectName = params.get('projectName') ?? undefined;
     });
   }
 
