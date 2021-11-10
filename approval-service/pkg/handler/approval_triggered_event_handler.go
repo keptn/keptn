@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	logger "github.com/sirupsen/logrus"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
@@ -42,7 +43,7 @@ func getResult(data keptnv2.ApprovalTriggeredEventData, event cloudevents.Event)
 func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn) {
 	data := &keptnv2.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
-		a.keptn.Logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
+		logger.WithError(err).Error("failed to parse ApprovalTriggeredEventData")
 		return
 	}
 
@@ -50,7 +51,7 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 	data.Result = getResult(*data, event)
 
 	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), keptnHandler.KeptnContext)
-	sendEvents(keptnHandler, outgoingEvents, a.keptn.Logger)
+	sendEvents(keptnHandler, outgoingEvents)
 }
 
 func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnv2.ApprovalTriggeredEventData,
@@ -60,7 +61,7 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 		inputEvent.Result == keptnv2.ResultWarning && inputEvent.Approval.Warning == keptnv2.ApprovalAutomatic {
 		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *startedEvent)
-		a.keptn.Logger.Info(fmt.Sprintf("Automatically approve release of service %s of project %s and current stage %s",
+		logger.Info(fmt.Sprintf("Automatically approve release of service %s of project %s and current stage %s",
 			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultPass, triggeredID, shkeptncontext)
@@ -70,7 +71,7 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *startedEvent)
 
-		a.keptn.Logger.Info(fmt.Sprintf("Disapprove release of service %s of project %s and current stage %s because"+
+		logger.Info(fmt.Sprintf("Disapprove release of service %s of project %s and current stage %s because"+
 			"the previous step failed", inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultFailed, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *finishedEvent)

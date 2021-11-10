@@ -30,11 +30,6 @@ spec:
             - name: "mytask"
             - name: "othertask"`
 
-func TestMain(m *testing.M) {
-	code := m.Run()
-	os.Exit(code)
-}
-
 func Test_SequenceLoopIntegrationTest(t *testing.T) {
 	projectName := "sequence-loop"
 	serviceName := "my-service"

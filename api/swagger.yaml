@@ -93,7 +93,7 @@ definitions:
       contenttype:
         type: string
       data:
-        type: [ "object", "string" ]
+        type: object
       id:
         type: string
       time:
@@ -125,4 +125,4 @@ definitions:
       bridgeversion:
         type: string
       keptnservices:
-        type: [ "object", "string" ]
+        type: object

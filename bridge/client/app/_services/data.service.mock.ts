@@ -134,6 +134,10 @@ export class DataServiceMock extends DataService {
     return of(['approval', 'deployment', 'test']);
   }
 
+  public getServiceNames(projectName: string): Observable<string[]> {
+    return of(['carts', 'carts-db']);
+  }
+
   public updateUniformSubscription(
     integrationId: string,
     subscription: UniformSubscription

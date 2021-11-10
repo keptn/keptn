@@ -75,14 +75,17 @@ spec:
                 name: ingress-config
                 key: hostname_template
                 optional: true
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | default "info" }}
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 0
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
@@ -93,13 +96,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10999
+              port: 8080
             initialDelaySeconds: 0
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
-              port: 10999
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
           imagePullPolicy: Always

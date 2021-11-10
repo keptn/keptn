@@ -24,8 +24,10 @@ appVersion: latest
 
 dependencies:
   - name: mongodb
-    version: 0.1.0
-    condition: mongodb.enabled
+    version: 10.26.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: mongo.enabled
+    alias: mongo
   - name: nats
     version: 0.7.4
     repository: https://nats-io.github.io/k8s/helm/charts/

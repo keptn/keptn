@@ -394,7 +394,7 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	taskSequenceRepo.DeleteTaskSequenceCollectionFunc = func(project string) error {
+	taskSequenceRepo.DeleteRepoFunc = func(project string) error {
 		return nil
 	}
 
@@ -1092,7 +1092,7 @@ func TestDelete(t *testing.T) {
 		return nil
 	}
 
-	taskSequenceRepo.DeleteTaskSequenceCollectionFunc = func(project string) error {
+	taskSequenceRepo.DeleteRepoFunc = func(project string) error {
 		return nil
 	}
 

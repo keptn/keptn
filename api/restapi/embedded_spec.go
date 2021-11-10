@@ -137,10 +137,7 @@ func init() {
           "type": "string"
         },
         "data": {
-          "type": [
-            "object",
-            "string"
-          ]
+          "type": "object"
         },
         "extensions": {
           "type": "object"
@@ -180,10 +177,7 @@ func init() {
           "type": "string"
         },
         "keptnservices": {
-          "type": [
-            "object",
-            "string"
-          ]
+          "type": "object"
         },
         "keptnversion": {
           "type": "string"
@@ -330,10 +324,7 @@ func init() {
           "type": "string"
         },
         "data": {
-          "type": [
-            "object",
-            "string"
-          ]
+          "type": "object"
         },
         "extensions": {
           "type": "object"
@@ -373,10 +364,7 @@ func init() {
           "type": "string"
         },
         "keptnservices": {
-          "type": [
-            "object",
-            "string"
-          ]
+          "type": "object"
         },
         "keptnversion": {
           "type": "string"

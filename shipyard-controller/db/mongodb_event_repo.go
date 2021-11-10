@@ -224,7 +224,7 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 	return nil
 }
 
-func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope *models.EventScope) ([]models.Event, error) {
+func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error) {
 	startedEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.StartedEvent))
 	if err != nil {
 		return nil, err

@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"os"
+	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -50,7 +51,11 @@ func NewConfigureMonitoringHandler(event cloudevents.Event, logger *logrus.Logge
 	return cmh, nil
 }
 
-func (eh *ConfigureMonitoringHandler) HandleEvent() error {
+func (eh *ConfigureMonitoringHandler) HandleEvent(ctx context.Context) error {
+	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	defer func() {
+		ctx.Value("Wg").(*sync.WaitGroup).Done()
+	}()
 
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)

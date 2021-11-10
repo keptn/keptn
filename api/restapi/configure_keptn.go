@@ -17,7 +17,6 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/api/handlers"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
@@ -28,6 +27,8 @@ import (
 )
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
+
+const envVarLogLevel = "LOG_LEVEL"
 
 type EnvConfig struct {
 	AuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
@@ -104,6 +105,16 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	log.SetLevel(log.InfoLevel)
+
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			log.SetLevel(logLevel)
+		}
+	}
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
@@ -145,13 +156,15 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
 			return
 		}
-
+		if strings.Index(r.URL.Path, "/health") == 0 {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 		handler.ServeHTTP(w, r)
 	})
 }

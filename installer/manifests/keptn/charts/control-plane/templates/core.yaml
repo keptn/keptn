@@ -81,11 +81,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -121,6 +122,8 @@ spec:
               value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST
               value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -347,19 +350,19 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Values.mongodb.host }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: user
+                  key: mongodb-user
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: password
-            - name: MONGO_DB_NAME
-              value: {{ .Values.mongodb.dbName | default "keptn"}}
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
@@ -372,6 +375,8 @@ spec:
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           ports:
             - containerPort: 8080
           resources:
@@ -503,7 +508,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
@@ -518,6 +523,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           ports:
             - containerPort: 8080
           resources:
@@ -564,7 +571,6 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  creationTimestamp: null
   name: configuration-volume
   labels:
     app.kubernetes.io/name: configuration-volume
@@ -635,13 +641,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
           imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
@@ -652,6 +658,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: DATASTORE_URI
               value: mongodb-datastore:8080
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
             {{- range $key, $value := .Values.configurationService.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -755,25 +763,27 @@ spec:
             - name: NEXT_GEN_EVENTS
               value: 'true'
             - name: MONGODB_HOST
-              value: 'mongodb:27017'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: user
+                  key: mongodb-user
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: password
-            - name: MONGO_DB_NAME
-              value: {{ .Values.mongodb.dbName | default "keptn"}}
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
                   key: external_connection_string
                   optional: true
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           ports:
             - containerPort: 8080
           resources:
@@ -871,11 +881,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -894,6 +905,8 @@ spec:
               value: 'http://configuration-service:8080'
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -984,11 +997,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -1007,6 +1021,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | default "info" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

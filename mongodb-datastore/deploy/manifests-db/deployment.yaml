@@ -19,22 +19,22 @@ spec:
       securityContext:
         fsGroup: 184
       containers:
-        - image: centos/mongodb-36-centos7:1
+        - image: mongo:5.0.3
           name: mongodb
           env:
-            - name: MONGODB_DATABASE
+            - name: MONGO_INITDB_DATABASE
               value: "keptn"
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
                     name: mongodb-credentials
                     key: user
-            - name: MONGODB_PASSWORD
+            - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                     name: mongodb-credentials
                     key: password
-            - name: MONGODB_ADMIN_PASSWORD
+            - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
                 secretKeyRef:
                     name: mongodb-credentials
@@ -43,7 +43,7 @@ spec:
             - containerPort: 27017
           resources: {}
           volumeMounts:
-            - mountPath: /var/lib/mongodb/data
+            - mountPath: /data/db
               name: mongodata
       restartPolicy: Always
       volumes:

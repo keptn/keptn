@@ -7,6 +7,7 @@ import (
 	"fmt"
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
@@ -35,6 +36,7 @@ func NewForwarder(httpClient *http.Client) *Forwarder {
 func (f *Forwarder) Start(ctx *ExecutionContext) error {
 	serverURL := fmt.Sprintf("localhost:%d", config.Global.APIProxyPort)
 	mux := http.NewServeMux()
+	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
 	mux.Handle(config.Global.EventForwardingPath, http.HandlerFunc(f.handleEvent))
 	mux.Handle(config.Global.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
 
@@ -63,6 +65,7 @@ func (f *Forwarder) Start(ctx *ExecutionContext) error {
 }
 
 func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
+
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		logger.Errorf("Failed to read body from request: %v", err)

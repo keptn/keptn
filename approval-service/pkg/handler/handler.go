@@ -1,13 +1,13 @@
 package handler
 
 import (
+	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
@@ -16,11 +16,11 @@ type Handler interface {
 	Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn)
 }
 
-func sendEvents(keptnHandler *keptnv2.Keptn, events []cloudevents.Event, l keptncommon.LoggerInterface) {
+func sendEvents(keptnHandler *keptnv2.Keptn, events []cloudevents.Event) {
 	for _, outgoingEvent := range events {
 		err := keptnHandler.SendCloudEvent(outgoingEvent)
 		if err != nil {
-			l.Error(err.Error())
+			logger.Error(err.Error())
 		}
 	}
 }

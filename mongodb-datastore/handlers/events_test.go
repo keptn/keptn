@@ -11,20 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
-	logger := keptncommon.NewLogger("", "", "mongodb-service")
-
 	grandchild := bson.D{{Key: "apple", Value: "red"}, {Key: "orange", Value: "orange"}}
 	child := bson.D{{Key: "foo", Value: "bar"}, {Key: "grandchild", Value: grandchild}}
 	parent := bson.D{{Key: "hello", Value: "world"}, {Key: "child", Value: child}}
 
 	// checks:
-	flattened, _ := flattenRecursively(parent, logger)
+	flattened, _ := flattenRecursively(parent)
 	parentMap, _ := flattened.(map[string]interface{})
 	assert.Equal(t, parentMap["hello"], "world", "flatting failed")
 
@@ -38,14 +35,12 @@ func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 // and bson.A (arrays)
 func TestFlattenRecursivelyNestedDocumentsWithArray(t *testing.T) {
-	logger := keptncommon.NewLogger("", "", "mongodb-service")
-
 	grandchild := bson.D{{Key: "apple", Value: "red"}, {Key: "orange", Value: "orange"}}
 	child := bson.A{grandchild, "foo", "bar"}
 	parent := bson.D{{Key: "hello", Value: "world"}, {Key: "child", Value: child}}
 
 	// checks:
-	flattened, _ := flattenRecursively(parent, logger)
+	flattened, _ := flattenRecursively(parent)
 	parentMap, _ := flattened.(map[string]interface{})
 	assert.Equal(t, parentMap["hello"], "world", "flatting failed")
 

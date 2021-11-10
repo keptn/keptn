@@ -31,7 +31,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          commit-message: "Update keptn/spec to release ${{ env.SPEC_TAG }}"
+          commit-message: "build(deps): Update keptn/spec to release ${{ env.SPEC_TAG }}"
           committer: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
           author: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
           signoff: true
@@ -39,7 +39,7 @@ jobs:
           delete-branch: true
           base: master
           labels: "area:spec,automated pr,dependencies"
-          title: "Update keptn/spec to release ${{ env.SPEC_TAG }}"
+          title: "build(deps): Update keptn/spec to release ${{ env.SPEC_TAG }}"
           body: |
             **This is an automated PR!**
 

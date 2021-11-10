@@ -294,7 +294,7 @@ export class DataService {
   }
 
   public loadPlainProject(projectName: string): Observable<Project> {
-    return this.apiService.getProject(projectName).pipe(map((project) => Project.fromJSON(project)));
+    return this.apiService.getPlainProject(projectName).pipe(map((project) => Project.fromJSON(project)));
   }
 
   public loadProject(projectName: string): void {
@@ -635,6 +635,12 @@ export class DataService {
     return this.apiService
       .getTaskNames(projectName)
       .pipe(map((taskNames) => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))));
+  }
+
+  public getServiceNames(projectName: string): Observable<string[]> {
+    return this.apiService
+      .getServiceNames(projectName)
+      .pipe(map((serviceNames) => serviceNames.sort((serviceA, serviceB) => serviceA.localeCompare(serviceB))));
   }
 
   public getWebhookConfig(

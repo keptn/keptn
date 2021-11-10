@@ -13,6 +13,7 @@ import { UniformSubscription } from '../../shared/interfaces/uniform-subscriptio
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/models/sequence';
+import { Stage } from '../models/stage';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -333,5 +334,10 @@ export class ApiService {
   public getSecrets(): Promise<AxiosResponse<{ Secrets: Secret[] }>> {
     const url = `${this.baseUrl}/secrets/v1/secret`;
     return this.axios.get<{ Secrets: Secret[] }>(url);
+  }
+
+  public getStages(projectName: string): Promise<AxiosResponse<{ stages: Stage[] }>> {
+    const url = `${this.baseUrl}/controlPlane/v1/project/${projectName}/stage`;
+    return this.axios.get(url);
   }
 }

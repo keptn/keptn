@@ -14,6 +14,8 @@ type EventScope struct {
 	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
 	TriggeredID      string `json:"triggeredId" bson:"triggeredId"`
 	EventType        string `json:"eventType" bson:"eventType"`
+	EventSource      string `json:"-" bson:"-"`
+	WrappedEvent     Event  `json:"-" bson:"-"`
 }
 
 func NewEventScope(event Event) (*EventScope, error) {
@@ -38,5 +40,9 @@ func NewEventScope(event Event) (*EventScope, error) {
 	if event.Type == nil {
 		return nil, errors.New("event does not contain a type")
 	}
-	return &EventScope{EventData: *data, KeptnContext: event.Shkeptncontext, EventType: *event.Type, TriggeredID: event.Triggeredid}, nil
+	var eventSource string
+	if event.Source != nil {
+		eventSource = *event.Source
+	}
+	return &EventScope{EventData: *data, KeptnContext: event.Shkeptncontext, EventType: *event.Type, TriggeredID: event.Triggeredid, EventSource: eventSource, WrappedEvent: event}, nil
 }

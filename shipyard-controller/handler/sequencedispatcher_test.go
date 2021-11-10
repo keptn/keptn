@@ -29,7 +29,7 @@ func TestSequenceDispatcher(t *testing.T) {
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
 		},
 	}
-	currentTaskSequences := []models.TaskSequenceEvent{}
+	currentTaskSequences := []models.TaskExecution{}
 	mockQueue := []models.QueueItem{}
 
 	mockEventRepo := &db_mock.EventRepoMock{
@@ -63,7 +63,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 
 	mockTaskSequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
 			return currentTaskSequences, nil
 		},
 	}
@@ -80,7 +80,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	// queue repo should have been queried
 	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 1)
 	// since no elements have been added to the queue yet, the other repos should not have been queried at this point
-	require.Empty(t, mockTaskSequenceRepo.GetTaskSequencesCalls())
+	require.Empty(t, mockTaskSequenceRepo.GetTaskExecutionsCalls())
 	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
 
 	// now, let's add a sequence to the queue - should be started immediately since no other sequences are running currently
@@ -98,9 +98,9 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 	err := sequenceDispatcher.Add(queueItem)
 	require.Nil(t, err)
-	require.Len(t, mockTaskSequenceRepo.GetTaskSequencesCalls(), 1)
-	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[0].Project, queueItem.Scope.Project)
-	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[0].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
+	require.Len(t, mockTaskSequenceRepo.GetTaskExecutionsCalls(), 1)
+	require.Equal(t, mockTaskSequenceRepo.GetTaskExecutionsCalls()[0].Project, queueItem.Scope.Project)
+	require.Equal(t, mockTaskSequenceRepo.GetTaskExecutionsCalls()[0].Filter, models.TaskExecution{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
 
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
 	require.Equal(t, mockEventRepo.GetEventsCalls()[0].Project, queueItem.Scope.Project)
@@ -121,7 +121,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	require.Equal(t, triggeredEvents[0], startSequenceCalls[0])
 
 	// now we have a sequence running
-	currentTaskSequences = append(currentTaskSequences, models.TaskSequenceEvent{
+	currentTaskSequences = append(currentTaskSequences, models.TaskExecution{
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-event-id",
 		Stage:            "my-stage",
@@ -150,9 +150,9 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 	err = sequenceDispatcher.Add(queueItem2)
 
-	require.Len(t, mockTaskSequenceRepo.GetTaskSequencesCalls(), 2)
-	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Project, queueItem.Scope.Project)
-	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
+	require.Len(t, mockTaskSequenceRepo.GetTaskExecutionsCalls(), 2)
+	require.Equal(t, mockTaskSequenceRepo.GetTaskExecutionsCalls()[1].Project, queueItem.Scope.Project)
+	require.Equal(t, mockTaskSequenceRepo.GetTaskExecutionsCalls()[1].Filter, models.TaskExecution{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
 
 	// GetEvents and DeleteQueuedSequences should not have been called again at this point
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
