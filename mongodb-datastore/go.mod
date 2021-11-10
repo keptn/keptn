@@ -16,6 +16,6 @@ require (
 	github.com/keptn/go-utils v0.10.1-0.20211102080258-6ac1aa413ca0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0
-	go.mongodb.org/mongo-driver v1.7.3
+	go.mongodb.org/mongo-driver v1.7.4
 	golang.org/x/net v0.0.0-20210421230115-4e50805a0758
 )
