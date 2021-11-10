@@ -1,5 +1,8 @@
 import MockAdapter from 'axios-mock-adapter';
-import { OpenRemediationsResponse, RemediationTraceResponse } from '../fixtures/open-remediations-response.mock';
+import {
+  OpenRemediationsResponse,
+  RemediationTraceResponse,
+} from '../../shared/fixtures/open-remediations-response.mock';
 import { RemediationConfigResponse } from '../fixtures/remediation-config-response.mock';
 
 export class TestUtils {

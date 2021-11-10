@@ -3,7 +3,7 @@ import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
 } from '../../../shared/fixtures/service-deployment-response.mock';
-import { OpenRemediationsResponse } from '../../../server/fixtures/open-remediations-response.mock';
+import { OpenRemediationsResponse } from '../../../shared/fixtures/open-remediations-response.mock';
 import { ResultTypes } from '../../../shared/models/result-types';
 import { SequenceState } from '../../../shared/models/sequence';
 import { ServiceRemediationInformation } from './service-remediation-information';

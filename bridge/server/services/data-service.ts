@@ -241,27 +241,47 @@ export class DataService {
       if (stageName && (!serviceName || sequence.service === serviceName)) {
         const stage = { ...sequence.stages[0], actions: [] };
         const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
-        if (includeProblemTitle) {
-          const response = await this.apiService.getTraces(
-            undefined,
-            includeActions ? this.MAX_TRACE_PAGE_SIZE : 1,
-            projectName,
-            stageName,
-            sequence.service,
-            sequence.shkeptncontext
-          );
-          const traces = response.data.events;
-          remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
-          if (includeActions) {
-            const actions = this.getRemediationActions(Trace.traceMapper(traces));
-            remediation.stages[0].actions.push(...actions);
-          }
-        }
 
+        await this.setRemediationDetails(
+          remediation,
+          includeProblemTitle,
+          includeActions,
+          projectName,
+          stageName,
+          sequence.service,
+          sequence.shkeptncontext
+        );
         remediations.push(remediation);
       }
     }
     return remediations;
+  }
+
+  private async setRemediationDetails(
+    remediation: Remediation,
+    includeProblemTitle: boolean,
+    includeActions: boolean,
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    keptnContext: string
+  ): Promise<void> {
+    if (includeProblemTitle) {
+      const response = await this.apiService.getTraces(
+        undefined,
+        includeActions ? this.MAX_TRACE_PAGE_SIZE : 1,
+        projectName,
+        stageName,
+        serviceName,
+        keptnContext
+      );
+      const traces = response.data.events;
+      remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
+      if (includeActions) {
+        const actions = this.getRemediationActions(Trace.traceMapper(traces));
+        remediation.stages[0].actions.push(...actions);
+      }
+    }
   }
 
   private getRemediationActions(traces: Trace[]): IRemediationAction[] {

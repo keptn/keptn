@@ -1,7 +1,7 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { ProjectQualityGatesResponse, ProjectResponse } from '../fixtures/project-response.mock';
-import { OpenRemediationsResponse } from '../fixtures/open-remediations-response.mock';
+import { OpenRemediationsResponse } from '../../shared/fixtures/open-remediations-response.mock';
 import {
   ServiceStateQualityGatesOnlyResponse,
   ServiceStateResponse,

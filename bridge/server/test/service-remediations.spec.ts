@@ -4,7 +4,7 @@ import { TestUtils } from '../.jest/test.utils';
 import {
   ServiceRemediationWithConfigResponse,
   ServiceRemediationWithoutConfigResponse,
-} from '../fixtures/open-remediations-response.mock';
+} from '../../shared/fixtures/open-remediations-response.mock';
 
 let axiosMock: MockAdapter;
 
