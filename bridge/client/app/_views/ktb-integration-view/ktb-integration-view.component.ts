@@ -74,13 +74,14 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\
     -H "Content-Type: application/json; charset=utf-8" \\
-    -d "{"start": "${this.currentTime}", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
+    -d "{\\"start\\": \\"${this.currentTime}\\", \\"timeframe\\": \\"5m\\", \\"labels\\":{\\"buildId\\":\\"build-17\\", \\"owner\\":\\"JohnDoe\\",\\"testNo\\":\\"47-11\\"}}"`;
       }
     }
   }
 
   private getCurrentTime(): string {
-    return moment.utc().startOf('minute').toISOString();
+    const curr = moment().subtract(5, 'minutes');
+    return curr.utc().startOf('minute').toISOString();
   }
 
   addEvaluationUseCaseToIntegrations(): void {
@@ -103,21 +104,21 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
       label: 'Trigger deployment with a new artifact',
       code: `curl -X POST "\${KEPTN_API_ENDPOINT}/api/v1/event" \\
       -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{"type":"sh.keptn.event.configuration.change","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}","configurationChange":{"values":{"image":"\${IMAGE}"}}}}"`,
+      -d "{\\"type\\":\\"sh.keptn.event.\${STAGE}.delivery.triggered\\",\\"specversion\\":\\"1.0\\",\\"source\\":\\"api\\",\\"contenttype\\":\\"application\/json\\",\\"data\\":{\\"project\\":\\"\${PROJECT}\\",\\"stage\\":\\"\${STAGE}\\",\\"service\\":\\"\${SERVICE}\\",\\"configurationChange\\":{\\"values\\":{\\"image\\":\\"\${IMAGE}:\${TAG}\\"}}}}"`,
     });
   }
 
   addRemediationUseCaseToIntegrations(): void {
     this.useCaseExamples.cli.push({
       label: 'Trigger remediation with a dummy problem event (Note: Linux/mac OS only)',
-      code: `echo '{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}' > dummy_problem.json \\
+      code: `echo '{"type":"sh.keptn.event.problem.open","specversion":"1.0","source":"api","contenttype":"application\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}' > dummy_problem.json \\
       keptn send event -f=dummy_problem.json`,
     });
     this.useCaseExamples.api.push({
       label: 'Trigger remediation with a dummy problem event',
       code: `curl -X POST "\${KEPTN_API_ENDPOINT}/api/v1/event" \\
       -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}"`,
+      -d "{\\"type\\":\\"sh.keptn.event.problem.open\\", \\"specversion\\":\\"1.0\\", \\"source\\":\\"api\\", \\"contenttype\\":\\"application\/json\\", \\"data\\":{\\"State\\":\\"OPEN\\",\\"ProblemID\\":\\"\${PROBLEM_ID}\\",\\"ProblemTitle\\":\\"\${PROBLEM}\\",\\"project\\":\\"\${PROJECT}\\",\\"stage\\":\\"\${STAGE}\\",\\"service\\":\\"\${SERVICE}\\"}}"`,
     });
   }
 
