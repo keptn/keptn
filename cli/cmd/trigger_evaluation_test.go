@@ -68,7 +68,7 @@ func TestTriggerEvaluationVariousFormats(t *testing.T) {
 	for _, time := range times {
 
 		cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
-			"--start=%s --mock", "sockshop", "hardening", "carts", time)
+			"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", time, "2020-01-02T15:10:12.000Z")
 		_, err := executeActionCommandC(cmd)
 
 		if err != nil {
