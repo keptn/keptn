@@ -1,0 +1,106 @@
+{
+  "state": "finished",
+  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+  "service": "items",
+  "stages": [
+    {
+      "name": "dyantrace-quality-gate",
+      "lastTimeUpdated": "2021-10-13T10:59:45.104Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["4fbf5b9b-3b41-41ea-b120-2f17d43891f1"],
+            "gitCommit": "",
+            "indicatorResults": [
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<600",
+                    "targetValue": 600,
+                    "violated": false
+                  }
+                ],
+                "score": 1,
+                "status": "pass",
+                "value": {
+                  "metric": "response_time_p95",
+                  "success": true,
+                  "value": 9.509678839406426
+                },
+                "warningTargets": [
+                  {
+                    "criteria": "<=800",
+                    "targetValue": 800,
+                    "violated": false
+                  }
+                ]
+              },
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<5",
+                    "targetValue": 5,
+                    "violated": false
+                  }
+                ],
+                "score": 1,
+                "status": "pass",
+                "value": {
+                  "metric": "error_rate",
+                  "success": true,
+                  "value": 0
+                },
+                "warningTargets": null
+              },
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": null,
+                "score": 0,
+                "status": "info",
+                "value": {
+                  "metric": "throughput",
+                  "success": true,
+                  "value": 933
+                },
+                "warningTargets": null
+              }
+            ],
+            "result": "pass",
+            "score": 100,
+            "sloFileContent": "c3BlY192ZXJzaW9uOiAiMS4wIgpmaWx0ZXI6IHt9CmNvbXBhcmlzb246CiAgY29tcGFyZV93aXRoOiBzaW5nbGVfcmVzdWx0CiAgaW5jbHVkZV9yZXN1bHRfd2l0aF9zY29yZTogcGFzcwogIG51bWJlcl9vZl9jb21wYXJpc29uX3Jlc3VsdHM6IDEKICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2ZwpvYmplY3RpdmVzOgotIHNsaTogcmVzcG9uc2VfdGltZV9wOTUKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDw2MDAKICB3YXJuaW5nOgogIC0gY3JpdGVyaWE6CiAgICAtIDw9ODAwCiAgd2VpZ2h0OiAxCiAga2V5X3NsaTogZmFsc2UKLSBzbGk6IGVycm9yX3JhdGUKICBkaXNwbGF5TmFtZTogIiIKICBwYXNzOgogIC0gY3JpdGVyaWE6CiAgICAtIDw1CiAgd2FybmluZzogW10KICB3ZWlnaHQ6IDEKICBrZXlfc2xpOiBmYWxzZQotIHNsaTogdGhyb3VnaHB1dAogIGRpc3BsYXlOYW1lOiAiIgogIHBhc3M6IFtdCiAgd2FybmluZzogW10KICB3ZWlnaHQ6IDAKICBrZXlfc2xpOiBmYWxzZQp0b3RhbF9zY29yZToKICBwYXNzOiA5MCUKICB3YXJuaW5nOiA3NSUK",
+            "timeEnd": "2021-10-04T09:22:57.164Z",
+            "timeStart": "2021-10-04T09:17:57.164Z"
+          },
+          "labels": {
+            "DtCreds": "dynatrace"
+          },
+          "project": "dynatrace",
+          "result": "pass",
+          "service": "items",
+          "stage": "quality-gate",
+          "status": "succeeded"
+        },
+        "id": "fc511923-2ef4-4a6a-824f-33b6e770b765",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2021-10-04T09:23:19.909Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "ee70aedb-b55d-4655-9135-25368a9f6dc2"
+      }
+    }
+  ],
+  "labels": {
+    "DtCreds": "dynatrace"
+  },
+  "image": "items"
+}

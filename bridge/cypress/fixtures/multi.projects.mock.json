@@ -73,7 +73,7 @@
               "lastEventTypes": {
                 "sh.keptn.event.evaluation.finished": {
                   "eventId": "f00d84b1-c0b8-4fe4-a120-f72b25f0dcd2",
-                  "keptnContext": "36ef49c9-1981-47f8-a0f6-5f65a7390820",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
                   "time": "1633511537018004620"
                 },
                 "sh.keptn.event.evaluation.started": {
