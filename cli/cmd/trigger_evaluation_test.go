@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
-	"time"
 )
 
 func init() {
@@ -51,8 +50,8 @@ func TestTriggerEvaluationWrongFormat(t *testing.T) {
 
 func TestTriggerEvaluationVariousFormats(t *testing.T) {
 
-	//credentialmanager.MockAuthCreds = true
-	//checkEndPointStatusMock = true
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	times := []string{
 		"2020-01-02T15:00:00",
@@ -66,14 +65,12 @@ func TestTriggerEvaluationVariousFormats(t *testing.T) {
 	*triggerEvaluation.Start = ""
 	*triggerEvaluation.End = ""
 
-	for _, t := range times {
+	for _, time := range times {
 
-		/*
-			cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
-				"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", time, time)
-			_, err := executeActionCommandC(cmd)
-		*/
-		err := t.Format(time.RFC3339)
+		cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
+			"--start=%s --mock", "sockshop", "hardening", "carts", time)
+		_, err := executeActionCommandC(cmd)
+
 		if err != nil {
 			t.Errorf(unexpectedErrMsg, err)
 		}
