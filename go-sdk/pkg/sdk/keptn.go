@@ -121,7 +121,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) Start() error {
-	ctx := getGracefulContext()
+	ctx := GetGracefulContext()
 	return k.eventReceiver.StartReceiver(ctx, k.gotEvent)
 }
 
@@ -319,7 +319,7 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 }
 
 // storing wait group into context to sync before shutdown
-func getGracefulContext() context.Context {
+func GetGracefulContext() context.Context {
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
