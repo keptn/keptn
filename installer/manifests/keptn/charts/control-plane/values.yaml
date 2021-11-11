@@ -1,9 +1,9 @@
-mongo:
+mongodb:
   enabled: true
   host: mongodb:27017
   architecture: standalone
   service:
-    nameOverride: 'mongo'
+    nameOverride: 'mongodb'
     port: 27017
   auth:
     database: 'keptn'
