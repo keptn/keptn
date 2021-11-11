@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/mongodb-datastore/db"
 	logger "github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
@@ -68,6 +69,32 @@ func UnlockProject(project string) {
 type ProjectEventData struct {
 	Project *string `json:"project,omitempty"`
 }
+
+type EventRequestHandler struct {
+	eventRepo db.EventRepo
+}
+
+func NewEventRequestHandler(eventRepo db.EventRepo) *EventRequestHandler {
+	return &EventRequestHandler{eventRepo: eventRepo}
+}
+
+func (erh *EventRequestHandler) SaveEvent(event *models.KeptnContextExtendedCE) error {
+	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
+		return erh.eventRepo.DropProjectCollections(getProjectOfEvent(event))
+	}
+
+	return erh.eventRepo.InsertEvent(*event)
+}
+
+func (erh *EventRequestHandler) GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
+	events, err := erh.eventRepo.GetEvents(params)
+	if err != nil {
+		return nil, err
+	}
+	return (*event.GetEventsOKBody)(events), nil
+}
+
+//==================================
 
 func ensureDBConnection() error {
 	mutex.Lock()
