@@ -34,7 +34,7 @@ func NewActionTriggeredHandler(keptnHandler Handler, configChanger configuration
 // HandleEvent takes the sh.keptn.events.action.triggered event and performs the scaling action on the generated chart
 // Therefore, this scaling action only works if the service is deployed b/g
 func (h *ActionTriggeredHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
+	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 	actionTriggeredEvent := keptnv2.ActionTriggeredEventData{}
 
 	err := ce.DataAs(&actionTriggeredEvent)

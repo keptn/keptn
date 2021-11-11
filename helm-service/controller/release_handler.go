@@ -47,7 +47,7 @@ func NewReleaseHandler(keptnHandler Handler,
 
 // HandleEvent handles release.triggered events and either promotes or aborts an artifact
 func (h *ReleaseHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
+	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 	e := keptnv2.ReleaseTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to release event")

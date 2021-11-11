@@ -28,7 +28,7 @@ func NewDeleteHandler(keptnHandler Handler, stagesHandler types.IStagesHandler, 
 
 // HandleEvent takes the sh.keptn.internal.event.service.delete event and deletes the service in all stages
 func (h *DeleteHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
+	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 	serviceDeleteEvent := keptnv2.ServiceDeleteFinishedEventData{}
 
 	err := ce.DataAs(&serviceDeleteEvent)

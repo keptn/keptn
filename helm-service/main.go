@@ -97,7 +97,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	// ToDo: Multithreaded is important here, such that the endpoint responds immediately
 	// else we will have deployment handler take 30 seconds, and after that the response will be sent
-	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	ctx.Value(controller.GracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
 		go deploymentHandler.HandleEvent(ctx, event)
@@ -115,7 +115,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		go deleteHandler.HandleEvent(ctx, event)
 	} else {
 		logger.Error("Received unexpected keptn event")
-		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		ctx.Value(controller.GracefulShutdownKey).(*sync.WaitGroup).Done()
 	}
 
 	return nil
@@ -226,7 +226,7 @@ func getGracefulContext() context.Context {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), controller.GracefulShutdownKey, wg)))
 
 	go func() {
 		<-ch

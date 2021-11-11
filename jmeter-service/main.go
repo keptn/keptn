@@ -29,6 +29,11 @@ const (
 	configurationService = "CONFIGURATION_SERVICE"
 )
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var gracefulShutdownKey = gracefulShutdownKeyType{}
+
 type envConfig struct {
 	// Port on which to listen for cloudevents
 	Port     int    `envconfig:"RCV_PORT" default:"8080"`
@@ -75,7 +80,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Info("Received '" + TestStrategy_RealUser + "' test strategy, hence no tests are triggered")
 		return nil
 	}
-	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	go runTests(ctx, event, shkeptncontext, *data)
 
 	return nil
@@ -86,7 +91,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
 func runTests(ctx context.Context, event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData) {
-	defer ctx.Value("Wg").(*sync.WaitGroup).Done()
+	defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
 	sendTestsStartedEvent(shkeptncontext, event)
 
 	testInfo := getTestInfo(data, shkeptncontext)
@@ -98,7 +103,7 @@ func runTests(ctx context.Context, event cloudevents.Event, shkeptncontext strin
 		if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
-		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
 		return
 	}()
 
@@ -420,7 +425,7 @@ func getGracefulContext() context.Context {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), gracefulShutdownKey, wg)))
 
 	go func() {
 		<-ch
