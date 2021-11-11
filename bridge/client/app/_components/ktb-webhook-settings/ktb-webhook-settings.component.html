@@ -117,6 +117,12 @@
       <dt-error *ngIf="getFormControl('proxy').errors?.url">URL must start with http(s)://</dt-error>
     </dt-form-field>
   </div>
+  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-form-field uitestid="edit-webhook-field-sendFinished">
+      <dt-label>Send finished</dt-label>
+      <dt-checkbox formControlName="sendFinished">Send finished</dt-checkbox>
+    </dt-form-field>
+  </div>
 </form>
 
 <ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">

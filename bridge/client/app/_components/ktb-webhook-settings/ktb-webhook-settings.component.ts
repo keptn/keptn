@@ -6,7 +6,7 @@ import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 
-type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
+type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
 
 @Component({
   selector: 'ktb-webhook-settings',
@@ -21,6 +21,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     payload: new FormControl('', []),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
+    sendFinished: new FormControl('', []),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
@@ -38,6 +39,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('url').setValue(webhookConfig.url);
       this.getFormControl('payload').setValue(webhookConfig.payload);
       this.getFormControl('proxy').setValue(webhookConfig.proxy);
+      this.getFormControl('sendFinished').setValue(webhookConfig.sendFinished);
 
       for (const header of webhookConfig.header || []) {
         this.addHeader(header.name, header.value);
@@ -83,6 +85,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this._webhook.payload = this.getFormControl('payload').value;
     this._webhook.proxy = this.getFormControl('proxy').value;
     this._webhook.header = this.getFormControl('header').value;
+    this._webhook.sendFinished = this.getFormControl('sendFinished').value;
     this.webhookChange.emit(this._webhook);
   }
 
