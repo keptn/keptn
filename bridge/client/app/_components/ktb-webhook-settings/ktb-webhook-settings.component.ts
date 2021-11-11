@@ -5,6 +5,7 @@ import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-confi
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
+import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
 
@@ -29,6 +30,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
     headerText: 'selectSecret',
     emptyText:
       'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
+  };
+  public sendFinishedOverlayConfig: DtOverlayConfig = {
+    pinnable: true,
+    originY: 'center',
   };
 
   @Input()

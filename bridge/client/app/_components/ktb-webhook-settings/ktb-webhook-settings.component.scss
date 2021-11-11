@@ -1,3 +1,6 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
 #webhook-config-form {
   > div:first-of-type {
     min-width: calc(100% - 170px);
@@ -15,6 +18,12 @@
 .resize-textarea {
   resize: vertical;
   font-family: monospace;
+}
+
+.dt-icon.info {
+  width: 16px;
+  height: 16px;
+  fill: $primary-color;
 }
 
 ::ng-deep {

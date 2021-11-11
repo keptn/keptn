@@ -117,11 +117,29 @@
       <dt-error *ngIf="getFormControl('proxy').errors?.url">URL must start with http(s)://</dt-error>
     </dt-form-field>
   </div>
-  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+  <div class="mt-3 mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field uitestid="edit-webhook-field-sendFinished">
-      <dt-label>Send finished</dt-label>
       <dt-checkbox formControlName="sendFinished">Send finished</dt-checkbox>
     </dt-form-field>
+    <div [dtOverlay]="sendFinishedOverlay" style="cursor: pointer" [dtOverlayConfig]="sendFinishedOverlayConfig">
+      <dt-icon name="information" class="info mr-1"></dt-icon>
+    </div>
+    <ng-template #sendFinishedOverlay>
+      <p>
+        If you subscribe your webhook to an event of type triggered, Keptn automatically sends a started event, executes
+        the webhook request via curl, and automatically generates a finished event. <br />
+        In certain cases, you do want to have more control about this behaviour, e.g., to run a long-running test on
+        Jenkins, and let the receiving tool (in this case Jenkins) decide when to send the finished event. Configure the
+        webhook to not send the finished event by setting the flag sendFinished to false.
+      </p>
+      <a
+        [href]="'/integrations/webhooks/#configure-webhook-to-not-auto-respond-with-a-finished-event' | keptnUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        target="_blank"
+        >Find out more in our docs.</a
+      >
+    </ng-template>
   </div>
 </form>
 
