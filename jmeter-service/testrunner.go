@@ -36,57 +36,49 @@ func (tr *TestRunner) RunTests(testInfo TestInfo) error {
 	if err := tr.runHealthCheck(testInfo, testStartedAt, jmeterConfig); err != nil {
 		return err
 	}
-	if err := tr.runTests(testInfo, testStartedAt, jmeterConfig); err != nil {
-		return err
-	}
 
-	return nil
-}
-
-func (tr *TestRunner) runTests(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
-	// now lets execute the workload based on the passed testStrategy
-	res := false
-	var testStrategy = strings.ToLower(testInfo.TestStrategy)
-
-	if testStrategy == "" {
-		// no testStrategy passed at all -> we just send a successful test finished event!
-		logger.Info("No testStrategy specified therefore skipping further test execution and sending back success")
-		res = true
-	} else {
-		// lets get the workload configuration for the test strategy
-		teststrategyWorkload, err := getWorkload(jmeterConf, testStrategy)
-		if teststrategyWorkload != nil {
-			res, err = tr.runWorkload(testInfo, teststrategyWorkload)
-			if err != nil {
-				msg := fmt.Sprintf("could not run test workload: %s", err.Error())
-				logger.Error(msg)
-				if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, msg); err != nil {
-					logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
-				}
-				return nil
-			} else {
-				logger.Infof("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
-			}
-		} else {
-			// no workload for that test strategy!!
-			res = false
-			logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
+	res, err := tr.runTests(testInfo, jmeterConfig)
+	if err != nil {
+		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, err.Error()); err != nil {
+			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 		}
 	}
-
-	// now lets send the test finished event
-	msg := fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
+	msg := fmt.Sprintf("Tests for %s with status = %s.%s", testInfo.TestStrategy, strconv.FormatBool(res), testInfo.ToString())
 	if !res {
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
 			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 		}
-		return nil
-	}
-
-	if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
-		logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+	} else {
+		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
+			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+		}
 	}
 	return nil
+}
+
+func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf) (bool, error) {
+	var testStrategy = strings.ToLower(testInfo.TestStrategy)
+
+	if testStrategy == "" {
+		logger.Info("No testStrategy specified therefore skipping further test execution and sending back success")
+		return true, nil
+	}
+
+	teststrategyWorkload, err := getWorkload(jmeterConf, testStrategy)
+	if err != nil {
+		return false, err
+	}
+	if teststrategyWorkload == nil {
+		logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
+		return false, nil
+	}
+
+	res, err := tr.runWorkload(testInfo, teststrategyWorkload)
+	if err != nil {
+		return false, fmt.Errorf("could not run test workload: %w", err)
+	}
+
+	return res, nil
 }
 
 func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
