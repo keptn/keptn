@@ -1147,6 +1147,27 @@ jobs:
         if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
         run: curl -sL https://github.com/keptn/keptn/releases/download/${META_KEPTN_VERSION}/keptn-${META_KEPTN_VERSION}-linux-amd64.tar.gz -o ${{ env.KEPTN_ARCHIVE_PATH }}
 
+      # load build-config
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+        id: load_build_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
+
+      - name: DEBUG Build-Config
+        run: |
+          echo VERSION=${VERSION}
+          echo BRANCH=${BRANCH}
+
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
         run: |
