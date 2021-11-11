@@ -38,10 +38,12 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		eventReceiver:          eventReceiver,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
+		graceful:               true,
 	}
 
 	keptn.Start()
-	eventReceiver.NewEvent(newTestTaskTriggeredEvent())
+	ctx := GetGracefulContext()
+	eventReceiver.NewEvent(ctx, newTestTaskTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
 		return len(eventSender.SendEventCalls()) == 2
@@ -88,7 +90,8 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 	}
 
 	keptn.Start()
-	eventReceiver.NewEvent(newTestTaskTriggeredEvent())
+	ctx := GetGracefulContext()
+	eventReceiver.NewEvent(ctx, newTestTaskTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
 		fmt.Println(len(eventSender.SendEventCalls()))
