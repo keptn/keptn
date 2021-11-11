@@ -338,7 +338,7 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	return c
 }
 
-// GetGracefulContext returns a context with cancel and a wait group to sync before shutdown
+// getGracefulContext returns a context with cancel and a wait group to sync before shutdown
 func getGracefulContext() context.Context {
 
 	ch := make(chan os.Signal, 1)
