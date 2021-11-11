@@ -60,7 +60,13 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @params eventType
    * @params curl
    */
-  public addWebhook(eventType: string, curl: string, subscriptionId: string, secrets: WebhookSecret[]): void {
+  public addWebhook(
+    eventType: string,
+    curl: string,
+    subscriptionId: string,
+    secrets: WebhookSecret[],
+    sendFinished: boolean
+  ): void {
     const webhook = this.getWebhook(subscriptionId);
     if (!webhook) {
       if (secrets.length) {
@@ -69,9 +75,15 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
           requests: [curl],
           envFrom: secrets,
           subscriptionID: subscriptionId,
+          sendFinished: sendFinished,
         });
       } else {
-        this.spec.webhooks.push({ type: eventType, requests: [curl], subscriptionID: subscriptionId });
+        this.spec.webhooks.push({
+          type: eventType,
+          requests: [curl],
+          subscriptionID: subscriptionId,
+          sendFinished: sendFinished,
+        });
       }
     } else {
       // overwrite
@@ -105,6 +117,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     const parsedConfig = curl ? this.parseConfig(curl) : undefined;
     if (parsedConfig) {
       parsedConfig.secrets = secrets;
+      parsedConfig.sendFinished = webhook?.sendFinished || false;
     }
     return parsedConfig;
   }
