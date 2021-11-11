@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -108,7 +109,11 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
-			log.WithError(err).Errorf("could not dispatch sequence with keptnContext %s", queuedSequence.EventID)
+			if errors.Is(err, ErrSequenceBlocked) {
+				log.Infof("could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
+			} else {
+				log.WithError(err).Errorf("could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
+			}
 		}
 	}
 }
@@ -119,7 +124,6 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
-		return ErrSequenceBlocked
 	}
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
 	taskExecutions, err := sd.sequenceRepo.GetTaskExecutions(queuedSequence.Scope.Project, models.TaskExecution{
