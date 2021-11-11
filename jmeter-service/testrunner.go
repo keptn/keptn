@@ -1,10 +1,8 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
 	"log"
@@ -16,31 +14,36 @@ import (
 )
 
 type TestRunner struct {
-	conf        JMeterConf
-	eventSender keptn.EventSender
+	eventSender *keptnv2.HTTPEventSender
 }
 
-func NewTestRunner(jMeterConfiguration JMeterConf, eventSender keptn.EventSender) *TestRunner {
-	return &TestRunner{jMeterConfiguration, eventSender}
+func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
+	return &TestRunner{eventSender}
 }
 
 func (tr *TestRunner) RunTests(testInfo TestInfo) error {
 	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
+		logger.WithError(err).Error("Unable to send test '.started' event")
 		return err
 	}
 	testStartedAt := time.Now()
 
-	if err := tr.runHealthCheck(testInfo, testStartedAt); err != nil {
+	jmeterConfig, err := getJMeterConf(testInfo)
+	if err != nil {
 		return err
 	}
-	if err := tr.runTests(testInfo, testStartedAt); err != nil {
+
+	if err := tr.runHealthCheck(testInfo, testStartedAt, jmeterConfig); err != nil {
+		return err
+	}
+	if err := tr.runTests(testInfo, testStartedAt, jmeterConfig); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (tr *TestRunner) runTests(testInfo TestInfo, testStartedAt time.Time) error {
+func (tr *TestRunner) runTests(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
 	// now lets execute the workload based on the passed testStrategy
 	res := false
 	var testStrategy = strings.ToLower(testInfo.TestStrategy)
@@ -51,7 +54,7 @@ func (tr *TestRunner) runTests(testInfo TestInfo, testStartedAt time.Time) error
 		res = true
 	} else {
 		// lets get the workload configuration for the test strategy
-		teststrategyWorkload, err := getWorkload(&tr.conf, testStrategy)
+		teststrategyWorkload, err := getWorkload(jmeterConf, testStrategy)
 		if teststrategyWorkload != nil {
 			res, err = tr.runWorkload(testInfo, teststrategyWorkload)
 			if err != nil {
@@ -86,8 +89,8 @@ func (tr *TestRunner) runTests(testInfo TestInfo, testStartedAt time.Time) error
 	return nil
 }
 
-func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time) error {
-	healthCheckWorkload, err := getWorkload(&tr.conf, TestStrategy_HealthCheck)
+func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
+	healthCheckWorkload, err := getWorkload(jmeterConf, TestStrategy_HealthCheck)
 	if err != nil {
 		return err
 	}
@@ -176,7 +179,7 @@ func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
 		log.Println("LOCALLY: Sending Event")
 		return nil
 	}
-	return tr.eventSender.Send(context.TODO(), event)
+	return tr.eventSender.SendEvent(event)
 
 }
 
@@ -201,7 +204,7 @@ func (tr *TestRunner) sendTestsFinishedEvent(testInfo TestInfo, startedAt time.T
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
 	event.SetData(cloudevents.ApplicationJSON, testFinishedData)
 
-	return tr.eventSender.Send(context.TODO(), event)
+	return tr.eventSender.SendEvent(event)
 }
 
 func (tr *TestRunner) sendErroredTestsFinishedEvent(testInfo TestInfo, startedAt time.Time, msg string) error {
@@ -225,5 +228,5 @@ func (tr *TestRunner) sendErroredTestsFinishedEvent(testInfo TestInfo, startedAt
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
 	event.SetData(cloudevents.ApplicationJSON, testFinishedData)
 
-	return tr.eventSender.Send(context.TODO(), event)
+	return tr.eventSender.SendEvent(event)
 }
