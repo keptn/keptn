@@ -3020,6 +3020,186 @@ const multipleEvaluationsTraces: any = Trace.fromJSON({
   finished: false,
 });
 
+const webhookTrace = Trace.fromJSON({
+  traces: [
+    Trace.fromJSON({
+      traces: [],
+      data: {
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'dev',
+        status: 'succeeded',
+      },
+      id: 'cdd49036-e590-4da6-876e-dcdc75bf8850',
+      source: 'helm-service',
+      specversion: '1.0',
+      time: '2021-11-11T13:05:29.701Z',
+      type: 'sh.keptn.event.deployment.started',
+      shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+      shkeptnspecversion: '0.2.3',
+      triggeredid: 'fdae8012-e66b-4f76-9dfc-0f848ed168b7',
+      plainEvent: {
+        data: {
+          project: 'sockshop',
+          service: 'carts',
+          stage: 'dev',
+          status: 'succeeded',
+        },
+        id: 'cdd49036-e590-4da6-876e-dcdc75bf8850',
+        source: 'helm-service',
+        specversion: '1.0',
+        time: '2021-11-11T13:05:29.701Z',
+        type: 'sh.keptn.event.deployment.started',
+        shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+        shkeptnspecversion: '0.2.3',
+        triggeredid: 'fdae8012-e66b-4f76-9dfc-0f848ed168b7',
+      },
+    }),
+    Trace.fromJSON({
+      traces: [
+        Trace.fromJSON({
+          traces: [],
+          data: {
+            labels: null,
+            message:
+              'could not execute request \'curl --request POST --data \'{"id":{{.id}}, "shkeptncontext": {{.shkeptncontext}}|, "project": {{.data.project}}}\' https://webhook.site/96844137-6034-467c-a8ff-18dc0083fd66\': curl command contains unallowed character \'|\'',
+            project: 'sockshop',
+            result: 'fail',
+            service: 'carts',
+            stage: 'dev',
+            status: 'errored',
+          },
+          id: 'ebbcf1a6-4f7c-49f2-97cc-5a1e516576b6',
+          source: 'webhook-service',
+          specversion: '1.0',
+          time: '2021-11-11T13:06:55.396Z',
+          type: 'sh.keptn.event.deployment.finished.finished',
+          shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+          triggeredid: '5ae118ea-29af-4c5f-be3e-941d70f03198',
+          plainEvent: {
+            data: {
+              labels: null,
+              message:
+                'could not execute request \'curl --request POST --data \'{"id":{{.id}}, "shkeptncontext": {{.shkeptncontext}}|, "project": {{.data.project}}}\' https://webhook.site/96844137-6034-467c-a8ff-18dc0083fd66\': curl command contains unallowed character \'|\'',
+              project: 'sockshop',
+              result: 'fail',
+              service: 'carts',
+              stage: 'dev',
+              status: 'errored',
+            },
+            id: 'ebbcf1a6-4f7c-49f2-97cc-5a1e516576b6',
+            source: 'webhook-service',
+            specversion: '1.0',
+            time: '2021-11-11T13:06:55.396Z',
+            type: 'sh.keptn.event.deployment.finished.finished',
+            shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+            triggeredid: '5ae118ea-29af-4c5f-be3e-941d70f03198',
+          },
+        }),
+      ],
+      data: {
+        deployment: {
+          deploymentNames: ['direct'],
+          deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
+          deploymentURIsPublic: ['http://carts.sockshop-dev.35.188.183.151.nip.io:80'],
+          deploymentstrategy: 'direct',
+          gitCommit: 'dd7507a70a5dd82188ae0e9b2af15f66932cf3d3',
+        },
+        message: 'Successfully deployed',
+        project: 'sockshop',
+        result: 'pass',
+        service: 'carts',
+        stage: 'dev',
+        status: 'succeeded',
+      },
+      id: '5ae118ea-29af-4c5f-be3e-941d70f03198',
+      source: 'helm-service',
+      specversion: '1.0',
+      time: '2021-11-11T13:06:47.187Z',
+      type: 'sh.keptn.event.deployment.finished',
+      shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+      shkeptnspecversion: '0.2.3',
+      triggeredid: 'fdae8012-e66b-4f76-9dfc-0f848ed168b7',
+      plainEvent: {
+        data: {
+          deployment: {
+            deploymentNames: ['direct'],
+            deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
+            deploymentURIsPublic: ['http://carts.sockshop-dev.35.188.183.151.nip.io:80'],
+            deploymentstrategy: 'direct',
+            gitCommit: 'dd7507a70a5dd82188ae0e9b2af15f66932cf3d3',
+          },
+          message: 'Successfully deployed',
+          project: 'sockshop',
+          result: 'pass',
+          service: 'carts',
+          stage: 'dev',
+          status: 'succeeded',
+        },
+        id: '5ae118ea-29af-4c5f-be3e-941d70f03198',
+        source: 'helm-service',
+        specversion: '1.0',
+        time: '2021-11-11T13:06:47.187Z',
+        type: 'sh.keptn.event.deployment.finished',
+        shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+        shkeptnspecversion: '0.2.3',
+        triggeredid: 'fdae8012-e66b-4f76-9dfc-0f848ed168b7',
+      },
+    }),
+  ],
+  data: {
+    configurationChange: {
+      values: {
+        image: 'docker.io/keptnexamples/carts:0.12.3',
+      },
+    },
+    deployment: {
+      deploymentURIsLocal: null,
+      deploymentstrategy: 'direct',
+    },
+    message: '',
+    project: 'sockshop',
+    result: '',
+    service: 'carts',
+    stage: 'dev',
+    status: '',
+  },
+  id: 'fdae8012-e66b-4f76-9dfc-0f848ed168b7',
+  source: 'shipyard-controller',
+  specversion: '1.0',
+  time: '2021-11-11T13:05:29.689Z',
+  type: 'sh.keptn.event.deployment.triggered',
+  shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+  shkeptnspecversion: '0.2.3',
+  plainEvent: {
+    data: {
+      configurationChange: {
+        values: {
+          image: 'docker.io/keptnexamples/carts:0.12.3',
+        },
+      },
+      deployment: {
+        deploymentURIsLocal: null,
+        deploymentstrategy: 'direct',
+      },
+      message: '',
+      project: 'sockshop',
+      result: '',
+      service: 'carts',
+      stage: 'dev',
+      status: '',
+    },
+    id: 'fdae8012-e66b-4f76-9dfc-0f848ed168b7',
+    source: 'shipyard-controller',
+    specversion: '1.0',
+    time: '2021-11-11T13:05:29.689Z',
+    type: 'sh.keptn.event.deployment.triggered',
+    shkeptncontext: '76f0b0af-0290-458e-82da-56bec6ec5868',
+    shkeptnspecversion: '0.2.3',
+  },
+  finished: false,
+});
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rootTracesMock: any = rootTraces;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3030,4 +3210,5 @@ export {
   rootTracesMock as RootTracesMock,
   evaluationTracesMock as EvaluationTracesMock,
   multipleEvaluationsTraces as MultipleEvaluationTracesMock,
+  webhookTrace as WebhookTraceMock,
 };

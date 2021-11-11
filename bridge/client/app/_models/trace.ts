@@ -112,10 +112,11 @@ class Trace extends tc {
     let result = false;
     if (this.data) {
       if (
-        this.isFailed() ||
-        (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
-        (this.isRemediation() && !this.isSuccessfulRemediation()) ||
-        this.traces.some((t) => t.isFaulty())
+        !this.isWebhookEvent() &&
+        (this.isFailed() ||
+          (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
+          (this.isRemediation() && !this.isSuccessfulRemediation()) ||
+          this.traces.some((t) => t.isFaulty()))
       ) {
         result = stageName ? this.data.stage === stageName : true;
       }
@@ -125,7 +126,7 @@ class Trace extends tc {
 
   isWarning(stageName?: string): boolean {
     let result = false;
-    if (this.getFinishedEvent()?.data.result === ResultTypes.WARNING) {
+    if (!this.isWebhookEvent() && this.getFinishedEvent()?.data.result === ResultTypes.WARNING) {
       result = stageName ? this.data.stage === stageName : true;
     }
     return result;
@@ -134,7 +135,7 @@ class Trace extends tc {
   isSuccessful(stageName?: string): boolean {
     let result = false;
     if (
-      (this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED) ||
+      (!this.isWebhookEvent() && this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED) ||
       (this.isApprovalFinished() && this.isApproved()) ||
       (this.isProblem() && this.isProblemResolvedOrClosed()) ||
       this.isSuccessfulRemediation()
@@ -142,6 +143,10 @@ class Trace extends tc {
       result = stageName ? this.data.stage === stageName : true;
     }
     return !this.isFaulty() && result;
+  }
+
+  isWebhookEvent(): boolean {
+    return !!this.source && this.source === KeptnService.WEBHOOK_SERVICE;
   }
 
   public isFailed(): boolean {

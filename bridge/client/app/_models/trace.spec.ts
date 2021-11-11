@@ -1,6 +1,6 @@
 import { Trace } from './trace';
 import { waitForAsync } from '@angular/core/testing';
-import { EvaluationTracesMock, MultipleEvaluationTracesMock, RootTracesMock } from './trace.mock';
+import { EvaluationTracesMock, MultipleEvaluationTracesMock, RootTracesMock, WebhookTraceMock } from './trace.mock';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 
 describe('Trace', () => {
@@ -75,5 +75,60 @@ describe('Trace', () => {
     expect(evalFinishedTrace?.source).toEqual('lighthouse-service');
     expect(evalFinishedTrace?.type).toEqual(EventTypes.EVALUATION_FINISHED);
     expect(evalFinishedTrace?.data.evaluation?.score).toEqual(100);
+  });
+
+  it('should return true if trace is webhook event', () => {
+    // given
+    const webhookTrace: Trace = WebhookTraceMock.traces[1].traces[0];
+
+    // when
+    const isWebhook = webhookTrace.isWebhookEvent();
+
+    // then
+    expect(isWebhook).toEqual(true);
+  });
+
+  it('should return false if trace is not a webhook event', () => {
+    // given
+    const webhookTrace: Trace = WebhookTraceMock.traces[1];
+
+    // when
+    const isWebhook = webhookTrace.isWebhookEvent();
+
+    // then
+    expect(isWebhook).toEqual(false);
+  });
+
+  it('should return isSuccess true if delivery is successful, but webhook failed', () => {
+    // given
+    const webhookMock: Trace = WebhookTraceMock;
+
+    // when
+    const isSuccess = webhookMock.isSuccessful();
+
+    // then
+    expect(isSuccess).toEqual(true);
+  });
+
+  it('should return isFaulty false if delivery is successful, but webhook failed', () => {
+    // given
+    const webhookMock: Trace = WebhookTraceMock;
+
+    // when
+    const isFaulty = webhookMock.isFaulty();
+
+    // then
+    expect(isFaulty).toEqual(false);
+  });
+
+  it('should return isWarning false if delivery is successful, but webhook failed', () => {
+    // given
+    const webhookMock: Trace = WebhookTraceMock;
+
+    // when
+    const isWarning = webhookMock.isWarning('dev');
+
+    // then
+    expect(isWarning).toEqual(false);
   });
 });
