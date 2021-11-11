@@ -41,7 +41,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	}
 
 	keptn.Start()
-	ctx := GetGracefulContext()
+	ctx := getGracefulContext()
 	eventReceiver.NewEvent(ctx, newTestTaskTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
@@ -89,7 +89,7 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 	}
 
 	keptn.Start()
-	ctx := GetGracefulContext()
+	ctx := getGracefulContext()
 	eventReceiver.NewEvent(ctx, newTestTaskTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
