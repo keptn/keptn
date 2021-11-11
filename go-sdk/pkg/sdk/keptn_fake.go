@@ -38,7 +38,7 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 
 func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
 	testReceiver := f.Keptn.eventReceiver.(*TestReceiver)
-	testReceiver.NewEvent(event)
+	testReceiver.NewEvent(context.Background(), event)
 }
 
 func (f *FakeKeptn) GetEventSender() *TestSender {
@@ -129,8 +129,8 @@ func (t *TestReceiver) StartReceiver(ctx context.Context, fn interface{}) error 
 	return nil
 }
 
-func (t *TestReceiver) NewEvent(e cloudevents.Event) {
-	t.receiverFn.(func(event.Event))(e)
+func (t *TestReceiver) NewEvent(ctx context.Context, e cloudevents.Event) {
+	t.receiverFn.(func(context.Context, event.Event))(ctx, e)
 }
 
 type TestResourceHandler struct {
