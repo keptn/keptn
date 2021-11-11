@@ -38,7 +38,6 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		eventReceiver:          eventReceiver,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
-		graceful:               true,
 	}
 
 	keptn.Start()
