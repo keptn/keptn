@@ -493,10 +493,7 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e models.Event) error {
 				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
 			}
 
-			deployedImage, err := common.ExtractImageOfDeploymentEvent(*triggeredData)
-			if err != nil {
-				return fmt.Errorf("could not determine deployed image: %s", err.Error())
-			}
+			deployedImage := common.ExtractImageOfDeploymentEvent(*triggeredData)
 			service.DeployedImage = deployedImage
 		}
 		return nil

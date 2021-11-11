@@ -182,9 +182,9 @@ func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload
 	return event
 }
 
-func ExtractImageOfDeploymentEvent(deploymentTriggeredEventData keptnv2.DeploymentTriggeredEventData) (string, error) {
+func ExtractImageOfDeploymentEvent(deploymentTriggeredEventData keptnv2.DeploymentTriggeredEventData) string {
 	if imageValue, ok := deploymentTriggeredEventData.ConfigurationChange.Values["image"].(string); ok {
-		return imageValue, nil
+		return imageValue
 	}
-	return "", errors.New("could not extract image name of event: could not find property configurationChange.Values['image'] of type string")
+	return ""
 }
