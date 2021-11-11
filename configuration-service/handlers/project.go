@@ -120,6 +120,10 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 					logger.Error("Authentication error detected")
 					return project.NewPostProjectDefault(http.StatusFailedDependency).WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(err.Error())})
 				}
+				if strings.Contains(err.Error(), "failed to set upstream") {
+					logger.Error("upstream URL not found")
+					return project.NewPostProjectDefault(http.StatusNotFound).WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(err.Error())})
+				}
 				return project.NewPostProjectDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 			}
 		}
