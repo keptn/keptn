@@ -88,6 +88,12 @@ func WithAutomaticResponse(autoResponse bool) KeptnOption {
 	}
 }
 
+func WithGracefulShutdown(graceful bool) KeptnOption {
+	return func(k *Keptn) {
+		k.graceful = graceful
+	}
+}
+
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
 	eventSender            EventSender
@@ -97,6 +103,7 @@ type Keptn struct {
 	taskRegistry           *TaskRegistry
 	syncProcessing         bool
 	automaticEventResponse bool
+	graceful               bool
 	recievingEvent         interface{}
 }
 
@@ -122,7 +129,11 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 
 func (k *Keptn) Start() error {
 	ctx := GetGracefulContext()
-	return k.eventReceiver.StartReceiver(ctx, k.gotEvent)
+	err := k.eventReceiver.StartReceiver(ctx, k.gotEvent)
+	if k.graceful {
+		ctx.Value("Wg").(*sync.WaitGroup).Wait()
+	}
+	return err
 }
 
 func (k *Keptn) GetResourceHandler() ResourceHandler {
@@ -147,14 +158,15 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 	return k.send(k.createFinishedEventForTriggeredEvent(inputCE, result))
 }
 
-func (k *Keptn) gotEvent(event cloudevents.Event) {
+func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 	if !keptnv2.IsTaskEventType(event.Type()) {
 		log.Errorf("event with event type %s is no valid keptn task event type", event.Type())
 		return
 	}
-
+	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
 	k.runEventTaskAction(func() {
 		{
+			defer ctx.Value("Wg").(*sync.WaitGroup).Done()
 			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
@@ -318,7 +330,7 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	return c
 }
 
-// storing wait group into context to sync before shutdown
+// GetGracefulContext returns a context with cancel and a wait group to sync before shutdown
 func GetGracefulContext() context.Context {
 
 	ch := make(chan os.Signal, 1)
