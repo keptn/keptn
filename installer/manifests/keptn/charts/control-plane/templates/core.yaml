@@ -350,7 +350,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongodb.service.nameOverride }}:{{ .Values.mongodb.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -362,7 +362,7 @@ spec:
                   name: mongodb-credentials
                   key: mongodb-password
             - name: MONGODB_DATABASE
-              value: {{ .Values.mongodb.auth.database | default "keptn" }}
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
@@ -763,7 +763,7 @@ spec:
             - name: NEXT_GEN_EVENTS
               value: 'true'
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongodb.service.nameOverride }}:{{ .Values.mongodb.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -775,7 +775,7 @@ spec:
                   name: mongodb-credentials
                   key: mongodb-password
             - name: MONGODB_DATABASE
-              value: {{ .Values.mongodb.auth.database | default "keptn" }}
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:

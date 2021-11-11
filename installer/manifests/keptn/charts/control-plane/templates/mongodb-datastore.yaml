@@ -62,9 +62,9 @@ spec:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"
         - name: MONGODB_HOST
-          value: '{{ .Release.Name }}-{{ .Values.mongodb.service.nameOverride }}:{{ .Values.mongodb.service.port }}'
+          value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
         - name: MONGODB_DATABASE
-          value: {{ .Values.mongodb.auth.database | default "keptn" }}
+          value: {{ .Values.mongo.auth.database | default "keptn" }}
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:
