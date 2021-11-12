@@ -351,16 +351,40 @@ describe('KtbWebhookSettingsComponent', () => {
     });
   });
 
-  it('sendFinished should be true by default', () => {
+  it('sendFinished should be enabled for triggered events and true by default', () => {
     // given
+    component.eventType = 'triggered';
 
     // when
 
     // then
+    expect(component.getFormControl('sendFinished').disabled).toEqual(false);
     expect(component.getFormControl('sendFinished').value).toEqual(true);
   });
 
-  it('sendFinished should be true', () => {
+  it('sendFinished should be disabled for started events and false by default', () => {
+    // given
+    component.eventType = 'started';
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').disabled).toEqual(true);
+    expect(component.getFormControl('sendFinished').value).toEqual(false);
+  });
+
+  it('sendFinished should be disabled for finished events and false by default', () => {
+    // given
+    component.eventType = 'finished';
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').disabled).toEqual(true);
+    expect(component.getFormControl('sendFinished').value).toEqual(false);
+  });
+
+  it('sendFinished should be set to true', () => {
     // given
     component.webhook = {
       header: [{ name: 'x-token', value: 'token-value' }],
