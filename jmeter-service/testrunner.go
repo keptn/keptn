@@ -171,7 +171,7 @@ func getWorkloadForStrategy(jmeterconf *JMeterConf, teststrategy string) (*Workl
 }
 
 func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
-	source, _ := url.Parse("jmeter-service")
+	source, _ := url.Parse(JMeterServiceName)
 
 	testStartedEventData := keptnv2.TestStartedEventData{}
 	testStartedEventData.EventData = testInfo.TestTriggeredData.EventData
@@ -189,7 +189,7 @@ func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
 }
 
 func (tr *TestRunner) sendTestsFinishedEvent(testInfo TestInfo, startedAt time.Time, msg string, result keptnv2.ResultType) error {
-	source, _ := url.Parse("jmeter-service")
+	source, _ := url.Parse(JMeterServiceName)
 
 	testFinishedData := keptnv2.TestFinishedEventData{}
 	testFinishedData.EventData = testInfo.TestTriggeredData.EventData
@@ -213,7 +213,7 @@ func (tr *TestRunner) sendTestsFinishedEvent(testInfo TestInfo, startedAt time.T
 }
 
 func (tr *TestRunner) sendErroredTestsFinishedEvent(testInfo TestInfo, startedAt time.Time, msg string) error {
-	source, _ := url.Parse("jmeter-service")
+	source, _ := url.Parse(JMeterServiceName)
 
 	testFinishedData := keptnv2.TestFinishedEventData{}
 	testFinishedData.EventData = testInfo.TestTriggeredData.EventData
