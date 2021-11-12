@@ -35,6 +35,6 @@ export class WebhookConfig implements wc {
     this.url = '';
     this.payload = '';
     this.header = [];
-    this.sendFinished = false;
+    this.sendFinished = true;
   }
 }
