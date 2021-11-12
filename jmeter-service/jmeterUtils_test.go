@@ -21,7 +21,7 @@ func Test_executeJMeter(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
-			if strings.HasSuffix(r.URL.Path, "/resource") {
+			if strings.HasSuffix(r.URL.Path, "/resource") || strings.HasSuffix(r.URL.Path, "/resource/") {
 				marshal, _ := json.Marshal(returnedResources)
 				w.Write(marshal)
 				return

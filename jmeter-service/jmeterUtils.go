@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
 	"net/url"
@@ -13,8 +14,6 @@ import (
 
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
-
-const maxAcceptedErrorRate = 0.1
 
 // JMeterConfigDirectory defines the default jmeter config directory
 const JMeterConfigDirectory = "/jmeter"
@@ -31,33 +30,34 @@ type TestInfo struct {
 	ServiceURL        *url.URL
 }
 
-// DoRemoveTempFiles Returns true if temp files should be removed. This is default - but can be changed through env variable DEBUG_KEEP_TEMP_FILES == true
-func DoRemoveTempFiles() bool {
-	debugFlag := os.Getenv("DEBUG_KEEP_TEMP_FILES")
-	if strings.Compare(debugFlag, "true") == 0 {
-		return false
-	}
-
-	return true
-}
-
 // ToString returns a string representation of a TestInfo object
 func (ti *TestInfo) ToString() string {
 	return fmt.Sprintf("Project: %s, Service: %s, Stage: %s, TestStrategy: %s, Context: %s", ti.Project, ti.Service, ti.Stage, ti.TestStrategy, ti.Context)
 }
 
-func getConfigurationServiceURL() string {
-	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE") == "" {
-		return "configuration-service:8080"
-	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE") != "" {
-		return os.Getenv("CONFIGURATION_SERVICE")
-	}
-	return "localhost:8080"
+// shouldRemoveTempFiles Returns true if temp files should be removed. This is default - but can be changed through env variable DEBUG_KEEP_TEMP_FILES == true
+func shouldRemoveTempFiles() bool {
+	debugFlag := os.Getenv("DEBUG_KEEP_TEMP_FILES")
+	return strings.Compare(debugFlag, "true") != 0
 }
 
-/**
- * Returns additional JMeter Command Line Parameters including additional params passed to the JMeter script
- */
+// createJMeterCLIArguments create the base arguments for the JMeter call
+func createJMeterCLIArguments(workload *Workload, url *url.URL, resultsDir string, loadTestName string) []string {
+	return []string{"-n", "-t", workload.Script,
+		// "-e", "-o", resultsDir,
+		"-l", resultsDir + "_result.tlf",
+		"-JPROTOCOL=" + url.Scheme,
+		"-JSERVER_PROTOCOL=" + url.Scheme,
+		"-JSERVER_URL=" + url.Hostname(),
+		"-JDT_LTN=" + loadTestName,
+		"-JVUCount=" + strconv.Itoa(workload.VUser),
+		"-JLoopCount=" + strconv.Itoa(workload.LoopCount),
+		"-JCHECK_PATH=" + derivePath(url),
+		"-JSERVER_PORT=" + derivePort(url),
+		"-JThinkTime=" + strconv.Itoa(workload.ThinkTime)}
+}
+
+// addJMeterCommandLineArguments returns additional JMeter Command Line Parameters including additional params passed to the JMeter script
 func addJMeterCommandLineArguments(testInfo TestInfo, initialList []string) []string {
 	dtTenant := fmt.Sprintf("-JDT_TENANT=%s", os.Getenv("DT_TENANT"))
 	dtAPIToken := fmt.Sprintf("-JDT_API_TOKEN=%s", os.Getenv("DT_API_TOKEN"))
@@ -70,13 +70,8 @@ func addJMeterCommandLineArguments(testInfo TestInfo, initialList []string) []st
 	return append(initialList, dtTenant, dtAPIToken, keptnProject, keptnStage, keptnService, keptnTestStrategy)
 }
 
-/**
- * Parses the output of the JMEter test and returns true or false
- */
+// parseJMeterResult parses the output of the JMEter test and returns true or false
 func parseJMeterResult(jmeterCommandResult string, testInfo TestInfo, workload *Workload, funcValidation bool) (bool, error) {
-
-	logger.Debug(jmeterCommandResult)
-
 	summary := getLastOccurrence(strings.Split(jmeterCommandResult, "\n"), "summary =")
 	if summary == "" {
 		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
@@ -118,41 +113,33 @@ func parseJMeterResult(jmeterCommandResult string, testInfo TestInfo, workload *
 	return true, nil
 }
 
-/**
- * Executes the actual JMeter script
- * Step 1: Downloads all resources from the jmeter subfolder in the local container in a temporary folder and validates the referenced jmeter file was there
- * Step 2: Executes the JMeter script that is referenced in the workload definition
- * Step 3: Parses the response after JMeter execution is done
- * Step 4: Removes the temporary folder
- *
- * Parameters:
- * testInfo: information about the test, e.g: project, stage, service
- * workload: jmeter.conf.yaml details
- * resultsDir: resultsDir output
- * url: the full server url. It gets parsed and then passed via JMeter properties SERVER_URL, SERVER_PORT, PROTOCOL, SERVER_PROTOCOL and CHECK_PATH
- * LTN: will be passed as DT_LTN
- * funcValidation: if true the function returns false if there were any errors detected during test execution
- *
- * Return:
- * Status: true or false
- * Error: error details if status was false
- */
-func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool) (bool, error) {
+// executeJMeter executes the actual JMeter script
+// Step 1: Downloads all resources from the jmeter subfolder in the local container in a temporary folder and validates the referenced jmeter file was there
+// Step 2: Executes the JMeter script that is referenced in the workload definition
+// Step 3: Parses the response after JMeter execution is done
+// Step 4: Removes the temporary folder
+//
+// Parameters:
+// testInfo: information about the test, e.g: project, stage, service
+// workload: jmeter.conf.yaml details
+// resultsDir: resultsDir output
+// url: the full server url. It gets parsed and then passed via JMeter properties SERVER_URL, SERVER_PORT, PROTOCOL, SERVER_PROTOCOL and CHECK_PATH
+// LTN: will be passed as DT_LTN
+// funcValidation: if true the function returns false if there were any errors detected during test execution
+//
+// Return:
+// Status: true or false
+// Error: error details if status was false
+func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url *url.URL, loadTestName string, funcValidation bool) (bool, error) {
 	os.RemoveAll(resultsDir)
-
 	os.MkdirAll(resultsDir, 0644)
 
 	// Step 1: Lets download all files that match /jmeter/ into a local temp directory
-	// Due to current limitations of the REST API we also fall-back and always load a specific file referenced in workload on service, stage or project level
-	// Implementing https://github.com/keptn/keptn/issues/2756
 	localTempDir := testInfo.Context
 	os.RemoveAll(localTempDir)
-
 	os.MkdirAll(localTempDir, 0644)
 
-	fileMatchPattern := JMeterConfigDirectory
-	primaryScriptDownloaded, downloadedFileCount, err := GetAllKeptnResources(testInfo.Project, testInfo.Stage, testInfo.Service, true, fileMatchPattern, workload.Script, localTempDir)
-
+	primaryScriptDownloaded, downloadedFileCount, err := GetAllKeptnResources(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfigDirectory, workload.Script, localTempDir)
 	if err != nil {
 		if err == ErrPrimaryFileNotAvailable {
 			// if no .jmx file is available -> skip the tests
@@ -170,13 +157,12 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 		err = fmt.Errorf("Primary file %s was not found for %s.%s.%s", workload.Script, testInfo.Project, testInfo.Stage, testInfo.Service)
 		return false, err
 	}
-
 	// this flag allows us to control whether files should be removed or not
-	removeTempFiles := DoRemoveTempFiles()
+	removeTempFiles := shouldRemoveTempFiles()
 
 	// Step 1a: Lets validate if the script that was referenced in the workload was downloaded
 	mainScriptFileName := localTempDir + "/" + workload.Script
-	if !FileExists(mainScriptFileName) {
+	if !fileutils.FileExists(mainScriptFileName) {
 		err = fmt.Errorf("JMeter script %s not found locally at %s for %s.%s.%s", workload.Script, mainScriptFileName, testInfo.Project, testInfo.Stage, testInfo.Service)
 		if removeTempFiles {
 			os.RemoveAll(localTempDir)
@@ -185,44 +171,24 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	}
 
 	// Step 2: Lets execute the script - but be aware that we launch jmeter from the localTempDir as a working directory!
-	testInfoStr := testInfo.ToString() + ", scriptName: " + mainScriptFileName + ", serverURL: " + url.String()
-	logger.Debug("Starting JMeter test. " + testInfoStr)
-
-	jMeterCommandLineArgs := []string{"-n", "-t", workload.Script,
-		// "-e", "-o", resultsDir,
-		"-l", resultsDir + "_result.tlf",
-		"-JPROTOCOL=" + url.Scheme,
-		"-JSERVER_PROTOCOL=" + url.Scheme,
-		"-JSERVER_URL=" + url.Hostname(),
-		"-JDT_LTN=" + LTN,
-		"-JVUCount=" + strconv.Itoa(workload.VUser),
-		"-JLoopCount=" + strconv.Itoa(workload.LoopCount),
-		"-JCHECK_PATH=" + derivePath(url),
-		"-JSERVER_PORT=" + derivePort(url),
-		"-JThinkTime=" + strconv.Itoa(workload.ThinkTime)}
-
-	jMeterCommandLineArgs = addJMeterCommandLineArguments(testInfo, jMeterCommandLineArgs)
+	jMeterCommandLineArgs := addJMeterCommandLineArguments(testInfo, createJMeterCLIArguments(workload, url, resultsDir, loadTestName))
 	jmeterCommandResult, err := keptnutils.ExecuteCommandInDirectory("jmeter", jMeterCommandLineArgs, localTempDir)
-
+	if err != nil {
+		logger.Error(err.Error())
+		return false, err
+	}
 	// now lets remove all downloaded files
 	if removeTempFiles {
 		os.RemoveAll(localTempDir)
 	}
 
-	// Step 3: Parse result
-	// and lets analyze the result
-	if err != nil {
-		logger.Error(err.Error())
-		return false, err
-	}
-
+	// Step 3: Parse result and lets analyze the result
 	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation)
 	if result && err != nil {
-		logger.Debug("Successfully executed JMeter test. " + testInfo.ToString())
+		logger.Debugf("Successfully executed JMeter test: %s", testInfo.ToString())
 	} else {
-		logger.Error("Successfully executed JMeter test. " + testInfo.ToString())
+		logger.Errorf("Successfully executed JMeter test: %s", testInfo.ToString())
 	}
-
 	return result, err
 }
 

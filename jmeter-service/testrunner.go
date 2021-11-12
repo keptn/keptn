@@ -65,7 +65,7 @@ func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf) (bool,
 		return true, nil
 	}
 
-	teststrategyWorkload, err := getWorkload(jmeterConf, testStrategy)
+	teststrategyWorkload, err := getWorkloadForStrategy(jmeterConf, testStrategy)
 	if err != nil {
 		return false, err
 	}
@@ -83,7 +83,7 @@ func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf) (bool,
 }
 
 func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
-	healthCheckWorkload, err := getWorkload(jmeterConf, TestStrategy_HealthCheck)
+	healthCheckWorkload, err := getWorkloadForStrategy(jmeterConf, TestStrategy_HealthCheck)
 	if err != nil {
 		return err
 	}
@@ -147,6 +147,27 @@ func (tr *TestRunner) runWorkload(testInfo TestInfo, workload *Workload) (bool, 
 		return false, err
 	}
 	return executeJMeter(testInfo, workload, resultDirectory, testInfo.ServiceURL, resultDirectory, breakOnFunctionalIssues)
+}
+
+// getWorkloadForStrategy Iterates through the JMeterConf and returns the workload configuration matching the testStrategy
+// If no config is found in JMeterConf it falls back to the defaults
+func getWorkloadForStrategy(jmeterconf *JMeterConf, teststrategy string) (*Workload, error) {
+	// get the entry for the passed strategy
+	if jmeterconf != nil && jmeterconf.Workloads != nil {
+		for _, workload := range jmeterconf.Workloads {
+			if workload.TestStrategy == teststrategy {
+				return workload, nil
+			}
+		}
+	}
+
+	// if we didn't find it in the config go through the defaults
+	for _, workload := range defaultWorkloads {
+		if workload.TestStrategy == teststrategy {
+			return &workload, nil
+		}
+	}
+	return nil, fmt.Errorf("No workload configuration found for teststrategy: %s", teststrategy)
 }
 
 func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
