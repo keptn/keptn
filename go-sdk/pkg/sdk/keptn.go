@@ -163,7 +163,7 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 	if err != nil {
 		return err
 	}
-	return k.send(k.createFinishedEventForTriggeredEvent(inputCE, result))
+	return k.send(k.createFinishedEventForReceivedEvent(inputCE, result))
 }
 
 func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
@@ -216,7 +216,7 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 				if result == nil {
 					log.Infof("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
 				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
-					if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
+					if err := k.send(k.createFinishedEventForReceivedEvent(event, result)); err != nil {
 						log.Errorf("unable to Send .finished event: %v", err)
 					}
 				}
@@ -257,7 +257,7 @@ func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.E
 	return c
 }
 
-func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}) cloudevents.Event {
+func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent cloudevents.Event, eventData interface{}) cloudevents.Event {
 	var genericEvent map[string]interface{}
 	keptnv2.Decode(eventData, &genericEvent)
 	if genericEvent["status"] == nil || genericEvent["status"] == "" {
@@ -268,14 +268,14 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 		genericEvent["result"] = "pass"
 	}
 
-	finishedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".finished"
-	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	finishedEventType, _ := ReplaceEventTypeKind(receivedEvent.Type(), "finished")
+	keptnContext, _ := receivedEvent.Context.GetExtension(KeptnContextCEExtension)
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType(finishedEventType)
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
-	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
+	c.SetExtension(TriggeredIDCEExtension, receivedEvent.ID())
 	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, genericEvent)
 	return c
