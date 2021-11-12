@@ -43,8 +43,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this._eventType = eventType;
       if (this._eventType !== 'triggered') {
         this.getFormControl('sendFinished').setValue(false);
+        this.getFormControl('sendFinished').disable();
       } else {
         this.getFormControl('sendFinished').setValue(this._webhook.sendFinished ?? true);
+        this.getFormControl('sendFinished').enable();
       }
     }
   }

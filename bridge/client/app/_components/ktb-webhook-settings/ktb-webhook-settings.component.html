@@ -119,9 +119,7 @@
   </div>
   <div class="mt-3 mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field uitestid="edit-webhook-field-sendFinished">
-      <dt-checkbox [disabled]="_eventType != 'triggered'" formControlName="sendFinished"
-        >Send finished event</dt-checkbox
-      >
+      <dt-checkbox formControlName="sendFinished">Send finished event</dt-checkbox>
     </dt-form-field>
     <div [dtOverlay]="sendFinishedOverlay" style="cursor: pointer" [dtOverlayConfig]="sendFinishedOverlayConfig">
       <dt-icon name="information" class="info mr-1"></dt-icon>

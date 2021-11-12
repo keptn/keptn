@@ -353,34 +353,40 @@ describe('KtbWebhookSettingsComponent', () => {
 
   it('sendFinished should be enabled for triggered events and true by default', () => {
     // given
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
     component.eventType = 'triggered';
+    fixture.detectChanges();
 
     // when
 
     // then
-    expect(component.getFormControl('sendFinished').disabled).toEqual(false);
+    expect(checkbox.disabled).toEqual(false);
     expect(component.getFormControl('sendFinished').value).toEqual(true);
   });
 
   it('sendFinished should be disabled for started events and false by default', () => {
     // given
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
     component.eventType = 'started';
+    fixture.detectChanges();
 
     // when
 
     // then
-    expect(component.getFormControl('sendFinished').disabled).toEqual(true);
+    expect(checkbox.disabled).toEqual(true);
     expect(component.getFormControl('sendFinished').value).toEqual(false);
   });
 
   it('sendFinished should be disabled for finished events and false by default', () => {
     // given
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
     component.eventType = 'finished';
+    fixture.detectChanges();
 
     // when
 
     // then
-    expect(component.getFormControl('sendFinished').disabled).toEqual(true);
+    expect(checkbox.disabled).toEqual(true);
     expect(component.getFormControl('sendFinished').value).toEqual(false);
   });
 
