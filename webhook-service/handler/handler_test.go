@@ -244,6 +244,39 @@ func Test_HandleIncomingFinishedEvent(t *testing.T) {
 	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
 }
 
+func Test_HandleIncomingFinishedEventWithResultingError(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "", errors.New("oops")
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithFinishedEvent})
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
+
+	require.Len(t, curlExecutorMock.CurlCalls(), 1)
+	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+
+	//verify sent events
+	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
+}
+
 func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
 		tplE := &lib.TemplateEngine{}
