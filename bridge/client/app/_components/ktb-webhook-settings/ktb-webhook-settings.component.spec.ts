@@ -345,9 +345,65 @@ describe('KtbWebhookSettingsComponent', () => {
       method: 'GET',
       payload: 'payload',
       proxy: 'https://proxy.com',
+      sendFinished: true,
       type: '',
       url: 'https://example.com',
     });
+  });
+
+  it('sendFinished should be true by default', () => {
+    // given
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').value).toEqual(true);
+  });
+
+  it('sendFinished should be true', () => {
+    // given
+    component.webhook = {
+      header: [{ name: 'x-token', value: 'token-value' }],
+      method: 'GET',
+      payload: 'payload',
+      proxy: 'https://proxy.com',
+      sendFinished: true,
+      filter: {
+        projects: null,
+        services: null,
+        stages: null,
+      },
+      type: '',
+      url: 'https://example.com',
+    };
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').value).toEqual(true);
+  });
+
+  it('sendFinished should be set to false', () => {
+    // given
+    component.webhook = {
+      header: [{ name: 'x-token', value: 'token-value' }],
+      method: 'GET',
+      payload: 'payload',
+      proxy: 'https://proxy.com',
+      sendFinished: false,
+      filter: {
+        projects: null,
+        services: null,
+        stages: null,
+      },
+      type: '',
+      url: 'https://example.com',
+    };
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').value).toEqual(false);
   });
 
   function getAddHeaderButton(): HTMLElement {

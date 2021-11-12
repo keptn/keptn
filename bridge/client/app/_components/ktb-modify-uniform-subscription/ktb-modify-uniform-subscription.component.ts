@@ -28,7 +28,7 @@ import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
-  private taskSuffixControl = new FormControl('', [Validators.required]);
+  public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
   public data$: Observable<{
     taskNames: string[];

@@ -35,6 +35,17 @@ export class KtbWebhookSettingsComponent implements OnInit {
     pinnable: true,
     originY: 'center',
   };
+  public _eventType: string | undefined;
+
+  @Input()
+  set eventType(eventType: string | undefined) {
+    if (this._eventType != eventType) {
+      this._eventType = eventType;
+      if (this._eventType !== 'triggered') {
+        this.getFormControl('sendFinished').setValue(false);
+      }
+    }
+  }
 
   @Input()
   set webhook(webhookConfig: WebhookConfig | undefined) {
