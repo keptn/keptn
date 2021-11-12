@@ -116,15 +116,15 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 				// TODO: use git library.
 				// until we do not use a propper git library it is hard/not possible to
 				// determine the correct error cases, so we need to rely on the output of the command
-				if strings.Contains(err.Error(), "Authentication failed") {
+				if strings.Contains(err.Error(), "Authentication failed") || strings.Contains(err.Error(), common.WrongToken) {
 					logger.Error("Authentication error detected")
-					return project.NewPostProjectDefault(http.StatusFailedDependency).WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(err.Error())})
+					return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(err.Error())})
 				}
-				if strings.Contains(err.Error(), "failed to set upstream") {
-					logger.Error("upstream URL not found")
-					return project.NewPostProjectDefault(http.StatusNotFound).WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(err.Error())})
+				if strings.Contains(err.Error(), common.GitURLNotFound) || strings.Contains(err.Error(), common.HostNotFound) {
+					logger.Error("Invalid URL detected")
+					return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(err.Error())})
 				}
-				return project.NewPostProjectDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
+				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusTeapot, Message: swag.String(err.Error())})
 			}
 		}
 	} else {
