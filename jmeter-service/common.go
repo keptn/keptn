@@ -96,12 +96,13 @@ func DownloadAndStoreResources(project string, stage string, service string, res
 }
 
 func getAllKeptnResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
+	// NOTE: we should also implement and use missing configutils.GetAllProjectResources(project) & configutils.GetAllServiceResources(project,service)
+	// and merge them into the resource list
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 	resourceList, err := resourceHandler.GetAllStageResources(project, stage)
 	if err != nil {
 		return false, 0, err
 	}
-	// TODO: implement and also use missing configutils.GetAllProjectResources(project) & configutils.GetAllServiceResources(project,service)
 	// iterate over all resources and download those that match the resourceURIFolderOfInterest
 	// when we store it locally we have to store all these files in /jmeter/filename.jmx
 	var fileCount, skippedFileCount int

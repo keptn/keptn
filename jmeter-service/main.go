@@ -11,9 +11,7 @@ import (
 	"os"
 )
 
-const (
-	configurationService = "CONFIGURATION_SERVICE"
-)
+const JMeterServiceName = "jmeter-service"
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
