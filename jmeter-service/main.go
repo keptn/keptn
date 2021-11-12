@@ -420,6 +420,7 @@ func sendEvent(event cloudevents.Event) error {
 	return keptnHandler.SendCloudEvent(event)
 }
 
+// getGracefulContext returns a context with a wait group and a cancel in case of sigterm/sigint
 func getGracefulContext() context.Context {
 
 	ch := make(chan os.Signal, 1)
