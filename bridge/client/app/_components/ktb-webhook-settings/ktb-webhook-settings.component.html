@@ -126,19 +126,12 @@
     </div>
     <ng-template #sendFinishedOverlay>
       <p>
-        If you subscribe your webhook to an event of type triggered, Keptn automatically sends a started event, executes
-        the webhook request via curl, and automatically generates a finished event. <br />
-        In certain cases, you do want to have more control about this behaviour, e.g., to run a long-running test on
-        Jenkins, and let the receiving tool (in this case Jenkins) decide when to send the finished event. Configure the
-        webhook to not send the finished event by setting the flag sendFinished to false.
+        If you subscribe your Webhook to a task event of type triggered, the corresponding started and finished events
+        are sent automatically.
+        <br />
+        To move the responsibility of sending the finished event to the Webhook receiver, disable this checkbox. This is
+        especially required for Webhooks that trigger a long-running task.
       </p>
-      <a
-        [href]="'/integrations/webhooks/#configure-webhook-to-not-auto-respond-with-a-finished-event' | keptnUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        target="_blank"
-        >Find out more in our docs.</a
-      >
     </ng-template>
   </div>
 </form>
