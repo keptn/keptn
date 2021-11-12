@@ -13,6 +13,16 @@ import (
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var gracefulShutdownKey = gracefulShutdownKeyType{}
+
+// Opaque key type used for graceful shutdown context value
+type keptnQuitType struct{}
+
+var keptnQuit = keptnQuitType{}
+
 // ErrPrimaryFileNotAvailable indicates that the primary test file is not available
 var ErrPrimaryFileNotAvailable = errors.New("primary test file not available")
 

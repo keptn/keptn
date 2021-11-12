@@ -61,6 +61,10 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sleep","60"]
           livenessProbe:
             httpGet:
               path: /health
@@ -146,3 +150,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      terminationGracePeriodSeconds: 90

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -14,7 +15,7 @@ type EventHandler struct {
 	testRunner *TestRunner
 }
 
-func (e *EventHandler) handleEvent(event cloudevents.Event) error {
+func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	if err := event.Context.ExtensionAs("shkeptncontext", &shkeptncontext); err != nil {
 		return err
@@ -38,11 +39,12 @@ func (e *EventHandler) handleEvent(event cloudevents.Event) error {
 		logger.Errorf("Unable to create test info: %v", err)
 		return nil
 	}
-	go func() {
-		if err := e.testRunner.RunTests(*testInfo); err != nil {
-			logger.Errorf("Unable to run JMeter tests: %v", err)
-		}
-	}()
+
+	//go func() {
+	if err := e.testRunner.RunTests(ctx, *testInfo); err != nil {
+		logger.Errorf("Unable to run JMeter tests: %v", err)
+	}
+	//}()
 	return nil
 }
 

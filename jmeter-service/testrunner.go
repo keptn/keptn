@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/common/retry"
@@ -12,12 +13,18 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 // TestRunner is responsible for executing healtch checks the JMeter workloads
 type TestRunner struct {
 	eventSender *keptnv2.HTTPEventSender
+}
+
+type TestResult struct {
+	res bool
+	err error
 }
 
 const errMsgSendFinishedEvent = "Error sending '.test.finished' event for %v"
@@ -29,11 +36,8 @@ func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
 
 // RunTests downloads the JMeter configuration, eventually run a basic health check
 // and executes the Jmeter test
-func (tr *TestRunner) RunTests(testInfo TestInfo) error {
-	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
-		logger.WithError(err).Error("Unable to send test '.started' event")
-		return err
-	}
+func (tr *TestRunner) RunTests(ctx context.Context, testInfo TestInfo) error {
+
 	testStartedAt := time.Now()
 
 	jmeterConfig, err := getJMeterConf(testInfo)
@@ -41,51 +45,78 @@ func (tr *TestRunner) RunTests(testInfo TestInfo) error {
 		return err
 	}
 
+	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
+		logger.WithError(err).Error("Unable to send test '.started' event")
+		return err
+	}
+
 	if err := tr.runHealthCheck(testInfo, testStartedAt, jmeterConfig); err != nil {
 		return err
 	}
 
-	res, err := tr.runTests(testInfo, jmeterConfig)
-	if err != nil {
-		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, err.Error()); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
-		}
-	}
-	msg := fmt.Sprintf("Tests for %s with status = %s. %v", testInfo.TestStrategy, strconv.FormatBool(res), testInfo)
-	if !res {
-		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
-		}
-	} else {
-		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
-		}
-	}
+	resChan := make(chan TestResult, 1)
+	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
+	// producer
+	go tr.runTests(testInfo, jmeterConfig, resChan)
+	//consumer
+	go tr.sendTestResult(ctx, testInfo, resChan, testStartedAt)
+
 	return nil
 }
 
-func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf) (bool, error) {
+func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, resChan chan TestResult, testStartedAt time.Time) {
+	defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+	select {
+	case result := <-resChan:
+		logger.Info("Sending result ", testInfo, result.res)
+		if result.err != nil {
+			if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, result.err.Error()); err != nil {
+				logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			}
+		}
+		msg := fmt.Sprintf("Tests for %s with status = %s. %v", testInfo.TestStrategy, strconv.FormatBool(result.res), testInfo)
+		if !result.res {
+			if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
+				logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			}
+		} else {
+			if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
+				logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			}
+		}
+	case <-ctx.Value(keptnQuit).(chan os.Signal): /// this avoids to answer to context.Done from cloud event lib
+		//logger.Info("Waiting for context")
+		//<-ctx.Done() // waits for main to do his thing
+		logger.Error("Terminated, sending test finished event " + ctx.Err().Error())
+		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
+			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.String())
+		}
+
+	}
+}
+
+func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf, resChan chan TestResult) {
 	var testStrategy = strings.ToLower(testInfo.TestStrategy)
+	res := false
 
 	if testStrategy == "" {
 		logger.Info("No testStrategy specified therefore skipping further test execution and sending back success")
-		return true, nil
 	}
 
 	testStrategyWorkload, err := getWorkloadForStrategy(jmeterConf, testStrategy)
 	if err != nil {
-		return false, err
+		logger.Error(err.Error())
 	}
 	if testStrategyWorkload == nil {
-		return false, fmt.Errorf("No workload definition found for testStrategy %s", testStrategy)
+		logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
 	}
 
-	res, err := tr.runWorkload(testInfo, testStrategyWorkload)
+	res, err = tr.runWorkload(testInfo, testStrategyWorkload)
 	if err != nil {
-		return false, fmt.Errorf("could not run test workload: %w", err)
+		logger.Errorf("could not run test workload: %w", err)
 	}
 
-	return res, nil
+	resChan <- TestResult{res, err}
 }
 
 func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
