@@ -139,9 +139,9 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	os.RemoveAll(localTempDir)
 	os.MkdirAll(localTempDir, 0644)
 
-	primaryScriptDownloaded, downloadedFileCount, err := GetAllKeptnResources(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfigDirectory, workload.Script, localTempDir)
+	primaryScriptDownloaded, downloadedFileCount, err := DownloadAndStoreResources(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfigDirectory, workload.Script, localTempDir)
 	if err != nil {
-		if err == ErrPrimaryFileNotAvailable {
+		if errors.Is(err, ErrPrimaryFileNotAvailable) {
 			// if no .jmx file is available -> skip the tests
 			logger.Debug("Skipping test execution because " + workload.Script + " not found on service, stage or project level.")
 			return true, nil

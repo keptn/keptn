@@ -57,7 +57,7 @@ func GetKeptnResource(project string, stage string, service string, resourceURI 
 	return resource.ResourceContent, nil
 }
 
-// GetAllKeptnResources downloads all resources from Keptn's Configuration Repository where the name starts with 'resourceUriStartWith'.
+// DownloadAndStoreResources downloads all resources from Keptn's Configuration Repository where the name starts with 'resourceUriStartWith'.
 // This for instance allows us to download all files in the /jmeter folders
 //
 // Parameters:
@@ -70,20 +70,38 @@ func GetKeptnResource(project string, stage string, service string, resourceURI 
 // foundPrimaryFile: true if it was downloaded
 // number of resources: total number of downloaded resources
 // error: any error that occurred
-func GetAllKeptnResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
+func DownloadAndStoreResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
+	foundPrimaryFile, fileCount, err := getAllKeptnResources(project, stage, service, resourceURIFolderOfInterest, primaryTestFileName, localDirectory)
+	if err != nil {
+		return foundPrimaryFile, fileCount, err
+	}
+	// Fallback if primary file wasn't loaded yet
+	// last effort - if we couldn't download the specific test file because, e.g: limitations of our current API - then simply go back to download this specific file
+	if !foundPrimaryFile {
+		primaryTestFileContent, err := GetKeptnResource(project, stage, service, primaryTestFileName)
+		if err != nil {
+			return false, fileCount, err
+		}
+		if primaryTestFileContent == "" {
+			return false, fileCount, ErrPrimaryFileNotAvailable
+		}
+		logger.Debug(fmt.Sprintf("Storing primary file in %s/%s - size(%d)", localDirectory, primaryTestFileName, len(primaryTestFileContent)))
+		if err := storeFile(localDirectory, primaryTestFileName, primaryTestFileContent, true); err != nil {
+			return false, fileCount, fmt.Errorf("could not store primary file in %s/%s: %w", localDirectory, primaryTestFileName, err)
+		}
+		fileCount++
+		foundPrimaryFile = true
+	}
+	return foundPrimaryFile, fileCount, nil
+}
+
+func getAllKeptnResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
-	resourceList, err := resourceHandler.GetAllServiceResources(project, stage, service)
+	resourceList, err := resourceHandler.GetAllStageResources(project, stage)
 	if err != nil {
 		return false, 0, err
 	}
-
-	stageResources, err := resourceHandler.GetAllStageResources(project, stage)
-	if err != nil {
-		return false, 0, err
-	}
-	resourceList = append(resourceList, stageResources...)
-	// TODO: implement and use missing configutils.GetAllProjectResources(project)
-
+	// TODO: implement and also use missing configutils.GetAllProjectResources(project) & configutils.GetAllServiceResources(project,service)
 	// iterate over all resources and download those that match the resourceURIFolderOfInterest
 	// when we store it locally we have to store all these files in /jmeter/filename.jmx
 	var fileCount, skippedFileCount int
@@ -118,28 +136,10 @@ func GetAllKeptnResources(project string, stage string, service string, resource
 			logger.Debugf("Not storing %s as it doesn't match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceURIFolderOfInterest)
 		}
 	}
-	// Fallback if primary file wasn't loaded yet
-	// last effort - if we couldn't download the specific test file because, e.g: limitations of our current API - then simply go back to download this specific file
-	if !foundPrimaryFile {
-		primaryTestFileContent, err := GetKeptnResource(project, stage, service, primaryTestFileName)
-		if err != nil {
-			return false, fileCount, err
-		}
-		if primaryTestFileContent == "" {
-			return false, fileCount, ErrPrimaryFileNotAvailable
-		}
-		logger.Debug(fmt.Sprintf("Storing primary file in %s/%s - size(%d)", localDirectory, primaryTestFileName, len(primaryTestFileContent)))
-		if err := storeFile(localDirectory, primaryTestFileName, primaryTestFileContent, true); err != nil {
-			return false, fileCount, fmt.Errorf("could not store primary file in %s/%s: %w", localDirectory, primaryTestFileName, err)
-		}
-		fileCount++
-		foundPrimaryFile = true
-	}
-	logger.Debug(fmt.Sprintf("Downloaded %d and skipped %d files for %s in %s.%s.%s", fileCount, skippedFileCount, resourceURIFolderOfInterest, project, stage, service))
 	return foundPrimaryFile, fileCount, nil
 }
 
-// Stores the content to the local file system under the targetFileName (can also contain directories)
+// storeFile stores the content to the local file system under the targetFileName (can also contain directories)
 // Returns:
 // 1: true if file was actually written, e.g: will be false if file exists and overwriteIfExists==False
 // 2: error if an error occurred
