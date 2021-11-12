@@ -261,10 +261,7 @@ func processTaskEventTaskEvent(scope models.EventScope, event models.Event, stag
 		if err := keptnv2.Decode(event.Data, deploymentTriggeredEventData); err != nil {
 			return nil, fmt.Errorf("could not decode deployment.triggered event data: %s", err.Error())
 		}
-		deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
-		if err != nil {
-			return nil, fmt.Errorf("could not determine deployed image: %s", err.Error())
-		}
+		deployedImage := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
 		stageState.Image = deployedImage
 	}
 
