@@ -40,7 +40,7 @@
     "@types/supertest": "^2.0.11",
     "axios-mock-adapter": "^1.20.0",
     "jest": "^27.3.1",
-    "nodemon": "^2.0.13",
+    "nodemon": "^2.0.15",
     "supertest": "^6.1.6",
     "ts-jest": "^27.0.7",
     "typescript": "^4.4.4"
