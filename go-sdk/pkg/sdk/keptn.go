@@ -9,7 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"syscall"
 )
@@ -242,8 +241,14 @@ func (k *Keptn) send(event cloudevents.Event) error {
 }
 
 func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.Event) cloudevents.Event {
-	startedEventType, _ := keptnv2.ReplaceEventTypeKind(triggeredEvent.Type(), "started")
-	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	startedEventType, err := keptnv2.ReplaceEventTypeKind(triggeredEvent.Type(), "started")
+	if err != nil {
+		log.Errorf("unable to create started event: %v from %s", err, triggeredEvent.Type())
+	}
+	keptnContext, err := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	if err != nil {
+		log.Errorf("unable to get extension: %v", err)
+	}
 	eventData := keptnv2.EventData{}
 	triggeredEvent.DataAs(&eventData)
 	c := cloudevents.NewEvent()
@@ -268,8 +273,14 @@ func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent cloudevents.Ev
 		genericEvent["result"] = "pass"
 	}
 
-	finishedEventType, _ := ReplaceEventTypeKind(receivedEvent.Type(), "finished")
-	keptnContext, _ := receivedEvent.Context.GetExtension(KeptnContextCEExtension)
+	finishedEventType, err := keptnv2.ReplaceEventTypeKind(receivedEvent.Type(), "finished")
+	if err != nil {
+		log.Errorf("unable to create finished event: %v from %s", err, receivedEvent.Type())
+	}
+	keptnContext, err := receivedEvent.Context.GetExtension(KeptnContextCEExtension)
+	if err != nil {
+		log.Errorf("unable to get extension: %v", err)
+	}
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType(finishedEventType)
@@ -303,7 +314,10 @@ func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent cloudevents.
 
 	errorEventData.Message = err.Message
 
-	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	keptnContext, err2 := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	if err2 != nil {
+		log.Errorf("unable to get extension: %v", err2)
+	}
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType(keptnv2.ErrorLogEventName)
@@ -325,8 +339,14 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	commonEventData.Status = err.StatusType
 	commonEventData.Message = err.Message
 
-	finishedEventType, _ := keptnv2.ReplaceEventTypeKind(event.Type(), "finished")
-	keptnContext, _ := event.Context.GetExtension(KeptnContextCEExtension)
+	finishedEventType, err2 := keptnv2.ReplaceEventTypeKind(event.Type(), "finished")
+	if err2 != nil {
+		log.Errorf("unable to create finished event: %v from %s", err2, event.Type())
+	}
+	keptnContext, err2 := event.Context.GetExtension(KeptnContextCEExtension)
+	if err2 != nil {
+		log.Errorf("unable to get extension: %v", err2)
+	}
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType(finishedEventType)
