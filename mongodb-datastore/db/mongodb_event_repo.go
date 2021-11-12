@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -23,10 +24,10 @@ const (
 	rootEventCollectionSuffix         = "-rootEvents"
 	invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 	unmappedEventsCollectionName      = "keptnUnmappedEvents"
-	keptn07EvaluationDoneEventType    = "sh.keptn.events.evaluation-done"
 )
 
 var (
+	projectLocks             = map[string]*sync.Mutex{}
 	rootEventsIndexes        = []string{"data.service", "time"}
 	projectEventsIndexes     = []string{"data.service", "shkeptncontext", "type"}
 	invalidatedEventsIndexes = []string{"triggeredid"}
@@ -45,12 +46,15 @@ func NewMongoDBEventRepo(dbConnection *MongoDBConnection) *MongoDBEventRepo {
 }
 
 func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) error {
-	collection, ctx, cancel, err := mr.getCollectionAndContext(getCollectionNameForEvent(event))
+	projectName := getProjectOfEvent(event)
+	collection, ctx, cancel, err := mr.getCollectionAndContext(projectName)
 	if err != nil {
 		return err
 	}
 	defer cancel()
 
+	lockProject(projectName)
+	defer unlockProject(projectName)
 	logger.Debugf("Storing event to collection %s" + collection.Name())
 
 	eventInterface, err := transformEventToInterface(event)
@@ -98,7 +102,11 @@ func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) err
 	return nil
 }
 
-func (mr *MongoDBEventRepo) DropProjectCollections(projectName string) error {
+func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExtendedCE) error {
+	projectName := getProjectOfEvent(event)
+	if projectName == "" {
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -177,7 +185,7 @@ func (mr *MongoDBEventRepo) GetEvents(params event.GetEventsParams) (*EventsResu
 
 func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) (*EventsResult, error) {
 	if params.Filter == nil {
-		return nil, NewInvalidEventFilterError("event filter must not be empty")
+		return nil, common.NewInvalidEventFilterError("event filter must not be empty")
 	}
 
 	matchFields := parseFilter(*params.Filter)
@@ -484,7 +492,7 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 	return result, nil
 }
 
-func getCollectionNameForEvent(event models.KeptnContextExtendedCE) string {
+func getProjectOfEvent(event models.KeptnContextExtendedCE) string {
 	collectionName := unmappedEventsCollectionName
 	// check if the data object contains the project name.
 	// if yes, store the event in the collection for the project, otherwise in /events
@@ -524,9 +532,9 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 		}
 
 		// backwards compatibility: transform evaluation-done events to evaluation.finished events
-		if keptnEvent.Type == keptn07EvaluationDoneEventType {
-			if err := common.TransformEvaluationDoneEvent(&keptnEvent); err != nil {
-				logger.WithError(err).Errorf("could not transform '%s' event", keptn07EvaluationDoneEventType)
+		if keptnEvent.Type == common.Keptn07EvaluationDoneEventType {
+			if err := common.TransformEvaluationDoneEvent(keptnEvent); err != nil {
+				logger.WithError(err).Errorf("could not transform '%s' event", common.Keptn07EvaluationDoneEventType)
 				continue
 			}
 		}
@@ -622,7 +630,7 @@ func parseFilter(filter string) bson.M {
 
 func validateFilter(searchOptions bson.M) error {
 	if (searchOptions["data.project"] == nil || searchOptions["data.project"] == "") && (searchOptions["shkeptncontext"] == nil || searchOptions["shkeptncontext"] == "") {
-		return NewInvalidEventFilterError("either 'shkeptncontext' or 'data.project' must be set")
+		return common.NewInvalidEventFilterError("either 'shkeptncontext' or 'data.project' must be set")
 	}
 
 	return nil
@@ -703,7 +711,7 @@ func setEventTypeMatchCriteria(eventType string, searchOptions bson.M) bson.M {
 	if eventType == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) {
 		searchOptions["$or"] = []bson.M{
 			{"type": eventType},
-			{"type": keptn07EvaluationDoneEventType},
+			{"type": common.Keptn07EvaluationDoneEventType},
 		}
 	} else {
 		searchOptions["type"] = eventType
@@ -744,4 +752,26 @@ func flattenRecursively(i interface{}) (interface{}, error) {
 	}
 
 	return i, nil
+}
+
+// LockProject locks the collections for a project
+func lockProject(project string) {
+	if projectLocks[project] == nil {
+		mutex.Lock()
+		defer mutex.Unlock()
+		projectLocks[project] = &sync.Mutex{}
+	}
+
+	projectLocks[project].Lock()
+}
+
+// unlockProject unlocks the collections for a project
+func unlockProject(project string) {
+	if projectLocks[project] == nil {
+		mutex.Lock()
+		defer mutex.Unlock()
+		projectLocks[project] = &sync.Mutex{}
+	}
+
+	projectLocks[project].Unlock()
 }

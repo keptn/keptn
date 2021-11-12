@@ -6,7 +6,9 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/models"
 )
 
-func TransformEvaluationDoneEvent(keptnEvent *models.KeptnContextExtendedCE) error {
+const Keptn07EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+
+func TransformEvaluationDoneEvent(keptnEvent models.KeptnContextExtendedCE) error {
 	eventMap := map[string]interface{}{}
 	convertedEvent := &keptnv2.EvaluationFinishedEventData{}
 	if err := keptnv2.Decode(keptnEvent.Data, &eventMap); err != nil {

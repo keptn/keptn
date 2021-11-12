@@ -18,7 +18,7 @@ type EventsResult struct {
 
 type EventRepo interface {
 	InsertEvent(event models.KeptnContextExtendedCE) error
-	DropProjectCollections(project string) error
+	DropProjectCollections(event models.KeptnContextExtendedCE) error
 	GetEvents(params event.GetEventsParams) (*EventsResult, error)
 	GetEventsByType(params event.GetEventsByTypeParams) (*EventsResult, error)
 }

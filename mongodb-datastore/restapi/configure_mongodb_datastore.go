@@ -3,7 +3,9 @@ package restapi
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
+	"github.com/keptn/keptn/mongodb-datastore/common"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -11,11 +13,12 @@ import (
 	"os"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
+	apierrors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
+	"github.com/keptn/keptn/mongodb-datastore/db"
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
@@ -32,7 +35,7 @@ func configureFlags(api *operations.MongodbDatastoreAPI) {
 
 func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	// configure the api here
-	api.ServeError = errors.ServeError
+	api.ServeError = apierrors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
 	// Expected interface func(string, ...interface{})
@@ -44,25 +47,34 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	eventRequestHandler := handlers.NewEventRequestHandler(db.NewMongoDBEventRepo(db.GetMongoDBConnectionInstance()))
+
 	api.EventSaveEventHandler = event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
-		if err := handlers.ProcessEvent(params.Body); err != nil {
+		if err := eventRequestHandler.ProcessEvent(params.Body); err != nil {
+			// TODO: check validation
 			return event.NewSaveEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewSaveEventCreated()
 	})
 
 	api.EventGetEventsHandler = event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
-		events, err := handlers.GetEvents(params)
+		events, err := eventRequestHandler.GetEvents(params)
 		if err != nil {
-			return event.NewGetEventsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+			if errors.Is(err, common.InvalidEventFilterError{}) {
+				return event.NewGetEventsDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
+			}
+			return event.NewGetEventsDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsOK().WithPayload(events)
 	})
 
 	api.EventGetEventsByTypeHandler = event.GetEventsByTypeHandlerFunc(func(params event.GetEventsByTypeParams) middleware.Responder {
-		events, err := handlers.GetEventsByType(params)
+		events, err := eventRequestHandler.GetEventsByType(params)
 		if err != nil {
-			return event.NewGetEventsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+			if errors.Is(err, common.InvalidEventFilterError{}) {
+				return event.NewGetEventsDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
+			}
+			return event.NewGetEventsDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsByTypeOK().WithPayload(events)
 	})
