@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	logger "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -14,11 +13,8 @@ import (
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
-var (
-	runlocal = (os.Getenv("env") == "runlocal")
-	// ErrPrimaryFileNotAvailable indicates that the primary test file is not available
-	ErrPrimaryFileNotAvailable = errors.New("primary test file not available")
-)
+// ErrPrimaryFileNotAvailable indicates that the primary test file is not available
+var ErrPrimaryFileNotAvailable = errors.New("primary test file not available")
 
 //
 // Iterates through the JMeterConf and returns the workload configuration matching the testStrategy
@@ -265,30 +261,21 @@ func getJMeterConf(testInfo TestInfo) (*JMeterConf, error) {
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	var fileContent []byte
 	var err error
-	if runlocal {
-		fileContent, err = ioutil.ReadFile(JMeterConfFilename)
-		if err != nil {
-			logMessage := fmt.Sprintf("No %s file found LOCALLY for service %s in stage %s in project %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project)
-			logger.Info(logMessage)
-			return nil, errors.New(logMessage)
-		}
-	} else {
-		logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, testInfo.Project, testInfo.Stage, testInfo.Service))
+	logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, testInfo.Project, testInfo.Stage, testInfo.Service))
 
-		keptnResourceContent, err := GetKeptnResource(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfFilename)
+	keptnResourceContent, err := GetKeptnResource(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfFilename)
 
-		if err != nil {
-			logMessage := fmt.Sprintf("error when trying to load %s file for service %s on stage %s or project-level %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project)
-			logger.Info(logMessage)
-			return nil, errors.New(logMessage)
-		}
-		if keptnResourceContent == "" {
-			// if no jmeter.conf file is available, this is not an error, as the service will proceed with the default workload
-			logger.Info(fmt.Sprintf("no %s found", JMeterConfFilename))
-			return nil, nil
-		}
-		fileContent = []byte(keptnResourceContent)
+	if err != nil {
+		logMessage := fmt.Sprintf("error when trying to load %s file for service %s on stage %s or project-level %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project)
+		logger.Info(logMessage)
+		return nil, errors.New(logMessage)
 	}
+	if keptnResourceContent == "" {
+		// if no jmeter.conf file is available, this is not an error, as the service will proceed with the default workload
+		logger.Info(fmt.Sprintf("no %s found", JMeterConfFilename))
+		return nil, nil
+	}
+	fileContent = []byte(keptnResourceContent)
 
 	var jmeterConf *JMeterConf
 	jmeterConf, err = parseJMeterConf(fileContent)

@@ -39,10 +39,6 @@ func main() {
 		}
 	}
 
-	if runlocal {
-		log.Println("Running LOCALLY: env=runlocal")
-	}
-
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))

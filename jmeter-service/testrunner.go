@@ -5,7 +5,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
-	"log"
 	"net/url"
 	"os"
 	"strconv"
@@ -16,6 +15,8 @@ import (
 type TestRunner struct {
 	eventSender *keptnv2.HTTPEventSender
 }
+
+const errMsgSendFinishedEvent = "Error sending '.test.finished' event for %s"
 
 func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
 	return &TestRunner{eventSender}
@@ -40,17 +41,17 @@ func (tr *TestRunner) RunTests(testInfo TestInfo) error {
 	res, err := tr.runTests(testInfo, jmeterConfig)
 	if err != nil {
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, err.Error()); err != nil {
-			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo.ToString())
 		}
 	}
 	msg := fmt.Sprintf("Tests for %s with status = %s.%s", testInfo.TestStrategy, strconv.FormatBool(res), testInfo.ToString())
 	if !res {
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo.ToString())
 		}
 	} else {
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
-			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo.ToString())
 		}
 	}
 	return nil
@@ -86,7 +87,7 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 	if err != nil {
 		return err
 	}
-	if healthCheckWorkload != nil {
+	if healthCheckWorkload == nil {
 		logger.Info("No Health Check test workload configuration found. Skipping Health Check")
 		return nil
 	}
@@ -94,7 +95,7 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", testInfo.Service, err.Error())
 		logger.Error(msg)
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo.ToString())
 		}
 		return nil
 	}
@@ -103,14 +104,14 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 		logger.Error(msg)
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, msg); err != nil {
-			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo.ToString())
 		}
 		return nil
 	}
 	if !res {
 		msg := fmt.Sprintf("Tests for %s with status = %s.%s", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo.ToString())
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
+			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo.ToString())
 		}
 		return nil
 	}
@@ -125,10 +126,6 @@ func (tr *TestRunner) runWorkload(testInfo TestInfo, workload *Workload) (bool, 
 	logger.Infof(
 		"Running workload testStrategy=%s, vuser=%d, loopcount=%d, thinktime=%d, funcvalidation=%t, acceptederrors=%f, avgrtvalidation=%d, script=%s",
 		workload.TestStrategy, workload.VUser, workload.LoopCount, workload.ThinkTime, breakOnFunctionalIssues, workload.AcceptedErrorRate, workload.AvgRtValidation, workload.Script)
-	if runlocal {
-		logger.Info("LOCALLY: not executing actual tests!")
-		return true, nil
-	}
 
 	// the resultdirectory is unique as it contains context but also gives some human readable context such as teststrategy and service
 	// this will also be used for TSN parameter
@@ -167,12 +164,7 @@ func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
 	event.SetData(cloudevents.ApplicationJSON, testStartedEventData)
 
-	if runlocal {
-		log.Println("LOCALLY: Sending Event")
-		return nil
-	}
 	return tr.eventSender.SendEvent(event)
-
 }
 
 func (tr *TestRunner) sendTestsFinishedEvent(testInfo TestInfo, startedAt time.Time, msg string, result keptnv2.ResultType) error {
