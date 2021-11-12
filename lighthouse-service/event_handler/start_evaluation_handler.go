@@ -49,7 +49,7 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	if err != nil {
 		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
 	}
-	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	go eh.sendGetSliCloudEvent(ctx, keptnContext, e, evaluationStartTimestamp, evaluationEndTimestamp)
 
 	return nil
@@ -58,7 +58,7 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 // fetch SLO and send the internal get-sli event
 func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
 	defer func() {
-		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 		eh.KeptnHandler.Logger.Info("Terminating Start-evaluation handler")
 	}()
 

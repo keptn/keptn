@@ -62,7 +62,7 @@ func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
-	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	go eh.processGetSliFinishedEvent(ctx, shkeptncontext, e)
 
 	return nil
@@ -70,7 +70,7 @@ func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 
 func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
 	defer func() {
-		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 		eh.KeptnHandler.Logger.Info("Terminating Evaluate-SLI handler")
 	}()
 

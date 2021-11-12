@@ -25,7 +25,7 @@ func TestCreateDeleteHandler(t *testing.T) {
 func TestHandleDeleteEvent(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -82,7 +82,7 @@ func TestHandleDeleteEvent(t *testing.T) {
 func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -101,7 +101,7 @@ func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
 func TestWhenGettingStagesFails_Then(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -126,7 +126,7 @@ func TestWhenGettingStagesFails_Then(t *testing.T) {
 func TestWhenUninstallingReleaseFails_FinishedEventIsStillSent(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

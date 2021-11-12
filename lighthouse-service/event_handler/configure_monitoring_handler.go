@@ -52,9 +52,9 @@ func NewConfigureMonitoringHandler(event cloudevents.Event, logger *logrus.Logge
 }
 
 func (eh *ConfigureMonitoringHandler) HandleEvent(ctx context.Context) error {
-	ctx.Value("Wg").(*sync.WaitGroup).Add(1)
+	ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	defer func() {
-		ctx.Value("Wg").(*sync.WaitGroup).Done()
+		ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 	}()
 
 	var keptnContext string

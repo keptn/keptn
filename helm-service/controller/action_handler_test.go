@@ -22,7 +22,7 @@ func TestCreateActionHandler(t *testing.T) {
 func TestHandleActionTriggeredEvent(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -95,7 +95,7 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 func TestHandleEvent_InvalidData(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -170,7 +170,7 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 func TestHandleUnparsableEvent(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -200,7 +200,7 @@ func TestHandleUnparsableEvent(t *testing.T) {
 func TestHandleEvent_SendStartEventFails(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -259,7 +259,7 @@ func TestHandleEvent_SendStartEventFails(t *testing.T) {
 func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -319,7 +319,7 @@ func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 func TestHandleEvent_WithMissingAction(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")

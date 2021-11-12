@@ -31,7 +31,7 @@ func TestCreateRollbackHandler(t *testing.T) {
 func TestHandleRollbackEvent(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -82,7 +82,7 @@ func TestHandleRollbackEvent(t *testing.T) {
 func TestHandleRollbackEvent_UpdatingChartFails(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

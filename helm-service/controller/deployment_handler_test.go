@@ -18,7 +18,7 @@ import (
 func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -83,7 +83,7 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -152,7 +152,7 @@ func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
 func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -220,7 +220,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -293,7 +293,7 @@ func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t 
 func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg)))
+	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

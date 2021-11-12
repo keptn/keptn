@@ -66,7 +66,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	}
 	ch := make(chan string)
 	wg := &sync.WaitGroup{}
-	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg))
 	var returnSlo bool
 	var sloFileContent string
 	var returnServiceNotFound bool
