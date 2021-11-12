@@ -28,7 +28,7 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.15.8",
+    "@babel/preset-env": "^7.16.0",
     "@babel/preset-typescript": "^7.16.0",
     "@types/adm-zip": "^0.4.34",
     "@types/cookie-parser": "^1.4.2",
