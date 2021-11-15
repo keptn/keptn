@@ -25,7 +25,7 @@ type Resource struct {
 	// Resource content
 	ResourceContent string `json:"resourceContent,omitempty"`
 
-	// Resource URI
+	// Resource URI in URL-encoded format
 	// Required: true
 	ResourceURI *string `json:"resourceURI"`
 }
@@ -57,6 +57,8 @@ func (m *Resource) validateMetadata(formats strfmt.Registry) error {
 		if err := m.Metadata.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metadata")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("metadata")
 			}
 			return err
 		}
@@ -94,6 +96,8 @@ func (m *Resource) contextValidateMetadata(ctx context.Context, formats strfmt.R
 		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metadata")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("metadata")
 			}
 			return err
 		}
