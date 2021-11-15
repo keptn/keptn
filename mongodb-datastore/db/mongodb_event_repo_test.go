@@ -320,7 +320,7 @@ func Test_validateFilter(t *testing.T) {
 					"data.project": "test",
 				},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "data.project empty string",
@@ -329,7 +329,7 @@ func Test_validateFilter(t *testing.T) {
 					"data.project": "",
 				},
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "shkeptncontext provided",
@@ -338,7 +338,7 @@ func Test_validateFilter(t *testing.T) {
 					"shkeptncontext": "test",
 				},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "shkeptncontext empty string",
@@ -347,14 +347,14 @@ func Test_validateFilter(t *testing.T) {
 					"shkeptncontext": "",
 				},
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "empty",
 			args: args{
 				searchOptions: bson.M{},
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {

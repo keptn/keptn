@@ -24,12 +24,22 @@ const (
 	rootEventCollectionSuffix         = "-rootEvents"
 	invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 	unmappedEventsCollectionName      = "keptnUnmappedEvents"
+
+	// paths of CloudEvent properties that are commonly used
+	sourcePropertyPath       = "source"
+	keptnContextPropertyPath = "shkeptncontext"
+	idPropertyPath           = "id"
+	timePropertyPath         = "time"
+	typePropertyPath         = "type"
+	projectPropertyPath      = "data.project"
+	stagePropertyPath        = "data.stage"
+	servicePropertyPath      = "data.service"
 )
 
 var (
 	projectLocks             = map[string]*sync.Mutex{}
-	rootEventsIndexes        = []string{"data.service", "time"}
-	projectEventsIndexes     = []string{"data.service", "shkeptncontext", "type"}
+	rootEventsIndexes        = []string{servicePropertyPath, timePropertyPath}
+	projectEventsIndexes     = []string{servicePropertyPath, keptnContextPropertyPath, typePropertyPath}
 	invalidatedEventsIndexes = []string{"triggeredid"}
 )
 
@@ -128,9 +138,10 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 	logger.Debug(fmt.Sprintf("Delete all events of project %s", projectName))
 
 	err := projectCollection.Drop(ctx)
+	const dropCollectionErrorMsg = "failed to drop collection %s: %v"
 	if err != nil {
-		err := fmt.Errorf("failed to drop collection %s: %v", projectCollection.Name(), err)
-		logger.Error(err.Error())
+		err := fmt.Errorf(dropCollectionErrorMsg, projectCollection.Name(), err)
+		logger.WithError(err).Error("Could not drop project collection.")
 		return err
 	}
 
@@ -138,8 +149,8 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 
 	err = rootEventsCollection.Drop(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to drop collection %s: %v", rootEventsCollection.Name(), err)
-		logger.Error(err.Error())
+		err := fmt.Errorf(dropCollectionErrorMsg, rootEventsCollection.Name(), err)
+		logger.WithError(err).Error("Could not drop root event collection.")
 		return err
 	}
 
@@ -149,15 +160,15 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 	err = invalidatedEventsCollection.Drop(ctx)
 	if err != nil {
 		// log the error but continue
-		err := fmt.Errorf("failed to drop collection %s: %v", invalidatedEventsCollection.Name(), err)
-		logger.Error(err.Error())
+		err := fmt.Errorf(dropCollectionErrorMsg, invalidatedEventsCollection.Name(), err)
+		logger.WithError(err).Error("Could not drop invalidatedEvents collection.")
 	}
 
 	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", projectName))
 	contextToProjectCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(contextToProjectCollection)
 	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": projectName}); err != nil {
 		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", projectName, err)
-		logger.Error(err.Error())
+		logger.WithError(err).Error("Could not delete context-to-project mapping.")
 		return err
 	}
 
@@ -196,7 +207,7 @@ func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) 
 	matchFields = setEventTypeMatchCriteria(params.EventType, matchFields)
 
 	if params.FromTime != nil {
-		matchFields["time"] = bson.M{
+		matchFields[timePropertyPath] = bson.M{
 			"$gt": *params.FromTime,
 		}
 	}
@@ -290,7 +301,7 @@ func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, ev
 	contextToProjectCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(contextToProjectCollection)
 
 	_, err := contextToProjectCollection.InsertOne(ctx,
-		bson.M{"_id": event.Shkeptncontext, "shkeptncontext": event.Shkeptncontext, "project": collectionName},
+		bson.M{"_id": event.Shkeptncontext, keptnContextPropertyPath: event.Shkeptncontext, "project": collectionName},
 	)
 	if err != nil {
 		if writeErr, ok := err.(mongo.WriteException); ok {
@@ -309,7 +320,7 @@ func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, ev
 
 func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName string, event models.KeptnContextExtendedCE) error {
 	if collectionName == unmappedEventsCollectionName {
-		logger.Debug("Will not store root event because no project has been set in the event")
+		logger.Debug("Will not store root event because no project has been set in the event.")
 		return nil
 	}
 
@@ -323,42 +334,49 @@ func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName s
 		)
 	}
 
-	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": event.Shkeptncontext})
+	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{keptnContextPropertyPath: event.Shkeptncontext})
 	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
 		err := mr.storeEventInCollection(ctx, event, rootEventsForProjectCollection)
 		if err != nil {
-			err = fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
+			err = fmt.Errorf("failed to store root event for KeptnContext "+event.Shkeptncontext+": %w", err)
 			return err
 		}
 		logger.Debug("Stored root event for KeptnContext: " + event.Shkeptncontext)
 	} else if result.Err() != nil {
 		// found an already stored root event => check if incoming event precedes the already existing event
 		// if yes, then the new event will be the new root event for this context
-		existingEvent := &models.KeptnContextExtendedCE{}
-
-		err := result.Decode(existingEvent)
-		if err != nil {
-			logger.Error("Could not decode existing root event: " + err.Error())
+		if err := mr.overWriteExistingRootEvent(ctx, result, event, rootEventsForProjectCollection); err != nil {
 			return err
-		}
-
-		if time.Time(existingEvent.Time).After(time.Time(event.Time)) {
-			logger.Debug("Replacing root event for KeptnContext: " + event.Shkeptncontext)
-			_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
-			if err != nil {
-				logger.Error("Could not delete previous root event: " + err.Error())
-				return err
-			}
-			err = mr.storeEventInCollection(ctx, event, rootEventsForProjectCollection)
-			if err != nil {
-				err = fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
-				return err
-			}
-			logger.Debug("Stored new root event for KeptnContext: " + event.Shkeptncontext)
 		}
 	}
 
 	logger.Info("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
+	return nil
+}
+
+func (mr *MongoDBEventRepo) overWriteExistingRootEvent(ctx context.Context, result *mongo.SingleResult, event models.KeptnContextExtendedCE, rootEventsForProjectCollection *mongo.Collection) error {
+	existingEvent := &models.KeptnContextExtendedCE{}
+
+	err := result.Decode(existingEvent)
+	if err != nil {
+		logger.Error("Could not decode existing root event: " + err.Error())
+		return err
+	}
+
+	if time.Time(existingEvent.Time).After(time.Time(event.Time)) {
+		logger.Debug("Replacing root event for KeptnContext: " + event.Shkeptncontext)
+		_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
+		if err != nil {
+			logger.Error("Could not delete previous root event: " + err.Error())
+			return err
+		}
+		err = mr.storeEventInCollection(ctx, event, rootEventsForProjectCollection)
+		if err != nil {
+			err = fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
+			return err
+		}
+		logger.Debug("Stored new root event for KeptnContext: " + event.Shkeptncontext)
+	}
 	return nil
 }
 
@@ -379,12 +397,12 @@ func (mr *MongoDBEventRepo) storeEventInCollection(ctx context.Context, event mo
 
 func (mr *MongoDBEventRepo) getCollectionNameForQuery(searchOptions bson.M) (string, error) {
 	collectionName := unmappedEventsCollectionName
-	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
+	if searchOptions[projectPropertyPath] != nil && searchOptions[projectPropertyPath] != "" {
 		// if a project has been specified, query the collection for that project
-		collectionName = searchOptions["data.project"].(string)
-	} else if searchOptions["shkeptncontext"] != nil && searchOptions["shkeptncontext"] != "" {
+		collectionName = searchOptions[projectPropertyPath].(string)
+	} else if searchOptions[keptnContextPropertyPath] != nil && searchOptions[keptnContextPropertyPath] != "" {
 		var err error
-		collectionName, err = mr.getProjectForContext(searchOptions["shkeptncontext"].(string))
+		collectionName, err = mr.getProjectForContext(searchOptions[keptnContextPropertyPath].(string))
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				logger.Info("no project found for shkeptncontext")
@@ -402,7 +420,7 @@ func (mr *MongoDBEventRepo) getProjectForContext(keptnContext string) (string, e
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	contextToProjectCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(contextToProjectCollection)
-	result := contextToProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": keptnContext})
+	result := contextToProjectCollection.FindOne(ctx, bson.M{keptnContextPropertyPath: keptnContext})
 	var resultMap bson.M
 	err := result.Decode(&resultMap)
 	if err != nil {
@@ -455,9 +473,9 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 		collectionName = collectionName + rootEventCollectionSuffix
 	}
 	if pageSize > 0 {
-		sortOptions = options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+		sortOptions = options.Find().SetSort(bson.D{{Key: timePropertyPath, Value: -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 	} else {
-		sortOptions = options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
+		sortOptions = options.Find().SetSort(bson.D{{Key: timePropertyPath, Value: -1}})
 	}
 
 	collection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(collectionName)
@@ -533,10 +551,12 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 
 		// backwards compatibility: transform evaluation-done events to evaluation.finished events
 		if keptnEvent.Type == common.Keptn07EvaluationDoneEventType {
-			if err := common.TransformEvaluationDoneEvent(keptnEvent); err != nil {
+			convertedEvent, err := common.TransformEvaluationDoneEvent(keptnEvent)
+			if err != nil {
 				logger.WithError(err).Errorf("could not transform '%s' event", common.Keptn07EvaluationDoneEventType)
 				continue
 			}
+			keptnEvent = *convertedEvent
 		}
 
 		events = append(events, &keptnEvent)
@@ -546,8 +566,9 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 
 func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
 	// TODO: find better name for this function
+	const matchExpr = "$match"
 	matchStage := bson.D{
-		{Key: "$match", Value: matchFields},
+		{Key: matchExpr, Value: matchFields},
 	}
 
 	lookupStage := bson.D{
@@ -559,7 +580,7 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 			},
 			"pipeline": []bson.M{
 				{
-					"$match": bson.M{
+					matchExpr: bson.M{
 						"$expr": bson.M{
 							"$or": []bson.M{
 								{
@@ -583,7 +604,7 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 	}
 
 	matchInvalidatedStage := bson.D{
-		{Key: "$match", Value: bson.M{
+		{Key: matchExpr, Value: bson.M{
 			"invalidated": bson.M{
 				"$size": 0,
 			},
@@ -591,7 +612,7 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 	}
 	sortStage := bson.D{
 		{Key: "$sort", Value: bson.M{
-			"time": -1,
+			timePropertyPath: -1,
 		}},
 	}
 	var aggregationPipeline mongo.Pipeline
@@ -629,7 +650,7 @@ func parseFilter(filter string) bson.M {
 }
 
 func validateFilter(searchOptions bson.M) error {
-	if (searchOptions["data.project"] == nil || searchOptions["data.project"] == "") && (searchOptions["shkeptncontext"] == nil || searchOptions["shkeptncontext"] == "") {
+	if (searchOptions[projectPropertyPath] == nil || searchOptions[projectPropertyPath] == "") && (searchOptions[keptnContextPropertyPath] == nil || searchOptions[keptnContextPropertyPath] == "") {
 		return common.NewInvalidEventFilterError("either 'shkeptncontext' or 'data.project' must be set")
 	}
 
@@ -665,41 +686,41 @@ func getIndexIDForCollection(collectionName string, indexName string) string {
 func getSearchOptions(params event.GetEventsParams) bson.M {
 	searchOptions := bson.M{}
 	if params.KeptnContext != nil {
-		searchOptions["shkeptncontext"] = *params.KeptnContext
+		searchOptions[keptnContextPropertyPath] = *params.KeptnContext
 	}
 	if params.Type != nil {
 		// for backwards compatibility: if evaluation.finished events are queried, also retrieve evaluation-done events
 		searchOptions = setEventTypeMatchCriteria(*params.Type, searchOptions)
 	}
 	if params.Source != nil {
-		searchOptions["source"] = *params.Source
+		searchOptions[sourcePropertyPath] = *params.Source
 	}
 	if params.Project != nil {
-		searchOptions["data.project"] = *params.Project
+		searchOptions[projectPropertyPath] = *params.Project
 	}
 	if params.Stage != nil {
-		searchOptions["data.stage"] = *params.Stage
+		searchOptions[stagePropertyPath] = *params.Stage
 	}
 	if params.Service != nil {
-		searchOptions["data.service"] = *params.Service
+		searchOptions[servicePropertyPath] = *params.Service
 	}
 	if params.EventID != nil {
-		searchOptions["id"] = *params.EventID
+		searchOptions[idPropertyPath] = *params.EventID
 	}
 	if params.FromTime != nil {
 		if params.BeforeTime == nil {
-			searchOptions["time"] = bson.M{
+			searchOptions[timePropertyPath] = bson.M{
 				"$gt": *params.FromTime,
 			}
 		} else {
 			searchOptions["$and"] = []bson.M{
-				{"time": bson.M{"$gt": *params.FromTime}},
-				{"time": bson.M{"$lt": *params.BeforeTime}},
+				{timePropertyPath: bson.M{"$gt": *params.FromTime}},
+				{timePropertyPath: bson.M{"$lt": *params.BeforeTime}},
 			}
 		}
 	}
 	if params.BeforeTime != nil && params.FromTime == nil {
-		searchOptions["time"] = bson.M{
+		searchOptions[timePropertyPath] = bson.M{
 			"$lt": *params.BeforeTime,
 		}
 	}
@@ -710,48 +731,56 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 func setEventTypeMatchCriteria(eventType string, searchOptions bson.M) bson.M {
 	if eventType == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) {
 		searchOptions["$or"] = []bson.M{
-			{"type": eventType},
-			{"type": common.Keptn07EvaluationDoneEventType},
+			{typePropertyPath: eventType},
+			{typePropertyPath: common.Keptn07EvaluationDoneEventType},
 		}
 	} else {
-		searchOptions["type"] = eventType
+		searchOptions[typePropertyPath] = eventType
 	}
 	return searchOptions
 }
 
 func flattenRecursively(i interface{}) (interface{}, error) {
 	if _, ok := i.(bson.D); ok {
-		d := i.(bson.D)
-		myMap := d.Map()
-		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
-		if err != nil {
-			return nil, fmt.Errorf("could not flatten element: %v", err)
-		}
-		for k, v := range flat {
-			res, err := flattenRecursively(v)
-			if err != nil {
-				return nil, err
-			}
-			if k == "eventContext" {
-				flat[k] = nil
-			} else {
-				flat[k] = res
-			}
-		}
-		return flat, nil
+		return flattenDocument(i)
 	} else if _, ok := i.(bson.A); ok {
-		a := i.(bson.A)
-		for i := 0; i < len(a); i++ {
-			res, err := flattenRecursively(a[i])
-			if err != nil {
-				return nil, err
-			}
-			a[i] = res
-		}
-		return a, nil
+		return flattenArray(i)
 	}
 
 	return i, nil
+}
+
+func flattenArray(i interface{}) (interface{}, error) {
+	a := i.(bson.A)
+	for i := 0; i < len(a); i++ {
+		res, err := flattenRecursively(a[i])
+		if err != nil {
+			return nil, err
+		}
+		a[i] = res
+	}
+	return a, nil
+}
+
+func flattenDocument(i interface{}) (interface{}, error) {
+	d := i.(bson.D)
+	myMap := d.Map()
+	flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
+	if err != nil {
+		return nil, fmt.Errorf("could not flatten element: %v", err)
+	}
+	for k, v := range flat {
+		res, err := flattenRecursively(v)
+		if err != nil {
+			return nil, err
+		}
+		if k == "eventContext" {
+			flat[k] = nil
+		} else {
+			flat[k] = res
+		}
+	}
+	return flat, nil
 }
 
 // LockProject locks the collections for a project

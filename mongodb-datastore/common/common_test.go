@@ -1,13 +1,13 @@
 package common
 
 import (
-	"github.com/go-test/deep"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func Test_transformEvaluationDonEvent(t *testing.T) {
+func Test_transformEvaluationDoneEvent(t *testing.T) {
 	type args struct {
 		keptnEvent models.KeptnContextExtendedCE
 	}
@@ -15,7 +15,7 @@ func Test_transformEvaluationDonEvent(t *testing.T) {
 		name      string
 		args      args
 		wantErr   bool
-		wantEvent *models.KeptnContextExtendedCE
+		wantEvent models.KeptnContextExtendedCE
 	}{
 		{
 			name: "transform evaluation-done event",
@@ -47,7 +47,7 @@ func Test_transformEvaluationDonEvent(t *testing.T) {
 					Triggeredid:    "my-triggeredid",
 				},
 			},
-			wantEvent: &models.KeptnContextExtendedCE{
+			wantEvent: models.KeptnContextExtendedCE{
 				Event: models.Event{
 					Contenttype: "",
 					Data: &keptnv2.EvaluationFinishedEventData{
@@ -80,16 +80,12 @@ func Test_transformEvaluationDonEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := TransformEvaluationDoneEvent(tt.args.keptnEvent); (err != nil) != tt.wantErr {
+			convertedEvent, err := TransformEvaluationDoneEvent(tt.args.keptnEvent)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("TransformEvaluationDoneEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if diff := deep.Equal(tt.args.keptnEvent, tt.wantEvent); len(diff) > 0 {
-				t.Errorf("TransformEvaluationDoneEvent() did not return expected event:")
-				for _, d := range diff {
-					t.Log(d)
-				}
-			}
+			require.Equal(t, &tt.wantEvent, convertedEvent)
 		})
 	}
 }
