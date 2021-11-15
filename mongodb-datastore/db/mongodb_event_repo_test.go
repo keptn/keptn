@@ -35,8 +35,8 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 
 	randomDbName := memongo.RandomDatabase()
 
-	os.Setenv("MONGODB_DATABASE", randomDbName)
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+	_ = os.Setenv("MONGODB_DATABASE", randomDbName)
+	_ = os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
 
 	var mongoClient *mongo.Client
 	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
@@ -49,6 +49,42 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 	}
 
 	return mongoServer, err
+}
+
+func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
+	repo := NewMongoDBEventRepo(GetMongoDBConnectionInstance())
+
+	keptnContext := "my-context"
+	testEvent := models.KeptnContextExtendedCE{
+		Event: models.Event{
+			Contenttype: "application/cloudevents+json",
+			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+			ID:          "my-id",
+			Source:      "test-source",
+			Specversion: "1.0",
+			Time:        models.Time{},
+			Type:        models.Type(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+		},
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Triggeredid:        "",
+	}
+
+	err := repo.InsertEvent(testEvent)
+	require.Nil(t, err)
+
+	pageSize := int64(0)
+	events, err := repo.GetEvents(
+		event.GetEventsParams{
+			KeptnContext: &keptnContext,
+			PageSize:     &pageSize,
+		},
+	)
+
+	require.Nil(t, err)
+	require.NotNil(t, events)
+	require.Len(t, events.Events, 1)
+	require.Equal(t, testEvent, *events.Events[0])
 }
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
