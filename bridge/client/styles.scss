@@ -173,6 +173,10 @@ button.dt-button-secondary.error-button:not([disabled]) {
   background-color: $gray-100;
 }
 
+.dt-checkbox.dt-checkbox-disabled .dt-checkbox-content {
+  color: #ccc;
+}
+
 .m-0 {
   margin: 0 !important;
 }
