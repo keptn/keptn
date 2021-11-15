@@ -45,7 +45,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
         this.getFormControl('sendFinished').setValue(false);
         this.getFormControl('sendFinished').disable();
       } else {
-        this.getFormControl('sendFinished').setValue(this._webhook.sendFinished ?? true);
+        this.getFormControl('sendFinished').setValue(this._webhook.sendFinished);
         this.getFormControl('sendFinished').enable();
       }
     }
