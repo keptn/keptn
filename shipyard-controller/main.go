@@ -19,8 +19,12 @@ import (
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -140,6 +144,10 @@ func main() {
 	)
 
 	engine := gin.Default()
+	/// setting up middlewere to handle graceful shutdown
+	wg := &sync.WaitGroup{}
+	engine.Use(handler.GracefulShutdownMiddleware(wg))
+
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
@@ -226,10 +234,38 @@ func main() {
 	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
-	err = engine.Run()
-	if err != nil {
-		log.WithError(err).Error("could not start API server")
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: engine,
 	}
+
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.WithError(err).Error("could not start API server")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	// The context is used to inform the server it has 5 seconds to finish
+	// the request it is currently handling
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	wg.Wait()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown: ", err)
+	}
+
+	log.Println("Server exiting")
+
 }
 
 func createProjectMVRepo() *db.MongoDBProjectMVRepo {
