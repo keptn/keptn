@@ -57,23 +57,44 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	repo := NewMongoDBEventRepo(GetMongoDBConnectionInstance())
 
+	evaluationEventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
+
 	keptnContext := "my-context"
 	testEvent := models.KeptnContextExtendedCE{
 		Event: models.Event{
 			Contenttype: "application/cloudevents+json",
 			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
-			ID:          "my-id",
+			ID:          "my-evaluation-id",
 			Source:      "test-source",
 			Specversion: "1.0",
 			Time:        models.Time{},
-			Type:        models.Type(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+			Type:        models.Type(evaluationEventType),
 		},
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
-		Triggeredid:        "",
+		Triggeredid:        "my-triggered-id",
 	}
 
 	err := repo.InsertEvent(testEvent)
+	require.Nil(t, err)
+
+	invalidatedEvent := models.KeptnContextExtendedCE{
+		Event: models.Event{
+			Contenttype: "application/cloudevents+json",
+			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+			ID:          "my-invalidated-id",
+			Source:      "test-source",
+			Specversion: "1.0",
+			Time:        models.Time{},
+			Type:        models.Type(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
+		},
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Triggeredid:        "my-evaluation-id",
+	}
+
+	err = repo.InsertEvent(invalidatedEvent)
+
 	require.Nil(t, err)
 
 	pageSize := int64(0)
@@ -81,6 +102,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 		event.GetEventsParams{
 			KeptnContext: &keptnContext,
 			PageSize:     &pageSize,
+			Type:         &evaluationEventType,
 		},
 	)
 
@@ -88,6 +110,54 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	require.NotNil(t, events)
 	require.Len(t, events.Events, 1)
 	require.Equal(t, testEvent, *events.Events[0])
+
+	filter := "data.project:my-project"
+	eventsByType, err := repo.GetEventsByType(
+		event.GetEventsByTypeParams{
+			EventType: evaluationEventType,
+			Filter:    &filter,
+			Limit:     &pageSize,
+		},
+	)
+
+	require.Nil(t, err)
+	require.NotNil(t, eventsByType)
+	require.Len(t, eventsByType.Events, 1)
+
+	excludeInvalidated := true
+	// now try to query again with excluded invalidated events
+	eventsByType, err = repo.GetEventsByType(
+		event.GetEventsByTypeParams{
+			EventType:          evaluationEventType,
+			ExcludeInvalidated: &excludeInvalidated,
+			Filter:             &filter,
+			Limit:              &pageSize,
+		},
+	)
+
+	require.Nil(t, err)
+	require.NotNil(t, eventsByType)
+	require.Empty(t, eventsByType.Events)
+}
+
+func TestMongoDBEventRepo_Retrieve_NoProjectOrKeptnContext(t *testing.T) {
+	repo := NewMongoDBEventRepo(GetMongoDBConnectionInstance())
+
+	pageSize := int64(0)
+	filter := ""
+	eventsByType, err := repo.GetEventsByType(
+		event.GetEventsByTypeParams{
+			EventType: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
+			Filter:    &filter,
+			Limit:     &pageSize,
+		},
+	)
+
+	require.NotNil(t, err)
+
+	var validationError *common.InvalidEventFilterError
+	require.ErrorAs(t, err, &validationError)
+	require.Nil(t, eventsByType)
 }
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
