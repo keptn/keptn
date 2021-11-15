@@ -124,7 +124,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 					logger.Error("Invalid URL detected")
 					return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(err.Error())})
 				}
-				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusTeapot, Message: swag.String(err.Error())})
+				return project.NewPostProjectDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 			}
 		}
 	} else {
