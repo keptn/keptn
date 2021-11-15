@@ -9,7 +9,7 @@ cd ./cli/ || return
 
 echo "Building Keptn CLI"
 env go mod download
-env go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTABLE_NAME}"
+env go build -v -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTABLE_NAME}"
 
 # shellcheck disable=SC2181
 if [ $? -ne 0 ]; then

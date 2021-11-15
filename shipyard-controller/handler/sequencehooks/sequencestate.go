@@ -259,10 +259,8 @@ func (smv *SequenceStateMaterializedView) updateImageOfSequence(event models.Eve
 		return fmt.Errorf("could not decode deployment.triggered event data: %s", err.Error())
 	}
 
-	deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
-	if err != nil {
-		return fmt.Errorf("could not determine deployed image: %s", err.Error())
-	}
+	deployedImage := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
+
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return fmt.Errorf("could not determine event scope: %s", err.Error())

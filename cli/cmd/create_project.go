@@ -41,7 +41,7 @@ The shipyard file describes the used stages. These stages are defined by name, a
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
 To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.
 
-For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/manage/)
+For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
 `,
 	Example: `keptn create project PROJECTNAME --shipyard=FILEPATH
 keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL`,

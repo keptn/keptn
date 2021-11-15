@@ -3,6 +3,7 @@ package common
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
@@ -85,10 +86,9 @@ func TestExtractImageOfDeploymentEvent(t *testing.T) {
 		eventData keptnv2.DeploymentTriggeredEventData
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
+		name string
+		args args
+		want string
 	}{
 		{
 			name: "extract image property from correctly structured event",
@@ -101,8 +101,7 @@ func TestExtractImageOfDeploymentEvent(t *testing.T) {
 					},
 				},
 			},
-			want:    "my-image",
-			wantErr: false,
+			want: "my-image",
 		},
 		{
 			name: "image property has different type than expected",
@@ -118,20 +117,14 @@ func TestExtractImageOfDeploymentEvent(t *testing.T) {
 					},
 				},
 			},
-			want:    "",
-			wantErr: true,
+			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ExtractImageOfDeploymentEvent(tt.args.eventData)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ExtractImageOfDeploymentEvent() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("ExtractImageOfDeploymentEvent() got = %v, want %v", got, tt.want)
-			}
+			got := ExtractImageOfDeploymentEvent(tt.args.eventData)
+
+			require.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -7,7 +7,11 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
 )
 
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
@@ -55,6 +59,11 @@ type TaskHandler interface {
 
 type KeptnEvent models.KeptnContextExtendedCE
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var gracefulShutdownKey = gracefulShutdownKeyType{}
+
 type Error struct {
 	StatusType keptnv2.StatusType
 	ResultType keptnv2.ResultType
@@ -84,6 +93,14 @@ func WithAutomaticResponse(autoResponse bool) KeptnOption {
 	}
 }
 
+// WithGracefulShutdown sets the option to ensure running tasks/handlers will finish in case of interrupt or forced termination
+// Per default this behavior is turned on and can be disabled with this function
+func WithGracefulShutdown(gracefulShutdown bool) KeptnOption {
+	return func(k *Keptn) {
+		k.gracefulShutdown = gracefulShutdown
+	}
+}
+
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
 	eventSender            EventSender
@@ -93,6 +110,7 @@ type Keptn struct {
 	taskRegistry           *TaskRegistry
 	syncProcessing         bool
 	automaticEventResponse bool
+	gracefulShutdown       bool
 	recievingEvent         interface{}
 }
 
@@ -108,6 +126,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		taskRegistry:           taskRegistry,
 		resourceHandler:        resourceHandler,
 		automaticEventResponse: true,
+		gracefulShutdown:       true,
 		syncProcessing:         false,
 	}
 	for _, opt := range opts {
@@ -117,9 +136,12 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) Start() error {
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
-	return k.eventReceiver.StartReceiver(ctx, k.gotEvent)
+	ctx := getGracefulContext()
+	err := k.eventReceiver.StartReceiver(ctx, k.gotEvent)
+	if k.gracefulShutdown {
+		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
+	}
+	return err
 }
 
 func (k *Keptn) GetResourceHandler() ResourceHandler {
@@ -144,14 +166,15 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 	return k.send(k.createFinishedEventForTriggeredEvent(inputCE, result))
 }
 
-func (k *Keptn) gotEvent(event cloudevents.Event) {
+func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 	if !keptnv2.IsTaskEventType(event.Type()) {
 		log.Errorf("event with event type %s is no valid keptn task event type", event.Type())
 		return
 	}
-
+	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	k.runEventTaskAction(func() {
 		{
+			defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
 			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
@@ -313,4 +336,20 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	c.SetSource(k.source)
 	c.SetData(cloudevents.ApplicationJSON, commonEventData)
 	return c
+}
+
+// getGracefulContext returns a context with cancel and a wait group to sync before shutdown
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), gracefulShutdownKey, wg)))
+
+	go func() {
+		<-ch
+		cancel()
+	}()
+
+	return ctx
 }
