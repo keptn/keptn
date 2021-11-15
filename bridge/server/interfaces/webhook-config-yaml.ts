@@ -117,7 +117,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     const parsedConfig = curl ? this.parseConfig(curl) : undefined;
     if (parsedConfig) {
       parsedConfig.secrets = secrets;
-      parsedConfig.sendFinished = webhook?.sendFinished ?? true;
+      parsedConfig.sendFinished = webhook?.sendFinished ?? false;
     }
     return parsedConfig;
   }
