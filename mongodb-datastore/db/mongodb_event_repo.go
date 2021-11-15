@@ -450,7 +450,11 @@ func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mong
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
-	defer cur.Close(ctx)
+	defer func() {
+		if err := cur.Close(ctx); err != nil {
+			logger.WithError(err).Error("Could not close cursor.")
+		}
+	}()
 	result.Events = formatEventResults(ctx, cur)
 
 	return result, nil
@@ -497,7 +501,11 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
-	defer cur.Close(ctx)
+	defer func() {
+		if err := cur.Close(ctx); err != nil {
+			logger.WithError(err).Error("Could not close cursor.")
+		}
+	}()
 	result.Events = formatEventResults(ctx, cur)
 
 	result.PageSize = pageSize
