@@ -224,7 +224,7 @@ func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) 
 	var events *EventsResult
 
 	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated {
-		aggregationPipeline := getAggregationPipeline(params, collectionName, matchFields)
+		aggregationPipeline := getInvalidatedEventQuery(params, collectionName, matchFields)
 		events, err = mr.aggregateFromDB(collectionName, aggregationPipeline)
 	} else {
 		events, err = mr.findInDB(collectionName, *params.Limit, nil, false, matchFields)
@@ -572,8 +572,7 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 	return events
 }
 
-func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
-	// TODO: find better name for this function
+func getInvalidatedEventQuery(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
 	const matchExpr = "$match"
 	matchStage := bson.D{
 		{Key: matchExpr, Value: matchFields},

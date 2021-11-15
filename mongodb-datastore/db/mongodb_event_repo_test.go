@@ -453,8 +453,8 @@ func Test_getAggregationPipeline(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getAggregationPipeline(tt.args.params, tt.args.collectionName, tt.args.matchFields); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getAggregationPipeline() = %v, want %v", got, tt.want)
+			if got := getInvalidatedEventQuery(tt.args.params, tt.args.collectionName, tt.args.matchFields); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getInvalidatedEventQuery() = %v, want %v", got, tt.want)
 			}
 		})
 	}
