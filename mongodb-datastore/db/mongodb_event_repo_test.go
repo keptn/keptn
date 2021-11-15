@@ -32,6 +32,9 @@ func TestMain(m *testing.M) {
 
 func setupLocalMongoDB() (*memongo.Server, error) {
 	mongoServer, err := memongo.Start(mongoDbVersion)
+	if err != nil {
+		return nil, err
+	}
 
 	randomDbName := memongo.RandomDatabase()
 
