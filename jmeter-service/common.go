@@ -71,7 +71,7 @@ func GetKeptnResource(project string, stage string, service string, resourceURI 
 // number of resources: total number of downloaded resources
 // error: any error that occurred
 func DownloadAndStoreResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
-	foundPrimaryFile, fileCount, err := getAllKeptnResources(project, stage, service, resourceURIFolderOfInterest, primaryTestFileName, localDirectory)
+	foundPrimaryFile, fileCount, err := getAllKeptnResources(project, stage, resourceURIFolderOfInterest, primaryTestFileName, localDirectory)
 	if err != nil {
 		return foundPrimaryFile, fileCount, err
 	}
@@ -95,7 +95,7 @@ func DownloadAndStoreResources(project string, stage string, service string, res
 	return foundPrimaryFile, fileCount, nil
 }
 
-func getAllKeptnResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
+func getAllKeptnResources(project string, stage string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
 	// NOTE: we should also implement and use missing configutils.GetAllProjectResources(project) & configutils.GetAllServiceResources(project,service)
 	// and merge them into the resource list
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -17,9 +16,11 @@ type EventHandler struct {
 	testRunner *TestRunner
 }
 
-func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event) error {
+func (e *EventHandler) handleEvent(event cloudevents.Event) error {
 	var shkeptncontext string
-	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+	if err := event.Context.ExtensionAs("shkeptncontext", &shkeptncontext); err != nil {
+		return err
+	}
 
 	data := &keptnv2.TestTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
@@ -42,7 +43,11 @@ func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event)
 		return nil
 	}
 
-	go e.testRunner.RunTests(*testInfo)
+	go func() {
+		if err := e.testRunner.RunTests(*testInfo); err != nil {
+			logger.WithError(err).Errorf("Unable to run JMeter tests")
+		}
+	}()
 	return nil
 }
 
@@ -90,8 +95,7 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	// hence we need to manually construct hostWithPort here
 	hostWithPort := fmt.Sprintf("%s:%s", serviceURL.Hostname(), derivePort(serviceURL))
 
-	var err error = nil
-
+	var err error
 	_ = retry.Retry(func() error {
 		if _, err = net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
 			return err
@@ -99,6 +103,5 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 
 		return nil
 	}, retry.DelayBetweenRetries(time.Second*5), retry.NumberOfRetries(3))
-
 	return err
 }

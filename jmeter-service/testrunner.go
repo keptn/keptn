@@ -167,7 +167,7 @@ func getWorkloadForStrategy(jmeterconf *JMeterConf, teststrategy string) (*Workl
 			return &workload, nil
 		}
 	}
-	return nil, fmt.Errorf("No workload configuration found for teststrategy: %s", teststrategy)
+	return nil, fmt.Errorf("no workload configuration found for teststrategy: %s", teststrategy)
 }
 
 func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
@@ -183,7 +183,9 @@ func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", testInfo.Context)
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
-	event.SetData(cloudevents.ApplicationJSON, testStartedEventData)
+	if err := event.SetData(cloudevents.ApplicationJSON, testStartedEventData); err != nil {
+		return err
+	}
 
 	return tr.eventSender.SendEvent(event)
 }
@@ -207,7 +209,9 @@ func (tr *TestRunner) sendTestsFinishedEvent(testInfo TestInfo, startedAt time.T
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", testInfo.Context)
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
-	event.SetData(cloudevents.ApplicationJSON, testFinishedData)
+	if err := event.SetData(cloudevents.ApplicationJSON, testFinishedData); err != nil {
+		return err
+	}
 
 	return tr.eventSender.SendEvent(event)
 }
@@ -231,7 +235,9 @@ func (tr *TestRunner) sendErroredTestsFinishedEvent(testInfo TestInfo, startedAt
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", testInfo.Context)
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
-	event.SetData(cloudevents.ApplicationJSON, testFinishedData)
+	if err := event.SetData(cloudevents.ApplicationJSON, testFinishedData); err != nil {
+		return err
+	}
 
 	return tr.eventSender.SendEvent(event)
 }

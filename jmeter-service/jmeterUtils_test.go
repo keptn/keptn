@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 )
 
 func Test_executeJMeter(t *testing.T) {
+	localTmpDir, _ := ioutil.TempDir("", "")
 	var returnedStatus int
 	var returnedResources keptnapimodels.Resources
 
@@ -64,22 +66,11 @@ func Test_executeJMeter(t *testing.T) {
 					Stage:        "dev",
 					Service:      "carts",
 					TestStrategy: "functional",
+					Context:      localTmpDir,
 				},
 				workload: &Workload{
-					TestStrategy:      "",
-					VUser:             0,
-					LoopCount:         0,
-					ThinkTime:         0,
-					Script:            "test.jmx",
-					AcceptedErrorRate: 0,
-					AvgRtValidation:   0,
-					Properties:        nil,
+					Script: "test.jmx",
 				},
-				resultsDir:     "",
-				url:            nil,
-				LTN:            "",
-				funcValidation: false,
-				logger:         nil,
 			},
 			want:           true,
 			wantErr:        false,
@@ -93,22 +84,11 @@ func Test_executeJMeter(t *testing.T) {
 					Stage:        "dev",
 					Service:      "carts",
 					TestStrategy: "functional",
+					Context:      localTmpDir,
 				},
 				workload: &Workload{
-					TestStrategy:      "",
-					VUser:             0,
-					LoopCount:         0,
-					ThinkTime:         0,
-					Script:            "test.jmx",
-					AcceptedErrorRate: 0,
-					AvgRtValidation:   0,
-					Properties:        nil,
+					Script: "test.jmx",
 				},
-				resultsDir:     "",
-				url:            nil,
-				LTN:            "",
-				funcValidation: false,
-				logger:         nil,
 			},
 			want:           false,
 			wantErr:        true,
@@ -128,7 +108,8 @@ func Test_executeJMeter(t *testing.T) {
 					ResourceURI: &res,
 				})
 			}
-			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tt.args.resultsDir, tt.args.url, tt.args.LTN, tt.args.funcValidation)
+			tmpDir, _ := ioutil.TempDir("", "")
+			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tmpDir, tt.args.url, tt.args.LTN, tt.args.funcValidation)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("executeJMeter() error = %v, wantErr %v", err, tt.wantErr)
 				return
