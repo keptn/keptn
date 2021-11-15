@@ -51,7 +51,6 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 	api.EventSaveEventHandler = event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
 		if err := eventRequestHandler.ProcessEvent(params.Body); err != nil {
-			// TODO: check validation
 			return event.NewSaveEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewSaveEventCreated()

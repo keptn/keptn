@@ -574,6 +574,8 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 
 func getInvalidatedEventQuery(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
 	const matchExpr = "$match"
+	const triggeredIDVar = "$triggeredid"
+
 	matchStage := bson.D{
 		{Key: matchExpr, Value: matchFields},
 	}
@@ -583,7 +585,7 @@ func getInvalidatedEventQuery(params event.GetEventsByTypeParams, collectionName
 			"from": getInvalidatedCollectionName(collectionName),
 			"let": bson.M{
 				"event_id":          "$id",
-				"event_triggeredid": "$triggeredid",
+				"event_triggeredid": triggeredIDVar,
 			},
 			"pipeline": []bson.M{
 				{
@@ -592,11 +594,11 @@ func getInvalidatedEventQuery(params event.GetEventsByTypeParams, collectionName
 							"$or": []bson.M{
 								{
 									// backwards-compatibility to 0.7.x -> triggeredid of .invalidated event refers to the id of the evaluation-done event
-									"$eq": []string{"$triggeredid", "$$event_id"},
+									"$eq": []string{triggeredIDVar, "$$event_id"},
 								},
 								{
 									// logic for 0.8: triggeredid of .invalidated event refers to the triggeredid of the evaluation.finished event (both are related to the same .triggered event)
-									"$eq": []string{"$triggeredid", "$$event_triggeredid"},
+									"$eq": []string{triggeredIDVar, "$$event_triggeredid"},
 								},
 							},
 						},
