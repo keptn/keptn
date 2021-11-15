@@ -131,30 +131,30 @@ func parseJMeterResult(jmeterCommandResult string, testInfo TestInfo, workload *
 // Status: true or false
 // Error: error details if status was false
 func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url *url.URL, loadTestName string, funcValidation bool) (bool, error) {
-	os.RemoveAll(resultsDir)
-	os.MkdirAll(resultsDir, 0644)
-
+	if err := createDir(resultsDir); err != nil {
+		return false, err
+	}
 	// Step 1: Lets download all files that match /jmeter/ into a local temp directory
 	localTempDir := testInfo.Context
-	os.RemoveAll(localTempDir)
-	os.MkdirAll(localTempDir, 0644)
-
+	if err := createDir(localTempDir); err != nil {
+		return false, err
+	}
 	primaryScriptDownloaded, downloadedFileCount, err := DownloadAndStoreResources(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfigDirectory, workload.Script, localTempDir)
 	if err != nil {
 		if errors.Is(err, ErrPrimaryFileNotAvailable) {
 			// if no .jmx file is available -> skip the tests
-			logger.Debug("Skipping test execution because " + workload.Script + " not found on service, stage or project level.")
+			logger.Debug("skipping test execution because " + workload.Script + " not found on service, stage or project level.")
 			return true, nil
 		}
-		err = fmt.Errorf("Error loading /jmeter/* files for %s.%s.%s: %s", testInfo.Project, testInfo.Stage, testInfo.Service, err.Error())
+		err = fmt.Errorf("error loading /jmeter/* files for %s.%s.%s: %w", testInfo.Project, testInfo.Stage, testInfo.Service, err)
 		return false, err
 	}
 	if downloadedFileCount == 0 {
-		err = fmt.Errorf("No files found in /jmeter/* for %s.%s.%s", testInfo.Project, testInfo.Stage, testInfo.Service)
+		err = fmt.Errorf("no files found in /jmeter/* for %s.%s.%s", testInfo.Project, testInfo.Stage, testInfo.Service)
 		return false, err
 	}
 	if !primaryScriptDownloaded {
-		err = fmt.Errorf("Primary file %s was not found for %s.%s.%s", workload.Script, testInfo.Project, testInfo.Stage, testInfo.Service)
+		err = fmt.Errorf("primary file %s was not found for %s.%s.%s", workload.Script, testInfo.Project, testInfo.Stage, testInfo.Service)
 		return false, err
 	}
 	// this flag allows us to control whether files should be removed or not
@@ -165,11 +165,12 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	if !fileutils.FileExists(mainScriptFileName) {
 		err = fmt.Errorf("JMeter script %s not found locally at %s for %s.%s.%s", workload.Script, mainScriptFileName, testInfo.Project, testInfo.Stage, testInfo.Service)
 		if removeTempFiles {
-			os.RemoveAll(localTempDir)
+			if err := os.RemoveAll(localTempDir); err != nil {
+				return false, err
+			}
 		}
 		return false, err
 	}
-
 	// Step 2: Lets execute the script - but be aware that we launch jmeter from the localTempDir as a working directory!
 	jMeterCommandLineArgs := addJMeterCommandLineArguments(testInfo, createJMeterCLIArguments(workload, url, resultsDir, loadTestName))
 	jmeterCommandResult, err := keptnutils.ExecuteCommandInDirectory("jmeter", jMeterCommandLineArgs, localTempDir)
@@ -179,9 +180,10 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	}
 	// now lets remove all downloaded files
 	if removeTempFiles {
-		os.RemoveAll(localTempDir)
+		if err := os.RemoveAll(localTempDir); err != nil {
+			return false, err
+		}
 	}
-
 	// Step 3: Parse result and lets analyze the result
 	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation)
 	if result && err != nil {
@@ -190,6 +192,13 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 		logger.Errorf("Successfully executed JMeter test: %s", testInfo.ToString())
 	}
 	return result, err
+}
+
+func createDir(dir string) error {
+	if err := os.RemoveAll(dir); err != nil {
+		return err
+	}
+	return os.MkdirAll(dir, 0644)
 }
 
 func derivePort(url *url.URL) string {

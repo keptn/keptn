@@ -42,7 +42,7 @@ type Workload struct {
 }
 
 var defaultWorkloads = []Workload{
-	Workload{
+	{
 		TestStrategy:      TestStrategy_HealthCheck,
 		VUser:             1,
 		LoopCount:         1,
@@ -50,7 +50,7 @@ var defaultWorkloads = []Workload{
 		Script:            "jmeter/basiccheck.jmx",
 		AcceptedErrorRate: 0.0,
 	},
-	Workload{
+	{
 		TestStrategy:      TestStrategy_Performance,
 		VUser:             10,
 		LoopCount:         500,
@@ -58,7 +58,7 @@ var defaultWorkloads = []Workload{
 		Script:            "jmeter/load.jmx",
 		AcceptedErrorRate: 0.1,
 	},
-	Workload{
+	{
 		TestStrategy:      TestStrategy_Functional,
 		VUser:             1,
 		LoopCount:         1,
