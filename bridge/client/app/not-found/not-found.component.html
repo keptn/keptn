@@ -5,7 +5,8 @@
         <img alt="Logo" class="mt-2" [src]="logoInvertedUrl" />
       </dt-empty-state-item-img>
       <dt-empty-state-item-title class="mt-2" aria-level="2"> Page not found </dt-empty-state-item-title>
-      <p>Your requested page couldn't be found. Go back to <a routerLink="/">Dashboard</a>.</p>
+      <p>The requested page <code [textContent]="routerUrl"></code> doesn't exist.</p>
+      <button dt-button routerLink="/">Go to Dashboard</button>
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
