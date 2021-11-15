@@ -18,6 +18,7 @@ import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -84,7 +85,7 @@ const routes: Routes = [
   { path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent },
   { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
   { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
-  { path: '**', redirectTo: '' },
+  { path: '**', component: NotFoundComponent },
 ];
 
 @NgModule({
