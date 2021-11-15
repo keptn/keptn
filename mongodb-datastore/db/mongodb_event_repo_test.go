@@ -1,17 +1,55 @@
 package db
 
 import (
+	"context"
+	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/common"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 	"reflect"
 	"testing"
 )
+
+var mongoDbVersion = "4.4.9"
+
+func TestMain(m *testing.M) {
+	mongoServer, err := setupLocalMongoDB()
+	if err != nil {
+		log.Fatalf("Mongo Server setup failed: %s", err)
+	}
+	defer mongoServer.Stop()
+	m.Run()
+}
+
+func setupLocalMongoDB() (*memongo.Server, error) {
+	mongoServer, err := memongo.Start(mongoDbVersion)
+
+	randomDbName := memongo.RandomDatabase()
+
+	os.Setenv("MONGODB_DATABASE", randomDbName)
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+
+	var mongoClient *mongo.Client
+	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
+	if err != nil {
+		return nil, err
+	}
+	err = mongoClient.Connect(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	return mongoServer, err
+}
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
