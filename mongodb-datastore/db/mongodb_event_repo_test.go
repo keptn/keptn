@@ -160,6 +160,66 @@ func TestMongoDBEventRepo_Retrieve_NoProjectOrKeptnContext(t *testing.T) {
 	require.Nil(t, eventsByType)
 }
 
+func TestMongoDBEventRepo_DropCollections(t *testing.T) {
+	repo := NewMongoDBEventRepo(GetMongoDBConnectionInstance())
+
+	evaluationEventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
+
+	keptnContext := "my-context"
+	testEvent := models.KeptnContextExtendedCE{
+		Event: models.Event{
+			Contenttype: "application/cloudevents+json",
+			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+			ID:          "my-evaluation-id",
+			Source:      "test-source",
+			Specversion: "1.0",
+			Time:        models.Time{},
+			Type:        models.Type(evaluationEventType),
+		},
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Triggeredid:        "my-triggered-id",
+	}
+
+	err := repo.InsertEvent(testEvent)
+	require.Nil(t, err)
+
+	invalidatedEvent := models.KeptnContextExtendedCE{
+		Event: models.Event{
+			Contenttype: "application/cloudevents+json",
+			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+			ID:          "my-invalidated-id",
+			Source:      "test-source",
+			Specversion: "1.0",
+			Time:        models.Time{},
+			Type:        models.Type(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
+		},
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Triggeredid:        "my-evaluation-id",
+	}
+
+	err = repo.InsertEvent(invalidatedEvent)
+
+	require.Nil(t, err)
+
+	err = repo.DropProjectCollections(testEvent)
+
+	require.Nil(t, err)
+
+	pageSize := int64(0)
+	events, err := repo.GetEvents(
+		event.GetEventsParams{
+			KeptnContext: &keptnContext,
+			PageSize:     &pageSize,
+			Type:         &evaluationEventType,
+		},
+	)
+
+	require.Nil(t, err)
+	require.Empty(t, events.Events)
+}
+
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 	grandchild := bson.D{{Key: "apple", Value: "red"}, {Key: "orange", Value: "orange"}}
