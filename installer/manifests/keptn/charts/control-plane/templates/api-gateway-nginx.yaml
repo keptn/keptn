@@ -348,6 +348,7 @@ spec:
             runAsUser: 101
             readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: api-nginx-config
           configMap:
@@ -365,7 +366,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}       
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:

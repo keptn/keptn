@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}     
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -28,7 +28,7 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}     
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
         fsGroup: 65532
@@ -88,6 +88,7 @@ spec:
           runAsUser: 65532
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
+          privileged: false
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
@@ -113,6 +114,7 @@ spec:
           runAsUser: 65532
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
+          privileged: false
 ---
 apiVersion: v1
 kind: Service
@@ -124,7 +126,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}         
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
   - port: 8080
