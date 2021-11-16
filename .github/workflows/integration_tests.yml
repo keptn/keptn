@@ -15,7 +15,7 @@ on:
         required: true
         default: 'master'
 env:
-  META_KEPTN_VERSION: 0.9.0
+  META_KEPTN_VERSION: 0.10.0
   META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
@@ -182,7 +182,7 @@ jobs:
             echo "VERSION=${VERSION}" >> $GITHUB_ENV
           fi
 
-      - name: DEBUG Build-Config
+      - name: Print Build-Config
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
@@ -787,7 +787,7 @@ jobs:
           # overwrite VERSION
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      - name: DEBUG Build-Config
+      - name: Print Build-Config
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
@@ -1115,6 +1115,37 @@ jobs:
     steps:
       - name: Create downloads folder
         run: mkdir ~/downloads
+
+      - name: Download all artifacts from last successful build of specified branch
+        uses: dawidd6/action-download-artifact@v2.15.0
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
+          # directory where to extract artifacts to
+          path: ./dist
+
+      # load build-config
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+        id: load_build_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
+
+      - name: Print Build-Config
+        run: |
+          echo VERSION=${VERSION}
+          echo BRANCH=${BRANCH}
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
