@@ -230,7 +230,7 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 							return
 						}
 						if err := k.send(*errorEvent); err != nil {
-							log.Errorf("unable to send '.finished' event: %v", err)
+							log.Errorf("unable to send '.error' event: %v", err)
 							return
 						}
 					}
