@@ -51,7 +51,7 @@ func Test_LogForwarding(t *testing.T) {
 	require.NotEmpty(t, keptnContextID)
 
 	// verify state
-	require.Eventually(t, func() bool {
+	require.Eventuallyf(t, func() bool {
 		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
@@ -72,7 +72,7 @@ func Test_LogForwarding(t *testing.T) {
 			return false
 		}
 		return true
-	}, 100*time.Second, 2*time.Second)
+	}, 100*time.Second, 2*time.Second, GetDiagnostics("shipyard-controller"))
 
 	// retrieve the integration for the lighthouse service
 	integrations, _, err := getIntegrations()
