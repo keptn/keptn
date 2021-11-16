@@ -120,7 +120,7 @@
   <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-form-field uitestid="edit-webhook-field-sendFinished" class="send-finished-input">
       <dt-label>Send finished event</dt-label>
-      <dt-radio-group name="sendFinished" formControlName="sendFinished">
+      <dt-radio-group name="sendFinished" formControlName="sendFinished" (change)="onWebhookFormChange()">
         <dt-radio-button value="true" class="mr-2"> automatically </dt-radio-button>
         <dt-radio-button value="false"> by Webhook receiver </dt-radio-button>
       </dt-radio-group>
