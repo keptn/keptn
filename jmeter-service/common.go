@@ -255,9 +255,7 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 		return err
 	}
 
-	// save changes
-	err = writeToFile.Sync()
-	return err
+	return nil
 }
 
 //

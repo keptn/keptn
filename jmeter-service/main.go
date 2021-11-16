@@ -83,9 +83,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
 func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData) {
-	if err := sendTestsStartedEvent(shkeptncontext, event); err != nil {
-		logger.Error(fmt.Sprintf("unable to send test .started event: %s", err))
-	}
+	sendTestsStartedEvent(shkeptncontext, event)
 
 	testInfo := getTestInfo(data, shkeptncontext)
 	startedAt := time.Now()
