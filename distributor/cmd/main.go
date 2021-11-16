@@ -16,7 +16,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -24,13 +23,13 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
 	logger "github.com/sirupsen/logrus"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -44,17 +43,29 @@ func main() {
 func _main(env config.EnvConfig) int {
 	connectionType := config.GetPubSubConnectionType()
 	executionContext := createExecutionContext()
-	eventSender := setupEventSender()
+	eventSender, err := setupEventSender(env)
+	if err != nil {
+		logger.WithError(err).Fatal("Could not initialize event sender.")
+	}
 	httpClient := setupHTTPClient()
 
 	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
+	// restrict the timeout for the http handlers to 5s
+	// otherwise, retry mechanisms of these components will be blocked for too long
+	uniformHandler.HTTPClient.Timeout = 5 * time.Second
+	uniformLogHandler.HTTPClient.Timeout = 5 * time.Second
+
 	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType)
 	uniformWatch := setupUniformWatch(controlPlane)
 	forwarder := events.NewForwarder(httpClient)
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
-	go forwarder.Start(executionContext)
+	go func() {
+		if err := forwarder.Start(executionContext); err != nil {
+			logger.WithError(err).Error("Could not start event forwarder")
+		}
+	}()
 
 	// Eventually start registration process
 	if shallRegister() {
@@ -99,11 +110,11 @@ func createExecutionContext() *events.ExecutionContext {
 
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
-	context := events.ExecutionContext{
+	executionContext := events.ExecutionContext{
 		Context: ctx,
 		Wg:      wg,
 	}
-	return &context
+	return &executionContext
 }
 
 func shallRegister() bool {
@@ -165,22 +176,10 @@ func setupHTTPClient() *http.Client {
 	return client
 }
 
-func setupCEClient() cloudevents.Client {
-	p, err := cloudevents.NewHTTP()
+func setupEventSender(env config.EnvConfig) (events.EventSender, error) {
+	eventSender, err := keptnv2.NewHTTPEventSender(env.GetPubSubRecipientURL())
 	if err != nil {
-		log.Fatalf("failed to create protocol: %s", err.Error())
+		return nil, err
 	}
-
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
-	}
-	return c
-}
-
-func setupEventSender() events.EventSender {
-	ceClient := setupCEClient()
-	return &keptnv2.HTTPEventSender{
-		Client: ceClient,
-	}
+	return eventSender, nil
 }

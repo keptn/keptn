@@ -381,7 +381,7 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 			}
 		}
 		return false
-	}, timeout, 10*time.Second, GetDiagnostics("shipyard-controller"))
+	}, timeout, 10*time.Second, GetDiagnostics("shipyard-controller", ""))
 }
 
 func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context *models.EventContext, desiredStates []string) bool {
@@ -416,9 +416,12 @@ func GetProject(projectName string) (*scmodels.ExpandedProject, error) {
 	return project, err
 }
 
-func GetDiagnostics(service string) string {
+func GetDiagnostics(service string, container string) string {
+	if container == "" {
+		container = service
+	}
 	outputBuilder := strings.Builder{}
-	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, service)
+	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, container)
 
 	outputBuilder.WriteString(fmt.Sprintf("Logs of  of %s: \n\n", service))
 	logOutput, err := ExecuteCommand(getLogsCmd)
@@ -428,7 +431,7 @@ func GetDiagnostics(service string) string {
 
 	outputBuilder.WriteString(logOutput)
 	outputBuilder.WriteString("\n-------------------------\n")
-	getLogsCmd = fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, service)
+	getLogsCmd = fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, container)
 
 	outputBuilder.WriteString(fmt.Sprintf("Logs of crashed instances of %s: \n\n", service))
 	logOutput, err = ExecuteCommand(getLogsCmd)
@@ -464,7 +467,7 @@ func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImag
 func VerifyTaskStartedEventExists(t *testing.T, keptnContext, projectName, stage string, taskName string) {
 	var startedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Logf("verifying that " + taskName + ".finished event for context %s does exist", keptnContext)
+		t.Logf("verifying that "+taskName+".finished event for context %s does exist", keptnContext)
 		taskStarted, err := GetLatestEventOfType(keptnContext, projectName, stage, keptnv2.GetStartedEventType(taskName))
 		if err != nil || taskStarted == nil {
 			return false
