@@ -445,92 +445,92 @@ jobs:
         continue-on-error: true
         run: cd test/go-tests && go get ./...
 
-#      - name: Test Airgapped Images
-#        id: test_airgapped_images
-#        if: env.RUN_AIRGAPPED_TEST == 'true'
-#        timeout-minutes: 2
-#        continue-on-error: true
-#        run: test/test_airgapped_images.sh "k3d-container-registry.localhost:12345"
-#
-#      - name: Test Log Ingestion
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_log_ingestion
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run LogIngestion -v
-#
-#      - name: Test Log Forwarding
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_log_forwarding
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run LogForwarding -v
-#
-#      - name: Test Sequence States
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_sequence_states
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run SequenceState -v
-#
-#      - name: Test Sequence Loop
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_sequence_loop
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
-#
-#      - name: Test Quality Gates Standalone
-#        id: test_quality_gates
-#        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
-#        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
-#        timeout-minutes: 10
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run Test_QualityGates -v
-#
-#      - name: Test Self Healing
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_self_healing
-#        timeout-minutes: 10
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#          UNLEASH_SERVICE_VERSION: "release-0.3.2"
-#        run: cd test/go-tests && go test -run Test_SelfHealing -v
-#
-#      - name: Test Delivery Assistant
-#        id: test_delivery_assistant
-#        # Delivery Assistant only works when we install keptn with continuous delivery use-case
-#        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
-#
-#      - name: Test User Managed Delivery
-#        id: test_user_managed_delivery
-#        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
+      - name: Test Airgapped Images
+        id: test_airgapped_images
+        if: env.RUN_AIRGAPPED_TEST == 'true'
+        timeout-minutes: 2
+        continue-on-error: true
+        run: test/test_airgapped_images.sh "k3d-container-registry.localhost:12345"
+
+      - name: Test Log Ingestion
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_log_ingestion
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run LogIngestion -v
+
+      - name: Test Log Forwarding
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_log_forwarding
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run LogForwarding -v
+
+      - name: Test Sequence States
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_states
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceState -v
+
+      - name: Test Sequence Loop
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_loop
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
+
+      - name: Test Quality Gates Standalone
+        id: test_quality_gates
+        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_QualityGates -v
+
+      - name: Test Self Healing
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_self_healing
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          UNLEASH_SERVICE_VERSION: "release-0.3.2"
+        run: cd test/go-tests && go test -run Test_SelfHealing -v
+
+      - name: Test Delivery Assistant
+        id: test_delivery_assistant
+        # Delivery Assistant only works when we install keptn with continuous delivery use-case
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
+
+      - name: Test User Managed Delivery
+        id: test_user_managed_delivery
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
 
       - name: Install Remote Execution Plane
         id: install_remote_execution_plane
@@ -571,76 +571,76 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run ContinuousDelivery -v
 
-#      - name: Test Manage Secrets
-#        id: test_manage_secrets
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run:  cd test/go-tests && go test -run ManageSecrets -v
-#
-#      - name: Test Webhook Integration
-#        id: test_webhook_integration
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run Test_Webhook -v
-#
-#      #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
-#      #        id: test_continuous_delivery
-#      #        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
-#      #        continue-on-error: true
-#      #        env:
-#      #          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#      #        run: |
-#      #          test/test_self_healing_scaling.sh
-#
-#      # for debugging etc... it makes sense to have the support archive attached as an artifact
-#
-#      - name: Test Sequence Timeout
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_sequence_timeout
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run SequenceTimeout -v
-#
-#      - name: Test Sequence Control
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_sequence_control
-#        timeout-minutes: 5
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run SequenceControl -v
-#
-#      - name: Test Sequence Queue
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true'
-#        id: test_sequence_queue
-#        timeout-minutes: 15
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run SequenceQueue -v -timeout 15m
-#
-#      - name: Test Uniform Registration
-#        # do not run this test for the airgapped scenario
-#        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
-#        id: test_uniform_registration
-#        timeout-minutes: 10
-#        continue-on-error: true
-#        env:
-#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-#        run: cd test/go-tests && go test -run UniformRegistration -v
+      - name: Test Manage Secrets
+        id: test_manage_secrets
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run:  cd test/go-tests && go test -run ManageSecrets -v
+
+      - name: Test Webhook Integration
+        id: test_webhook_integration
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_Webhook -v
+
+      #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
+      #        id: test_continuous_delivery
+      #        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+      #        continue-on-error: true
+      #        env:
+      #          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+      #        run: |
+      #          test/test_self_healing_scaling.sh
+
+      # for debugging etc... it makes sense to have the support archive attached as an artifact
+
+      - name: Test Sequence Timeout
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_timeout
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceTimeout -v
+
+      - name: Test Sequence Control
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_control
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceControl -v
+
+      - name: Test Sequence Queue
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_queue
+        timeout-minutes: 15
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceQueue -v -timeout 15m
+
+      - name: Test Uniform Registration
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
+        id: test_uniform_registration
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run UniformRegistration -v
 
       - name: keptn generate support-archive
         if: always()
