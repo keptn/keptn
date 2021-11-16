@@ -32,6 +32,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore

@@ -77,6 +77,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
@@ -205,6 +207,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
@@ -330,6 +334,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
@@ -510,6 +516,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: keptn-secret-service
       containers:
         - name: secret-service
@@ -709,6 +717,8 @@ spec:
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        seccompProfile:
+          type: RuntimeDefault
 {{- if .Values.configurationService.initContainer }}
       initContainers:
         - name: change-user-init
@@ -836,6 +846,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
@@ -972,6 +984,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
@@ -1093,6 +1107,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service

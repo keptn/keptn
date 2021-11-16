@@ -302,6 +302,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}

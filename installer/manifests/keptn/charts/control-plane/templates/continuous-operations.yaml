@@ -31,6 +31,8 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
