@@ -182,7 +182,7 @@ jobs:
             echo "VERSION=${VERSION}" >> $GITHUB_ENV
           fi
 
-      - name: DEBUG Build-Config
+      - name: Print Build-Config
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
@@ -787,7 +787,7 @@ jobs:
           # overwrite VERSION
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      - name: DEBUG Build-Config
+      - name: Print Build-Config
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
@@ -1142,7 +1142,7 @@ jobs:
             echo "VERSION=${VERSION}" >> $GITHUB_ENV
           fi
 
-      - name: DEBUG Build-Config
+      - name: Print Build-Config
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
