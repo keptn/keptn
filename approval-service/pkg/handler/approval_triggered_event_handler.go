@@ -57,10 +57,13 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnv2.ApprovalTriggeredEventData,
 	triggeredID, shkeptncontext string) []cloudevents.Event {
 	outgoingEvents := make([]cloudevents.Event, 0)
+
+	startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
+	outgoingEvents = append(outgoingEvents, *startedEvent)
+
 	if inputEvent.Result == keptnv2.ResultPass && inputEvent.Approval.Pass == keptnv2.ApprovalAutomatic ||
 		inputEvent.Result == keptnv2.ResultWarning && inputEvent.Approval.Warning == keptnv2.ApprovalAutomatic {
-		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
-		outgoingEvents = append(outgoingEvents, *startedEvent)
+
 		logger.Info(fmt.Sprintf("Automatically approve release of service %s of project %s and current stage %s",
 			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
@@ -68,34 +71,28 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 		outgoingEvents = append(outgoingEvents, *finishedEvent)
 	} else if inputEvent.Result == keptnv2.ResultFailed {
 		// Handle case if an ApprovalTriggered event was sent even the evaluation result is failed
-		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
-		outgoingEvents = append(outgoingEvents, *startedEvent)
-
 		logger.Info(fmt.Sprintf("Disapprove release of service %s of project %s and current stage %s because"+
 			"the previous step failed", inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultFailed, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *finishedEvent)
-	} else if inputEvent.Approval.Pass == keptnv2.ApprovalManual || inputEvent.Approval.Warning == keptnv2.ApprovalManual {
-		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
-		outgoingEvents = append(outgoingEvents, *startedEvent)
 	}
 
 	return outgoingEvents
 }
 
 func (a *ApprovalTriggeredEventHandler) getApprovalStartedEvent(inputEvent keptnv2.ApprovalTriggeredEventData, triggeredID, shkeptncontext string) *cloudevents.Event {
-	approvalFinishedEvent := keptnv2.ApprovalStartedEventData{
+	approvalStartedEvent := keptnv2.ApprovalStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: inputEvent.Project,
 			Stage:   inputEvent.Stage,
 			Service: inputEvent.Service,
 			Labels:  inputEvent.Labels,
 			Status:  keptnv2.StatusSucceeded,
-			Message: "",
+			Message: fmt.Sprintf("Approval strategy for result '%s': %s", string(inputEvent.Result), getApprovalStrategyForEvent(inputEvent)),
 		},
 	}
 
-	return getCloudEvent(approvalFinishedEvent, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
+	return getCloudEvent(approvalStartedEvent, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
 }
 
 func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent keptnv2.ApprovalTriggeredEventData,
@@ -113,4 +110,27 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 	}
 
 	return getCloudEvent(approvalFinishedEvent, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
+}
+
+func getApprovalStrategyForEvent(event keptnv2.ApprovalTriggeredEventData) interface{} {
+	if event.Result == keptnv2.ResultPass {
+		if event.Approval.Pass != "" {
+			return event.Approval.Pass
+		}
+		// fall back to manual if no approval strategy has been set
+		return keptnv2.ApprovalManual
+	}
+	if event.Result == keptnv2.ResultWarning {
+		if event.Approval.Warning != "" {
+			return event.Approval.Warning
+		}
+		// fall back to manual if no approval strategy has been set
+		return keptnv2.ApprovalManual
+	}
+	if event.Result == keptnv2.ResultFailed {
+		// if we had a result=fail previously, we automatically decline
+		return keptnv2.ApprovalAutomatic
+	}
+	// fall back to manual in al other cases
+	return keptnv2.ApprovalManual
 }
