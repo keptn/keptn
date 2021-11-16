@@ -158,7 +158,14 @@ async function init(): Promise<Express> {
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
 
-  app.use(helmet.contentSecurityPolicy());
+  app.use(
+    helmet.contentSecurityPolicy({
+      useDefaults: true,
+      directives: {
+        'script-src': ["'self'", "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", "'unsafe-eval'"],
+      },
+    })
+  );
   app.use(helmet.hidePoweredBy());
   app.use(helmet.noSniff());
   app.use(helmet.permittedCrossDomainPolicies());
