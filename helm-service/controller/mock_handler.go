@@ -99,7 +99,10 @@ func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) 
 func (h *MockedHandler) handleError(triggerID string, err error, taskName string, finishedEventData interface{}) {
 	fmt.Println("HandleError: " + err.Error())
 	h.handledErrorEvents = append(h.handledErrorEvents, finishedEventData)
-	h.sendEvent(triggerID, keptnv2.GetFinishedEventType(taskName), finishedEventData)
+	sendErr := h.sendEvent(triggerID, keptnv2.GetFinishedEventType(taskName), finishedEventData)
+	if sendErr != nil {
+		h.getKeptnHandler().Logger.Errorf("HandleError: Unable to send finished event: " + sendErr.Error())
+	}
 }
 
 func (h *MockedHandler) sendEvent(triggerID, ceType string, data interface{}) error {

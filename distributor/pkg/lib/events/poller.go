@@ -187,8 +187,6 @@ func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription ke
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
-	ctx = cloudevents.ContextWithTarget(ctx, p.env.GetPubSubRecipientURL())
-	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
 	if err := p.eventSender.Send(ctx, event); err != nil {
