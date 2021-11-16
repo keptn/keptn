@@ -117,9 +117,13 @@
       <dt-error *ngIf="getFormControl('proxy').errors?.url">URL must start with http(s)://</dt-error>
     </dt-form-field>
   </div>
-  <div class="mt-3 mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field uitestid="edit-webhook-field-sendFinished">
-      <dt-checkbox formControlName="sendFinished">Send finished event</dt-checkbox>
+  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-form-field uitestid="edit-webhook-field-sendFinished" class="send-finished-input">
+      <dt-label>Send finished event</dt-label>
+      <dt-radio-group name="sendFinished" formControlName="sendFinished">
+        <dt-radio-button value="true" class="mr-2"> automatically </dt-radio-button>
+        <dt-radio-button value="false"> by Webhook receiver </dt-radio-button>
+      </dt-radio-group>
     </dt-form-field>
     <div [dtOverlay]="sendFinishedOverlay" style="cursor: pointer" [dtOverlayConfig]="sendFinishedOverlayConfig">
       <dt-icon name="information" class="info mr-1"></dt-icon>
@@ -129,8 +133,8 @@
         If you subscribe your Webhook to a task event of type triggered, the corresponding started and finished events
         are sent automatically.
         <br /><br />
-        To move the responsibility of sending the finished event to the Webhook receiver, disable this checkbox. This is
-        especially required for Webhooks that trigger a long-running task.
+        To move the responsibility of sending the finished event to the Webhook receiver, select the option 'by Webhook
+        receiver'. This is especially required for Webhooks that trigger a long-running task.
       </p>
     </ng-template>
   </div>

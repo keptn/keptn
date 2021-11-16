@@ -22,7 +22,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     payload: new FormControl('', []),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
-    sendFinished: new FormControl(true, []),
+    sendFinished: new FormControl('true', []),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
@@ -41,11 +41,11 @@ export class KtbWebhookSettingsComponent implements OnInit {
   set eventType(eventType: string | undefined) {
     if (this._eventType != eventType) {
       this._eventType = eventType;
-      if (this._eventType !== 'triggered') {
-        this.getFormControl('sendFinished').setValue(false);
+      if (this._eventType !== 'triggered' && this._eventType !== '*') {
+        this.getFormControl('sendFinished').setValue(null);
         this.getFormControl('sendFinished').disable();
       } else {
-        this.getFormControl('sendFinished').setValue(this._webhook.sendFinished);
+        this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
         this.getFormControl('sendFinished').enable();
       }
     }
@@ -59,7 +59,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('url').setValue(webhookConfig.url);
       this.getFormControl('payload').setValue(webhookConfig.payload);
       this.getFormControl('proxy').setValue(webhookConfig.proxy);
-      this.getFormControl('sendFinished').setValue(webhookConfig.sendFinished);
+      this.getFormControl('sendFinished').setValue(webhookConfig.sendFinished.toString());
 
       for (const header of webhookConfig.header || []) {
         this.addHeader(header.name, header.value);
@@ -105,7 +105,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this._webhook.payload = this.getFormControl('payload').value;
     this._webhook.proxy = this.getFormControl('proxy').value;
     this._webhook.header = this.getFormControl('header').value;
-    this._webhook.sendFinished = this.getFormControl('sendFinished').value;
+    this._webhook.sendFinished = this.getFormControl('sendFinished').value === 'true';
     this.webhookChange.emit(this._webhook);
   }
 

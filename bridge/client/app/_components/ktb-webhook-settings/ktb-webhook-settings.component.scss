@@ -26,6 +26,10 @@
   fill: $primary-color;
 }
 
+.send-finished-input + .dt-overlay-trigger {
+  margin-top: 2.5em;
+}
+
 ::ng-deep {
   .dt-form-field.text-area {
     .dt-form-field-suffix {
