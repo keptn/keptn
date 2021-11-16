@@ -162,15 +162,15 @@ async function init(): Promise<Express> {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", "'unsafe-eval '"],
+        'script-src': ["'self'", 'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g=', 'unsafe-eval'],
       },
     })
   );
-  app.use(helmet.hidePoweredBy());
-  app.use(helmet.noSniff());
-  app.use(helmet.permittedCrossDomainPolicies());
+  // app.use(helmet.hidePoweredBy());
+  // app.use(helmet.noSniff());
+  // app.use(helmet.permittedCrossDomainPolicies());
   app.use(helmet.frameguard());
-  app.use(helmet.xssFilter());
+  // app.use(helmet.xssFilter());
 
   const authType: string = await setAuth();
 
