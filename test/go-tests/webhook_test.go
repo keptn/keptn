@@ -70,6 +70,16 @@ spec:
             key: "my-key"
       requests:
         - "curl http://kubernetes.default.svc.cluster.local:443/v1"
+    - type: "sh.keptn.event.mytask.finished"
+      subscriptionID: ${mytask-finished-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - "curl http://shipyard-controller:8080/v1/some-unknown-api"
     - type: "sh.keptn.event.mytask.triggered"
       subscriptionID: ${mytask-sub-id}
       sendFinished: true
@@ -176,12 +186,16 @@ func Test_Webhook(t *testing.T) {
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
-	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask", "failedtask"}
+	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
 	for _, taskType := range taskTypes {
+		eventType := keptnv2.GetTriggeredEventType(taskType)
+		if strings.HasSuffix(taskType, "-finished") {
+			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
+		}
 		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
-			Event: keptnv2.GetTriggeredEventType(taskType),
+			Event: eventType,
 			Filter: models.EventSubscriptionFilter{
 				Projects: []string{projectName},
 			},
@@ -228,6 +242,11 @@ func Test_Webhook(t *testing.T) {
 		require.Nil(t, err)
 
 		verify(t, decodedEvent)
+
+		// verify that no <task>.finished.finished event is sent
+		finishedFinishedEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("mytask.finished"))
+		require.Nil(t, err)
+		require.Nil(t, finishedFinishedEvent)
 	}
 
 	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "mytask", func(t *testing.T, decodedEvent map[string]interface{}) {
