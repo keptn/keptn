@@ -28,6 +28,7 @@ const (
 	// paths of CloudEvent properties that are commonly used
 	sourcePropertyPath       = "source"
 	keptnContextPropertyPath = "shkeptncontext"
+	triggeredIDPropertyPath  = "triggeredid"
 	idPropertyPath           = "id"
 	timePropertyPath         = "time"
 	typePropertyPath         = "type"
@@ -40,7 +41,7 @@ var (
 	projectLocks             = map[string]*sync.Mutex{}
 	rootEventsIndexes        = []string{servicePropertyPath, timePropertyPath}
 	projectEventsIndexes     = []string{servicePropertyPath, keptnContextPropertyPath, typePropertyPath}
-	invalidatedEventsIndexes = []string{"triggeredid"}
+	invalidatedEventsIndexes = []string{triggeredIDPropertyPath}
 )
 
 type MongoDBEventRepo struct {
@@ -245,7 +246,7 @@ func (mr *MongoDBEventRepo) storeEvaluationInvalidatedEvent(ctx context.Context,
 	mr.ensureIndexExistsOnCollection(
 		ctx,
 		invalidatedCollection,
-		"triggeredid",
+		triggeredIDPropertyPath,
 	)
 	_, err := invalidatedCollection.InsertOne(ctx, eventInterface)
 	if err != nil {
