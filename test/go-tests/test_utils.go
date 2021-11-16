@@ -421,7 +421,7 @@ func GetDiagnostics(service string, container string) string {
 		container = service
 	}
 	outputBuilder := strings.Builder{}
-	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, service)
+	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, container)
 
 	outputBuilder.WriteString(fmt.Sprintf("Logs of  of %s: \n\n", service))
 	logOutput, err := ExecuteCommand(getLogsCmd)
@@ -431,7 +431,7 @@ func GetDiagnostics(service string, container string) string {
 
 	outputBuilder.WriteString(logOutput)
 	outputBuilder.WriteString("\n-------------------------\n")
-	getLogsCmd = fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, service)
+	getLogsCmd = fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, container)
 
 	outputBuilder.WriteString(fmt.Sprintf("Logs of crashed instances of %s: \n\n", service))
 	logOutput, err = ExecuteCommand(getLogsCmd)
