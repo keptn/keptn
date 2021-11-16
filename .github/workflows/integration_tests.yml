@@ -1040,25 +1040,6 @@ jobs:
           # directory where to extract artifacts to
           path: ./dist
 
-      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
-        id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: ./dist/build-config/build-config.env
-
-      - name: Overwrite VERSION String for nightly builds
-        if: env.BRANCH == 'master'
-        run: |
-          # use VERSION.DATETIME for the cli version (e.g., nightly build)
-          VERSION=${VERSION}.${DATETIME}
-          # overwrite VERSION
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-
-      - name: DEBUG Build-Config
-        run: |
-          echo VERSION=${VERSION}
-          echo BRANCH=${BRANCH}
-
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
         run: |
