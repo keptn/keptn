@@ -177,7 +177,7 @@ func setupHTTPClient() *http.Client {
 }
 
 func setupEventSender(env config.EnvConfig) (events.EventSender, error) {
-	eventSender, err := keptnv2.NewHTTPEventSender(env.PubSubRecipient)
+	eventSender, err := keptnv2.NewHTTPEventSender(env.GetPubSubRecipientURL())
 	if err != nil {
 		return nil, err
 	}
