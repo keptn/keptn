@@ -21,6 +21,7 @@ type UniformRepo interface {
 	CreateUniformIntegration(integration models.Integration) error
 	CreateOrUpdateUniformIntegration(integration models.Integration) error
 	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
+	DeleteServiceFromSubscriptions(subscriptionName string) error
 	DeleteSubscription(integrationID, subscriptionID string) error
 	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
 	GetSubscriptions(integrationID string) ([]models.Subscription, error)

@@ -145,32 +145,25 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 					Timeframe: "",
 				},
 			},
-			wantResponse: false,
-			wantErr:      &models.Error{Code: evaluationErrInvalidTimeframe},
-			wantEvents:   []eventTypeWithPayload{},
-		},
-		{
-			name: "time w/ timezone w/o millis",
-			fields: fields{
-				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
-				}},
-			},
-			args: args{
-				project: "test-project",
-				stage:   "test-stage",
-				service: "test-service",
-				params: &models.CreateEvaluationParams{
-					Labels:    map[string]string{"foo": "bar"},
-					Start:     "2020-01-02T15:00:00Z",
-					End:       "2020-01-02T16:00:00Z",
-					Timeframe: "",
+			wantResponse: true,
+			wantErr:      nil, //&models.Error{Code: evaluationErrInvalidTimeframe},
+			wantEvents: []eventTypeWithPayload{
+				{
+					eventType: keptnv2.GetTriggeredEventType("test-stage." + keptnv2.EvaluationTaskName),
+					payload: &keptnv2.EvaluationTriggeredEventData{
+						EventData: keptnv2.EventData{
+							Project: "test-project",
+							Stage:   "test-stage",
+							Service: "test-service",
+							Labels:  map[string]string{"foo": "bar"},
+						},
+						Evaluation: keptnv2.Evaluation{
+							Start: "2020-01-02T15:00:00.000Z",
+							End:   "2020-01-02T16:00:00.000Z",
+						},
+					},
 				},
 			},
-			wantResponse: false,
-			wantErr:      &models.Error{Code: evaluationErrInvalidTimeframe},
-			wantEvents:   []eventTypeWithPayload{},
 		},
 		{
 			name: "time w/ timezone w/o millis w/ offset",

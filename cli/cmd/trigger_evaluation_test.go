@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/stretchr/testify/assert"
+	"os"
+	"testing"
 )
 
 func init() {
@@ -47,6 +45,36 @@ func TestTriggerEvaluationWrongFormat(t *testing.T) {
 
 	if err == nil {
 		t.Error("An error occurred: expect an error due to wrong time frame format")
+	}
+}
+
+func TestTriggerEvaluationVariousFormats(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+
+	times := []string{
+		"2020-01-02T15:00:00",
+		"2020-01-02T15:00:00Z",
+		"2020-01-02T15:00:00+10:00",
+		"2020-01-02T15:00:00.000Z",
+		"2020-01-02T15:00:00.000000000Z",
+	}
+
+	*triggerEvaluation.Timeframe = ""
+	*triggerEvaluation.Start = ""
+	*triggerEvaluation.End = ""
+
+	for _, time := range times {
+
+		cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
+			"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", time, "2020-01-02T15:10:12.000Z")
+		_, err := executeActionCommandC(cmd)
+
+		if err != nil {
+			t.Errorf(unexpectedErrMsg, err)
+		}
+
 	}
 }
 
