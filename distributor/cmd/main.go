@@ -31,6 +31,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -48,6 +49,11 @@ func _main(env config.EnvConfig) int {
 	httpClient := setupHTTPClient()
 
 	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
+	// restrict the timeout for the http handlers to 5s
+	// otherwise, retry mechanisms of these components will be blocked for too long
+	uniformHandler.HTTPClient.Timeout = 5 * time.Second
+	uniformLogHandler.HTTPClient.Timeout = 5 * time.Second
+
 	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType)
 	uniformWatch := setupUniformWatch(controlPlane)
 	forwarder := events.NewForwarder(httpClient)
