@@ -45,7 +45,7 @@ func WriteFile(path string, content []byte) error {
 	defer file.Close()
 
 	path = filepath.Clean(path)
-	file, err = os.OpenFile(path, os.O_RDWR, 0644)
+	file, err = os.OpenFile(path, os.O_RDWR, 0600)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func WriteFile(path string, content []byte) error {
 
 	// save changes
 	err = file.Sync()
-	return nil
+	return err
 }
 
 // DeleteFile deletes a file
