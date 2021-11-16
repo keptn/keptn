@@ -6,7 +6,7 @@
         [stage]="stage.name"
         [evaluation]="stage.hasEvaluation ? stage.latestEvaluation : undefined"
         [isSelected]="selectedStage === stage.name"
-        [success]="stage.isSuccessful()"
+        [success]="!stage.isFaulty() && !stage.approvalInformation && !stage.isWarning()"
         [error]="stage.isFaulty()"
         [class.warning]="stage.isWarning()"
         [highlight]="!!stage.approvalInformation"

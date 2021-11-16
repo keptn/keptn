@@ -66,7 +66,7 @@
     <div *ngIf="!deploymentStage.hasEvaluation" fxLayout="row" fxLayoutAlign="start start" class="mt-2">
       <dt-icon class="event-icon info mr-1" name="information"></dt-icon>
       <div fxLayout="column">
-        <span>No evaluation performed during the sequence execution.</span>
+        <span>No evaluation was performed during the sequence execution.</span>
         <span
           >To perform an evaluation, add the <code>evaluation</code> task to the <code>delivery</code> sequence of the
           <code [textContent]="deploymentInfo.stage"></code> stage in the Shipyard for this project.</span

@@ -25,6 +25,7 @@ export class ServiceState extends svs {
     }
 
     this.deleteOldServices(serviceStates, newServiceStates);
+    serviceStates.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private static deleteOldServices(serviceStates: ServiceState[], newServiceStates: ServiceState[]): void {

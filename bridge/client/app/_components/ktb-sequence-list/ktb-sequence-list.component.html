@@ -21,10 +21,10 @@
       <ng-template #trace>
         <ng-container *ngIf="isSubsequence(row) as subSequence">
           <dt-icon
-            *ngIf="subSequence.state === 'finished' || subSequence.hasPendingApproval; else loading"
+            *ngIf="subSequence.state === SequenceState.FINISHED || subSequence.hasPendingApproval; else loading"
             class="event-icon"
-            [class.error]="subSequence.result === 'fail'"
-            [class.success]="subSequence.result === 'pass'"
+            [class.error]="subSequence.result === ResultTypes.FAILED"
+            [class.success]="subSequence.result === ResultTypes.PASSED"
             [class.highlight]="subSequence.hasPendingApproval"
             [name]="getEventIcon(subSequence)"
           ></dt-icon>

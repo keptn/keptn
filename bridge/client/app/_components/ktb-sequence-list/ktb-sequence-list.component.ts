@@ -8,6 +8,8 @@ import { ActivatedRoute } from '@angular/router';
 import { SubSequence } from '../../../../shared/interfaces/deployment';
 import { EVENT_ICONS } from '../../_models/event-icons';
 import { DtIconType } from '@dynatrace/barista-icons';
+import { ResultTypes } from '../../../../shared/models/result-types';
+import { SequenceState } from '../../../../shared/models/sequence';
 
 @Component({
   selector: 'ktb-sequence-list',
@@ -20,6 +22,8 @@ export class KtbSequenceListComponent implements OnDestroy {
   private _sequences: SubSequence[] = [];
   private _remediations: Sequence[] = [];
   private projectName?: string;
+  public ResultTypes = ResultTypes;
+  public SequenceState = SequenceState;
 
   @Input() stage?: string;
   @Input() shkeptncontext?: string;
@@ -75,7 +79,7 @@ export class KtbSequenceListComponent implements OnDestroy {
   }
 
   public getEventIcon(subSequence: SubSequence): DtIconType {
-    return subSequence.state === 'finished'
+    return subSequence.state === SequenceState.FINISHED
       ? EVENT_ICONS[subSequence.name] ?? EVENT_ICONS.default
       : EVENT_ICONS.approval;
   }

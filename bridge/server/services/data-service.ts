@@ -928,6 +928,7 @@ export class DataService {
   }
 
   private sortServiceStates(serviceStates: ServiceState[]): void {
+    serviceStates.sort((a, b) => a.name.localeCompare(b.name));
     for (const serviceState of serviceStates) {
       serviceState.deploymentInformation.sort((a, b) =>
         a.version &&
