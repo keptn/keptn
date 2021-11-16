@@ -5,17 +5,13 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chartutil"
 
 	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
-	"helm.sh/helm/v3/pkg/chart/loader"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -23,38 +19,6 @@ func check(e error, t *testing.T) {
 	if e != nil {
 		t.Error(e)
 	}
-}
-
-// CreateTestHelmChartData creates a new Helm Chart tgz and returns its data
-func CreateTestHelmChartData(t *testing.T) []byte {
-
-	err := os.MkdirAll("carts/templates", 0777)
-	check(err, t)
-	err = ioutil.WriteFile("carts/Chart.yaml", []byte(chartContent), 0644)
-	check(err, t)
-	err = ioutil.WriteFile("carts/values.yaml", []byte(valuesContent), 0644)
-	check(err, t)
-	err = ioutil.WriteFile("carts/templates/deployment.yml", []byte(userDeployment), 0644)
-	check(err, t)
-	err = ioutil.WriteFile("carts/templates/service.yaml", []byte(userService), 0644)
-	check(err, t)
-
-	ch, err := loader.Load("carts")
-	if err != nil {
-		check(err, t)
-	}
-
-	name, err := chartutil.Save(ch, ".")
-	if err != nil {
-		check(err, t)
-	}
-	defer os.RemoveAll(name)
-	defer os.RemoveAll("carts")
-
-	name = filepath.Clean(name)
-	bytes, err := ioutil.ReadFile(name)
-	check(err, t)
-	return bytes
 }
 
 type GeneratedResource struct {
