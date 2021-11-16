@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/url"
 	"os"
@@ -47,7 +46,7 @@ func main() {
 		logger.Fatalf("Failed to process env var: %s", err)
 	}
 
-	logger.SetLevel(logger.InfoLevel)
+	logger.SetLevel(logger.DebugLevel)
 
 	if os.Getenv(env.LogLevel) != "" {
 		logLevel, err := logger.ParseLevel(os.Getenv(env.LogLevel))
@@ -62,8 +61,11 @@ func main() {
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
-	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-
+	err := event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+	if err != nil {
+		logger.WithError(err).Error("Could not retrieve keptn context")
+		return err
+	}
 	data := &keptnv2.TestTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.WithError(err).Error("Got Data Error")
@@ -91,24 +93,28 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
 func runTests(ctx context.Context, event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData) {
-	defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
-	sendTestsStartedEvent(shkeptncontext, event)
 
+	defer func() {
+		select {
+		//if the context is already Done we want to avoid a race condition
+		case <-ctx.Done():
+			return
+		default:
+			ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+			return
+		}
+	}()
+
+	err := sendTestsStartedEvent(shkeptncontext, event)
+	if err != nil {
+		return
+	}
 	testInfo := getTestInfo(data, shkeptncontext)
 	startedAt := time.Now()
 
-	go func() {
-		<-ctx.Done()
-		logger.Error("Error sending test finished event" + testInfo.ToString())
-		if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
-			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
-		}
-		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
-		return
-	}()
+	go ensureFinishedEvent(ctx, event, shkeptncontext, testInfo, startedAt)
 
 	// load the workloads from JMeterConf
-	var err error
 	var jmeterconf *JMeterConf
 	jmeterconf, err = getJMeterConf(testInfo.Project, testInfo.Stage, testInfo.Service)
 
@@ -205,6 +211,16 @@ func runTests(ctx context.Context, event cloudevents.Event, shkeptncontext strin
 	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultPass); err != nil {
 		logger.WithError(err).Errorf("Error sending test finished event for %s", testInfo.ToString())
 	}
+}
+
+func ensureFinishedEvent(ctx context.Context, event cloudevents.Event, shkeptncontext string, testInfo *TestInfo, startedAt time.Time) {
+	<-ctx.Done()
+	logger.Error("Terminated, sending test finished event" + testInfo.ToString() + ctx.Err().Error())
+	if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
+		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+	}
+	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+	return
 }
 
 //
@@ -388,27 +404,29 @@ func sendErroredTestsFinishedEvent(shkeptncontext string, incomingEvent cloudeve
 
 func _main(args []string, env envConfig) int {
 	if runlocal {
-		log.Println("Running LOCALLY: env=runlocal")
+		logger.Println("Running LOCALLY: env=runlocal")
 	}
 
 	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		logger.Fatalf("failed to create client, %v", err)
 	}
 	c, err := cloudevents.NewClient(p)
 	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		logger.Fatalf("failed to create client, %v", err)
 	}
 
-	log.Fatal(c.StartReceiver(ctx, gotEvent))
+	logger.Fatal(c.StartReceiver(ctx, gotEvent))
+	logger.Println("Shutting Down")
+	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
 	return 0
 }
 
 func sendEvent(event cloudevents.Event) error {
 	if runlocal {
-		log.Println("LOCALLY: Sending Event")
+		logger.Println("LOCALLY: Sending Event")
 		return nil
 	}
 	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
@@ -426,11 +444,11 @@ func getGracefulContext() context.Context {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), gracefulShutdownKey, wg)))
-
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), gracefulShutdownKey, wg))
+	ctx = cloudevents.WithEncodingStructured(ctx)
 	go func() {
 		<-ch
-		log.Fatal("Container termination triggered, starting graceful shutdown")
+		logger.Fatal("Container termination triggered, starting graceful shutdown")
 		cancel()
 	}()
 
