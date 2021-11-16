@@ -72,7 +72,7 @@ func Test_LogForwarding(t *testing.T) {
 			return false
 		}
 		return true
-	}, 100*time.Second, 2*time.Second, GetDiagnostics("shipyard-controller"))
+	}, 100*time.Second, 2*time.Second, GetDiagnostics("lighthouse-service"))
 
 	// retrieve the integration for the lighthouse service
 	integrations, _, err := getIntegrations()
