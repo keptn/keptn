@@ -344,6 +344,7 @@ jobs:
   # Build CLI                                                                #
   ############################################################################
   build-cli:
+    name: Build Keptn CLI
     needs: [ prepare_ci_run, unit-tests-cli ]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
     uses: keptn/keptn/.github/workflows/build-cli.yml@chore/release-automation
@@ -356,8 +357,8 @@ jobs:
   # Build Helm Charts (only relevant for build_everything)                   #
   ############################################################################
   helm_charts_build:
-    needs: prepare_ci_run
     name: Build Helm Charts
+    needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
     uses: keptn/keptn/.github/workflows/build-helm-charts.yml@chore/release-automation
     with:
@@ -370,8 +371,8 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   docker_build:
-    needs: [prepare_ci_run, unit-tests-microservices]
     name: Docker Build
+    needs: [prepare_ci_run, unit-tests-microservices]
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
