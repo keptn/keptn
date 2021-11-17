@@ -30,8 +30,7 @@ type TestInfo struct {
 	ServiceURL        *url.URL
 }
 
-// ToString returns a string representation of a TestInfo object
-func (ti *TestInfo) ToString() string {
+func (ti TestInfo) String() string {
 	return fmt.Sprintf("Project: %s, Service: %s, Stage: %s, TestStrategy: %s, Context: %s", ti.Project, ti.Service, ti.Stage, ti.TestStrategy, ti.Context)
 }
 
@@ -74,39 +73,39 @@ func addJMeterCommandLineArguments(testInfo TestInfo, initialList []string) []st
 func parseJMeterResult(jmeterCommandResult string, testInfo TestInfo, workload *Workload, funcValidation bool) (bool, error) {
 	summary := getLastOccurrence(strings.Split(jmeterCommandResult, "\n"), "summary =")
 	if summary == "" {
-		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
+		return false, fmt.Errorf("cannot parse jmeter-result. %v", testInfo)
 	}
 
 	space := regexp.MustCompile(`\s+`)
 	splits := strings.Split(space.ReplaceAllString(summary, " "), " ")
 	runs, err := strconv.Atoi(splits[2])
 	if err != nil {
-		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
+		return false, fmt.Errorf("cannot parse jmeter-result. %v", testInfo)
 	}
 
 	errorCount, err := strconv.Atoi(splits[14])
 	if err != nil {
-		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
+		return false, fmt.Errorf("cannot parse jmeter-result. %v", testInfo)
 	}
 
 	avg, err := strconv.Atoi(splits[8])
 	if err != nil {
-		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
+		return false, fmt.Errorf("cannot parse jmeter-result. %v", testInfo)
 	}
 
 	if funcValidation && errorCount > 0 {
-		logger.Debug(fmt.Sprintf("Function validation failed because we got %d errors.", errorCount) + ". " + testInfo.ToString())
+		logger.Debugf("Function validation failed because we got %d errors. %v", errorCount, testInfo)
 		return false, nil
 	}
 
 	maxAcceptedErrors := float64(workload.AcceptedErrorRate) * float64(runs)
 	if errorCount > int(maxAcceptedErrors) {
-		logger.Debug(fmt.Sprintf("jmeter test failed because we got a too high error rate of %.2f.", float64(errorCount)/float64(runs)) + ". " + testInfo.ToString())
+		logger.Debugf("Jmeter test failed because we got a too high error rate of %.2f. %v", float64(errorCount)/float64(runs), testInfo)
 		return false, nil
 	}
 
 	if workload.AvgRtValidation > 0 && avg > workload.AvgRtValidation {
-		logger.Debug(fmt.Sprintf("Avg rt validation failed because we got an avg rt of %d", workload.AvgRtValidation) + ". " + testInfo.ToString())
+		logger.Debugf("Avg rt validation failed because we got an avg rt of %d. %v", workload.AvgRtValidation, testInfo)
 		return false, nil
 	}
 
@@ -187,9 +186,9 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	// Step 3: Parse result and lets analyze the result
 	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation)
 	if result && err != nil {
-		logger.Debugf("Successfully executed JMeter test: %s", testInfo.ToString())
+		logger.Debugf("Successfully executed JMeter test: %v", testInfo)
 	} else {
-		logger.Errorf("Successfully executed JMeter test: %s", testInfo.ToString())
+		logger.Errorf("Successfully executed JMeter test: %v", testInfo)
 	}
 	return result, err
 }

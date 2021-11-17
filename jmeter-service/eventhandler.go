@@ -20,30 +20,27 @@ func (e *EventHandler) handleEvent(event cloudevents.Event) error {
 		return err
 	}
 
-	data := &keptnv2.TestTriggeredEventData{}
-	if err := event.DataAs(data); err != nil {
-		logger.WithError(err).Error("Unable to decode 'test.triggered' event data")
+	if event.Type() != keptnv2.GetTriggeredEventType(keptnv2.TestTaskName) {
+		logger.Warnf("Received unexpected keptn event: %s", event.Type())
 		return nil
 	}
-
-	if event.Type() != keptnv2.GetTriggeredEventType(keptnv2.TestTaskName) {
-		logger.Errorf("Received unexpected keptn event: %s", event.Type())
+	data := &keptnv2.TestTriggeredEventData{}
+	if err := event.DataAs(data); err != nil {
+		logger.Errorf("Unable to decode 'test.triggered' event data: %v", err)
 		return nil
 	}
 	if data.Test.TestStrategy == TestStrategy_RealUser {
 		logger.Infof("Received '%s' test strategy, hence no tests are triggered", TestStrategy_RealUser)
 		return nil
 	}
-
 	testInfo, err := createTestInfo(*data, shkeptncontext, event.ID())
 	if err != nil {
 		logger.Errorf("Unable to create test info: %v", err)
 		return nil
 	}
-
 	go func() {
 		if err := e.testRunner.RunTests(*testInfo); err != nil {
-			logger.WithError(err).Errorf("Unable to run JMeter tests")
+			logger.Errorf("Unable to run JMeter tests: %v", err)
 		}
 	}()
 	return nil
