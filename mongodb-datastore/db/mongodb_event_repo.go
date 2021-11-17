@@ -97,7 +97,7 @@ func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) err
 		logger.Error(err.Error())
 		return err
 	}
-	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
+	logger.Debugf("insertedID: %s", res.InsertedID)
 
 	err = mr.storeContextToProjectMapping(ctx, event, collection.Name())
 	if err != nil {
@@ -109,7 +109,7 @@ func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) err
 		return err
 	}
 
-	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collection.Name()))
+	logger.Debugf("inserted mapping %s->%s", event.Shkeptncontext, collection.Name())
 	return nil
 }
 
@@ -136,7 +136,7 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 		mr.skipCreateIndex[getIndexIDForCollection(invalidatedEventsCollection.Name(), indexName)] = false
 	}
 
-	logger.Debug(fmt.Sprintf("Delete all events of project %s", projectName))
+	logger.Debugf("Delete all events of project %s", projectName)
 
 	err := projectCollection.Drop(ctx)
 	const dropCollectionErrorMsg = "failed to drop collection %s: %v"
@@ -146,7 +146,7 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 		return err
 	}
 
-	logger.Debug(fmt.Sprintf("Delete all root events of project %s", projectName))
+	logger.Debugf("Delete all root events of project %s", projectName)
 
 	err = rootEventsCollection.Drop(ctx)
 	if err != nil {
@@ -155,7 +155,7 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 		return err
 	}
 
-	logger.Debug(fmt.Sprintf("Delete all invalidated events of project %s", projectName))
+	logger.Debugf("Delete all invalidated events of project %s", projectName)
 
 	mr.skipCreateIndex[invalidatedEventsCollection.Name()+"-triggeredid"] = false
 	err = invalidatedEventsCollection.Drop(ctx)
@@ -165,7 +165,7 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 		logger.WithError(err).Error("Could not drop invalidatedEvents collection.")
 	}
 
-	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", projectName))
+	logger.Debugf("Delete context-to-project mappings of project %s", projectName)
 	contextToProjectCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(contextToProjectCollection)
 	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": projectName}); err != nil {
 		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", projectName, err)
@@ -299,7 +299,7 @@ func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, ev
 		return nil
 	}
 
-	logger.Debug(fmt.Sprintf("Storing mapping %s->%s", event.Shkeptncontext, collectionName))
+	logger.Debugf("Storing mapping %s->%s", event.Shkeptncontext, collectionName)
 	contextToProjectCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(contextToProjectCollection)
 
 	_, err := contextToProjectCollection.InsertOne(ctx,
@@ -410,7 +410,7 @@ func (mr *MongoDBEventRepo) getCollectionNameForQuery(searchOptions bson.M) (str
 				logger.Info("no project found for shkeptncontext")
 				return unmappedEventsCollectionName, nil
 			}
-			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			logger.WithError(err).Errorf("Error loading project for shkeptncontext")
 			return "", err
 		}
 	}
@@ -448,13 +448,13 @@ func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mong
 	cur, err := collection.Aggregate(ctx, pipeline)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		logger.WithError(err).Error("Could not retrieve events from collectiong elements in events collection")
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
 	defer func() {
 		if err := cur.Close(ctx); err != nil {
-			logger.WithError(err).Error("Could not close cursor.")
+			logger.WithError(err).Error("Could not close cursor")
 		}
 	}()
 	result.Events = formatEventResults(ctx, cur)
@@ -493,13 +493,13 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
+		logger.WithError(err).Error("Could not count elements in events collection")
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		logger.WithError(err).Error("Could not retrieve elements from events collection")
 		return nil, err
 	}
 	// close the cursor after the function has completed to avoid memory leaks
@@ -541,12 +541,12 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 		var outputEvent interface{}
 		err := cur.Decode(&outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to decode event %v", err))
+			logger.WithError(err).Error("Could not decode event")
 			continue
 		}
 		outputEvent, err = flattenRecursively(outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to flatten %v", err))
+			logger.WithError(err).Error("Could not flatten event")
 			continue
 		}
 
@@ -555,7 +555,7 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 		var keptnEvent models.KeptnContextExtendedCE
 		err = keptnEvent.UnmarshalJSON(data)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			logger.WithError(err).Error("Could not unmarshal")
 			continue
 		}
 
