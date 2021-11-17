@@ -140,6 +140,9 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 		if err := sm.projectMVRepo.DeleteService(projectName, stage.StageName, serviceName); err != nil {
 			return sm.logAndReturnError(fmt.Sprintf("could not delete service %s from stage %s: %s", serviceName, stage.StageName, err.Error()))
 		}
+		if err := sm.uniformRepo.DeleteServiceFromSubscriptions(serviceName); err != nil {
+			return sm.logAndReturnError(fmt.Sprintf("could not delete service %s from stage %s: %s", serviceName, stage.StageName, err.Error()))
+		}
 	}
 	log.Infof("deleted service %s from project %s", serviceName, projectName)
 

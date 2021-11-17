@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/google/martian/log"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
@@ -27,7 +26,6 @@ type projectMetadata struct {
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -56,8 +54,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 		initializedGit, err = common.CloneRepo(params.Project.ProjectName, *credentials)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not clone git repository during creating project %s", params.Project.ProjectName)
 			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not clone git repository")})
 		}
@@ -67,16 +64,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		///////////////////////////////////////////////////
 		err := os.MkdirAll(projectConfigPath, os.ModePerm)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could make directory during creating project %s", params.Project.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could make directory during creating project %s", params.Project.ProjectName)
 			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not create project")})
 		}
 
 		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not initialize git repository during creating project %s", params.Project.ProjectName))
-			logger.Error(err.Error())
+			logger.WithError(err).Errorf("Could not initialize git repository during creating project %s", params.Project.ProjectName)
 			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
 		}
@@ -91,16 +86,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName)
 		rollbackFunc()
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not store project metadata")})
 	}
 
 	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName)
 		rollbackFunc()
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not commit changes")})
 	}
@@ -109,8 +102,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	projectName := params.Project.ProjectName
 
 	if common.ProjectExists(projectName) {
@@ -121,7 +112,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 		if err == nil && gitCredentials != nil {
 			log.Infof("Storing Git credentials for project %s", projectName)
 			if err := common.UpdateOrCreateOrigin(projectName); err != nil {
-				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
+				logger.WithError(err).Errorf("Could not add upstream repository while updating project %s", params.Project.ProjectName)
 				// TODO: use git library.
 				// until we do not use a propper git library it is hard/not possible to
 				// determine the correct error cases, so we need to rely on the output of the command
@@ -140,8 +131,6 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -149,8 +138,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not delete directory during deleting project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not delete directory during deleting project %s", params.ProjectName)
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not delete project")})
 	}
 

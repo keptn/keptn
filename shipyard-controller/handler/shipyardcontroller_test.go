@@ -139,12 +139,11 @@ func Test_HandleStartedEvents(t *testing.T) {
 		event models.Event
 	}
 	tests := []struct {
-		name                   string
-		fields                 fields
-		args                   args
-		wantErr                bool
-		wantErrNoMatchingEvent bool
-		wantHookCalled         bool
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantHookCalled bool
 	}{
 		{
 			name: "received started event with matching triggered event",
@@ -168,8 +167,8 @@ func Test_HandleStartedEvents(t *testing.T) {
 						return nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-					return []models.TaskSequenceEvent{
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+					return []models.TaskExecution{
 						{},
 					}, nil
 				}},
@@ -200,19 +199,16 @@ func Test_HandleStartedEvents(t *testing.T) {
 						return nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-					return []models.TaskSequenceEvent{
-						{},
-					}, nil
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+					return []models.TaskExecution{}, nil
 				}},
 				taskStartedHook: &fakehooks.ISequenceTaskStartedHookMock{OnSequenceTaskStartedFunc: func(event models.Event) {}},
 			},
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
 			},
-			wantErr:                true,
-			wantErrNoMatchingEvent: true,
-			wantHookCalled:         false,
+			wantErr:        false,
+			wantHookCalled: false,
 		},
 	}
 	for _, tt := range tests {
@@ -223,12 +219,9 @@ func Test_HandleStartedEvents(t *testing.T) {
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
 			em.AddSequenceTaskStartedHook(tt.fields.taskStartedHook)
-			err := em.handleStartedEvent(tt.args.event)
+			err := em.handleTaskStarted(tt.args.event)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("handleStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.wantErrNoMatchingEvent && (err != ErrNoMatchingEvent) {
-				t.Errorf("handleStartedEvent() expected ErrNoMatchingEvent but got %v", err)
+				t.Errorf("handleTaskStarted() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantHookCalled {
@@ -276,12 +269,12 @@ func TestHandleFinishedEvent(t *testing.T) {
 					DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 						return nil
 					},
-					GetStartedEventsForTriggeredIDFunc: func(eventScope *models.EventScope) ([]models.Event, error) {
+					GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]models.Event, error) {
 						return nil, nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
-					return []models.TaskSequenceEvent{
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+					return []models.TaskExecution{
 						{},
 					}, nil
 				}},
@@ -303,8 +296,8 @@ func TestHandleFinishedEvent(t *testing.T) {
 			}
 
 			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
-			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
+			if err := em.handleTaskFinished(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("handleTaskFinished() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantHookCalled {

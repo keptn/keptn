@@ -45,6 +45,7 @@ const envVarSequenceDispatchIntervalSec = "SEQUENCE_DISPATCH_INTERVAL_SEC"
 const envVarTaskStartedWaitDuration = "TASK_STARTED_WAIT_DURATION"
 const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
 const envVarLogTTL = "LOG_TTL"
+const envVarLogLevel = "LOG_LEVEL"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
@@ -53,6 +54,15 @@ const envVarTaskStartedWaitDurationDefault = "10m"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
+
+	if os.Getenv(envVarLogLevel) != "" {
+		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+		if err != nil {
+			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			log.SetLevel(logLevel)
+		}
+	}
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
 		// disable GIN request logging in release mode
@@ -127,7 +137,6 @@ func main() {
 		sequenceTimeoutChannel,
 		shipyardRetriever,
 	)
-	sequenceDispatcher.Run(context.Background(), shipyardController.StartTaskSequence)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")

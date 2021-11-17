@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
+	logger "github.com/sirupsen/logrus"
 )
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
 	}
@@ -22,13 +21,13 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 
 	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not determine default branch for project %s: %s", params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not determine default branch for project %s", params.ProjectName)
 		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create stage.")})
 	}
 	logger.Info(fmt.Sprintf("creating stage %s from base %s", params.Stage.StageName, defaultBranch))
 	err = common.CreateBranch(params.ProjectName, params.Stage.StageName, defaultBranch)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not create %s branch for project %s: %s", params.Stage.StageName, params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not create %s branch for project %s", params.Stage.StageName, params.ProjectName)
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
 	}
 

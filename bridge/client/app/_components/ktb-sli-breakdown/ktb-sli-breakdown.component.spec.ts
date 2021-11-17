@@ -121,7 +121,7 @@ describe('KtbSliBreakdownComponent', () => {
       false,
       '370.2',
       '1082',
-      '0',
+      '1',
       '-712.42',
       '-65.805%',
       '<=+10% and <600',
@@ -134,6 +134,33 @@ describe('KtbSliBreakdownComponent', () => {
     expect(cells[Column.WARNING_CRITERIA].querySelectorAll('.error.error-line').length).toBe(1);
     expect(cells[Column.SCORE].querySelector('.error')).toBeTruthy();
     expect(firstRow.querySelector('.success')).toBeFalsy();
+  });
+
+  it('should have weight fallback to 1', () => {
+    // given
+    initEvaluation(6, 5, false);
+
+    // when
+    fixture.detectChanges();
+    const firstRow = fixture.nativeElement.querySelectorAll('dt-row')[0];
+    firstRow.click();
+    fixture.detectChanges();
+
+    // then
+    const cells = firstRow.querySelectorAll('dt-cell');
+    validateIndicatorResult(
+      cells,
+      false,
+      '370.2',
+      '1082',
+      '1',
+      '-712.42',
+      '-65.805%',
+      '<=+10% and <600',
+      '<=800',
+      'failed',
+      '0'
+    );
   });
 
   it('should sort by weight asc', () => {
@@ -180,9 +207,56 @@ describe('KtbSliBreakdownComponent', () => {
     }
   }
 
-  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex = -1): void {
+  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex = -1, includeWeight = true): void {
     const selectedEvaluation = Evaluations.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     component.indicatorResults = selectedEvaluation.data.evaluation?.indicatorResults as IndicatorResult[];
+    component.objectives = [
+      {
+        sli: 'response_time_p95',
+        key_sli: false,
+        pass: [
+          {
+            criteria: ['<=+10%', '<600'],
+          },
+        ],
+        warning: [
+          {
+            criteria: ['<=800'],
+          },
+        ],
+        ...(includeWeight && { weight: 1 }),
+      },
+      {
+        sli: 'response_time_p90',
+        key_sli: false,
+        pass: [
+          {
+            criteria: ['<=+10%', '<600'],
+          },
+        ],
+        warning: [
+          {
+            criteria: ['<=800'],
+          },
+        ],
+        weight: 4,
+      },
+      {
+        sli: 'response_time_p50',
+        key_sli: false,
+        pass: [
+          {
+            criteria: ['<=+10%', '<600'],
+          },
+        ],
+        warning: [
+          {
+            criteria: ['<=800'],
+          },
+        ],
+        weight: 2,
+      },
+    ];
     component.score = selectedEvaluation.data.evaluation?.score as number;
 
     component.comparedIndicatorResults =

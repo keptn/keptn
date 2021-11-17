@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'toDate',
 })
 export class ToDatePipe implements PipeTransform {
-  transform(value: string): Date {
+  transform(value: string | number): Date {
     return new Date(value);
   }
 }

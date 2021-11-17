@@ -151,6 +151,10 @@ func removeSecretsFromMessage(errMsg string, secrets map[string]string) string {
 }
 
 func (th *TaskHandler) sendFinishedEvent(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, result map[string]interface{}) {
+	// ensure that finished events are only sent as responses for .triggered events
+	if !keptnv2.IsTaskEventType(*event.Type) || !keptnv2.IsTriggeredEventType(*event.Type) {
+		return
+	}
 	if err := keptnHandler.SendFinishedEvent(event, result); err != nil {
 		logger.WithError(err).Error("could not send .finished event")
 	}

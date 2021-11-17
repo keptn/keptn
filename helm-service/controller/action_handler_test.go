@@ -13,7 +13,7 @@ func TestCreateActionHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	instance := NewActionTriggeredHandler(&MockedHandler{}, mocks.NewMockIConfigurationChanger(ctrl), "")
+	instance := NewActionTriggeredHandler(&MockedHandler{}, mocks.NewMockIConfigurationChanger(ctrl))
 	assert.NotNil(t, instance)
 }
 

@@ -2,12 +2,11 @@ package handlers
 
 import (
 	"encoding/base64"
-	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -20,7 +19,6 @@ import (
 
 // GetProjectProjectNameStageStageNameResourceHandlerFunc get list of stage resources
 func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -31,8 +29,7 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	logger.Debug("Checking out " + params.StageName + " branch")
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stage resources")})
 	}
 
@@ -43,7 +40,6 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
 func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -63,8 +59,7 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	logger.Debug("Checking out " + params.StageName + " branch")
 	err = common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch containing stage config")})
 	}
 
@@ -75,7 +70,7 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	resourcePath = filepath.Clean(resourcePath)
 	dat, err := ioutil.ReadFile(resourcePath)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.WithError(err).Error("could not read file")
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
@@ -95,7 +90,6 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage
 func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -109,8 +103,7 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch containing stage config")})
 	}
 
@@ -123,8 +116,7 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully added resources")
@@ -137,7 +129,6 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 
 // PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
 func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -152,8 +143,7 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -165,8 +155,7 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully updated resources")
@@ -179,7 +168,6 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
 func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -193,8 +181,7 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -204,8 +191,7 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
@@ -217,7 +203,6 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc deletes the specified stage resource
 func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -231,8 +216,7 @@ func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
@@ -253,8 +237,7 @@ func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+unescapedResourceName, true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debugf("Successfully updated resource: %s" + unescapedResourceName)

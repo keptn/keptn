@@ -21,6 +21,7 @@ type UniformRepo interface {
 	CreateUniformIntegration(integration models.Integration) error
 	CreateOrUpdateUniformIntegration(integration models.Integration) error
 	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
+	DeleteServiceFromSubscriptions(subscriptionName string) error
 	DeleteSubscription(integrationID, subscriptionID string) error
 	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
 	GetSubscriptions(integrationID string) ([]models.Subscription, error)
@@ -29,10 +30,10 @@ type UniformRepo interface {
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/tasksequencerepo_mock.go . TaskSequenceRepo
 type TaskSequenceRepo interface {
-	GetTaskSequences(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error)
-	CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error
-	DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error
-	DeleteTaskSequenceCollection(project string) error
+	GetTaskExecutions(project string, filter models.TaskExecution) ([]models.TaskExecution, error)
+	CreateTaskExecution(project string, taskExecution models.TaskExecution) error
+	DeleteTaskExecution(keptnContext, project, stage, taskSequenceName string) error
+	DeleteRepo(project string) error
 }
 
 type LogRepo interface {
@@ -62,7 +63,7 @@ type EventRepo interface {
 	InsertEvent(project string, event models.Event, status common.EventStatus) error
 	DeleteEvent(project string, eventID string, status common.EventStatus) error
 	DeleteEventCollections(project string) error
-	GetStartedEventsForTriggeredID(eventScope *models.EventScope) ([]models.Event, error)
+	GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error)
 	GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error)
 	GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error)
 	DeleteAllFinishedEvents(eventScope models.EventScope) error

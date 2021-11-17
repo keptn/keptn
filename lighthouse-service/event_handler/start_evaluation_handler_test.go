@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -14,6 +15,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -63,7 +65,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		Type string `json:"type"`
 	}
 	ch := make(chan string)
-
+	wg := &sync.WaitGroup{}
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
 	var returnSlo bool
 	var sloFileContent string
 	var returnServiceNotFound bool
@@ -136,8 +139,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		{
 			name: "No SLO file available -  send get-sli event",
 			fields: fields{
-				Logger: keptncommon.NewLogger("", "", ""),
-				Event:  getStartEvaluationEvent(),
+				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapi.Resource, error) {
 						return nil, nil
@@ -162,8 +164,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		{
 			name: "Service not available - return evaluation.finished event",
 			fields: fields{
-				Logger: keptncommon.NewLogger("", "", ""),
-				Event:  getStartEvaluationEvent(),
+				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
 					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
@@ -188,8 +189,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		{
 			name: "No SLI provider configured for project - use default",
 			fields: fields{
-				Logger: keptncommon.NewLogger("", "", ""),
-				Event:  getStartEvaluationEvent(),
+				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
 					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
@@ -216,8 +216,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		{
 			name: "Error during SLO file parsing - send finished event with error",
 			fields: fields{
-				Logger: keptncommon.NewLogger("", "", ""),
-				Event:  getStartEvaluationEvent(),
+				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
 					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
@@ -263,7 +262,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				},
 				SLOFileRetriever: tt.fields.SLOFileRetriever,
 			}
-			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
+			if err := eh.HandleEvent(ctx); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

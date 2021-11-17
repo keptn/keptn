@@ -62,7 +62,10 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 
 	defer func() {
 		ctx.Wg.Done()
-		n.natsConnectionHandler.RemoveAllSubscriptions()
+		err := n.natsConnectionHandler.RemoveAllSubscriptions()
+		if err != nil {
+			logger.WithError(err).Error("Could not remove subscriptions.")
+		}
 		logger.Info("Terminating NATS event receiver")
 	}()
 
@@ -169,8 +172,6 @@ func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscript
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
-	ctx = cloudevents.ContextWithTarget(ctx, n.env.GetPubSubRecipientURL())
-	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
 	logger.Infof("Sending CloudEvent with ID %s to %s", event.ID(), n.env.PubSubRecipient)

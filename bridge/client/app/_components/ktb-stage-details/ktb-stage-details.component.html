@@ -108,10 +108,7 @@
                   [textContent]="service.getImageName()"
                 ></a>
                 <ng-template #noDeployment>
-                  <p
-                    class="m-0"
-                    *ngIf="isQualityGatesOnly && !project.getServiceWithLatestDeployment(service.serviceName)"
-                  >
+                  <p class="m-0" *ngIf="isQualityGatesOnly">
                     Use
                     <a
                       [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl"
@@ -236,6 +233,7 @@
                 class="mt-1"
                 *ngFor="let approval of service.getOpenApprovals()"
                 [event]="approval.trace"
+                [evaluation]="approval.evaluationTrace"
               ></ktb-approval-item>
             </div>
             <ng-template #noOutOfSyncDeployments>

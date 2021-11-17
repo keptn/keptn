@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+	logger "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 
@@ -30,8 +31,9 @@ import (
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8080"`
-	Path string `envconfig:"RCV_PATH" default:"/"`
+	Port     int    `envconfig:"RCV_PORT" default:"8080"`
+	Path     string `envconfig:"RCV_PATH" default:"/"`
+	LogLevel string `envconfig:"LOG_LEVEL" default:"info"`
 }
 
 const serviceName = "helm-service"
@@ -39,7 +41,18 @@ const serviceName = "helm-service"
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
-		log.Fatalf("Failed to process env var: %s", err)
+		logger.Fatalf("Failed to process env var: %s", err)
+	}
+
+	logger.SetLevel(logger.InfoLevel)
+
+	if os.Getenv(env.LogLevel) != "" {
+		logLevel, err := logger.ParseLevel(os.Getenv(env.LogLevel))
+		if err != nil {
+			logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		} else {
+			logger.SetLevel(logLevel)
+		}
 	}
 
 	os.Exit(_main(os.Args[1:], env))
@@ -55,10 +68,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		LoggingOptions: &keptncommon.LoggingOpts{
-			EnableWebsocket: true,
-			ServiceName:     &serviceName,
-		},
 		ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 	})
 	if err != nil {
@@ -68,20 +77,20 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	configServiceURL, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting configServiceURL: %s", err.Error()))
+		logger.WithError(err).Error("Error when getting configServiceURL")
 		return err
 	}
 
 	shipyardControllerURL, err := serviceutils.GetShipyardControllerURL()
 	if err != nil {
-		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting shipyardControllerURL: %s", err.Error()))
+		logger.WithError(err).Error("Error when getting shipyardControllerURL")
 		return err
 	}
 
 	//create dependencies
 
 	mesh := mesh.NewIstioMesh()
-	keptnHandler.Logger.Debug("Got event of type " + event.Type())
+	logger.Debug("Got event of type " + event.Type())
 
 	// ToDo: Multithreaded is important here, such that the endpoint responds immediately
 	// else we will have deployment handler take 30 seconds, and after that the response will be sent
@@ -102,7 +111,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
 		go deleteHandler.HandleEvent(event)
 	} else {
-		keptnHandler.Logger.Error("Received unexpected keptn event")
+		logger.Error("Received unexpected keptn event")
 	}
 
 	return nil
@@ -125,13 +134,13 @@ func createDeleteHandler(configServiceURL *url.URL, shipyardControllerURL *url.U
 func createActionTriggeredHandler(configServiceURL *url.URL, keptn *keptnv2.Keptn) *controller.ActionTriggeredHandler {
 	configChanger := configurationchanger.NewConfigurationChanger(configServiceURL.String())
 	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
-	actionHandler := controller.NewActionTriggeredHandler(keptnBaseHandler, configChanger, configServiceURL.String())
+	actionHandler := controller.NewActionTriggeredHandler(keptnBaseHandler, configChanger)
 	return actionHandler
 }
 
 func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Keptn) *controller.ReleaseHandler {
 	configChanger := configurationchanger.NewConfigurationChanger(url.String())
-	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh)
 	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
 	chartPackager := keptnutils.NewChartPackager()
 	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
@@ -149,7 +158,7 @@ func createRollbackHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Ke
 func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
 	namespaceManager := namespacemanager.NewNamespaceManager(keptn.Logger)
 	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(configServiceURL.String()))
-	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh)
 	chartPackager := keptnutils.NewChartPackager()
 	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
 	onBoarder := controller.NewOnboarder(keptnBaseHandler, namespaceManager, chartStorer, chartGenerator, chartPackager)
@@ -157,7 +166,7 @@ func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh
 }
 
 func createDeploymentHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
-	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh)
 	onBoarder := createOnboarder(url, keptn, mesh)
 	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
 	deploymentHandler := controller.NewDeploymentHandler(keptnBaseHandler, mesh, onBoarder, chartGenerator)

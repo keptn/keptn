@@ -5,6 +5,7 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -154,7 +155,7 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 		event.SetData(cloudevents.ApplicationJSON, data)
 	}
 
-	keptnHandler.Logger.Debug("Send event: " + eventType)
+	logger.Debug("Send event: " + eventType)
 	return keptnHandler.SendCloudEvent(event)
 }
 

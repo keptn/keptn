@@ -44,7 +44,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 		StatisticsRepo  db.StatisticsRepo
 		Statistics      operations.Statistics
 		uniqueSequences map[string]bool
-		logger          keptncommon.LoggerInterface
 		lock            sync.Mutex
 		cutoffTime      time.Time
 	}
@@ -75,7 +74,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 				uniqueSequences: map[string]bool{
 					"test-context": true,
 				},
-				logger:     nil,
 				lock:       sync.Mutex{},
 				cutoffTime: time.Time{},
 			},
@@ -87,7 +85,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
-				logger:          tt.fields.logger,
 				lock:            tt.fields.lock,
 				cutoffTime:      tt.fields.cutoffTime,
 			}
@@ -136,7 +133,6 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 				},
 				bucketTimer:     nil,
 				uniqueSequences: nil,
-				logger:          keptncommon.NewLogger("", "", ""),
 				lock:            sync.Mutex{},
 				cutoffTime:      time.Time{},
 			},
@@ -149,7 +145,6 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
-				logger:          tt.fields.logger,
 				lock:            tt.fields.lock,
 				cutoffTime:      tt.fields.cutoffTime,
 			}
@@ -175,7 +170,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
-		logger          keptncommon.LoggerInterface
 		lock            sync.Mutex
 		cutoffTime      time.Time
 	}
@@ -200,7 +194,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				},
 				bucketTimer:     nil,
 				uniqueSequences: map[string]bool{},
-				logger:          keptncommon.NewLogger("", "", ""),
 				lock:            sync.Mutex{},
 				cutoffTime:      time.Time{},
 			},
@@ -277,7 +270,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				},
 				bucketTimer:     nil,
 				uniqueSequences: map[string]bool{},
-				logger:          keptncommon.NewLogger("", "", ""),
 				lock:            sync.Mutex{},
 				cutoffTime:      time.Time{},
 			},
@@ -348,7 +340,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				uniqueSequences: map[string]bool{
 					"my-context": true,
 				},
-				logger:     keptncommon.NewLogger("", "", ""),
 				lock:       sync.Mutex{},
 				cutoffTime: time.Time{},
 			},
@@ -400,7 +391,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
-				logger:          tt.fields.logger,
 				lock:            tt.fields.lock,
 				cutoffTime:      tt.fields.cutoffTime,
 			}

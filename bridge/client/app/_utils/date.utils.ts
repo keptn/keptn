@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { Trace } from '../_models/trace';
 import { Injectable } from '@angular/core';
+import { DateUtil as dtl } from '../../../shared/utils/date.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -10,21 +11,11 @@ export class DateUtil {
   public readonly DEFAULT_TIME_FORMAT = 'HH:mm';
 
   static compareTraceTimesAsc(a: Trace, b: Trace): number {
-    return DateUtil.compareTraceTimesDesc(a, b, -1);
+    return dtl.compareTraceTimesDesc(a, b, -1);
   }
 
   static compareTraceTimesDesc(a?: Trace, b?: Trace, direction = 1): number {
-    let result;
-    if (a?.time && b?.time) {
-      result = new Date(a.time).getTime() - new Date(b.time).getTime();
-    } else if (a?.time && !b?.time) {
-      result = 1;
-    } else if (!a?.time && b?.time) {
-      result = -1;
-    } else {
-      result = 0;
-    }
-    return result * direction;
+    return dtl.compareTraceTimesDesc(a, b, direction);
   }
 
   public getDurationFormatted(start: string | Date, end?: string | Date): string {

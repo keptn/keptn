@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -11,7 +12,6 @@ import (
 
 	models "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 var (
@@ -101,7 +101,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
  * no of resources: total number of downloaded resources
  * error: any error that occurred
  */
-func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
+func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 
 	// Lets first get the service resources
@@ -261,7 +261,7 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 //
 // Loads jmeter.conf for the current service
 //
-func getJMeterConf(project string, stage string, service string, logger *keptncommon.Logger) (*JMeterConf, error) {
+func getJMeterConf(project string, stage string, service string) (*JMeterConf, error) {
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	var fileContent []byte
 	var err error

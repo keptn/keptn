@@ -122,6 +122,8 @@ spec:
               value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST
               value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -373,6 +375,8 @@ spec:
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           ports:
             - containerPort: 8080
           resources:
@@ -519,6 +523,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           ports:
             - containerPort: 8080
           resources:
@@ -652,6 +658,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: DATASTORE_URI
               value: mongodb-datastore:8080
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
             {{- range $key, $value := .Values.configurationService.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -774,6 +782,8 @@ spec:
                   name: mongodb-credentials
                   key: external_connection_string
                   optional: true
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           ports:
             - containerPort: 8080
           resources:
@@ -895,6 +905,8 @@ spec:
               value: 'http://configuration-service:8080'
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -1009,6 +1021,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | default "info" }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

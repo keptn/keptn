@@ -2,14 +2,12 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Project } from '../../_models/project';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormUtils } from '../../_utils/form.utils';
-import { Location } from '@angular/common';
 
 @Component({
   selector: 'ktb-create-service',
@@ -19,6 +17,7 @@ export class KtbCreateServiceComponent implements OnDestroy {
   public projectName?: string;
   public isCreating = false;
   public serviceNameControl: FormControl = new FormControl();
+  public isLoading = true;
   private unsubscribe$: Subject<void> = new Subject<void>();
   private redirectTo?: string;
   public formGroup: FormGroup = new FormGroup({
@@ -29,8 +28,7 @@ export class KtbCreateServiceComponent implements OnDestroy {
     private route: ActivatedRoute,
     private dataService: DataService,
     private router: Router,
-    private notificationsService: NotificationsService,
-    private location: Location
+    private notificationsService: NotificationsService
   ) {
     this.route.queryParamMap
       .pipe(
@@ -41,22 +39,26 @@ export class KtbCreateServiceComponent implements OnDestroy {
       .subscribe((redirectTo) => {
         this.redirectTo = redirectTo;
       });
+
     this.route.paramMap
       .pipe(
         map((params) => params.get('projectName')),
-        filter((projectName: string | null): projectName is string => !!projectName),
-        switchMap((projectName) => this.dataService.getProject(projectName)),
-        takeUntil(this.unsubscribe$),
-        filter((project?: Project): project is Project => !!project)
+        filter((projectName): projectName is string => !!projectName),
+        takeUntil(this.unsubscribe$)
       )
-      .subscribe((project) => {
-        this.projectName = project.projectName;
-        const serviceNames = project.services?.map((service) => service.serviceName) ?? [];
-        this.serviceNameControl.setValidators([
-          Validators.required,
-          FormUtils.nameExistsValidator(serviceNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-        ]);
+      .subscribe((projectName) => {
+        this.projectName = projectName;
+        this.isLoading = true;
+
+        this.dataService.getServiceNames(this.projectName).subscribe((serviceNames) => {
+          this.isLoading = false;
+
+          this.serviceNameControl.setValidators([
+            Validators.required,
+            FormUtils.nameExistsValidator(serviceNames),
+            Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+          ]);
+        });
       });
   }
 

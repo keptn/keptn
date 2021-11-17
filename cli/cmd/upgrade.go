@@ -56,7 +56,7 @@ func NewUpgraderCommand(vChecker *version.KeptnVersionChecker) *cobra.Command {
 		Short: "Upgrades Keptn on a Kubernetes cluster and supports upgrading the shipyard of a project to a new specification.",
 		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift. Also, it supports upgrading the shipyard of an existing project to a new specification.
 
-For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
+For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/operate/upgrade/)
 `,
 		Example: `keptn upgrade # upgrades Keptn
 
@@ -162,7 +162,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if *upgradeParams.PlatformIdentifier != platform.OpenShiftIdentifier {
 		if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 			logging.PrintLog(err.Error(), logging.VerboseLevel)
-			logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
+			logging.PrintLog("See https://keptn.sh/docs/"+getReleaseDocsURL()+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 		} else if isNewerVersion {
 			logging.PrintLog("The Kubernetes server version is higher than the one officially supported. This is not recommended and could have negative impacts on the stability of Keptn - use at your own risk.", logging.InfoLevel)

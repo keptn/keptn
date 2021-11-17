@@ -82,7 +82,7 @@ describe('KtbEditServiceComponent', () => {
     });
   });
 
-  it('should get the file tree of all stages for project sockshop and service carts', (done) => {
+  it('should get the file tree of all stages for project sockshop and service carts', () => {
     // given, when
     const expectedTree = FileTreeMock;
 
@@ -99,14 +99,11 @@ describe('KtbEditServiceComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalledWith('sockshop', 'carts');
-    component.fileTree$.subscribe((fileTree) => {
-      expect(fileTree).toBeTruthy();
-      expect(fileTree).toEqual(expectedTree);
-      done();
-    });
+    expect(component.fileTree).toBeTruthy();
+    expect(component.fileTree).toEqual(expectedTree);
   });
 
-  it('should show a message when file tree is empty', (done) => {
+  it('should show a message when file tree is empty', () => {
     // given, when
     const dataService = TestBed.inject(DataService);
     jest.spyOn(dataService, 'getFileTreeForService').mockReturnValue(of([]));
@@ -120,14 +117,11 @@ describe('KtbEditServiceComponent', () => {
     );
 
     // then
-    component.fileTree$.subscribe((fileTree) => {
-      fixture.detectChanges();
-      const section = fixture.debugElement.query(By.css('.settings-section:first-of-type > div'));
-      expect(fileTree).toBeTruthy();
-      expect(fileTree).toEqual([]);
-      expect(section.nativeElement.textContent.trim()).toEqual('There are no files in the Git upstream repository');
-      done();
-    });
+    fixture.detectChanges();
+    const section = fixture.debugElement.query(By.css('.settings-section:first-of-type > div'));
+    expect(component.fileTree).toBeTruthy();
+    expect(component.fileTree).toEqual([]);
+    expect(section.nativeElement.textContent.trim()).toEqual('There are no files in the Git upstream repository');
   });
 
   it('should show a note that the Git upstream has to be set if the remoteURI is not set', () => {
@@ -135,7 +129,7 @@ describe('KtbEditServiceComponent', () => {
     const projectMock = ProjectMock;
     projectMock.gitRemoteURI = '';
     projectMock.gitUser = '';
-    component.project$ = of(projectMock);
+    component.project = projectMock;
     component.serviceName = 'carts';
     fixture.detectChanges();
 

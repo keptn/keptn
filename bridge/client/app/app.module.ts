@@ -42,7 +42,6 @@ import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter'
 import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
 import { MomentModule } from 'ngx-moment';
-import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import {
   KtbExpandableTileComponent,
   KtbExpandableTileHeaderDirective,
@@ -143,6 +142,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { DtRadioModule } from '@dynatrace/barista-components/radio';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -154,6 +154,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   declarations: [
     AppComponent,
     DashboardComponent,
+    NotFoundComponent,
     AppHeaderComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,
@@ -170,7 +171,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbRootEventsListComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
-    KtbEventsListComponent,
     KtbEventItemComponent,
     KtbEventItemDetailDirective,
     KtbSequenceTasksListComponent,

@@ -11,7 +11,7 @@ import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Sequence } from '../_models/sequence';
 import { UniformRegistrationsMock } from '../_models/uniform-registrations.mock';
-import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
 import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-logs.mock';
 import { SequencesData } from './_mockData/sequences.mock';
 import { UniformRegistration } from '../_models/uniform-registration';
@@ -132,6 +132,10 @@ export class DataServiceMock extends DataService {
 
   public getTaskNames(projectName: string): Observable<string[]> {
     return of(['approval', 'deployment', 'test']);
+  }
+
+  public getServiceNames(projectName: string): Observable<string[]> {
+    return of(['carts', 'carts-db']);
   }
 
   public updateUniformSubscription(

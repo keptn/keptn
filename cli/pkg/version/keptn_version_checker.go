@@ -27,7 +27,7 @@ const newKeptnVersionMsg = `* Keptn version %s is available! Please visit https:
 // CheckKeptnVersion checks whether there is a new Keptn version available and prints corresponding
 // messages to the stdout
 func (c KeptnVersionChecker) CheckKeptnVersion(cliVersion, clusterVersion string, considerPrevCheck bool) (bool, bool) {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)

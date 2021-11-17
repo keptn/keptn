@@ -99,10 +99,15 @@ func NewVersionCommand(vChecker *version.VersionChecker) *cobra.Command {
 	return versionCmd
 }
 
-// SetVersion sets version, versionCheckInfo and extracts and sets {Major} and {Minor} version for keptnReleaseDocsURL
-func SetVersion(vers string) {
-	Version = vers
-	v, err := versionCheck.NewSemver(vers)
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}
+
+func getReleaseDocsURL() string {
+	if keptnReleaseDocsURL != "" {
+		return keptnReleaseDocsURL
+	}
+	v, err := versionCheck.NewSemver(Version)
 	keptnReleaseDocsURL = "0.8.x" //fallback version if provided doc version is invalid
 	if err == nil {
 		segments := v.Segments()
@@ -115,14 +120,11 @@ func SetVersion(vers string) {
 Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/` + keptnReleaseDocsURL + `/reference/version_check
 ---------------------------------------------------
 `
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
+	return keptnReleaseDocsURL
 }
 
 func isLastCheckStale() (bool, error) {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		return false, err
@@ -131,7 +133,7 @@ func isLastCheckStale() (bool, error) {
 }
 
 func printDailyVersionCheckInfo() error {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		return err
@@ -148,7 +150,7 @@ func printDailyVersionCheckInfo() error {
 }
 
 func updateLastVersionCheck() {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)

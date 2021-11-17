@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	logger "github.com/sirupsen/logrus"
 	"os"
 	"time"
 
@@ -22,8 +22,6 @@ type serviceMetadata struct {
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -42,7 +40,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
+		logger.WithError(err).Errorf(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
@@ -73,8 +71,6 @@ func PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc deletes a service
 func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -93,7 +89,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", params.StageName, params.ProjectName, err.Error()))
+		logger.WithError(err).Errorf("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 

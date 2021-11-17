@@ -5,7 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -26,6 +26,8 @@ import (
 )
 
 //go:generate swagger generate server --target ../../configuration-service --name ConfigurationService --spec ../swagger.yaml
+
+const envVarLogLevel = "LOG_LEVEL"
 
 func configureFlags(api *operations.ConfigurationServiceAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -126,20 +128,27 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	log.SetLevel(log.InfoLevel)
+
+	logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+	if err != nil {
+		log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+	} else {
+		log.SetLevel(logLevel)
+	}
 	if os.Getenv("env") == "production" {
 		///////// initialize git ////////////
-		logger.Debug("Configuring git user.email")
+		log.Debug("Configuring git user.email")
 		cmd := exec.Command("git", "config", "--global", "user.email", "keptn@keptn.com")
 		_, err := cmd.Output()
 		if err != nil {
-			logger.Error("Could not configure git user.email: " + err.Error())
+			log.Error("Could not configure git user.email: " + err.Error())
 		}
-		logger.Debug("Configuring git user.name")
+		log.Debug("Configuring git user.name")
 		cmd = exec.Command("git", "config", "--global", "user.name", "keptn")
 		_, err = cmd.Output()
 		if err != nil {
-			logger.Error("Could not configure git user.name: " + err.Error())
+			log.Error("Could not configure git user.name: " + err.Error())
 		}
 		////////////////////////////////////
 	}

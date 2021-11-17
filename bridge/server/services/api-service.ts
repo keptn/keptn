@@ -5,7 +5,7 @@ import { ResultTypes } from '../../shared/models/result-types';
 import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
 import { UniformRegistration } from '../models/uniform-registration';
-import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
+import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-registration-log';
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { ProjectResult } from '../interfaces/project-result';
@@ -13,6 +13,7 @@ import { UniformSubscription } from '../../shared/interfaces/uniform-subscriptio
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/models/sequence';
+import { Stage } from '../models/stage';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -156,6 +157,15 @@ export class ApiService {
     );
   }
 
+  public getEvaluationResult(keptnContext: string): Promise<AxiosResponse<EventResult>> {
+    const url = `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
+    const params = {
+      filter: `shkeptncontext:${keptnContext} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
+      limit: '1',
+    };
+    return this.axios.get<EventResult>(url, { params });
+  }
+
   public getOpenTriggeredEvents(
     projectName: string,
     stageName: string,
@@ -295,7 +305,7 @@ export class ApiService {
     );
   }
 
-  public getServiceResource(
+  public getServiceResources(
     projectName: string,
     stageName: string,
     serviceName: string,
@@ -310,8 +320,24 @@ export class ApiService {
     return this.axios.get<ResourceResponse>(url, params);
   }
 
+  public getServiceResource(
+    projectName: string,
+    stageName: string,
+    serviceName: string,
+    resourceURI: string
+  ): Promise<AxiosResponse<Resource>> {
+    const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceURI}`;
+
+    return this.axios.get<Resource>(url);
+  }
+
   public getSecrets(): Promise<AxiosResponse<{ Secrets: Secret[] }>> {
     const url = `${this.baseUrl}/secrets/v1/secret`;
     return this.axios.get<{ Secrets: Secret[] }>(url);
+  }
+
+  public getStages(projectName: string): Promise<AxiosResponse<{ stages: Stage[] }>> {
+    const url = `${this.baseUrl}/controlPlane/v1/project/${projectName}/stage`;
+    return this.axios.get(url);
   }
 }

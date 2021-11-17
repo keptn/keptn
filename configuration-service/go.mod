@@ -4,8 +4,6 @@ go 1.16
 
 require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
-	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/loads v0.21.0
 	github.com/go-openapi/runtime v0.21.0
@@ -15,14 +13,12 @@ require (
 	github.com/go-openapi/validate v0.20.3
 	github.com/google/martian v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.10.1-0.20211108082931-55a5cc361a0a
+	github.com/keptn/go-utils v0.10.1-0.20211115145943-79e64c4f92ea // indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
-	github.com/mholt/archiver v3.1.1+incompatible
-	github.com/nwaples/rardecode v1.0.0 // indirect
+	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.6.0
-	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.22.3

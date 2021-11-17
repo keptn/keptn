@@ -104,11 +104,42 @@ const apiRouter = (params: {
     }
   });
 
+  router.get('/project/:projectName/serviceStates', async (req, res, next) => {
+    try {
+      const serviceStates = await dataService.getServiceStates(req.params.projectName);
+      return res.json(serviceStates);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.get('/project/:projectName/deployment/:keptnContext', async (req, res, next) => {
+    try {
+      const deployment = await dataService.getServiceDeployment(
+        req.params.projectName,
+        req.params.keptnContext,
+        req.query.fromTime?.toString()
+      );
+      return res.json(deployment);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.get('/project/:projectName/tasks', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectName = req.params.projectName;
       const tasks = await dataService.getTasks(projectName);
       return res.json(tasks);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get('/project/:projectName/services', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const services = await dataService.getServiceNames(req.params.projectName);
+      return res.json(services);
     } catch (error) {
       return next(error);
     }
@@ -218,6 +249,23 @@ const apiRouter = (params: {
           req.params.serviceName
         );
         return res.json(serviceResources);
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/project/:projectName/service/:serviceName/openRemediations',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const serviceRemediationInformation = await dataService.getServiceRemediationInformation(
+          req.params.projectName,
+          req.params.serviceName,
+          req.query.config?.toString() === 'true'
+        );
+
+        return res.json(serviceRemediationInformation);
       } catch (error) {
         return next(error);
       }

@@ -125,8 +125,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         keySli: indicatorResult.keySli,
         success: indicatorResult.value.success,
         expanded: false,
-        weight:
-          this.objectives?.find((obj) => obj.sli === indicatorResult.value.metric)?.weight ?? indicatorResult.score,
+        weight: this.objectives?.find((obj) => obj.sli === indicatorResult.value.metric)?.weight ?? 1,
         ...compared,
       };
     });

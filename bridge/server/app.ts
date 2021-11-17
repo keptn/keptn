@@ -9,7 +9,7 @@ import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import admZip from 'adm-zip';
-import { apiRouter } from './api/index';
+import { apiRouter } from './api';
 import { execSync } from 'child_process';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -157,7 +157,14 @@ async function init(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
+
+  app.use(helmet.contentSecurityPolicy());
+  app.use(helmet.hidePoweredBy());
+  app.use(helmet.noSniff());
+  app.use(helmet.permittedCrossDomainPolicies());
+  app.use(helmet.referrerPolicy());
   app.use(helmet.frameguard());
+  app.use(helmet.xssFilter());
 
   const authType: string = await setAuth();
 

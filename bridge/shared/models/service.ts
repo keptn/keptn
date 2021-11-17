@@ -1,7 +1,11 @@
 import { Sequence } from './sequence';
 import { Approval } from '../interfaces/approval';
 
-type ServiceEvent = { eventId: string; keptnContext: string; time: number };
+interface ServiceEvent {
+  eventId: string;
+  keptnContext: string;
+  time: string; // nanoseconds
+}
 export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service {
@@ -27,5 +31,19 @@ export class Service {
       }
     }
     return latestSequence?.keptnContext;
+  }
+
+  public getImageVersion(): string | undefined {
+    return this.deployedImage?.split(':').pop();
+  }
+
+  public getShortImageName(): string | undefined {
+    return this.getShortImage()
+      ?.split(':')
+      .find(() => true);
+  }
+
+  public getShortImage(): string | undefined {
+    return this.deployedImage?.split('/').pop();
   }
 }

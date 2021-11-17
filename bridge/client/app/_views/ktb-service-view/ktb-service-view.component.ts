@@ -1,11 +1,15 @@
-import { Component, HostBinding, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Subject } from 'rxjs';
-import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
-import { Project } from '../../_models/project';
+import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
-import { Deployment, DeploymentSelection } from 'client/app/_models/deployment';
 import { Location } from '@angular/common';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
+import { ServiceState } from '../../_models/service-state';
+import { SequenceState } from '../../../../shared/models/sequence';
+import { Deployment } from '../../_models/deployment';
+import { ServiceRemediationInformation } from '../../_models/service-remediation-information';
 
 @Component({
   selector: 'ktb-service-view',
@@ -17,130 +21,167 @@ import { Location } from '@angular/common';
 export class KtbServiceViewComponent implements OnDestroy {
   @HostBinding('class') cls = 'ktb-service-view';
   private readonly unsubscribe$ = new Subject<void>();
-  public project?: Project;
   public serviceName?: string;
-  public selectedDeploymentInfo?: DeploymentSelection;
   public isQualityGatesOnly = false;
+  public serviceStates?: ServiceState[];
+  public projectName?: string;
+  public selectedDeployment?: DeploymentInformationSelection;
+  public updateDeploymentSubscription$?: Subscription;
+  public deploymentLoading = false;
 
   constructor(
     private dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
-    public location: Location
+    public location: Location,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
 
-    const params$ = this.route.params.pipe(takeUntil(this.unsubscribe$));
+    const params$ = this.route.paramMap.pipe(takeUntil(this.unsubscribe$));
+    const projectName$ = params$.pipe(
+      map((params) => params.get('projectName')),
+      filter((projectName: string | null): projectName is string => !!projectName)
+    );
 
-    const project$ = params$.pipe(
-      switchMap((params) => this.dataService.getProject(params.projectName)),
-      filter((project: Project | undefined): project is Project => !!project?.projectDetailsLoaded),
+    const serviceStatesInitial$ = projectName$.pipe(
+      switchMap((projectName) => this.dataService.getServiceStates(projectName)),
       takeUntil(this.unsubscribe$)
     );
 
-    params$.pipe(take(1)).subscribe((params) => {
-      this.serviceName = params.serviceName;
-    });
-
-    combineLatest([params$, project$])
+    combineLatest([params$, projectName$, serviceStatesInitial$])
       .pipe(take(1))
-      .subscribe(([params, project]) => {
-        if (params.shkeptncontext && params.serviceName) {
-          const service = project.getServices().find((s) => s.serviceName === params.serviceName);
-          const paramDeployment = service?.deployments.find(
-            (deployment) => deployment.shkeptncontext === params.shkeptncontext
+      .subscribe(([params, projectName, serviceStates]) => {
+        this.updateServiceStates(serviceStates);
+        const keptnContext = params.get('shkeptncontext');
+        this.serviceName = params.get('serviceName') ?? undefined;
+        if (keptnContext && this.serviceName) {
+          const serviceState = serviceStates.find((state) => state.name === this.serviceName);
+          const selectedDeploymentInformation = serviceState?.deploymentInformation.find(
+            (deployment) => deployment.keptnContext === keptnContext
           );
-          const changedDeployments =
-            (this.selectedDeploymentInfo &&
-              service?.deployments.filter(
-                (deployment) => deployment.name === this.selectedDeploymentInfo?.deployment.name
-              )) ??
-            []; // the context of a deployment may change
-          this.setDeploymentInfo(
-            project.projectName,
-            this.getSelectedDeployment(project.projectName, params.serviceName, changedDeployments, paramDeployment),
-            params.stage
-          );
+          if (selectedDeploymentInformation) {
+            const selection = {
+              deploymentInformation: selectedDeploymentInformation,
+              stage: params.get('stage') ?? '',
+            };
+            this.deploymentSelected(selection, projectName);
+          } else if (serviceState) {
+            // remove context and stage parameter if it does not exist
+            const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', serviceState.name]);
+            this.location.go(routeUrl.toString());
+          } else {
+            // remove service parameter, if it does not exist
+            const routeUrl = this.router.createUrlTree(['/project', projectName, 'service']);
+            this.location.go(routeUrl.toString());
+          }
         }
       });
 
-    project$.subscribe((project) => {
-      if (this.selectedDeploymentInfo) {
-        // the selected deployment gets lost if the project is updated, because the deployments are rebuild
-        const selectedDeployment = project
-          .getServices()
-          .find((s) => s.serviceName === this.selectedDeploymentInfo?.deployment.service)
-          ?.deployments.find((d) => d.shkeptncontext === this.selectedDeploymentInfo?.deployment.shkeptncontext);
-        if (selectedDeployment) {
-          this.setDeploymentInfo(project.projectName, selectedDeployment, this.selectedDeploymentInfo.stage);
-        }
-      }
-      this.dataService.loadOpenRemediations(project);
-      this.project = project;
+    projectName$.subscribe((projectName) => {
+      this.projectName = projectName;
     });
+
+    if (this.initialDelayMillis !== 0) {
+      const serviceStateInterval$ = projectName$.pipe(
+        switchMap((projectName) =>
+          AppUtils.createTimer(this.initialDelayMillis, this.initialDelayMillis).pipe(map(() => projectName))
+        ),
+        takeUntil(this.unsubscribe$),
+        switchMap((projectName) => this.dataService.getServiceStates(projectName)),
+        takeUntil(this.unsubscribe$)
+      );
+      serviceStateInterval$.subscribe((serviceStates) => {
+        this.updateServiceStates(serviceStates);
+      });
+    }
   }
 
-  private getSelectedDeployment(
-    projectName: string,
-    serviceName: string,
-    changedDeployments: Deployment[],
-    paramDeployment?: Deployment
-  ): Deployment | undefined {
-    let selectedDeployment;
-    if (paramDeployment) {
-      selectedDeployment = paramDeployment;
-    } else if (changedDeployments.length > 0) {
-      if (changedDeployments.length === 1) {
-        selectedDeployment = changedDeployments[0];
-      } else {
-        selectedDeployment = changedDeployments.find((d) =>
-          d.stages.some((s) =>
-            this.selectedDeploymentInfo?.deployment.stages.some((sd) => s.stageName === sd.stageName)
-          )
-        );
-      }
-    } else {
-      const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', serviceName]);
+  // checks if the given stage exists in the deployment and returns the latest one if not
+  private validateStage(deployment: Deployment, projectName: string, stage: string): string {
+    if (!stage || !deployment.getStage(stage)) {
+      stage = deployment.stages[deployment.stages.length - 1].name;
+      const routeUrl = this.router.createUrlTree([
+        '/project',
+        projectName,
+        'service',
+        deployment.service,
+        'context',
+        deployment.keptnContext,
+        'stage',
+        stage,
+      ]);
       this.location.go(routeUrl.toString());
     }
-    return selectedDeployment;
+    return stage;
   }
 
-  private setDeploymentInfo(projectName: string, selectedDeployment?: Deployment, paramStage?: string): void {
-    if (selectedDeployment) {
-      let stage;
-      if (paramStage) {
-        stage = paramStage;
-      } else {
-        stage = selectedDeployment.stages[selectedDeployment.stages.length - 1].stageName;
-        const routeUrl = this.router.createUrlTree([
-          '/project',
-          projectName,
-          'service',
-          selectedDeployment.service,
-          'context',
-          selectedDeployment.shkeptncontext,
-          'stage',
-          stage,
-        ]);
-        this.location.go(routeUrl.toString());
-      }
-      this.selectedDeploymentInfo = { deployment: selectedDeployment, stage };
+  private updateServiceStates(serviceStates: ServiceState[]): void {
+    if (!this.serviceStates) {
+      this.serviceStates = serviceStates;
     } else {
-      this.selectedDeploymentInfo = undefined;
+      ServiceState.update(this.serviceStates, serviceStates);
     }
   }
 
-  public selectService(projectName: string, serviceName: string): void {
-    if (this.serviceName !== serviceName) {
-      this.serviceName = serviceName;
-    }
+  public deploymentSelected(deploymentInfo: DeploymentInformationSelection, projectName: string): void {
+    this.updateDeploymentSubscription$?.unsubscribe();
+    this.updateDeploymentSubscription$ = AppUtils.createTimer(0, this.initialDelayMillis)
+      .pipe(switchMap(() => this.updateDeployment(deploymentInfo, projectName)))
+      .subscribe(
+        (update) => {
+          const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+          if (update instanceof Deployment) {
+            if (!originalDeployment) {
+              deploymentInfo.stage = this.validateStage(update, projectName, deploymentInfo.stage);
+              deploymentInfo.deploymentInformation.deployment = update;
+            } else {
+              originalDeployment.update(update);
+            }
+            this.deploymentLoading = false;
+          } else if (originalDeployment) {
+            originalDeployment.updateRemediations(update);
+          }
+        },
+        () => {
+          this.deploymentLoading = false;
+        }
+      );
   }
 
-  ngOnDestroy(): void {
+  private updateDeployment(
+    deploymentInfo: DeploymentInformationSelection,
+    projectName: string
+  ): Observable<Deployment | ServiceRemediationInformation> {
+    const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+    this.selectedDeployment = deploymentInfo;
+    let update$: Observable<Deployment | ServiceRemediationInformation>;
+
+    if (!originalDeployment) {
+      // initially fetch deployment
+      this.deploymentLoading = true;
+      update$ = this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
+    } else {
+      // update deployment
+      if (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT) {
+        // deployment is finished. Just update open remediations
+        update$ = this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
+      } else {
+        update$ = this.dataService.getServiceDeployment(
+          projectName,
+          deploymentInfo.deploymentInformation.keptnContext,
+          originalDeployment.latestTimeUpdated?.toISOString()
+        );
+      }
+    }
+    return update$;
+  }
+
+  public ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    this.updateDeploymentSubscription$?.unsubscribe();
   }
 }

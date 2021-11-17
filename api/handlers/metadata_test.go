@@ -20,8 +20,6 @@ import (
 	fakeappsv1 "k8s.io/client-go/kubernetes/typed/apps/v1/fake"
 	test "k8s.io/client-go/testing"
 
-	"github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
@@ -81,7 +79,6 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 
 	type fields struct {
 		k8sClient kubernetes.Interface
-		logger    keptn.LoggerInterface
 	}
 	tests := []struct {
 		name        string
@@ -93,7 +90,6 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 			name: "get bridge deployment info from k8s",
 			fields: fields{
 				k8sClient: clientSet,
-				logger:    keptnutils.NewLogger("", "", "api"),
 			},
 			want: &metadata.MetadataOK{
 				Payload: &models.Metadata{
@@ -111,7 +107,6 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 			name: "k8s api not available - skip bridge but return remaining attributes",
 			fields: fields{
 				k8sClient: clientSet,
-				logger:    keptnutils.NewLogger("", "", "api"),
 			},
 			k8sAPIError: true,
 			want: &metadata.MetadataOK{
@@ -144,7 +139,6 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 
 			h := &metadataHandler{
 				k8sClient:       tt.fields.k8sClient,
-				logger:          tt.fields.logger,
 				swaggerFilePath: tmpSwaggerFileName,
 			}
 			require.Equal(t, tt.want, h.getMetadata())
