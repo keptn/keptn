@@ -59,7 +59,11 @@ func Test_DeliveryAssistant(t *testing.T) {
 
 	shipyardFilePath, err := CreateTmpShipyardFile(deliveryAssistantShipyard)
 	require.Nil(t, err)
-	defer os.Remove(shipyardFilePath)
+	defer func() {
+		if err := os.Remove(shipyardFilePath); err != nil {
+			t.Logf("warning: could not remove shipyard file %s", shipyardFilePath)
+		}
+	}()
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
@@ -80,12 +84,19 @@ func Test_DeliveryAssistant(t *testing.T) {
 	combi1FailContext := triggerApproval(t, projectName, serviceName, "combi1", keptnv2.ResultFailed)
 	verifyApprovalFinishedEventExistsWithResult(t, combi1FailContext, projectName, "combi1", keptnv2.ResultFailed, keptnv2.StatusSucceeded)
 
+	// also send an event with no result - in this case, only a .started event should be available
+	combi1UnknownContext := triggerApproval(t, projectName, serviceName, "combi1", "")
+	verifyApprovalStartedEventExists(t, combi1UnknownContext, projectName, "combi1", keptnv2.StatusSucceeded)
+	verifyApprovalFinishedEventDoesNotExist(t, combi1UnknownContext, projectName)
+	triggeredEvent := retrieveApprovalTriggeredEvent(t, combi1UnknownContext, projectName, "combi1")
+	verifyApprovalUsingCLI(t, combi1UnknownContext, projectName, "combi1", triggeredEvent.ID)
+
 	verifyNoOpenApprovalsLeft(t, projectName, "combi1")
 
 	// combi2
 	combi2PassContext := triggerApproval(t, projectName, serviceName, "combi2", keptnv2.ResultPass)
 	verifyApprovalFinishedEventDoesNotExist(t, combi2PassContext, projectName)
-	triggeredEvent := retrieveApprovalTriggeredEvent(t, combi2PassContext, projectName, "combi2")
+	triggeredEvent = retrieveApprovalTriggeredEvent(t, combi2PassContext, projectName, "combi2")
 	verifyApprovalUsingCLI(t, combi2PassContext, projectName, "combi2", triggeredEvent.ID)
 
 	combi2WarningContext := triggerApproval(t, projectName, serviceName, "combi2", keptnv2.ResultWarning)
