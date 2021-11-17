@@ -41,13 +41,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   set eventType(eventType: string | undefined) {
     if (this._eventType != eventType) {
       this._eventType = eventType;
-      if (this._eventType !== 'triggered' && this._eventType !== '>') {
-        this.getFormControl('sendFinished').setValue(null);
-        this.getFormControl('sendFinished').disable();
-      } else {
-        this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
-        this.getFormControl('sendFinished').enable();
-      }
+      this.setSendFinishedControl();
     }
   }
 
@@ -59,7 +53,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('url').setValue(webhookConfig.url);
       this.getFormControl('payload').setValue(webhookConfig.payload);
       this.getFormControl('proxy').setValue(webhookConfig.proxy);
-      this.getFormControl('sendFinished').setValue(webhookConfig.sendFinished.toString());
+      this.setSendFinishedControl();
 
       for (const header of webhookConfig.header || []) {
         this.addHeader(header.name, header.value);
@@ -143,6 +137,16 @@ export class KtbWebhookSettingsComponent implements OnInit {
     control.setValue(finalString);
     // Input event detection is not working reliable for adding secrets, so we have to call it to work properly
     this.onWebhookFormChange();
+  }
+
+  private setSendFinishedControl(): void {
+    if (this._eventType !== 'triggered' && this._eventType !== '>') {
+      this.getFormControl('sendFinished').setValue(null);
+      this.getFormControl('sendFinished').disable();
+    } else {
+      this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
+      this.getFormControl('sendFinished').enable();
+    }
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {
