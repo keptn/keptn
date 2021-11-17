@@ -55,7 +55,7 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 			return middleware.NotImplemented("operation health.GetHealth has not yet been implemented")
 		}),
 		EventSaveEventHandler: event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
-			return middleware.NotImplemented("operation event.SaveEvent has not yet been implemented")
+			return middleware.NotImplemented("operation event.ProcessEvent has not yet been implemented")
 		}),
 	}
 }
