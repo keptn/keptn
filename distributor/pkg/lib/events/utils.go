@@ -8,7 +8,6 @@ import (
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
-	logger "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 )
@@ -74,7 +73,6 @@ func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {
 	event := cloudevents.NewEvent(cv.SpecVersion)
 
 	if err := json.Unmarshal(data, &event); err != nil {
-		logger.Errorf("Could not unmarshal CloudEvent: %v", err)
 		return nil, err
 	}
 

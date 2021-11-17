@@ -84,14 +84,14 @@ func _main(env config.EnvConfig) int {
 		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
 		uniformWatch.RegisterListener(httpEventPoller)
 		if err := httpEventPoller.Start(executionContext); err != nil {
-			logger.Fatalf("Unable to start HTTP event poller: %v", err)
+			logger.Fatalf("Could not start HTTP event poller: %v", err)
 		}
 	} else {
 		logger.Info("Starting NATS event Receiver")
 		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
 		uniformWatch.RegisterListener(natsEventReceiver)
 		if err := natsEventReceiver.Start(executionContext); err != nil {
-			logger.Fatalf("Unable to start NATS event receiver: %v", err)
+			logger.Fatalf("Could not start NATS event receiver: %v", err)
 		}
 	}
 	executionContext.Wg.Wait()

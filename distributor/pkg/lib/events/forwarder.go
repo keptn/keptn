@@ -58,14 +58,12 @@ func (f *Forwarder) Start(ctx *ExecutionContext) error {
 	if err != nil {
 		return err
 	}
-
 	logger.Info("Terminating event forwarder")
 	ctx.Wg.Done()
 	return nil
 }
 
 func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
-
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		logger.Errorf("Failed to read body from request: %v", err)
@@ -89,7 +87,7 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
-	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn\n", event.ID())
+	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn", event.ID())
 	select {
 	case f.EventChannel <- event:
 		// no-op
@@ -101,7 +99,7 @@ func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
 		return nil
 	}
 	if config.Global.KeptnAPIEndpoint == "" {
-		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
+		logger.Debug("No external API endpoint defined. Forwarding directly to NATS server")
 		return f.forwardEventToNATSServer(event)
 	}
 	return f.forwardEventToAPI(event)
@@ -115,24 +113,21 @@ func (f *Forwarder) forwardEventToNATSServer(event cloudevents.Event) error {
 
 	c, err := cloudevents.NewClient(pubSubConnection)
 	if err != nil {
-		logger.Errorf("Failed to create client, %v\n", err)
+		logger.Errorf("Failed to create cloudevents client: %v", err)
 		return err
 	}
 
 	cloudevents.WithEncodingStructured(context.Background())
 
 	if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
-		logger.Errorf("Failed to send: %v\n", err)
+		logger.Errorf("Failed to send cloud event: %v", err)
 	} else {
 		logger.Infof("Sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
 	}
-
 	return nil
 }
 
 func (f *Forwarder) forwardEventToAPI(event cloudevents.Event) error {
-	logger.Infof("Keptn API endpoint: %s", config.Global.KeptnAPIEndpoint)
-
 	payload, err := event.MarshalJSON()
 	if err != nil {
 		return err
@@ -193,20 +188,18 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	} else {
 		path = req.URL.Path
 	}
-
-	logger.Infof("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
-
+	logger.Debugf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
 	proxyScheme, proxyHost, proxyPath := config.Global.GetProxyHost(path)
 
 	if proxyScheme == "" || proxyHost == "" {
-		logger.Error("Could not get proxy Host URL - got empty values")
+		logger.Error("Could not get proxy Host URL - got empty values of 'proxyScheme' or 'proxyHost'")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
 	if err != nil {
-		logger.Errorf("Unable to create request to be forwarded: %v", err)
+		logger.Errorf("Could not create request to be forwarded: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -222,8 +215,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	forwardReq.URL = parsedProxyURL
 	forwardReq.URL.RawQuery = req.URL.RawQuery
-
-	logger.Infof("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String())
+	logger.Debugf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String())
 
 	if config.Global.KeptnAPIToken != "" {
 		logger.Debug("Adding x-token header to HTTP request")
@@ -254,7 +246,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	logger.Infof("Received response from API: Status=%d", resp.StatusCode)
+	logger.Debugf("Received response from API: Status=%d", resp.StatusCode)
 	if _, err := rw.Write(respBytes); err != nil {
 		logger.Errorf("could not send response from API: %v", err)
 	}

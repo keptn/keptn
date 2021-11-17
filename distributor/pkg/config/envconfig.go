@@ -40,7 +40,7 @@ type EnvConfig struct {
 func GetRegistrationInterval(env EnvConfig) time.Duration {
 	duration, err := time.ParseDuration(env.RegistrationInterval)
 	if err != nil {
-		logger.Warnf("Unable to parse REGISTRATION_INTERVAL environment variable as duration: %s", env.RegistrationInterval)
+		logger.Warnf("Could not parse REGISTRATION_INTERVAL environment variable as duration: %s", env.RegistrationInterval)
 		return 10 * time.Second
 	}
 	return duration

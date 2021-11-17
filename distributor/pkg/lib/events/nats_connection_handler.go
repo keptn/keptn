@@ -51,7 +51,7 @@ func (nch *NatsConnectionHandler) Connect() error {
 // RemoveAllSubscriptions removes all current subscriptions from the NATS handler
 func (nch *NatsConnectionHandler) RemoveAllSubscriptions() error {
 	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
-		return fmt.Errorf("unable to remove all subscriptions, because not connected to NATS")
+		return fmt.Errorf("could not remove all subscriptions, because not connected to NATS")
 	}
 	for _, sub := range nch.subscriptions {
 		_ = sub.Unsubscribe()
@@ -74,18 +74,18 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 	nch.mux.Lock()
 	defer nch.mux.Unlock()
 	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
-		return errors.New("unable to remove all subscriptions, because not connected to NATS")
+		return errors.New("could not remove all subscriptions, because not connected to NATS")
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
 		err := nch.RemoveAllSubscriptions()
 		if err != nil {
-			return fmt.Errorf("unable to remove all subscriptions: %w", err)
+			return fmt.Errorf("could not remove all subscriptions: %w", err)
 		}
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			logger.Infof("Subscribing to topic <%s> with queue group <%s>", topic, queueGroup)
+			logger.Infof("Subscribing to topic '%s' with queue group '%s'", topic, queueGroup)
 			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.messageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
