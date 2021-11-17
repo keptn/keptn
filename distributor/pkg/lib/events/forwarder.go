@@ -54,7 +54,7 @@ func (f *Forwarder) Start(ctx *ExecutionContext) {
 		<-ctx.Done()
 		logger.Info("Terminating event forwarder")
 		if err := svr.Shutdown(context.Background()); err != nil {
-			logger.Fatalf("Could not gracefully shutdown http server of forwarder: %v", err)
+			logger.Fatalf("Could not gracefully shutdown http server of event forwarder: %v", err)
 		}
 	}()
 }
