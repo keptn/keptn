@@ -169,11 +169,13 @@ export class ApiService {
   public getFailedEvaluationResults(
     projectName: string,
     servicesKeptnContext: string,
-    stageName?: string
+    stageName?: string,
+    resultType?: ResultTypes
   ): Promise<AxiosResponse<EventResult>> {
     const stageString = stageName ? `AND data.stage:${stageName} ` : '';
+    const resultTypeString = resultType ? `AND data.result:${ResultTypes.FAILED} ` : '';
     const params = {
-      filter: `data.project:${projectName} ${stageString}AND data.result:${ResultTypes.FAILED} AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND ${servicesKeptnContext}`,
+      filter: `data.project:${projectName} ${stageString}${resultTypeString}AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND ${servicesKeptnContext}`,
       excludeInvalidated: 'true',
     };
     return this.axios.get<EventResult>(
