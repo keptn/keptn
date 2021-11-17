@@ -32,7 +32,7 @@ func NewForwarder(httpClient *http.Client) *Forwarder {
 	}
 }
 
-func (f *Forwarder) Start(ctx *ExecutionContext) error {
+func (f *Forwarder) Start(ctx *ExecutionContext) {
 	mux := http.NewServeMux()
 	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
 	mux.Handle(config.Global.EventForwardingPath, http.HandlerFunc(f.handleEvent))
@@ -57,7 +57,6 @@ func (f *Forwarder) Start(ctx *ExecutionContext) error {
 			logger.Fatalf("Could not gracefully shutdown http server of forwarder: %v", err)
 		}
 	}()
-	return nil
 }
 
 func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
