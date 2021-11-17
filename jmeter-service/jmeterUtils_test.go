@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -16,10 +15,6 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
-func Test_Out(t *testing.T) {
-	ti := TestInfo{}
-	logger.Infof("%v", ti)
-}
 func Test_executeJMeter(t *testing.T) {
 	localTmpDir, _ := ioutil.TempDir("", "")
 	var returnedStatus int
