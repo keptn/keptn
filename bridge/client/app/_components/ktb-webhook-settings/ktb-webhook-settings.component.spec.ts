@@ -392,6 +392,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
   it('sendFinished should be set to true', () => {
     // given
+    component.eventType = 'triggered';
     component.webhook = {
       header: [{ name: 'x-token', value: 'token-value' }],
       method: 'GET',
@@ -415,6 +416,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
   it('sendFinished should be set to false', () => {
     // given
+    component.eventType = 'triggered';
     component.webhook = {
       header: [{ name: 'x-token', value: 'token-value' }],
       method: 'GET',
