@@ -345,9 +345,97 @@ describe('KtbWebhookSettingsComponent', () => {
       method: 'GET',
       payload: 'payload',
       proxy: 'https://proxy.com',
+      sendFinished: true,
       type: '',
       url: 'https://example.com',
     });
+  });
+
+  it('sendFinished should be enabled for triggered events and true by default', () => {
+    // given
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
+    component.eventType = 'triggered';
+    fixture.detectChanges();
+
+    // when
+
+    // then
+    expect(checkbox.disabled).toEqual(false);
+    expect(component.getFormControl('sendFinished').value).toEqual('true');
+  });
+
+  it('sendFinished should be disabled for started events and null', () => {
+    // given
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
+    component.eventType = 'started';
+    fixture.detectChanges();
+
+    // when
+
+    // then
+    expect(checkbox.disabled).toEqual(true);
+    expect(component.getFormControl('sendFinished').value).toEqual(null);
+  });
+
+  it('sendFinished should be disabled for finished events and null', () => {
+    // given
+    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
+    component.eventType = 'finished';
+    fixture.detectChanges();
+
+    // when
+
+    // then
+    expect(checkbox.disabled).toEqual(true);
+    expect(component.getFormControl('sendFinished').value).toEqual(null);
+  });
+
+  it('sendFinished should be set to true', () => {
+    // given
+    component.eventType = 'triggered';
+    component.webhook = {
+      header: [{ name: 'x-token', value: 'token-value' }],
+      method: 'GET',
+      payload: 'payload',
+      proxy: 'https://proxy.com',
+      sendFinished: true,
+      filter: {
+        projects: null,
+        services: null,
+        stages: null,
+      },
+      type: '',
+      url: 'https://example.com',
+    };
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').value).toEqual('true');
+  });
+
+  it('sendFinished should be set to false', () => {
+    // given
+    component.eventType = 'triggered';
+    component.webhook = {
+      header: [{ name: 'x-token', value: 'token-value' }],
+      method: 'GET',
+      payload: 'payload',
+      proxy: 'https://proxy.com',
+      sendFinished: false,
+      filter: {
+        projects: null,
+        services: null,
+        stages: null,
+      },
+      type: '',
+      url: 'https://example.com',
+    };
+
+    // when
+
+    // then
+    expect(component.getFormControl('sendFinished').value).toEqual('false');
   });
 
   function getAddHeaderButton(): HTMLElement {

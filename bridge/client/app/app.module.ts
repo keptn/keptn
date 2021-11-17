@@ -141,6 +141,7 @@ import {
 import { OverlayModule } from '@angular/cdk/overlay';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
+import { DtRadioModule } from '@dynatrace/barista-components/radio';
 import { NotFoundComponent } from './not-found/not-found.component';
 
 registerLocaleData(localeEn, 'en');
@@ -272,6 +273,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtCopyToClipboardModule,
     DtToggleButtonGroupModule,
     DtQuickFilterModule,
+    DtRadioModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,

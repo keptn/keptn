@@ -5,8 +5,9 @@ import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-confi
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
+import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 
-type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header';
+type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
 
 @Component({
   selector: 'ktb-webhook-settings',
@@ -21,6 +22,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     payload: new FormControl('', []),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
+    sendFinished: new FormControl('true', []),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
@@ -29,6 +31,19 @@ export class KtbWebhookSettingsComponent implements OnInit {
     emptyText:
       'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
   };
+  public sendFinishedOverlayConfig: DtOverlayConfig = {
+    pinnable: true,
+    originY: 'center',
+  };
+  public _eventType: string | undefined;
+
+  @Input()
+  set eventType(eventType: string | undefined) {
+    if (this._eventType != eventType) {
+      this._eventType = eventType;
+      this.setSendFinishedControl();
+    }
+  }
 
   @Input()
   set webhook(webhookConfig: WebhookConfig | undefined) {
@@ -38,6 +53,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('url').setValue(webhookConfig.url);
       this.getFormControl('payload').setValue(webhookConfig.payload);
       this.getFormControl('proxy').setValue(webhookConfig.proxy);
+      this.setSendFinishedControl();
 
       for (const header of webhookConfig.header || []) {
         this.addHeader(header.name, header.value);
@@ -83,6 +99,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this._webhook.payload = this.getFormControl('payload').value;
     this._webhook.proxy = this.getFormControl('proxy').value;
     this._webhook.header = this.getFormControl('header').value;
+    this._webhook.sendFinished = this.getFormControl('sendFinished').value === 'true';
     this.webhookChange.emit(this._webhook);
   }
 
@@ -120,6 +137,16 @@ export class KtbWebhookSettingsComponent implements OnInit {
     control.setValue(finalString);
     // Input event detection is not working reliable for adding secrets, so we have to call it to work properly
     this.onWebhookFormChange();
+  }
+
+  private setSendFinishedControl(): void {
+    if (this._eventType !== 'triggered' && this._eventType !== '>') {
+      this.getFormControl('sendFinished').setValue(null);
+      this.getFormControl('sendFinished').disable();
+    } else {
+      this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
+      this.getFormControl('sendFinished').enable();
+    }
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {

@@ -643,7 +643,13 @@ export class DataService {
             stage,
             service
           );
-          previousWebhookConfig.addWebhook(webhookConfig.type, curl, subscriptionId, secrets);
+          previousWebhookConfig.addWebhook(
+            webhookConfig.type,
+            curl,
+            subscriptionId,
+            secrets,
+            webhookConfig.sendFinished
+          );
           await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
         }
       }

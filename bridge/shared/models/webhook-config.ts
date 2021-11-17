@@ -27,6 +27,7 @@ export class WebhookConfig implements wc {
   public header: WebhookHeader[];
   public proxy?: string;
   public secrets?: WebhookSecret[];
+  public sendFinished: boolean;
 
   constructor() {
     this.type = '';
@@ -34,5 +35,6 @@ export class WebhookConfig implements wc {
     this.url = '';
     this.payload = '';
     this.header = [];
+    this.sendFinished = true;
   }
 }
