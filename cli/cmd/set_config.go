@@ -32,7 +32,7 @@ Supported keys:
 			cmd.SilenceUsage = false
 			return errors.New("required arguments KEY and VALUE")
 		}
-		configMng = config.NewCLIConfigManager()
+		configMng = config.NewCLIConfigManager("")
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {

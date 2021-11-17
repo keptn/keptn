@@ -62,6 +62,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
 		"Specify the namespace where Keptn should be installed, used and uninstalled in")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config-file", "", "",
+		"Specify custom Keptn Config file path (default: ~/.keptn/config)")
 	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all user prompts")
 	rootCmd.PersistentFlags().BoolVarP(&help, "help", "h", false, "help")
 
@@ -81,12 +83,7 @@ func initConfig() {
 		logging.LogLevel = logging.QuietLevel
 	}
 
-	cfgMgr := config.NewCLIConfigManager()
-
-	if cfgFile != "" {
-		// Use config file from the flag.
-		cfgMgr.CLIConfigPath = cfgFile
-	}
+	cfgMgr := config.NewCLIConfigManager(cfgFile)
 
 	logging.PrintLog(fmt.Sprintf("Using config file: %s", cfgMgr.CLIConfigPath), logging.VerboseLevel)
 
@@ -95,6 +92,7 @@ func initConfig() {
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
 	}
+
 }
 
 type options []string

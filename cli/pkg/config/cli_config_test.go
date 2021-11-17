@@ -1,16 +1,20 @@
 package config
 
 import (
-	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 )
 
-const testConfig = `{"automatic_version_check":true,"kube_context_check":true,"last_version_check":"2020-02-20T00:00:00Z","current-context":""}`
+// testConfig keys are in the alphabetical order
+// this is because Viper writes the keys to the file in the alphabetical order
+const testConfig = `{"automatic_version_check":true,"current-context":"","kube_context_check":true,"last_version_check":"2020-02-20T00:00:00Z"}`
 
 var testTime time.Time
 
@@ -19,7 +23,7 @@ func init() {
 }
 
 func TestLoadNonExistingCLIConfig(t *testing.T) {
-	mng := NewCLIConfigManager()
+	mng := NewCLIConfigManager("")
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		log.Fatal(err)
@@ -42,7 +46,7 @@ func TestLoadNonExistingCLIConfig(t *testing.T) {
 }
 
 func TestStoreCLIConfig(t *testing.T) {
-	mng := NewCLIConfigManager()
+	mng := NewCLIConfigManager("")
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		log.Fatal(err)
@@ -60,6 +64,12 @@ func TestStoreCLIConfig(t *testing.T) {
 	}
 
 	data, err := fileutils.ReadFileAsStr(mng.CLIConfigPath)
+
+	// This is to remove the indentation viper adds
+	data = strings.ReplaceAll(data, " ", "")
+	data = strings.ReplaceAll(data, "\t", "")
+	data = strings.ReplaceAll(data, "\n", "")
+
 	if data != testConfig {
 		t.Errorf("Different config stored")
 	}
@@ -69,7 +79,7 @@ func TestStoreCLIConfig(t *testing.T) {
 }
 
 func TestLoadCLIConfig(t *testing.T) {
-	mng := NewCLIConfigManager()
+	mng := NewCLIConfigManager("")
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		log.Fatal(err)

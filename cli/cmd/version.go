@@ -124,7 +124,7 @@ Keptn will%s collect statistical data and will%s notify about new versions and s
 }
 
 func isLastCheckStale() (bool, error) {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		return false, err
@@ -133,7 +133,7 @@ func isLastCheckStale() (bool, error) {
 }
 
 func printDailyVersionCheckInfo() error {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		return err
@@ -150,7 +150,7 @@ func printDailyVersionCheckInfo() error {
 }
 
 func updateLastVersionCheck() {
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)

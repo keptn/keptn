@@ -139,7 +139,7 @@ const newIncompatibleVersionMsg = `* Keptn CLI version %s is available! Please n
 // messages to the stdout
 func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bool) (bool, bool) {
 
-	configMng := config.NewCLIConfigManager()
+	configMng := config.NewCLIConfigManager("")
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
