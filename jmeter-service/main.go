@@ -11,6 +11,7 @@ import (
 	"os"
 )
 
+// JMeterServiceName is the name of the JMeter Keptn Service
 const JMeterServiceName = "jmeter-service"
 
 type envConfig struct {

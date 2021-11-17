@@ -8,6 +8,8 @@ import (
 	"net/url"
 )
 
+// EventHandler handles events of type 'test.triggered' and kicks off
+// the TestRunner to execute the JMeter tests
 type EventHandler struct {
 	testRunner *TestRunner
 }

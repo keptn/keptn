@@ -25,11 +25,13 @@ const (
 	TestStrategy_RealUser    = "real-user"
 )
 
+// JMeterConf contains the workload configuration for JMeter
 type JMeterConf struct {
 	SpecVersion string      `json:"spec_version" yaml:"spec_version"`
 	Workloads   []*Workload `json:"workloads" yaml:"workloads"`
 }
 
+// Workload contains information about a JMeter workload to be executed
 type Workload struct {
 	TestStrategy      string            `json:"teststrategy" yaml:"teststrategy"`
 	VUser             int               `json:"vuser" yaml:"vuser"`

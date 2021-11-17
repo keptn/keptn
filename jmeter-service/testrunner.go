@@ -14,16 +14,20 @@ import (
 	"time"
 )
 
+// TestRunner is responsible for executing healtch checks the JMeter workloads
 type TestRunner struct {
 	eventSender *keptnv2.HTTPEventSender
 }
 
 const errMsgSendFinishedEvent = "Error sending '.test.finished' event for %s"
 
+// NewTestRunner creates a new TestRunner
 func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
 	return &TestRunner{eventSender}
 }
 
+// RunTests downloads the JMeter configuration, eventually run a basic health check
+// and executes the Jmeter test
 func (tr *TestRunner) RunTests(testInfo TestInfo) error {
 	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
 		logger.WithError(err).Error("Unable to send test '.started' event")
