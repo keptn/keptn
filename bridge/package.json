@@ -83,7 +83,7 @@
     "@angular/cli": "^11.2.14",
     "@angular/compiler-cli": "^11.2.8",
     "@angular/language-service": "^11.2.13",
-    "@cypress/schematic": "^1.5.0",
+    "@cypress/schematic": "^1.6.0",
     "@types/dompurify": "^2.2.3",
     "@types/jest": "^27.0.2",
     "@types/marked": "^3.0.0",
