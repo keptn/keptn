@@ -7,7 +7,6 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
-	"log"
 	"os"
 )
 
@@ -42,19 +41,19 @@ func main() {
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
-		log.Fatalf("failed to create client: %v", err)
+		logger.Fatalf("Failed to create cloud event client: %v", err)
 	}
 	c, err := cloudevents.NewClient(p)
 	if err != nil {
-		log.Fatalf("failed to create client: %v", err)
+		logger.Fatalf("Failed to create cloud event client: %v", err)
 	}
 
 	eventSender, err := keptnv2.NewHTTPEventSender("")
 	if err != nil {
-		log.Fatalf("failed to create event sender: %v", err)
+		logger.Fatalf("Failed to create event sender: %v", err)
 	}
 
 	eventHandler := &EventHandler{testRunner: NewTestRunner(eventSender)}
 
-	log.Fatal(c.StartReceiver(ctx, eventHandler.handleEvent))
+	logger.Fatal(c.StartReceiver(ctx, eventHandler.handleEvent))
 }

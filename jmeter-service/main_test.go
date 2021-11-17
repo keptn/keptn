@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -25,7 +25,7 @@ var serviceURLTests = []struct {
 func encodeURL(urlString string) *url.URL {
 	parsedURL, err := url.Parse(urlString)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	return parsedURL
 }
