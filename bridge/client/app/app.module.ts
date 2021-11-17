@@ -132,7 +132,7 @@ import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-s
 import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 import { DtAlertModule } from '@dynatrace/barista-components/alert';
-import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list/ktb-edit-service-file-list.component';
+import { KtbEditServiceFileListComponent } from './_components/ktb-edit-service-file-list/ktb-edit-service-file-list.component';
 import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 import {
   KtbTreeListSelectComponent,
