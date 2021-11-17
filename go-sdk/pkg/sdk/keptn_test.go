@@ -99,10 +99,62 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 
 }
 
+func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
+		return FakeTaskData{}, nil
+	}
+
+	taskEntry := TaskEntry{
+		TaskHandler: taskHandler,
+	}
+
+	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
+
+	eventReceiver := &TestReceiver{}
+	eventSender := &EventSenderMock{}
+
+	eventSender.SendEventFunc = func(eventMoqParam event.Event) error {
+		return nil
+	}
+
+	taskRegistry := &TaskRegistry{
+		Entries: taskEntries,
+	}
+
+	keptn := Keptn{
+		eventSender:            eventSender,
+		eventReceiver:          eventReceiver,
+		taskRegistry:           taskRegistry,
+		automaticEventResponse: true,
+	}
+
+	keptn.Start()
+	ctx := getGracefulContext()
+	eventReceiver.NewEvent(ctx, newTestTaskBadTriggeredEvent())
+
+	require.Eventuallyf(t, func() bool {
+		fmt.Println(len(eventSender.SendEventCalls()))
+		return len(eventSender.SendEventCalls()) == 0
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+}
+
 func newTestTaskTriggeredEvent() cloudevents.Event {
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType("sh.keptn.event.faketask.triggered")
+	c.SetDataContentType(cloudevents.ApplicationJSON)
+	c.SetExtension(KeptnContextCEExtension, "keptncontext")
+	c.SetExtension(TriggeredIDCEExtension, "ID")
+	c.SetSource("unittest")
+	c.SetData(cloudevents.ApplicationJSON, FakeTaskData{})
+	return c
+}
+
+func newTestTaskBadTriggeredEvent() cloudevents.Event {
+	c := cloudevents.NewEvent()
+	c.SetID(uuid.New().String())
+	c.SetType("sh.keptn.event.faketask.finished.triggered")
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, "keptncontext")
 	c.SetExtension(TriggeredIDCEExtension, "ID")
