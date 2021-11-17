@@ -19,21 +19,24 @@
         </div>
       </ng-container>
       <ng-template #trace>
-        <ng-container *ngIf="isTrace(row) as trace">
+        <ng-container *ngIf="isSubsequence(row) as subSequence">
           <dt-icon
-            *ngIf="!trace.isLoading() || trace.isApproval() || trace.getLastTrace().isApproval(); else loading"
+            *ngIf="subSequence.state === SequenceState.FINISHED || subSequence.hasPendingApproval; else loading"
             class="event-icon"
-            [class.error]="trace.isFaulty()"
-            [class.success]="trace.isSuccessful()"
-            [class.highlight]="trace.isApproval() || trace.getLastTrace().isApproval()"
-            [name]="trace.isFinished() ? trace.getIcon() : trace.getLastTrace().getIcon()"
+            [class.error]="subSequence.result === ResultTypes.FAILED"
+            [class.success]="subSequence.result === ResultTypes.PASSED"
+            [class.highlight]="subSequence.hasPendingApproval"
+            [name]="getEventIcon(subSequence)"
           ></dt-icon>
           <ng-template #loading>
             <button class="m-0 p-0" dt-button disabled variant="nested">
               <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
             </button>
           </ng-template>
-          <span *ngIf="trace.time" [textContent]="trace.time | amCalendar: dateUtil.getCalendarFormats()"></span>
+          <span
+            *ngIf="subSequence.time"
+            [textContent]="subSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"
+          ></span>
         </ng-container>
       </ng-template>
     </dt-cell>
@@ -47,7 +50,11 @@
         [textContent]="sequence.name"
         [routerLink]="getRemediationLink(sequence)"
       ></a>
-      <a *ngIf="isTrace(row) as trace" [textContent]="trace.getLabel()" [routerLink]="getSequenceLink(trace)"></a>
+      <a
+        *ngIf="isSubsequence(row) as subSequence"
+        [textContent]="subSequence.name"
+        [routerLink]="getSequenceLink(subSequence)"
+      ></a>
     </dt-cell>
   </ng-container>
 
@@ -56,7 +63,7 @@
     <dt-cell *dtCellDef="let row">
       <span *ngIf="isRemediation(row) as sequence; else traceMessage" [textContent]="sequence.problemTitle"></span>
       <ng-template #traceMessage>
-        <span [textContent]="getTraceMessage(row)"></span>
+        <span [textContent]="row.message"></span>
       </ng-template>
     </dt-cell>
   </ng-container>

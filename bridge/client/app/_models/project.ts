@@ -2,10 +2,7 @@ import semver from 'semver';
 import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
 import { Trace } from './trace';
-import { Deployment } from './deployment';
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import moment from 'moment';
-import { DeploymentStage } from './deployment-stage';
 import { Sequence } from './sequence';
 import { Project as pj } from '../../../shared/models/project';
 import { Approval } from '../_interfaces/approval';
@@ -20,7 +17,6 @@ export class Project extends pj {
   static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);
     project.stages = project.stages.map((stage) => Stage.fromJSON(stage));
-    project.setDeployments();
     return project;
   }
 
@@ -102,58 +98,6 @@ export class Project extends pj {
       }
     }
     return evaluation?.evaluationTrace;
-  }
-
-  private setDeployments(): void {
-    for (const service of this.getServices()) {
-      service.deployments = this.getDeploymentsOfService(service.serviceName);
-    }
-  }
-
-  private getDeploymentsOfService(serviceName: string): Deployment[] {
-    const deployments: Deployment[] = [];
-    this.stages.forEach((stage) => {
-      const service = stage.services.find((s) => s.serviceName === serviceName);
-      if (service?.deploymentContext) {
-        const image = service.getImageVersion();
-        const deployment = deployments.find(
-          (dp) => dp.version === image && dp.shkeptncontext === service.deploymentContext
-        );
-        const stageDetails = new DeploymentStage(stage.stageName, service.evaluationContext);
-        if (deployment) {
-          deployment.stages.push(stageDetails);
-        } else {
-          const newDeployment = new Deployment(image, service.serviceName, stageDetails, service.deploymentContext);
-          deployments.push(newDeployment);
-        }
-      }
-    });
-    return deployments.sort((a, b) =>
-      a.version &&
-      b.version &&
-      semver.valid(a.version) != null &&
-      semver.valid(b.version) != null &&
-      semver.gt(a.version, b.version, true)
-        ? -1
-        : 1
-    );
-  }
-
-  public getServiceWithLatestDeployment(serviceName: string): Service | undefined {
-    let lastService: Service | undefined;
-    this.stages.forEach((stage: Stage) => {
-      const service = stage.services.find((s) => s.serviceName === serviceName);
-      if (
-        service?.deploymentContext &&
-        (!lastService ||
-          (service.deploymentTime &&
-            lastService.deploymentTime &&
-            moment.unix(service.deploymentTime).isAfter(moment.unix(lastService.deploymentTime))))
-      ) {
-        lastService = service;
-      }
-    });
-    return lastService;
   }
 
   public getStages(parent: string[] | null): Stage[] {

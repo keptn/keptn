@@ -3,7 +3,7 @@
   [warning]="_event.isWarning()"
   [success]="_event.isSuccessful()"
   [highlight]="!!_event.isApproval()"
-  *ngIf="_event && (project$ | async) as project"
+  *ngIf="_event"
 >
   <div fxLayout="row">
     <div fxFlex>
@@ -106,23 +106,18 @@
       <tr>
         <td><p class="m-0">Currently deployed artifact:</p></td>
         <td>
-          <p
-            class="m-0"
-            [textContent]="
-              (_event.data.service &&
-                _event.data.stage &&
-                project.getLatestDeployment(
-                  project.getService(_event.data.service),
-                  project.getStage(_event.data.stage)
-                )?.image) ||
-              'N/A'
-            "
-          ></p>
+          <p class="m-0" [textContent]="image || 'N/A'"></p>
         </td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact:</p></td>
-        <td><ktb-approval-item [event]="_event"></ktb-approval-item></td>
+        <td>
+          <ktb-approval-item
+            [event]="_event"
+            [evaluation]="evaluation"
+            (approvalSent)="approvalSent.emit()"
+          ></ktb-approval-item>
+        </td>
       </tr>
     </table>
   </div>

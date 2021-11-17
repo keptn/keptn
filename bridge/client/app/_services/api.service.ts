@@ -5,13 +5,13 @@ import { Resource } from '../../../shared/interfaces/resource';
 import { Stage } from '../_models/stage';
 import { ServiceResult } from '../_models/service-result';
 import { Trace } from '../_models/trace';
-import { ApprovalStates } from '../_models/approval-states';
+import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Metadata } from '../_models/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
-import { UniformRegistrationLogResponse } from '../../../server/interfaces/uniform-registration-log';
+import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
@@ -25,6 +25,9 @@ import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../../shared/models/keptn-service';
+import { ServiceState } from '../../../shared/models/service-state';
+import { Deployment } from '../../../shared/interfaces/deployment';
+import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 
 @Injectable({
   providedIn: 'root',
@@ -257,16 +260,6 @@ export class ApiService {
     return this.http.get<Resource[]>(url);
   }
 
-  public getServiceResource(
-    projectName: string,
-    stageName: string,
-    serviceName: string,
-    resourceUri: string
-  ): Observable<Resource> {
-    const url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceUri}`;
-    return this.http.get<Resource>(url);
-  }
-
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
     const url = `${this._baseUrl}/project/${projectName}/service/${serviceName}/files`;
     return this.http.get<FileTree[]>(url).pipe(shareReplay());
@@ -374,15 +367,6 @@ export class ApiService {
     return this.http.get<EventResult>(url, { params });
   }
 
-  public getEvaluationResult(shkeptncontext: string): Observable<EventResult> {
-    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
-    const params = {
-      filter: `shkeptncontext:${shkeptncontext} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
-      limit: '1',
-    };
-    return this.http.get<EventResult>(url, { params });
-  }
-
   public sendGitUpstreamUrl(
     projectName: string,
     gitUrl: string,
@@ -484,5 +468,29 @@ export class ApiService {
     return this.http.post<unknown>(url, {
       config,
     });
+  }
+
+  public getServiceStates(projectName: string): Observable<ServiceState[]> {
+    return this.http.get<ServiceState[]>(`${this._baseUrl}/project/${projectName}/serviceStates`);
+  }
+
+  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
+    const params = {
+      ...(fromTime && { fromTime }),
+    };
+    return this.http.get<Deployment>(`${this._baseUrl}/project/${projectName}/deployment/${keptnContext}`, { params });
+  }
+
+  public getOpenRemediationsOfService(
+    projectName: string,
+    serviceName: string
+  ): Observable<IServiceRemediationInformation> {
+    const params = {
+      config: 'true',
+    };
+    return this.http.get<IServiceRemediationInformation>(
+      `${this._baseUrl}/project/${projectName}/service/${serviceName}/openRemediations`,
+      { params }
+    );
   }
 }

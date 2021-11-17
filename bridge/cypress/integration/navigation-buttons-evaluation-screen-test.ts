@@ -67,6 +67,15 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       }
     ).as('getEventEvalFinishedWithProject');
 
+    cy.intercept('GET', '/api/project/dynatrace/serviceStates', {
+      statusCode: 200,
+      fixture: 'get.service.states.mock.json',
+    });
+    cy.intercept('GET', `/api/project/dynatrace/deployment/*`, {
+      statusCode: 200,
+      fixture: 'get.service.deployment.mock.json',
+    });
+
     cy.visit('/');
     cy.wait(500);
     basePage.clickProjectTile('dynatrace');

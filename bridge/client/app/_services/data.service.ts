@@ -7,9 +7,8 @@ import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ApiService } from './api.service';
 import moment from 'moment';
-import { Deployment } from '../_models/deployment';
 import { Sequence } from '../_models/sequence';
-import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { Root } from '../_models/root';
 import { HttpResponse } from '@angular/common/http';
@@ -17,7 +16,6 @@ import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
-import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
@@ -27,6 +25,9 @@ import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
 import { Service } from '../_models/service';
+import { Deployment } from '../_models/deployment';
+import { ServiceState } from '../_models/service-state';
+import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 
 @Injectable({
   providedIn: 'root',
@@ -37,7 +38,6 @@ export class DataService {
   protected _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
-  protected _changedDeployments = new BehaviorSubject<Deployment[]>([]);
   protected _rootsLastUpdated: { [key: string]: Date } = {};
   protected _sequencesLastUpdated: { [key: string]: Date } = {};
   protected _tracesLastUpdated: { [key: string]: Date } = {};
@@ -76,10 +76,6 @@ export class DataService {
 
   get evaluationResults(): Observable<EvaluationHistory> {
     return this._evaluationResults;
-  }
-
-  get changedDeployments(): Observable<Deployment[]> {
-    return this._changedDeployments.asObservable();
   }
 
   get isQualityGatesOnly(): Observable<boolean> {
@@ -364,103 +360,6 @@ export class DataService {
     return projects$;
   }
 
-  public loadOpenRemediations(project: Project): void {
-    this.apiService
-      .getOpenRemediations(project.projectName, this.MAX_SEQUENCE_PAGE_SIZE)
-      .pipe(
-        map((response) => response.body),
-        map((sequenceResult) => sequenceResult?.states ?? []),
-        map((sequences: Sequence[]): [Sequence[], Deployment[]] => {
-          const changedDeployments: Deployment[] = [];
-          // remove finished remediations
-          for (const service of project.getServices()) {
-            for (const deployment of service.deployments) {
-              for (const stage of deployment.stages) {
-                const filteredRemediations = stage.remediations.filter((r) =>
-                  sequences.some((s) => s.shkeptncontext === r.shkeptncontext)
-                );
-                if (filteredRemediations.length !== stage.remediations.length) {
-                  if (!changedDeployments.some((d) => d.shkeptncontext === deployment.shkeptncontext)) {
-                    changedDeployments.push(deployment);
-                  }
-                  stage.remediations = filteredRemediations;
-                }
-              }
-            }
-          }
-          return [sequences, changedDeployments];
-        }),
-        mergeMap(([sequences, changedDeployments]) =>
-          from(sequences).pipe(
-            mergeMap((sequence: Sequence) => {
-              const service = project.getService(sequence.service);
-              const sequenceStage = sequence.stages[0].name;
-              let result: Observable<null | Deployment> = of(null);
-              if (service) {
-                const deployment = service.deployments.find((d) =>
-                  d.stages.some((stage) => sequence.stages.some((s) => s.name === stage.stageName))
-                );
-                if (deployment) {
-                  const stage = deployment.stages.find((s) => s.stageName === sequenceStage);
-                  if (stage) {
-                    const existingRemediation = stage.remediations.find(
-                      (r) => r.shkeptncontext === sequence.shkeptncontext
-                    );
-                    let _resourceContent: Observable<DeploymentStage | undefined> = of(undefined);
-                    let _root: Observable<Root | undefined> = of(undefined);
-
-                    // update existing remediation
-                    if (existingRemediation) {
-                      Object.assign(existingRemediation, Sequence.fromJSON(sequence));
-                    } else {
-                      const remediation = Sequence.fromJSON(sequence);
-                      stage.remediations.push(remediation);
-                      if (!remediation.problemTitle) {
-                        _root = this.getRoot(project.projectName, remediation.shkeptncontext).pipe(
-                          tap((root) => {
-                            remediation.problemTitle = root?.getProblemTitle();
-                          })
-                        );
-                      }
-                    }
-
-                    if (!stage?.config) {
-                      _resourceContent = this.apiService
-                        .getServiceResource(project.projectName, sequenceStage, deployment.service, 'remediation.yaml')
-                        .pipe(
-                          map((resource) => {
-                            stage.config = atob(resource.resourceContent);
-                            return stage;
-                          })
-                        );
-                    }
-                    result = forkJoin([_root, _resourceContent]).pipe(switchMap(() => of(deployment)));
-                  }
-                }
-              }
-              return result;
-            }),
-            toArray(),
-            map((deployments) =>
-              deployments.filter((deployment: Deployment | null): deployment is Deployment => !!deployment)
-            ),
-            map((newChangedDeployments: Deployment[]) => {
-              const deployments = changedDeployments;
-              for (const deployment of newChangedDeployments) {
-                if (!deployments.some((d) => d.shkeptncontext === deployment.shkeptncontext)) {
-                  deployments.push(deployment);
-                }
-              }
-              return deployments;
-            })
-          )
-        )
-      )
-      .subscribe((deployments: Deployment[]) => {
-        this._changedDeployments.next(deployments);
-      });
-  }
-
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
     if (!beforeTime && !fromTime) {
       // set fromTime if it isn't loadOldSequences
@@ -670,42 +569,32 @@ export class DataService {
     }
   }
 
-  public getEvaluationResult(shkeptncontext: string): Observable<Trace | undefined> {
-    return this.apiService.getEvaluationResult(shkeptncontext).pipe(
-      map((result) => result.events || []),
-      map((traces) => traces.map((trace) => Trace.fromJSON(trace)).find(() => true))
+  public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {
+    const approval$ = this.apiService.sendApprovalEvent(
+      approval,
+      approve,
+      EventTypes.APPROVAL_FINISHED,
+      'approval.finished'
     );
-  }
 
-  public sendApprovalEvent(approval: Trace, approve: boolean): void {
-    this.apiService
-      .sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished')
-      .subscribe(() => {
-        const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
-        if (project?.projectName) {
-          const stage = project.stages.find((st) => st.stageName === approval.data.stage);
-          const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
-          const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
-          const deployment = service?.deployments.find((dep) => dep.shkeptncontext === approval.shkeptncontext);
+    approval$.subscribe(() => {
+      const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
+      if (project?.projectName) {
+        const stage = project.stages.find((st) => st.stageName === approval.data.stage);
+        const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
+        const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
 
-          if (sequence) {
-            // update data of sequence screen
-            this.loadTraces(sequence);
-          }
-          if (deployment) {
-            // update data of service screen
-            this.getRoot(project.projectName, deployment.shkeptncontext).subscribe((root) => {
-              if (deployment.sequence) {
-                deployment.sequence = root;
-              }
-            });
-          }
-          if (service) {
-            // update data of environment screen
-            this.updateServiceApproval(service, approval);
-          }
+        if (sequence) {
+          // update data of sequence screen
+          this.loadTraces(sequence);
         }
-      });
+        if (service) {
+          // update data of environment screen
+          this.updateServiceApproval(service, approval);
+        }
+      }
+    });
+    return approval$;
   }
 
   private updateServiceApproval(service: Service, approval: Trace): void {
@@ -808,6 +697,31 @@ export class DataService {
       ),
       toArray(),
       map((rs) => rs.map((root) => Root.fromJSON(root)))
+    );
+  }
+
+  public getServiceStates(projectName: string): Observable<ServiceState[]> {
+    return this.apiService
+      .getServiceStates(projectName)
+      .pipe(map((serviceStates) => serviceStates.map((state) => ServiceState.fromJSON(state))));
+  }
+
+  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
+    return this.apiService.getServiceDeployment(projectName, keptnContext, fromTime).pipe(
+      map((deployment) => {
+        return Deployment.fromJSON(deployment);
+      })
+    );
+  }
+
+  public getOpenRemediationsOfService(
+    projectName: string,
+    serviceName: string
+  ): Observable<ServiceRemediationInformation> {
+    return this.apiService.getOpenRemediationsOfService(projectName, serviceName).pipe(
+      map((serviceRemediationInformation) => {
+        return ServiceRemediationInformation.fromJSON(serviceRemediationInformation);
+      })
     );
   }
 }

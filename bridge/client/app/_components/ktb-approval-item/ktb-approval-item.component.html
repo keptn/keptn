@@ -1,11 +1,6 @@
-<div
-  fxLayout="row"
-  fxLayoutAlign="start center"
-  fxLayoutGap="5px"
-  *ngIf="_event && _event.isApproval() && (project$ | async) as project"
->
+<div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="_event && _event.isApproval()">
   <h4 class="m-0" [textContent]="_event.getShortImageName()"></h4>
-  <dt-tag-list aria-label="evaluation-info" *ngIf="project.getApprovalEvaluation(_event) as evaluation">
+  <dt-tag-list aria-label="evaluation-info" *ngIf="evaluation">
     <dt-tag
       class="justify-content-center"
       [dtOverlay]="overlay"
