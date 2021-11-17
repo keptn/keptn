@@ -61,11 +61,9 @@ func _main(env config.EnvConfig) int {
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
-	go func() {
-		if err := forwarder.Start(executionContext); err != nil {
-			logger.WithError(err).Error("Could not start event forwarder")
-		}
-	}()
+	if err := forwarder.Start(executionContext); err != nil {
+		logger.WithError(err).Error("Could not start event forwarder")
+	}
 
 	// Eventually start registration process
 	if shallRegister() {

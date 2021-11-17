@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // Forwarder receives events directly from the Keptn Service and forwards them to the Keptn API
@@ -34,32 +33,30 @@ func NewForwarder(httpClient *http.Client) *Forwarder {
 }
 
 func (f *Forwarder) Start(ctx *ExecutionContext) error {
-	serverURL := fmt.Sprintf("localhost:%d", config.Global.APIProxyPort)
 	mux := http.NewServeMux()
 	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
 	mux.Handle(config.Global.EventForwardingPath, http.HandlerFunc(f.handleEvent))
 	mux.Handle(config.Global.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
+	serverURL := fmt.Sprintf("localhost:%d", config.Global.APIProxyPort)
 
 	svr := &http.Server{
 		Addr:    serverURL,
 		Handler: mux,
 	}
+
 	go func() {
+		defer ctx.Wg.Done()
 		if err := svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Fatalf("listen:%+s\n", err)
+			logger.Fatalf("Unexpected http server error in event forwarder: %v", err)
 		}
 	}()
-	<-ctx.Done()
-	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer func() {
-		cancel()
+	go func() {
+		<-ctx.Done()
+		logger.Info("Terminating event forwarder")
+		if err := svr.Shutdown(context.Background()); err != nil {
+			logger.Fatalf("Could not gracefully shutdown http server of forwarder: %v", err)
+		}
 	}()
-	err := svr.Shutdown(ctxShutDown)
-	if err != nil {
-		return err
-	}
-	logger.Info("Terminating event forwarder")
-	ctx.Wg.Done()
 	return nil
 }
 
