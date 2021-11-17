@@ -15,6 +15,11 @@ on:
       keptn-spec-version:
         type: string
         required: true
+      release:
+        description: 'Set to true if the current build is for a release'
+        type: boolean
+        required: false
+        default: false
 defaults:
   run:
     shell: bash
@@ -29,6 +34,7 @@ jobs:
       VERSION: ${{ inputs.version }}
       KEPTN_SPEC_VERSION: ${{ inputs.keptn-spec-version }}
       DATETIME: ${{ inputs.datetime }}
+      RELEASE_BUILD: ${{ inputs.release }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.4.0
