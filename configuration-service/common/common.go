@@ -7,3 +7,6 @@ const StageDoesNotExistErrorMsg = "Stage does not exist"
 const ServiceDoesNotExistErrorMsg = "Service does not exist"
 
 const CannotCheckOutBranchErrorMsg = "Could not check out branch"
+
+const CannotAddResourceErrorMsg = "Could not add resource"
+const CannotUpdateResourceErrorMsg = "Could not update resource"

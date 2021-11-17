@@ -175,6 +175,17 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(metadata)
 }
 
+func AddUpdateHelmResources(resource string, actionType string, filePath string, projectName string) error {
+	logger.Debugf("%sing resource: %s", actionType, filePath)
+	err := common.WriteBase64EncodedFile(filePath, resource)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not %s resource %s to project %s", actionType, filePath, projectName)
+		return err
+	}
+
+	return nil
+}
+
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
@@ -208,14 +219,16 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
-		logger.Debug("Adding resource: " + filePath)
-
-		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 
 		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
 			if resp := untarHelm(res, filePath); resp != nil {
 				return resp
 			}
+		}
+
+		if err := AddUpdateHelmResources(res.ResourceContent, "add", filePath, params.ProjectName); err != nil {
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
+			WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotAddResourceErrorMsg)})
 		}
 	}
 
@@ -331,12 +344,16 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
-		logger.Debug("Updating resource: " + filePath)
-		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
+
 		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
 			if resp := untarHelm(res, filePath); resp != nil {
 				return resp
 			}
+		}
+
+		if err := AddUpdateHelmResources(res.ResourceContent, "update", filePath, params.ProjectName); err != nil {
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
+			WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotUpdateResourceErrorMsg)})
 		}
 	}
 
