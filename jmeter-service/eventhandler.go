@@ -2,14 +2,10 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/common/retry"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
-	"net"
 	"net/url"
-	"time"
 )
 
 type EventHandler struct {
@@ -84,24 +80,4 @@ func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 		return newurl, err
 	}
 	return nil, errors.New("no deployment URI included in event")
-}
-
-func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
-	if serviceURL == nil {
-		return fmt.Errorf("url to check for reachability is nil")
-	}
-
-	// serviceURL.Host does not contain the port in case of serviceURL=http://1.2.3.4/ (without port)
-	// hence we need to manually construct hostWithPort here
-	hostWithPort := fmt.Sprintf("%s:%s", serviceURL.Hostname(), derivePort(serviceURL))
-
-	var err error
-	_ = retry.Retry(func() error {
-		if _, err = net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
-			return err
-		}
-
-		return nil
-	}, retry.DelayBetweenRetries(time.Second*5), retry.NumberOfRetries(3))
-	return err
 }
