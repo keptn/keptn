@@ -1,19 +1,15 @@
 import { Sequence } from './sequence';
 import { Approval } from '../interfaces/approval';
+import { IService, IServiceEvent } from '../interfaces/service';
 
-interface ServiceEvent {
-  eventId: string;
-  keptnContext: string;
-  time: string; // nanoseconds
-}
 export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
-export class Service {
+export class Service implements IService {
   serviceName!: string;
   creationDate!: number;
   stage!: string;
   deployedImage?: string;
-  lastEventTypes: { [p: string]: ServiceEvent } = {};
+  lastEventTypes: { [p: string]: IServiceEvent } = {};
   latestSequence?: Sequence;
   openRemediations: Sequence[] = [];
   openApprovals?: Approval[] = [];
@@ -23,14 +19,14 @@ export class Service {
     return Object.assign(new this(), data);
   }
 
-  public getLatestSequence(): string | undefined {
-    let latestSequence: ServiceEvent | undefined;
+  public getLatestEvent(): IServiceEvent | undefined {
+    let latestSequence: IServiceEvent | undefined;
     for (const key of Object.keys(this.lastEventTypes)) {
       if (!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
         latestSequence = this.lastEventTypes[key];
       }
     }
-    return latestSequence?.keptnContext;
+    return latestSequence;
   }
 
   public getImageVersion(): string | undefined {

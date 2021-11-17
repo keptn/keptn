@@ -26,7 +26,30 @@ export class Service extends sv {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED];
   }
 
-  private get evaluationEvent(): ServiceEvent | undefined {
+  public get evaluationEvent(): ServiceEvent | undefined {
     return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED];
+  }
+
+  public hasEvaluationUpdate(fromTime: Date): boolean {
+    return this.hasUpdate(EventTypes.EVALUATION_FINISHED, fromTime);
+  }
+
+  public hasUpdate(type: EventTypes, fromTime: Date): boolean {
+    const serviceEvent = this.lastEventTypes?.[type];
+    return !!serviceEvent && new Date(+serviceEvent.time / 1_000_000) > fromTime;
+  }
+
+  public hasRemediationUpdate(fromTime: Date): boolean {
+    return (
+      this.hasUpdate(EventTypes.REMEDIATION_TRIGGERED, fromTime) ||
+      this.hasUpdate(EventTypes.REMEDIATION_FINISHED, fromTime) ||
+      this.hasUpdate(EventTypes.ACTION_TRIGGERED, fromTime)
+    );
+  }
+
+  public hasApprovalUpdate(fromTime: Date): boolean {
+    return (
+      this.hasUpdate(EventTypes.APPROVAL_STARTED, fromTime) || this.hasUpdate(EventTypes.APPROVAL_FINISHED, fromTime)
+    );
   }
 }

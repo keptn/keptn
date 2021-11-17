@@ -3,6 +3,7 @@ import { Method } from 'axios';
 import { currentPrincipal } from '../user/session';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
+import { ServiceFilter } from '../../shared/interfaces/service-filter';
 
 const router = Router();
 
@@ -125,6 +126,69 @@ const apiRouter = (params: {
       next(err);
     }
   });
+
+  router.post('/project/:projectName/stageOverview', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const projectName = req.params.projectName;
+      const pageSize = req.query.pageSize;
+      const stageOverview = await dataService.getStageOverview(
+        projectName,
+        pageSize ? +pageSize : undefined,
+        req.query.fromTime?.toString(),
+        req.body.services ?? []
+      );
+      return res.json(stageOverview);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.post(
+    '/project/:projectName/stage/:stageName/overview',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const projectName = req.params.projectName;
+        const pageSize = req.query.pageSize;
+        const stageOverview = await dataService.getStageOverview(
+          projectName,
+          pageSize ? +pageSize : undefined,
+          req.query.fromTime?.toString(),
+          req.body.services ?? [],
+          req.params.stageName
+        );
+        if (stageOverview.length === 0) {
+          return res.status(404).json('stage not found');
+        }
+        return res.json(stageOverview[0]);
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
+
+  router.post(
+    '/project/:projectName/stage/:stageName/details',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const projectName = req.params.projectName;
+        const pageSize = req.query.pageSize;
+        const serviceFilter: ServiceFilter | undefined = req.params.serviceFilter
+          ? parseInt(req.params.serviceFilter, 10)
+          : undefined;
+        const stageDetails = await dataService.getStageDetails(
+          projectName,
+          req.params.stageName,
+          req.body.services ?? [],
+          serviceFilter && ServiceFilter[serviceFilter] ? serviceFilter : undefined,
+          pageSize ? +pageSize : undefined,
+          req.query.fromTime?.toString()
+        );
+        return res.json(stageDetails);
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
 
   router.get('/project/:projectName/tasks', async (req: Request, res: Response, next: NextFunction) => {
     try {

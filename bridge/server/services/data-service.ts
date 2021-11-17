@@ -30,6 +30,10 @@ import { ServiceDeploymentInformation, ServiceState } from '../../shared/models/
 import { Deployment, IStageDeployment, SubSequence } from '../../shared/interfaces/deployment';
 import semver from 'semver';
 import { ServiceRemediationInformation } from '../../shared/interfaces/service-remediation-information';
+import { Stage } from '../models/stage';
+import { StageDetails, StageServiceDetails } from '../../shared/interfaces/stage-details';
+import { ServiceFilter } from '../../shared/interfaces/service-filter';
+import { StageOverview, StageOverviewServiceInfo } from '../../shared/interfaces/stage-overview';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -37,6 +41,11 @@ type StageRemediationInformation = {
   remediations: Remediation[];
   remediationsForStage: Sequence[];
   config?: string;
+};
+type StageIconInformation = {
+  openApprovals: Approval[];
+  openRemediations: Remediation[];
+  failedEvaluations: Trace[];
 };
 
 export class DataService {
@@ -53,35 +62,49 @@ export class DataService {
     return response.data.projects.map((project) => Project.fromJSON(project));
   }
 
+  private async getPlainProject(projectName: string): Promise<Project> {
+    const response = await this.apiService.getProject(projectName);
+    return Project.fromJSON(response.data);
+  }
+
   public async getProject(
     projectName: string,
     includeRemediation: boolean,
     includeApproval: boolean
   ): Promise<Project> {
-    const response = await this.apiService.getProject(projectName);
-    const project = Project.fromJSON(response.data);
-    let remediations: Remediation[] = [];
+    const project = await this.getPlainProject(projectName);
+    const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
+    let openApprovals: Approval[] = [];
+    let openRemediations: Remediation[] = [];
 
     if (includeRemediation) {
-      remediations = await this.getOpenRemediations(projectName, true, true);
+      openRemediations = await this.getOpenRemediations(projectName, true, true);
     }
-    const lastSequences: { [key: string]: Sequence } = {};
+
+    if (includeApproval) {
+      openApprovals = await this.getApprovals(projectName, true);
+    }
+
     for (const stage of project.stages) {
+      const stageRemediations = openRemediations.filter((seq) => seq.stages.some((s) => s.name === stage.stageName));
+      const stageApprovals = openApprovals.filter((approval) => approval.trace.data.stage === stage.stageName);
+
       for (const service of stage.services) {
-        const keptnContext = service.getLatestSequence();
-        if (keptnContext) {
+        const latestEvent = service.getLatestEvent();
+
+        if (latestEvent) {
           try {
             const latestSequence = await this.fetchServiceDetails(
               service,
               stage.stageName,
-              keptnContext,
+              latestEvent.keptnContext,
               projectName,
-              includeApproval,
-              remediations,
-              lastSequences[service.serviceName]
+              stageApprovals,
+              stageRemediations,
+              cachedSequences[latestEvent.keptnContext]
             );
             if (latestSequence) {
-              lastSequences[service.serviceName] = latestSequence;
+              cachedSequences[latestEvent.keptnContext] = latestSequence;
             }
           } catch (error) {
             console.error(error);
@@ -92,19 +115,59 @@ export class DataService {
     return project;
   }
 
+  private async getFailedEvaluationResults(
+    projectName: string,
+    services: Service[],
+    stageName?: string
+  ): Promise<Trace[]> {
+    const chunkSize = 150; //we have a max URL length here (about 8k). That's why we are splitting our requests
+    let traces: Trace[] = [];
+
+    for (let i = 0; i < services.length; i += chunkSize) {
+      const keptnContexts: string[] = [];
+      const maxLength = Math.min(i + chunkSize, services.length);
+
+      for (let y = i; y < maxLength; ++y) {
+        const latestContext = services[y].getLatestEvent()?.keptnContext;
+        if (latestContext) {
+          // string concatenation is expensive; that's why we use an array here
+          keptnContexts.push(latestContext);
+        }
+      }
+      if (keptnContexts.length) {
+        const response = await this.apiService.getFailedEvaluationResults(
+          projectName,
+          `shkeptncontext:${keptnContexts.join(',')}`,
+          stageName
+        );
+        traces = [...traces, ...response.data.events];
+      }
+    }
+    return traces;
+  }
+
+  private getFilteredServices(services: Service[], filteredServices: string[], limit?: number): Service[] {
+    const serviceLength = Math.min(services.length, limit ?? services.length);
+    let resultServices: Service[];
+
+    if (filteredServices.length) {
+      resultServices = services.filter((service) => filteredServices.includes(service.serviceName));
+    } else {
+      resultServices = services;
+    }
+    return resultServices.slice(0, serviceLength);
+  }
+
   private async fetchServiceDetails(
     service: Service,
     stageName: string,
     keptnContext: string,
     projectName: string,
-    includeApproval: boolean,
-    remediations: Remediation[],
-    sequenceBefore: Sequence | undefined
+    openApprovals: Approval[],
+    openRemediations: Remediation[],
+    cachedSequence: Sequence | undefined
   ): Promise<Sequence | undefined> {
-    const latestSequence =
-      sequenceBefore?.shkeptncontext === keptnContext
-        ? sequenceBefore
-        : await this.getSequence(projectName, stageName, keptnContext, true);
+    const latestSequence = cachedSequence ?? (await this.getSequence(projectName, stageName, keptnContext, true));
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(stageName);
     service.deploymentInformation = await this.getDeploymentInformation(
@@ -114,19 +177,257 @@ export class DataService {
       service.getShortImage()
     );
 
-    const serviceRemediations = remediations.filter(
-      (remediation) =>
-        remediation.service === service.serviceName && remediation.stages.some((s) => s.name === stageName)
-    );
+    const serviceRemediations = openRemediations.filter((remediation) => remediation.service === service.serviceName);
     for (const remediation of serviceRemediations) {
       remediation.reduceToStage(stageName);
     }
     service.openRemediations = serviceRemediations;
+    service.openApprovals = openApprovals.filter((approval) => approval.trace.data.service === service.serviceName);
 
-    if (includeApproval) {
-      service.openApprovals = await this.getApprovals(projectName, stageName, service.serviceName);
-    }
     return latestSequence;
+  }
+
+  public async getStageOverview(
+    projectName: string,
+    pageSize?: number,
+    fromTimeString?: string,
+    filteredServices: string[] = [],
+    stageName?: string
+  ): Promise<StageOverview[]> {
+    const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
+    const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
+    const stageOverviews: StageOverview[] = [];
+    let stages: Stage[];
+    if (stageName) {
+      stages = [await this.getStage(projectName, stageName)];
+    } else {
+      const project = await this.getPlainProject(projectName);
+      stages = project.stages;
+    }
+    const stageIconInformation = await this.getStagesIconInformation(stages, projectName, false, fromTime, stageName);
+
+    for (const stage of stages) {
+      const services = this.getFilteredServices(stage.services, filteredServices, pageSize);
+      const stageRemediations = this.filterRemediationsForStage(stage, stageIconInformation.openRemediations, fromTime);
+      const stageApprovals = this.filterApprovalsForStage(stage, stageIconInformation.openApprovals, fromTime);
+      const stageEvaluations = this.filterEvaluationsForStage(stage, stageIconInformation.failedEvaluations, fromTime);
+      const stageOverview: StageOverview = {
+        name: stage.stageName,
+        services: [],
+        failedEvaluations: stageEvaluations?.length,
+        openRemediations: stageRemediations?.length,
+        openApprovals: stageApprovals?.length,
+      };
+
+      for (const service of services) {
+        const serviceInfo = await this.getStageOverviewServiceInfo(
+          service,
+          projectName,
+          stage.stageName,
+          cachedSequences,
+          fromTime
+        );
+        stageOverview.services.push(serviceInfo);
+      }
+      stageOverviews.push(stageOverview);
+    }
+    return stageOverviews;
+  }
+
+  private async getStagesIconInformation(
+    stages: Stage[],
+    projectName: string,
+    includeRemediationDetails: boolean,
+    fromTime?: Date,
+    stageName?: string
+  ): Promise<StageIconInformation> {
+    let openApprovals: Approval[] = [];
+    let openRemediations: Remediation[] = [];
+    let failedEvaluations: Trace[] = [];
+    if (fromTime) {
+      // only fetch/update evaluations, open remediation and approval count if there are any updates
+      if (Stage.hasApprovalUpdate(stages, fromTime)) {
+        openApprovals = await this.getApprovals(projectName, true, stageName);
+      }
+      if (Stage.hasRemediationUpdate(stages, fromTime)) {
+        openRemediations = await this.getOpenRemediations(projectName, false, false);
+      }
+      if (Stage.hasEvaluationsUpdate(stages, fromTime)) {
+        failedEvaluations = await this.getFailedEvaluationResults(projectName, Stage.getAllServices(stages));
+      }
+    } else {
+      openApprovals = await this.getApprovals(projectName, true, stageName);
+      openRemediations = await this.getOpenRemediations(
+        projectName,
+        includeRemediationDetails,
+        includeRemediationDetails
+      );
+      failedEvaluations = await this.getFailedEvaluationResults(projectName, Stage.getAllServices(stages), stageName);
+    }
+    return {
+      openApprovals,
+      openRemediations,
+      failedEvaluations,
+    };
+  }
+
+  private filterRemediationsForStage(
+    stage: Stage,
+    openRemediations: Remediation[],
+    fromTime?: Date
+  ): Remediation[] | undefined {
+    return fromTime && !Stage.hasRemediationUpdate([stage], fromTime)
+      ? undefined
+      : openRemediations.filter((seq) => seq.stages.some((s) => s.name === stage.stageName));
+  }
+
+  private filterApprovalsForStage(stage: Stage, openApprovals: Approval[], fromTime?: Date): Approval[] | undefined {
+    return fromTime && !Stage.hasApprovalUpdate([stage], fromTime)
+      ? undefined
+      : openApprovals.filter((approval) => approval.trace.data.stage === stage.stageName);
+  }
+
+  private filterEvaluationsForStage(stage: Stage, evaluations: Trace[], fromTime?: Date): Trace[] | undefined {
+    return fromTime && !Stage.hasEvaluationsUpdate([stage], fromTime)
+      ? undefined
+      : evaluations.filter((t) => t.data.stage === stage.stageName);
+  }
+
+  private filterRemediationsForService(
+    service: Service,
+    openRemediations: Remediation[],
+    fromTime?: Date
+  ): Remediation[] | undefined {
+    return fromTime && !service.hasRemediationUpdate(fromTime)
+      ? undefined
+      : openRemediations.filter((remediation) => remediation.service === service.serviceName);
+  }
+
+  private filterApprovalsForService(
+    service: Service,
+    openApprovals: Approval[],
+    fromTime?: Date
+  ): Approval[] | undefined {
+    return fromTime && !service.hasApprovalUpdate(fromTime)
+      ? undefined
+      : openApprovals.filter((approval) => approval.trace.data.service === service.serviceName);
+  }
+
+  private filterEvaluationsForService(service: Service, evaluations: Trace[], fromTime?: Date): Trace | undefined {
+    return fromTime && !service.hasEvaluationUpdate(fromTime)
+      ? undefined
+      : evaluations.find((t) => t.data.service === service.serviceName);
+  }
+
+  private async getStageOverviewServiceInfo(
+    service: Service,
+    projectName: string,
+    stageName: string,
+    cachedSequences: { [keptnContext: string]: Sequence | undefined },
+    fromTime?: Date
+  ): Promise<StageOverviewServiceInfo> {
+    const serviceInfo: StageOverviewServiceInfo = {
+      name: service.serviceName,
+    };
+    const latestEvent = service.getLatestEvent();
+
+    if (latestEvent && (!fromTime || fromTime < new Date(+latestEvent.time / 1_000_000))) {
+      try {
+        const cachedSequence = cachedSequences[latestEvent.keptnContext];
+        let latestSequence =
+          cachedSequence ?? (await this.getSequence(projectName, stageName, latestEvent.keptnContext, true));
+        latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
+        latestSequence?.reduceToStage(stageName);
+
+        serviceInfo.latestSequence = latestSequence;
+        serviceInfo.deployedImage = service.deployedImage;
+
+        if (latestSequence) {
+          cachedSequences[service.serviceName] = latestSequence;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return serviceInfo;
+  }
+
+  private async getStage(projectName: string, stageName: string): Promise<Stage> {
+    const response = await this.apiService.getStage(projectName, stageName);
+    return Stage.fromJSON(response.data);
+  }
+
+  public async getStageDetails(
+    projectName: string,
+    stageName: string,
+    filteredServices: string[],
+    serviceFilter?: ServiceFilter,
+    pageSize?: number,
+    fromTimeString?: string
+  ): Promise<StageDetails | undefined> {
+    const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
+    const stage = await this.getStage(projectName, stageName);
+    let stageDetails: undefined | StageDetails;
+    if (stage) {
+      stageDetails = {
+        services: [],
+      };
+      const stagesIconInformation = await this.getStagesIconInformation(
+        [stage],
+        projectName,
+        true,
+        fromTime,
+        stageName
+      );
+      const services = this.getFilteredServices(stage.services, filteredServices, pageSize);
+      for (const service of services) {
+        const failedEvaluation = this.filterEvaluationsForService(
+          service,
+          stagesIconInformation.failedEvaluations,
+          fromTime
+        );
+        const openApprovals = this.filterApprovalsForService(service, stagesIconInformation.openApprovals, fromTime);
+        const openRemediations = this.filterRemediationsForService(
+          service,
+          stagesIconInformation.openRemediations,
+          fromTime
+        );
+        let deployedImage: string | undefined;
+        let deployedURL: string | undefined;
+
+        if (!fromTime || (service.deploymentEvent && new Date(+service.deploymentEvent.time / 1_000_000) > fromTime)) {
+          deployedImage = service.deployedImage;
+          deployedURL = await this.getDeploymentURL(projectName, stageName, service.serviceName);
+        }
+
+        const serviceDetails: StageServiceDetails = {
+          name: service.serviceName,
+          deployedImage,
+          deployedURL,
+          failedEvaluation,
+          openApprovals,
+          openRemediations,
+        };
+        stageDetails.services.push(serviceDetails);
+      }
+      switch (serviceFilter) {
+        case ServiceFilter.FAILED_EVALUATIONS:
+          stageDetails.services = stageDetails.services.filter((service) => service.failedEvaluation);
+          break;
+
+        case ServiceFilter.OPEN_PROBLEMS:
+          stageDetails.services = stageDetails.services.filter((service) => service.openRemediations?.length);
+          break;
+
+        case ServiceFilter.OPEN_APPROVALS:
+          stageDetails.services = stageDetails.services.filter((service) => service.openApprovals?.length);
+          break;
+
+        default:
+          break;
+      }
+    }
+    return stageDetails;
   }
 
   public async getSequence(
@@ -150,8 +451,11 @@ export class DataService {
       if (includeEvaluationTrace && stageName) {
         // we just need the result of a stage
         const stage = sequence.stages.find((s) => s.name === stageName);
-        if (stage) {
-          // get latest evaluation
+        if (stage?.latestEvaluation) {
+          // only fetch evaluation trace if the sequence has one
+          // whole information is needed because of the overlay
+          // fetch on demand instead?
+
           const evaluationTraces = await this.getEvaluationResults(
             projectName,
             sequence.service,
@@ -159,9 +463,7 @@ export class DataService {
             1,
             sequence.shkeptncontext
           );
-          if (evaluationTraces) {
-            stage.latestEvaluationTrace = evaluationTraces.shift();
-          }
+          stage.latestEvaluationTrace = evaluationTraces.shift();
         }
       }
     }
@@ -174,7 +476,19 @@ export class DataService {
     stageName: string,
     deployedImage?: string
   ): Promise<DeploymentInformation | undefined> {
-    const result = await this.apiService.getTracesWithResult(
+    return {
+      deploymentUrl: await this.getDeploymentURL(projectName, stageName, serviceName),
+      image: deployedImage,
+    };
+  }
+
+  private async getDeploymentURL(
+    projectName: string,
+    stageName: string,
+    serviceName: string
+  ): Promise<string | undefined> {
+    let url: string | undefined;
+    const response = await this.apiService.getTracesWithResult(
       EventTypes.DEPLOYMENT_FINISHED,
       1,
       projectName,
@@ -183,16 +497,11 @@ export class DataService {
       ResultTypes.PASSED
     ); // the finished trace does not have the image
 
-    const traceData = result.data.events[0];
-    let deploymentInformation: DeploymentInformation | undefined;
+    const traceData = response.data.events[0];
     if (traceData) {
-      const trace = Trace.fromJSON(traceData);
-      deploymentInformation = {
-        deploymentUrl: trace.getDeploymentUrl(),
-        image: deployedImage,
-      };
+      url = Trace.fromJSON(traceData).getDeploymentUrl();
     }
-    return deploymentInformation;
+    return url;
   }
 
   private async getEvaluationResults(
@@ -330,14 +639,19 @@ export class DataService {
     return response.data.events.shift();
   }
 
-  public async getApprovals(projectName: string, stageName: string, serviceName: string): Promise<Approval[]> {
+  public async getApprovals(
+    projectName: string,
+    includeEvaluationTrace: boolean,
+    stageName?: string,
+    serviceName?: string
+  ): Promise<Approval[]> {
     let tracesTriggered: Trace[];
     try {
       const response = await this.apiService.getOpenTriggeredEvents(
         projectName,
+        EventTypes.APPROVAL_TRIGGERED,
         stageName,
-        serviceName,
-        EventTypes.APPROVAL_TRIGGERED
+        serviceName
       );
       tracesTriggered = response.data.events ?? [];
     } catch {
@@ -347,14 +661,17 @@ export class DataService {
     const approvals: Approval[] = [];
     // for each approval the latest evaluation trace (before this event) is needed
     for (const trace of tracesTriggered) {
-      const evaluationTrace = await this.getTrace(
-        trace.shkeptncontext,
-        projectName,
-        trace.data.stage,
-        trace.data.service,
-        EventTypes.EVALUATION_FINISHED,
-        KeptnService.LIGHTHOUSE_SERVICE
-      );
+      let evaluationTrace: Trace | undefined;
+      if (includeEvaluationTrace) {
+        evaluationTrace = await this.getTrace(
+          trace.shkeptncontext,
+          projectName,
+          stageName,
+          serviceName,
+          EventTypes.EVALUATION_FINISHED,
+          KeptnService.LIGHTHOUSE_SERVICE
+        );
+      }
       approvals.push({
         evaluationTrace,
         trace,
@@ -983,8 +1300,7 @@ export class DataService {
     if (iSequence) {
       const sequence = Sequence.fromJSON(iSequence);
       let openRemediations: Remediation[] | undefined;
-      const projectResponse = await this.apiService.getProject(projectName);
-      const project = Project.fromJSON(projectResponse.data);
+      const project = await this.getPlainProject(projectName);
       const traceResponse = await this.apiService.getTracesByContext(keptnContext, projectName);
       const traces = Trace.traceMapper(traceResponse.data.events);
       deployment = {

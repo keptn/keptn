@@ -13,7 +13,7 @@ import { UniformSubscription } from '../../shared/interfaces/uniform-subscriptio
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/models/sequence';
-import { Stage } from '../models/stage';
+import { IStage } from '../../shared/interfaces/stage';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -166,16 +166,32 @@ export class ApiService {
     return this.axios.get<EventResult>(url, { params });
   }
 
+  public getFailedEvaluationResults(
+    projectName: string,
+    servicesKeptnContext: string,
+    stageName?: string
+  ): Promise<AxiosResponse<EventResult>> {
+    const stageString = stageName ? `AND data.stage:${stageName} ` : '';
+    const params = {
+      filter: `data.project:${projectName} ${stageString}AND data.result:${ResultTypes.FAILED} AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND ${servicesKeptnContext}`,
+      excludeInvalidated: 'true',
+    };
+    return this.axios.get<EventResult>(
+      `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`,
+      { params }
+    );
+  }
+
   public getOpenTriggeredEvents(
     projectName: string,
-    stageName: string,
-    serviceName: string,
-    eventType: EventTypes
+    eventType: EventTypes,
+    stageName?: string,
+    serviceName?: string
   ): Promise<AxiosResponse<EventResult>> {
     const params = {
       project: projectName,
-      stage: stageName,
-      service: serviceName,
+      ...(stageName && { stage: stageName }),
+      ...(serviceName && { service: serviceName }),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, { params });
   }
@@ -336,8 +352,12 @@ export class ApiService {
     return this.axios.get<{ Secrets: Secret[] }>(url);
   }
 
-  public getStages(projectName: string): Promise<AxiosResponse<{ stages: Stage[] }>> {
+  public getStages(projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {
     const url = `${this.baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.axios.get(url);
+  }
+
+  public getStage(projectName: string, stageName: string): Promise<AxiosResponse<IStage>> {
+    return this.axios.get(`${this.baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}`);
   }
 }

@@ -1,0 +1,5 @@
+export enum ServiceFilter {
+  OPEN_PROBLEMS,
+  FAILED_EVALUATIONS,
+  OPEN_APPROVALS,
+}
