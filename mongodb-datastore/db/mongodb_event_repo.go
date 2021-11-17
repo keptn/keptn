@@ -197,7 +197,8 @@ func (mr *MongoDBEventRepo) GetEvents(params event.GetEventsParams) (*EventsResu
 
 func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) (*EventsResult, error) {
 	if params.Filter == nil {
-		return nil, common.NewInvalidEventFilterError("event filter must not be empty")
+		//return nil, common.NewInvalidEventFilterError("event filter must not be empty")
+		return nil, fmt.Errorf("event filter must not be empty: %w", common.ErrInvalidEventFilter)
 	}
 
 	matchFields := parseFilter(*params.Filter)
@@ -661,7 +662,7 @@ func parseFilter(filter string) bson.M {
 
 func validateFilter(searchOptions bson.M) error {
 	if (searchOptions[projectPropertyPath] == nil || searchOptions[projectPropertyPath] == "") && (searchOptions[keptnContextPropertyPath] == nil || searchOptions[keptnContextPropertyPath] == "") {
-		return common.NewInvalidEventFilterError("either 'shkeptncontext' or 'data.project' must be set")
+		return fmt.Errorf("%w: either 'shkeptncontext' or 'data.project' must be set", common.ErrInvalidEventFilter)
 	}
 
 	return nil

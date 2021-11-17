@@ -186,7 +186,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	log.Infof("Checking if sequence '.triggered' event should start a sequence in project %s", eventScope.Project)
 	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(eventScope.EventType)
 	if err != nil {
-		return fmt.Errorf("unable to parse seuqnce event of type %s: %w", eventScope.EventType, err)
+		return fmt.Errorf("unable to parse sequence event of type %s: %w", eventScope.EventType, err)
 	}
 
 	// fetching cached shipyard file from project git repo

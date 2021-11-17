@@ -59,8 +59,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	api.EventGetEventsHandler = event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
 		events, err := eventRequestHandler.GetEvents(params)
 		if err != nil {
-			var validationError *common.InvalidEventFilterError
-			if errors.As(err, &validationError) {
+			if errors.Is(err, common.ErrInvalidEventFilter) {
 				return event.NewGetEventsDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
 			}
 			return event.NewGetEventsDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
@@ -71,8 +70,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	api.EventGetEventsByTypeHandler = event.GetEventsByTypeHandlerFunc(func(params event.GetEventsByTypeParams) middleware.Responder {
 		events, err := eventRequestHandler.GetEventsByType(params)
 		if err != nil {
-			var validationError *common.InvalidEventFilterError
-			if errors.As(err, &validationError) {
+			if errors.Is(err, common.ErrInvalidEventFilter) {
 				return event.NewGetEventsDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
 			}
 			return event.NewGetEventsDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})

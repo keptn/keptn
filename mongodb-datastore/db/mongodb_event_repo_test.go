@@ -155,8 +155,7 @@ func TestMongoDBEventRepo_Retrieve_NoProjectOrKeptnContext(t *testing.T) {
 
 	require.NotNil(t, err)
 
-	var validationError *common.InvalidEventFilterError
-	require.ErrorAs(t, err, &validationError)
+	require.ErrorIs(t, err, common.ErrInvalidEventFilter)
 	require.Nil(t, eventsByType)
 }
 
