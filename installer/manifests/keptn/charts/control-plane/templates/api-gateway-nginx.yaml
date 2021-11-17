@@ -348,7 +348,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 101
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false # we need it for caching. It is used to create /var/cache/nginx/client_temp
             allowPrivilegeEscalation: false
             privileged: false
       volumes:
