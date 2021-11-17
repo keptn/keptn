@@ -25,11 +25,13 @@ const (
 	TestStrategy_RealUser    = "real-user"
 )
 
+// JMeterConf contains the workload configuration for JMeter
 type JMeterConf struct {
 	SpecVersion string      `json:"spec_version" yaml:"spec_version"`
 	Workloads   []*Workload `json:"workloads" yaml:"workloads"`
 }
 
+// Workload contains information about a JMeter workload to be executed
 type Workload struct {
 	TestStrategy      string            `json:"teststrategy" yaml:"teststrategy"`
 	VUser             int               `json:"vuser" yaml:"vuser"`
@@ -42,7 +44,7 @@ type Workload struct {
 }
 
 var defaultWorkloads = []Workload{
-	Workload{
+	{
 		TestStrategy:      TestStrategy_HealthCheck,
 		VUser:             1,
 		LoopCount:         1,
@@ -50,7 +52,7 @@ var defaultWorkloads = []Workload{
 		Script:            "jmeter/basiccheck.jmx",
 		AcceptedErrorRate: 0.0,
 	},
-	Workload{
+	{
 		TestStrategy:      TestStrategy_Performance,
 		VUser:             10,
 		LoopCount:         500,
@@ -58,7 +60,7 @@ var defaultWorkloads = []Workload{
 		Script:            "jmeter/load.jmx",
 		AcceptedErrorRate: 0.1,
 	},
-	Workload{
+	{
 		TestStrategy:      TestStrategy_Functional,
 		VUser:             1,
 		LoopCount:         1,

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,20 +17,20 @@ var serviceURLTests = []struct {
 	event keptnv2.TestTriggeredEventData
 	url   *url.URL
 }{
-	{"local", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "https://carts.sockshop-dev.svc.cluster.local/test", "carts.sockshop-dev.mydomain.com"), getURL("https://carts.sockshop-dev.svc.cluster.local/test")},
-	{"public", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "", "http://carts.sockshop-dev.mydomain.com:8080/myendpoint"), getURL("http://carts.sockshop-dev.mydomain.com:8080/myendpoint")},
-	{"no path but valid uri", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "", "http://carts.sockshop-dev.mydomain.com:8080"), getURL("http://carts.sockshop-dev.mydomain.com:8080/")},
+	{"local", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "https://carts.sockshop-dev.svc.cluster.local/test", "carts.sockshop-dev.mydomain.com"), encodeURL("https://carts.sockshop-dev.svc.cluster.local/test")},
+	{"public", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "", "http://carts.sockshop-dev.mydomain.com:8080/myendpoint"), encodeURL("http://carts.sockshop-dev.mydomain.com:8080/myendpoint")},
+	{"no path but valid uri", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "", "http://carts.sockshop-dev.mydomain.com:8080"), encodeURL("http://carts.sockshop-dev.mydomain.com:8080/")},
 }
 
-func getURL(urlString string) *url.URL {
-	url, err := url.Parse(urlString)
+func encodeURL(urlString string) *url.URL {
+	parsedURL, err := url.Parse(urlString)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
-	return url
+	return parsedURL
 }
 
-func deploymentFinishedEventInitHelper(project, service, stage, deploymentStrategy,
+func deploymentFinishedEventInitHelper(project, service, stage,
 	deploymentURILocal, deploymentURIPublic string) keptnv2.TestTriggeredEventData {
 	return keptnv2.TestTriggeredEventData{
 		EventData: keptnv2.EventData{
@@ -60,7 +60,6 @@ func TestGetServiceURL(t *testing.T) {
 }
 
 func Test_checkEndpointAvailable(t *testing.T) {
-
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer ts.Close()
 	reachableURL, _ := url.Parse(ts.URL)

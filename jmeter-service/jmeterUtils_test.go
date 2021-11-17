@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,13 +16,14 @@ import (
 )
 
 func Test_executeJMeter(t *testing.T) {
+	localTmpDir, _ := ioutil.TempDir("", "")
 	var returnedStatus int
 	var returnedResources keptnapimodels.Resources
 
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
-			if strings.HasSuffix(r.URL.Path, "/resource") {
+			if strings.HasSuffix(r.URL.Path, "/resource") || strings.HasSuffix(r.URL.Path, "/resource/") {
 				marshal, _ := json.Marshal(returnedResources)
 				w.Write(marshal)
 				return
@@ -40,7 +42,7 @@ func Test_executeJMeter(t *testing.T) {
 	os.Setenv("env", "production")
 
 	type args struct {
-		testInfo       *TestInfo
+		testInfo       TestInfo
 		workload       *Workload
 		resultsDir     string
 		url            *url.URL
@@ -59,27 +61,16 @@ func Test_executeJMeter(t *testing.T) {
 		{
 			name: "Skip tests if 404 is returned by configuration service and mark as success",
 			args: args{
-				testInfo: &TestInfo{
+				testInfo: TestInfo{
 					Project:      "sockshop",
 					Stage:        "dev",
 					Service:      "carts",
 					TestStrategy: "functional",
+					Context:      localTmpDir,
 				},
 				workload: &Workload{
-					TestStrategy:      "",
-					VUser:             0,
-					LoopCount:         0,
-					ThinkTime:         0,
-					Script:            "test.jmx",
-					AcceptedErrorRate: 0,
-					AvgRtValidation:   0,
-					Properties:        nil,
+					Script: "test.jmx",
 				},
-				resultsDir:     "",
-				url:            nil,
-				LTN:            "",
-				funcValidation: false,
-				logger:         nil,
 			},
 			want:           true,
 			wantErr:        false,
@@ -88,27 +79,16 @@ func Test_executeJMeter(t *testing.T) {
 		{
 			name: "Skip tests if error code is returned by configuration service and return error",
 			args: args{
-				testInfo: &TestInfo{
+				testInfo: TestInfo{
 					Project:      "sockshop",
 					Stage:        "dev",
 					Service:      "carts",
 					TestStrategy: "functional",
+					Context:      localTmpDir,
 				},
 				workload: &Workload{
-					TestStrategy:      "",
-					VUser:             0,
-					LoopCount:         0,
-					ThinkTime:         0,
-					Script:            "test.jmx",
-					AcceptedErrorRate: 0,
-					AvgRtValidation:   0,
-					Properties:        nil,
+					Script: "test.jmx",
 				},
-				resultsDir:     "",
-				url:            nil,
-				LTN:            "",
-				funcValidation: false,
-				logger:         nil,
 			},
 			want:           false,
 			wantErr:        true,
@@ -128,7 +108,8 @@ func Test_executeJMeter(t *testing.T) {
 					ResourceURI: &res,
 				})
 			}
-			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tt.args.resultsDir, tt.args.url, tt.args.LTN, tt.args.funcValidation)
+			tmpDir, _ := ioutil.TempDir("", "")
+			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tmpDir, tt.args.url, tt.args.LTN, tt.args.funcValidation)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("executeJMeter() error = %v, wantErr %v", err, tt.wantErr)
 				return
