@@ -388,16 +388,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Docker Cache
-        id: docker_cache
-        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
@@ -417,14 +407,7 @@ jobs:
           tags: |
             keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
             keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             version=${{ env.VERSION }}
           push: ${{ matrix.config.should-push-image }}
           pull: true
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
