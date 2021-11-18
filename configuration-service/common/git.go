@@ -160,17 +160,18 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 			// create new remote origin in case updating was not possible
 			_, err := g.Executor.ExecuteCommand("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
 			if err != nil {
-				err = removeRemoteOrigin(project)
-				if err != nil {
-					return err
+				err2 := removeRemoteOrigin(project)
+				if err2 != nil {
+					return err2
 				}
+
 				return obfuscateErrorMessage(err, credentials)
 			}
 		}
 		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
-			err = removeRemoteOrigin(project)
-			if err != nil {
-				return err
+			err2 := removeRemoteOrigin(project)
+			if err2 != nil {
+				return err2
 			}
 			return fmt.Errorf("failed to set upstream: %v", err)
 		}
