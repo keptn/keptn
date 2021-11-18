@@ -192,7 +192,7 @@ async function init(): Promise<Express> {
     }
 
     res.status(err.response?.status || 500).send(err.message);
-    console.error(err);
+    console.error(`[ERROR] ${err.message}`);
   });
 
   return app;
