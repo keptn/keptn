@@ -113,7 +113,7 @@ func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf, resCha
 
 	res, err = tr.runWorkload(testInfo, testStrategyWorkload)
 	if err != nil {
-		logger.Errorf("could not run test workload: %w", err)
+		logger.Error("could not run test workload:", err.Error())
 	}
 
 	resChan <- TestResult{res, err}
