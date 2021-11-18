@@ -316,10 +316,6 @@ jobs:
         run: |
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
-      - name: Debugging
-        run: |
-          ls -laR "$PWD/shared"
-
       - name: Report test coverage for ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         uses: codecov/codecov-action@v2
