@@ -227,10 +227,11 @@ func getGracefulContext() context.Context {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), controller.GracefulShutdownKey, wg)))
-
 	go func() {
 		<-ch
 		log.Fatal("Container termination triggered, starting graceful shutdown")
+		close(ch)
+		wg.Wait()
 		cancel()
 	}()
 
