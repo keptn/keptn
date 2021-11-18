@@ -325,6 +325,13 @@ jobs:
           move_coverage_to_trash: true
           flags: ${{ matrix.config.artifact }}
 
+      - name: Upload Test Screenshots
+        if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
+        uses: actions/upload-artifact@v2
+        with:
+          name: bridge-e2e-screenshots
+          path: ./shared/screenshots
+
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
     needs: prepare_ci_run
