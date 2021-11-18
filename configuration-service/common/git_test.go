@@ -507,3 +507,65 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 		})
 	}
 }
+
+func TestGit_Reset(t *testing.T) {
+	type fields struct {
+		Executor         *common_mock.CommandExecutorMock
+		CredentialReader CredentialReader
+	}
+	type args struct {
+		project string
+	}
+	tests := []struct {
+		name             string
+		fields           fields
+		args             args
+		wantErr          bool
+		expectedCommands []struct {
+			Command   string
+			Args      []string
+			Directory string
+		}
+	}{
+		{
+			name: "reset",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						return "", nil
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+			},
+			wantErr: false,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"reset", "--hard"},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Git{
+				Executor:         tt.fields.Executor,
+				CredentialReader: tt.fields.CredentialReader,
+			}
+			if err := g.Reset(tt.args.project); (err != nil) != tt.wantErr {
+				t.Errorf("Reset() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
+
+			assert.Equal(t, tt.expectedCommands, executedCommands)
+		})
+	}
+}
