@@ -124,6 +124,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
+		return ErrSequenceBlocked
 	}
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
 	taskExecutions, err := sd.sequenceRepo.GetTaskExecutions(queuedSequence.Scope.Project, models.TaskExecution{
