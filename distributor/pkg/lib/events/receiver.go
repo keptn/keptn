@@ -48,16 +48,16 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 
 func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 	if n.env.PubSubRecipient == "" {
-		return errors.New("unable to start NatsEventReceiver: no pubsub recipient defined")
+		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
 
 	if err := n.natsConnectionHandler.Connect(); err != nil {
-		return fmt.Errorf("unable to Start NatsEventReceiver: %w", err)
+		return fmt.Errorf("could not Start NatsEventReceiver: %w", err)
 	}
 	n.natsConnectionHandler.messageHandler = n.handleMessage
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.GetPubSubTopics(), n.env.PubSubGroup)
 	if err != nil {
-		return fmt.Errorf("unable to subscribe to events: %w", err)
+		return fmt.Errorf("could not subscribe to events: %w", err)
 	}
 
 	defer func() {
@@ -81,7 +81,7 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubs
 	}
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(topics, n.env.PubSubGroup)
 	if err != nil {
-		logger.Errorf("Unable to subscribe to topics %v: %v", topics, err)
+		logger.Errorf("Could not subscribe to topics %v: %v", topics, err)
 	}
 }
 
@@ -107,12 +107,12 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 		subscriptions := n.getSubscriptionsFromReceivedMessage(m, *cloudEvent)
 		if len(subscriptions) > 0 {
 			if err := n.sendEventForSubscriptions(subscriptions, keptnEvent); err != nil {
-				logger.Errorf("Could not send CloudEvent: %v", err)
+				logger.Errorf("Could not send cloud event: %v", err)
 			}
 		} else {
 			// forward keptn event
 			if err := n.sendEvent(keptnEvent, nil); err != nil {
-				logger.Errorf("Could not send CloudEvent: %v", err)
+				logger.Errorf("Could not send cloud event: %v", err)
 			}
 		}
 	}()
@@ -123,7 +123,7 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 		// check if the event with the given ID has already been sent for the subscription
 		if n.ceCache.Contains(subscription.ID, keptnEvent.ID) {
 			// Skip this event as it has already been sent
-			logger.Infof("CloudEvent with ID %s has already been sent", keptnEvent.ID)
+			logger.Debugf("CloudEvent with ID %s has already been sent", keptnEvent.ID)
 			continue
 		}
 		// add to CloudEvents cache
@@ -139,7 +139,7 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 
 		// add subscription ID as additional information to the keptn event
 		if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
-			logger.WithError(err).Error("Unable to add temporary information about subscriptions to event")
+			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 		// forward keptn event
 		return n.sendEvent(keptnEvent, &subscriptions[i])
@@ -176,7 +176,6 @@ func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscript
 
 	logger.Infof("Sending CloudEvent with ID %s to %s", event.ID(), n.env.PubSubRecipient)
 	if err := n.eventSender.Send(ctx, event); err != nil {
-		logger.WithError(err).Error("Unable to send event")
 		return err
 	}
 	return nil

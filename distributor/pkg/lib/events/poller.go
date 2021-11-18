@@ -44,7 +44,7 @@ func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *
 
 func (p *Poller) Start(ctx *ExecutionContext) error {
 	if p.env.PubSubRecipient == "" {
-		return errors.New("unable to start NatsEventReceiver: no pubsub recipient defined")
+		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
 
 	eventEndpoint := p.env.GetHTTPPollingEndpoint()
@@ -55,6 +55,7 @@ func (p *Poller) Start(ctx *ExecutionContext) error {
 		pollingInterval = config.DefaultPollingInterval
 	}
 
+	logger.Infof("Polling events from: %s", eventEndpoint)
 	for {
 		select {
 		case <-time.After(time.Duration(pollingInterval) * time.Second):
@@ -72,7 +73,6 @@ func (p *Poller) UpdateSubscriptions(subscriptions []keptnmodels.EventSubscripti
 }
 
 func (p *Poller) doPollEvents(endpoint, token string) {
-	logger.Infof("Polling events from: %s", endpoint)
 	for _, sub := range p.currentSubscriptions {
 		p.pollEventsForSubscription(sub, endpoint, token)
 	}
@@ -84,7 +84,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", subscription.Event, endpoint, err)
 		return
 	}
-	logger.Infof("Received %d new .triggered events", len(events))
+	logger.Debugf("Received %d new .triggered events", len(events))
 	// iterate over all events, discard the event if it has already been sent
 	for index := range events {
 		event := *events[index]
@@ -97,7 +97,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		logger.Infof("Adding temporary data to event: <subscriptionID=%s>", subscription.ID)
 		// add subscription ID as additional information to the keptn event
 		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
-			logger.Errorf("Unable to add temporary information about subscriptions to event: %v", err)
+			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 
 		// add to CloudEvents cache
@@ -112,12 +112,12 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		}()
 	}
 
-	logger.Infof("Cleaning up list of sent events for topic %s", subscription.Event)
+	logger.Debugf("Cleaning up list of sent events for topic %s", subscription.Event)
 	p.ceCache.Keep(subscription.ID, ToIDs(events))
 }
 
 func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
-	logger.Infof("Retrieving events of type %s", subscription.Event)
+	logger.Debugf("Retrieving events of type %s", subscription.Event)
 	events := make([]*keptnmodels.KeptnContextExtendedCE, 0)
 	nextPageKey := ""
 
@@ -190,7 +190,6 @@ func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription ke
 	defer cancel()
 
 	if err := p.eventSender.Send(ctx, event); err != nil {
-		logger.WithError(err).Error("Unable to send event")
 		return err
 	}
 

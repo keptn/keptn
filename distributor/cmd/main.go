@@ -61,11 +61,7 @@ func _main(env config.EnvConfig) int {
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
-	go func() {
-		if err := forwarder.Start(executionContext); err != nil {
-			logger.WithError(err).Error("Could not start event forwarder")
-		}
-	}()
+	forwarder.Start(executionContext)
 
 	// Eventually start registration process
 	if shallRegister() {
@@ -84,14 +80,14 @@ func _main(env config.EnvConfig) int {
 		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
 		uniformWatch.RegisterListener(httpEventPoller)
 		if err := httpEventPoller.Start(executionContext); err != nil {
-			logger.Fatalf("Unable to start HTTP event poller: %v", err)
+			logger.Fatalf("Could not start HTTP event poller: %v", err)
 		}
 	} else {
 		logger.Info("Starting NATS event Receiver")
 		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
 		uniformWatch.RegisterListener(natsEventReceiver)
 		if err := natsEventReceiver.Start(executionContext); err != nil {
-			logger.Fatalf("Unable to start NATS event receiver: %v", err)
+			logger.Fatalf("Could not start NATS event receiver: %v", err)
 		}
 	}
 	executionContext.Wg.Wait()

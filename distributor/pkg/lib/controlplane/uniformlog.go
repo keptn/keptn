@@ -28,15 +28,15 @@ func NewEventUniformLog(integrationID string, logHandler keptn.ILogHandler) *Eve
 }
 
 func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudevents.Event) {
-	logger.Infof("Starting UniformLog for Keptn service with integration ID %s", l.IntegrationID)
+	logger.Infof("Starting uniform log for Keptn service with integration ID %s", l.IntegrationID)
 	l.logHandler.Start(ctx)
 	go func() {
 		for {
 			select {
 			case event := <-eventChannel:
-				logger.Infof("UniformLogger: received event: %s", event.Context.GetType())
+				logger.Debugf("Received event: %s", event.Context.GetType())
 				if err := l.OnEvent(event); err != nil {
-					logger.Errorf("could not handle event: %s", err.Error())
+					logger.Errorf("Could not handle event: %v", err)
 				}
 			case <-ctx.Done():
 				logger.Info("Closing UniformLogger")
@@ -49,18 +49,18 @@ func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudeven
 func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 	keptnEvent, err := keptnv2.ToKeptnEvent(event)
 	if err != nil {
-		return fmt.Errorf("could not decode CloudEvent to Keptn event: %v", err.Error())
+		return fmt.Errorf("could not decode CloudEvent to Keptn event: %w", err)
 	}
 	if strings.HasSuffix(*keptnEvent.Type, ".finished") {
 		eventData := &keptnv2.EventData{}
 		if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
-			return fmt.Errorf("could not decode Keptn event data: %v", err.Error())
+			return fmt.Errorf("could not decode Keptn event data: %w", err)
 		}
 
 		taskName, _, _ := keptnv2.ParseTaskEventType(*keptnEvent.Type)
 
 		if eventData.Status == keptnv2.StatusErrored {
-			logger.Info("UniformLogger: received .finished event with status errored. forwarding log message to log ingestion API")
+			logger.Info("Received '.finished' event with status 'errored'. Forwarding log message to log ingestion API")
 			l.Log(keptnapimodels.LogEntry{
 				IntegrationID: l.IntegrationID,
 				Message:       eventData.Message,
@@ -71,11 +71,11 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 		}
 		return nil
 	} else if *keptnEvent.Type == keptnv2.ErrorLogEventName {
-		logger.Info("received log.error event. forwarding log message to log ingestion API")
+		logger.Info("Received 'log.error' event. Forwarding log message to log ingestion API")
 
 		eventData := &keptnv2.ErrorLogEvent{}
 		if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
-			return fmt.Errorf("could not decode Keptn event data: %v", err.Error())
+			return fmt.Errorf("unable decode Keptn event data: %w", err)
 		}
 
 		integrationID := l.IntegrationID
