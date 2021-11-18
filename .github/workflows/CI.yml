@@ -318,7 +318,7 @@ jobs:
 
       - name: Debugging
         run: |
-          ls -la "$PWD/shared"
+          ls -laR "$PWD/shared"
 
       - name: Report test coverage for ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
