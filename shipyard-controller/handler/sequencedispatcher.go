@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -85,7 +86,7 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 		for {
 			select {
 			case <-ctx.Done():
-				log.Info("cancelling sequence dispatcher loop")
+				log.Info("Cancelling sequence dispatcher loop")
 				return
 			case <-ticker.C:
 				log.Debugf("%.2f seconds have passed. Dispatching sequences", sd.syncInterval.Seconds())
@@ -102,13 +103,17 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 			// if no sequences are in the queue, we can return here
 			return
 		}
-		log.WithError(err).Error("could not load queued sequences")
+		log.WithError(err).Error("Could not load queued sequences")
 		return
 	}
 
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
-			log.WithError(err).Errorf("could not dispatch sequence with keptnContext %s", queuedSequence.EventID)
+			if errors.Is(err, ErrSequenceBlocked) {
+				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
+			} else {
+				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
+			}
 		}
 	}
 }
@@ -132,7 +137,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 
 	// if there is a sequence running in the stage, we cannot trigger this sequence yet
 	if sd.areActiveSequencesBlockingQueuedSequences(taskExecutions) {
-		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
+		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
 		return ErrSequenceBlocked
 	}
 
