@@ -220,15 +220,20 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 
-		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
-			if resp := untarHelm(res, filePath); resp != nil {
-				return resp
-			}
-		}
-
 		if err := AddUpdateHelmResources(res.ResourceContent, "add", filePath, params.ProjectName); err != nil {
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotAddResourceErrorMsg)})
+				WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotAddResourceErrorMsg)})
+		}
+
+		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
+			if resp := untarHelm(res, filePath); resp != nil {
+				err2 := common.DeleteFile(filePath)
+				if err2 != nil {
+					logger.WithError(err2).Errorf("Could not delete file %s", filePath)
+					return nil
+				}
+				return resp
+			}
 		}
 	}
 
@@ -254,7 +259,12 @@ func untarHelm(res *models.Resource, filePath string) middleware.Responder {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		err := os.RemoveAll(tmpDir)
+		if err != nil {
+			logger.WithError(err).Errorf("Could not remove directory %s", tmpDir)
+		}
+	}()
 
 	tarGz := archive.NewTarGz()
 	tarGz.OverwriteExisting = true
@@ -345,15 +355,20 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 
-		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
-			if resp := untarHelm(res, filePath); resp != nil {
-				return resp
-			}
-		}
-
 		if err := AddUpdateHelmResources(res.ResourceContent, "update", filePath, params.ProjectName); err != nil {
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotUpdateResourceErrorMsg)})
+				WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotUpdateResourceErrorMsg)})
+		}
+
+		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
+			if resp := untarHelm(res, filePath); resp != nil {
+				err2 := common.DeleteFile(filePath)
+				if err2 != nil {
+					logger.WithError(err2).Errorf("Could not delete file %s", filePath)
+					return nil
+				}
+				return resp
+			}
 		}
 	}
 
