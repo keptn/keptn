@@ -166,22 +166,20 @@ export class ApiService {
     return this.axios.get<EventResult>(url, { params });
   }
 
-  public getFailedEvaluationResults(
+  public getTracesOfMultipleServices(
     projectName: string,
+    eventType: EventTypes,
     servicesKeptnContext: string,
-    stageName?: string,
+    source?: KeptnService,
     resultType?: ResultTypes
   ): Promise<AxiosResponse<EventResult>> {
-    const stageString = stageName ? `AND data.stage:${stageName} ` : '';
-    const resultTypeString = resultType ? `AND data.result:${ResultTypes.FAILED} ` : '';
+    const resultTypeString = resultType ? `AND data.result:${resultType} ` : '';
+    const sourceString = source ? `AND source:${source} ` : '';
     const params = {
-      filter: `data.project:${projectName} ${stageString}${resultTypeString}AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND ${servicesKeptnContext}`,
+      filter: `data.project:${projectName} ${resultTypeString}${sourceString}AND ${servicesKeptnContext}`,
       excludeInvalidated: 'true',
     };
-    return this.axios.get<EventResult>(
-      `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`,
-      { params }
-    );
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, { params });
   }
 
   public getOpenTriggeredEvents(
