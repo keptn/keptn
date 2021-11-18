@@ -94,7 +94,7 @@ func getApprovalFinishedTestData(result keptnv2.ResultType, status keptnv2.Statu
 	}
 }
 
-func getApprovalStartedTestData(status keptnv2.StatusType) keptnv2.ApprovalStartedEventData {
+func getApprovalStartedTestData(status keptnv2.StatusType, message string) keptnv2.ApprovalStartedEventData {
 	return keptnv2.ApprovalStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: "sockshop",
@@ -104,7 +104,7 @@ func getApprovalStartedTestData(status keptnv2.StatusType) keptnv2.ApprovalStart
 				"l1": "lValue",
 			},
 			Status:  status,
-			Message: "",
+			Message: message,
 		},
 	}
 }
