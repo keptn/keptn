@@ -169,14 +169,14 @@ export class ApiService {
   public getTracesOfMultipleServices(
     projectName: string,
     eventType: EventTypes,
-    servicesKeptnContext: string,
+    eventIds: string,
     source?: KeptnService,
     resultType?: ResultTypes
   ): Promise<AxiosResponse<EventResult>> {
     const resultTypeString = resultType ? `AND data.result:${resultType} ` : '';
     const sourceString = source ? `AND source:${source} ` : '';
     const params = {
-      filter: `data.project:${projectName} ${resultTypeString}${sourceString}AND ${servicesKeptnContext}`,
+      filter: `data.project:${projectName} ${resultTypeString}${sourceString}AND ${eventIds}`,
       excludeInvalidated: 'true',
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, { params });
@@ -355,9 +355,5 @@ export class ApiService {
   public getStages(projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {
     const url = `${this.baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.axios.get(url);
-  }
-
-  public getStage(projectName: string, stageName: string): Promise<AxiosResponse<IStage>> {
-    return this.axios.get(`${this.baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}`);
   }
 }

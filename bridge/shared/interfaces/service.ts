@@ -9,5 +9,5 @@ export interface IService {
   creationDate: number;
   stage: string;
   deployedImage?: string;
-  lastEventTypes?: { [p: string]: IServiceEvent };
+  lastEventTypes?: { [p: string]: IServiceEvent | undefined };
 }

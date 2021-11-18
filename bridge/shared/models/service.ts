@@ -9,7 +9,7 @@ export class Service implements IService {
   creationDate!: number;
   stage!: string;
   deployedImage?: string;
-  lastEventTypes: { [p: string]: IServiceEvent } = {};
+  lastEventTypes: { [p: string]: IServiceEvent | undefined } = {};
   latestSequence?: Sequence;
   openRemediations: Sequence[] = [];
   openApprovals?: Approval[] = [];
@@ -22,8 +22,9 @@ export class Service implements IService {
   public getLatestEvent(): IServiceEvent | undefined {
     let latestSequence: IServiceEvent | undefined;
     for (const key of Object.keys(this.lastEventTypes)) {
-      if (!latestSequence || this.lastEventTypes[key].time > latestSequence.time) {
-        latestSequence = this.lastEventTypes[key];
+      const event = this.lastEventTypes[key];
+      if (!latestSequence || (event && event.time > latestSequence.time)) {
+        latestSequence = event;
       }
     }
     return latestSequence;
