@@ -528,28 +528,6 @@ export class DataService {
     return sequence;
   }
 
-  private async getDeploymentURL(
-    projectName: string,
-    stageName: string,
-    serviceName: string
-  ): Promise<string | undefined> {
-    let url: string | undefined;
-    const response = await this.apiService.getTracesWithResult(
-      EventTypes.DEPLOYMENT_FINISHED,
-      1,
-      projectName,
-      stageName,
-      serviceName,
-      ResultTypes.PASSED
-    ); // the finished trace does not have the image
-
-    const traceData = response.data.events[0];
-    if (traceData) {
-      url = Trace.fromJSON(traceData).getDeploymentUrl();
-    }
-    return url;
-  }
-
   public async getSequences(
     projectName: string,
     sequenceName: string,
