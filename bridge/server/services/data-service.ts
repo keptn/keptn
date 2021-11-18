@@ -268,15 +268,15 @@ export class DataService {
   ): Promise<void> {
     if (includeProblemTitle) {
       const response = await this.apiService.getTraces(
-        undefined,
-        includeActions ? this.MAX_TRACE_PAGE_SIZE : 1,
+        includeActions ? undefined : `${EventTypes.PREFIX}${stageName}.remediation.triggered`,
+        this.MAX_TRACE_PAGE_SIZE,
         projectName,
         stageName,
         serviceName,
         keptnContext
       );
       const traces = response.data.events;
-      remediation.problemTitle = traces[0]?.data.problem?.ProblemTitle;
+      remediation.problemTitle = traces[traces.length - 1]?.data.problem?.ProblemTitle;
       if (includeActions) {
         const actions = this.getRemediationActions(Trace.traceMapper(traces));
         remediation.stages[0].actions.push(...actions);
