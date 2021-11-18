@@ -63,8 +63,8 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	}
 	if err := sh.serviceManager.CreateService(projectName, createServiceParams); err != nil {
 
-		if err := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
-			log.Errorf("could not send service.create.finished event: %s", err.Error())
+		if err2 := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err2 != nil {
+			log.Errorf("could not send service.create.finished event: %s", err2.Error())
 		}
 
 		if err == ErrServiceAlreadyExists {
