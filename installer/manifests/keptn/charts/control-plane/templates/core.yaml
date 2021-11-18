@@ -392,6 +392,10 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sleep", "30"]
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
@@ -415,6 +419,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 60
 ---
 apiVersion: v1
 kind: Service
