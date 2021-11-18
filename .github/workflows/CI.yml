@@ -316,6 +316,10 @@ jobs:
         run: |
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
+      - name: Debugging
+        run: |
+          ls -la "$PWD/shared"
+
       - name: Report test coverage for ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         uses: codecov/codecov-action@v2
@@ -330,7 +334,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: bridge-e2e-screenshots
-          path: /shared/screenshots
+          path: ./shared/screenshots
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
