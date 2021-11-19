@@ -1,6 +1,10 @@
 package lib
 
-import "gopkg.in/yaml.v3"
+import (
+	"errors"
+
+	"gopkg.in/yaml.v3"
+)
 
 type WebHookConfig struct {
 	ApiVersion string            `yaml:"apiVersion"`
@@ -44,5 +48,24 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 	if err := yaml.Unmarshal(webhookConfigYaml, webHookConfig); err != nil {
 		return nil, err
 	}
+
+	if len(webHookConfig.Spec.Webhooks) == 0 {
+		return nil, errors.New("Webhook configuration invalid: missing 'webhooks[]' part")
+	}
+
+	for _, webhook := range webHookConfig.Spec.Webhooks {
+		if webhook.Type == "" {
+			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].Type' part")
+		}
+
+		if webhook.SubscriptionID == "" {
+			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].SubscriptionID' part")
+		}
+
+		if len(webhook.Requests) == 0 {
+			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].Requests[]' part")
+		}
+	}
+
 	return webHookConfig, nil
 }
