@@ -17,12 +17,12 @@ func TestGetProjectsMaterializedView(t *testing.T) {
 	}{
 		{
 			name: "get MV instance",
-			want: NewProjectMVRepo(NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())),
+			want: NewProjectMVRepo(NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewProjectMVRepo(NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())); got != tt.want {
+			if got := NewProjectMVRepo(NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())); got != tt.want {
 				t.Errorf("NewProjectMVRepo() = %v, want %v", got, tt.want)
 			}
 		})

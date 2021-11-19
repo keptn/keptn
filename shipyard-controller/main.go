@@ -229,7 +229,7 @@ func main() {
 }
 
 func createProjectMVRepo() *db.MongoDBProjectMVRepo {
-	return db.NewProjectMVRepo(db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()))
+	return db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()))
 }
 
 func createUniformRepo() *db.MongoDBUniformRepo {
@@ -240,8 +240,8 @@ func createStateRepo() *db.MongoDBStateRepo {
 	return db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 }
 
-func createProjectRepo() *db.MongoDBProjectsRepo {
-	return db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance())
+func createProjectRepo() *db.MongoDBKeyEncodingProjectsRepo {
+	return db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createEventsRepo() *db.MongoDBEventsRepo {
