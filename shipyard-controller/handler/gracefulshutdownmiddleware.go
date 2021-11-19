@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-// GracefulShutdownMiddleware syncronise active handlers to enable graceful shutdown
+// GracefulShutdownMiddleware synchronize active handlers to enable graceful shutdown
 func GracefulShutdownMiddleware(wg *sync.WaitGroup) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
