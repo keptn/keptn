@@ -3,29 +3,20 @@ module github.com/keptn/keptn/cli
 go 1.16
 
 require (
-	cloud.google.com/go v0.93.3 // indirect
 	github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/docker/docker-credential-helpers v0.6.4
-	github.com/fatih/color v1.9.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.10.1-0.20211115145943-79e64c4f92ea
+	github.com/keptn/go-utils v0.10.1-0.20211119130041-da7d7abd5e93
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
-	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.2
-	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
-	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
-	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.7.0
