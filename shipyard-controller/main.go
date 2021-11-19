@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/db/migration"
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
@@ -214,8 +215,11 @@ func main() {
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
 
-	sequenceMigrator := handler.NewSequenceMigrator(createEventsRepo(), createStateRepo(), createProjectRepo())
-	sequenceMigrator.Run()
+	projectsMigrator := migration.NewProjectMVMigrator(db.GetMongoDBConnectionInstance())
+	err = projectsMigrator.MigrateKeys()
+	if err != nil {
+		log.Fatalf("Unable to run projects migrator: %v", err)
+	}
 
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)

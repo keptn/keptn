@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewProjectMVMigrator(dbConnection *db.MongoDBConnection) *ProjectMVMigrator {
@@ -15,6 +16,7 @@ type ProjectMVMigrator struct {
 }
 
 func (p *ProjectMVMigrator) MigrateKeys() error {
+	log.Info("Migrating project key format")
 	projects, err := p.projectRepo.GetProjects()
 	if err != nil {
 		return fmt.Errorf("could not migrate keys for last event types in project mv collection: %w", err)
