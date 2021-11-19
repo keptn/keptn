@@ -76,7 +76,7 @@ export class DataService {
     const allServices = Stage.getAllServices(project.stages);
     const latestDeployments = await this.getDeploymentFinishedForServices(projectName, allServices, ResultTypes.PASSED);
     const latestEvaluations = await this.getEvaluationResultsForServices(projectName, allServices);
-    // const latestSequences = await this.getSequencesForServices(projectName, allServices);
+    // for sequence adjustment: const latestSequences = await this.getSequencesForServices(projectName, allServices);
     const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
 
     if (includeRemediation) {
@@ -92,7 +92,7 @@ export class DataService {
       const stageApprovals = openApprovals.filter((approval) => approval.trace.data.stage === stage.stageName);
       const stageEvaluations = latestEvaluations.filter((t) => t.data.stage === stage.stageName);
       const stageDeployments = latestDeployments.filter((t) => t.data.stage === stage.stageName);
-      // const stageSequences = latestSequences.filter((seq) => seq.stages.some((st) => st.name === stage.stageName));
+      // for sequence adjustment: const stageSequences = latestSequences.filter((seq) => seq.stages.some((st) => st.name === stage.stageName));
       const stageInformation: StageOpenInformation = {
         openApprovals: stageApprovals,
         openRemediations: stageRemediations,

@@ -16,7 +16,7 @@ import {
 } from '../fixtures/traces-response.mock';
 import { SequencesResponses } from '../fixtures/sequence-response.mock';
 import { KeptnService } from '../../shared/models/keptn-service';
-import { ProjectDetailsResponse } from '../fixtures/project-details-response';
+import { ProjectDetailsResponse } from '../fixtures/project-details-response.mock';
 
 let axiosMock: MockAdapter;
 
