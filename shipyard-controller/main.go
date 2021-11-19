@@ -247,8 +247,12 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
+	GracefulShutdown(wg, srv)
+
+}
+
+func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
+	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -265,7 +269,6 @@ func main() {
 	}
 
 	log.Println("Server exiting")
-
 }
 
 func createProjectMVRepo() *db.MongoDBProjectMVRepo {
