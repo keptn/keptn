@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 import admZip from 'adm-zip';
 import { apiRouter } from './api';
 import { execSync } from 'child_process';
+import { AxiosError } from 'axios';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -179,20 +180,26 @@ async function init(): Promise<Express> {
 
   // error handler
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: Error | AxiosError, req: Request, res: Response, _next: NextFunction) => {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-    // render the error page
-    if (err.response?.data?.message) {
-      err.message = err.response.data.message;
-    }
-    if (err.response?.status === 401) {
-      res.setHeader('keptn-auth-type', authType);
-    }
 
-    res.status(err.response?.status || 500).send(err.message);
-    console.error(`[ERROR] ${err.message}`);
+    if (isAxiosError(err)) {
+      // render the error page
+      if (err.response?.data?.message) {
+        err.message = err.response?.data.message;
+      }
+      if (err.response?.status === 401) {
+        res.setHeader('keptn-auth-type', authType);
+      }
+
+      console.error(`Error for ${err.request.method} ${err.request.path}: ${err.message}`);
+      res.status(err.response?.status || 500).send(err.message);
+    } else {
+      console.error(err);
+      res.status(500).send(err.message);
+    }
   });
 
   return app;
@@ -302,6 +309,10 @@ function cleanIpBuckets(): void {
       delete throttleBucket[ip];
     }
   }
+}
+
+function isAxiosError(err: Error | AxiosError): err is AxiosError {
+  return err.hasOwnProperty('isAxiosError');
 }
 
 export { init };
