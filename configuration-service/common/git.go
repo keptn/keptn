@@ -341,6 +341,15 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 	return masterBranch, nil
 }
 
+func (g *Git) Reset(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	_, err := g.Executor.ExecuteCommand("git", []string{"reset", "--hard"}, projectConfigPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // ==============================
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
@@ -376,6 +385,12 @@ func getRepoURI(uri string, user string, token string) string {
 func CheckoutBranch(project string, branch string, disableUpstreamSync bool) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
 	return g.CheckoutBranch(project, branch, disableUpstreamSync)
+}
+
+// Reset resets the current branch to the latest commit
+func Reset(project string) error {
+	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
+	return g.Reset(project)
 }
 
 // CreateBranch creates a new branch
