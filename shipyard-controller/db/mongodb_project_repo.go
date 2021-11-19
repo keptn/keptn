@@ -282,8 +282,12 @@ func DecodeProjectsKeys(projects []*models.ExpandedProject) ([]*models.ExpandedP
 }
 
 func encodeKey(key string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(key, "$", "\\uu024"), ".", "\\u002e")
+	encodedKey := strings.ReplaceAll(strings.ReplaceAll(key, "$", "\\uu024"), ".", "\\u002e")
+	log.Debugf("Encodingd key %s to %s\n", key, encodedKey)
+	return encodedKey
 }
 func decodeKey(key string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(key, "\\u002e", "."), "\\u0024", "$")
+	decodedKey := strings.ReplaceAll(strings.ReplaceAll(key, "\\u002e", "."), "\\u0024", "$")
+	log.Debugf("Decoded key %s to %s\n", key, decodedKey)
+	return decodedKey
 }

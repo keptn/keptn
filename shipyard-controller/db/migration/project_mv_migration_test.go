@@ -47,7 +47,8 @@ func Test_MigrateKeys(t *testing.T) {
 				Services: []*models.ExpandedService{
 					{
 						LastEventTypes: map[string]models.EventContext{
-							"sh.keptn.event.deployment.started": {},
+							`sh.keptn.event.get-sli.start`:               {},
+							`sh.keptn.event.get-s\u022e\u022eli.started`: {},
 						},
 						ServiceName: "test-service",
 					},
@@ -57,10 +58,11 @@ func Test_MigrateKeys(t *testing.T) {
 	}
 
 	projectRepo := db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance())
+
 	err := projectRepo.CreateProject(project)
 	require.Nil(t, err)
 
-	projectMVMigrator := NewProjectMVMigrator(projectRepo)
+	projectMVMigrator := NewProjectMVMigrator(db.GetMongoDBConnectionInstance())
 	projectMVMigrator.MigrateKeys()
 
 	insertedProject, err := projectRepo.GetProject("test-project")

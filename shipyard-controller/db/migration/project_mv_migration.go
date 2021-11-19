@@ -6,8 +6,8 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-func NewProjectMVMigrator(projectRepo db.ProjectRepo) *ProjectMVMigrator {
-	return &ProjectMVMigrator{projectRepo: projectRepo}
+func NewProjectMVMigrator(dbConnection *db.MongoDBConnection) *ProjectMVMigrator {
+	return &ProjectMVMigrator{projectRepo: db.NewMongoDBKeyEncodingProjectsRepo(dbConnection)}
 }
 
 type ProjectMVMigrator struct {
@@ -19,11 +19,10 @@ func (p *ProjectMVMigrator) MigrateKeys() error {
 	if err != nil {
 		return fmt.Errorf("could not migrate keys for last event types in project mv collection: %w", err)
 	}
-	migratedProjects, err := db.EncodeProjectsKeys(projects)
 	if err != nil {
 		return fmt.Errorf("could not migrate keys for last event types in project mv collection: %w", err)
 	}
-	return p.updateProjects(migratedProjects)
+	return p.updateProjects(projects)
 }
 
 func (p *ProjectMVMigrator) updateProjects(projects []*models.ExpandedProject) error {
