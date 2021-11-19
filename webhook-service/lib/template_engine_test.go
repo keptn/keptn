@@ -1,8 +1,9 @@
 package lib_test
 
 import (
-	"github.com/keptn/keptn/webhook-service/lib"
 	"testing"
+
+	"github.com/keptn/keptn/webhook-service/lib"
 )
 
 func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
@@ -38,6 +39,46 @@ func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
 					},
 				},
 				templateStr: "foo {{.Env.Bar}",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "non-existing key",
+			args: args{
+				data: map[string]interface{}{
+					"env": map[string]interface{}{
+						"bar": "foo",
+					},
+				},
+				templateStr: "foo {{.env.foo}",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "empty value",
+			args: args{
+				data: map[string]interface{}{
+					"env": map[string]interface{}{
+						"bar": "",
+					},
+				},
+				templateStr: "foo {{.env.bar}",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "empty key",
+			args: args{
+				data: map[string]interface{}{
+					"env": map[string]interface{}{
+						"bar": "bar",
+						"":    "foo",
+					},
+				},
+				templateStr: "foo {{.env.bar}",
 			},
 			want:    "",
 			wantErr: true,
