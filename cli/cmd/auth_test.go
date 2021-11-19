@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 	"time"
+	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -35,6 +36,36 @@ func TestLookupHostname(t *testing.T) {
 				t.Errorf("lookupHostname(%s): got %v, want %v", tt.in, s, tt.out)
 			}
 		})
+	}
+}
+
+func TestSmartFetchKeptnAuthParameters(t *testing.T) {
+	var endPoint = "keptn.github.io"
+	var apiToken = "someApiToken"
+	var falseValue = false
+	var authParams = authCmdParams {
+		endPoint:			  &endPoint,
+		apiToken:             &apiToken,
+		exportConfig:         &falseValue,
+		acceptContext:        true,
+		secure:               &falseValue,
+		skipNamespaceListing: &falseValue,
+	}
+
+	var smartKeptnAuth = smartKeptnAuthParams{
+		ingressName:    "api-keptn-ingress",
+		serviceName:    "api-gateway-nginx",
+		secretName:     "keptn-api-token",
+		insecurePrefix: "http://",
+	}
+
+	err := smartFetchKeptnAuthParameters(&authParams, smartKeptnAuth)
+	if err != nil {
+		t.Errorf("TestSmartFetchKeptnAuthParameters: %v", err)
+	}
+
+	if !strings.HasPrefix(*authParams.endPoint, "http://") {
+		t.Errorf("TestSmartFetchKeptnAuthParameters: endpoint %s does not have the required http prefix", *authParams.endPoint)
 	}
 }
 

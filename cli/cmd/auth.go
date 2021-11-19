@@ -63,7 +63,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			secretName:     "keptn-api-token",
 			insecurePrefix: "http://",
 		}
-		return verifyAuthParams(authParams)
+		return verifyAuthParams(authParams, smartKeptnAuth)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -99,7 +99,7 @@ func init() {
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
 }
 
-func verifyAuthParams(authParams *authCmdParams) error {
+func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthParams) error {
 
 	const parametersRequiredMessage = "keptn auth requires api-token and endpoint \n\n" +
 		"For more information on how to obtain token and endpoint to go https://keptn.sh/docs/%s/reference/cli/#authenticate-keptn-cli \n\n" +
@@ -120,7 +120,7 @@ func verifyAuthParams(authParams *authCmdParams) error {
 			}
 		}
 
-		err = smartFetchKeptnAuthParameters()
+		err = smartFetchKeptnAuthParameters(authParams, smartKeptnAuth)
 		if err != nil {
 			return fmt.Errorf(err.Error()+parametersRequiredMessage, getReleaseDocsURL(), namespace, namespace)
 		}
@@ -128,10 +128,24 @@ func verifyAuthParams(authParams *authCmdParams) error {
 	return nil
 }
 
+// Removes given prefix and adds the right one according to cmd paramters
+func addCorrectHttpPrefix(authParams *authCmdParams) string {
+	prefix := "http://"
+
+	if *authParams.secure {
+		prefix = "https://"
+	}
+
+	url := strings.TrimPrefix(*authParams.endPoint, "https://")
+	url = strings.TrimPrefix(url, "http://")
+
+	return prefix + url
+}
+
 type resolveFunc func(string) ([]string, error)
 type sleepFunc func(time.Duration)
 
-func smartFetchKeptnAuthParameters() error {
+func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthParams) error {
 	var err error
 
 	if authParams.endPoint == nil || *authParams.endPoint == "" {
@@ -142,11 +156,10 @@ func smartFetchKeptnAuthParameters() error {
 				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
 			}
 		}
-		if *authParams.secure {
-			smartKeptnAuth.insecurePrefix = "https://"
-		}
-		*authParams.endPoint = smartKeptnAuth.insecurePrefix + *authParams.endPoint + "/api"
+		*authParams.endPoint = *authParams.endPoint + "/api"
 	}
+
+	*authParams.endPoint = addCorrectHttpPrefix(authParams)
 
 	if authParams.apiToken == nil || *authParams.apiToken == "" {
 		*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
