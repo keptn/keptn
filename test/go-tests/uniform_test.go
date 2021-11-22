@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -32,7 +33,75 @@ spec:
           tasks:
             - name: "echo"`
 
-const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/main/deploy/service-with-fixed-node-name-env.yaml"
+const echoServiceK8sManifest = `---
+# Deployment of our echo-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: echo-service
+      app.kubernetes.io/instance: keptn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: echo-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
+    spec:
+      containers:
+        - name: echo-service
+          image: keptnsandbox/echo-service:0.1.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EVENTBROKER
+              value: 'http://localhost:8081/event'
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+        - name: distributor
+          image: ${distributor-image}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/v1/event'
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/version']
+            - name: LOCATION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
+            - name: K8S_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              value: 'some-node'`
+
 const echoServiceName = "echo-service"
 
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
@@ -249,16 +318,28 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
+	// make sure the echo-service uses the same distributor as Keptn core
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+
+	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
+		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
-		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
+		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
 	})
 }
@@ -266,9 +347,21 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
+	// make sure the echo-service uses the same distributor as Keptn core
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+
+	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
+		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
 		keptnQueueGroupEV := v1.EnvVar{
@@ -286,7 +379,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 		require.Nil(t, err)
 
 	}, func() {
-		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
+		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
 	})
 }
@@ -294,9 +387,22 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
+	// install echo integration
+	// make sure the echo-service uses the same distributor as Keptn core
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+
+	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
+		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
@@ -318,7 +424,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		require.Nil(t, err)
 
 	}, func() {
-		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
+		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
 	})
 }
