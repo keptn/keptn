@@ -2,9 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
+
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	logger "github.com/sirupsen/logrus"
-	"strconv"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -37,7 +38,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 
 	err := ce.DataAs(&actionTriggeredEvent)
 	if err != nil {
-		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to action event")
 		h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
 		return
 	}

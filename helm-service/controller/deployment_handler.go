@@ -40,7 +40,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 
 	e := keptnv2.DeploymentTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
-		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to deployment event")
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
