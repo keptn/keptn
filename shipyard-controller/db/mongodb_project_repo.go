@@ -166,6 +166,7 @@ func transformProjectToInterface(prj *models.ExpandedProject) (interface{}, erro
 	}
 	return prjInterface, nil
 }
+
 func NewMongoDBKeyEncodingProjectsRepo(dbConnection *MongoDBConnection) *MongoDBKeyEncodingProjectsRepo {
 	projectsRepo := NewMongoDBProjectsRepo(dbConnection)
 	return &MongoDBKeyEncodingProjectsRepo{
@@ -173,6 +174,8 @@ func NewMongoDBKeyEncodingProjectsRepo(dbConnection *MongoDBConnection) *MongoDB
 	}
 }
 
+// MongoDBKeyEncodingProjectsRepo is a wrapper around a ProjectRepo which takes care
+// of transforming the value of a project's LastEventTypes to not contain invalid characters like a dot (.)
 type MongoDBKeyEncodingProjectsRepo struct {
 	d ProjectRepo
 }
@@ -217,26 +220,10 @@ func (m *MongoDBKeyEncodingProjectsRepo) DeleteProject(projectName string) error
 	return m.d.DeleteProject(projectName)
 }
 
-func EncodeProjectsKeys(projects []*models.ExpandedProject) ([]*models.ExpandedProject, error) {
-	copiedProjects, err := copystructure.Copy(projects)
-	if err != nil {
-		return nil, err
-	}
-	for _, project := range copiedProjects.([]*models.ExpandedProject) {
-		for _, stage := range project.Stages {
-			for _, service := range stage.Services {
-				newLastEvents := make(map[string]models.EventContext)
-				for eventType, context := range service.LastEventTypes {
-					newLastEvents[encodeKey(eventType)] = context
-				}
-				service.LastEventTypes = newLastEvents
-			}
-		}
-	}
-	return copiedProjects.([]*models.ExpandedProject), nil
-}
-
 func EncodeProjectKeys(project *models.ExpandedProject) (*models.ExpandedProject, error) {
+	if project == nil {
+		return nil, nil
+	}
 	copiedProject, err := copystructure.Copy(project)
 	if err != nil {
 		return nil, err
@@ -254,6 +241,9 @@ func EncodeProjectKeys(project *models.ExpandedProject) (*models.ExpandedProject
 }
 
 func DecodeProjectKeys(project *models.ExpandedProject) *models.ExpandedProject {
+	if project == nil {
+		return nil
+	}
 	for _, stage := range project.Stages {
 		for _, service := range stage.Services {
 			newLastEvents := make(map[string]models.EventContext)
@@ -267,6 +257,9 @@ func DecodeProjectKeys(project *models.ExpandedProject) *models.ExpandedProject 
 }
 
 func DecodeProjectsKeys(projects []*models.ExpandedProject) ([]*models.ExpandedProject, error) {
+	if projects == nil {
+		return nil, nil
+	}
 	for _, project := range projects {
 		for _, stage := range project.Stages {
 			for _, service := range stage.Services {
