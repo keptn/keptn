@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
@@ -10,7 +9,6 @@ import (
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"sync"
 	"testing"
 )
 
@@ -23,9 +21,6 @@ func TestCreateDeleteHandler(t *testing.T) {
 }
 
 func TestHandleDeleteEvent(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -73,16 +68,13 @@ func TestHandleDeleteEvent(t *testing.T) {
 		},
 	})
 
-	instance.HandleEvent(ctx, ce)
+	instance.HandleEvent(ce)
 
 	require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
 	assert.Equal(t, expectedDeleteFinishedEvent, mockedBaseHandler.sentCloudEvents[0])
 }
 
 func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -93,15 +85,12 @@ func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
 		stagesHandler: mockedStagesHandler,
 	}
 
-	instance.HandleEvent(ctx, createUnparsableEvent())
+	instance.HandleEvent(createUnparsableEvent())
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 
 }
 
 func TestWhenGettingStagesFails_Then(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -119,14 +108,11 @@ func TestWhenGettingStagesFails_Then(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, eventData)
 
-	instance.HandleEvent(ctx, ce)
+	instance.HandleEvent(ce)
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 }
 
 func TestWhenUninstallingReleaseFails_FinishedEventIsStillSent(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -174,7 +160,7 @@ func TestWhenUninstallingReleaseFails_FinishedEventIsStillSent(t *testing.T) {
 		},
 	})
 
-	instance.HandleEvent(ctx, ce)
+	instance.HandleEvent(ce)
 
 	require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
 	assert.Equal(t, expectedDeleteFinishedEvent, mockedBaseHandler.sentCloudEvents[0])
