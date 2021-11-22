@@ -1,0 +1,58 @@
+name: Build Helm Charts
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+      datetime:
+        type: string
+        required: false
+        default: ''
+      keptn-spec-version:
+        type: string
+        required: true
+      release:
+        description: 'Set to true if the current build is for a release'
+        type: boolean
+        required: false
+        default: false
+defaults:
+  run:
+    shell: bash
+env:
+  GO_VERSION: "^1.16"
+jobs:
+  helm_charts_build:
+    name: Build Helm Charts
+    runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ inputs.branch }}
+      VERSION: ${{ inputs.version }}
+      KEPTN_SPEC_VERSION: ${{ inputs.keptn-spec-version }}
+      DATETIME: ${{ inputs.datetime }}
+      RELEASE_BUILD: ${{ inputs.release }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2.4.0
+
+      - name: Build Helm Charts
+        id: build_helm_charts
+        run: |
+          if [[ "$BRANCH" == "master" ]] && [[ "$RELEASE_BUILD" == 'false' ]] && [[ $DATETIME != "" ]]; then
+            # use VERSION.DATETIME for the image tag (e.g., nightly build)
+            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
+          else
+            # just use VERSION for the image tag
+            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
+          fi
+
+      - name: Upload Helm Chart as an artifact
+        id: upload_helm_chart
+        uses: actions/upload-artifact@v2
+        with:
+          name: keptn-installer
+          path: keptn-charts/*.tgz

@@ -54,7 +54,7 @@ echo "Changed files:"
 echo "$CHANGED_FILES"
 matrix_config='{"config":['
 # shellcheck disable=SC2016
-build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "docker-test-target": $docker_test_target, "should-push-image": $should_push_image }'
+build_artifact_template='{"artifact":$artifact,"working-dir":$working_dir,"should-run":$should_run,"docker-test-target":$docker_test_target,"should-push-image":$should_push_image}'
 
 echo "Checking changed files against artifacts now"
 echo "::group::Check output"
@@ -90,7 +90,7 @@ for changed_file in $CHANGED_FILES; do
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
       IFS= read -r "${should_build_artifact?}" <<< "true"
-      artifact_config=$(jq -n \
+      artifact_config=$(jq -j -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "${!should_build_artifact}" \
@@ -98,7 +98,7 @@ for changed_file in $CHANGED_FILES; do
         --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
-      matrix_config="$matrix_config $artifact_config,"
+      matrix_config="$matrix_config$artifact_config,"
     fi
   done
 done
@@ -123,7 +123,7 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
 
     if [[ "${!should_build_artifact}" != 'true' ]]; then
       echo "Adding unchanged artifact $artifact to build matrix since build everything was requested"
-      artifact_config=$(jq -n \
+      artifact_config=$(jq -j -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
         --arg should_run "false" \
@@ -131,7 +131,7 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
         --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
-      matrix_config="$matrix_config $artifact_config,"
+      matrix_config="$matrix_config$artifact_config,"
     fi
   done
 fi
@@ -143,9 +143,10 @@ matrix_config="${matrix_config%,}]}"
 
 # Escape newlines for multiline string support in GH actions
 # Reference: https://github.community/t/set-output-truncates-multiline-strings/16852
-matrix_config="${matrix_config//'%'/'%25'}"
-matrix_config="${matrix_config//$'\n'/'%0A'}"
-matrix_config="${matrix_config//$'\r'/'%0D'}"
+matrix_config="${matrix_config//'%'/''}"
+matrix_config="${matrix_config//$'\n'/''}"
+matrix_config="${matrix_config//$'\r'/''}"
+matrix_config="${matrix_config//$' '/''}"
 
 echo "::group::Build Matrix"
 echo "$matrix_config"
@@ -154,7 +155,6 @@ echo "::endgroup::"
 # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
 echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"
 echo "::set-output name=BUILD_CLI::$BUILD_CLI"
-echo "::set-output name=BUILD_BRIDGE::$BUILD_BRIDGE"
 echo "::set-output name=BUILD_MATRIX::$matrix_config"
 echo ""
 echo "The following artifacts have changes and will be built fresh:"
