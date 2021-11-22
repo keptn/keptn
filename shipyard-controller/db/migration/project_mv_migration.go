@@ -34,6 +34,9 @@ func (p *ProjectMVMigrator) MigrateKeys() error {
 }
 
 func (p *ProjectMVMigrator) updateProjects(projects []*models.ExpandedProject) error {
+	if projects == nil {
+		return nil
+	}
 	for _, project := range projects {
 		err := p.projectRepo.UpdateProject(project)
 		if err != nil {
