@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+
 	logger "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
@@ -97,25 +98,25 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	// ToDo: Multithreaded is important here, such that the endpoint responds immediately
 	// else we will have deployment handler take 30 seconds, and after that the response will be sent
-	ctx.Value(controller.GracefulShutdownKey).(*sync.WaitGroup).Add(1)
+
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
-		go deploymentHandler.HandleEvent(ctx, event)
+		go gracefulMiddleware(ctx, event, deploymentHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
-		go releaseHandler.HandleEvent(ctx, event)
+		go gracefulMiddleware(ctx, event, releaseHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName) {
 		rollbackHandler := createRollbackHandler(configServiceURL, mesh, keptnHandler)
-		go rollbackHandler.HandleEvent(ctx, event)
+		go gracefulMiddleware(ctx, event, rollbackHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
-		go actionHandler.HandleEvent(ctx, event)
+		go gracefulMiddleware(ctx, event, actionHandler)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
-		go deleteHandler.HandleEvent(ctx, event)
+		go gracefulMiddleware(ctx, event, deleteHandler)
 	} else {
 		logger.Error("Received unexpected keptn event")
-		ctx.Value(controller.GracefulShutdownKey).(*sync.WaitGroup).Done()
+
 	}
 
 	return nil
@@ -230,10 +231,20 @@ func getGracefulContext() context.Context {
 	go func() {
 		<-ch
 		log.Fatal("Container termination triggered, starting graceful shutdown")
-		close(ch)
 		wg.Wait()
 		cancel()
 	}()
 
 	return ctx
+}
+
+func gracefulMiddleware(ctx context.Context, ce cloudevents.Event, handler controller.Handler) {
+	val := ctx.Value(controller.GracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
+			handler.HandleEvent(ce)
+			wg.Done()
+		}
+	}
 }

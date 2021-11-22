@@ -40,11 +40,10 @@ func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event)
 		return nil
 	}
 
-	//go func() {
 	if err := e.testRunner.RunTests(ctx, *testInfo); err != nil {
 		logger.Errorf("Unable to run JMeter tests: %v", err)
 	}
-	//}()
+
 	return nil
 }
 

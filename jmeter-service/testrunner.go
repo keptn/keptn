@@ -54,18 +54,32 @@ func (tr *TestRunner) RunTests(ctx context.Context, testInfo TestInfo) error {
 		return err
 	}
 
+	val := ctx.Value(gracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
+		}
+	}
+
 	resChan := make(chan TestResult, 1)
-	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
-	// producer
 	go tr.runTests(testInfo, jmeterConfig, resChan)
-	//consumer
 	go tr.sendTestResult(ctx, testInfo, resChan, testStartedAt)
 
 	return nil
 }
 
 func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, resChan chan TestResult, testStartedAt time.Time) {
-	defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+
+	defer func() {
+		val := ctx.Value(gracefulShutdownKey)
+		if val == nil {
+			return
+		}
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Done()
+		}
+	}()
+
 	select {
 	case result := <-resChan:
 		logger.Info("Sending result ", testInfo, result.res)
@@ -85,9 +99,7 @@ func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, res
 			}
 		}
 	case <-ctx.Value(keptnQuit).(chan os.Signal): /// this avoids to answer to context.Done from cloud event lib
-		//logger.Info("Waiting for context")
-		//<-ctx.Done() // waits for main to do his thing
-		logger.Error("Terminated, sending test finished event " + ctx.Err().Error())
+		logger.Errorf("Terminated, sending test finished event %v", ctx.Err())
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.String())
 		}

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"fmt"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -9,7 +8,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
-	"sync"
 )
 
 type RollbackHandler struct {
@@ -28,8 +26,7 @@ func NewRollbackHandler(keptnHandler Handler,
 	}
 }
 
-func (r *RollbackHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
+func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 	e := keptnv2.RollbackTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to rollback event")

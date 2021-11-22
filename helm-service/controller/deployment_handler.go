@@ -1,12 +1,8 @@
 package controller
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"math"
-	"sync"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -15,6 +11,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
 	corev1 "k8s.io/api/core/v1"
+	"math"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
@@ -38,8 +35,7 @@ func NewDeploymentHandler(keptnHandler Handler, mesh mesh.Mesh, onboarder Onboar
 
 // HandleEvent handles deployment.triggered events by first changing the new configuration and
 // afterwards applying the configuration in the cluster
-func (h *DeploymentHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
+func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	e := keptnv2.DeploymentTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to deployment event")

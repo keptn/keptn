@@ -1,13 +1,9 @@
 package controller
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/keptn/keptn/helm-service/pkg/types"
-	"sync"
-
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/helm-service/pkg/types"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
@@ -27,13 +23,12 @@ func NewDeleteHandler(keptnHandler Handler, stagesHandler types.IStagesHandler, 
 }
 
 // HandleEvent takes the sh.keptn.internal.event.service.delete event and deletes the service in all stages
-func (h *DeleteHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
+func (h *DeleteHandler) HandleEvent(ce cloudevents.Event) {
 	serviceDeleteEvent := keptnv2.ServiceDeleteFinishedEventData{}
 
 	err := ce.DataAs(&serviceDeleteEvent)
 	if err != nil {
-		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to deleteService event")
+		err = fmt.Errorf("failed to unmarshal data: %v", err)
 		h.handleError(ce.ID(), err, keptnv2.ServiceDeleteTaskName, h.getFinishedEventDataForError(serviceDeleteEvent.EventData, err))
 		return
 	}

@@ -58,8 +58,6 @@ func main() {
 	eventHandler := &EventHandler{testRunner: NewTestRunner(eventSender)}
 
 	logger.Fatal(c.StartReceiver(ctx, eventHandler.handleEvent))
-	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
-	close(ctx.Value(keptnQuit).(chan os.Signal))
 
 }
 
@@ -75,7 +73,7 @@ func getGracefulContext() context.Context {
 		<-ch
 		close(ch)
 		logger.Fatal("Container termination triggered, starting graceful shutdown")
-		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
+		wg.Wait()
 		logger.Fatal("cancelling context")
 		cancel()
 	}()

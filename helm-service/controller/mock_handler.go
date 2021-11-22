@@ -79,6 +79,10 @@ func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, string,
 	return &ch, "USER_CHART_GIT_ID", nil
 }
 
+func (h *MockedHandler) HandleEvent(e cloudevents.Event) {
+	return
+}
+
 type getUserManagedEndpointsData struct {
 	event keptnv2.EventData
 }

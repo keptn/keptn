@@ -37,6 +37,10 @@ func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor,
 	}
 }
 
+func (h *HandlerBase) HandleEvent(_ce cloudevents.Event) {
+	panic("implement me")
+}
+
 func (h *HandlerBase) getKeptnHandler() *keptnv2.Keptn {
 	return h.keptnHandler
 }

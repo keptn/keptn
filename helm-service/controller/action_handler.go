@@ -1,12 +1,10 @@
 package controller
 
 import (
-	"context"
 	"fmt"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	logger "github.com/sirupsen/logrus"
 	"strconv"
-	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -33,8 +31,8 @@ func NewActionTriggeredHandler(keptnHandler Handler, configChanger configuration
 
 // HandleEvent takes the sh.keptn.events.action.triggered event and performs the scaling action on the generated chart
 // Therefore, this scaling action only works if the service is deployed b/g
-func (h *ActionTriggeredHandler) HandleEvent(ctx context.Context, ce cloudevents.Event) {
-	defer ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
+func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
+
 	actionTriggeredEvent := keptnv2.ActionTriggeredEventData{}
 
 	err := ce.DataAs(&actionTriggeredEvent)
