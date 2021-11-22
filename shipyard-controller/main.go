@@ -259,8 +259,6 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 	<-quit
 	log.Println("Shutting down server...")
 
-	// The context is used to inform the server it has 5 seconds to finish
-	// the request it is currently handling
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	wg.Wait()
