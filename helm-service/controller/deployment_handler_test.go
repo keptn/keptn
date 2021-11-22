@@ -341,6 +341,29 @@ func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *test
 	assert.Equal(t, keptn.UserManaged, mockedBaseHandler.upgradeChartInvocations[0].strategy)
 }
 
+func TestHandleUnparsableDeploymentEvent(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+
+	instance := DeploymentHandler{
+		Handler: mockedBaseHandler,
+		mesh:    mocks.NewMockMesh(ctrl),
+	}
+
+	expectedTriggerEventData := keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status:  "errored",
+			Result:  "fail",
+			Message: "Failed to unmarshal data: unable to convert json data from cloudEvent to deployment event",
+		},
+	}
+
+	instance.HandleEvent(createUnparsableEvent())
+	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedTriggerEventData, mockedBaseHandler.handledErrorEvents[0])
+}
+
 func Test_getPortOfService(t *testing.T) {
 	type args struct {
 		service *corev1.Service
