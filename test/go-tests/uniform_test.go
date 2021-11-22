@@ -352,6 +352,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "replicas: 1", "replicas: 3")
 
 	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
 	defer func() {
@@ -370,9 +371,6 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 		}
 
 		err = SetEnvVarsOfDeployment(echoServiceName, "distributor", []v1.EnvVar{keptnQueueGroupEV})
-		require.Nil(t, err)
-
-		err = ScaleUpUniform([]string{echoServiceName}, 3)
 		require.Nil(t, err)
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
