@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -32,7 +33,76 @@ spec:
           tasks:
             - name: "echo"`
 
-const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/main/deploy/service-with-fixed-node-name-env.yaml"
+const echoServiceK8sManifest = `---
+# Deployment of our echo-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: echo-service
+      app.kubernetes.io/instance: keptn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: echo-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
+    spec:
+      containers:
+        - name: echo-service
+          image: keptnsandbox/echo-service:0.1.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EVENTBROKER
+              value: 'http://localhost:8081/event'
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+        - name: distributor
+          image: ${distributor-image}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/v1/event'
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/version']
+            - name: LOCATION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
+            - name: K8S_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              value: 'some-node'`
+
+const echoServiceName = "echo-service"
 
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
@@ -248,16 +318,28 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
+	// make sure the echo-service uses the same distributor as Keptn core
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+
+	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
+		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
-		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
+		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
 	})
 }
@@ -265,12 +347,25 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
+	// install echo integration
+	// make sure the echo-service uses the same distributor as Keptn core
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+
+	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
+		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 		apiToken, apiEndpoint, err := GetApiCredentials()
@@ -289,7 +384,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		require.Nil(t, err)
 
 	}, func() {
-		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
+		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
 	})
 }
@@ -300,7 +395,12 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	sequencename := "mysequence"
 	shipyardFilePath, err := CreateTmpShipyardFile(filteredUniformTestShipyard)
 	require.Nil(t, err)
-	defer os.Remove(shipyardFilePath)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
@@ -316,21 +416,21 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 
 	// wait a little bit and restart the echo-service to make sure it's not affected by a previous version that unsubscribes itself before being shut down
 	<-time.After(20 * time.Second)
-	err = RestartPod("echo-service")
+	err = RestartPod(echoServiceName)
 	require.Nil(t, err)
 
 	// wait for echo integration registered
 	var fetchedEchoIntegration keptnmodels.Integration
 	require.Eventually(t, func() bool {
-		fetchedEchoIntegration, err = GetIntegrationWithName("echo-service")
+		fetchedEchoIntegration, err = GetIntegrationWithName(echoServiceName)
 		return err == nil
 	}, time.Second*20, time.Second*3)
 
 	// Integration exists - fine
 	require.Nil(t, err)
 	require.NotNil(t, fetchedEchoIntegration)
-	require.Equal(t, "echo-service", fetchedEchoIntegration.Name)
-	require.Equal(t, "echo-service", fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
+	require.Equal(t, echoServiceName, fetchedEchoIntegration.Name)
+	require.Equal(t, echoServiceName, fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
 	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 
@@ -348,23 +448,31 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	filteredStageName := "filtered-stage"
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, filteredStageName, sequencename, nil)
 
+	// we need to wait a few seconds here if we want to be really sure that only one .started event has been sent afterwards
+	<-time.After(10 * time.Second)
+
+	var startedEvents []*keptnmodels.KeptnContextExtendedCE
 	// make sure the echo service has received the task event and reacted with a .started event
 	require.Eventually(t, func() bool {
-		taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, filteredStageName, keptnv2.GetStartedEventType("echo"))
-		if err != nil || taskTriggeredEvent == nil {
+		var err error
+		startedEvents, err = GetEventsOfType(keptnContextID, projectName, filteredStageName, keptnv2.GetStartedEventType("echo"))
+		if err != nil || startedEvents == nil || len(startedEvents) == 0 {
 			return false
 		}
 		return true
 	}, 30*time.Second, 5*time.Second)
+
+	// ensure that there is only one .started event
+	require.Len(t, startedEvents, 1)
 
 	// trigger a sequence for a stage that should not be received by the echo service - now the echo service should not react with a .started event anymore
 	unfilteredStageName := "unfiltered-stage"
 	keptnContextID, _ = TriggerSequence(projectName, serviceName, unfilteredStageName, sequencename, nil)
 	<-time.After(10 * time.Second) // sorry :(
 
-	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, unfilteredStageName, keptnv2.GetStartedEventType("echo"))
+	taskStartedEvent, err := GetLatestEventOfType(keptnContextID, projectName, unfilteredStageName, keptnv2.GetStartedEventType("echo"))
 	require.Nil(t, err)
-	require.Nil(t, taskTriggeredEvent)
+	require.Nil(t, taskStartedEvent)
 
 	// uninstall echo integration
 	cleanupIntegrationFunc()

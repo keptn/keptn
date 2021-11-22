@@ -28,7 +28,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 		PubSubTopic:     "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(config, eventSender)
+	receiver := NewNATSEventReceiver(config, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -89,7 +89,7 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(config, eventSender)
+	receiver := NewNATSEventReceiver(config, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -156,7 +156,7 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(config, eventSender)
+	receiver := NewNATSEventReceiver(config, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -208,7 +208,7 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(config, eventSender)
+	receiver := NewNATSEventReceiver(config, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
