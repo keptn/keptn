@@ -5,5 +5,5 @@
     "types": ["jest"]
   },
   "files": ["client/polyfills.ts"],
-  "include": ["client/**/*.spec.ts", "client/**/*.d.ts"]
+  "include": ["client/**/*.spec.ts", "shared/**/*.spec.ts", "client/**/*.d.ts"]
 }

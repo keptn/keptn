@@ -6,8 +6,7 @@ export interface IServiceEvent {
 
 export interface IService {
   serviceName: string;
-  creationDate: number;
-  stage: string;
+  creationDate: string; // nanoseconds
   deployedImage?: string;
   lastEventTypes?: { [p: string]: IServiceEvent | undefined };
 }

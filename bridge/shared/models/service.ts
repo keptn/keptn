@@ -6,8 +6,7 @@ export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service implements IService {
   serviceName!: string;
-  creationDate!: number;
-  stage!: string;
+  creationDate!: string;
   deployedImage?: string;
   lastEventTypes: { [p: string]: IServiceEvent | undefined } = {};
   latestSequence?: Sequence;
@@ -15,7 +14,7 @@ export class Service implements IService {
   openApprovals?: Approval[] = [];
   deploymentInformation?: DeploymentInformation;
 
-  public static fromJSON(data: unknown): Service {
+  public static fromJSON(data: IService): Service {
     return Object.assign(new this(), data);
   }
 
