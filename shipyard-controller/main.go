@@ -218,7 +218,7 @@ func main() {
 	projectsMigrator := migration.NewProjectMVMigrator(db.GetMongoDBConnectionInstance())
 	err = projectsMigrator.MigrateKeys()
 	if err != nil {
-		log.Fatalf("Unable to run projects migrator: %v", err)
+		log.Errorf("Unable to run projects migrator: %v", err)
 	}
 
 	healthHandler := handler.NewHealthHandler()
