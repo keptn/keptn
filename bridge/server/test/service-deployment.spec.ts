@@ -1,12 +1,12 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { ProjectResponse } from '../fixtures/project-response.mock';
+import { ProjectResponse } from '../../shared/fixtures/project-response.mock';
 import {
   DeploymentTracesResponseMock,
   DeploymentTracesWithPendingApprovalResponseMock,
   EvaluationFinishedProductionResponse,
   EvaluationFinishedStagingResponse,
-} from '../fixtures/traces-response.mock';
+} from '../../shared/fixtures/traces-response.mock';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import {

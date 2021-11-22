@@ -1,7 +1,7 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { StagesResponse } from '../fixtures/stages.mock';
-import { ProjectResponse } from '../fixtures/project-response.mock';
+import { ProjectResponse } from '../../shared/fixtures/project-response.mock';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { SequenceState } from '../../shared/models/sequence';
 import {
@@ -13,7 +13,7 @@ import {
   LatestFinishedDeployments,
   LatestFinishedEvaluations,
   OpenApprovalsResponse,
-} from '../fixtures/traces-response.mock';
+} from '../../shared/fixtures/traces-response.mock';
 import { SequencesResponses } from '../fixtures/sequence-response.mock';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { ProjectDetailsResponse } from '../fixtures/project-details-response.mock';

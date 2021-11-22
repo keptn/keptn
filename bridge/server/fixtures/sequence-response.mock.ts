@@ -5,7 +5,7 @@ import {
   ProductionCartsLatestServiceEvent,
   StagingCartsDbLatestServiceEvent,
   StagingCartsLatestServiceEvent,
-} from './project-response.mock';
+} from '../../shared/fixtures/project-response.mock';
 
 const sequenceDeliveryResponseMock = {
   states: [
