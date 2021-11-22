@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { Trace } from './trace';
+import { Trace } from '../../_models/trace';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rootTraces: any = [

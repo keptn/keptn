@@ -3,11 +3,12 @@ import { KtbKeptnServicesListComponent } from './ktb-keptn-services-list.compone
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { UniformRegistrationsMock } from '../../_models/uniform-registrations.mock';
+import { UniformRegistrationsMock } from '../../_services/_mockData/uniform-registrations.mock';
 import { of } from 'rxjs';
-import { UniformRegistrationLogsMock } from '../../_models/uniform-registrations-logs.mock';
+import { UniformRegistrationLogsMock } from '../../_services/_mockData/uniform-registrations-logs.mock';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbKeptnServicesListComponent', () => {
   let component: KtbKeptnServicesListComponent;
@@ -18,7 +19,7 @@ describe('KtbKeptnServicesListComponent', () => {
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: DataService, useClass: DataServiceMock },
+        { provide: ApiService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

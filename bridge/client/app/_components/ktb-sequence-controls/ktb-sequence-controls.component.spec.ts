@@ -5,10 +5,11 @@ import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
@@ -22,8 +23,8 @@ describe('KtbSequenceControlsComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
-          provide: DataService,
-          useClass: DataServiceMock,
+          provide: ApiService,
+          useClass: ApiServiceMock,
         },
         {
           provide: ActivatedRoute,

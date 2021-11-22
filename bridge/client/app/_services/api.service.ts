@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Resource } from '../../../shared/interfaces/resource';
-import { Stage } from '../_models/stage';
-import { ServiceResult } from '../_models/service-result';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
@@ -21,7 +18,6 @@ import { UniformSubscription } from '../_models/uniform-subscription';
 import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
-import { shareReplay } from 'rxjs/operators';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../../shared/models/keptn-service';
@@ -33,12 +29,12 @@ import { IServiceRemediationInformation } from '../_interfaces/service-remediati
   providedIn: 'root',
 })
 export class ApiService {
-  private _baseUrl: string;
-  private readonly VERSION_CHECK_COOKIE = 'keptn_versioncheck';
-  private readonly ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
-  private readonly INTEGRATION_DATES = 'keptn_integration_dates';
+  protected _baseUrl: string;
+  protected readonly VERSION_CHECK_COOKIE = 'keptn_versioncheck';
+  protected readonly ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
+  protected readonly INTEGRATION_DATES = 'keptn_integration_dates';
 
-  constructor(private http: HttpClient) {
+  constructor(protected http: HttpClient) {
     this._baseUrl = `./api`;
   }
 
@@ -192,6 +188,7 @@ export class ApiService {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
     return this.http.put<Record<string, unknown>>(url, { subscription, webhookConfig });
   }
+
   public createUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
@@ -255,14 +252,9 @@ export class ApiService {
     return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
 
-  public getProjectResources(projectName: string): Observable<Resource[]> {
-    const url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
-    return this.http.get<Resource[]>(url);
-  }
-
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
     const url = `${this._baseUrl}/project/${projectName}/service/${serviceName}/files`;
-    return this.http.get<FileTree[]>(url).pipe(shareReplay());
+    return this.http.get<FileTree[]>(url);
   }
 
   public getTaskNames(projectName: string): Observable<string[]> {
@@ -273,23 +265,6 @@ export class ApiService {
   public getServiceNames(projectName: string): Observable<string[]> {
     const url = `${this._baseUrl}/project/${projectName}/services`;
     return this.http.get<string[]>(url);
-  }
-
-  public getStages(projectName: string): Observable<Stage[]> {
-    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage`;
-    return this.http.get<Stage[]>(url);
-  }
-
-  public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
-    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service`;
-    const params = {
-      pageSize: pageSize.toString(),
-    };
-    return this.http.get<ServiceResult>(url, { params });
-  }
-
-  public getOpenRemediations(projectName: string, pageSize: number): Observable<HttpResponse<SequenceResult>> {
-    return this.getSequences(projectName, pageSize, 'remediation', 'triggered');
   }
 
   public getSequences(
@@ -460,14 +435,6 @@ export class ApiService {
       ...(serviceName && { serviceName }),
     };
     return this.http.get<WebhookConfig>(url, { params });
-  }
-
-  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
-    const url = `${this._baseUrl}/uniform/registration/webhook-service/config`;
-
-    return this.http.post<unknown>(url, {
-      config,
-    });
   }
 
   public getServiceStates(projectName: string): Observable<ServiceState[]> {

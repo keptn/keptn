@@ -3,9 +3,11 @@ import { KtbSequenceStateInfoComponent } from './ktb-sequence-state-info.compone
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { Project } from '../../_models/project';
 import { filter, take } from 'rxjs/operators';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
+import { DataServiceMock } from '../../_services/data.service.mock';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
@@ -20,9 +22,10 @@ describe('KtbSequenceStateInfoComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
-          provide: DataService,
-          useClass: DataServiceMock,
+          provide: ApiService,
+          useClass: ApiServiceMock,
         },
+        { provide: DataService, useClass: DataServiceMock },
       ],
     }).compileComponents();
 

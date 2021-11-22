@@ -1,0 +1,9 @@
+{
+  "id": "0e021b71-1533-4cfe-875a-b756aa6107ba",
+  "event": "sh.keptn.event.test.triggered",
+  "filter": {
+    "projects": [],
+    "stages": [],
+    "services": []
+  }
+}
