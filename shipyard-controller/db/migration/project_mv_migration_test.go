@@ -2,7 +2,6 @@ package migration
 
 import (
 	"context"
-	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
@@ -23,7 +22,7 @@ func setupLocalMongoDB() func() {
 	randomDbName := memongo.RandomDatabase()
 
 	os.Setenv("MONGODB_DATABASE", randomDbName)
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", "mongodb://admin:0R5eIpDfvzeg4ZFrHCQrVmiNij64NVn0ai337NX2hLWdR@localhost:27017/keptn?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false") //fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
 
 	var mongoDBClient *mongo.Client
 	mongoDBClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
@@ -48,8 +47,8 @@ func Test_MigratorRunsOnOldData(t *testing.T) {
 				Services: []*models.ExpandedService{
 					{
 						LastEventTypes: map[string]models.EventContext{
-							`sh.keptn.event.get-sli.start`:               {},
-							`sh.keptn.event.get-s\u022e\u022eli.started`: {},
+							`sh.keptn.event.get-sli.start`:     {},
+							`sh.keptn.event.get-sli~~.started`: {},
 						},
 						ServiceName: "test-service",
 					},
@@ -72,14 +71,24 @@ func Test_MigratorRunsOnOldData(t *testing.T) {
 	insertedProject, err := projectRepo.GetProject("test-project")
 	require.Nil(t, err)
 	assert.NotContains(t, insertedProject.Stages[0].Services[0].LastEventTypes, "sh.keptn.event.get-sli.start")
-	assert.NotContains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-s\u022e\u022eli.started`)
+	assert.NotContains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-sli~~.started`)
 
 	// get data using encoding aware repo
 	encodingAwareProjectRepo := db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance())
 	insertedProject, err = encodingAwareProjectRepo.GetProject("test-project")
 	require.Nil(t, err)
 	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, "sh.keptn.event.get-sli.start")
-	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-s\u022e\u022eli.started`)
+	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-sli~~.started`)
+
+	// migrate data again
+	err = projectMVMigrator.MigrateKeys()
+	require.Nil(t, err)
+
+	insertedProject, err = encodingAwareProjectRepo.GetProject("test-project")
+	require.Nil(t, err)
+	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, "sh.keptn.event.get-sli.start")
+	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-sli~~.started`)
+
 }
 
 func Test_MigratorRunsOnAlreadyMigratedData(t *testing.T) {
@@ -92,8 +101,8 @@ func Test_MigratorRunsOnAlreadyMigratedData(t *testing.T) {
 				Services: []*models.ExpandedService{
 					{
 						LastEventTypes: map[string]models.EventContext{
-							`sh.keptn.event.get-sli.start`:               {},
-							`sh.keptn.event.get-s\u022e\u022eli.started`: {},
+							`sh.keptn.event.get-sli.start`:    {},
+							`sh.keptn.event.get-sli~.started`: {},
 						},
 						ServiceName: "test-service",
 					},
@@ -117,6 +126,6 @@ func Test_MigratorRunsOnAlreadyMigratedData(t *testing.T) {
 	require.Nil(t, err)
 
 	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, "sh.keptn.event.get-sli.start")
-	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-s\u022e\u022eli.started`)
+	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-sli~.started`)
 
 }
