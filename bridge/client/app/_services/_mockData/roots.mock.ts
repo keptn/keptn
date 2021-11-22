@@ -17320,12 +17320,10 @@ const rootsData = [
               },
               ProblemID: 'P-21035',
               ProblemTitle: 'Response time degradation',
-              ProblemURL:
-                'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+              ProblemURL: 'http://myUrl.com',
               State: 'CLOSED',
               labels: {
-                'Problem URL':
-                  'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+                'Problem URL': 'http://myUrl.com',
               },
               project: 'sockshop',
               service: 'carts',
@@ -17353,12 +17351,10 @@ const rootsData = [
                 },
                 ProblemID: 'P-21035',
                 ProblemTitle: 'Response time degradation',
-                ProblemURL:
-                  'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+                ProblemURL: 'http://myUrl.com',
                 State: 'CLOSED',
                 labels: {
-                  'Problem URL':
-                    'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+                  'Problem URL': 'http://myUrl.com',
                 },
                 project: 'sockshop',
                 service: 'carts',
@@ -17388,12 +17384,10 @@ const rootsData = [
           },
           ProblemID: 'P-21035',
           ProblemTitle: 'Response time degradation',
-          ProblemURL:
-            'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+          ProblemURL: 'http://myUrl.com',
           State: 'OPEN',
           labels: {
-            'Problem URL':
-              'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+            'Problem URL': 'http://myUrl.com',
           },
           project: 'sockshop',
           service: 'carts',
@@ -17421,12 +17415,10 @@ const rootsData = [
             },
             ProblemID: 'P-21035',
             ProblemTitle: 'Response time degradation',
-            ProblemURL:
-              'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+            ProblemURL: 'http://myUrl.com',
             State: 'OPEN',
             labels: {
-              'Problem URL':
-                'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+              'Problem URL': 'http://myUrl.com',
             },
             project: 'sockshop',
             service: 'carts',
@@ -17445,8 +17437,7 @@ const rootsData = [
         traces: [],
         data: {
           labels: {
-            'Problem URL':
-              'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+            'Problem URL': 'http://myUrl.com',
           },
           message: 'Remediation disabled for service carts in project sockshop in stage dev',
           project: 'sockshop',
@@ -17464,8 +17455,7 @@ const rootsData = [
         plainEvent: {
           data: {
             labels: {
-              'Problem URL':
-                'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+              'Problem URL': 'http://myUrl.com',
             },
             message: 'Remediation disabled for service carts in project sockshop in stage dev',
             project: 'sockshop',
@@ -17499,12 +17489,10 @@ const rootsData = [
       },
       ProblemID: 'P-21035',
       ProblemTitle: 'Response time degradation',
-      ProblemURL:
-        'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+      ProblemURL: 'http://myUrl.com',
       State: 'OPEN',
       labels: {
-        'Problem URL':
-          'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=591537040618286140_1614888780000V2',
+        'Problem URL': 'http://myUrl.com',
       },
       project: 'sockshop',
       service: 'carts',
@@ -18019,12 +18007,10 @@ const rootsData = [
               },
               ProblemID: 'P-21034',
               ProblemTitle: 'Response time degradation',
-              ProblemURL:
-                'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+              ProblemURL: 'http://myUrl.com',
               State: 'CLOSED',
               labels: {
-                'Problem URL':
-                  'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+                'Problem URL': 'http://myUrl.com',
               },
               project: 'sockshop',
               service: 'carts',
@@ -18052,12 +18038,10 @@ const rootsData = [
                 },
                 ProblemID: 'P-21034',
                 ProblemTitle: 'Response time degradation',
-                ProblemURL:
-                  'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+                ProblemURL: 'http://myUrl.com',
                 State: 'CLOSED',
                 labels: {
-                  'Problem URL':
-                    'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+                  'Problem URL': 'http://myUrl.com',
                 },
                 project: 'sockshop',
                 service: 'carts',
@@ -18087,12 +18071,10 @@ const rootsData = [
           },
           ProblemID: 'P-21034',
           ProblemTitle: 'Response time degradation',
-          ProblemURL:
-            'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+          ProblemURL: 'http://myUrl.com',
           State: 'OPEN',
           labels: {
-            'Problem URL':
-              'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+            'Problem URL': 'http://myUrl.com',
           },
           project: 'sockshop',
           service: 'carts',
@@ -18120,12 +18102,10 @@ const rootsData = [
             },
             ProblemID: 'P-21034',
             ProblemTitle: 'Response time degradation',
-            ProblemURL:
-              'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+            ProblemURL: 'http://myUrl.com',
             State: 'OPEN',
             labels: {
-              'Problem URL':
-                'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+              'Problem URL': 'http://myUrl.com',
             },
             project: 'sockshop',
             service: 'carts',
@@ -18144,8 +18124,7 @@ const rootsData = [
         traces: [],
         data: {
           labels: {
-            'Problem URL':
-              'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+            'Problem URL': 'http://myUrl.com',
           },
           message: 'Remediation disabled for service carts in project sockshop in stage dev',
           project: 'sockshop',
@@ -18163,8 +18142,7 @@ const rootsData = [
         plainEvent: {
           data: {
             labels: {
-              'Problem URL':
-                'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+              'Problem URL': 'http://myUrl.com',
             },
             message: 'Remediation disabled for service carts in project sockshop in stage dev',
             project: 'sockshop',
@@ -18198,12 +18176,10 @@ const rootsData = [
       },
       ProblemID: 'P-21034',
       ProblemTitle: 'Response time degradation',
-      ProblemURL:
-        'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+      ProblemURL: 'http://myUrl.com',
       State: 'OPEN',
       labels: {
-        'Problem URL':
-          'https://sjb57563.sprint.dynatracelabs.com/#problems/problemdetails;pid=-7574494827157675290_1614867240000V2',
+        'Problem URL': 'http://myUrl.com',
       },
       project: 'sockshop',
       service: 'carts',

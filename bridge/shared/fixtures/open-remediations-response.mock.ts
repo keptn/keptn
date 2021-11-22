@@ -167,7 +167,7 @@ const remediationTracesResponse = {
               status: 'fail',
               value: {
                 message:
-                  'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://sjb57563.sprint.dynatracelabs.com/api/v2/metrics/query/?entitySelector=type%28SERVICE%29%2Ctag%28keptn_project%3Asockshop%29%2Ctag%28keptn_stage%3Aproduction%29%2Ctag%28keptn_service%3Acarts%29%2Ctag%28keptn_deployment%3A%29&from=1637240000000&metricSelector=builtin%3Aservice.response.time%3Amerge%28%22dt.entity.service%22%29%3Apercentile%2890%29&resolution=Inf&to=1637240900000.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
+                  'Dynatrace Metrics API returned 0 result values, expected 1 for query: .\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
                 metric: 'response_time_p90',
                 success: false,
                 value: 0,
@@ -194,7 +194,7 @@ const remediationTracesResponse = {
               status: 'fail',
               value: {
                 message:
-                  'Problems API request https://sjb57563.sprint.dynatracelabs.com/api/v2/problems/-4365226942138395796_1635983460000V2 was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
+                  'Problems API request http://myUrl.com was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
                 metric: 'problem_open',
                 success: false,
                 value: 0,
@@ -288,7 +288,7 @@ const remediationTracesResponse = {
               status: 'fail',
               value: {
                 message:
-                  'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://sjb57563.sprint.dynatracelabs.com/api/v2/metrics/query/?entitySelector=type%28SERVICE%29%2Ctag%28keptn_project%3Asockshop%29%2Ctag%28keptn_stage%3Aproduction%29%2Ctag%28keptn_service%3Acarts%29%2Ctag%28keptn_deployment%3A%29&from=1637240000000&metricSelector=builtin%3Aservice.response.time%3Amerge%28%22dt.entity.service%22%29%3Apercentile%2890%29&resolution=Inf&to=1637240900000.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
+                  'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://myUrl.com.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
                 metric: 'response_time_p90',
                 success: false,
                 value: 0,
@@ -315,7 +315,7 @@ const remediationTracesResponse = {
               status: 'fail',
               value: {
                 message:
-                  'Problems API request https://sjb57563.sprint.dynatracelabs.com/api/v2/problems/-4365226942138395796_1635983460000V2 was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
+                  'Problems API request https://myUrl.com was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
                 metric: 'problem_open',
                 success: false,
                 value: 0,
@@ -421,7 +421,7 @@ const remediationTracesResponse = {
               status: 'fail',
               value: {
                 message:
-                  'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://sjb57563.sprint.dynatracelabs.com/api/v2/metrics/query/?entitySelector=type%28SERVICE%29%2Ctag%28keptn_project%3Asockshop%29%2Ctag%28keptn_stage%3Aproduction%29%2Ctag%28keptn_service%3Acarts%29%2Ctag%28keptn_deployment%3A%29&from=1637240000000&metricSelector=builtin%3Aservice.response.time%3Amerge%28%22dt.entity.service%22%29%3Apercentile%2890%29&resolution=Inf&to=1637240900000.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
+                  'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://myUrl.com.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
                 metric: 'response_time_p90',
                 success: false,
                 value: 0,
@@ -448,7 +448,7 @@ const remediationTracesResponse = {
               status: 'fail',
               value: {
                 message:
-                  'Problems API request https://sjb57563.sprint.dynatracelabs.com/api/v2/problems/-4365226942138395796_1635983460000V2 was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
+                  'Problems API request https://myUrl.com was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
                 metric: 'problem_open',
                 success: false,
                 value: 0,
@@ -490,14 +490,14 @@ const remediationTracesResponse = {
           indicatorValues: [
             {
               message:
-                'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://sjb57563.sprint.dynatracelabs.com/api/v2/metrics/query/?entitySelector=type%28SERVICE%29%2Ctag%28keptn_project%3Asockshop%29%2Ctag%28keptn_stage%3Aproduction%29%2Ctag%28keptn_service%3Acarts%29%2Ctag%28keptn_deployment%3A%29&from=1637240000000&metricSelector=builtin%3Aservice.response.time%3Amerge%28%22dt.entity.service%22%29%3Apercentile%2890%29&resolution=Inf&to=1637240900000.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
+                'Dynatrace Metrics API returned 0 result values, expected 1 for query: https://myUrl.com.\nPlease ensure the response contains exactly one value (e.g., by using :merge(0):avg for the metric). Here is the output for troubleshooting: {"metricId":"builtin:service.response.time:merge(\\"dt.entity.service\\"):percentile(90)","data":[]}',
               metric: 'response_time_p90',
               success: false,
               value: 0,
             },
             {
               message:
-                'Problems API request https://sjb57563.sprint.dynatracelabs.com/api/v2/problems/-4365226942138395796_1635983460000V2 was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
+                'Problems API request https://myUrl.com was not successful: Dynatrace API returned error 403: Token is missing required scope. Use one of: problems.read (Read problems)',
               metric: 'problem_open',
               success: false,
               value: 0,
