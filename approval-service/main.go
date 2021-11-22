@@ -5,6 +5,9 @@ import (
 	"keptn/approval-service/pkg/handler"
 	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
@@ -22,6 +25,11 @@ type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
+
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var gracefulShutdownKey = gracefulShutdownKeyType{}
 
 func main() {
 	logger.SetLevel(logger.InfoLevel)
@@ -44,8 +52,7 @@ func main() {
 }
 
 func _main(args []string, env envConfig) int {
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
@@ -61,11 +68,13 @@ func _main(args []string, env envConfig) int {
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
-	go switchEvent(event)
+	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
+	go switchEvent(ctx, event)
 	return nil
 }
 
-func switchEvent(event cloudevents.Event) {
+func switchEvent(ctx context.Context, event cloudevents.Event) {
+	defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
 	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {
@@ -78,14 +87,31 @@ func switchEvent(event cloudevents.Event) {
 	}
 
 	unhandled := true
-	for _, handler := range handlers {
-		if handler.IsTypeHandled(event) {
+	for _, currHandler := range handlers {
+		if currHandler.IsTypeHandled(event) {
 			unhandled = false
-			handler.Handle(event, keptnHandlerV2)
+			currHandler.Handle(event, keptnHandlerV2)
 		}
 	}
 
 	if unhandled {
 		logger.Debugf("Received unexpected keptn event type %s", event.Type())
 	}
+}
+
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), gracefulShutdownKey, wg))
+	ctx = cloudevents.WithEncodingStructured(ctx)
+	go func() {
+		<-ch
+		logger.Fatal("Container termination triggered, starting graceful shutdown")
+		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
+		logger.Fatal("cancelling context")
+		cancel()
+	}()
+	return ctx
 }
