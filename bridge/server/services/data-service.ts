@@ -5,7 +5,6 @@ import { Trace } from '../models/trace';
 import { Service } from '../models/service';
 import { Project } from '../models/project';
 import { EventState } from '../../shared/models/event-state';
-import { Remediation } from '../../shared/models/remediation';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
@@ -32,6 +31,7 @@ import semver from 'semver';
 import { ServiceRemediationInformation } from '../../shared/interfaces/service-remediation-information';
 import { Stage } from '../models/stage';
 import { IServiceEvent } from '../../shared/interfaces/service';
+import { Remediation } from '../models/remediation';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
