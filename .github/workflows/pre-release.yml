@@ -1,0 +1,385 @@
+name: Pre-Release
+on:
+  workflow_dispatch:
+    inputs:
+      semver-type:
+        description: 'Can be one of [major,minor,patch]. CAUTION: This will enforce a new pre-release with the specified semantic version type bumped.'
+        required: false
+env:
+  NODE_VERSION: 14
+  KEPTN_BOT_NAME: "Keptn Bot"
+  KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+  RELEASE_NOTES_FILE: "RELEASE-BODY.md"
+  PRERELEASE_BUILD: 'true'
+  BUILD_EVERYTHING: 'true'
+  PRERELEASE_KEYWORD: "next"
+
+  BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
+  API_ARTIFACT_PREFIX: "API"
+  OS_ROUTE_SVC_ARTIFACT_PREFIX: "OS_ROUTE_SVC"
+  JMETER_SVC_ARTIFACT_PREFIX: "JMETER_SVC"
+  HELM_SVC_ARTIFACT_PREFIX: "HELM_SVC"
+  APPROVAL_SVC_ARTIFACT_PREFIX: "APPROVAL_SVC"
+  DISTRIBUTOR_ARTIFACT_PREFIX: "DISTRIBUTOR"
+  SHIPYARD_CONTROLLER_ARTIFACT_PREFIX: "SHIPYARD_CONTROLLER"
+  SECRET_SVC_ARTIFACT_PREFIX: "SECRET_SVC"
+  CONFIGURATION_SVC_ARTIFACT_PREFIX: "CONFIGURATION_SVC"
+  REMEDIATION_SVC_ARTIFACT_PREFIX: "REMEDIATION_SVC"
+  LIGHTHOUSE_SVC_ARTIFACT_PREFIX: "LIGHTHOUSE_SVC"
+  MONGODB_DS_ARTIFACT_PREFIX: "MONGODB_DS"
+  STATISTICS_SVC_ARTIFACT_PREFIX: "STATISTICS_SVC"
+  WEBHOOK_SVC_ARTIFACT_PREFIX: "WEBHOOK_SVC"
+
+  BRIDGE_ARTIFACT: "bridge2"
+  BRIDGE_FOLDER: "bridge/"
+  BRIDGE_DOCKER_TEST_TARGET: "builder-test-unit"
+
+  API_ARTIFACT: "api"
+  API_FOLDER: "api/"
+  API_DOCKER_TEST_TARGET: "builder-test"
+
+  OS_ROUTE_SVC_ARTIFACT: "openshift-route-service"
+  OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
+  OS_ROUTE_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  JMETER_SVC_ARTIFACT: "jmeter-service"
+  JMETER_SVC_FOLDER: "jmeter-service/"
+  JMETER_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  HELM_SVC_ARTIFACT: "helm-service"
+  HELM_SVC_FOLDER: "helm-service/"
+  HELM_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  APPROVAL_SVC_ARTIFACT: "approval-service"
+  APPROVAL_SVC_FOLDER: "approval-service/"
+  APPROVAL_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  DISTRIBUTOR_ARTIFACT: "distributor"
+  DISTRIBUTOR_FOLDER: "distributor/"
+  DISTRIBUTOR_DOCKER_TEST_TARGET: "builder-test"
+
+  SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
+  SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
+  SHIPYARD_CONTROLLER_DOCKER_TEST_TARGET: "builder-test"
+
+  SECRET_SVC_ARTIFACT: "secret-service"
+  SECRET_SVC_FOLDER: "secret-service/"
+  SECRET_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  CONFIGURATION_SVC_ARTIFACT: "configuration-service"
+  CONFIGURATION_SVC_FOLDER: "configuration-service/"
+  CONFIGURATION_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  REMEDIATION_SVC_ARTIFACT: "remediation-service"
+  REMEDIATION_SVC_FOLDER: "remediation-service/"
+  REMEDIATION_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
+  LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
+  LIGHTHOUSE_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  MONGODB_DS_ARTIFACT: "mongodb-datastore"
+  MONGODB_DS_FOLDER: "mongodb-datastore/"
+  MONGODB_DS_DOCKER_TEST_TARGET: "builder-test"
+
+  STATISTICS_SVC_ARTIFACT: "statistics-service"
+  STATISTICS_SVC_FOLDER: "statistics-service/"
+  STATISTICS_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  WEBHOOK_SVC_ARTIFACT: "webhook-service"
+  WEBHOOK_SVC_FOLDER: "webhook-service/"
+  WEBHOOK_SVC_DOCKER_TEST_TARGET: "builder-test"
+defaults:
+  run:
+    shell: bash
+jobs:
+  prepare:
+    name: Prepare release run
+    runs-on: ubuntu-20.04
+    outputs:
+      next-version: ${{ steps.version_number.outputs.next-version }}
+      branch: ${{ steps.current_branch.outputs.branch }}
+      keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
+      BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
+      BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
+      BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
+      BUILD_MATRIX: ${{ steps.check_modified_files.outputs.BUILD_MATRIX }}
+      BUILD_MATRIX_EMPTY: ${{ steps.check_modified_files.outputs.BUILD_MATRIX_EMPTY }}
+    steps:
+      - name: Check SemVer input
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
+        run: |
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
+            echo "SemVer Type is defined. Checking for valid SemVer type..."
+            if [[ "$SEMVER_TYPE" == "major" ]] || [[ "$SEMVER_TYPE" == "minor" ]] || [[ "$SEMVER_TYPE" == "patch" ]]; then
+              echo "::notice::SemVer Type is correctly set to $SEMVER_TYPE! Continuing with this version bump..."
+            else
+              echo "::error::ERROR: Enforced SemVer does not match any of [major,minor,patch]!"
+              echo "Exiting..."
+              exit 1
+            fi
+          else
+            echo "::notice::No SemVer type defined, continuing with auto generated version number..."
+          fi
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Find next version number
+        id: version_number
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
+        run: |
+          if [[ -z "$SEMVER_TYPE" ]]; then
+            npx standard-version@^9.3.1 \
+              --skip.commit \
+              --skip.tag \
+              --skip.changelog \
+              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
+              --release-as "$SEMVER_TYPE"
+          else
+            npx standard-version@^9.3.1 \
+              --skip.commit \
+              --skip.tag \
+              --skip.changelog \
+              --prerelease "${{ env.PRERELEASE_KEYWORD }}"
+          fi
+
+          NEXT_VERSION=$(cat VERSION.txt)
+          echo "::set-output name=next-version::${NEXT_VERSION}"
+          git checkout HEAD -- VERSION.txt
+
+      - name: Find current branch
+        id: current_branch
+        run: |
+          branch=${GITHUB_REF#refs/heads/}
+          echo "::set-output name=branch::${branch}"
+
+      - name: Get keptn spec version
+        id: keptn_spec_version
+        run: |
+          git submodule update --init
+          cd specification
+          KEPTN_SPEC_VERSION=$(git describe --tags)
+          echo "::set-output name=keptn-spec-version::${KEPTN_SPEC_VERSION}"
+
+      - name: Prepare artifact build matrix
+        id: check_modified_files
+        env:
+          BUILD_EVERYTHING: true
+        run: |
+          ./gh-actions-scripts/prepare_changed_artifacts.sh ""
+
+  ############################################################################
+  # Build Docker Images
+  ############################################################################
+  docker_build:
+    needs: prepare
+    name: Docker Build
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
+    env:
+      BRANCH: ${{ needs.prepare.outputs.branch }}
+      VERSION: ${{ needs.prepare.outputs.next-version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - id: docker_build_image
+        name: "Docker Build keptn/${{ matrix.config.artifact }}"
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.config.working-dir }}
+          tags: |
+            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+          build-args: |
+            version=${{ env.VERSION }}
+          push: ${{ matrix.config.should-push-image }}
+          pull: true
+
+  ############################################################################
+  # Build Helm Charts (only relevant for build_everything)
+  ############################################################################
+  build-helm-charts:
+    needs: prepare
+    name: Build Helm Charts
+    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
+    with:
+      branch: ${{ needs.prepare.outputs.branch }}
+      version: ${{ needs.prepare.outputs.next-version }}
+      keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
+      release: ${{ env.PRERELEASE_BUILD }}
+
+  ############################################################################
+  # Build CLI
+  ############################################################################
+  build-cli:
+    needs: prepare
+    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    with:
+      branch: ${{ needs.prepare.outputs.branch }}
+      version: ${{ needs.prepare.outputs.next-version }}
+      release: true
+
+  ############################################################################
+  # Pre-Release
+  ############################################################################
+  pre-release:
+    name: "Pre-Release"
+    runs-on: ubuntu-20.04
+    needs: [docker_build, build-helm-charts, build-cli]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure Git
+        env:
+          KEPTN_BOT_NAME: ${{ env.KEPTN_BOT_NAME }}
+          KEPTN_BOT_EMAIL: ${{ env.KEPTN_BOT_EMAIL }}
+        run: |
+          git config user.name "$KEPTN_BOT_NAME"
+          git config user.email "$KEPTN_BOT_EMAIL"
+
+      - name: Download Pre-Release Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ./dist
+
+      - name: Prepare GitHub Pre-Release Notes
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
+        run: |
+          if [[ -z "$SEMVER_TYPE" ]]; then
+            npx standard-version@^9.3.1 \
+              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
+              -i "${{ env.RELEASE_NOTES_FILE }}" \
+              --skip.commit \
+              --skip.tag \
+              --header "" \
+              --release-as "$SEMVER_TYPE"
+          else
+            npx standard-version@^9.3.1 \
+              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
+              -i "${{ env.RELEASE_NOTES_FILE }}" \
+              --skip.commit \
+              --skip.tag \
+              --header ""
+          fi
+
+      - name: Temporarily disable "include administrators" branch protection
+        uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
+        with:
+          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          branch: ${{ github.event.repository.default_branch }}
+          enforce_admins: false
+
+      - name: Create pre-release package
+        id: create-release-package
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+        run: |
+          echo "🚀 Creating release package now..."
+
+          if [[ -z "$SEMVER_TYPE" ]]; then
+            npx standard-version@^9.3.1 \
+              --release-as "$SEMVER_TYPE" \
+              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
+              --skip.commit \
+              --skip.changelog
+          else
+            npx standard-version@^9.3.1 \
+              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
+              --skip.commit \
+              --skip.changelog
+          fi
+
+          echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
+
+          echo "⚡️ Pushing changes to remote repository..."
+          git push --follow-tags
+
+      - name: Enable "include administrators" branch protection
+        uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
+        if: always() # Force to always run this step to ensure "include administrators" is always turned back on
+        with:
+          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          branch: ${{ github.event.repository.default_branch }}
+          enforce_admins: true
+
+      - name: Create GitHub Pre-Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+        run: |
+          gh release create "$RELEASE_TAG" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" --title "$RELEASE_TAG"
+
+      - name: Upload Release Assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+        run: |
+          gh release upload "$RELEASE_TAG" ./dist/keptn-installer/*.tgz
+          gh release upload "$RELEASE_TAG" ./dist/keptn-cli/*.tar.gz
+
+  ############################################################################
+  # Push Docker Images to alternative Registries
+  ############################################################################
+  repush_images:
+    needs: [prepare, pre-release]
+    name: Push Images to alternative Registries
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: "ghcr.io"
+          username: "keptn-bot"
+          password: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Login to Quay.io
+        uses: docker/login-action@v1
+        with:
+          registry: "quay.io"
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Push to alternative Registries
+        env:
+          VERSION: ${{ needs.prepare.outputs.next-version }}
+        uses: akhilerm/tag-push-action@v2.0.0
+        with:
+          src: docker.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+          dst: |
+            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}

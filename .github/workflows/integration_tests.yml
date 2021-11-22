@@ -517,7 +517,7 @@ jobs:
         id: test_delivery_assistant
         # Delivery Assistant only works when we install keptn with continuous delivery use-case
         if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-        timeout-minutes: 5
+        timeout-minutes: 7
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}

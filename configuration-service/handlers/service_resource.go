@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"encoding/base64"
+	"errors"
+	"fmt"
 	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -226,13 +229,10 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		}
 
 		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
-			if resp := untarHelm(res, filePath); resp != nil {
-				err2 := common.DeleteFile(filePath)
-				if err2 != nil {
-					logger.WithError(err2).Errorf("Could not delete file %s", filePath)
-					return nil
-				}
-				return resp
+			if err := extractHelmArchiveResource(params.ProjectName, params.StageName, filePath, res); err != nil {
+				logger.Errorf("Could not extract helm archive: %v", err)
+				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
+					WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not extract helm archive")})
 			}
 		}
 	}
@@ -252,7 +252,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		WithPayload(metadata)
 }
 
-func untarHelm(res *models.Resource, filePath string) middleware.Responder {
+func untarHelm(res *models.Resource, filePath string) error {
 	// unarchive the Helm chart
 	logger.Debug("Unarchive the Helm chart: " + *res.ResourceURI)
 	tmpDir, err := ioutil.TempDir("", "")
@@ -269,21 +269,16 @@ func untarHelm(res *models.Resource, filePath string) middleware.Responder {
 	tarGz := archive.NewTarGz()
 	tarGz.OverwriteExisting = true
 	if err := tarGz.Unarchive(filePath, tmpDir); err != nil {
-		logger.Error(err.Error())
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not unarchive Helm chart")})
+		return fmt.Errorf("could not unarchive Helm chart: %w", err)
 	}
 
 	files, err := ioutil.ReadDir(tmpDir)
 	if err != nil {
-		logger.Error(err.Error())
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not read unpacked files")})
+		return fmt.Errorf("could not read unpacked files: %w", err)
 	}
 
 	if len(files) != 1 {
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Unexpected amount of unpacked files")})
+		return errors.New("unexpected amount of unpacked files")
 	}
 
 	uri := *res.ResourceURI
@@ -291,31 +286,23 @@ func untarHelm(res *models.Resource, filePath string) middleware.Responder {
 	oldPath := filepath.Join(tmpDir, files[0].Name())
 	if oldPath != folderName {
 		if err := os.Rename(oldPath, folderName); err != nil {
-			logger.Error(err.Error())
-			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-				WithPayload(&models.Error{Code: 400, Message: swag.String("Could not rename unpacked folder")})
+			return fmt.Errorf("could not rename unpacked folder: %w", err)
 		}
 	}
 
 	dir, err := filepath.Abs(filepath.Dir(filePath))
 	if err != nil {
-		logger.Error(err.Error())
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Path of Helm chart is invalid")})
+		return fmt.Errorf("patch of helm chart is invalid: %w", err)
 	}
 
 	if err := copy.Copy(tmpDir, dir); err != nil {
-		logger.Error(err.Error())
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not copy folder")})
+		return fmt.Errorf("could not copy folder: %w", err)
 	}
 
 	// remove Helm chart .tgz file
 	logger.Debug("Remove the Helm chart: " + *res.ResourceURI)
 	if err := os.Remove(filePath); err != nil {
-		logger.Error(err.Error())
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
+		return fmt.Errorf("could not delete helm chart package: %w", err)
 	}
 	return nil
 }
@@ -361,13 +348,10 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		}
 
 		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
-			if resp := untarHelm(res, filePath); resp != nil {
-				err2 := common.DeleteFile(filePath)
-				if err2 != nil {
-					logger.WithError(err2).Errorf("Could not delete file %s", filePath)
-					return nil
-				}
-				return resp
+			if err := extractHelmArchiveResource(params.ProjectName, params.StageName, filePath, res); err != nil {
+				logger.Errorf("Could not extract helm archive: %v", err)
+				return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
+					WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not extract helm archive")})
 			}
 		}
 	}
@@ -392,6 +376,29 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 	metadata.Branch = defaultBranch
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(metadata)
+}
+
+func extractHelmArchiveResource(project, stage, filePath string, res *models.Resource) error {
+	rollbackFunc := func() {
+		// restore previously deleted helm/resourceURI folder using git reset
+		if err := common.Reset(project); err != nil {
+			logger.Errorf("Could not reset current branch '%s': %v", stage, err)
+		}
+		if err := common.DeleteFile(filePath); err != nil {
+			logger.Errorf("Could not delete file %s: %v", filePath, err)
+		}
+	}
+	// remove previous helm/resourceURI folder
+	targetFolderPath := strings.TrimSuffix(filePath, ".tgz")
+	if err := os.RemoveAll(targetFolderPath); err != nil {
+		rollbackFunc()
+		return fmt.Errorf("could not delete existing folder %s, %v", targetFolderPath, err)
+	}
+	if err := untarHelm(res, filePath); err != nil {
+		rollbackFunc()
+		return err
+	}
+	return nil
 }
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc updates a specified resource
