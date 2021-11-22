@@ -5,6 +5,7 @@
       class="event-icon"
       [name]="sequence.getIcon()"
       [class.success]="sequence.isSuccessful()"
+      [class.warning]="sequence.isWarning()"
       [class.error]="sequence.isFaulty()"
       [class.highlight]="sequence.hasPendingApproval()"
     ></dt-icon>

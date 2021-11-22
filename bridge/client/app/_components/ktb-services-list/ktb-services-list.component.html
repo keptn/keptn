@@ -19,6 +19,7 @@
                 [name]="currentSequence.getIcon()"
                 [class.error]="currentSequence.isFaulty(service.stage)"
                 [class.success]="currentSequence.isSuccessful(service.stage)"
+                [class.warning]="currentSequence.isWarning(service.stage)"
                 [class.highlight]="currentSequence.hasPendingApproval(service.stage)"
               ></dt-icon>
               <ng-template #showLoading>

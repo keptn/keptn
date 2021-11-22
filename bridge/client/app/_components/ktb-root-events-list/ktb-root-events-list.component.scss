@@ -45,6 +45,15 @@
       background: $cta-color;
     }
 
+    &.ktb-tile-warning:hover .ktb-selectable-tile-container,
+    &.ktb-tile-warning .ktb-selectable-tile-container {
+      border-color: $warning-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-warning .ktb-selectable-tile-container:before {
+      background: $warning-color;
+    }
+
     &.ktb-tile-highlight:hover .ktb-selectable-tile-container,
     &.ktb-tile-highlight .ktb-selectable-tile-container {
       border-color: $blue-400;
