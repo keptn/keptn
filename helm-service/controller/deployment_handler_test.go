@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"context"
-	"sync"
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -16,9 +14,6 @@ import (
 )
 
 func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -47,7 +42,7 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-	deploymentHandler.HandleEvent(ctx, ce)
+	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
 	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
@@ -81,9 +76,6 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 }
 
 func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -112,7 +104,7 @@ func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-	deploymentHandler.HandleEvent(ctx, ce)
+	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
 	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
@@ -150,9 +142,6 @@ func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
 }
 
 func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -180,7 +169,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-	deploymentHandler.HandleEvent(ctx, ce)
+	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
 	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
@@ -218,9 +207,6 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 }
 
 func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -256,7 +242,7 @@ func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t 
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-	deploymentHandler.HandleEvent(ctx, ce)
+	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
 	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
@@ -291,9 +277,6 @@ func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t 
 }
 
 func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	ctx, _ := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg)))
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -326,7 +309,7 @@ func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *test
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-	deploymentHandler.HandleEvent(ctx, ce)
+	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
 	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")

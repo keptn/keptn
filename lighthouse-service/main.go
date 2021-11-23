@@ -53,7 +53,12 @@ func _main(args []string, env envConfig) int {
 	}
 	logger.Fatal(c.StartReceiver(ctx, gotEvent))
 
-	ctx.Value(event_handler.GracefulShutdownKey).(*sync.WaitGroup).Wait()
+	val := ctx.Value(event_handler.GracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Wait()
+		}
+	}
 	return 0
 }
 
@@ -85,6 +90,7 @@ func getGracefulContext() context.Context {
 	go func() {
 		<-ch
 		logger.Fatal("Container termination triggered, waiting for graceful shutdown")
+		wg.Wait()
 		cancel()
 	}()
 
