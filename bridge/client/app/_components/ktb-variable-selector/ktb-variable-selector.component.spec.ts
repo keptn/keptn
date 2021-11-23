@@ -6,12 +6,12 @@ import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
-import { KtbSecretSelectorComponent } from './ktb-secret-selector.component';
+import { KtbVariableSelectorComponent } from './ktb-variable-selector.component';
 
 describe('KtbSecretSelectorComponent', () => {
   const secretPath = 'SecretA.key1';
-  let component: KtbSecretSelectorComponent;
-  let fixture: ComponentFixture<KtbSecretSelectorComponent>;
+  let component: KtbVariableSelectorComponent;
+  let fixture: ComponentFixture<KtbVariableSelectorComponent>;
 
   const secretDataSource = [
     {
@@ -56,7 +56,7 @@ describe('KtbSecretSelectorComponent', () => {
       providers: [{ provide: DataService, useClass: DataServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(KtbSecretSelectorComponent);
+    fixture = TestBed.createComponent(KtbVariableSelectorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -70,9 +70,10 @@ describe('KtbSecretSelectorComponent', () => {
     component.control = new FormControl('');
     component.control.setValue('');
     component.selectionStart = 0;
+    component.variablePrefix = '.secret';
 
     // when
-    component.setSecret(secretPath);
+    component.setVariable(secretPath);
 
     // then
     expect(component.control.value).toEqual(`{{.secret.${secretPath}}}`);
@@ -83,9 +84,10 @@ describe('KtbSecretSelectorComponent', () => {
     component.control = new FormControl('');
     component.control.setValue('https://example.com?somestringtoinsert');
     component.selectionStart = 30;
+    component.variablePrefix = '.secret';
 
     // when
-    component.setSecret(secretPath);
+    component.setVariable(secretPath);
 
     // then
     expect(component.control.value).toEqual(`https://example.com?somestring{{.secret.${secretPath}}}toinsert`);
@@ -105,6 +107,6 @@ describe('KtbSecretSelectorComponent', () => {
     component.secrets = secrets;
 
     // then
-    expect(component.secretDataSource).toEqual(secretDataSource);
+    expect(component.treeDataSource).toEqual(secretDataSource);
   });
 });

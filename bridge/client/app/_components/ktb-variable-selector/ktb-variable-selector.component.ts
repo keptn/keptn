@@ -5,33 +5,43 @@ import { AbstractControl } from '@angular/forms';
 
 @Component({
   selector: 'ktb-secret-selector',
-  templateUrl: './ktb-secret-selector.component.html',
+  templateUrl: './ktb-variable-selector.component.html',
 })
-export class KtbSecretSelectorComponent {
+export class KtbVariableSelectorComponent {
   @Input() public control: AbstractControl | undefined;
   @Input() public selectionStart: number | null = null;
+  @Input() public variablePrefix = '';
 
   @Output() changed: EventEmitter<void> = new EventEmitter<void>();
 
-  public secretDataSource: SelectTreeNode[] = [];
-  public secretOptions: TreeListSelectOptions = {
-    headerText: 'Select secret',
-    emptyText:
-      'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
+  public treeDataSource: SelectTreeNode[] = [];
+  public treeOptions: TreeListSelectOptions = {
+    headerText: 'Select element',
+    emptyText: 'No elements available.',
   };
 
   @Input()
   set secrets(secrets: Secret[] | undefined) {
     if (secrets) {
-      this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
+      this.treeDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
   }
 
-  public setSecret(secret: string): void {
-    const secretVar = `{{.secret.${secret}}}`;
+  @Input()
+  set title(title: string) {
+    this.treeOptions.headerText = title;
+  }
+
+  @Input()
+  set emptyText(text: string) {
+    this.treeOptions.emptyText = text;
+  }
+
+  public setVariable(variable: string): void {
+    const variableString = `{{${this.variablePrefix}.${variable}}}`;
     const firstPart = this.control?.value.slice(0, this.selectionStart);
-    const secondPart = this.control?.value.slice(this.selectionStart, this.control?.value.length);
-    const finalString = firstPart + secretVar + secondPart;
+    const secondPart = this.control?.value.slice(this.selectionStart);
+    const finalString = firstPart + variableString + secondPart;
 
     this.control?.setValue(finalString);
     // Input event detection is not working reliable for adding secrets, so we have to call it to work properly

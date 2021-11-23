@@ -3,9 +3,9 @@
   variant="nested"
   aria-label="Add secret"
   ktbTreeListSelect
-  [data]="secretDataSource"
-  [options]="secretOptions"
-  (selected)="setSecret($event)"
+  [data]="treeDataSource"
+  [options]="treeOptions"
+  (selected)="setVariable($event)"
 >
   <dt-icon name="resetpassword"></dt-icon>
 </button>
