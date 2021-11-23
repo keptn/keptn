@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"strings"
 	"time"
 )
 
@@ -143,10 +145,9 @@ func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
 	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.DeleteMany(ctx, bson.M{"projectName": projectName})
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Could not delete project %s : %s\n", projectName, err.Error()))
+		log.Errorf("Could not delete project %s: %v", projectName, err)
 		return err
 	}
-	fmt.Println("Deleted project " + projectName)
 	return nil
 }
 
@@ -164,4 +165,120 @@ func transformProjectToInterface(prj *models.ExpandedProject) (interface{}, erro
 		return nil, err
 	}
 	return prjInterface, nil
+}
+
+func NewMongoDBKeyEncodingProjectsRepo(dbConnection *MongoDBConnection) *MongoDBKeyEncodingProjectsRepo {
+	projectsRepo := NewMongoDBProjectsRepo(dbConnection)
+	return &MongoDBKeyEncodingProjectsRepo{
+		d: projectsRepo,
+	}
+}
+
+// MongoDBKeyEncodingProjectsRepo is a wrapper around a ProjectRepo which takes care
+// of transforming the value of a project's LastEventTypes to not contain invalid characters like a dot (.)
+type MongoDBKeyEncodingProjectsRepo struct {
+	d ProjectRepo
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) GetProjects() ([]*models.ExpandedProject, error) {
+	projects, err := m.d.GetProjects()
+	if err != nil {
+		return nil, err
+	}
+	return DecodeProjectsKeys(projects)
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
+	project, err := m.d.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+	return DecodeProjectKeys(project), nil
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) CreateProject(project *models.ExpandedProject) error {
+	encProject, err := EncodeProjectKeys(project)
+	if err != nil {
+		return err
+	}
+	return m.d.CreateProject(encProject)
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
+	encProject, err := EncodeProjectKeys(project)
+	if err != nil {
+		return err
+	}
+	return m.d.UpdateProject(encProject)
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
+	return m.d.UpdateProjectUpstream(projectName, uri, user)
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) DeleteProject(projectName string) error {
+	return m.d.DeleteProject(projectName)
+}
+
+func EncodeProjectKeys(project *models.ExpandedProject) (*models.ExpandedProject, error) {
+	if project == nil {
+		return nil, nil
+	}
+	copiedProject, err := copystructure.Copy(project)
+	if err != nil {
+		return nil, err
+	}
+	for _, stage := range copiedProject.(*models.ExpandedProject).Stages {
+		for _, service := range stage.Services {
+			newLastEvents := make(map[string]models.EventContext)
+			for eventType, context := range service.LastEventTypes {
+				newLastEvents[encodeKey(eventType)] = context
+			}
+			service.LastEventTypes = newLastEvents
+		}
+	}
+	return copiedProject.(*models.ExpandedProject), nil
+}
+
+func DecodeProjectKeys(project *models.ExpandedProject) *models.ExpandedProject {
+	if project == nil {
+		return nil
+	}
+	for _, stage := range project.Stages {
+		for _, service := range stage.Services {
+			newLastEvents := make(map[string]models.EventContext)
+			for eventType, context := range service.LastEventTypes {
+				newLastEvents[decodeKey(eventType)] = context
+			}
+			service.LastEventTypes = newLastEvents
+		}
+	}
+	return project
+}
+
+func DecodeProjectsKeys(projects []*models.ExpandedProject) ([]*models.ExpandedProject, error) {
+	if projects == nil {
+		return nil, nil
+	}
+	for _, project := range projects {
+		for _, stage := range project.Stages {
+			for _, service := range stage.Services {
+				newLastEvents := make(map[string]models.EventContext)
+				for eventType, context := range service.LastEventTypes {
+					newLastEvents[decodeKey(eventType)] = context
+				}
+				service.LastEventTypes = newLastEvents
+			}
+		}
+	}
+	return projects, nil
+}
+
+func encodeKey(key string) string {
+	encodedKey := strings.ReplaceAll(strings.ReplaceAll(key, "~", "~t"), ".", "~p")
+	return encodedKey
+}
+func decodeKey(key string) string {
+	decodedKey := strings.ReplaceAll(strings.ReplaceAll(key, "~p", "."), "~t", "~")
+	return decodedKey
 }

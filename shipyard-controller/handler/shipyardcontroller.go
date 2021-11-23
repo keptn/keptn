@@ -62,7 +62,7 @@ func GetShipyardControllerInstance(
 			eventRepo:        db.NewMongoDBEventsRepo(cbConnectionInstance),
 			taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(cbConnectionInstance),
 			projectMvRepo: db.NewProjectMVRepo(
-				db.NewMongoDBProjectsRepo(cbConnectionInstance),
+				db.NewMongoDBKeyEncodingProjectsRepo(cbConnectionInstance),
 				db.NewMongoDBEventsRepo(cbConnectionInstance)),
 			eventDispatcher:     eventDispatcher,
 			sequenceDispatcher:  sequenceDispatcher,
