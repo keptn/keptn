@@ -160,8 +160,8 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.10.1-0.20211115145943-79e64c4f92ea h1:XcJRJPNvIT7320czAnXG4gUoT1FYG+7tmIqvo68TaNI=
 github.com/keptn/go-utils v0.10.1-0.20211115145943-79e64c4f92ea/go.mod h1:wOOwrQxPrKNzEzP7xK58MLikUuQXi/HPvKlOmuS5qMk=
-github.com/keptn/keptn/go-sdk v0.0.0-20211122065558-b141ce435491 h1:mCjbriUgoPnMV9K4Gg7cWtfF0esdySh73eTJSvgO8Nw=
-github.com/keptn/keptn/go-sdk v0.0.0-20211122065558-b141ce435491/go.mod h1:8Ahn/TcK9RI5m01hGh7Re2vXGw9ME9Tdlsm76pu5bQI=
+github.com/keptn/keptn/go-sdk v0.0.0-20211123074316-018007b636bd h1:w3xjghwpwnWwuP6tS/zIkkhA08OUObix/f9kxt59bF4=
+github.com/keptn/keptn/go-sdk v0.0.0-20211123074316-018007b636bd/go.mod h1:8Ahn/TcK9RI5m01hGh7Re2vXGw9ME9Tdlsm76pu5bQI=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
