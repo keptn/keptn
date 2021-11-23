@@ -4,7 +4,7 @@ import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/k
 import { AbstractControl } from '@angular/forms';
 
 @Component({
-  selector: 'ktb-secret-selector',
+  selector: 'ktb-variable-selector',
   templateUrl: './ktb-variable-selector.component.html',
 })
 export class KtbVariableSelectorComponent {
@@ -23,7 +23,7 @@ export class KtbVariableSelectorComponent {
   @Input()
   set secrets(secrets: Secret[] | undefined) {
     if (secrets) {
-      this.treeDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
+      this.treeDataSource = []; // secrets.map((secret: Secret) => this.mapSecret(secret));
     }
   }
 
