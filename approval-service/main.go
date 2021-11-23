@@ -69,12 +69,27 @@ func _main(args []string, env envConfig) int {
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
+	val := ctx.Value(gracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
+		}
+	}
 	go switchEvent(ctx, event)
 	return nil
 }
 
 func switchEvent(ctx context.Context, event cloudevents.Event) {
-	defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+	defer func() {
+		logger.Info("Terminating Evaluate-SLI handler")
+		val := ctx.Value(gracefulShutdownKey)
+		if val == nil {
+			return
+		}
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Done()
+		}
+	}()
 	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {
@@ -109,7 +124,7 @@ func getGracefulContext() context.Context {
 	go func() {
 		<-ch
 		logger.Fatal("Container termination triggered, starting graceful shutdown")
-		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
+		wg.Wait()
 		logger.Fatal("cancelling context")
 		cancel()
 	}()
