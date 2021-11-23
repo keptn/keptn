@@ -51,7 +51,7 @@ func main() {
 	_ = controller.GetStatisticsBucketInstance()
 
 	router := gin.Default()
-	/// setting up middlewere to handle graceful shutdown
+	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	router.Use(controller.GracefulShutdownMiddleware(wg))
 
