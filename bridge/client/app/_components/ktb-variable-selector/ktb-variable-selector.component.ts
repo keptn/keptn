@@ -23,7 +23,7 @@ export class KtbVariableSelectorComponent {
   @Input()
   set secrets(secrets: Secret[] | undefined) {
     if (secrets) {
-      this.treeDataSource = []; // secrets.map((secret: Secret) => this.mapSecret(secret));
+      this.treeDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
   }
 
