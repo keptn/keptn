@@ -536,15 +536,3 @@ func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
 	require.Equal(t, context1, states.States[1].Shkeptncontext)
 
 }
-
-func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {
-	newContext := uuid.New().String()
-
-	for i := len(events) - 1; i >= 0; i-- {
-		events[i].Shkeptncontext = newContext
-		if _, err := ApiPOSTRequest("/mongodb-datastore/event", events[i], 3); err != nil {
-			return "", err
-		}
-	}
-	return newContext, nil
-}
