@@ -47,7 +47,12 @@ func Test_SequenceState(t *testing.T) {
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
-	defer os.Remove(sequenceStateShipyardFilePath)
+	defer func() {
+		err := os.Remove(sequenceStateShipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
+		}
+	}()
 
 	source := "golang-test"
 
@@ -379,7 +384,12 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
-	defer os.Remove(sequenceStateShipyardFilePath)
+	defer func() {
+		err := os.Remove(sequenceStateShipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
+		}
+	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
@@ -415,7 +425,12 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
-	defer os.Remove(sequenceStateShipyardFilePath)
+	defer func() {
+		err := os.Remove(sequenceStateShipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
+		}
+	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
@@ -429,7 +444,12 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 
 	invalidShipyardFile, err := CreateTmpShipyardFile(invalidShipyardString)
 	require.Nil(t, err)
-	defer os.Remove(invalidShipyardFile)
+	defer func() {
+		err := os.Remove(invalidShipyardFile)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", invalidShipyardFile, err)
+		}
+	}()
 
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --resource=%s --resourceUri=shipyard.yaml", projectName, invalidShipyardFile))
 	require.Nil(t, err)
@@ -457,7 +477,12 @@ func Test_SequenceState_SequenceNotFound(t *testing.T) {
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
-	defer os.Remove(sequenceStateShipyardFilePath)
+	defer func() {
+		err := os.Remove(sequenceStateShipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
+		}
+	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
@@ -482,6 +507,71 @@ func Test_SequenceState_SequenceNotFound(t *testing.T) {
 		}
 		return true
 	}, 20*time.Second, 3*time.Second)
+}
+
+func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
+	projectName := "state-retrieve-multiple"
+	serviceName := "my-service"
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(sequenceStateShipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
+		}
+	}()
+
+	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	require.Nil(t, err)
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+
+	// start the first sequence
+	context1, err := TriggerSequence(projectName, serviceName, "dev", "delivery", nil)
+	require.Nil(t, err)
+
+	var states *scmodels.SequenceStates
+	require.Eventually(t, func() bool {
+		// filter sequences by providing the context ID
+		states, _, err = GetStateByContext(projectName, context1)
+		if err != nil {
+			return false
+		} else if states == nil || len(states.States) != 1 {
+			return false
+		}
+		return true
+	}, 20*time.Second, 3*time.Second)
+
+	require.Equal(t, context1, states.States[0].Shkeptncontext)
+
+	// start the first sequence
+	context2, err := TriggerSequence(projectName, serviceName, "dev", "delivery", nil)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		// filter sequences by providing the context ID
+		states, _, err = GetStateByContext(projectName, context2)
+		if err != nil {
+			return false
+		} else if states == nil || len(states.States) != 1 {
+			return false
+		}
+		return true
+	}, 20*time.Second, 3*time.Second)
+
+	require.Equal(t, context2, states.States[0].Shkeptncontext)
+
+	// now let's try to fetch both sequences by providing both context IDs
+	states, _, err = GetStateByContext(projectName, fmt.Sprintf("%s,%s", context1, context2))
+	require.Nil(t, err)
+
+	require.NotNil(t, states)
+	require.Len(t, states.States, 2)
+	require.Equal(t, context2, states.States[0].Shkeptncontext)
+	require.Equal(t, context1, states.States[1].Shkeptncontext)
+
 }
 
 func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {

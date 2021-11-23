@@ -404,6 +404,15 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	return states, resp, err
 }
 
+func GetStateByContext(projectName, keptnContext string) (*scmodels.SequenceStates, *req.Resp, error) {
+	states := &scmodels.SequenceStates{}
+
+	resp, err := ApiGETRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s?keptnContext=%s", projectName, keptnContext), 3)
+	err = resp.ToJSON(states)
+
+	return states, resp, err
+}
+
 func GetProject(projectName string) (*scmodels.ExpandedProject, error) {
 	project := &scmodels.ExpandedProject{}
 
