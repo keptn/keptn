@@ -136,7 +136,6 @@ jobs:
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
-      LAST_SUCCESSFUL_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
 
     steps:
       - name: Check out code
@@ -168,25 +167,6 @@ jobs:
         id: extract_branch
         # see https://github.com/keptn/gh-action-extract-branch-name for details
         uses: keptn/gh-action-extract-branch-name@main
-
-      - name: Find last successful run ID
-        if: steps.build_everything.outputs.BUILD_EVERYTHING == 'true'
-        id: last_run_id
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: "keptn/keptn"
-          BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
-        run: |
-          BRANCH_NAME=""
-          if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
-            BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          elif [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-            PR_NUMBER=${BRANCH_SLUG#PR-}
-            BRANCH_NAME=$(gh pr view "$PR_NUMBER" --json "headRefName" | jq -r '.headRefName')
-          fi
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | jq -c '[.workflow_runs[] | select( .conclusion == "success" )][0] | .id')
-          echo "::set-output name=RUN_ID::$RUN_ID"
-          echo "Last successful run ID was: $RUN_ID"
 
       - name: 'Get Previous tag'
         id: get_previous_tag
@@ -408,7 +388,7 @@ jobs:
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' ) )
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
         uses: docker/build-push-action@v2
         with:
           context: ${{ matrix.config.working-dir }}
