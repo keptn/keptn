@@ -21,12 +21,12 @@ export class KtbVariableSelectorComponent {
 
   @Input()
   set title(title: string) {
-    this.treeOptions.headerText = title;
+    this.options.headerText = title;
   }
 
   @Input()
   set emptyText(text: string) {
-    this.treeOptions.emptyText = text;
+    this.options.emptyText = text;
   }
 
   public setVariable(variable: string): void {
