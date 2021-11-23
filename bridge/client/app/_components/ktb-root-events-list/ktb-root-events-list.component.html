@@ -3,7 +3,8 @@
     <ktb-selectable-tile
       (click)="selectEvent(sequence)"
       [error]="sequence.isFinished() && sequence.isFaulty()"
-      [success]="sequence.isFinished() && !sequence.isFaulty()"
+      [warning]="sequence.isFinished() && sequence.isWarning()"
+      [success]="sequence.isSuccessful()"
       [highlight]="sequence.hasPendingApproval()"
       [selected]="_selectedEvent == sequence"
       [attr.uitestid]="'keptn-root-events-list-' + sequence.shkeptncontext"

@@ -1,4 +1,3 @@
-import { ResultTypes } from '../../../shared/models/result-types';
 import { Trace } from './trace';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
@@ -6,6 +5,7 @@ import { EVENT_ICONS } from './event-icons';
 import { RemediationAction } from '../../../shared/models/remediation-action';
 import { Sequence as sq, SequenceStage, SequenceState } from '../../../shared/models/sequence';
 import { DtIconType } from '@dynatrace/barista-icons';
+import { ResultTypes } from '../../../shared/models/result-types';
 
 type SeqStage = SequenceStage & {
   latestEvaluationTrace?: Trace;
@@ -102,13 +102,16 @@ export class Sequence extends sq {
   }
 
   public isSuccessful(stageName?: string): boolean {
-    return stageName
-      ? !this.isFaulty(stageName) && this.isFinished(stageName)
-      : this.state === SequenceState.FINISHED && !this.isFaulty();
+    return !this.isFaulty(stageName) && !this.isWarning(stageName) && this.isFinished(stageName);
   }
 
-  public isWarning(stageName: string): boolean {
-    return this.getStage(stageName)?.latestEvaluation?.result === ResultTypes.WARNING;
+  public isWarning(stageName?: string): boolean {
+    return (
+      !this.isFaulty(stageName) &&
+      (stageName
+        ? this.getStage(stageName)?.latestEvaluation?.result === ResultTypes.WARNING
+        : this.stages.some((st) => st.latestEvaluation?.result === ResultTypes.WARNING))
+    );
   }
 
   public isWaiting(): boolean {

@@ -11,7 +11,9 @@
           <ng-template #finished>
             <dt-icon
               name="criticalevent"
-              [class]="sequence.isFaulty(this.stage) ? 'error' : 'success'"
+              [class.error]="sequence.isFaulty(this.stage)"
+              [class.warning]="sequence.isWarning(this.stage)"
+              [class.success]="sequence.isSuccessful(this.stage)"
               class="event-icon"
             ></dt-icon>
           </ng-template>
@@ -25,6 +27,7 @@
             class="event-icon"
             [class.error]="subSequence.result === ResultTypes.FAILED"
             [class.success]="subSequence.result === ResultTypes.PASSED"
+            [class.warning]="subSequence.result === ResultTypes.WARNING"
             [class.highlight]="subSequence.hasPendingApproval"
             [name]="getEventIcon(subSequence)"
           ></dt-icon>
