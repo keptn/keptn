@@ -74,9 +74,13 @@ export class DataService {
     let openApprovals: Approval[] = [];
     let openRemediations: Remediation[] = [];
     const allServices = Stage.getAllServices(project.stages);
-    const latestDeployments = await this.getDeploymentFinishedForServices(projectName, allServices, ResultTypes.PASSED);
-    const latestEvaluations = await this.getEvaluationResultsForServices(projectName, allServices);
-    // for sequence adjustment: const latestSequences = await this.getSequencesForServices(projectName, allServices);
+    const latestDeployments = await this.getLatestDeploymentFinishedForServices(
+      projectName,
+      allServices,
+      ResultTypes.PASSED
+    );
+    const latestEvaluations = await this.getLatestEvaluationResultsForServices(projectName, allServices);
+    // for sequence adjustment: const latestSequences = await this.getLatestSequenceForServices(projectName, allServices);
     const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
 
     if (includeRemediation) {
@@ -102,7 +106,7 @@ export class DataService {
       for (const service of stage.services) {
         const latestEvent = service.getLatestEvent();
         if (latestEvent) {
-          const latestSequence = await this.fetchServiceDetails(
+          const latestSequence = await this.setServiceDetails(
             service,
             stage.stageName,
             latestEvent.keptnContext,
@@ -120,7 +124,7 @@ export class DataService {
     return project;
   }
 
-  private async getSequencesForServices(projectName: string, services: Service[]): Promise<Sequence[]> {
+  private async getLatestSequenceForServices(projectName: string, services: Service[]): Promise<Sequence[]> {
     const chunkSize = 100;
     let sequences: Sequence[] = [];
 
@@ -151,12 +155,12 @@ export class DataService {
     return sequences;
   }
 
-  private async getDeploymentFinishedForServices(
+  private async getLatestDeploymentFinishedForServices(
     projectName: string,
     services: Service[],
     resultType?: ResultTypes
   ): Promise<Trace[]> {
-    return this.getTracesOfMultipleServices(
+    return this.getLatestTracesOfMultipleServices(
       projectName,
       services,
       EventTypes.DEPLOYMENT_FINISHED,
@@ -166,12 +170,12 @@ export class DataService {
     );
   }
 
-  private async getEvaluationResultsForServices(
+  private async getLatestEvaluationResultsForServices(
     projectName: string,
     services: Service[],
     resultType?: ResultTypes
   ): Promise<Trace[]> {
-    return this.getTracesOfMultipleServices(
+    return this.getLatestTracesOfMultipleServices(
       projectName,
       services,
       EventTypes.EVALUATION_FINISHED,
@@ -185,7 +189,7 @@ export class DataService {
     );
   }
 
-  private async getTracesOfMultipleServices(
+  private async getLatestTracesOfMultipleServices(
     projectName: string,
     services: Service[],
     eventType: EventTypes,
@@ -220,7 +224,7 @@ export class DataService {
     return traces;
   }
 
-  private async fetchServiceDetails(
+  private async setServiceDetails(
     service: Service,
     stageName: string,
     keptnContext: string,

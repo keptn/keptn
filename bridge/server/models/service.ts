@@ -6,7 +6,7 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import { IServiceEvent } from '../../shared/interfaces/service';
 
 export class Service extends sv {
-  lastEventTypes: { [p: string]: IServiceEvent | undefined } = {};
+  lastEventTypes: { [event: string]: IServiceEvent | undefined } = {};
   latestSequence?: Sequence;
   openRemediations: Remediation[] = [];
   openApprovals: Approval[] = [];
