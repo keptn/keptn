@@ -8,7 +8,7 @@ export class Service implements IService {
   serviceName!: string;
   creationDate!: string;
   deployedImage?: string;
-  lastEventTypes: { [p: string]: IServiceEvent | undefined } = {};
+  lastEventTypes: { [event: string]: IServiceEvent | undefined } = {};
   latestSequence?: Sequence;
   openRemediations: Sequence[] = [];
   openApprovals?: Approval[] = [];
