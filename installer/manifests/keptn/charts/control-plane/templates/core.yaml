@@ -419,7 +419,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: 40
 ---
 apiVersion: v1
 kind: Service
