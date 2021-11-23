@@ -272,7 +272,7 @@ func doUpgrade() error {
 
 	if strings.HasPrefix(getAppVersion(keptnUpgradeChart), "0.11") {
 		fmt.Printf("CAUTION: While upgrading Keptn from version %s to version %s there is a possibility of data loss due to moving to a new database model.\n", installedKeptnVersion, getAppVersion(keptnUpgradeChart))
-		fmt.Printf("Please backup your data before proceeding to the next step. Information about backing up and restoring the data is described here: https://keptn.sh/docs/0.11.x/operate/backup_and_restore/\n")
+		fmt.Printf("Please backup your data before proceeding to the next step. Information about backing up and restoring the data is described here: https://keptn.sh/docs/0.11.x/operate/upgrade/\n")
 
 		userConfirmation := common.NewUserInput().AskBool("Did you create a backup of the database or do you want to proceed without it?", &common.UserInputOptions{AssumeYes: assumeYes})
 
