@@ -2,6 +2,7 @@ package migration
 
 import (
 	"context"
+	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
@@ -22,7 +23,7 @@ func setupLocalMongoDB() func() {
 	randomDbName := memongo.RandomDatabase()
 
 	os.Setenv("MONGODB_DATABASE", randomDbName)
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", "mongodb://admin:0R5eIpDfvzeg4ZFrHCQrVmiNij64NVn0ai337NX2hLWdR@localhost:27017/keptn?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false") //fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
 
 	var mongoDBClient *mongo.Client
 	mongoDBClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
