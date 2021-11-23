@@ -4,5 +4,7 @@
     ":gitSignOff"
   ],
   "addLabels": ["dependencies"],
-  "cloneSubmodules": true
+  "cloneSubmodules": true,
+  "semanticCommitType": "build",
+  "semanticCommitScope": "deps"
 }
