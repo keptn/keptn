@@ -28,7 +28,7 @@ func (h *DeleteHandler) HandleEvent(ce cloudevents.Event) {
 
 	err := ce.DataAs(&serviceDeleteEvent)
 	if err != nil {
-		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to deleteService event")
 		h.handleError(ce.ID(), err, keptnv2.ServiceDeleteTaskName, h.getFinishedEventDataForError(serviceDeleteEvent.EventData, err))
 		return
 	}

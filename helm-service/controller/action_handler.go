@@ -37,7 +37,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 
 	err := ce.DataAs(&actionTriggeredEvent)
 	if err != nil {
-		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to action event")
 		h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
 		return
 	}
