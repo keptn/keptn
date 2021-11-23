@@ -602,7 +602,15 @@ export class DataService {
     if (approvalIndex >= 0 && approval.data.project) {
       service.openApprovals.splice(approvalIndex, 1);
       this.apiService
-        .getSequences(approval.data.project, 1, undefined, undefined, undefined, undefined, service.getLatestSequence())
+        .getSequences(
+          approval.data.project,
+          1,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          service.getLatestEvent()?.keptnContext
+        )
         .subscribe((response) => {
           const seq = response.body?.states[0];
           if (seq) {

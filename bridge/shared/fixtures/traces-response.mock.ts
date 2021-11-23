@@ -1,4 +1,117 @@
+import {
+  DevCartsDbDeploymentFinished,
+  DevCartsDeploymentFinished,
+  ProductionCartsDbDeploymentFinished,
+  ProductionCartsDeploymentFinished,
+  StagingCartsDbDeploymentFinished,
+  StagingCartsDeploymentFinished,
+  StagingCartsEvaluationFinished,
+} from './project-response.mock';
+
 const keptnContext = '2c0e568b-8bd3-4726-a188-e528423813ed';
+
+const defaultEvaluationData = {
+  comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+  gitCommit: '',
+  indicatorResults: [
+    {
+      displayName: 'Response time P95',
+      keySli: false,
+      passTargets: [
+        {
+          criteria: '<=+10%',
+          targetValue: 336.9946150194969,
+          violated: false,
+        },
+        {
+          criteria: '<600',
+          targetValue: 600,
+          violated: false,
+        },
+      ],
+      score: 1,
+      status: 'pass',
+      value: {
+        metric: 'response_time_p95',
+        success: true,
+        value: 304.2952915485157,
+      },
+      warningTargets: [
+        {
+          criteria: '<=800',
+          targetValue: 800,
+          violated: false,
+        },
+      ],
+    },
+  ],
+  result: 'pass',
+  score: 100,
+  sloFileContent:
+    'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+  timeEnd: '2021-10-13T10:53:29Z',
+  timeStart: '2021-10-13T10:51:08Z',
+};
+
+const defaultEvaluationFinishedTrace = {
+  data: {
+    evaluation: defaultEvaluationData,
+    labels: {
+      DtCreds: 'dynatrace',
+    },
+    project: 'sockshop',
+    result: 'pass',
+    service: 'carts',
+    stage: 'dev',
+    status: 'succeeded',
+    temporaryData: {
+      distributor: {
+        subscriptionID: '',
+      },
+    },
+  },
+  id: '93c2eba9-b77c-4976-b079-29a0188d86ef',
+  source: 'lighthouse-service',
+  specversion: '1.0',
+  time: '2021-10-13T10:54:43.112Z',
+  type: 'sh.keptn.event.evaluation.finished',
+  shkeptncontext: keptnContext,
+  shkeptnspecversion: '0.2.3',
+  triggeredid: '1cc9c272-721a-43de-98f6-9eceae484cf5',
+};
+
+const defaultDeploymentData = {
+  deploymentNames: ['direct'],
+  deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
+  deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
+  deploymentstrategy: 'direct',
+  gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
+};
+
+const defaultDeploymentFinishedTrace = {
+  data: {
+    deployment: defaultDeploymentData,
+    message: 'Successfully deployed',
+    project: 'sockshop',
+    result: 'pass',
+    service: 'carts',
+    stage: 'dev',
+    status: 'succeeded',
+    temporaryData: {
+      distributor: {
+        subscriptionID: '',
+      },
+    },
+  },
+  id: '8b65ab52-f1bb-4ecf-8559-48854acfa60d',
+  source: 'helm-service',
+  specversion: '1.0',
+  time: '2021-10-13T10:46:41.861Z',
+  type: 'sh.keptn.event.deployment.finished',
+  shkeptncontext: keptnContext,
+  shkeptnspecversion: '0.2.3',
+  triggeredid: '89265987-90b9-4554-8d13-98deb7b44f9d',
+};
 
 const deliveryFinishedProduction = {
   data: {
@@ -697,6 +810,102 @@ const approvalFinishedTraceStaging = {
   triggeredid: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
 };
 
+const approvalTriggeredTraceStaging = {
+  data: {
+    approval: {
+      pass: 'manual',
+      warning: 'manual',
+    },
+    configurationChange: {
+      values: {
+        image: 'docker.io/keptnexamples/carts:0.12.1',
+      },
+    },
+    deployment: {
+      deploymentNames: ['canary', 'direct'],
+      deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
+      deploymentURIsPublic: [
+        'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
+        'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
+      ],
+      deploymentstrategy: 'duplicate',
+      gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
+    },
+    evaluation: {
+      comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+      gitCommit: '',
+      indicatorResults: [
+        {
+          displayName: 'Response time P95',
+          keySli: false,
+          passTargets: [
+            {
+              criteria: '<=+10%',
+              targetValue: 336.9946150194969,
+              violated: false,
+            },
+            {
+              criteria: '<600',
+              targetValue: 600,
+              violated: false,
+            },
+          ],
+          score: 1,
+          status: 'pass',
+          value: {
+            metric: 'response_time_p95',
+            success: true,
+            value: 304.2952915485157,
+          },
+          warningTargets: [
+            {
+              criteria: '<=800',
+              targetValue: 800,
+              violated: false,
+            },
+          ],
+        },
+      ],
+      responses: ['Redirecting to https://keptn.sh/\n'],
+      result: 'pass',
+      score: 100,
+      sloFileContent:
+        'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+      timeEnd: '2021-10-13T10:53:29Z',
+      timeStart: '2021-10-13T10:51:08Z',
+    },
+    labels: {
+      DtCreds: 'dynatrace',
+    },
+    message: '',
+    project: 'sockshop',
+    release: {
+      gitCommit: '',
+    },
+    result: 'pass',
+    service: 'carts',
+    stage: 'staging',
+    status: 'succeeded',
+    temporaryData: {
+      distributor: {
+        subscriptionID: '',
+      },
+    },
+    test: {
+      end: '2021-10-13T10:53:29Z',
+      gitCommit: '',
+      start: '2021-10-13T10:51:08Z',
+    },
+  },
+  id: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
+  source: 'shipyard-controller',
+  specversion: '1.0',
+  time: '2021-10-13T10:54:43.311Z',
+  type: 'sh.keptn.event.approval.triggered',
+  shkeptncontext: keptnContext,
+  shkeptnspecversion: '0.2.3',
+};
+
 const approvalStartedTracesStaging = [
   {
     data: {
@@ -722,101 +931,7 @@ const approvalStartedTracesStaging = [
     shkeptnspecversion: '0.2.3',
     triggeredid: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
   },
-  {
-    data: {
-      approval: {
-        pass: 'manual',
-        warning: 'manual',
-      },
-      configurationChange: {
-        values: {
-          image: 'docker.io/keptnexamples/carts:0.12.1',
-        },
-      },
-      deployment: {
-        deploymentNames: ['canary', 'direct'],
-        deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
-        deploymentURIsPublic: [
-          'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
-          'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
-        ],
-        deploymentstrategy: 'duplicate',
-        gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
-      },
-      evaluation: {
-        comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-        gitCommit: '',
-        indicatorResults: [
-          {
-            displayName: 'Response time P95',
-            keySli: false,
-            passTargets: [
-              {
-                criteria: '<=+10%',
-                targetValue: 336.9946150194969,
-                violated: false,
-              },
-              {
-                criteria: '<600',
-                targetValue: 600,
-                violated: false,
-              },
-            ],
-            score: 1,
-            status: 'pass',
-            value: {
-              metric: 'response_time_p95',
-              success: true,
-              value: 304.2952915485157,
-            },
-            warningTargets: [
-              {
-                criteria: '<=800',
-                targetValue: 800,
-                violated: false,
-              },
-            ],
-          },
-        ],
-        responses: ['Redirecting to https://keptn.sh/\n'],
-        result: 'pass',
-        score: 100,
-        sloFileContent:
-          'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
-        timeEnd: '2021-10-13T10:53:29Z',
-        timeStart: '2021-10-13T10:51:08Z',
-      },
-      labels: {
-        DtCreds: 'dynatrace',
-      },
-      message: '',
-      project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
-      result: 'pass',
-      service: 'carts',
-      stage: 'staging',
-      status: 'succeeded',
-      temporaryData: {
-        distributor: {
-          subscriptionID: '',
-        },
-      },
-      test: {
-        end: '2021-10-13T10:53:29Z',
-        gitCommit: '',
-        start: '2021-10-13T10:51:08Z',
-      },
-    },
-    id: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
-    source: 'shipyard-controller',
-    specversion: '1.0',
-    time: '2021-10-13T10:54:43.311Z',
-    type: 'sh.keptn.event.approval.triggered',
-    shkeptncontext: keptnContext,
-    shkeptnspecversion: '0.2.3',
-  },
+  approvalTriggeredTraceStaging,
 ];
 
 const approvalTracesStaging = [...[approvalFinishedTraceStaging], ...approvalStartedTracesStaging];
@@ -1748,9 +1863,6 @@ const deploymentTracesWithPendingApprovalResponseMock = {
   totalCount: 20,
 };
 
-export { deploymentTracesResponseMock as DeploymentTracesResponseMock };
-export { deploymentTracesWithPendingApprovalResponseMock as DeploymentTracesWithPendingApprovalResponseMock };
-
 const evaluationFinishedProductionResponse = {
   events: [
     {
@@ -1863,5 +1975,165 @@ const evaluationFinishedStagingResponse = {
   ],
 };
 
+const latestFinishedDeployments = {
+  events: [
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        service: 'carts',
+        stage: 'dev',
+        project: 'sockshop',
+        deployment: {
+          ...defaultDeploymentData,
+          deploymentURIsPublic: ['http://dev-carts.com'],
+        },
+        result: 'pass',
+      },
+      id: DevCartsDeploymentFinished.eventId,
+      shkeptncontext: DevCartsDeploymentFinished.keptnContext,
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        service: 'carts-db',
+        stage: 'dev',
+        project: 'sockshop',
+        deployment: {
+          ...defaultDeploymentData,
+          deploymentURIsPublic: ['http://dev-carts-db.com'],
+        },
+        result: 'pass',
+      },
+      id: DevCartsDbDeploymentFinished.eventId,
+      shkeptncontext: DevCartsDbDeploymentFinished.keptnContext,
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        service: 'carts',
+        stage: 'staging',
+        project: 'sockshop',
+        deployment: {
+          ...defaultDeploymentData,
+          deploymentURIsPublic: ['http://staging-carts.com'],
+        },
+        result: 'pass',
+      },
+      id: StagingCartsDeploymentFinished.eventId,
+      shkeptncontext: StagingCartsDeploymentFinished.keptnContext,
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        service: 'carts-db',
+        stage: 'staging',
+        project: 'sockshop',
+        deployment: {
+          ...defaultDeploymentData,
+          deploymentURIsPublic: ['http://staging-carts-db.com'],
+        },
+        result: 'pass',
+      },
+      id: StagingCartsDbDeploymentFinished.eventId,
+      shkeptncontext: StagingCartsDbDeploymentFinished.keptnContext,
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        service: 'carts',
+        stage: 'production',
+        project: 'sockshop',
+        deployment: {
+          ...defaultDeploymentData,
+          deploymentURIsPublic: ['http://production-carts.com'],
+        },
+        result: 'pass',
+      },
+      id: ProductionCartsDeploymentFinished.eventId,
+      shkeptncontext: ProductionCartsDeploymentFinished.keptnContext,
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        service: 'carts-db',
+        stage: 'production',
+        project: 'sockshop',
+        deployment: {
+          ...defaultDeploymentData,
+          deploymentURIsPublic: ['http://production-carts-db.com'],
+        },
+        result: 'pass',
+      },
+      id: ProductionCartsDbDeploymentFinished.eventId,
+      shkeptncontext: ProductionCartsDbDeploymentFinished.keptnContext,
+    },
+  ],
+  pageSize: 100,
+  totalCount: 6,
+};
+
+const latestFinishedEvaluations = {
+  events: [
+    // {
+    //   ...defaultEvaluationFinishedTrace,
+    //   data: {
+    //     service: 'carts',
+    //     stage: 'dev',
+    //     project: 'sockshop',
+    //     evaluation: defaultEvaluationData,
+    //   },
+    //   id: DevCartsEvaluationFinished.eventId,
+    //   shkeptncontext: DevCartsEvaluationFinished.keptnContext,
+    // }, //evaluation is not part of latest Sequence
+    {
+      ...defaultEvaluationFinishedTrace,
+      data: {
+        service: 'carts',
+        stage: 'staging',
+        project: 'sockshop',
+        evaluation: defaultEvaluationData,
+        result: 'pass',
+      },
+      id: StagingCartsEvaluationFinished.eventId,
+      shkeptncontext: StagingCartsEvaluationFinished.keptnContext,
+    },
+  ],
+  pageSize: 100,
+  totalCount: 1,
+};
+
+const openApprovalsResponse = {
+  events: [approvalTriggeredTraceStaging],
+  pageSize: 100,
+  totalCount: 1,
+};
+
+const approvalEvaluationResponse = {
+  events: [
+    {
+      ...defaultEvaluationFinishedTrace,
+      data: {
+        ...approvalTriggeredTraceStaging.data,
+        ...defaultEvaluationFinishedTrace.data,
+        stage: 'staging',
+        project: 'sockshop',
+        service: 'carts',
+      },
+      shkeptncontext: approvalTriggeredTraceStaging.shkeptncontext,
+    },
+  ],
+  pageSize: 1,
+  totalCount: 1,
+};
+
+export { deploymentTracesResponseMock as DeploymentTracesResponseMock };
+export { deploymentTracesWithPendingApprovalResponseMock as DeploymentTracesWithPendingApprovalResponseMock };
 export { evaluationFinishedProductionResponse as EvaluationFinishedProductionResponse };
 export { evaluationFinishedStagingResponse as EvaluationFinishedStagingResponse };
+export { latestFinishedDeployments as LatestFinishedDeployments };
+export { latestFinishedEvaluations as LatestFinishedEvaluations };
+export { openApprovalsResponse as OpenApprovalsResponse };
+export { approvalEvaluationResponse as ApprovalEvaluationResponse };
+export { defaultDeploymentFinishedTrace as DefaultDeploymentFinishedTrace };
+export { defaultDeploymentData as DefaultDeploymentData };
+export { defaultEvaluationFinishedTrace as DefaultEvaluationFinishedTrace };

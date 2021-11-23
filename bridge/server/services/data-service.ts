@@ -2,10 +2,9 @@ import { ApiService } from './api-service';
 import { Sequence } from '../models/sequence';
 import { SequenceTypes } from '../../shared/models/sequence-types';
 import { Trace } from '../models/trace';
-import { DeploymentInformation, Service } from '../models/service';
+import { Service } from '../models/service';
 import { Project } from '../models/project';
 import { EventState } from '../../shared/models/event-state';
-import { Remediation } from '../../shared/models/remediation';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
@@ -30,6 +29,9 @@ import { ServiceDeploymentInformation, ServiceState } from '../../shared/models/
 import { Deployment, IStageDeployment, SubSequence } from '../../shared/interfaces/deployment';
 import semver from 'semver';
 import { ServiceRemediationInformation } from '../../shared/interfaces/service-remediation-information';
+import { Stage } from '../models/stage';
+import { IServiceEvent } from '../../shared/interfaces/service';
+import { Remediation } from '../models/remediation';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -37,6 +39,11 @@ type StageRemediationInformation = {
   remediations: Remediation[];
   remediationsForStage: Sequence[];
   config?: string;
+};
+type StageOpenInformation = {
+  openApprovals: Approval[];
+  openRemediations: Remediation[];
+  evaluations: Trace[];
 };
 
 export class DataService {
@@ -53,38 +60,62 @@ export class DataService {
     return response.data.projects.map((project) => Project.fromJSON(project));
   }
 
+  private async getPlainProject(projectName: string): Promise<Project> {
+    const response = await this.apiService.getProject(projectName);
+    return Project.fromJSON(response.data);
+  }
+
   public async getProject(
     projectName: string,
     includeRemediation: boolean,
     includeApproval: boolean
   ): Promise<Project> {
-    const response = await this.apiService.getProject(projectName);
-    const project = Project.fromJSON(response.data);
-    let remediations: Remediation[] = [];
+    const project = await this.getPlainProject(projectName);
+    let openApprovals: Approval[] = [];
+    let openRemediations: Remediation[] = [];
+    const allServices = Stage.getAllServices(project.stages);
+    const latestDeployments = await this.getLatestDeploymentFinishedForServices(
+      projectName,
+      allServices,
+      ResultTypes.PASSED
+    );
+    const latestEvaluations = await this.getLatestEvaluationResultsForServices(projectName, allServices);
+    // for sequence adjustment: const latestSequences = await this.getLatestSequenceForServices(projectName, allServices);
+    const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
 
     if (includeRemediation) {
-      remediations = await this.getOpenRemediations(projectName, true, true);
+      openRemediations = await this.getOpenRemediations(projectName, true, true);
     }
-    const lastSequences: { [key: string]: Sequence } = {};
+
+    if (includeApproval) {
+      openApprovals = await this.getApprovals(projectName, true);
+    }
+
     for (const stage of project.stages) {
+      const stageRemediations = openRemediations.filter((seq) => seq.stages.some((s) => s.name === stage.stageName));
+      const stageApprovals = openApprovals.filter((approval) => approval.trace.data.stage === stage.stageName);
+      const stageEvaluations = latestEvaluations.filter((t) => t.data.stage === stage.stageName);
+      const stageDeployments = latestDeployments.filter((t) => t.data.stage === stage.stageName);
+      const stageInformation: StageOpenInformation = {
+        openApprovals: stageApprovals,
+        openRemediations: stageRemediations,
+        evaluations: stageEvaluations,
+      };
+
       for (const service of stage.services) {
-        const keptnContext = service.getLatestSequence();
-        if (keptnContext) {
-          try {
-            const latestSequence = await this.fetchServiceDetails(
-              service,
-              stage.stageName,
-              keptnContext,
-              projectName,
-              includeApproval,
-              remediations,
-              lastSequences[service.serviceName]
-            );
-            if (latestSequence) {
-              lastSequences[service.serviceName] = latestSequence;
-            }
-          } catch (error) {
-            console.error(error);
+        const latestEvent = service.getLatestEvent();
+        if (latestEvent) {
+          const latestSequence = await this.setServiceDetails(
+            service,
+            stage.stageName,
+            latestEvent.keptnContext,
+            projectName,
+            stageInformation,
+            stageDeployments,
+            cachedSequences[latestEvent.keptnContext]
+          );
+          if (latestSequence) {
+            cachedSequences[latestEvent.keptnContext] = latestSequence;
           }
         }
       }
@@ -92,48 +123,192 @@ export class DataService {
     return project;
   }
 
-  private async fetchServiceDetails(
+  private async getLatestSequenceForServices(projectName: string, services: Service[]): Promise<Sequence[]> {
+    const chunkSize = 100;
+    let sequences: Sequence[] = [];
+
+    for (let i = 0; i < services.length; i += chunkSize) {
+      const keptnContexts: string[] = [];
+      const maxLength = Math.min(i + chunkSize, services.length);
+
+      for (let y = i; y < maxLength; ++y) {
+        const latestServiceEvent = services[y].getLatestEvent();
+        if (latestServiceEvent) {
+          // string concatenation is expensive; that's why we use an array here
+          keptnContexts.push(latestServiceEvent.keptnContext);
+        }
+      }
+      if (keptnContexts.length) {
+        const response = await this.apiService.getSequences(
+          projectName,
+          chunkSize,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          keptnContexts.join(',')
+        );
+        sequences = [...sequences, ...response.data.states];
+      }
+    }
+    return sequences;
+  }
+
+  private async getLatestDeploymentFinishedForServices(
+    projectName: string,
+    services: Service[],
+    resultType?: ResultTypes
+  ): Promise<Trace[]> {
+    return this.getLatestTracesOfMultipleServices(
+      projectName,
+      services,
+      EventTypes.DEPLOYMENT_FINISHED,
+      (service: Service) => service.lastEventTypes[EventTypes.DEPLOYMENT_FINISHED],
+      undefined,
+      resultType
+    );
+  }
+
+  private async getLatestEvaluationResultsForServices(projectName: string, services: Service[]): Promise<Trace[]> {
+    return this.getLatestTracesOfMultipleServices(
+      projectName,
+      services,
+      EventTypes.EVALUATION_FINISHED,
+      (service: Service) => {
+        const latestEvent = service.getLatestEvent();
+        const latestEvaluation = service.lastEventTypes[EventTypes.EVALUATION_FINISHED];
+        return latestEvent?.keptnContext === latestEvaluation?.keptnContext ? latestEvaluation : undefined;
+      },
+      KeptnService.LIGHTHOUSE_SERVICE
+    );
+  }
+
+  /**
+   * Fetches the latest event provided by latestEventTypes of a service.
+   * If resultType is provided, the result is filtered and if it does not match, it fetches the one with the right result.
+   * This will result in API-Calls:
+   *  best case: O(1)
+   *  worst case: O(N) (exceptional case for deployment.finished is fail)
+   * @param projectName
+   * @param services
+   * @param eventType
+   * @param getServiceEvent
+   * @param source
+   * @param resultType
+   * @private
+   */
+  private async getLatestTracesOfMultipleServices(
+    projectName: string,
+    services: Service[],
+    eventType: EventTypes,
+    getServiceEvent: (service: Service) => IServiceEvent | undefined,
+    source?: KeptnService,
+    resultType?: ResultTypes
+  ): Promise<Trace[]> {
+    const chunkSize = 100; // because we have a pageSize limit of 100 and also the URL length has to be limited
+    let traces: Trace[] = [];
+
+    for (let i = 0; i < services.length; i += chunkSize) {
+      const eventIds: string[] = [];
+      const maxLength = Math.min(i + chunkSize, services.length);
+      for (let y = i; y < maxLength; ++y) {
+        const latestServiceEvent = getServiceEvent(services[y]);
+        if (latestServiceEvent) {
+          // string concatenation is expensive; that's why we use an array here
+          eventIds.push(latestServiceEvent.eventId);
+        }
+      }
+      if (eventIds.length) {
+        const response = await this.apiService.getTracesOfMultipleServices(
+          projectName,
+          eventType,
+          `id:${eventIds.join(',')}`
+        );
+        if (resultType || source) {
+          await this.checkAndSetEventsWithResult(response.data.events, resultType, source);
+        }
+        traces = [...traces, ...response.data.events];
+      }
+    }
+    return traces;
+  }
+
+  private async checkAndSetEventsWithResult(
+    traces: Trace[],
+    resultType?: ResultTypes,
+    source?: KeptnService
+  ): Promise<void> {
+    for (let i = 0; i < traces.length; ++i) {
+      const trace = traces[i];
+      if ((resultType && trace.data.result !== resultType) || (source && trace.source !== source)) {
+        const response = await this.apiService.getTracesWithResultAndSource(
+          trace.type as EventTypes,
+          1,
+          trace.data.project as string,
+          trace.data.stage as string,
+          trace.data.service as string,
+          resultType,
+          source
+        );
+        if (response.data.events.length) {
+          traces[i] = response.data.events[0];
+        }
+      }
+    }
+  }
+
+  private async setServiceDetails(
     service: Service,
     stageName: string,
     keptnContext: string,
     projectName: string,
-    includeApproval: boolean,
-    remediations: Remediation[],
-    sequenceBefore: Sequence | undefined
+    stageInformation: StageOpenInformation,
+    stageDeployments: Trace[],
+    cachedSequence: Sequence | undefined
   ): Promise<Sequence | undefined> {
-    const latestSequence =
-      sequenceBefore?.shkeptncontext === keptnContext
-        ? sequenceBefore
-        : await this.getSequence(projectName, stageName, keptnContext, true);
+    let latestSequence;
+    try {
+      latestSequence = cachedSequence ?? (await this.getSequence(projectName, stageName, keptnContext));
+    } catch (error) {
+      console.error(error);
+      return;
+    }
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(stageName);
-    service.deploymentInformation = await this.getDeploymentInformation(
-      service.serviceName,
-      projectName,
-      stageName,
-      service.getShortImage()
-    );
 
-    const serviceRemediations = remediations.filter(
-      (remediation) =>
-        remediation.service === service.serviceName && remediation.stages.some((s) => s.name === stageName)
+    if (!cachedSequence && service.latestSequence) {
+      const stage = service.latestSequence.stages.find((seq) => seq.name === stageName);
+      if (stage) {
+        stage.latestEvaluationTrace = stageInformation.evaluations.find(
+          (t) => t.data.service === service.latestSequence?.service
+        );
+      }
+    }
+    const deployment = stageDeployments.find((t) => t.data.service === service.serviceName);
+    if (deployment) {
+      service.deploymentInformation = {
+        deploymentUrl: Trace.fromJSON(deployment).getDeploymentUrl(),
+        image: service.getShortImage(),
+      };
+    }
+
+    const serviceRemediations = stageInformation.openRemediations.filter(
+      (remediation) => remediation.service === service.serviceName
     );
     for (const remediation of serviceRemediations) {
       remediation.reduceToStage(stageName);
     }
     service.openRemediations = serviceRemediations;
-
-    if (includeApproval) {
-      service.openApprovals = await this.getApprovals(projectName, stageName, service.serviceName);
-    }
+    service.openApprovals = stageInformation.openApprovals.filter(
+      (approval) => approval.trace.data.service === service.serviceName
+    );
     return latestSequence;
   }
 
   public async getSequence(
     projectName: string,
     stageName?: string,
-    keptnContext?: string,
-    includeEvaluationTrace = false
+    keptnContext?: string
   ): Promise<Sequence | undefined> {
     const response = await this.apiService.getSequences(
       projectName,
@@ -147,69 +322,8 @@ export class DataService {
     let sequence = response.data.states[0];
     if (sequence) {
       sequence = Sequence.fromJSON(sequence);
-      if (includeEvaluationTrace && stageName) {
-        // we just need the result of a stage
-        const stage = sequence.stages.find((s) => s.name === stageName);
-        if (stage) {
-          // get latest evaluation
-          const evaluationTraces = await this.getEvaluationResults(
-            projectName,
-            sequence.service,
-            stageName,
-            1,
-            sequence.shkeptncontext
-          );
-          if (evaluationTraces) {
-            stage.latestEvaluationTrace = evaluationTraces.shift();
-          }
-        }
-      }
     }
     return sequence;
-  }
-
-  public async getDeploymentInformation(
-    serviceName: string,
-    projectName: string,
-    stageName: string,
-    deployedImage?: string
-  ): Promise<DeploymentInformation | undefined> {
-    const result = await this.apiService.getTracesWithResult(
-      EventTypes.DEPLOYMENT_FINISHED,
-      1,
-      projectName,
-      stageName,
-      serviceName,
-      ResultTypes.PASSED
-    ); // the finished trace does not have the image
-
-    const traceData = result.data.events[0];
-    let deploymentInformation: DeploymentInformation | undefined;
-    if (traceData) {
-      const trace = Trace.fromJSON(traceData);
-      deploymentInformation = {
-        deploymentUrl: trace.getDeploymentUrl(),
-        image: deployedImage,
-      };
-    }
-    return deploymentInformation;
-  }
-
-  private async getEvaluationResults(
-    projectName: string,
-    serviceName: string,
-    stageName: string,
-    pageSize: number,
-    keptnContext?: string
-  ): Promise<Trace[]> {
-    const response = await this.apiService.getEvaluationResults(
-      projectName,
-      serviceName,
-      stageName,
-      pageSize,
-      keptnContext
-    );
-    return response.data.events.map((trace) => Trace.fromJSON(trace));
   }
 
   public async getSequences(
@@ -330,14 +444,19 @@ export class DataService {
     return response.data.events.shift();
   }
 
-  public async getApprovals(projectName: string, stageName: string, serviceName: string): Promise<Approval[]> {
+  public async getApprovals(
+    projectName: string,
+    includeEvaluationTrace: boolean,
+    stageName?: string,
+    serviceName?: string
+  ): Promise<Approval[]> {
     let tracesTriggered: Trace[];
     try {
       const response = await this.apiService.getOpenTriggeredEvents(
         projectName,
+        EventTypes.APPROVAL_TRIGGERED,
         stageName,
-        serviceName,
-        EventTypes.APPROVAL_TRIGGERED
+        serviceName
       );
       tracesTriggered = response.data.events ?? [];
     } catch {
@@ -347,14 +466,17 @@ export class DataService {
     const approvals: Approval[] = [];
     // for each approval the latest evaluation trace (before this event) is needed
     for (const trace of tracesTriggered) {
-      const evaluationTrace = await this.getTrace(
-        trace.shkeptncontext,
-        projectName,
-        trace.data.stage,
-        trace.data.service,
-        EventTypes.EVALUATION_FINISHED,
-        KeptnService.LIGHTHOUSE_SERVICE
-      );
+      let evaluationTrace: Trace | undefined;
+      if (includeEvaluationTrace) {
+        evaluationTrace = await this.getTrace(
+          trace.shkeptncontext,
+          projectName,
+          stageName,
+          serviceName,
+          EventTypes.EVALUATION_FINISHED,
+          KeptnService.LIGHTHOUSE_SERVICE
+        );
+      }
       approvals.push({
         evaluationTrace,
         trace,
@@ -989,8 +1111,7 @@ export class DataService {
     if (iSequence) {
       const sequence = Sequence.fromJSON(iSequence);
       let openRemediations: Remediation[] | undefined;
-      const projectResponse = await this.apiService.getProject(projectName);
-      const project = Project.fromJSON(projectResponse.data);
+      const project = await this.getPlainProject(projectName);
       const traceResponse = await this.apiService.getTracesByContext(keptnContext, projectName);
       const traces = Trace.traceMapper(traceResponse.data.events);
       deployment = {

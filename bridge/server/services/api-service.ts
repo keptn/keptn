@@ -13,7 +13,7 @@ import { UniformSubscription } from '../../shared/interfaces/uniform-subscriptio
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/models/sequence';
-import { Stage } from '../models/stage';
+import { IStage } from '../../shared/interfaces/stage';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -122,16 +122,19 @@ export class ApiService {
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, { params });
   }
 
-  public getTracesWithResult(
+  public getTracesWithResultAndSource(
     eventType: EventTypes,
     pageSize: number,
     projectName: string,
     stageName: string,
     serviceName: string,
-    resultType: ResultTypes
+    resultType?: ResultTypes,
+    source?: KeptnService
   ): Promise<AxiosResponse<EventResult>> {
+    const resultString = resultType ? ` AND data.result:${resultType}` : '';
+    const sourceString = source ? ` AND data.source:${source}` : '';
     const params = {
-      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName} AND data.result:${resultType}`,
+      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}${sourceString}${resultString}`,
       excludeInvalidated: 'true',
       limit: pageSize.toString(),
     };
@@ -166,16 +169,30 @@ export class ApiService {
     return this.axios.get<EventResult>(url, { params });
   }
 
+  public getTracesOfMultipleServices(
+    projectName: string,
+    eventType: EventTypes,
+    eventIds: string,
+    source?: KeptnService
+  ): Promise<AxiosResponse<EventResult>> {
+    const sourceString = source ? `AND source:${source} ` : '';
+    const params = {
+      filter: `data.project:${projectName} ${sourceString}AND ${eventIds}`,
+      excludeInvalidated: 'true',
+    };
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, { params });
+  }
+
   public getOpenTriggeredEvents(
     projectName: string,
-    stageName: string,
-    serviceName: string,
-    eventType: EventTypes
+    eventType: EventTypes,
+    stageName?: string,
+    serviceName?: string
   ): Promise<AxiosResponse<EventResult>> {
     const params = {
       project: projectName,
-      stage: stageName,
-      service: serviceName,
+      ...(stageName && { stage: stageName }),
+      ...(serviceName && { service: serviceName }),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, { params });
   }
@@ -336,7 +353,7 @@ export class ApiService {
     return this.axios.get<{ Secrets: Secret[] }>(url);
   }
 
-  public getStages(projectName: string): Promise<AxiosResponse<{ stages: Stage[] }>> {
+  public getStages(projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {
     const url = `${this.baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.axios.get(url);
   }

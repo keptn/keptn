@@ -1,20 +1,8 @@
-const keptnContextDeploymentDev = '2e21574c-dcf7-4275-b677-6bc19214acd5';
-const keptnContextDeploymentStaging = '29af69cc-ea85-4358-b169-ce29034d9c81';
-
-const projectResponseMock = {
-  creationDate: '1632999780800366280',
-  gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace-v1',
-  gitUser: 'Kirdock',
-  projectName: 'sockshop',
-  shipyard:
-    'apiVersion: spec.keptn.sh/0.2.2\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 15m\n                  properties:\n                    timeframe: 15m\n',
-  shipyardVersion: 'spec.keptn.sh/0.2.2',
+const projectDetailsResponse = {
   stages: [
     {
       services: [
         {
-          creationDate: '1632999819358104940',
-          deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
           lastEventTypes: {
             'sh.keptn.event.approval.finished': {
               eventId: 'a7b4db51-c004-4a16-b4b9-eb290ac64ae8',
@@ -33,17 +21,17 @@ const projectResponseMock = {
             },
             'sh.keptn.event.deployment.finished': {
               eventId: '88c5b44b-9b97-4ffb-9349-f0e431efe519',
-              keptnContext: keptnContextDeploymentDev,
+              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
               time: '1636114893991052283',
             },
             'sh.keptn.event.deployment.started': {
               eventId: '06c24857-a010-4bdd-bcac-639e6ae7d3ed',
-              keptnContext: keptnContextDeploymentDev,
+              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
               time: '1636114806860574185',
             },
             'sh.keptn.event.deployment.triggered': {
               eventId: 'ff94e27d-4309-4fa2-8cf3-20f266f9e244',
-              keptnContext: keptnContextDeploymentDev,
+              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
               time: '1636114806657239737',
             },
             'sh.keptn.event.dev.delivery.finished': {
@@ -142,12 +130,37 @@ const projectResponseMock = {
               time: '1636002113431434060',
             },
           },
-          openRemediations: null,
+          openRemediations: [],
+          openApprovals: [],
+          creationDate: '1632999819358104940',
+          deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
           serviceName: 'carts',
+          latestSequence: {
+            name: 'delivery',
+            service: 'carts',
+            project: 'sockshop',
+            time: '2021-11-05T12:20:06.463Z',
+            shkeptncontext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
+            state: 'started',
+            stages: [
+              {
+                name: 'dev',
+                image: 'docker.io/keptnexamples/carts:0.12.3',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.evaluation.started',
+                  id: 'b7d4225d-26d5-440a-b3c0-3265e2a1735b',
+                  time: '2021-11-10T11:59:58.655Z',
+                },
+              },
+            ],
+          },
+          deploymentInformation: {
+            deploymentUrl: 'http://dev-carts.com',
+            image: 'carts:0.12.3',
+          },
         },
         {
-          creationDate: '1632999870648452455',
-          deployedImage: 'docker.io/mongo:4.2.2',
           lastEventTypes: {
             'sh.keptn.event.approval.finished': {
               eventId: 'e5248059-fa5f-4464-87dc-23bab1edcd8c',
@@ -205,8 +218,35 @@ const projectResponseMock = {
               time: '1634037212001312487',
             },
           },
-          openRemediations: null,
+          openRemediations: [],
+          openApprovals: [],
+          creationDate: '1632999870648452455',
+          deployedImage: 'docker.io/mongo:4.2.2',
           serviceName: 'carts-db',
+          latestSequence: {
+            name: 'delivery-direct',
+            service: 'carts-db',
+            project: 'sockshop',
+            time: '2021-10-12T11:12:55.904Z',
+            shkeptncontext: '0cc574e9-3d47-4a29-81b7-84faf33bdc9c',
+            state: 'finished',
+            stages: [
+              {
+                name: 'dev',
+                image: 'docker.io/mongo:4.2.2',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.dev.delivery-direct.finished',
+                  id: 'e170b6cc-27ab-4f9a-a8c9-86cb37c2babd',
+                  time: '2021-10-12T11:13:34.304Z',
+                },
+              },
+            ],
+          },
+          deploymentInformation: {
+            deploymentUrl: 'http://dev-carts-db.com',
+            image: 'mongo:4.2.2',
+          },
         },
       ],
       stageName: 'dev',
@@ -214,8 +254,6 @@ const projectResponseMock = {
     {
       services: [
         {
-          creationDate: '1632999823491550948',
-          deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
           lastEventTypes: {
             'sh.keptn.event.approval.finished': {
               eventId: '0b31d407-db29-4f80-82eb-e30f45a74c1f',
@@ -234,17 +272,17 @@ const projectResponseMock = {
             },
             'sh.keptn.event.deployment.finished': {
               eventId: 'cd2bed17-388d-4771-a95e-0548093ae8b8',
-              keptnContext: keptnContextDeploymentStaging,
+              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
               time: '1636109341288361706',
             },
             'sh.keptn.event.deployment.started': {
               eventId: '7b473f05-e61e-452a-ba78-4501941a16c6',
-              keptnContext: keptnContextDeploymentStaging,
+              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
               time: '1636109246055285536',
             },
             'sh.keptn.event.deployment.triggered': {
               eventId: 'baaf784a-34b7-4cc9-bdc5-1b80669b3dde',
-              keptnContext: keptnContextDeploymentStaging,
+              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
               time: '1636109245959499928',
             },
             'sh.keptn.event.evaluation.finished': {
@@ -373,12 +411,297 @@ const projectResponseMock = {
               time: '1633073831796796941',
             },
           },
-          openRemediations: null,
+          openRemediations: [],
+          openApprovals: [
+            {
+              evaluationTrace: {
+                data: {
+                  approval: {
+                    pass: 'manual',
+                    warning: 'manual',
+                  },
+                  configurationChange: {
+                    values: {
+                      image: 'docker.io/keptnexamples/carts:0.12.1',
+                    },
+                  },
+                  deployment: {
+                    deploymentNames: ['canary', 'direct'],
+                    deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
+                    deploymentURIsPublic: [
+                      'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
+                      'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
+                    ],
+                    deploymentstrategy: 'duplicate',
+                    gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
+                  },
+                  evaluation: {
+                    comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+                    gitCommit: '',
+                    indicatorResults: [
+                      {
+                        displayName: 'Response time P95',
+                        keySli: false,
+                        passTargets: [
+                          {
+                            criteria: '<=+10%',
+                            targetValue: 336.9946150194969,
+                            violated: false,
+                          },
+                          {
+                            criteria: '<600',
+                            targetValue: 600,
+                            violated: false,
+                          },
+                        ],
+                        score: 1,
+                        status: 'pass',
+                        value: {
+                          metric: 'response_time_p95',
+                          success: true,
+                          value: 304.2952915485157,
+                        },
+                        warningTargets: [
+                          {
+                            criteria: '<=800',
+                            targetValue: 800,
+                            violated: false,
+                          },
+                        ],
+                      },
+                    ],
+                    result: 'pass',
+                    score: 100,
+                    sloFileContent:
+                      'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+                    timeEnd: '2021-10-13T10:53:29Z',
+                    timeStart: '2021-10-13T10:51:08Z',
+                  },
+                  labels: {
+                    DtCreds: 'dynatrace',
+                  },
+                  message: '',
+                  project: 'sockshop',
+                  release: {
+                    gitCommit: '',
+                  },
+                  result: 'pass',
+                  service: 'carts',
+                  stage: 'staging',
+                  status: 'succeeded',
+                  temporaryData: {
+                    distributor: {
+                      subscriptionID: '',
+                    },
+                  },
+                  test: {
+                    end: '2021-10-13T10:53:29Z',
+                    gitCommit: '',
+                    start: '2021-10-13T10:51:08Z',
+                  },
+                },
+                id: '93c2eba9-b77c-4976-b079-29a0188d86ef',
+                source: 'lighthouse-service',
+                specversion: '1.0',
+                time: '2021-10-13T10:54:43.112Z',
+                type: 'sh.keptn.event.evaluation.finished',
+                shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
+                shkeptnspecversion: '0.2.3',
+                triggeredid: '1cc9c272-721a-43de-98f6-9eceae484cf5',
+              },
+              trace: {
+                data: {
+                  approval: {
+                    pass: 'manual',
+                    warning: 'manual',
+                  },
+                  configurationChange: {
+                    values: {
+                      image: 'docker.io/keptnexamples/carts:0.12.1',
+                    },
+                  },
+                  deployment: {
+                    deploymentNames: ['canary', 'direct'],
+                    deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
+                    deploymentURIsPublic: [
+                      'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
+                      'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
+                    ],
+                    deploymentstrategy: 'duplicate',
+                    gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
+                  },
+                  evaluation: {
+                    comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+                    gitCommit: '',
+                    indicatorResults: [
+                      {
+                        displayName: 'Response time P95',
+                        keySli: false,
+                        passTargets: [
+                          {
+                            criteria: '<=+10%',
+                            targetValue: 336.9946150194969,
+                            violated: false,
+                          },
+                          {
+                            criteria: '<600',
+                            targetValue: 600,
+                            violated: false,
+                          },
+                        ],
+                        score: 1,
+                        status: 'pass',
+                        value: {
+                          metric: 'response_time_p95',
+                          success: true,
+                          value: 304.2952915485157,
+                        },
+                        warningTargets: [
+                          {
+                            criteria: '<=800',
+                            targetValue: 800,
+                            violated: false,
+                          },
+                        ],
+                      },
+                    ],
+                    responses: ['Redirecting to https://keptn.sh/\n'],
+                    result: 'pass',
+                    score: 100,
+                    sloFileContent:
+                      'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+                    timeEnd: '2021-10-13T10:53:29Z',
+                    timeStart: '2021-10-13T10:51:08Z',
+                  },
+                  labels: {
+                    DtCreds: 'dynatrace',
+                  },
+                  message: '',
+                  project: 'sockshop',
+                  release: {
+                    gitCommit: '',
+                  },
+                  result: 'pass',
+                  service: 'carts',
+                  stage: 'staging',
+                  status: 'succeeded',
+                  temporaryData: {
+                    distributor: {
+                      subscriptionID: '',
+                    },
+                  },
+                  test: {
+                    end: '2021-10-13T10:53:29Z',
+                    gitCommit: '',
+                    start: '2021-10-13T10:51:08Z',
+                  },
+                },
+                id: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
+                source: 'shipyard-controller',
+                specversion: '1.0',
+                time: '2021-10-13T10:54:43.311Z',
+                type: 'sh.keptn.event.approval.triggered',
+                shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
+                shkeptnspecversion: '0.2.3',
+              },
+            },
+          ],
+          creationDate: '1632999823491550948',
+          deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
           serviceName: 'carts',
+          latestSequence: {
+            name: 'delivery',
+            service: 'carts',
+            project: 'sockshop',
+            time: '2021-10-29T08:40:02.123Z',
+            shkeptncontext: '29af69cc-ea85-4358-b169-ce29034d9c81',
+            state: 'finished',
+            stages: [
+              {
+                name: 'staging',
+                image: 'docker.io/keptnexamples/carts:0.12.3',
+                state: 'finished',
+                latestEvaluation: {
+                  result: 'pass',
+                  score: 100,
+                },
+                latestEvent: {
+                  type: 'sh.keptn.event.staging.rollback.finished',
+                  id: '236a6da9-d76c-4d6c-bb0c-6e529c6912fb',
+                  time: '2021-11-05T10:53:00.603Z',
+                },
+                latestFailedEvent: {
+                  type: 'sh.keptn.event.staging.delivery.finished',
+                  id: 'f8d890e0-2951-42c4-8b97-d512af6f068a',
+                  time: '2021-11-05T10:52:31.260Z',
+                },
+                latestEvaluationTrace: {
+                  data: {
+                    service: 'carts',
+                    stage: 'staging',
+                    project: 'sockshop',
+                    result: 'pass',
+                    evaluation: {
+                      comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+                      gitCommit: '',
+                      indicatorResults: [
+                        {
+                          displayName: 'Response time P95',
+                          keySli: false,
+                          passTargets: [
+                            {
+                              criteria: '<=+10%',
+                              targetValue: 336.9946150194969,
+                              violated: false,
+                            },
+                            {
+                              criteria: '<600',
+                              targetValue: 600,
+                              violated: false,
+                            },
+                          ],
+                          score: 1,
+                          status: 'pass',
+                          value: {
+                            metric: 'response_time_p95',
+                            success: true,
+                            value: 304.2952915485157,
+                          },
+                          warningTargets: [
+                            {
+                              criteria: '<=800',
+                              targetValue: 800,
+                              violated: false,
+                            },
+                          ],
+                        },
+                      ],
+                      result: 'pass',
+                      score: 100,
+                      sloFileContent:
+                        'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+                      timeEnd: '2021-10-13T10:53:29Z',
+                      timeStart: '2021-10-13T10:51:08Z',
+                    },
+                  },
+                  id: '7c1e8531-3005-4b4f-831e-da84d3613f93',
+                  source: 'lighthouse-service',
+                  specversion: '1.0',
+                  time: '2021-10-13T10:54:43.112Z',
+                  type: 'sh.keptn.event.evaluation.finished',
+                  shkeptncontext: '29af69cc-ea85-4358-b169-ce29034d9c81',
+                  shkeptnspecversion: '0.2.3',
+                  triggeredid: '1cc9c272-721a-43de-98f6-9eceae484cf5',
+                },
+              },
+            ],
+          },
+          deploymentInformation: {
+            deploymentUrl: 'http://staging-carts.com',
+            image: 'carts:0.12.3',
+          },
         },
         {
-          creationDate: '1632999875203630913',
-          deployedImage: 'docker.io/mongo:4.2.2',
           lastEventTypes: {
             'sh.keptn.event.approval.finished': {
               eventId: 'a823d8b8-146e-442b-94d7-f81870eab073',
@@ -436,8 +759,35 @@ const projectResponseMock = {
               time: '1634037214405956780',
             },
           },
-          openRemediations: null,
+          openRemediations: [],
+          openApprovals: [],
+          creationDate: '1632999875203630913',
+          deployedImage: 'docker.io/mongo:4.2.2',
           serviceName: 'carts-db',
+          latestSequence: {
+            name: 'delivery-direct',
+            service: 'carts-db',
+            project: 'sockshop',
+            time: '2021-10-12T11:12:55.904Z',
+            shkeptncontext: '0cc574e9-3d47-4a29-81b7-84faf33bdc9c',
+            state: 'finished',
+            stages: [
+              {
+                name: 'staging',
+                image: 'docker.io/mongo:4.2.2',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.staging.delivery-direct.finished',
+                  id: '7e2ba68e-9780-43ca-9aa7-d181329370e6',
+                  time: '2021-10-12T11:14:33.202Z',
+                },
+              },
+            ],
+          },
+          deploymentInformation: {
+            deploymentUrl: 'http://staging-carts-db.com',
+            image: 'mongo:4.2.2',
+          },
         },
       ],
       stageName: 'staging',
@@ -446,8 +796,6 @@ const projectResponseMock = {
     {
       services: [
         {
-          creationDate: '1632999827864626575',
-          deployedImage: 'docker.io/keptnexamples/carts:0.12.1',
           lastEventTypes: {
             'sh.keptn.event.deployment.finished': {
               eventId: '9998714f-64f1-431f-8423-7bbcef957604',
@@ -520,12 +868,73 @@ const projectResponseMock = {
               time: '1636002059361084387',
             },
           },
-          openRemediations: null,
+          openRemediations: [
+            {
+              stages: [
+                {
+                  name: 'production',
+                  state: 'started',
+                  latestEvent: {
+                    type: 'sh.keptn.event.get-action.started',
+                    id: '7448420f-5b15-4777-9d39-cc8308e2b0c3',
+                    time: '2021-11-04T04:51:23.266Z',
+                  },
+                  actions: [
+                    {
+                      action: 'toggle-feature',
+                      description: 'Toogle feature flag EnableItemCache to ON',
+                      name: 'Toogle feature flag',
+                      value: {
+                        EnableItemCache: 'on',
+                      },
+                      state: 'finished',
+                      result: 'pass',
+                    },
+                  ],
+                },
+              ],
+              name: 'remediation',
+              service: 'carts',
+              project: 'sockshop',
+              time: '2021-11-04T04:51:21.557Z',
+              shkeptncontext: '35383737-3630-4639-b037-353138323631',
+              state: 'started',
+            },
+          ],
+          openApprovals: [],
+          creationDate: '1632999827864626575',
+          deployedImage: 'docker.io/keptnexamples/carts:0.12.1',
           serviceName: 'carts',
+          latestSequence: {
+            name: 'remediation',
+            service: 'carts',
+            project: 'sockshop',
+            time: '2021-11-04T04:51:21.557Z',
+            shkeptncontext: '35383737-3630-4639-b037-353138323631',
+            state: 'finished',
+            stages: [
+              {
+                name: 'production',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.production.remediation.finished',
+                  id: '7448420f-5b15-4777-9d39-cc8308e2b0c3',
+                  time: '2021-11-04T04:51:23.266Z',
+                },
+                latestFailedEvent: {
+                  type: 'sh.keptn.event.production.remediation.finished',
+                  id: '7448420f-5b15-4777-9d39-cc8308e2b0c3',
+                  time: '2021-11-04T04:51:23.266Z',
+                },
+              },
+            ],
+          },
+          deploymentInformation: {
+            deploymentUrl: 'http://production-carts.com',
+            image: 'carts:0.12.1',
+          },
         },
         {
-          creationDate: '1632999879474188928',
-          deployedImage: 'docker.io/mongo:4.2.2',
           lastEventTypes: {
             'sh.keptn.event.deployment.finished': {
               eventId: '2ce9d439-6c75-44d0-aa3f-6f2b3576f8e7',
@@ -568,17 +977,41 @@ const projectResponseMock = {
               time: '1634037297604313167',
             },
           },
-          openRemediations: null,
+          openRemediations: [],
+          openApprovals: [],
+          creationDate: '1632999879474188928',
+          deployedImage: 'docker.io/mongo:4.2.2',
           serviceName: 'carts-db',
+          latestSequence: {
+            name: 'delivery-direct',
+            service: 'carts-db',
+            project: 'sockshop',
+            time: '2021-10-12T11:12:55.904Z',
+            shkeptncontext: '0cc574e9-3d47-4a29-81b7-84faf33bdc9c',
+            state: 'finished',
+            stages: [
+              {
+                name: 'production',
+                image: 'docker.io/mongo:4.2.2',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.production.delivery-direct.finished',
+                  id: 'aca3bcab-4863-4b87-a1e9-6c328c077348',
+                  time: '2021-10-12T11:14:59.804Z',
+                },
+              },
+            ],
+          },
+          deploymentInformation: {
+            deploymentUrl: 'http://production-carts-db.com',
+            image: 'mongo:4.2.2',
+          },
         },
       ],
       stageName: 'production',
       parentStages: ['staging'],
     },
   ],
-};
-
-const projectQualityGatesResponse = {
   creationDate: '1632999780800366280',
   gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace-v1',
   gitUser: 'Kirdock',
@@ -586,179 +1019,6 @@ const projectQualityGatesResponse = {
   shipyard:
     'apiVersion: spec.keptn.sh/0.2.2\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 15m\n                  properties:\n                    timeframe: 15m\n',
   shipyardVersion: 'spec.keptn.sh/0.2.2',
-  stages: [
-    {
-      services: [
-        {
-          creationDate: '1632999819358104940',
-          lastEventTypes: {
-            'sh.keptn.event.dev.evaluation.finished': {
-              eventId: '16338541-30a0-4a6b-b990-d4e81d0dd9fd',
-              keptnContext: '79a80508-b9c5-4b71-a8c7-98b39bb4b5dd',
-              time: '1635866557202816616',
-            },
-            'sh.keptn.event.dev.evaluation.triggered': {
-              eventId: 'c4b192e5-e33f-441a-bae8-e0922a80aaa4',
-              keptnContext: '79a80508-b9c5-4b71-a8c7-98b39bb4b5dd',
-              time: '1635866530701681563',
-            },
-            'sh.keptn.event.evaluation.finished': {
-              eventId: '1064035a-a908-4165-9368-f70297716e34',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636115048667099257',
-            },
-            'sh.keptn.event.evaluation.started': {
-              eventId: '9fa91160-b91d-4980-9b39-9e2aae13466c',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114917956875836',
-            },
-            'sh.keptn.event.evaluation.triggered': {
-              eventId: '6a456cc7-dcaa-4fb5-8c19-f74f0d999ab6',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114917876402210',
-            },
-            'sh.keptn.event.get-sli.finished': {
-              eventId: 'b37c2058-1c19-4a27-996d-3d2256aa40fc',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636115047365792075',
-            },
-            'sh.keptn.event.get-sli.started': {
-              eventId: 'e4e03769-94e7-4ecc-9728-bab6f795de58',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114920461529175',
-            },
-            'sh.keptn.event.get-sli.triggered': {
-              eventId: '06a169b2-cd9e-4e46-a9fc-1b132b42d8de',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114920456530146',
-            },
-            'sh.keptn.event.test.finished': {
-              eventId: '47013a83-9bb2-485a-b55c-43db355d6117',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114917763904168',
-            },
-            'sh.keptn.event.test.started': {
-              eventId: 'c822f8a3-1ef0-4768-b525-9c87f932f251',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114894258451746',
-            },
-            'sh.keptn.event.test.triggered': {
-              eventId: '9f98bfaf-35bf-44e1-90c2-f5c7fb740a39',
-              keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-              time: '1636114894156898359',
-            },
-          },
-          openRemediations: null,
-          serviceName: 'carts',
-        },
-        {
-          creationDate: '1632999870648452455',
-          lastEventTypes: {},
-          openRemediations: null,
-          serviceName: 'carts-db',
-        },
-      ],
-      stageName: 'dev',
-    },
-    {
-      services: [
-        {
-          creationDate: '1632999823491550948',
-          lastEventTypes: {
-            'sh.keptn.event.evaluation.finished': {
-              eventId: '7c1e8531-3005-4b4f-831e-da84d3613f93',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109551167902030',
-            },
-            'sh.keptn.event.evaluation.invalidated': {
-              eventId: '6715dd3f-e2c0-4627-aee4-f23ac1f90a78',
-              keptnContext: '199287a3-b723-479b-8083-8b3ff3482531',
-              time: '1634117655559543662',
-            },
-            'sh.keptn.event.evaluation.started': {
-              eventId: 'b8405eba-1b5a-421b-b9f9-38d95c97d1c3',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109471857303004',
-            },
-            'sh.keptn.event.evaluation.triggered': {
-              eventId: 'd0abb253-5ab5-45ba-84a7-05f9da3ea38f',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109471860859011',
-            },
-            'sh.keptn.event.get-sli.finished': {
-              eventId: 'cad33fc0-00b8-40d2-84ed-059e38966d5d',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109548584193827',
-            },
-            'sh.keptn.event.get-sli.started': {
-              eventId: '963eac9d-d667-437b-8c22-41e36b4ffb51',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109474256595017',
-            },
-            'sh.keptn.event.get-sli.triggered': {
-              eventId: 'b9d70498-fd95-483b-a347-c717e87feb04',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109474170571015',
-            },
-            'sh.keptn.event.staging.evaluation.finished': {
-              eventId: 'aa55bcb3-7a1f-49ca-806a-c12e73155d81',
-              keptnContext: '62acfcc1-02dc-4683-b6f3-64c38f5c534a',
-              time: '1635866621511128737',
-            },
-            'sh.keptn.event.staging.evaluation.triggered': {
-              eventId: 'f7e763f3-ea65-4a0b-b833-78f84821af29',
-              keptnContext: '62acfcc1-02dc-4683-b6f3-64c38f5c534a',
-              time: '1635866599693544147',
-            },
-            'sh.keptn.event.test.finished': {
-              eventId: '4b8793a2-17ca-412d-9efe-aa00c88beddd',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109471648146908',
-            },
-            'sh.keptn.event.test.started': {
-              eventId: '15c004f0-9871-42e5-bbd0-345247e3b91e',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109341369573266',
-            },
-            'sh.keptn.event.test.triggered': {
-              eventId: 'ab7009c8-ff2a-48e3-b10b-c160e49c6180',
-              keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-              time: '1636109341364946130',
-            },
-          },
-          openRemediations: null,
-          serviceName: 'carts',
-        },
-        {
-          creationDate: '1632999875203630913',
-          lastEventTypes: {},
-          openRemediations: null,
-          serviceName: 'carts-db',
-        },
-      ],
-      stageName: 'staging',
-      parentStages: ['dev'],
-    },
-    {
-      services: [
-        {
-          creationDate: '1632999827864626575',
-          lastEventTypes: {},
-          openRemediations: null,
-          serviceName: 'carts',
-        },
-        {
-          creationDate: '1632999879474188928',
-          lastEventTypes: {},
-          openRemediations: null,
-          serviceName: 'carts-db',
-        },
-      ],
-      stageName: 'production',
-      parentStages: ['staging'],
-    },
-  ],
 };
 
-export { projectQualityGatesResponse as ProjectQualityGatesResponse };
-export { projectResponseMock as ProjectResponse };
+export { projectDetailsResponse as ProjectDetailsResponse };
