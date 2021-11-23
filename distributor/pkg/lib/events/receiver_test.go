@@ -260,3 +260,84 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 	cancelReceiver()
 	executionContext.Wg.Wait()
 }
+
+func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilterNoMatch(t *testing.T) {
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	eventSender := &keptnv2.TestSender{}
+	envConfig := config.EnvConfig{
+		PubSubRecipient: "http://127.0.0.1",
+		PubSubTopic:     "sh.keptn.event.task.triggered",
+		PubSubURL:       natsURL,
+	}
+	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
+	ctx, cancelReceiver := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go receiver.Start(executionContext)
+
+	// make sure the message handler of the receiver is set before continuing with the test
+	require.Eventually(t, func() bool {
+		return receiver.natsConnectionHandler.messageHandler != nil
+	}, 5*time.Second, time.Second)
+	receiver.UpdateSubscriptions([]models.EventSubscription{
+		{
+			ID:    "id1",
+			Event: "sh.keptn.event.task.triggered",
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{"my-project"},
+				Stages:   []string{"stageX"},
+			},
+		},
+	})
+
+	time.Sleep(time.Second)
+	// send an event that matches both subscriptions
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
+
+	time.Sleep(time.Second)
+
+	require.Empty(t, eventSender.SentEvents)
+
+	cancelReceiver()
+	executionContext.Wg.Wait()
+}
+
+func Test_ReceiveFromNATSAndForwardEventNoSubscriptionPulling(t *testing.T) {
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	defer shutdownNats()
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	eventSender := &keptnv2.TestSender{}
+	config := config.EnvConfig{
+		PubSubRecipient: "http://127.0.0.1",
+		PubSubTopic:     "sh.keptn.event.task.triggered",
+		PubSubURL:       natsURL,
+	}
+	receiver := NewNATSEventReceiver(config, eventSender, false)
+	ctx, cancelReceiver := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go receiver.Start(executionContext)
+
+	// make sure the message handler of the receiver is set before continuing with the test
+	require.Eventually(t, func() bool {
+		return receiver.natsConnectionHandler.messageHandler != nil
+	}, 5*time.Second, time.Second)
+
+	time.Sleep(time.Second)
+	// send an event that matches both subscriptions
+	natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(task1TriggerEvent))
+
+	assert.Eventually(t, func() bool {
+		if len(eventSender.SentEvents) != 1 {
+			return false
+		}
+		return true
+	}, time.Second*time.Duration(5), time.Second)
+
+	cancelReceiver()
+	executionContext.Wg.Wait()
+}

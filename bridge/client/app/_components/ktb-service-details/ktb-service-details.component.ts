@@ -76,7 +76,7 @@ export class KtbServiceDetailsComponent implements OnDestroy {
   public showRemediationConfigDialog(config: string): void {
     if (this.remediationDialog) {
       this.remediationDialogRef = this.dialog.open(this.remediationDialog, {
-        data: config,
+        data: atob(config),
       });
     }
   }

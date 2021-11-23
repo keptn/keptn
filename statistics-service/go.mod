@@ -7,7 +7,7 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-test/deep v1.0.8
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.10.1-0.20211115145943-79e64c4f92ea
+	github.com/keptn/go-utils v0.11.0
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
