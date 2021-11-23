@@ -5,6 +5,7 @@ import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-confi
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Secret } from '../../_models/secret';
+import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
 
@@ -24,13 +25,12 @@ export class KtbWebhookSettingsComponent implements OnInit {
     sendFinished: new FormControl('true', []),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
+  public secretDataSource: SelectTreeNode[] = [];
   public sendFinishedOverlayConfig: DtOverlayConfig = {
     pinnable: true,
     originY: 'center',
   };
   public _eventType: string | undefined;
-
-  @Input() public secrets: Secret[] | undefined;
 
   @Input()
   set eventType(eventType: string | undefined) {
@@ -57,6 +57,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
       for (const controlKey of Object.keys(this.webhookConfigForm.controls)) {
         this.webhookConfigForm.get(controlKey)?.markAsDirty();
       }
+    }
+  }
+
+  @Input()
+  set secrets(secrets: Secret[] | undefined) {
+    if (secrets) {
+      this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
   }
 
@@ -121,5 +128,16 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
       this.getFormControl('sendFinished').enable();
     }
+  }
+
+  private mapSecret(secret: Secret): SelectTreeNode {
+    const scrt: SelectTreeNode = { name: secret.name };
+    if (secret.keys) {
+      scrt.keys = secret.keys.map((key: string) => {
+        return { name: key, path: `${secret.name}.${key}` };
+      });
+      scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return scrt;
   }
 }

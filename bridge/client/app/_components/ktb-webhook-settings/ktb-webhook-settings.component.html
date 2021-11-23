@@ -22,7 +22,7 @@
       <dt-error *ngIf="getFormControl('url').errors?.url">URL must start with http(s)://</dt-error>
       <div dtSuffix>
         <ktb-variable-selector
-          [secrets]="secrets"
+          [data]="secretDataSource"
           [title]="'Select secret'"
           [emptyText]="
             'No secrets can be found.<p>Secrets can be configured under the menu entry &quot;Secrets&quot; in the Uniform.</p>'
@@ -72,7 +72,7 @@
             <dt-error>Must not be empty</dt-error>
             <div dtSuffix>
               <ktb-variable-selector
-                [secrets]="secrets"
+                [data]="secretDataSource"
                 [title]="'Select secret'"
                 [emptyText]="
                   'No secrets can be found.<p>Secrets can be configured under the menu entry &quot;Secrets&quot; in the Uniform.</p>'
@@ -105,7 +105,7 @@
       <dt-error>Payload must not be empty</dt-error>
       <div dtSuffix>
         <ktb-variable-selector
-          [secrets]="secrets"
+          [data]="secretDataSource"
           [title]="'Select secret'"
           [emptyText]="
             'No secrets can be found.<p>Secrets can be configured under the menu entry &quot;Secrets&quot; in the Uniform.</p>'

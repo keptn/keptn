@@ -6,10 +6,49 @@ import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
+import { Secret } from '../../_models/secret';
+import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 
 describe('KtbWebhookSettingsComponent', () => {
   let component: KtbWebhookSettingsComponent;
   let fixture: ComponentFixture<KtbWebhookSettingsComponent>;
+
+  const secretDataSource = [
+    {
+      name: 'SecretA',
+      keys: [
+        {
+          name: 'key1',
+          path: 'SecretA.key1',
+        },
+        {
+          name: 'key2',
+          path: 'SecretA.key2',
+        },
+        {
+          name: 'key3',
+          path: 'SecretA.key3',
+        },
+      ],
+    },
+    {
+      name: 'SecretB',
+      keys: [
+        {
+          name: 'key1',
+          path: 'SecretB.key1',
+        },
+        {
+          name: 'key2',
+          path: 'SecretB.key2',
+        },
+        {
+          name: 'key3',
+          path: 'SecretB.key3',
+        },
+      ],
+    },
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -196,6 +235,23 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(component.webhookConfigForm.valid).toEqual(true);
+  });
+
+  it('should map secrets to a tree when set', () => {
+    // given, when
+    const secrets = [new Secret(), new Secret()];
+    secrets[0].name = 'SecretA';
+    secrets[0].scope = SecretScope.WEBHOOK;
+    secrets[0].keys = ['key1', 'key2', 'key3'];
+    secrets[1].name = 'SecretB';
+    secrets[1].scope = SecretScope.WEBHOOK;
+    secrets[1].keys = ['key1', 'key2', 'key3'];
+
+    // when
+    component.secrets = secrets;
+
+    // then
+    expect(component.secretDataSource).toEqual(secretDataSource);
   });
 
   it('should emit the set values in the form', () => {
