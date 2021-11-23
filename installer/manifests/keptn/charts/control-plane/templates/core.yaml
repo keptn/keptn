@@ -805,6 +805,7 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -826,6 +827,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 50
 ---
 apiVersion: v1
 kind: Service
@@ -919,6 +921,7 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -938,6 +941,8 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 50
+
 ---
 apiVersion: v1
 kind: Service
@@ -1035,6 +1040,7 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -1056,6 +1062,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 50
 ---
 apiVersion: v1
 kind: Service

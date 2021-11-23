@@ -70,6 +70,10 @@ spec:
           allowPrivilegeEscalation: false
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sleep", "30"]
         imagePullPolicy: IfNotPresent
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
@@ -90,6 +94,7 @@ spec:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
       serviceAccountName: keptn-default
+      terminationGracePeriodSeconds: 50
 ---
 apiVersion: v1
 kind: Service
