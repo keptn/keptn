@@ -103,6 +103,36 @@ const sequenceDeliveryTillStagingResponseMock = {
   ],
 };
 
+const sequenceResponseURLFallback = {
+  states: [
+    {
+      name: 'delivery',
+      service: 'carts',
+      project: 'sockshop',
+      time: '2021-11-05T12:20:06.463Z',
+      shkeptncontext: 'keptnContext',
+      state: 'finished',
+      stages: [
+        {
+          name: 'dev',
+          state: 'finished',
+          latestEvent: {
+            type: 'sh.keptn.event.deployment.finished',
+            id: 'eventId',
+            time: '2021-11-10T11:59:58.655Z',
+          },
+          latestFailedEvent: {
+            type: 'sh.keptn.event.deployment.finished',
+            id: 'eventId',
+            time: '2021-11-10T11:59:58.655Z',
+          },
+        },
+      ],
+    },
+  ],
+  totalCount: 1,
+};
+
 const sequencesResponses = {
   [DevCartsLatestServiceEvent.keptnContext]: {
     states: [
@@ -365,3 +395,4 @@ const sequencesResponses = {
 export { sequenceDeliveryResponseMock as SequenceDeliveryResponseMock };
 export { sequenceDeliveryTillStagingResponseMock as SequenceDeliveryTillStagingResponseMock };
 export { sequencesResponses as SequencesResponses };
+export { sequenceResponseURLFallback as SequenceResponseURLFallback };

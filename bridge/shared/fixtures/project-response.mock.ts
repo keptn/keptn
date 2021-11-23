@@ -1,3 +1,5 @@
+import { EventTypes } from '../interfaces/event-types';
+
 const keptnContextDeploymentDev = '2e21574c-dcf7-4275-b677-6bc19214acd5';
 const keptnContextDeploymentStaging = '29af69cc-ea85-4358-b169-ce29034d9c81';
 const devCartsDeploymentFinished = {
@@ -787,8 +789,79 @@ const projectQualityGatesResponse = {
   ],
 };
 
+const projectResponseURLFallback = {
+  projectName: 'sockshop',
+  stages: [
+    {
+      stageName: 'dev',
+      services: [
+        {
+          serviceName: 'carts',
+          lastEventTypes: {
+            [EventTypes.DEPLOYMENT_FINISHED]: {
+              eventId: 'eventId',
+              keptnContext: 'keptnContext',
+              time: '1637666066861000',
+            },
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const projectDetailsResponseURLFallback = {
+  stages: [
+    {
+      services: [
+        {
+          lastEventTypes: {
+            'sh.keptn.event.deployment.finished': {
+              eventId: 'eventId',
+              keptnContext: 'keptnContext',
+              time: '1637666066861000',
+            },
+          },
+          openRemediations: [],
+          openApprovals: [],
+          serviceName: 'carts',
+          latestSequence: {
+            name: 'delivery',
+            service: 'carts',
+            project: 'sockshop',
+            time: '2021-11-05T12:20:06.463Z',
+            shkeptncontext: 'keptnContext',
+            state: 'finished',
+            stages: [
+              {
+                name: 'dev',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.deployment.finished',
+                  id: 'eventId',
+                  time: '2021-11-10T11:59:58.655Z',
+                },
+                latestFailedEvent: {
+                  type: 'sh.keptn.event.deployment.finished',
+                  id: 'eventId',
+                  time: '2021-11-10T11:59:58.655Z',
+                },
+              },
+            ],
+          },
+          deploymentInformation: { deploymentUrl: 'http://carts.sockshop-dev.35.192.209.116.nip.io:80' },
+        },
+      ],
+      stageName: 'dev',
+    },
+  ],
+  projectName: 'sockshop',
+};
+
 export { projectQualityGatesResponse as ProjectQualityGatesResponse };
 export { projectResponseMock as ProjectResponse };
+export { projectResponseURLFallback as ProjectResponseURLFallback };
+export { projectDetailsResponseURLFallback as ProjectDetailsResponseURLFallback };
 export { devCartsDeploymentFinished as DevCartsDeploymentFinished };
 export { devCartsDbDeploymentFinished as DevCartsDbDeploymentFinished };
 export { devCartsEvaluationFinished as DevCartsEvaluationFinished };

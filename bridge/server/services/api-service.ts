@@ -170,13 +170,11 @@ export class ApiService {
     projectName: string,
     eventType: EventTypes,
     eventIds: string,
-    source?: KeptnService,
-    resultType?: ResultTypes
+    source?: KeptnService
   ): Promise<AxiosResponse<EventResult>> {
-    const resultTypeString = resultType ? `AND data.result:${resultType} ` : '';
     const sourceString = source ? `AND source:${source} ` : '';
     const params = {
-      filter: `data.project:${projectName} ${resultTypeString}${sourceString}AND ${eventIds}`,
+      filter: `data.project:${projectName} ${sourceString}AND ${eventIds}`,
       excludeInvalidated: 'true',
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, { params });

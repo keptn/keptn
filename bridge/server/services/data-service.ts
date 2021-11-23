@@ -96,7 +96,6 @@ export class DataService {
       const stageApprovals = openApprovals.filter((approval) => approval.trace.data.stage === stage.stageName);
       const stageEvaluations = latestEvaluations.filter((t) => t.data.stage === stage.stageName);
       const stageDeployments = latestDeployments.filter((t) => t.data.stage === stage.stageName);
-      // for sequence adjustment: const stageSequences = latestSequences.filter((seq) => seq.stages.some((st) => st.name === stage.stageName));
       const stageInformation: StageOpenInformation = {
         openApprovals: stageApprovals,
         openRemediations: stageRemediations,
@@ -170,11 +169,7 @@ export class DataService {
     );
   }
 
-  private async getLatestEvaluationResultsForServices(
-    projectName: string,
-    services: Service[],
-    resultType?: ResultTypes
-  ): Promise<Trace[]> {
+  private async getLatestEvaluationResultsForServices(projectName: string, services: Service[]): Promise<Trace[]> {
     return this.getLatestTracesOfMultipleServices(
       projectName,
       services,
@@ -184,11 +179,24 @@ export class DataService {
         const latestEvaluation = service.lastEventTypes[EventTypes.EVALUATION_FINISHED];
         return latestEvent?.keptnContext === latestEvaluation?.keptnContext ? latestEvaluation : undefined;
       },
-      KeptnService.LIGHTHOUSE_SERVICE,
-      resultType
+      KeptnService.LIGHTHOUSE_SERVICE
     );
   }
 
+  /**
+   * Fetches the latest event provided by latestEventTypes of a service.
+   * If resultType is provided, the result is filtered and if it does not match, it fetches the one with the right result.
+   * This will result in API-Calls:
+   *  best case: O(1)
+   *  worst case: O(N) (exceptional case for deployment.finished is fail)
+   * @param projectName
+   * @param services
+   * @param eventType
+   * @param getServiceEvent
+   * @param source
+   * @param resultType
+   * @private
+   */
   private async getLatestTracesOfMultipleServices(
     projectName: string,
     services: Service[],
@@ -215,13 +223,34 @@ export class DataService {
           projectName,
           eventType,
           `id:${eventIds.join(',')}`,
-          source,
-          resultType
+          source
         );
+        if (resultType) {
+          await this.checkAndSetEventsWithResult(response.data.events, resultType);
+        }
         traces = [...traces, ...response.data.events];
       }
     }
     return traces;
+  }
+
+  private async checkAndSetEventsWithResult(traces: Trace[], resultType: ResultTypes): Promise<void> {
+    for (let i = 0; i < traces.length; ++i) {
+      const trace = traces[i];
+      if (trace.data.result !== resultType) {
+        const response = await this.apiService.getTracesWithResult(
+          trace.type as EventTypes,
+          1,
+          trace.data.project as string,
+          trace.data.stage as string,
+          trace.data.service as string,
+          resultType
+        );
+        if (response.data.events.length) {
+          traces[i] = response.data.events[0];
+        }
+      }
+    }
   }
 
   private async setServiceDetails(

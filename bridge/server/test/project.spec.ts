@@ -1,7 +1,11 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { StagesResponse } from '../fixtures/stages.mock';
-import { ProjectResponse } from '../../shared/fixtures/project-response.mock';
+import {
+  ProjectDetailsResponseURLFallback,
+  ProjectResponse,
+  ProjectResponseURLFallback,
+} from '../../shared/fixtures/project-response.mock';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { SequenceState } from '../../shared/models/sequence';
 import {
@@ -10,13 +14,16 @@ import {
 } from '../../shared/fixtures/open-remediations-response.mock';
 import {
   ApprovalEvaluationResponse,
+  DefaultDeploymentData,
+  DefaultDeploymentFinishedTrace,
   LatestFinishedDeployments,
   LatestFinishedEvaluations,
   OpenApprovalsResponse,
 } from '../../shared/fixtures/traces-response.mock';
-import { SequencesResponses } from '../fixtures/sequence-response.mock';
+import { SequenceResponseURLFallback, SequencesResponses } from '../fixtures/sequence-response.mock';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { ProjectDetailsResponse } from '../fixtures/project-details-response.mock';
+import { ResultTypes } from '../../shared/models/result-types';
 
 let axiosMock: MockAdapter;
 
@@ -103,5 +110,61 @@ describe('Test project resources', () => {
 
     const response = await request(global.app).get(`/api/project/${projectName}?approval=true&remediation=true`);
     expect(response.body).toEqual(ProjectDetailsResponse);
+  });
+
+  it('should correctly set deployment URL', async () => {
+    const projectName = 'sockshop';
+    const data = {
+      message: 'Failed to deploy',
+      project: 'sockshop',
+      result: ResultTypes.FAILED,
+      service: 'carts',
+      stage: 'dev',
+      status: 'failed',
+    };
+    axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}`).reply(200, ProjectResponseURLFallback);
+    axiosMock
+      .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_FINISHED}`, {
+        params: {
+          filter: `data.project:${projectName} AND id:eventId`,
+          excludeInvalidated: 'true',
+        },
+      })
+      .reply(200, {
+        events: [
+          {
+            ...DefaultDeploymentFinishedTrace,
+            data,
+          },
+        ],
+      });
+
+    axiosMock
+      .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_FINISHED}`, {
+        params: {
+          filter: `data.project:${projectName} AND data.service:carts AND data.stage:dev AND data.result:pass`,
+          excludeInvalidated: 'true',
+          limit: '1',
+        },
+      })
+      .reply(200, {
+        events: [
+          {
+            ...DefaultDeploymentFinishedTrace,
+            data: {
+              ...data,
+              deployment: DefaultDeploymentData,
+              result: ResultTypes.PASSED,
+            },
+          },
+        ],
+      });
+
+    axiosMock
+      .onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`)
+      .reply(200, SequenceResponseURLFallback);
+
+    const response = await request(global.app).get(`/api/project/${projectName}`);
+    expect(response.body).toEqual(ProjectDetailsResponseURLFallback);
   });
 });

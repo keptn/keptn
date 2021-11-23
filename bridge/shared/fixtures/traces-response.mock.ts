@@ -2125,3 +2125,5 @@ export { latestFinishedDeployments as LatestFinishedDeployments };
 export { latestFinishedEvaluations as LatestFinishedEvaluations };
 export { openApprovalsResponse as OpenApprovalsResponse };
 export { approvalEvaluationResponse as ApprovalEvaluationResponse };
+export { defaultDeploymentFinishedTrace as DefaultDeploymentFinishedTrace };
+export { defaultDeploymentData as DefaultDeploymentData };
