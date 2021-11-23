@@ -15,7 +15,7 @@ export class KtbSecretSelectorComponent {
 
   public secretDataSource: SelectTreeNode[] = [];
   public secretOptions: TreeListSelectOptions = {
-    headerText: 'selectSecret',
+    headerText: 'Select secret',
     emptyText:
       'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
   };
