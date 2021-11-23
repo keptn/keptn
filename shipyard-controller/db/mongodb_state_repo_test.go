@@ -32,8 +32,12 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 
 	randomDbName := memongo.RandomDatabase()
 
-	os.Setenv("MONGODB_DATABASE", randomDbName)
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+	if err := os.Setenv("MONGODB_DATABASE", randomDbName); err != nil {
+		return nil, err
+	}
+	if err := os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName)); err != nil {
+		return nil, err
+	}
 
 	var mongoClient *mongo.Client
 	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
@@ -99,7 +103,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(1), states.TotalCount)
-	require.Equal(t, 1, len(states.States))
+	require.Len(t, states.States, 1)
 	require.Equal(t, state, states.States[0])
 
 	// Find by project name
@@ -111,7 +115,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(3), states.TotalCount)
-	require.Equal(t, 3, len(states.States))
+	require.Len(t, states.States, 3)
 	require.Equal(t, state, states.States[0])
 	require.Equal(t, state2, states.States[1])
 	require.Equal(t, state3, states.States[2])
@@ -126,7 +130,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(1), states.TotalCount)
-	require.Equal(t, 1, len(states.States))
+	require.Len(t, states.States, 1)
 	require.Equal(t, state, states.States[0])
 
 	// Find by project and sequence state
@@ -139,7 +143,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(1), states.TotalCount)
-	require.Equal(t, 1, len(states.States))
+	require.Len(t, states.States, 1)
 	require.Equal(t, state2, states.States[0])
 
 	// Find by project and from time
@@ -152,7 +156,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(1), states.TotalCount)
-	require.Equal(t, 1, len(states.States))
+	require.Len(t, states.States, 1)
 	require.Equal(t, state, states.States[0])
 
 	// Find by project and before time
@@ -165,7 +169,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(1), states.TotalCount)
-	require.Equal(t, 1, len(states.States))
+	require.Len(t, states.States, 1)
 	require.Equal(t, state3, states.States[0])
 
 	// Find by project and before and from time
@@ -179,9 +183,22 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, int64(1), states.TotalCount)
-	require.Equal(t, 1, len(states.States))
+	require.Len(t, states.States, 1)
 	require.Equal(t, state2, states.States[0])
 
+	// Filter by multiple keptnContext IDs
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:      "my-project",
+			KeptnContext: "my-context,my-context2",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(2), states.TotalCount)
+	require.Len(t, states.States, 2)
+	require.Equal(t, state, states.States[0])
+	require.Equal(t, state2, states.States[1])
 }
 
 func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {

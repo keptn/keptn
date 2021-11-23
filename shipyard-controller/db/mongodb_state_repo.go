@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strings"
 	"time"
 )
 
@@ -116,7 +117,11 @@ func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bso
 	}
 
 	if filter.KeptnContext != "" {
-		searchOptions["shkeptncontext"] = filter.KeptnContext
+		splitContexts := strings.Split(filter.KeptnContext, ",")
+		//searchOptions["shkeptncontext"] = filter.KeptnContext
+		searchOptions["shkeptncontext"] = bson.M{
+			"$in": splitContexts,
+		}
 	}
 
 	if filter.Name != "" {
