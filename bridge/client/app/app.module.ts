@@ -143,6 +143,7 @@ import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { DtRadioModule } from '@dynatrace/barista-components/radio';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { KtbSecretSelectorComponent } from './_components/ktb-secret-selector/ktb-secret-selector.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -230,6 +231,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbTreeListSelectDirective,
     KtbSequenceStateInfoComponent,
     KtbPayloadViewerComponent,
+    KtbSecretSelectorComponent,
   ],
   imports: [
     BrowserModule,

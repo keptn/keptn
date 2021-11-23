@@ -21,14 +21,12 @@
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url">URL must start with http(s)://</dt-error>
       <div dtSuffix>
-        <ng-container
-          [ngTemplateOutlet]="secretButton"
-          [ngTemplateOutletContext]="{
-            $implicit: undefined,
-            controlName: 'url',
-            selectionStart: urlInput.selectionStart
-          }"
-        ></ng-container>
+        <ktb-secret-selector
+          [secrets]="secrets"
+          [control]="getFormControl('url')"
+          [selectionStart]="urlInput.selectionStart"
+          (changed)="onWebhookFormChange()"
+        ></ktb-secret-selector>
       </div>
     </dt-form-field>
   </div>
@@ -68,15 +66,12 @@
             />
             <dt-error>Must not be empty</dt-error>
             <div dtSuffix>
-              <ng-container
-                [ngTemplateOutlet]="secretButton"
-                [ngTemplateOutletContext]="{
-                  $implicit: '',
-                  controlName: 'header',
-                  index: i,
-                  selectionStart: headerInput.selectionStart
-                }"
-              ></ng-container>
+              <ktb-secret-selector
+                [secrets]="secrets"
+                [control]="getFormControl('header', i)"
+                [selectionStart]="headerInput.selectionStart"
+                (changed)="onWebhookFormChange()"
+              ></ktb-secret-selector>
             </div>
           </dt-form-field>
           <button
@@ -99,14 +94,12 @@
       <textarea #payloadInput class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
       <div dtSuffix>
-        <ng-container
-          [ngTemplateOutlet]="secretButton"
-          [ngTemplateOutletContext]="{
-            $implicit: undefined,
-            controlName: 'payload',
-            selectionStart: payloadInput.selectionStart
-          }"
-        ></ng-container>
+        <ktb-secret-selector
+          [secrets]="secrets"
+          [control]="getFormControl('payload')"
+          [selectionStart]="payloadInput.selectionStart"
+          (changed)="onWebhookFormChange()"
+        ></ktb-secret-selector>
       </div>
     </dt-form-field>
   </div>
@@ -139,17 +132,3 @@
     </ng-template>
   </div>
 </form>
-
-<ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
-  <button
-    dt-icon-button
-    variant="nested"
-    aria-label="Add secret"
-    ktbTreeListSelect
-    [data]="secretDataSource"
-    [options]="secretOptions"
-    (selected)="setSecret($event, controlName, selectionStart, index)"
-  >
-    <dt-icon name="resetpassword"></dt-icon>
-  </button>
-</ng-template>

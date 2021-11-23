@@ -3,9 +3,8 @@ import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '
 import { FormUtils } from '../../_utils/form.utils';
 import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
-import { Secret } from '../../_models/secret';
-import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
+import { Secret } from '../../_models/secret';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
 
@@ -25,17 +24,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
     sendFinished: new FormControl('true', []),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
-  public secretDataSource: SelectTreeNode[] = [];
-  public secretOptions: TreeListSelectOptions = {
-    headerText: 'selectSecret',
-    emptyText:
-      'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
-  };
   public sendFinishedOverlayConfig: DtOverlayConfig = {
     pinnable: true,
     originY: 'center',
   };
   public _eventType: string | undefined;
+
+  @Input() public secrets: Secret[] | undefined;
 
   @Input()
   set eventType(eventType: string | undefined) {
@@ -62,13 +57,6 @@ export class KtbWebhookSettingsComponent implements OnInit {
       for (const controlKey of Object.keys(this.webhookConfigForm.controls)) {
         this.webhookConfigForm.get(controlKey)?.markAsDirty();
       }
-    }
-  }
-
-  @Input()
-  set secrets(secrets: Secret[] | undefined) {
-    if (secrets) {
-      this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
   }
 
@@ -116,27 +104,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this.header.removeAt(index);
   }
 
-  public getFormControl(controlName: ControlType): AbstractControl {
-    return this.webhookConfigForm.get(controlName) as AbstractControl;
-  }
-
-  public setSecret(secret: string, controlName: ControlType, selectionStart: number, controlIndex?: number): void {
-    let control: AbstractControl;
+  public getFormControl(controlName: ControlType, controlIndex?: number): AbstractControl {
     if (controlName === 'header' && controlIndex !== undefined) {
       const group = this.header.at(controlIndex) as FormGroup;
-      control = group.controls.value;
+      return group.controls.value;
     } else {
-      control = this.getFormControl(controlName);
+      return this.webhookConfigForm.get(controlName) as AbstractControl;
     }
-
-    const secretVar = `{{.secret.${secret}}}`;
-    const firstPart = control.value.slice(0, selectionStart);
-    const secondPart = control.value.slice(selectionStart, control.value.length);
-    const finalString = firstPart + secretVar + secondPart;
-
-    control.setValue(finalString);
-    // Input event detection is not working reliable for adding secrets, so we have to call it to work properly
-    this.onWebhookFormChange();
   }
 
   private setSendFinishedControl(): void {
@@ -147,16 +121,5 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
       this.getFormControl('sendFinished').enable();
     }
-  }
-
-  private mapSecret(secret: Secret): SelectTreeNode {
-    const scrt: SelectTreeNode = { name: secret.name };
-    if (secret.keys) {
-      scrt.keys = secret.keys.map((key: string) => {
-        return { name: key, path: `${secret.name}.${key}` };
-      });
-      scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
-    }
-    return scrt;
   }
 }
