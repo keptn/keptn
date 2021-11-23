@@ -1,5 +1,4 @@
 import { Component, Input, EventEmitter, Output } from '@angular/core';
-import { Secret } from '../../_models/secret';
 import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 import { AbstractControl } from '@angular/forms';
 
@@ -14,18 +13,11 @@ export class KtbVariableSelectorComponent {
 
   @Output() changed: EventEmitter<void> = new EventEmitter<void>();
 
-  public treeDataSource: SelectTreeNode[] = [];
-  public treeOptions: TreeListSelectOptions = {
+  @Input() public data: SelectTreeNode[] = [];
+  public options: TreeListSelectOptions = {
     headerText: 'Select element',
     emptyText: 'No elements available.',
   };
-
-  @Input()
-  set secrets(secrets: Secret[] | undefined) {
-    if (secrets) {
-      this.treeDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
-    }
-  }
 
   @Input()
   set title(title: string) {
@@ -46,16 +38,5 @@ export class KtbVariableSelectorComponent {
     this.control?.setValue(finalString);
     // Input event detection is not working reliable for adding secrets, so we have to call it to work properly
     this.changed.emit();
-  }
-
-  private mapSecret(secret: Secret): SelectTreeNode {
-    const scrt: SelectTreeNode = { name: secret.name };
-    if (secret.keys) {
-      scrt.keys = secret.keys.map((key: string) => {
-        return { name: key, path: `${secret.name}.${key}` };
-      });
-      scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
-    }
-    return scrt;
   }
 }
