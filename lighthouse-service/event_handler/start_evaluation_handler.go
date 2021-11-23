@@ -64,7 +64,6 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
 
 	defer func() {
-		ctx.Value(GracefulShutdownKey).(*sync.WaitGroup).Done()
 		logger.Info("Terminating Evaluate-SLI handler")
 		val := ctx.Value(GracefulShutdownKey)
 		if val == nil {
