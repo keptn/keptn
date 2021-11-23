@@ -1,7 +1,7 @@
 package go_tests
 
 import (
-	"fmt"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"path"
 	"testing"
@@ -103,49 +103,41 @@ func Test_GracefulShutdown(t *testing.T) {
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 
-	err = waitAndKill(t, shipyardPod, 30)
+	err = waitAndKill(t, shipyardPod, 20)
 	require.Nil(t, err)
 
-	require.Eventually(t, func() bool {
-		t.Log("Verify Direct delivery of helloservice in stage dev")
-		err := VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-		if err != nil {
-			return false
-		}
-		t.Log("Verify network access to public URI of helloservice in stage dev")
-		cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
-		if err != nil {
-			return false
-		}
-		err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
-		if err != nil {
-			return false
-		}
-		t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
-		err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-		if err != nil {
-			return false
-		}
+	keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
-		t.Log("Verify network access to public URI of helloservice in stage staging")
-		cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
-		if err != nil {
-			return false
-		}
-		err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
-		if err != nil {
-			return false
-		}
+	t.Log("Verify Direct delivery of helloservice in stage dev")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
 
-		return true
-	}, 1*time.Minute, 10*time.Second)
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	require.Nil(t, err)
+
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage staging")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
+	require.Nil(t, err)
+
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+
+	require.Nil(t, err)
 
 }
 
 func waitAndKill(t *testing.T, keptnServiceName string, waitFor int) error {
 	t.Logf("Sleeping %d seconds...\n", waitFor)
 	time.Sleep(time.Duration(waitFor) * time.Second)
-	t.Logf("Kill shipyard controller Pod")
-	_, err := ExecuteCommand(fmt.Sprintf("kubectl delete pod -n %s -l app.kubernetes.io/name=%s", GetKeptnNameSpaceFromEnv(), keptnServiceName))
+	t.Logf("Killing %s Pod", keptnServiceName)
+	err := RestartPod(keptnServiceName)
 	return err
 }
