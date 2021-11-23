@@ -1,7 +1,6 @@
 package go_tests
 
 import (
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"path"
 	"testing"
@@ -85,9 +84,6 @@ func Test_GracefulShutdown(t *testing.T) {
 	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
 	require.Nil(t, err)
 
-	err = waitAndKill(t, shipyardPod, 10)
-	require.Nil(t, err)
-
 	t.Log("Adding jmeter config in staging")
 	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
 	require.Nil(t, err)
@@ -106,7 +102,10 @@ func Test_GracefulShutdown(t *testing.T) {
 	err = waitAndKill(t, shipyardPod, 20)
 	require.Nil(t, err)
 
-	keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
+	err = WaitForPodOfDeployment("shipyard-controller")
+	require.Nil(t, err)
+
+	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
 	t.Log("Verify Direct delivery of helloservice in stage dev")
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
@@ -115,21 +114,17 @@ func Test_GracefulShutdown(t *testing.T) {
 	t.Log("Verify network access to public URI of helloservice in stage dev")
 	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
 	require.Nil(t, err)
-
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
 	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
 	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage staging")
 	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
 	require.Nil(t, err)
-
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
-
 	require.Nil(t, err)
 
 }
