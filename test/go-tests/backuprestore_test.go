@@ -173,4 +173,16 @@ func TestBackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl apply -f %s-credentials.yaml", keptnProjectName)
 	require.Nil(t, err)
 
+	t.Log("Verify Direct delivery of helloservice in stage dev")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "gabrieltanner/hello-server", "v0.1.1")
+	require.Nil(t, err)
+
+	t.Log("Verify Direct delivery of helloservice in stage staging")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "gabrieltanner/hello-server", "v0.1.1")
+	require.Nil(t, err)
+
+	t.Log("Verify Direct delivery of helloservice in stage production")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "gabrieltanner/hello-server", "v0.1.1")
+	require.Nil(t, err)
+
 }
