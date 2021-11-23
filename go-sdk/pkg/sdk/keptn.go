@@ -185,16 +185,20 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 		log.Errorf("event with event type %s is no valid keptn task event type", event.Type())
 		return
 	}
-	val := ctx.Value(gracefulShutdownKey)
+
+	var val interface{} = nil
+	if k.gracefulShutdown {
+		val = ctx.Value(gracefulShutdownKey)
+	}
 	if val != nil {
 		if wg, ok := val.(*sync.WaitGroup); ok {
 			wg.Add(1)
 		}
 	}
+
 	k.runEventTaskAction(func() {
 		{
 			defer func() {
-				val := ctx.Value(gracefulShutdownKey)
 				if val == nil {
 					return
 				}
@@ -202,6 +206,7 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 					wg.Done()
 				}
 			}()
+
 			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
