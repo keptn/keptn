@@ -340,43 +340,6 @@ func Test_SequenceState(t *testing.T) {
 
 		return true
 	}, 10*time.Second, 2*time.Second)
-
-	// Test Sequence migration
-	// create a copy of the event stream by directly sending them to the datastore under a new context
-	eventTrace, err := GetEventTraceForContext(*context.KeptnContext, projectName)
-
-	require.Nil(t, err)
-	newContext, err := copyEventTrace(eventTrace)
-
-	require.Nil(t, err)
-
-	// restart the shipyard controller pod - this should trigger the sequence state migration
-	err = RestartPod("shipyard-controller")
-	require.Nil(t, err)
-
-	var copiedState scmodels.SequenceState
-	// wait for the recreated state to be available
-	require.Eventually(t, func() bool {
-		states, _, err := GetState(projectName)
-		if err != nil {
-			return false
-		}
-		for _, state := range states.States {
-			if state.Shkeptncontext == newContext {
-				copiedState = state
-				return true
-			}
-		}
-		return false
-	}, 1*time.Minute, 10*time.Second)
-
-	// verify that the state has been recreated correctly
-	require.Equal(t, projectName, copiedState.Project)
-	require.Equal(t, "finished", copiedState.State)
-	require.Equal(t, 2, len(copiedState.Stages))
-	stagingStage := copiedState.Stages[1]
-	require.Equal(t, keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type)
-
 }
 
 func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {

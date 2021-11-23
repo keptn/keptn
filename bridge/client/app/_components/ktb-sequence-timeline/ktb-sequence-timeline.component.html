@@ -19,6 +19,7 @@
             [class.error]="currentSequence.isFaulty(stage)"
             [class.success]="currentSequence.isSuccessful(stage)"
             [class.highlight]="currentSequence.hasPendingApproval(stage)"
+            [class.warning]="currentSequence.isWarning(stage)"
           ></dt-icon>
           <ng-template #showLoading>
             <button
