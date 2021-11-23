@@ -168,25 +168,6 @@ jobs:
         # see https://github.com/keptn/gh-action-extract-branch-name for details
         uses: keptn/gh-action-extract-branch-name@main
 
-      - name: Find last successful run ID
-        if: steps.build_everything.outputs.BUILD_EVERYTHING == 'true'
-        id: last_run_id
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: "keptn/keptn"
-          BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
-        run: |
-          BRANCH_NAME=""
-          if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
-            BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          elif [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-            PR_NUMBER=${BRANCH_SLUG#PR-}
-            BRANCH_NAME=$(gh pr view "$PR_NUMBER" --json "headRefName" | jq -r '.headRefName')
-          fi
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | jq -c '[.workflow_runs[] | select( .conclusion == "success" )][0] | .id')
-          echo "::set-output name=RUN_ID::$RUN_ID"
-          echo "Last successful run ID was: $RUN_ID"
-
       - name: 'Get Previous tag'
         id: get_previous_tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1.1"
