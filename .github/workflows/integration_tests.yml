@@ -35,14 +35,14 @@ jobs:
           #  RUN_QUALITY_GATES_TEST: "false"
            # RUN_CONTINUOUS_DELIVERY_TEST: "false"
             #COLLECT_RESOURCE_LIMITS: "true"
-          - CLOUD_PROVIDER: "k3s-on-GHA"
-            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
-            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            COLLECT_RESOURCE_LIMITS: "false"
+         # - CLOUD_PROVIDER: "k3s-on-GHA"
+         #   PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
+         #   KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+         #   PLATFORM: "kubernetes"
+         #   KEPTN_SERVICE_TYPE: "NodePort"
+         #   RUN_QUALITY_GATES_TEST: "true"
+         #   RUN_CONTINUOUS_DELIVERY_TEST: "false"
+         #   COLLECT_RESOURCE_LIMITS: "false"
          # - CLOUD_PROVIDER: "k3s-on-GHA"
           #  PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
            # KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -60,15 +60,15 @@ jobs:
             #RUN_QUALITY_GATES_TEST: "false"
             #RUN_CONTINUOUS_DELIVERY_TEST: "false"
             #COLLECT_RESOURCE_LIMITS: "false"
-          #- CLOUD_PROVIDER: "GKE"
-           # PLATFORM_VERSION: "1.19"
-           # KUBECONFIG: ""
-            #PLATFORM: "kubernetes"
-            #KEPTN_SERVICE_TYPE: "LoadBalancer"
-            #RUN_QUALITY_GATES_TEST: "true"
-            #RUN_CONTINUOUS_DELIVERY_TEST: "true"
-            #REMOTE_EXECUTION_PLANE: "true"
-            #COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.19"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
+            COLLECT_RESOURCE_LIMITS: "false"
          # - CLOUD_PROVIDER: "GKE"
           #  PLATFORM_VERSION: "1.21"
            # KUBECONFIG: ""
@@ -633,6 +633,8 @@ jobs:
         run: cd test/go-tests && go test -run SequenceQueue -v -timeout 15m
 
       - name: Test Graceful Shutdown
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
         id: test_graceful_shutdown
         timeout-minutes: 10
         continue-on-error: true
