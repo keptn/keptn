@@ -64,7 +64,8 @@ func _main(env config.EnvConfig) int {
 	forwarder.Start(executionContext)
 
 	// Eventually start registration process
-	if shallRegister() {
+	register := shallRegister()
+	if register {
 		id := uniformWatch.Start(executionContext)
 		uniformLogger := controlplane.NewEventUniformLog(id, uniformLogHandler)
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
@@ -84,7 +85,7 @@ func _main(env config.EnvConfig) int {
 		}
 	} else {
 		logger.Info("Starting NATS event Receiver")
-		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
+		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender, register)
 		uniformWatch.RegisterListener(natsEventReceiver)
 		if err := natsEventReceiver.Start(executionContext); err != nil {
 			logger.Fatalf("Could not start NATS event receiver: %v", err)

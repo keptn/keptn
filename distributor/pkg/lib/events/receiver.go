@@ -30,9 +30,10 @@ type NATSEventReceiver struct {
 	ceCache               *Cache
 	mutex                 *sync.Mutex
 	currentSubscriptions  []models.EventSubscription
+	pullSubscriptions     bool
 }
 
-func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
+func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender, pullSubscriptions bool) *NATSEventReceiver {
 	eventMatcher := NewEventMatcherFromEnv(env)
 	nch := NewNatsConnectionHandler(env.PubSubURL)
 
@@ -43,6 +44,7 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 		ceCache:               NewCache(),
 		mutex:                 &sync.Mutex{},
 		natsConnectionHandler: nch,
+		pullSubscriptions:     pullSubscriptions,
 	}
 }
 
@@ -109,7 +111,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 			if err := n.sendEventForSubscriptions(subscriptions, keptnEvent); err != nil {
 				logger.Errorf("Could not send cloud event: %v", err)
 			}
-		} else {
+		} else if !n.pullSubscriptions {
 			// forward keptn event
 			if err := n.sendEvent(keptnEvent, nil); err != nil {
 				logger.Errorf("Could not send cloud event: %v", err)
