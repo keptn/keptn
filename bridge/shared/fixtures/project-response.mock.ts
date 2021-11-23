@@ -810,6 +810,27 @@ const projectResponseURLFallback = {
   ],
 };
 
+const projectResponseEvaluationFallback = {
+  projectName: 'sockshop',
+  stages: [
+    {
+      stageName: 'dev',
+      services: [
+        {
+          serviceName: 'carts',
+          lastEventTypes: {
+            [EventTypes.EVALUATION_FINISHED]: {
+              eventId: 'webhookId',
+              keptnContext: 'keptnContext',
+              time: '1637666066861000',
+            },
+          },
+        },
+      ],
+    },
+  ],
+};
+
 const projectDetailsResponseURLFallback = {
   stages: [
     {
@@ -858,10 +879,97 @@ const projectDetailsResponseURLFallback = {
   projectName: 'sockshop',
 };
 
+const projectDetailsResponseEvaluationFallback = {
+  stages: [
+    {
+      services: [
+        {
+          lastEventTypes: {
+            'sh.keptn.event.evaluation.finished': {
+              eventId: 'webhookId',
+              keptnContext: 'keptnContext',
+              time: '1637666066861000',
+            },
+          },
+          openRemediations: [],
+          openApprovals: [],
+          serviceName: 'carts',
+          latestSequence: {
+            name: 'delivery',
+            service: 'carts',
+            project: 'sockshop',
+            time: '2021-11-05T12:20:06.463Z',
+            shkeptncontext: 'keptnContext',
+            state: 'finished',
+            stages: [
+              {
+                name: 'dev',
+                state: 'finished',
+                latestEvent: {
+                  type: 'sh.keptn.event.evaluation.finished',
+                  id: 'eventId',
+                  time: '2021-11-10T11:59:58.655Z',
+                },
+                latestEvaluationTrace: {
+                  data: {
+                    evaluation: {
+                      comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+                      gitCommit: '',
+                      indicatorResults: [
+                        {
+                          displayName: 'Response time P95',
+                          keySli: false,
+                          passTargets: [
+                            { criteria: '<=+10%', targetValue: 336.9946150194969, violated: false },
+                            { criteria: '<600', targetValue: 600, violated: false },
+                          ],
+                          score: 1,
+                          status: 'pass',
+                          value: { metric: 'response_time_p95', success: true, value: 304.2952915485157 },
+                          warningTargets: [{ criteria: '<=800', targetValue: 800, violated: false }],
+                        },
+                      ],
+                      result: 'pass',
+                      score: 100,
+                      sloFileContent:
+                        'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+                      timeEnd: '2021-10-13T10:53:29Z',
+                      timeStart: '2021-10-13T10:51:08Z',
+                    },
+                    labels: { DtCreds: 'dynatrace' },
+                    project: 'sockshop',
+                    result: 'pass',
+                    service: 'carts',
+                    stage: 'dev',
+                    status: 'succeeded',
+                    temporaryData: { distributor: { subscriptionID: '' } },
+                  },
+                  id: '93c2eba9-b77c-4976-b079-29a0188d86ef',
+                  source: 'lighthouse-service',
+                  specversion: '1.0',
+                  time: '2021-10-13T10:54:43.112Z',
+                  type: 'sh.keptn.event.evaluation.finished',
+                  shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
+                  shkeptnspecversion: '0.2.3',
+                  triggeredid: '1cc9c272-721a-43de-98f6-9eceae484cf5',
+                },
+              },
+            ],
+          },
+        },
+      ],
+      stageName: 'dev',
+    },
+  ],
+  projectName: 'sockshop',
+};
+
 export { projectQualityGatesResponse as ProjectQualityGatesResponse };
 export { projectResponseMock as ProjectResponse };
 export { projectResponseURLFallback as ProjectResponseURLFallback };
+export { projectResponseEvaluationFallback as ProjectResponseEvaluationFallback };
 export { projectDetailsResponseURLFallback as ProjectDetailsResponseURLFallback };
+export { projectDetailsResponseEvaluationFallback as ProjectDetailsResponseEvaluationFallback };
 export { devCartsDeploymentFinished as DevCartsDeploymentFinished };
 export { devCartsDbDeploymentFinished as DevCartsDbDeploymentFinished };
 export { devCartsEvaluationFinished as DevCartsEvaluationFinished };

@@ -2,8 +2,10 @@ import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { StagesResponse } from '../fixtures/stages.mock';
 import {
+  ProjectDetailsResponseEvaluationFallback,
   ProjectDetailsResponseURLFallback,
   ProjectResponse,
+  ProjectResponseEvaluationFallback,
   ProjectResponseURLFallback,
 } from '../../shared/fixtures/project-response.mock';
 import { EventTypes } from '../../shared/interfaces/event-types';
@@ -16,11 +18,16 @@ import {
   ApprovalEvaluationResponse,
   DefaultDeploymentData,
   DefaultDeploymentFinishedTrace,
+  DefaultEvaluationFinishedTrace,
   LatestFinishedDeployments,
   LatestFinishedEvaluations,
   OpenApprovalsResponse,
 } from '../../shared/fixtures/traces-response.mock';
-import { SequenceResponseURLFallback, SequencesResponses } from '../fixtures/sequence-response.mock';
+import {
+  SequenceResponseEvaluationFallback,
+  SequenceResponseURLFallback,
+  SequencesResponses,
+} from '../fixtures/sequence-response.mock';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { ProjectDetailsResponse } from '../fixtures/project-details-response.mock';
 import { ResultTypes } from '../../shared/models/result-types';
@@ -112,7 +119,7 @@ describe('Test project resources', () => {
     expect(response.body).toEqual(ProjectDetailsResponse);
   });
 
-  it('should correctly set deployment URL', async () => {
+  it('should correctly fallback to right deployment URL', async () => {
     const projectName = 'sockshop';
     const data = {
       message: 'Failed to deploy',
@@ -166,5 +173,51 @@ describe('Test project resources', () => {
 
     const response = await request(global.app).get(`/api/project/${projectName}`);
     expect(response.body).toEqual(ProjectDetailsResponseURLFallback);
+  });
+
+  it('should correctly fallback to right evaluation trace', async () => {
+    const projectName = 'sockshop';
+
+    axiosMock
+      .onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}`)
+      .reply(200, ProjectResponseEvaluationFallback);
+    axiosMock
+      .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {
+        params: {
+          filter: `data.project:${projectName} AND id:webhookId`,
+          excludeInvalidated: 'true',
+        },
+      })
+      .reply(200, {
+        events: [
+          {
+            ...DefaultEvaluationFinishedTrace,
+            source: 'webhook-service',
+          },
+        ],
+      });
+
+    axiosMock
+      .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {
+        params: {
+          filter: `data.project:${projectName} AND data.service:carts AND data.stage:dev AND data.source:${KeptnService.LIGHTHOUSE_SERVICE}`,
+          excludeInvalidated: 'true',
+          limit: '1',
+        },
+      })
+      .reply(200, {
+        events: [
+          {
+            ...DefaultEvaluationFinishedTrace,
+          },
+        ],
+      });
+
+    axiosMock
+      .onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`)
+      .reply(200, SequenceResponseEvaluationFallback);
+
+    const response = await request(global.app).get(`/api/project/${projectName}`);
+    expect(response.body).toEqual(ProjectDetailsResponseEvaluationFallback);
   });
 });

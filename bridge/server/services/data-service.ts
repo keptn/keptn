@@ -222,11 +222,10 @@ export class DataService {
         const response = await this.apiService.getTracesOfMultipleServices(
           projectName,
           eventType,
-          `id:${eventIds.join(',')}`,
-          source
+          `id:${eventIds.join(',')}`
         );
-        if (resultType) {
-          await this.checkAndSetEventsWithResult(response.data.events, resultType);
+        if (resultType || source) {
+          await this.checkAndSetEventsWithResult(response.data.events, resultType, source);
         }
         traces = [...traces, ...response.data.events];
       }
@@ -234,17 +233,22 @@ export class DataService {
     return traces;
   }
 
-  private async checkAndSetEventsWithResult(traces: Trace[], resultType: ResultTypes): Promise<void> {
+  private async checkAndSetEventsWithResult(
+    traces: Trace[],
+    resultType?: ResultTypes,
+    source?: KeptnService
+  ): Promise<void> {
     for (let i = 0; i < traces.length; ++i) {
       const trace = traces[i];
-      if (trace.data.result !== resultType) {
-        const response = await this.apiService.getTracesWithResult(
+      if ((resultType && trace.data.result !== resultType) || (source && trace.source !== source)) {
+        const response = await this.apiService.getTracesWithResultAndSource(
           trace.type as EventTypes,
           1,
           trace.data.project as string,
           trace.data.stage as string,
           trace.data.service as string,
-          resultType
+          resultType,
+          source
         );
         if (response.data.events.length) {
           traces[i] = response.data.events[0];

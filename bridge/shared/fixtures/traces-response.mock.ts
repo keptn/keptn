@@ -62,7 +62,7 @@ const defaultEvaluationFinishedTrace = {
     project: 'sockshop',
     result: 'pass',
     service: 'carts',
-    stage: 'staging',
+    stage: 'dev',
     status: 'succeeded',
     temporaryData: {
       distributor: {
@@ -1987,6 +1987,7 @@ const latestFinishedDeployments = {
           ...defaultDeploymentData,
           deploymentURIsPublic: ['http://dev-carts.com'],
         },
+        result: 'pass',
       },
       id: DevCartsDeploymentFinished.eventId,
       shkeptncontext: DevCartsDeploymentFinished.keptnContext,
@@ -2001,6 +2002,7 @@ const latestFinishedDeployments = {
           ...defaultDeploymentData,
           deploymentURIsPublic: ['http://dev-carts-db.com'],
         },
+        result: 'pass',
       },
       id: DevCartsDbDeploymentFinished.eventId,
       shkeptncontext: DevCartsDbDeploymentFinished.keptnContext,
@@ -2015,6 +2017,7 @@ const latestFinishedDeployments = {
           ...defaultDeploymentData,
           deploymentURIsPublic: ['http://staging-carts.com'],
         },
+        result: 'pass',
       },
       id: StagingCartsDeploymentFinished.eventId,
       shkeptncontext: StagingCartsDeploymentFinished.keptnContext,
@@ -2029,6 +2032,7 @@ const latestFinishedDeployments = {
           ...defaultDeploymentData,
           deploymentURIsPublic: ['http://staging-carts-db.com'],
         },
+        result: 'pass',
       },
       id: StagingCartsDbDeploymentFinished.eventId,
       shkeptncontext: StagingCartsDbDeploymentFinished.keptnContext,
@@ -2043,6 +2047,7 @@ const latestFinishedDeployments = {
           ...defaultDeploymentData,
           deploymentURIsPublic: ['http://production-carts.com'],
         },
+        result: 'pass',
       },
       id: ProductionCartsDeploymentFinished.eventId,
       shkeptncontext: ProductionCartsDeploymentFinished.keptnContext,
@@ -2057,6 +2062,7 @@ const latestFinishedDeployments = {
           ...defaultDeploymentData,
           deploymentURIsPublic: ['http://production-carts-db.com'],
         },
+        result: 'pass',
       },
       id: ProductionCartsDbDeploymentFinished.eventId,
       shkeptncontext: ProductionCartsDbDeploymentFinished.keptnContext,
@@ -2109,6 +2115,9 @@ const approvalEvaluationResponse = {
       data: {
         ...approvalTriggeredTraceStaging.data,
         ...defaultEvaluationFinishedTrace.data,
+        stage: 'staging',
+        project: 'sockshop',
+        service: 'carts',
       },
       shkeptncontext: approvalTriggeredTraceStaging.shkeptncontext,
     },
@@ -2127,3 +2136,4 @@ export { openApprovalsResponse as OpenApprovalsResponse };
 export { approvalEvaluationResponse as ApprovalEvaluationResponse };
 export { defaultDeploymentFinishedTrace as DefaultDeploymentFinishedTrace };
 export { defaultDeploymentData as DefaultDeploymentData };
+export { defaultEvaluationFinishedTrace as DefaultEvaluationFinishedTrace };
