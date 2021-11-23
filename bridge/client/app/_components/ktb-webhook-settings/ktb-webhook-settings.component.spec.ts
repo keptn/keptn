@@ -6,8 +6,6 @@ import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
-import { Secret } from '../../_models/secret';
-import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 
 describe('KtbWebhookSettingsComponent', () => {
   let component: KtbWebhookSettingsComponent;
