@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+
 	"github.com/keptn/keptn/helm-service/pkg/types"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -47,7 +48,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 
 	e := keptnv2.ReleaseTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
-		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to release event")
 		h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}

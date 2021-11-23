@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -28,7 +29,7 @@ func NewRollbackHandler(keptnHandler Handler,
 func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 	e := keptnv2.RollbackTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
-		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to rollback event")
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
 	}
 

@@ -85,8 +85,17 @@ func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
 		stagesHandler: mockedStagesHandler,
 	}
 
+	expectedFinishEventData := keptnv2.ServiceDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status:  "errored",
+			Result:  "fail",
+			Message: "Failed to unmarshal data: unable to convert json data from cloudEvent to deleteService event",
+		},
+	}
+
 	instance.HandleEvent(createUnparsableEvent())
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedFinishEventData, mockedBaseHandler.handledErrorEvents[0])
 
 }
 

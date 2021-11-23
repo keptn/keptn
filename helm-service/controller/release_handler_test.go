@@ -141,3 +141,26 @@ func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T)
 	assert.Equal(t, expectedErrorData, mockedBaseHandler.handledErrorEvents[0])
 
 }
+
+func TestHandleUnparsableReleaseEvent(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+
+	instance := ReleaseHandler{
+		Handler: mockedBaseHandler,
+		mesh:    mocks.NewMockMesh(ctrl),
+	}
+
+	expectedTriggerEventData := ReleaseFinishedEventData{
+		EventData: EventData{
+			Status:  "errored",
+			Result:  "fail",
+			Message: "Failed to unmarshal data: unable to convert json data from cloudEvent to release event",
+		},
+	}
+
+	instance.HandleEvent(createUnparsableEvent())
+	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedTriggerEventData, mockedBaseHandler.handledErrorEvents[0])
+}

@@ -177,7 +177,7 @@ func TestHandleUnparsableEvent(t *testing.T) {
 		EventData: keptnv2.EventData{
 			Status:  "errored",
 			Result:  "fail",
-			Message: "failed to unmarshal data: [json] found bytes \"\"WEIRD_JSON_CONTENT\"\", but failed to unmarshal: json: cannot unmarshal string into Go value of type v0_2_0.ActionTriggeredEventData",
+			Message: "Failed to unmarshal data: unable to convert json data from cloudEvent to action event",
 		},
 		Action: keptnv2.ActionData{
 			GitCommit: "",
