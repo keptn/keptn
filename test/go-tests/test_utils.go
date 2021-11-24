@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"context"
+	b64 "encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -542,4 +543,13 @@ func removeQuotes(str string) string {
 	}
 
 	return str
+}
+
+func decodeBase64(str string) (string, error) {
+	res, err := b64.StdEncoding.DecodeString(str)
+	if err != nil {
+		return "", err
+	}
+
+	return string(res), nil
 }
