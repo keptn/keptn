@@ -105,7 +105,7 @@
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.0",
-    "jest": "^27.2.4",
+    "jest": "^27.3.1",
     "jest-fetch-mock": "^3.0.3",
     "jest-preset-angular": "^10.0.1",
     "minimist": "1.2.5",
