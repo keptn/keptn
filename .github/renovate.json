@@ -1,10 +1,13 @@
 {
   "extends": [
     "config:base",
-    ":gitSignOff"
+    ":gitSignOff",
+    "schedule:nonOfficeHours"
   ],
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,
   "semanticCommitType": "build",
-  "semanticCommitScope": "deps"
+  "semanticCommitScope": "deps",
+  "stabilityDays": 7,
+  "timezone": "AT"
 }
