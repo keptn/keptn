@@ -8,7 +8,7 @@ require (
 	github.com/go-openapi/loads v0.21.0
 	github.com/go-openapi/runtime v0.20.0
 	github.com/go-openapi/spec v0.20.4
-	github.com/go-openapi/strfmt v0.21.0
+	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
@@ -17,6 +17,6 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0
 	github.com/tryvium-travels/memongo v0.3.1
-	go.mongodb.org/mongo-driver v1.7.4
+	go.mongodb.org/mongo-driver v1.7.5
 	golang.org/x/net v0.0.0-20211108170745-6635138e15ea
 )
