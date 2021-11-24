@@ -30,6 +30,7 @@
               class="mr-2 item"
               placeholder="Choose your task"
               aria-label="Choose your task"
+              (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
             >
               <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
             </dt-select>
@@ -41,6 +42,7 @@
               class="mr-2 item"
               placeholder="Choose your task suffix"
               aria-label="Choose your task suffix"
+              (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
             >
               <dt-option
                 *ngFor="let suffix of suffixes"
@@ -59,7 +61,7 @@
             "
             (filterChanges)="
               data.subscription.filterChanged($event, data.project.projectName);
-              updateIsGlobalCheckbox(data.subscription)
+              subscriptionFilterChanged(data.subscription, data.project.projectName)
             "
             class="mb-2"
             aria-label="Filter by stage and service"
@@ -81,6 +83,7 @@
           *ngIf="isWebhookService"
           [(webhook)]="data.webhook"
           [secrets]="data.webhookSecrets"
+          [eventPayload]="eventPayload"
           [eventType]="taskSuffixControl.value"
           (validityChanged)="webhookFormValidityChanged($event)"
         ></ktb-webhook-settings>

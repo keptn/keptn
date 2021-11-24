@@ -53,6 +53,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      declarations: [],
       imports: [AppModule, HttpClientTestingModule],
       providers: [{ provide: DataService, useClass: DataServiceMock }],
     }).compileComponents();
@@ -123,9 +124,9 @@ describe('KtbWebhookSettingsComponent', () => {
     // when
     let headerRows = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form');
     const lengthBefore = headerRows.length;
-    const buttons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form button');
+    const buttons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form>div>button');
 
-    buttons[1].click();
+    buttons[0].click();
     fixture.detectChanges();
 
     // then
@@ -243,7 +244,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.getFormControl('url').setValue('');
 
     // when
-    component.setSecret(secretPath, 'url', 0);
+    component.insertControlText('secret', secretPath, 'url', 0);
 
     // then
     expect(component.getFormControl('url').value).toEqual(`{{.secret.${secretPath}}}`);
@@ -254,7 +255,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.getFormControl('url').setValue('https://example.com?somestringtoinsert');
 
     // when
-    component.setSecret(secretPath, 'url', 30);
+    component.insertControlText('secret', secretPath, 'url', 30);
 
     // then
     expect(component.getFormControl('url').value).toEqual(
@@ -267,7 +268,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.getFormControl('payload').setValue('');
 
     // when
-    component.setSecret(secretPath, 'payload', 0);
+    component.insertControlText('secret', secretPath, 'payload', 0);
 
     // then
     expect(component.getFormControl('payload').value).toEqual(`{{.secret.${secretPath}}}`);
@@ -278,7 +279,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.getFormControl('payload').setValue('{id: , project: sockshop}');
 
     // when
-    component.setSecret(secretPath, 'payload', 5);
+    component.insertControlText('secret', secretPath, 'payload', 5);
 
     // then
     expect(component.getFormControl('payload').value).toEqual(`{id: {{.secret.${secretPath}}}, project: sockshop}`);
@@ -290,7 +291,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.addHeader('header2', '');
 
     // when
-    component.setSecret(secretPath, 'header', 0, 1);
+    component.insertControlText('secret', secretPath, 'header', 0, 1);
 
     // then
     expect(component.headerControls[1].get('value')?.value).toEqual(`{{.secret.${secretPath}}}`);
@@ -301,7 +302,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.addHeader('header1', 'value1');
     component.addHeader('header2', 'value2');
     // when
-    component.setSecret(secretPath, 'header', 5, 1);
+    component.insertControlText('secret', secretPath, 'header', 5, 1);
 
     // then
     expect(component.headerControls[1].get('value')?.value).toEqual(`value{{.secret.${secretPath}}}2`);
@@ -436,6 +437,87 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(component.getFormControl('sendFinished').value).toEqual('false');
+  });
+
+  it('should correctly set event payload', () => {
+    component.eventPayload = {
+      data: {
+        myCustomData: [
+          [
+            {
+              myCustomKey: {
+                myCustomElement: undefined,
+              },
+            },
+            {
+              myCustomKey2: {
+                myCustomElement2: undefined,
+              },
+            },
+          ],
+        ],
+        project: undefined,
+      },
+      id: undefined,
+      keptnContext: undefined,
+    };
+    expect(component.eventDataSource).toEqual([
+      {
+        keys: [
+          {
+            keys: [
+              {
+                keys: [
+                  {
+                    keys: [
+                      {
+                        keys: [
+                          {
+                            name: 'myCustomElement',
+                            path: '(index (index .event.data.myCustomData 0) 0).myCustomKey.myCustomElement',
+                          },
+                        ],
+                        name: 'myCustomKey',
+                      },
+                    ],
+                    name: '[0]',
+                  },
+                  {
+                    keys: [
+                      {
+                        keys: [
+                          {
+                            name: 'myCustomElement2',
+                            path: '(index (index .event.data.myCustomData 0) 1).myCustomKey2.myCustomElement2',
+                          },
+                        ],
+                        name: 'myCustomKey2',
+                      },
+                    ],
+                    name: '[1]',
+                  },
+                ],
+                name: '[0]',
+              },
+            ],
+            name: 'myCustomData',
+          },
+          {
+            name: 'project',
+            path: '.event.data.project',
+          },
+        ],
+        name: 'data',
+      },
+      {
+        name: 'id',
+        path: '.event.id',
+      },
+      {
+        name: 'keptnContext',
+        path: '.event.keptnContext',
+      },
+    ]);
   });
 
   function getAddHeaderButton(): HTMLElement {

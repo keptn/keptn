@@ -22,6 +22,16 @@
       <dt-error *ngIf="getFormControl('url').errors?.url">URL must start with http(s)://</dt-error>
       <div dtSuffix>
         <ng-container
+          [ngTemplateOutlet]="payloadButton"
+          [ngTemplateOutletContext]="{
+            $implicit: undefined,
+            controlName: 'url',
+            selectionStart: urlInput.selectionStart
+          }"
+        ></ng-container>
+      </div>
+      <div dtSuffix>
+        <ng-container
           [ngTemplateOutlet]="secretButton"
           [ngTemplateOutletContext]="{
             $implicit: undefined,
@@ -69,6 +79,16 @@
             <dt-error>Must not be empty</dt-error>
             <div dtSuffix>
               <ng-container
+                [ngTemplateOutlet]="payloadButton"
+                [ngTemplateOutletContext]="{
+                  $implicit: undefined,
+                  controlName: 'url',
+                  selectionStart: urlInput.selectionStart
+                }"
+              ></ng-container>
+            </div>
+            <div dtSuffix>
+              <ng-container
                 [ngTemplateOutlet]="secretButton"
                 [ngTemplateOutletContext]="{
                   $implicit: '',
@@ -98,6 +118,16 @@
       <dt-label>Custom payload</dt-label>
       <textarea #payloadInput class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
+      <div dtSuffix>
+        <ng-container
+          [ngTemplateOutlet]="payloadButton"
+          [ngTemplateOutletContext]="{
+            $implicit: undefined,
+            controlName: 'url',
+            selectionStart: urlInput.selectionStart
+          }"
+        ></ng-container>
+      </div>
       <div dtSuffix>
         <ng-container
           [ngTemplateOutlet]="secretButton"
@@ -148,8 +178,22 @@
     ktbTreeListSelect
     [data]="secretDataSource"
     [options]="secretOptions"
-    (selected)="setSecret($event, controlName, selectionStart, index)"
+    (selected)="insertControlText('secret', $event, controlName, selectionStart, index)"
   >
     <dt-icon name="resetpassword"></dt-icon>
+  </button>
+</ng-template>
+
+<ng-template #payloadButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
+  <button
+    dt-icon-button
+    variant="nested"
+    aria-label="Add event data"
+    ktbTreeListSelect
+    [data]="eventDataSource"
+    [options]="eventOptions"
+    (selected)="insertControlText('event', $event, controlName, selectionStart, index)"
+  >
+    <dt-icon name="coding"></dt-icon>
   </button>
 </ng-template>

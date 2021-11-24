@@ -831,6 +831,97 @@ const projectResponseEvaluationFallback = {
   ],
 };
 
+const projectResponseIntersect = {
+  projectName: 'sockshop',
+  stages: [
+    {
+      stageName: 'dev',
+      services: [
+        {
+          serviceName: 'carts',
+          lastEventTypes: {
+            [EventTypes.DEPLOYMENT_TRIGGERED]: {
+              eventId: '1',
+              keptnContext: 'context1',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_STARTED]: {
+              eventId: '2',
+              keptnContext: 'context2',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_FINISHED]: {
+              eventId: '3',
+              keptnContext: 'context3',
+              time: '1637666066861000',
+            },
+          },
+        },
+        {
+          serviceName: 'carts-db',
+          lastEventTypes: {
+            [EventTypes.DEPLOYMENT_TRIGGERED]: {
+              eventId: '4',
+              keptnContext: 'context1',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_STARTED]: {
+              eventId: '5',
+              keptnContext: 'context2',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_FINISHED]: {
+              eventId: '6',
+              keptnContext: 'context3',
+              time: '1637666066861000',
+            },
+          },
+        },
+      ],
+    },
+    {
+      stageName: 'staging',
+      services: [
+        {
+          serviceName: 'carts',
+          lastEventTypes: {
+            [EventTypes.DEPLOYMENT_TRIGGERED]: {
+              eventId: '7',
+              keptnContext: 'context1',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_STARTED]: {
+              eventId: '8',
+              keptnContext: 'context2',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_FINISHED]: {
+              eventId: '9',
+              keptnContext: 'context3',
+              time: '1637666066861000',
+            },
+          },
+        },
+        {
+          serviceName: 'carts-db',
+          lastEventTypes: {
+            [EventTypes.DEPLOYMENT_TRIGGERED]: {
+              eventId: '10',
+              keptnContext: 'context1',
+              time: '1637666066861000',
+            },
+            [EventTypes.DEPLOYMENT_STARTED]: {
+              eventId: '11',
+              keptnContext: 'context2',
+              time: '1637666066861000',
+            },
+          },
+        },
+      ],
+    },
+  ],
+};
+
 const projectDetailsResponseURLFallback = {
   stages: [
     {
@@ -964,9 +1055,10 @@ const projectDetailsResponseEvaluationFallback = {
   projectName: 'sockshop',
 };
 
-export { projectQualityGatesResponse as ProjectQualityGatesResponse };
 export { projectResponseMock as ProjectResponse };
+export { projectResponseIntersect as ProjectResponseIntersect };
 export { projectResponseURLFallback as ProjectResponseURLFallback };
+export { projectQualityGatesResponse as ProjectQualityGatesResponse };
 export { projectResponseEvaluationFallback as ProjectResponseEvaluationFallback };
 export { projectDetailsResponseURLFallback as ProjectDetailsResponseURLFallback };
 export { projectDetailsResponseEvaluationFallback as ProjectDetailsResponseEvaluationFallback };

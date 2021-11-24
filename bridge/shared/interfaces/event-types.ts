@@ -3,6 +3,7 @@ export enum EventTypes {
   CONFIGURATION_CHANGE = 'sh.keptn.event.configuration.change',
   CONFIGURE_MONITORING = 'sh.keptn.event.monitoring.configure',
   DEPLOYMENT_TRIGGERED = 'sh.keptn.event.deployment.triggered',
+  DEPLOYMENT_STARTED = 'sh.keptn.event.deployment.started',
   DEPLOYMENT_FINISHED = 'sh.keptn.event.deployment.finished',
   TESTS_FINISHED = 'sh.keptn.events.tests-finished',
   START_EVALUATION = 'sh.keptn.event.start-evaluation',

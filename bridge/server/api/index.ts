@@ -90,6 +90,20 @@ const apiRouter = (params: {
     }
   });
 
+  router.post('/intersectEvents', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { event, eventSuffix, projectName, stages, services } = req.body;
+      if (event && eventSuffix && projectName) {
+        const result = await dataService.intersectEvents(event, eventSuffix, projectName, stages ?? [], services ?? []);
+        return res.json(result);
+      } else {
+        return res.status(400).json('incorrect data');
+      }
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.get('/project/:projectName', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectName = req.params.projectName;

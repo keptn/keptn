@@ -18,6 +18,7 @@ import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-r
 import { NotificationType } from '../../_models/notification';
 import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
+import { EventState } from '../../../../shared/models/event-state';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -28,6 +29,7 @@ import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
+  public eventPayload: Record<string, unknown> = {};
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
   public data$: Observable<{
@@ -56,16 +58,16 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       displayValue: '*',
     },
     {
-      value: 'triggered',
-      displayValue: 'triggered',
+      value: EventState.TRIGGERED,
+      displayValue: EventState.TRIGGERED,
     },
     {
-      value: 'started',
-      displayValue: 'started',
+      value: EventState.STARTED,
+      displayValue: EventState.STARTED,
     },
     {
-      value: 'finished',
-      displayValue: 'finished',
+      value: EventState.FINISHED,
+      displayValue: EventState.FINISHED,
     },
   ];
 
@@ -126,8 +128,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       if (!info.isControlPlane) {
         this.suffixes = [
           {
-            value: 'triggered',
-            displayValue: 'triggered',
+            value: EventState.TRIGGERED,
+            displayValue: EventState.TRIGGERED,
           },
         ];
       }
@@ -167,6 +169,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
             const stage: string | undefined = data.subscription.filter?.stages?.[0];
             const services: string | undefined = data.subscription.filter?.services?.[0];
             webhook = this.dataService.getWebhookConfig(data.subscription.id, data.projectName, stage, services);
+            this.updateEventPayload(
+              data.projectName,
+              data.subscription.filter?.stages ?? [],
+              data.subscription.filter?.services ?? []
+            );
           } else {
             webhook = of(undefined);
           }
@@ -193,6 +200,22 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       webhook: webhook$,
       webhookSecrets: webhookSecrets$,
     });
+  }
+
+  private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
+    if (this.isWebhookService && this.taskControl.value && this.taskSuffixControl.value) {
+      this.dataService
+        .getIntersectedEvent(
+          `${EventTypes.PREFIX}${this.taskControl.value}`,
+          this.taskSuffixControl.value,
+          projectName,
+          stages,
+          services
+        )
+        .subscribe((event: Record<string, unknown>) => {
+          this.eventPayload = event;
+        });
+    }
   }
 
   private updateDataSource(project: Project): void {
@@ -260,6 +283,15 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       this.isWebhookFormValid &&
       !this.updating
     );
+  }
+
+  public selectedTaskChanged(projectName: string, subscription: UniformSubscription): void {
+    this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
+  }
+
+  public subscriptionFilterChanged(subscription: UniformSubscription, projectName: string): void {
+    this.updateIsGlobalCheckbox(subscription);
+    this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
   }
 
   public updateIsGlobalCheckbox(subscription: UniformSubscription): void {

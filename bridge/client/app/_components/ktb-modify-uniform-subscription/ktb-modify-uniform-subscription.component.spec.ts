@@ -441,6 +441,15 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(isGlobalControl.value).toEqual(false);
   });
 
+  it('should initially load intersected events', () => {
+    const eventPayload = { data: {} };
+    const dataService = TestBed.inject(DataService);
+    dataService.getIntersectedEvent = jest.fn().mockReturnValue(of(eventPayload));
+    setSubscription(10, 0);
+    fixture.detectChanges();
+    expect(component.eventPayload).toEqual(eventPayload);
+  });
+
   function assertIsUpdateButtonEnabled(isEnabled: boolean): void {
     const element = expect(
       fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')

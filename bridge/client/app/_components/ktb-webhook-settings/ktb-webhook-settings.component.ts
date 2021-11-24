@@ -27,15 +27,31 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
   public secretOptions: TreeListSelectOptions = {
-    headerText: 'selectSecret',
+    headerText: 'Select secret',
     emptyText:
       'No secrets can be found.<p>Secrets can be configured under the menu entry "Secrets" in the Uniform.</p>',
+  };
+  public eventOptions: TreeListSelectOptions = {
+    headerText: 'Select payload variable',
+    emptyText: '', // can't be empty because fallback to default-event
   };
   public sendFinishedOverlayConfig: DtOverlayConfig = {
     pinnable: true,
     originY: 'center',
   };
-  public _eventType: string | undefined;
+  public _eventType?: string;
+  private defaultTrace = {
+    data: {
+      project: undefined,
+      service: undefined,
+      stage: undefined,
+    },
+    id: undefined,
+    type: undefined,
+    time: undefined,
+    shkeptncontext: undefined,
+  };
+  public eventDataSource: SelectTreeNode[] = this.setObject(this.defaultTrace);
 
   @Input()
   set eventType(eventType: string | undefined) {
@@ -70,6 +86,48 @@ export class KtbWebhookSettingsComponent implements OnInit {
     if (secrets) {
       this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
+  }
+
+  @Input()
+  set eventPayload(event: Record<string, unknown> | undefined) {
+    if (event && Object.keys(event).length) {
+      this.eventDataSource = this.setObject(event);
+    } else {
+      this.eventDataSource = this.setObject(this.defaultTrace);
+    }
+  }
+
+  private setObject(data: Record<string, unknown>, path = '.event'): SelectTreeNode[] {
+    const result: SelectTreeNode[] = [];
+    for (const key of Object.keys(data)) {
+      const newItem = this.generateNewTreeNode(data[key], key, `${path}.${key}`);
+      result.push(newItem);
+    }
+    return result;
+  }
+
+  private generateNewTreeNode(property: unknown, itemName: string, itemPath: string): SelectTreeNode {
+    const newItem: SelectTreeNode = {
+      name: itemName,
+    };
+    if (property instanceof Array) {
+      newItem.keys = this.setArray(property, itemPath);
+    } else if (property && typeof property === 'object') {
+      newItem.keys = this.setObject(property as Record<string, unknown>, itemPath);
+    } else {
+      newItem.path = itemPath;
+    }
+    return newItem;
+  }
+
+  private setArray(array: Array<unknown>, path: string): SelectTreeNode[] {
+    const result: SelectTreeNode[] = [];
+    const data = array;
+    for (let i = 0; i < data.length; ++i) {
+      const newItem = this.generateNewTreeNode(data[i], `[${i}]`, `(index ${path} ${i})`);
+      result.push(newItem);
+    }
+    return result;
   }
 
   @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -120,7 +178,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
     return this.webhookConfigForm.get(controlName) as AbstractControl;
   }
 
-  public setSecret(secret: string, controlName: ControlType, selectionStart: number, controlIndex?: number): void {
+  public insertControlText(
+    type: 'secret' | 'event',
+    path: string,
+    controlName: ControlType,
+    selectionStart: number,
+    controlIndex?: number
+  ): void {
     let control: AbstractControl;
     if (controlName === 'header' && controlIndex !== undefined) {
       const group = this.header.at(controlIndex) as FormGroup;
@@ -129,7 +193,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       control = this.getFormControl(controlName);
     }
 
-    const secretVar = `{{.secret.${secret}}}`;
+    const secretVar = type === 'secret' ? `{{.${type}.${path}}}` : `{{${path}}}`;
     const firstPart = control.value.slice(0, selectionStart);
     const secondPart = control.value.slice(selectionStart, control.value.length);
     const finalString = firstPart + secretVar + secondPart;
