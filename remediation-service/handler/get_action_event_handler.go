@@ -42,7 +42,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 	// determine next action
 	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.ActionIndex)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "No more actions defined " + err.Error() + " in remediation.yaml file."}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: err.Error()}
 	}
 
 	finishedEventData := keptnv2.GetActionFinishedEventData{
@@ -91,7 +91,7 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 	} else if problemTitle != "" {
 		problem = "problem title " + problemTitle
 	} else {
-		problem = "root cause or problem title not found"
+		problem = "problem type default"
 	}
 
 	var actions []v0_1_4.RemediationActionsOnOpen
@@ -125,12 +125,12 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 
 	// we did not find an action
 	if actions == nil {
-		return nil, fmt.Errorf(problem)
+		return nil, fmt.Errorf("unable to find action for %s", problem)
 	}
 
 	// the required action does not exist
 	if actionIndex >= len(actions) {
-		return nil, fmt.Errorf("%s. There is no action with index %d", problem, actionIndex)
+		return nil, fmt.Errorf("there is no action with index %d for %s", problem, actionIndex)
 	}
 
 	action := actions[actionIndex]
