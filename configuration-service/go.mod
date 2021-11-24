@@ -16,7 +16,7 @@ require (
 	github.com/keptn/go-utils v0.11.0 // indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/otiai10/copy v1.6.0
+	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
