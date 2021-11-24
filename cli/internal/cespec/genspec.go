@@ -55,6 +55,7 @@ func Generate(outputDir string) {
 	md.Bullet().Link("Service", "#service")
 	md.Bullet().Link("Approval", "#approval")
 	md.Bullet().Link("Deployment", "#deployment")
+	md.Bullet().Link("Rollback", "#rollback")
 	md.Bullet().Link("Test", "#test")
 	md.Bullet().Link("Evaluation", "#evaluation")
 	md.Bullet().Link("Release", "#release")
