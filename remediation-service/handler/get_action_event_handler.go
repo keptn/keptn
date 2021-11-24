@@ -130,7 +130,7 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 
 	// the required action does not exist
 	if actionIndex >= len(actions) {
-		return nil, fmt.Errorf("there is no action with index %d for %s", problem, actionIndex)
+		return nil, fmt.Errorf("there is no action with index %d for %s", actionIndex, problem)
 	}
 
 	action := actions[actionIndex]
