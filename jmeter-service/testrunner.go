@@ -27,7 +27,7 @@ type TestResult struct {
 	err error
 }
 
-const errMsgSendFinishedEvent = "Error sending '.test.finished' event for %v"
+const errMsgSendFinishedEvent = "Could not send '.test.finished' event for %v %s"
 
 // NewTestRunner creates a new TestRunner
 func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
@@ -46,7 +46,7 @@ func (tr *TestRunner) RunTests(ctx context.Context, testInfo TestInfo) error {
 	}
 
 	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
-		logger.WithError(err).Error("Unable to send test '.started' event")
+		logger.Errorf("Could not send test '.started' event: %v", err)
 		return err
 	}
 
@@ -85,23 +85,23 @@ func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, res
 		logger.Info("Sending result ", testInfo, result.res)
 		if result.err != nil {
 			if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, result.err.Error()); err != nil {
-				logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 			}
 		}
 		msg := fmt.Sprintf("Tests for %s with status = %s. %v", testInfo.TestStrategy, strconv.FormatBool(result.res), testInfo)
 		if !result.res {
 			if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-				logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 			}
 		} else {
 			if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
-				logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 			}
 		}
 	case <-ctx.Value(keptnQuit).(chan os.Signal): /// this avoids to answer to context.Done from cloud event lib
 		logger.Errorf("Terminated, sending test finished event %v", ctx.Err())
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
-			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.String())
+			logger.Errorf("Could not send test finished event: %v.%s", err, testInfo.String())
 		}
 
 	}
@@ -117,7 +117,7 @@ func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf, resCha
 
 	testStrategyWorkload, err := getWorkloadForStrategy(jmeterConf, testStrategy)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Errorf("Could not retrieve workload strategy: %v", err)
 	}
 	if testStrategyWorkload == nil {
 		logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
@@ -125,7 +125,7 @@ func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf, resCha
 
 	res, err = tr.runWorkload(testInfo, testStrategyWorkload)
 	if err != nil {
-		logger.Error("could not run test workload:", err.Error())
+		logger.Errorf("could not run test workload: %v", err)
 	}
 
 	resChan <- TestResult{res, err}
@@ -144,7 +144,7 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", testInfo.Service, err.Error())
 		logger.Error(msg)
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
 		return nil
 	}
@@ -153,14 +153,14 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 		logger.Error(msg)
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, msg); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
 		return nil
 	}
 	if !res {
 		msg := fmt.Sprintf("Tests for %s with status = %s. %v", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo)
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
 		return nil
 	}
