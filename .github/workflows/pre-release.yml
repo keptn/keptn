@@ -10,7 +10,6 @@ env:
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
-  PRERELEASE_BUILD: 'true'
   BUILD_EVERYTHING: 'true'
   PRERELEASE_KEYWORD: "next"
 
@@ -222,7 +221,7 @@ jobs:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
       keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
-      release: ${{ env.PRERELEASE_BUILD }}
+      release: true
 
   ############################################################################
   # Build CLI
