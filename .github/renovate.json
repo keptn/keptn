@@ -9,5 +9,5 @@
   "semanticCommitType": "build",
   "semanticCommitScope": "deps",
   "stabilityDays": 7,
-  "timezone": "AT"
+  "timezone": "Europe/Vienna"
 }
