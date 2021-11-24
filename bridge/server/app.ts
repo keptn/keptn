@@ -302,26 +302,27 @@ function isAxiosError(err: Error | AxiosError): err is AxiosError {
   return err.hasOwnProperty('isAxiosError');
 }
 
-function handleError(err: Error | AxiosError, req: Request, res: Response, authType: string): number {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleError(err: any, req: Request, res: Response, authType: string): number {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  if (isAxiosError(err)) {
-    // render the error page
-    if (err.response?.data?.message) {
-      err.message = err.response?.data.message;
-    }
-    if (err.response?.status === 401) {
-      res.setHeader('keptn-auth-type', authType);
-    }
+  // render the error page
+  if (err.response?.data?.message) {
+    err.message = err.response?.data.message;
+  }
+  if (err.response?.status === 401) {
+    res.setHeader('keptn-auth-type', authType);
+  }
 
+  if (isAxiosError(err)) {
     console.error(`Error for ${err.request.method} ${err.request.path}: ${err.message}`);
-    return err.response?.status || 500;
   } else {
     console.error(err);
-    return 500;
   }
+
+  return err.response?.status || 500;
 }
 
 export { init };
