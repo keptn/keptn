@@ -117,7 +117,7 @@ func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bso
 	}
 
 	if filter.KeptnContext != "" {
-		splitContexts := strings.Split(filter.KeptnContext, ",")
+		splitContexts := strings.Split(strings.ReplaceAll(filter.KeptnContext, " ", ""), ",")
 		//searchOptions["shkeptncontext"] = filter.KeptnContext
 		searchOptions["shkeptncontext"] = bson.M{
 			"$in": splitContexts,
