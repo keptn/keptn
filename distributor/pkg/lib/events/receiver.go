@@ -144,7 +144,9 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 		// forward keptn event
-		return n.sendEvent(keptnEvent, &subscriptions[i])
+		if err := n.sendEvent(keptnEvent, &subscriptions[i]); err != nil {
+			logger.Errorf("Could not send event for subscription %s: %v", subscription.ID, err)
+		}
 	}
 	return nil
 }

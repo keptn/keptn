@@ -345,6 +345,44 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 }
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
+// registered/unregistered to/from the Keptn control plane
+func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
+	// make sure the echo-service uses the same distributor as Keptn core
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "replicas: 1", "replicas: 3")
+
+	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
+	testUniformIntegration(t, func() {
+		// install echo integration
+		_, err = KubeCtlApplyFromURL(tmpFile)
+		require.Nil(t, err)
+
+		keptnQueueGroupEV := v1.EnvVar{
+			Name:  "PUBSUB_GROUP",
+			Value: echoServiceName,
+		}
+
+		err = SetEnvVarsOfDeployment(echoServiceName, "distributor", []v1.EnvVar{keptnQueueGroupEV})
+		require.Nil(t, err)
+
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		require.Nil(t, err)
+
+	}, func() {
+		err := KubeCtlDeleteFromURL(tmpFile)
+		require.Nil(t, err)
+	})
+}
+
+// Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
 	// install echo integration

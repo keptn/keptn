@@ -127,6 +127,12 @@ spec:
               {{- $apiValidateTls := .Values.remoteControlPlane.api.apiValidateTls | ternary "true" "false" }}
               value: "{{ $apiValidateTls }}"
             {{- end }}
+            {{- if .Values.distributor.config.queueGroup.enabled }}
+            - name: PUBSUB_GROUP
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
+            {{- end }}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:
