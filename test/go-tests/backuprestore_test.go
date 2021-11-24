@@ -47,20 +47,6 @@ spec:
             - name: "release"
 `
 
-const resetGitReposScript = `cat <<EOT >> reset-git-repos.sh
-#!/bin/sh
-
-cd /data/config/
-for FILE in *; do
-    if [ -d "\$FILE" ]; then
-        cd "\$FILE"
-        git reset --hard
-        cd ..
-    fi
-done
-EOT
-`
-
 func Test_BackupRestore(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "podtato-head"
@@ -128,7 +114,7 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("chmod o+w mongodb-backup")
 	require.Nil(t, err)
 
-	t.Logf("Logging in to MongoDb database")
+	t.Logf("Execute MongoDb database dump")
 	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-user}")
 	require.Nil(t, err)
 	mongoDbRootUserByte, err := b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootUser))
@@ -150,12 +136,6 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb", removeQuotes(mongoDbPod))
 	require.Nil(t, err)
 
-	//backup git credentials
-
-	//t.Logf("Executing backup of git credentials")
-	//_, err = ExecuteCommandf("kubectl get secret -n keptn git-credentials-%s -oyaml > %s-credentials.yaml", keptnProjectName, keptnProjectName)
-	//require.Nil(t, err)
-
 	//deleting testing project
 
 	t.Logf("Deleting testing project")
@@ -163,23 +143,10 @@ func Test_BackupRestore(t *testing.T) {
 	require.Nil(t, err)
 
 	//restore Configuration Service data
+
 	t.Logf("Restoring configuration-service data")
-	// configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
-	// require.Nil(t, err)
 	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/config/ keptn/%s:/data -c configuration-service", removeQuotes(configServicePod))
 	require.Nil(t, err)
-
-	// t.Logf("Reseting git repository HEAD")
-	// _, err = ExecuteCommandf(resetGitReposScript)
-	// require.Nil(t, err)
-	// configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
-	// require.Nil(t, err)
-	// _, err = ExecuteCommandf("kubectl cp ./reset-git-repos.sh keptn/%s:/ -c configuration-service", removeQuotes(configServicePod))
-	// require.Nil(t, err)
-	// _, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- chmod +x -R ./reset-git-repos.sh", removeQuotes(configServicePod))
-	// require.Nil(t, err)
-	// _, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- ./reset-git-repos.sh", removeQuotes(configServicePod))
-	// require.Nil(t, err)
 
 	//restore MongoDB data
 
@@ -187,14 +154,9 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/keptn/ keptn/%s:/tmp/dump -c mongodb", removeQuotes(mongoDbPod))
 	require.Nil(t, err)
 
-	t.Logf("Logging in to MongoDb database")
+	t.Logf("Import MongoDb database dump")
 	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n keptn -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /tmp/dump", mongoDbRootUser, mongoDbRootPassword)
 	require.Nil(t, err)
-
-	//restore git credentials
-	//t.Logf("Restoring git credentials")
-	//_, err = ExecuteCommandf("kubectl apply -f %s-credentials.yaml", keptnProjectName)
-	//require.Nil(t, err)
 
 	t.Logf("Trigger delivery after restore of helloservice:v0.1.1")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
