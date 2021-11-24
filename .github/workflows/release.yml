@@ -340,6 +340,22 @@ jobs:
           gh release upload "$RELEASE_TAG" ./dist/keptn-installer/*.tgz
           gh release upload "$RELEASE_TAG" ./dist/keptn-cli/*.tar.gz
 
+      - name: Upload Helm Charts to Google Cloud
+        id: upload_helm_charts
+        env:
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+        run: |
+            echo "Installing GCloud CLI"
+            export OS_TYPE="linux"
+            mkdir ~/downloads
+            ./test/utils/download_and_install_gcloud.sh
+            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+
   ############################################################################
   # Push Docker Images to alternative Registries
   ############################################################################
