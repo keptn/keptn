@@ -10,6 +10,8 @@ export class KtbVariableSelectorComponent {
   @Input() public control: AbstractControl | undefined;
   @Input() public selectionStart: number | null = null;
   @Input() public variablePrefix = '';
+  @Input() public iconName = 'resetpassword';
+  @Input() public label = '';
 
   @Output() changed: EventEmitter<void> = new EventEmitter<void>();
 

@@ -1,11 +1,11 @@
 <button
   dt-icon-button
   variant="nested"
-  aria-label="Add secret"
   ktbTreeListSelect
+  [aria-label]="label"
   [data]="data"
   [options]="options"
   (selected)="setVariable($event)"
 >
-  <dt-icon name="resetpassword"></dt-icon>
+  <dt-icon [name]="iconName"></dt-icon>
 </button>
