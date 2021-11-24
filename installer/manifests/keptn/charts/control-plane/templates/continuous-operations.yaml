@@ -94,7 +94,7 @@ spec:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
       serviceAccountName: keptn-default
-      terminationGracePeriodSeconds: 50
+      {{- include "control-plane.gracePeriod" . | nindent 8 }}
 ---
 apiVersion: v1
 kind: Service

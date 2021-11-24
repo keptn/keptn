@@ -827,7 +827,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-      terminationGracePeriodSeconds: 50
+      {{- include "control-plane.gracePeriod" . | nindent 8 }}
 ---
 apiVersion: v1
 kind: Service
@@ -941,7 +941,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-      terminationGracePeriodSeconds: 50
+      {{- include "control-plane.gracePeriod" . | nindent 8 }}
 
 ---
 apiVersion: v1
@@ -1062,7 +1062,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-      terminationGracePeriodSeconds: 50
+      {{- include "control-plane.gracePeriod" . | nindent 8 }}
 ---
 apiVersion: v1
 kind: Service
