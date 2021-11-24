@@ -16,6 +16,11 @@ type IEventSender interface {
 	Send(ctx context.Context, event cloudevents.Event) error
 }
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var gracefulShutdownKey = gracefulShutdownKeyType{}
+
 const invalidRequestFormatMsg = "Invalid request format"
 
 func SetFailedDependencyErrorResponse(err error, c *gin.Context, message ...string) {
