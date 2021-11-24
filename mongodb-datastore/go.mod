@@ -14,7 +14,7 @@ require (
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.11.0
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tryvium-travels/memongo v0.3.1
 	go.mongodb.org/mongo-driver v1.7.4
