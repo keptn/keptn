@@ -634,7 +634,7 @@ jobs:
 
       - name: Test Graceful Shutdown
         # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
         id: test_graceful_shutdown
         timeout-minutes: 10
         continue-on-error: true
