@@ -38,7 +38,7 @@ func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyar
 // @Param 	beforeTime			query	string	false	"The before time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
 // @Param	pageSize			query	int		false	"The number of items to return"
 // @Param   nextPageKey     	query   string  false	"Pointer to the next set of items"
-// @Param   keptnContext		query	string	false	"The keptn context"
+// @Param   keptnContext		query	string	false	"Comma separated list of keptnContext IDs"
 // @Success 200 {object} models.SequenceStates	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
