@@ -170,6 +170,7 @@ jobs:
         id: check_modified_files
         env:
           BUILD_EVERYTHING: true
+          PRERELEASE_BUILD: true
         run: |
           ./gh-actions-scripts/prepare_changed_artifacts.sh ""
 
