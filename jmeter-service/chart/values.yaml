@@ -14,6 +14,9 @@ distributor:
     repository: docker.io/keptn/distributor  # Container Image Name
     pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
     tag: ""                                  # Container Tag
+  config:
+    queueGroup:
+      enabled: true                          # Enable connection via Nats queue group to support exactly-once message processing
 
 remoteControlPlane:
   enabled: false                             # Enables remote execution plane mode

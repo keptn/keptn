@@ -113,4 +113,10 @@ readinessProbe:
     fieldRef:
       fieldPath: spec.nodeName
 {{- end }}
+{{- if .Values.distributor.config.queueGroup.enabled }}
+- name: PUBSUB_GROUP
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/name']
+{{- end }}
 {{- end }}

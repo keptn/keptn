@@ -24,12 +24,13 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
-	config := config.EnvConfig{
+	envConfig := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
 		PubSubURL:       natsURL,
+		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(config, eventSender, true)
+	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -85,12 +86,13 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
-	config := config.EnvConfig{
+	envConfig := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
+		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(config, eventSender, true)
+	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -152,12 +154,13 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
-	config := config.EnvConfig{
+	envConfig := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
+		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(config, eventSender, true)
+	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -204,12 +207,13 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
-	config := config.EnvConfig{
+	envConfig := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
+		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(config, eventSender, true)
+	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -265,12 +269,12 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilterNoMatch(t *testin
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
-	config := config.EnvConfig{
+	envConfig := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(config, eventSender, true)
+	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
@@ -309,12 +313,12 @@ func Test_ReceiveFromNATSAndForwardEventNoSubscriptionPulling(t *testing.T) {
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
-	config := config.EnvConfig{
+	envConfig := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(config, eventSender, false)
+	receiver := NewNATSEventReceiver(envConfig, eventSender, false)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)

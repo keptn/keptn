@@ -60,7 +60,7 @@ func Test_SequenceState(t *testing.T) {
 	}
 
 	defer func() {
-		if err := ScaleUpUniform(uniform); err != nil {
+		if err := ScaleUpUniform(uniform, 1); err != nil {
 			t.Errorf("could not scale up uniform: " + err.Error())
 		}
 	}()
