@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	eventSender := &keptnv2.TestSender{}
+	eventSender := &keptnfake.EventSender{}
 	config := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
@@ -83,7 +84,7 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	eventSender := &keptnv2.TestSender{}
+	eventSender := &keptnfake.EventSender{}
 	config := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
@@ -150,7 +151,7 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	eventSender := &keptnv2.TestSender{}
+	eventSender := &keptnfake.EventSender{}
 	config := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
@@ -202,7 +203,7 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	eventSender := &keptnv2.TestSender{}
+	eventSender := &keptnfake.EventSender{}
 	config := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
@@ -263,7 +264,7 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilterNoMatch(t *testin
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	eventSender := &keptnv2.TestSender{}
+	eventSender := &keptnfake.EventSender{}
 	config := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
@@ -307,7 +308,7 @@ func Test_ReceiveFromNATSAndForwardEventNoSubscriptionPulling(t *testing.T) {
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
-	eventSender := &keptnv2.TestSender{}
+	eventSender := &keptnfake.EventSender{}
 	config := config.EnvConfig{
 		PubSubRecipient: "http://127.0.0.1",
 		PubSubTopic:     "sh.keptn.event.task.triggered",
