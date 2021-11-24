@@ -376,6 +376,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: DEBUG GitHub actor
+        run: |
+          echo "$GITHUB_ACTOR"
+
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
