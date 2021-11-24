@@ -1,6 +1,7 @@
 import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 import { AbstractControl } from '@angular/forms';
+import { DtIconType } from '@dynatrace/barista-icons';
 
 @Component({
   selector: 'ktb-variable-selector',
@@ -10,7 +11,7 @@ export class KtbVariableSelectorComponent {
   @Input() public control: AbstractControl | undefined;
   @Input() public selectionStart: number | null = null;
   @Input() public variablePrefix = '';
-  @Input() public iconName = 'resetpassword';
+  @Input() public iconName: DtIconType = 'resetpassword';
   @Input() public label = '';
 
   @Output() changed: EventEmitter<void> = new EventEmitter<void>();
