@@ -4,16 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
-	"github.com/imroc/req"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/osutils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/kubernetes-utils/pkg"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -21,6 +11,17 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	v2 "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
+	"github.com/imroc/req"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/osutils"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -530,4 +531,15 @@ func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) erro
 	}, 30*time.Second, 5*time.Second)
 
 	return nil
+}
+
+func removeQuotes(str string) string {
+	if str[0] == '"' || str[0] == '\'' {
+		str = str[1:]
+	}
+	if i := len(str) - 1; str[i] == '"' || str[i] == '\'' {
+		str = str[:i]
+	}
+
+	return str
 }

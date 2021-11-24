@@ -1,10 +1,11 @@
 package go_tests
 
 import (
-	"github.com/stretchr/testify/require"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 const onboardServiceShipyard = `apiVersion: "spec.keptn.sh/0.2.3"

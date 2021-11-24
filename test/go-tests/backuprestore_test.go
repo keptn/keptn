@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	b64 "encoding/base64"
 	"os"
 	"testing"
 
@@ -59,9 +60,9 @@ done
 EOT
 `
 
-func TestBackupRestore(t *testing.T) {
+func Test_BackupRestore(t *testing.T) {
 	repoLocalDir := "../assets/potatohead/"
-	keptnProjectName := "potatohead"
+	keptnProjectName := "podtato-head"
 	serviceName := "helloserver"
 	resourceName := "helloserver.tgz"
 
@@ -88,6 +89,8 @@ func TestBackupRestore(t *testing.T) {
 	//backup Configuration Service data
 
 	t.Logf("Creating backup directories for configuration-service")
+	err = os.Chdir(repoLocalDir)
+	require.Nil(t, err)
 	err = os.MkdirAll("keptn-backup", os.ModePerm)
 	require.Nil(t, err)
 	err = os.Chdir("keptn-backup")
@@ -98,7 +101,7 @@ func TestBackupRestore(t *testing.T) {
 	t.Logf("Executing backup of configuration-service")
 	configServicePod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp keptn/%s:/data ./config-svc-backup/ -c configuration-service", configServicePod)
+	_, err = ExecuteCommandf("kubectl cp keptn/%s:/data ./config-svc-backup/ -c configuration-service", removeQuotes(configServicePod))
 	require.Nil(t, err)
 
 	//backup MongoDB Data
@@ -108,24 +111,32 @@ func TestBackupRestore(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Logging in to MongoDb database")
-	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-user} | base64 -d")
+	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user}")
 	require.Nil(t, err)
-	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-password} | base64 --decode")
+	mongoDbRootUserByte, err := b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootUser))
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n keptn -- mongodump --authenticationDatabase admin --username %s--password %s -d keptn -h localhost --out=/tmp/dump", mongoDbRootUser, mongoDbRootPassword)
+	mongoDbRootUser = string(mongoDbRootUserByte)
+
+	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.admin_password}")
+	require.Nil(t, err)
+	mongoDbRootPasswordByte, err := b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootPassword))
+	require.Nil(t, err)
+	mongoDbRootPassword = string(mongoDbRootPasswordByte)
+
+	_, err = ExecuteCommandf("kubectl exec svc/mongodb -n keptn -- mongodump --authenticationDatabase admin --username admin --password %s -d keptn -h localhost --out=/tmp/dump", mongoDbRootPassword)
 	require.Nil(t, err)
 
 	t.Logf("Executing backup of MongoDB database")
-	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'")
+	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongodb -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb", mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb", removeQuotes(mongoDbPod))
 	require.Nil(t, err)
 
 	//backup git credentials
 
-	t.Logf("Executing backup of git credentials")
-	_, err = ExecuteCommandf("kubectl get secret -n keptn git-credentials-%s -oyaml > %s-credentials.yaml", keptnProjectName, keptnProjectName)
-	require.Nil(t, err)
+	//t.Logf("Executing backup of git credentials")
+	//_, err = ExecuteCommandf("kubectl get secret -n keptn git-credentials-%s -oyaml > %s-credentials.yaml", keptnProjectName, keptnProjectName)
+	//require.Nil(t, err)
 
 	//deleting testing project
 
@@ -137,7 +148,7 @@ func TestBackupRestore(t *testing.T) {
 	t.Logf("Restoring configuration-service data")
 	configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/* keptn/%s:/data -c configuration-service", configServicePod)
+	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/* keptn/%s:/data -c configuration-service", removeQuotes(configServicePod))
 	require.Nil(t, err)
 
 	t.Logf("Reseting git repository HEAD")
@@ -145,33 +156,41 @@ func TestBackupRestore(t *testing.T) {
 	require.Nil(t, err)
 	configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp ./reset-git-repos.sh keptn/%s:/ -c configuration-service", configServicePod)
+	_, err = ExecuteCommandf("kubectl cp ./reset-git-repos.sh keptn/%s:/ -c configuration-service", removeQuotes(configServicePod))
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- chmod +x -R ./reset-git-repos.sh", configServicePod)
+	_, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- chmod +x -R ./reset-git-repos.sh", removeQuotes(configServicePod))
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- ./reset-git-repos.sh", configServicePod)
+	_, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- ./reset-git-repos.sh", removeQuotes(configServicePod))
 	require.Nil(t, err)
 
 	//restore MongoDB data
 
 	t.Logf("Restoring MongoDB data")
-	mongoDbPod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'")
+	mongoDbPod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongodb -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/ keptn/%s:/opt/dump -c mongodb", mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/ keptn/%s:/opt/dump -c mongodb", removeQuotes(mongoDbPod))
 	require.Nil(t, err)
 
 	t.Logf("Logging in to MongoDb database")
-	mongoDbRootUser, err = ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-user} | base64 -d")
+	mongoDbRootUser, err = ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user}")
 	require.Nil(t, err)
-	mongoDbRootPassword, err = ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-password} | base64 --decode")
+	mongoDbRootUserByte, err = b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootUser))
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n keptn -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /opt/dump", mongoDbRootUser, mongoDbRootPassword)
+	mongoDbRootUser = string(mongoDbRootUserByte)
+
+	mongoDbRootPassword, err = ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.admin_password}")
+	require.Nil(t, err)
+	mongoDbRootPasswordByte, err = b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootPassword))
+	require.Nil(t, err)
+	mongoDbRootPassword = string(mongoDbRootPasswordByte)
+
+	_, err = ExecuteCommandf("kubectl exec svc/mongodb -n keptn -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username admin --password %s /opt/dump", mongoDbRootPassword)
 	require.Nil(t, err)
 
 	//restore git credentials
-	t.Logf("Restoring git credentials")
-	_, err = ExecuteCommandf("kubectl apply -f %s-credentials.yaml", keptnProjectName)
-	require.Nil(t, err)
+	//t.Logf("Restoring git credentials")
+	//_, err = ExecuteCommandf("kubectl apply -f %s-credentials.yaml", keptnProjectName)
+	//require.Nil(t, err)
 
 	t.Log("Verify Direct delivery of helloservice in stage dev")
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "gabrieltanner/hello-server", "v0.1.1")
