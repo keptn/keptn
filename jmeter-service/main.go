@@ -61,6 +61,7 @@ func main() {
 
 }
 
+//getGracefulContext returns a context with cancel and a waitgroup to sync handlers before shutdown
 func getGracefulContext() context.Context {
 
 	ch := make(chan os.Signal)
@@ -68,9 +69,12 @@ func getGracefulContext() context.Context {
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), gracefulShutdownKey, wg))
 	ctx = cloudevents.WithEncodingStructured(ctx)
-	ctx = context.WithValue(ctx, keptnQuit, ch)
+	ctx = context.WithValue(ctx, testRunnerQuit, ch)
 	go func() {
 		<-ch
+		// In case of SIGINT or SIGTERM Jmeter needs to stop and send an error event
+		// a quit channel is preferred to ctx.Done to avoid context being closed
+		// too early by the cloudevents StartReceiver
 		close(ch)
 		logger.Fatal("Container termination triggered, starting graceful shutdown")
 		wg.Wait()

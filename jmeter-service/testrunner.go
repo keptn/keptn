@@ -98,7 +98,7 @@ func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, res
 				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 			}
 		}
-	case <-ctx.Value(keptnQuit).(chan os.Signal): /// this avoids to answer to context.Done from cloud event lib
+	case <-ctx.Value(testRunnerQuit).(chan os.Signal): /// this avoids to answer to context.Done from cloud event lib
 		logger.Errorf("Terminated, sending test finished event %v", ctx.Err())
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
 			logger.Errorf("Could not send test finished event: %v.%s", err, testInfo.String())
