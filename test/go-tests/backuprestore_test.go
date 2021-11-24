@@ -3,6 +3,7 @@ package go_tests
 import (
 	b64 "encoding/base64"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,12 +12,12 @@ import (
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
 kind: "Shipyard"
 metadata:
-  name: "shipyard-potatohead"
+  name: "shipyard-podtato-ohead"
 spec:
   stages:
     - name: "dev"
       sequences:
-        - name: "delivery-direct"
+        - name: "delivery"
           tasks:
             - name: "deployment"
               properties:
@@ -25,9 +26,9 @@ spec:
 
     - name: "staging"
       sequences:
-        - name: "delivery-direct"
+        - name: "delivery"
           triggeredOn:
-            - event: "dev.delivery-direct.finished"
+            - event: "dev.delivery.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -36,9 +37,9 @@ spec:
 
     - name: "production"
       sequences:
-        - name: "delivery-direct"
+        - name: "delivery"
           triggeredOn:
-            - event: "staging.delivery-direct.finished"
+            - event: "staging.delivery.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -61,29 +62,44 @@ EOT
 `
 
 func Test_BackupRestore(t *testing.T) {
-	repoLocalDir := "../assets/potatohead/"
+	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "podtato-head"
-	serviceName := "helloserver"
-	resourceName := "helloserver.tgz"
-
-	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
-	require.Nil(t, err)
-	defer os.Remove(shipyardFilePath)
+	serviceName := "helloservice"
+	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
+	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
+	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
+	require.Nil(t, err)
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("Creating a new service %s in project %s", serviceName, keptnProjectName)
-	_, err = ExecuteCommandf("keptn create service %s --project=%s", serviceName, keptnProjectName)
+	t.Logf("Onboarding service %s in project %s with chart %s", serviceName, keptnProjectName, serviceChartLocalDir)
+	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
 	require.Nil(t, err)
 
-	t.Logf("Adding resource %s to service %s in project %s", resourceName, serviceName, keptnProjectName)
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --all-stages --resource=%s --resourceUri=%s", keptnProjectName, serviceName, repoLocalDir+resourceName, "helm/"+resourceName)
+	t.Log("Adding jmeter config in staging")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
 	require.Nil(t, err)
 
-	t.Logf("Triggering delivery of service %s in project %s", serviceName, keptnProjectName)
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image='gabrieltanner/hello-server' --tag=v0.1.1", keptnProjectName, serviceName)
+	t.Log("Adding load test resources for jmeter in staging")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
+	require.Nil(t, err)
+
+	t.Logf("Trigger delivery before backup of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	require.Nil(t, err)
+
+	t.Logf("Verify Direct delivery before backup of %s in stage dev", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
+
+	t.Logf("Verify Direct delivery before backup of %s in stage staging", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
+
+	t.Logf("Verify Direct delivery before backup of %s in stage production", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
 	//backup Configuration Service data
@@ -109,25 +125,27 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Creating backup directories for MongoDb data")
 	err = os.MkdirAll("mongodb-backup", os.ModePerm)
 	require.Nil(t, err)
+	_, err = ExecuteCommandf("chmod o+w mongodb-backup")
+	require.Nil(t, err)
 
 	t.Logf("Logging in to MongoDb database")
-	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user}")
+	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-user}")
 	require.Nil(t, err)
 	mongoDbRootUserByte, err := b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootUser))
 	require.Nil(t, err)
 	mongoDbRootUser = string(mongoDbRootUserByte)
 
-	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.admin_password}")
+	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-password}")
 	require.Nil(t, err)
 	mongoDbRootPasswordByte, err := b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootPassword))
 	require.Nil(t, err)
 	mongoDbRootPassword = string(mongoDbRootPasswordByte)
 
-	_, err = ExecuteCommandf("kubectl exec svc/mongodb -n keptn -- mongodump --authenticationDatabase admin --username admin --password %s -d keptn -h localhost --out=/tmp/dump", mongoDbRootPassword)
+	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n keptn -- mongodump --authenticationDatabase admin --username %s --password %s -d keptn -h localhost --out=/tmp/dump", mongoDbRootUser, mongoDbRootPassword)
 	require.Nil(t, err)
 
 	t.Logf("Executing backup of MongoDB database")
-	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongodb -ojsonpath='{.items[0].metadata.name}'")
+	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
 	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb", removeQuotes(mongoDbPod))
 	require.Nil(t, err)
@@ -146,45 +164,31 @@ func Test_BackupRestore(t *testing.T) {
 
 	//restore Configuration Service data
 	t.Logf("Restoring configuration-service data")
-	configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
-	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/* keptn/%s:/data -c configuration-service", removeQuotes(configServicePod))
+	// configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
+	// require.Nil(t, err)
+	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/config/ keptn/%s:/data -c configuration-service", removeQuotes(configServicePod))
 	require.Nil(t, err)
 
-	t.Logf("Reseting git repository HEAD")
-	_, err = ExecuteCommandf(resetGitReposScript)
-	require.Nil(t, err)
-	configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
-	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp ./reset-git-repos.sh keptn/%s:/ -c configuration-service", removeQuotes(configServicePod))
-	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- chmod +x -R ./reset-git-repos.sh", removeQuotes(configServicePod))
-	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- ./reset-git-repos.sh", removeQuotes(configServicePod))
-	require.Nil(t, err)
+	// t.Logf("Reseting git repository HEAD")
+	// _, err = ExecuteCommandf(resetGitReposScript)
+	// require.Nil(t, err)
+	// configServicePod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
+	// require.Nil(t, err)
+	// _, err = ExecuteCommandf("kubectl cp ./reset-git-repos.sh keptn/%s:/ -c configuration-service", removeQuotes(configServicePod))
+	// require.Nil(t, err)
+	// _, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- chmod +x -R ./reset-git-repos.sh", removeQuotes(configServicePod))
+	// require.Nil(t, err)
+	// _, err = ExecuteCommandf("kubectl exec -n keptn %s -c configuration-service -- ./reset-git-repos.sh", removeQuotes(configServicePod))
+	// require.Nil(t, err)
 
 	//restore MongoDB data
 
 	t.Logf("Restoring MongoDB data")
-	mongoDbPod, err = ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongodb -ojsonpath='{.items[0].metadata.name}'")
-	require.Nil(t, err)
 	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/ keptn/%s:/opt/dump -c mongodb", removeQuotes(mongoDbPod))
 	require.Nil(t, err)
 
 	t.Logf("Logging in to MongoDb database")
-	mongoDbRootUser, err = ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user}")
-	require.Nil(t, err)
-	mongoDbRootUserByte, err = b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootUser))
-	require.Nil(t, err)
-	mongoDbRootUser = string(mongoDbRootUserByte)
-
-	mongoDbRootPassword, err = ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.admin_password}")
-	require.Nil(t, err)
-	mongoDbRootPasswordByte, err = b64.StdEncoding.DecodeString(removeQuotes(mongoDbRootPassword))
-	require.Nil(t, err)
-	mongoDbRootPassword = string(mongoDbRootPasswordByte)
-
-	_, err = ExecuteCommandf("kubectl exec svc/mongodb -n keptn -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username admin --password %s /opt/dump", mongoDbRootPassword)
+	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n keptn -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /opt/dump", mongoDbRootUser, mongoDbRootPassword)
 	require.Nil(t, err)
 
 	//restore git credentials
@@ -192,16 +196,20 @@ func Test_BackupRestore(t *testing.T) {
 	//_, err = ExecuteCommandf("kubectl apply -f %s-credentials.yaml", keptnProjectName)
 	//require.Nil(t, err)
 
-	t.Log("Verify Direct delivery of helloservice in stage dev")
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "gabrieltanner/hello-server", "v0.1.1")
+	//t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
+	//_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	//require.Nil(t, err)
+
+	t.Logf("Verify Direct delivery after restore of %s in stage dev", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify Direct delivery of helloservice in stage staging")
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "gabrieltanner/hello-server", "v0.1.1")
+	t.Logf("Verify Direct delivery after restore of %s in stage staging", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify Direct delivery of helloservice in stage production")
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "gabrieltanner/hello-server", "v0.1.1")
+	t.Logf("Verify Direct delivery after restore of %s in stage production", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
 }
