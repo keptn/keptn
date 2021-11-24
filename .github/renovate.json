@@ -2,12 +2,13 @@
   "extends": [
     "config:base",
     ":gitSignOff",
-    "schedule:nonOfficeHours"
+    "schedule:nonOfficeHours",
+    ":semanticCommitTypeAll(build)",
+    ":semanticCommitScope(deps)",
+    "group:monorepos"
   ],
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,
-  "semanticCommitType": "build",
-  "semanticCommitScope": "deps",
   "stabilityDays": 7,
   "timezone": "Europe/Vienna"
 }
