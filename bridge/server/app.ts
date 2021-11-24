@@ -128,9 +128,6 @@ async function init(): Promise<Express> {
     integrationsPageLink = 'https://get.keptn.sh/integrations.html';
   }
 
-  // Remove the X-Powered-By headers.
-  app.disable('x-powered-by');
-
   // server static files - Images & CSS
   app.use('/static', express.static(join(serverFolder, 'views/static'), { maxAge: oneWeek }));
 
@@ -163,16 +160,17 @@ async function init(): Promise<Express> {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", 'unsafe-eval'],
+        'script-src': ["'self'", "'unsafe-eval'", "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='"],
         'upgrade-insecure-requests': null,
       },
     })
   );
-  app.use(helmet.hidePoweredBy());
   app.use(helmet.noSniff());
   app.use(helmet.permittedCrossDomainPolicies());
   app.use(helmet.frameguard());
   app.use(helmet.xssFilter());
+  // Remove the X-Powered-By headers, has to be done via express and not helmet
+  app.disable('x-powered-by');
 
   const authType: string = await setAuth();
 

@@ -9,7 +9,7 @@
     "start:server:dev": "cd ./server && yarn dev",
     "start:ci": "ng serve --port=3000 --no-live-reload --configuration=test",
     "ng": "ng",
-    "build": "ng build --prod --base-href=/bridge/",
+    "build": "ng build --prod --base-href=./",
     "test": "jest --config=jest.config.ts --maxWorkers=1",
     "lint:check": "eslint ./",
     "lint:fix": "eslint --fix ./",
