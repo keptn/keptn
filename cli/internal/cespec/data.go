@@ -115,6 +115,18 @@ var deploymentFinishedEventData = keptnv2.DeploymentFinishedEventData{
 	},
 }
 
+var rollbackTriggeredEventData = keptnv2.RollbackTriggeredEventData{
+	EventData: commonEventData,
+}
+
+var rollbackStartedEventData = keptnv2.RollbackStartedEventData{
+	EventData: commonEventData,
+}
+
+var rollbackFinishedEventData = keptnv2.RollbackFinishedEventData{
+	EventData: commonEventData,
+}
+
 var testTriggeredEventData = keptnv2.TestTriggeredEventData{
 	EventData: commonEventData,
 	Test: keptnv2.TestTriggeredDetails{

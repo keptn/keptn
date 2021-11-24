@@ -147,6 +147,11 @@ func Generate(outputDir string) {
 	createSection(md, "Deployment Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.DeploymentTaskName), deploymentStatusChangedEventData)
 	createSection(md, "Deployment Finished", keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), deploymentFinishedEventData)
 
+	createSectionTitle(md, "Rollback")
+	createSection(md, "Rollback Triggered", keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName), rollbackTriggeredEventData)
+	createSection(md, "Rollback Started", keptnv2.GetStartedEventType(keptnv2.RollbackTaskName), rollbackStartedEventData)
+	createSection(md, "Rollback Finished", keptnv2.GetFinishedEventType(keptnv2.RollbackTaskName), rollbackFinishedEventData)
+
 	createSectionTitle(md, "Test")
 	createSection(md, "Test Triggered", keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), testTriggeredEventData)
 	createSection(md, "Test Started", keptnv2.GetStartedEventType(keptnv2.TestTaskName), testStartedEventData)
