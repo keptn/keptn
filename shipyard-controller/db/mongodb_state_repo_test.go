@@ -190,7 +190,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project:      "my-project",
-			KeptnContext: "my-context,my-context2",
+			KeptnContext: "my-context, my-context2",
 		},
 	})
 
