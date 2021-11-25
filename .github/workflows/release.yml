@@ -238,7 +238,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-20.04
-    needs: [docker_build, build-helm-charts, build-cli]
+    needs: [prepare, docker_build, build-helm-charts, build-cli]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -292,7 +292,7 @@ jobs:
         uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ github.event.repository.default_branch }}
+          branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: false
 
       - name: Create release package
@@ -322,7 +322,7 @@ jobs:
         if: always() # Force to always run this step to ensure "include administrators" is always turned back on
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ github.event.repository.default_branch }}
+          branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: true
 
       - name: Create GitHub Release
