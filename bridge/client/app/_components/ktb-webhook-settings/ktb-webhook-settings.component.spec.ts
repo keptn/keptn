@@ -19,15 +19,15 @@ describe('KtbWebhookSettingsComponent', () => {
       keys: [
         {
           name: 'key1',
-          path: 'SecretA.key1',
+          path: '.secret.SecretA.key1',
         },
         {
           name: 'key2',
-          path: 'SecretA.key2',
+          path: '.secret.SecretA.key2',
         },
         {
           name: 'key3',
-          path: 'SecretA.key3',
+          path: '.secret.SecretA.key3',
         },
       ],
     },
@@ -36,15 +36,15 @@ describe('KtbWebhookSettingsComponent', () => {
       keys: [
         {
           name: 'key1',
-          path: 'SecretB.key1',
+          path: '.secret.SecretB.key1',
         },
         {
           name: 'key2',
-          path: 'SecretB.key2',
+          path: '.secret.SecretB.key2',
         },
         {
           name: 'key3',
-          path: 'SecretB.key3',
+          path: '.secret.SecretB.key3',
         },
       ],
     },

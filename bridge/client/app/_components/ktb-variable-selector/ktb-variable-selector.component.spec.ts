@@ -7,7 +7,7 @@ import { DataServiceMock } from '../../_services/data.service.mock';
 import { KtbVariableSelectorComponent } from './ktb-variable-selector.component';
 
 describe('KtbSecretSelectorComponent', () => {
-  const variablePath = 'SecretA.key1';
+  const variablePath = '.secret.SecretA.key1';
   let component: KtbVariableSelectorComponent;
   let fixture: ComponentFixture<KtbVariableSelectorComponent>;
 
@@ -31,13 +31,12 @@ describe('KtbSecretSelectorComponent', () => {
     component.control = new FormControl('');
     component.control.setValue('');
     component.selectionStart = 0;
-    component.variablePrefix = '.secret';
 
     // when
     component.setVariable(variablePath);
 
     // then
-    expect(component.control.value).toEqual(`{{.secret.${variablePath}}}`);
+    expect(component.control.value).toEqual(`{{${variablePath}}}`);
   });
 
   it('should insert the processed string as value to the control at the given position', () => {
@@ -45,12 +44,11 @@ describe('KtbSecretSelectorComponent', () => {
     component.control = new FormControl('');
     component.control.setValue('https://example.com?somestringtoinsert');
     component.selectionStart = 30;
-    component.variablePrefix = '.secret';
 
     // when
     component.setVariable(variablePath);
 
     // then
-    expect(component.control.value).toEqual(`https://example.com?somestring{{.secret.${variablePath}}}toinsert`);
+    expect(component.control.value).toEqual(`https://example.com?somestring{{${variablePath}}}toinsert`);
   });
 });
