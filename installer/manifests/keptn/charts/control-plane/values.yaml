@@ -30,16 +30,19 @@ apiGatewayNginx:
   type: ClusterIP
   port: 80
   nodePort: 31090
+  replicas: 1
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.21.3-alpine
 
 remediationService:
+  replicas: 1
   image:
     repository: docker.io/keptn/remediation-service
     tag: ""
 
 apiService:
+  replicas: 1
   image:
     repository: docker.io/keptn/api
     tag: ""
@@ -48,6 +51,7 @@ apiService:
     maxAuthRequestBurst: "2"
 
 bridge:
+  replicas: 1
   image:
     repository: docker.io/keptn/bridge2
     tag: ""
@@ -80,6 +84,7 @@ distributor:
       enabled: true
 
 shipyardController:
+  replicas: 1
   image:
     repository: docker.io/keptn/shipyard-controller
     tag: ""
@@ -88,6 +93,7 @@ shipyardController:
     uniformIntegrationTTL: "48h"
 
 secretService:
+  replicas: 1
   image:
     repository: docker.io/keptn/secret-service
     tag: ""
@@ -101,26 +107,31 @@ configurationService:
   storageClass: null
 
 mongodbDatastore:
+  replicas: 1
   image:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
 
 lighthouseService:
+  replicas: 1
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
 
 statisticsService:
+  replicas: 1
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
 
 approvalService:
+  replicas: 1
   image:
     repository: docker.io/keptn/approval-service
     tag: ""
 
 webhookService:
+  replicas: 1
   enabled: true
   image:
     repository: docker.io/keptn/webhook-service

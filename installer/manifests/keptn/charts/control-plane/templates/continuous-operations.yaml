@@ -17,7 +17,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: remediation-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.remediationService.replicas | default 1 }}
   template:
     metadata:
       labels:

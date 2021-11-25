@@ -18,7 +18,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: mongodb-datastore
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.mongodbDatastore.replicas | default 1 }}
   template:
     metadata:
       labels:

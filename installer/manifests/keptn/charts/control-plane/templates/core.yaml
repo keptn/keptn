@@ -61,7 +61,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: api-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.apiGatewayNginx.replicas | default 1 }}
   template:
     metadata:
       labels:
@@ -187,7 +187,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: bridge
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.bridge.replicas | default 1 }}
   template:
     metadata:
       labels:
@@ -308,7 +308,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: shipyard-controller
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.shipyardController.replicas | default 1 }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -489,7 +489,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: secret-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.secretService.replicas | default 1 }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -730,7 +730,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: statistics-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.statisticsService.replicas | default 1 }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -865,7 +865,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: approval-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.approvalService.replicas | default 1 }}
   template:
     metadata:
       labels:
@@ -978,7 +978,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: webhook-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: {{ .Values.webhookService.replicas | default 1 }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
