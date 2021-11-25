@@ -128,9 +128,6 @@ async function init(): Promise<Express> {
     integrationsPageLink = 'https://get.keptn.sh/integrations.html';
   }
 
-  // Remove the X-Powered-By headers.
-  app.disable('x-powered-by');
-
   // server static files - Images & CSS
   app.use('/static', express.static(join(serverFolder, 'views/static'), { maxAge: oneWeek }));
 
@@ -163,16 +160,17 @@ async function init(): Promise<Express> {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", 'unsafe-eval'],
+        'script-src': ["'self'", "'unsafe-eval'", "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='"],
         'upgrade-insecure-requests': null,
       },
     })
   );
-  app.use(helmet.hidePoweredBy());
   app.use(helmet.noSniff());
   app.use(helmet.permittedCrossDomainPolicies());
   app.use(helmet.frameguard());
   app.use(helmet.xssFilter());
+  // Remove the X-Powered-By headers, has to be done via express and not helmet
+  app.disable('x-powered-by');
 
   const authType: string = await setAuth();
 
@@ -304,26 +302,27 @@ function isAxiosError(err: Error | AxiosError): err is AxiosError {
   return err.hasOwnProperty('isAxiosError');
 }
 
-function handleError(err: Error | AxiosError, req: Request, res: Response, authType: string): number {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleError(err: any, req: Request, res: Response, authType: string): number {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  if (isAxiosError(err)) {
-    // render the error page
-    if (err.response?.data?.message) {
-      err.message = err.response?.data.message;
-    }
-    if (err.response?.status === 401) {
-      res.setHeader('keptn-auth-type', authType);
-    }
+  // render the error page
+  if (err.response?.data?.message) {
+    err.message = err.response?.data.message;
+  }
+  if (err.response?.status === 401) {
+    res.setHeader('keptn-auth-type', authType);
+  }
 
+  if (isAxiosError(err)) {
     console.error(`Error for ${err.request.method} ${err.request.path}: ${err.message}`);
-    return err.response?.status || 500;
   } else {
     console.error(err);
-    return 500;
   }
+
+  return err.response?.status || 500;
 }
 
 export { init };
