@@ -158,4 +158,4 @@ const deploymentData = {
 
 const deployment = Deployment.fromJSON(deploymentData);
 
-export { deployment as deploymentResponseMock };
+export { deployment as DeploymentResponseMock };

@@ -1,4 +1,4 @@
-import { Trace } from '../../_models/trace';
+import { TestUtils } from '../../_utils/test.utils';
 
 const evaluationChartItemMock = [
   {
@@ -3384,14 +3384,6 @@ const evaluationChartItemMock = [
   },
 ];
 
-const mocked = evaluationChartItemMock.map((item) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  item.data = item.data.map((data: { evaluationData: unknown }) => {
-    data.evaluationData = Trace.fromJSON(data.evaluationData);
-    return data;
-  });
-  return item;
-});
+const mocked = TestUtils.mapTraces(evaluationChartItemMock);
 
 export { mocked as EvaluationChartItemMock };

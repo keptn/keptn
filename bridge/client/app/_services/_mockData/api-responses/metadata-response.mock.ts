@@ -6,4 +6,4 @@ const metadata = {
   shipyardversion: '0.2.0',
 };
 
-export { metadata as metadataMock };
+export { metadata as MetadataResponseMock };

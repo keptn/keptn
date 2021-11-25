@@ -24,21 +24,21 @@ import { Trace } from '../_models/trace';
 import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
-import { versionMock } from './_mockData/version.mock';
-import { Projects } from './_mockData/projects.mock';
+import { VersionResponseMock } from './_mockData/api-responses/version-response.mock';
+import { ProjectsMock } from './_mockData/projects.mock';
 import { UniformRegistrationsMock } from './_mockData/uniform-registrations.mock';
 import { UniformRegistrationLogsMock } from './_mockData/uniform-registrations-logs.mock';
-import { secretsMock } from './_mockData/secrets.mock';
-import { bridgeInfoMock } from './_mockData/bridgeInfo.mock';
-import { metadataMock } from './_mockData/metadata.mock';
+import { SecretsResponseMock } from './_mockData/api-responses/secrets-response.mock';
+import { BridgeInfoResponseMock } from './_mockData/api-responses/bridgeInfo-response.mock';
+import { MetadataResponseMock } from './_mockData/api-responses/metadata-response.mock';
 import { FileTreeMock } from './_mockData/fileTree.mock';
-import { SequencesData } from './_mockData/sequences.mock';
-import { rootResultMock } from './_mockData/api-responses/root-result.mock';
-import { Traces } from './_mockData/traces.mock';
-import { evaluationResultsResponseDataMock } from './_mockData/api-responses/evaluation-results.mock';
-import { getEventResultMock } from './_mockData/api-responses/event-result.mock';
-import { serviceStatesResultMock } from './_mockData/api-responses/service-states-results.mock';
-import { deploymentResponseMock } from './_mockData/api-responses/deployment-response.mock';
+import { SequencesMock } from './_mockData/sequences.mock';
+import { RootResultResponseMock } from './_mockData/api-responses/root-result-response.mock';
+import { TracesResponseMock } from './_mockData/api-responses/traces-response.mock';
+import { EvaluationResultsResponseDataMock } from './_mockData/api-responses/evaluation-results-response.mock';
+import { EventResultResponseMock } from './_mockData/api-responses/event-result-response.mock';
+import { ServiceStatesResultResponseMock } from './_mockData/api-responses/service-states-results-response.mock';
+import { DeploymentResponseMock } from './_mockData/api-responses/deployment-response.mock';
 
 @Injectable({
   providedIn: null,
@@ -65,7 +65,7 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getKeptnInfo(): Observable<KeptnInfoResult> {
-    return of(bridgeInfoMock);
+    return of(BridgeInfoResponseMock);
   }
 
   public getIntegrationsPage(): Observable<string> {
@@ -89,7 +89,7 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getAvailableVersions(): Observable<KeptnVersions | undefined> {
-    return of(versionMock);
+    return of(VersionResponseMock);
   }
 
   public deleteProject(projectName: string): Observable<Record<string, unknown>> {
@@ -119,7 +119,7 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getProject(projectName: string): Observable<Project> {
-    const projects = [...Projects];
+    const projects = [...ProjectsMock];
     return of(projects[0]);
   }
 
@@ -128,7 +128,7 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getProjects(pageSize?: number): Observable<ProjectResult> {
-    const projects = [...Projects];
+    const projects = [...ProjectsMock];
     const result: ProjectResult = {
       projects: projects,
       totalCount: projects.length,
@@ -187,12 +187,12 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getSecrets(): Observable<{ Secrets: Secret[] }> {
-    const secrets = secretsMock;
+    const secrets = SecretsResponseMock;
     return of(secrets);
   }
 
   public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
-    const secrets = secretsMock.Secrets.filter((s) => s.scope === scope);
+    const secrets = SecretsResponseMock.Secrets.filter((s) => s.scope === scope);
     return of(secrets);
   }
 
@@ -213,7 +213,7 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getMetadata(): Observable<Metadata> {
-    return of(metadataMock);
+    return of(MetadataResponseMock);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
@@ -237,15 +237,15 @@ export class ApiServiceMock extends ApiService {
     beforeTime?: string,
     keptnContext?: string
   ): Observable<HttpResponse<SequenceResult>> {
-    let data = SequencesData;
+    let data = SequencesMock;
     let totalCount = 34;
 
     if (pageSize) {
-      data = SequencesData.slice(0, pageSize);
+      data = SequencesMock.slice(0, pageSize);
     }
 
     if (beforeTime) {
-      data = SequencesData.slice(25, 34);
+      data = SequencesMock.slice(25, 34);
       totalCount = 9;
     }
 
@@ -270,7 +270,7 @@ export class ApiServiceMock extends ApiService {
       pageSize: 20,
       totalCount: 1,
       nextPageKey: 0,
-      events: rootResultMock,
+      events: RootResultResponseMock,
     };
     const res = new HttpResponse<EventResult>({ body });
     return of(res);
@@ -285,7 +285,7 @@ export class ApiServiceMock extends ApiService {
       pageSize: 100,
       totalCount: 42,
       nextPageKey: 0,
-      events: Traces,
+      events: TracesResponseMock,
     };
     const res = new HttpResponse<EventResult>({ body });
     return of(res);
@@ -301,7 +301,7 @@ export class ApiServiceMock extends ApiService {
       pageSize: 100,
       totalCount: 5,
       nextPageKey: 0,
-      events: evaluationResultsResponseDataMock,
+      events: EvaluationResultsResponseDataMock,
     };
     return of(result);
   }
@@ -333,7 +333,7 @@ export class ApiServiceMock extends ApiService {
       pageSize: 1,
       totalCount: 1,
       nextPageKey: 0,
-      events: getEventResultMock,
+      events: EventResultResponseMock,
     };
 
     return of(result);
@@ -367,11 +367,11 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getServiceStates(projectName: string): Observable<ServiceState[]> {
-    return of(serviceStatesResultMock);
+    return of(ServiceStatesResultResponseMock);
   }
 
   public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
-    return of(deploymentResponseMock);
+    return of(DeploymentResponseMock);
   }
 
   public getOpenRemediationsOfService(

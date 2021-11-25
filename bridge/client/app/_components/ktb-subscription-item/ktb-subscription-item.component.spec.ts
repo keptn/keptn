@@ -8,7 +8,6 @@ import { UniformSubscription } from '../../_models/uniform-subscription';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -20,7 +19,6 @@ describe('KtbSubscriptionItemComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
-        { provide: DataService, useClass: DataServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -32,7 +30,9 @@ describe('KtbSubscriptionItemComponent', () => {
 
     fixture = TestBed.createComponent(KtbSubscriptionItemComponent);
     component = fixture.componentInstance;
+    TestBed.inject(DataService).loadProjects();
     fixture.detectChanges();
+
     subscription = new UniformSubscription('sockshop');
     subscription.id = 'mySubscriptionId';
   });

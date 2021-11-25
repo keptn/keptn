@@ -190,4 +190,4 @@ const evaluationResultsData = [
 ];
 
 const results = TestUtils.mapTraces(evaluationResultsData);
-export { results as evaluationResultsResponseDataMock };
+export { results as EvaluationResultsResponseDataMock };

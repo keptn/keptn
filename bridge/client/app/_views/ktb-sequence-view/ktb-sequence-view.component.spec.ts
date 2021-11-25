@@ -5,8 +5,8 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { Projects } from '../../_services/_mockData/projects.mock';
-import { SequencesData } from '../../_services/_mockData/sequences.mock';
+import { ProjectsMock } from '../../_services/_mockData/projects.mock';
+import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 describe('KtbEventsListComponent', () => {
@@ -51,8 +51,8 @@ describe('KtbEventsListComponent', () => {
     dataService.loadProjects();
     const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
     projectsRequest.flush({
-      projects: Projects,
-      totalCount: Projects.length,
+      projects: ProjectsMock,
+      totalCount: ProjectsMock.length,
     });
 
     fixture.detectChanges();
@@ -72,8 +72,8 @@ describe('KtbEventsListComponent', () => {
     dataService.loadProjects();
     const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
     projectsRequest.flush({
-      projects: Projects,
-      totalCount: Projects.length,
+      projects: ProjectsMock,
+      totalCount: ProjectsMock.length,
     });
 
     const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
@@ -100,14 +100,14 @@ describe('KtbEventsListComponent', () => {
     dataService.loadProjects();
     const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
     projectsRequest.flush({
-      projects: Projects,
-      totalCount: Projects.length,
+      projects: ProjectsMock,
+      totalCount: ProjectsMock.length,
     });
 
     const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
     sequencesRequest.flush({
-      states: SequencesData,
-      totalCount: SequencesData.length,
+      states: SequencesMock,
+      totalCount: SequencesMock.length,
     });
 
     httpMock.verify();
@@ -128,14 +128,14 @@ describe('KtbEventsListComponent', () => {
     dataService.loadProjects();
     const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
     projectsRequest.flush({
-      projects: Projects,
-      totalCount: Projects.length,
+      projects: ProjectsMock,
+      totalCount: ProjectsMock.length,
     });
 
     const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
     sequencesRequest.flush({
-      states: SequencesData,
-      totalCount: SequencesData.length,
+      states: SequencesMock,
+      totalCount: SequencesMock.length,
     });
 
     httpMock.verify();

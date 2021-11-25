@@ -1,5 +1,5 @@
-import { SecretScope } from '../../../../shared/interfaces/secret-scope';
-import { Secret } from '../../_models/secret';
+import { SecretScope } from '../../../../../shared/interfaces/secret-scope';
+import { Secret } from '../../../_models/secret';
 
 const secrets = {
   Secrets: [
@@ -21,4 +21,4 @@ const secrets = {
   ],
 };
 
-export { secrets as secretsMock };
+export { secrets as SecretsResponseMock };

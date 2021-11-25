@@ -107,4 +107,4 @@ const versions = {
   },
 };
 
-export { versions as versionMock };
+export { versions as VersionResponseMock };

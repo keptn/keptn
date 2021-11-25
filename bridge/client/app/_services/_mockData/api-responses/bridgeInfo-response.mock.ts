@@ -8,4 +8,4 @@ const bridgeInfo = {
   showApiToken: true,
   authType: 'BASIC',
 };
-export { bridgeInfo as bridgeInfoMock };
+export { bridgeInfo as BridgeInfoResponseMock };

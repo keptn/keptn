@@ -14,7 +14,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { DataServiceMock } from '../../_services/data.service.mock';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -32,7 +31,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
-        { provide: DataService, useClass: DataServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -43,6 +41,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;
+    TestBed.inject(DataService).loadProjects();
   });
 
   it('should create', () => {

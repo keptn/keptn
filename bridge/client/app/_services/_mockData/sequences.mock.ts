@@ -1052,4 +1052,4 @@ let sequencesData = [
   },
 ] as Sequence[];
 sequencesData = sequencesData.map((sequence) => Sequence.fromJSON(sequence));
-export { sequencesData as SequencesData };
+export { sequencesData as SequencesMock };

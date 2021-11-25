@@ -65,4 +65,4 @@ const serviceStates = [
   },
 ];
 
-export { serviceStates as serviceStatesResultMock };
+export { serviceStates as ServiceStatesResultResponseMock };

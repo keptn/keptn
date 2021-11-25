@@ -27,4 +27,4 @@ const rootsData = [
 ];
 
 const root = [Root.fromJSON(rootsData[0])];
-export { root as rootResultMock };
+export { root as RootResultResponseMock };

@@ -7,7 +7,6 @@ import { Project } from '../../_models/project';
 import { filter, take } from 'rxjs/operators';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { DataServiceMock } from '../../_services/data.service.mock';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
@@ -25,13 +24,13 @@ describe('KtbSequenceStateInfoComponent', () => {
           provide: ApiService,
           useClass: ApiServiceMock,
         },
-        { provide: DataService, useClass: DataServiceMock },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceStateInfoComponent);
     component = fixture.componentInstance;
-    dataService = fixture.debugElement.injector.get(DataService);
+    dataService = TestBed.inject(DataService);
+    dataService.loadProjects();
     project = await dataService
       .getProject(projectName)
       .pipe(

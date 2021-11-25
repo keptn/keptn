@@ -32,4 +32,4 @@ const eventData = [
 ];
 
 const data = TestUtils.mapTraces(eventData);
-export { data as getEventResultMock };
+export { data as EventResultResponseMock };
