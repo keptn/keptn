@@ -10,7 +10,6 @@ env:
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
-  PRERELEASE_BUILD: 'true'
   BUILD_EVERYTHING: 'true'
   PRERELEASE_KEYWORD: "next"
 
@@ -171,6 +170,7 @@ jobs:
         id: check_modified_files
         env:
           BUILD_EVERYTHING: true
+          PRERELEASE_BUILD: true
         run: |
           ./gh-actions-scripts/prepare_changed_artifacts.sh ""
 
@@ -222,7 +222,7 @@ jobs:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
       keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
-      release: ${{ env.PRERELEASE_BUILD }}
+      release: true
 
   ############################################################################
   # Build CLI
@@ -241,7 +241,7 @@ jobs:
   pre-release:
     name: "Pre-Release"
     runs-on: ubuntu-20.04
-    needs: [docker_build, build-helm-charts, build-cli]
+    needs: [prepare, docker_build, build-helm-charts, build-cli]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -292,7 +292,7 @@ jobs:
         uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ github.event.repository.default_branch }}
+          branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: false
 
       - name: Create pre-release package
@@ -326,7 +326,7 @@ jobs:
         if: always() # Force to always run this step to ensure "include administrators" is always turned back on
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ github.event.repository.default_branch }}
+          branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: true
 
       - name: Create GitHub Pre-Release
@@ -343,6 +343,22 @@ jobs:
         run: |
           gh release upload "$RELEASE_TAG" ./dist/keptn-installer/*.tgz
           gh release upload "$RELEASE_TAG" ./dist/keptn-cli/*.tar.gz
+
+      - name: Upload Helm Charts to Google Cloud
+        id: upload_helm_charts
+        env:
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+        run: |
+          echo "Installing GCloud CLI"
+          export OS_TYPE="linux"
+          mkdir ~/downloads
+          ./test/utils/download_and_install_gcloud.sh
+          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+          gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
 
   ############################################################################
   # Push Docker Images to alternative Registries

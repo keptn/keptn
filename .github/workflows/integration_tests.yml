@@ -109,7 +109,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: |
             ~/downloads
@@ -156,7 +156,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.15.0
+        uses: dawidd6/action-download-artifact@v2.16.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -606,7 +606,7 @@ jobs:
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_sequence_timeout
-        timeout-minutes: 5
+        timeout-minutes: 10
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -631,6 +631,16 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run SequenceQueue -v -timeout 15m
+
+      - name: Test Graceful Shutdown
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
+        id: test_graceful_shutdown
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run GracefulShutdown -v
 
       - name: Test Uniform Registration
         # do not run this test for the airgapped scenario
@@ -764,7 +774,7 @@ jobs:
           # Todo: some calculations should be done...
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.15.0
+        uses: dawidd6/action-download-artifact@v2.16.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -995,24 +1005,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Helm Charts to Google Cloud
-        id: upload_helm_charts
-        env:
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
-          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-          CLOUDSDK_REGION: "us-east1"
-        run: |
-          if [[ "$BRANCH" == "release-"* ]]; then
-            echo "Installing gcloud CLI"
-            export OS_TYPE="linux"
-            mkdir ~/downloads
-            ./test/utils/download_and_install_gcloud.sh
-            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
-          fi
-
   #######################################################################
   # This job deploys Keptn with Keptn                                   #
   #######################################################################
@@ -1031,7 +1023,7 @@ jobs:
           submodules: 'true'
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.15.0
+        uses: dawidd6/action-download-artifact@v2.16.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -1117,7 +1109,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.15.0
+        uses: dawidd6/action-download-artifact@v2.16.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -1149,7 +1141,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.7
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli

@@ -257,9 +257,9 @@ func ScaleDownUniform(deployments []string) error {
 	return nil
 }
 
-func ScaleUpUniform(deployments []string) error {
+func ScaleUpUniform(deployments []string, replicas int) error {
 	for _, deployment := range deployments {
-		if err := keptnkubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 1); err != nil {
+		if err := keptnkubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale up deployment: " + err.Error())
 		}
@@ -399,6 +399,15 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	states := &scmodels.SequenceStates{}
 
 	resp, err := ApiGETRequest("/controlPlane/v1/sequence/"+projectName, 3)
+	err = resp.ToJSON(states)
+
+	return states, resp, err
+}
+
+func GetStateByContext(projectName, keptnContext string) (*scmodels.SequenceStates, *req.Resp, error) {
+	states := &scmodels.SequenceStates{}
+
+	resp, err := ApiGETRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s?keptnContext=%s", projectName, keptnContext), 3)
 	err = resp.ToJSON(states)
 
 	return states, resp, err

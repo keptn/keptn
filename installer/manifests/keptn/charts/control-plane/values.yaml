@@ -75,6 +75,9 @@ distributor:
   image:
     repository: docker.io/keptn/distributor
     tag: ""
+  config:
+    queueGroup:
+      enabled: true
 
 shipyardController:
   image:

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
-import { TreeEntry } from '../../../shared/interfaces/resourceFileTree';
+import { TreeEntry } from '../../../../shared/interfaces/resourceFileTree';
 
 export class TreeFlatEntry {
   fileName: string;

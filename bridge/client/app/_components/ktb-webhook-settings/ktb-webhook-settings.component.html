@@ -171,29 +171,30 @@
 </form>
 
 <ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
-  <button
-    dt-icon-button
-    variant="nested"
-    aria-label="Add secret"
-    ktbTreeListSelect
+  <ktb-variable-selector
     [data]="secretDataSource"
-    [options]="secretOptions"
-    (selected)="insertControlText('secret', $event, controlName, selectionStart, index)"
-  >
-    <dt-icon name="resetpassword"></dt-icon>
-  </button>
+    [title]="'Select secret'"
+    [label]="'Add secret'"
+    [emptyText]="
+      'No secrets can be found.<p>Secrets can be configured under the menu entry &quot;Secrets&quot; in the Uniform.</p>'
+    "
+    [variablePrefix]="'.secret'"
+    [control]="getFormControl(controlName, index)"
+    [selectionStart]="selectionStart"
+    (changed)="onWebhookFormChange()"
+  ></ktb-variable-selector>
 </ng-template>
 
 <ng-template #payloadButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
-  <button
-    dt-icon-button
-    variant="nested"
+  <ktb-variable-selector
     aria-label="Add event data"
     ktbTreeListSelect
     [data]="eventDataSource"
-    [options]="eventOptions"
-    (selected)="insertControlText('event', $event, controlName, selectionStart, index)"
+    [control]="getFormControl(controlName, index)"
+    title="Select payload variable"
+    label="Add payload variable"
+    [selectionStart]="selectionStart"
+    (changed)="onWebhookFormChange()"
   >
-    <dt-icon name="coding"></dt-icon>
-  </button>
+  </ktb-variable-selector>
 </ng-template>
