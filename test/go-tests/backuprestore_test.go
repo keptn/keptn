@@ -104,7 +104,7 @@ func Test_BackupRestore(t *testing.T) {
 	configServicePod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
 	require.Nil(t, err)
 	configServicePod = removeQuotes(configServicePod)
-	_, err = ExecuteCommandf("kubectl cp keptn/%s:/data ./config-svc-backup/ -c configuration-service", configServicePod)
+	_, err = ExecuteCommandf("kubectl cp keptn/%s:/data ./config-svc-backup/ -c configuration-service -n %s", configServicePod, keptnNamespace)
 	require.Nil(t, err)
 
 	//backup MongoDB Data
@@ -133,7 +133,7 @@ func Test_BackupRestore(t *testing.T) {
 	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
 	require.Nil(t, err)
 	mongoDbPod = removeQuotes(mongoDbPod)
-	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb", mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb -n %s", mongoDbPod, keptnNamespace)
 	require.Nil(t, err)
 
 	//deleting testing project
@@ -145,13 +145,13 @@ func Test_BackupRestore(t *testing.T) {
 	//restore Configuration Service data
 
 	t.Logf("Restoring configuration-service data")
-	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/config/ keptn/%s:/data -c configuration-service", configServicePod)
+	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/config/ keptn/%s:/data -c configuration-service -n %s", configServicePod, keptnNamespace)
 	require.Nil(t, err)
 
 	//restore MongoDB data
 
 	t.Logf("Restoring MongoDB data")
-	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/keptn/ keptn/%s:/tmp/dump -c mongodb", mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/keptn/ keptn/%s:/tmp/dump -c mongodb -n %s", mongoDbPod, keptnNamespace)
 	require.Nil(t, err)
 
 	t.Logf("Import MongoDb database dump")
