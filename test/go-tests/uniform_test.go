@@ -7,7 +7,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
 	"strings"
@@ -79,6 +78,12 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+            - name: PUBSUB_GROUP
+              value: "${queue-group}"
+            - name: KEPTN_API_ENDPOINT
+              value: "${api-endpoint}"
+            - name: KEPTN_API_TOKEN
+              value: "${api-token}"
             - name: VERSION
               valueFrom:
                 fieldRef:
@@ -323,6 +328,9 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-endpoint}", "")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-token}", "")
 
 	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
 	defer func() {
@@ -353,6 +361,9 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "replicas: 1", "replicas: 3")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "echo-service")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-endpoint}", "")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-token}", "")
 
 	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
 	defer func() {
@@ -363,14 +374,6 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 	testUniformIntegration(t, func() {
 		// install echo integration
 		_, err = KubeCtlApplyFromURL(tmpFile)
-		require.Nil(t, err)
-
-		keptnQueueGroupEV := v1.EnvVar{
-			Name:  "PUBSUB_GROUP",
-			Value: echoServiceName,
-		}
-
-		err = SetEnvVarsOfDeployment(echoServiceName, "distributor", []v1.EnvVar{keptnQueueGroupEV})
 		require.Nil(t, err)
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
@@ -390,7 +393,13 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
 	require.Nil(t, err)
 
+	apiToken, apiEndpoint, err := GetApiCredentials()
+	require.Nil(t, err)
+
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "echo-service")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-endpoint}", apiEndpoint)
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-token}", apiToken)
 
 	tmpFile, err := CreateTmpFile("echo-service-*.yaml", echoServiceManifestContent)
 	defer func() {
@@ -404,21 +413,6 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		require.Nil(t, err)
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
-		require.Nil(t, err)
-
-		apiToken, apiEndpoint, err := GetApiCredentials()
-		require.Nil(t, err)
-
-		keptnEndpointEV := v1.EnvVar{
-			Name:  "KEPTN_API_ENDPOINT",
-			Value: apiEndpoint,
-		}
-		keptnAPITokenEV := v1.EnvVar{
-			Name:  "KEPTN_API_TOKEN",
-			Value: apiToken,
-		}
-
-		err = SetEnvVarsOfDeployment("echo-service", "distributor", []v1.EnvVar{keptnEndpointEV, keptnAPITokenEV})
 		require.Nil(t, err)
 
 	}, func() {
