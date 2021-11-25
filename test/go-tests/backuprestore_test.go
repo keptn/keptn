@@ -3,6 +3,7 @@ package go_tests
 import (
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -48,7 +49,7 @@ spec:
 
 func Test_BackupRestore(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
-	keptnProjectName := "podtato-head"
+	keptnProjectName := "backup-restore"
 	serviceName := "helloservice"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
@@ -102,7 +103,7 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Executing backup of configuration-service")
 	configServicePod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	configServicePod = removeQuotes(configServicePod)
+	configServicePod = strings.Trim(configServicePod, "'")
 	_, err = ExecuteCommandf("kubectl cp keptn/%s:/data ./config-svc-backup/ -c configuration-service", configServicePod)
 	require.Nil(t, err)
 
@@ -117,12 +118,12 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Execute MongoDb database dump")
 	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-user}")
 	require.Nil(t, err)
-	mongoDbRootUser, err = decodeBase64((removeQuotes(mongoDbRootUser)))
+	mongoDbRootUser, err = decodeBase64((strings.Trim(mongoDbRootUser, "'")))
 	require.Nil(t, err)
 
 	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.mongodb-root-password}")
 	require.Nil(t, err)
-	mongoDbRootPassword, err = decodeBase64((removeQuotes(mongoDbRootPassword)))
+	mongoDbRootPassword, err = decodeBase64((strings.Trim(mongoDbRootPassword, "'")))
 	require.Nil(t, err)
 
 	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n keptn -- mongodump --authenticationDatabase admin --username %s --password %s -d keptn -h localhost --out=/tmp/dump", mongoDbRootUser, mongoDbRootPassword)
@@ -131,7 +132,7 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Executing backup of MongoDB database")
 	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n keptn -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'")
 	require.Nil(t, err)
-	mongoDbPod = removeQuotes(mongoDbPod)
+	mongoDbPod = strings.Trim(mongoDbPod, "'")
 	_, err = ExecuteCommandf("kubectl cp keptn/%s:/tmp/dump ./mongodb-backup/ -c mongodb", mongoDbPod)
 	require.Nil(t, err)
 

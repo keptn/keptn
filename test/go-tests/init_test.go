@@ -10,7 +10,7 @@ import (
 
 func TestMain(m *testing.M) {
 	if err := setup(); err != nil {
-		fmt.Printf("TestMain: error while setting up the tests")
+		fmt.Printf("TestMain: error while setting up the tests: %v", err)
 		os.Exit(-1)
 	}
 	code := m.Run()

@@ -534,17 +534,6 @@ func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) erro
 	return nil
 }
 
-func removeQuotes(str string) string {
-	if str[0] == '"' || str[0] == '\'' {
-		str = str[1:]
-	}
-	if i := len(str) - 1; str[i] == '"' || str[i] == '\'' {
-		str = str[:i]
-	}
-
-	return str
-}
-
 func decodeBase64(str string) (string, error) {
 	res, err := b64.StdEncoding.DecodeString(str)
 	if err != nil {
