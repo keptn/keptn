@@ -446,10 +446,10 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 				t.Logf("got error: %s. will try again in a few seconds", err.Error())
 				return false
 			} else if taskStartedEvents == nil {
-				t.Log("did not receive any .finished events")
+				t.Log("did not receive any .started events")
 				return false
 			} else if len(taskStartedEvents) != nrExpected {
-				t.Logf("received %d .finished events, but expected %d", len(taskStartedEvents), nrExpected)
+				t.Logf("received %d .started events, but expected %d", len(taskStartedEvents), nrExpected)
 				return false
 			}
 			return true
