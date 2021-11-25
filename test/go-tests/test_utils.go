@@ -542,3 +542,14 @@ func decodeBase64(str string) (string, error) {
 
 	return string(res), nil
 }
+
+func removeQuotes(str string) string {
+	if str[0] == '"' || str[0] == '\'' {
+		str = str[1:]
+	}
+	if i := len(str) - 1; str[i] == '"' || str[i] == '\'' {
+		str = str[:i]
+	}
+
+	return str
+}
