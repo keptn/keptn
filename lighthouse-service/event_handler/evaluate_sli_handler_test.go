@@ -1603,10 +1603,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -1746,10 +1747,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 0.5,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   16.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         16.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -1900,10 +1902,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -1935,10 +1938,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 0,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-log-metric",
-								Value:   30.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-log-metric",
+								Value:         30.0,
+								ComparedValue: 0,
+								Success:       true,
+								Message:       "",
 							},
 							Status: "info",
 						},
@@ -2066,10 +2070,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -2101,10 +2106,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 0,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-log-metric",
-								Value:   30.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-log-metric",
+								Value:         30.0,
+								ComparedValue: 0.0,
+								Success:       true,
+								Message:       "",
 							},
 							Status: "info",
 						},
@@ -2986,10 +2992,11 @@ func TestCalculateScore(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 0.0,
+								Success:       true,
+								Message:       "",
 							},
 							PassTargets:    nil,
 							WarningTargets: nil,
@@ -2999,10 +3006,11 @@ func TestCalculateScore(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-key-metric",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-key-metric",
+								Value:         10.0,
+								ComparedValue: 0.0,
+								Success:       true,
+								Message:       "",
 							},
 							PassTargets:    nil,
 							WarningTargets: nil,

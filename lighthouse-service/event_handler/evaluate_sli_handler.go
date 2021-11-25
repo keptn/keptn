@@ -250,7 +250,8 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		} else {
 			isWarning = false
 		}
-
+		aggregatedValues, _ := aggregateValues(previousSLIResults, sloConfig.Comparison)
+		sliEvaluationResult.Value.ComparedValue = aggregatedValues
 		sliEvaluationResult.PassTargets = passTargets
 		sliEvaluationResult.WarningTargets = warningTargets
 		sliEvaluationResult.KeySLI = objective.KeySLI
@@ -395,37 +396,10 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	// aggregate previous results
 	var aggregatedValue float64
 	var targetValue float64
-	var previousValues []float64
 
-	if len(previousResults) == 0 {
-		// if no comparison values are available, the evaluation passes
+	aggregatedValue, skip := aggregateValues(previousResults, comparison)
+	if skip {
 		return true, nil
-	}
-
-	for _, val := range previousResults {
-		if val.Value.Success == true {
-			// always include
-			previousValues = append(previousValues, val.Value.Value)
-		}
-	}
-
-	if len(previousValues) == 0 {
-		// if no comparison values are available, the evaluation passes
-		return true, nil
-	}
-
-	// aggregate the previous values based on the passed aggregation function
-	switch comparison.AggregateFunction {
-	case "avg":
-		aggregatedValue = calculateAverage(previousValues)
-	case "p50":
-		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.5)
-	case "p90":
-		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.9)
-	case "p95":
-		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.95)
-	default:
-		break
 	}
 
 	// calculate the comparison value
@@ -441,6 +415,44 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	violation.TargetValue = targetValue
 	// compare!
 	return evaluateValue(sliResult.Value, targetValue, co.Operator)
+}
+
+//aggregateValues combines the previous values into a single one, based on the aggregation function
+//it returns the aggregated value and a boolean telling if the rest of the evaluation should be skipped
+//(no previous results or no successful previous results)
+func aggregateValues(previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison) (float64, bool) {
+
+	if len(previousResults) == 0 {
+		// if no comparison values are available, the evaluation passes
+		return 0, true
+	}
+	var previousValues []float64
+	for _, val := range previousResults {
+		if val.Value.Success == true {
+			// always include
+			previousValues = append(previousValues, val.Value.Value)
+		}
+	}
+
+	if len(previousValues) == 0 {
+		// if no comparison values are available, the evaluation passes
+		return 0, true
+	}
+	var aggregatedValue float64
+	// aggregate the previous values based on the passed aggregation function
+	switch comparison.AggregateFunction {
+	case "avg":
+		aggregatedValue = calculateAverage(previousValues)
+	case "p50":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.5)
+	case "p90":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.9)
+	case "p95":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.95)
+	default:
+		break
+	}
+	return aggregatedValue, false
 }
 
 func calculateAverage(values []float64) float64 {
