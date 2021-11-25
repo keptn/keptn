@@ -188,7 +188,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     const scrt: SelectTreeNode = { name: secret.name };
     if (secret.keys) {
       scrt.keys = secret.keys.map((key: string) => {
-        return { name: key, path: `${secret.name}.${key}` };
+        return { name: key, path: `.secret.${secret.name}.${key}` };
       });
       scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
     }

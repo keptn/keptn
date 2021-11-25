@@ -20,7 +20,7 @@
       <input #urlInput formControlName="url" dtInput placeholder="URL" />
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url">URL must start with http(s)://</dt-error>
-      <div dtSuffix>
+      <div dtSuffix uitestid="event-url">
         <ng-container
           [ngTemplateOutlet]="payloadButton"
           [ngTemplateOutletContext]="{
@@ -30,7 +30,7 @@
           }"
         ></ng-container>
       </div>
-      <div dtSuffix>
+      <div dtSuffix uitestid="secret-url">
         <ng-container
           [ngTemplateOutlet]="secretButton"
           [ngTemplateOutletContext]="{
@@ -77,17 +77,18 @@
               autocomplete="false"
             />
             <dt-error>Must not be empty</dt-error>
-            <div dtSuffix>
+            <div dtSuffix uitestid="event-header">
               <ng-container
                 [ngTemplateOutlet]="payloadButton"
                 [ngTemplateOutletContext]="{
                   $implicit: undefined,
-                  controlName: 'url',
-                  selectionStart: urlInput.selectionStart
+                  controlName: 'header',
+                  index: i,
+                  selectionStart: headerInput.selectionStart
                 }"
               ></ng-container>
             </div>
-            <div dtSuffix>
+            <div dtSuffix uitestid="secret-header">
               <ng-container
                 [ngTemplateOutlet]="secretButton"
                 [ngTemplateOutletContext]="{
@@ -118,17 +119,17 @@
       <dt-label>Custom payload</dt-label>
       <textarea #payloadInput class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
       <dt-error>Payload must not be empty</dt-error>
-      <div dtSuffix>
+      <div dtSuffix uitestid="event-payload">
         <ng-container
           [ngTemplateOutlet]="payloadButton"
           [ngTemplateOutletContext]="{
             $implicit: undefined,
-            controlName: 'url',
-            selectionStart: urlInput.selectionStart
+            controlName: 'payload',
+            selectionStart: payloadInput.selectionStart
           }"
         ></ng-container>
       </div>
-      <div dtSuffix>
+      <div dtSuffix uitestid="secret-payload">
         <ng-container
           [ngTemplateOutlet]="secretButton"
           [ngTemplateOutletContext]="{
@@ -178,7 +179,6 @@
     [emptyText]="
       'No secrets can be found.<p>Secrets can be configured under the menu entry &quot;Secrets&quot; in the Uniform.</p>'
     "
-    [variablePrefix]="'.secret'"
     [control]="getFormControl(controlName, index)"
     [selectionStart]="selectionStart"
     (changed)="onWebhookFormChange()"
@@ -187,12 +187,11 @@
 
 <ng-template #payloadButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
   <ktb-variable-selector
-    aria-label="Add event data"
-    ktbTreeListSelect
-    [data]="eventDataSource"
-    [control]="getFormControl(controlName, index)"
+    iconName="coding"
     title="Select payload variable"
     label="Add payload variable"
+    [data]="eventDataSource"
+    [control]="getFormControl(controlName, index)"
     [selectionStart]="selectionStart"
     (changed)="onWebhookFormChange()"
   >
