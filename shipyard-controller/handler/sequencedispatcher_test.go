@@ -68,7 +68,15 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock)
+	sequenceDispatcher := handler.NewSequenceDispatcher(
+		mockEventRepo,
+		mockEventQueueRepo,
+		mockSequenceQueueRepo,
+		mockTaskSequenceRepo,
+		10*time.Second,
+		theClock,
+		common.GetSyncMutexLockerInstance(),
+	)
 
 	sequenceDispatcher.Run(context.Background(), func(event models.Event) error {
 		startSequenceCalls = append(startSequenceCalls, event)
@@ -169,7 +177,15 @@ func TestSequenceDispatcher_Remove(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, mockSequenceQueueRepo, nil, 10*time.Second, nil)
+	sequenceDispatcher := handler.NewSequenceDispatcher(
+		nil,
+		nil,
+		mockSequenceQueueRepo,
+		nil,
+		10*time.Second,
+		nil,
+		common.GetSyncMutexLockerInstance(),
+	)
 
 	myScope := models.EventScope{
 		EventData:    keptnv2.EventData{Project: "my-project"},

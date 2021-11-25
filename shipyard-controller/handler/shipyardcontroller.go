@@ -266,7 +266,7 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 		return nil
 	}
 
-	lockID, err := sc.locker.Lock(fmt.Sprintf("%s-%s-%s:taskFinisher", eventScope.Project, eventScope.Stage, eventScope.Service))
+	lockID, err := sc.locker.Lock(fmt.Sprintf("%s-%s-%s--taskFinisher", eventScope.Project, eventScope.Stage, eventScope.Service))
 	if err != nil {
 		log.Errorf("Could not acquire lock: %v", err)
 		return err

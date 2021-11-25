@@ -10,9 +10,10 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"sync"
 	"time"
 )
+
+const sequenceDispatcherLockKey = "--sc-sequenceDispatcher"
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
@@ -31,7 +32,7 @@ type SequenceDispatcher struct {
 	syncInterval       time.Duration
 	startSequenceFunc  func(event models.Event) error
 	shipyardController shipyardController
-	mutex              sync.Mutex
+	locker             common.Locker
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -42,7 +43,7 @@ func NewSequenceDispatcher(
 	sequenceRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
 	theClock clock.Clock,
-
+	locker common.Locker,
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
 		eventRepo:      eventRepo,
@@ -51,7 +52,7 @@ func NewSequenceDispatcher(
 		sequenceRepo:   sequenceRepo,
 		theClock:       theClock,
 		syncInterval:   syncInterval,
-		mutex:          sync.Mutex{},
+		locker:         locker,
 	}
 }
 
@@ -71,8 +72,17 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
-	sd.mutex.Lock()
-	defer sd.mutex.Unlock()
+	lockID, err := sd.locker.Lock(sequenceDispatcherLockKey)
+	if err != nil {
+		return fmt.Errorf("could not acquire lock for SequenceDispatcher: %w", err)
+	}
+
+	defer func() {
+		err := sd.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
+		}
+	}()
 
 	return sd.sequenceQueue.DeleteQueuedSequences(models.QueueItem{
 		Scope: eventScope,
@@ -119,8 +129,18 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
-	sd.mutex.Lock()
-	defer sd.mutex.Unlock()
+	// TODO use non-blocking lock and return err if lock has not been obtained
+	lockID, err := sd.locker.Lock(sequenceDispatcherLockKey)
+	if err != nil {
+		return fmt.Errorf("could not acquire lock for SequenceDispatcher: %w", err)
+	}
+
+	defer func() {
+		err := sd.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
+		}
+	}()
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)

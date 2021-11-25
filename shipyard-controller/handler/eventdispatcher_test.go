@@ -60,6 +60,7 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 		eventSender:    eventSender,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -119,6 +120,7 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 		eventSender:    eventSender,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -186,6 +188,7 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 		eventSender:    eventSender,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -272,6 +275,7 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 		eventSender:    eventSender,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -308,6 +312,7 @@ func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 		eventSender:    eventSender,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 
 	data := keptnv2.EventData{
@@ -395,6 +400,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		sequenceRepo:   sequenceRepo,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 
 	dispatcher.Add(dispatcherEvent1, false)
@@ -494,6 +500,7 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		eventSender:    eventSender,
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
+		locker:         common.GetSyncMutexLockerInstance(),
 	}
 
 	dispatcher.Add(dispatcherEvent1, false)

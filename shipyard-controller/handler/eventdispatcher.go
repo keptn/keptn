@@ -30,6 +30,7 @@ type EventDispatcher struct {
 	eventSender    keptncommon.EventSender
 	theClock       clock.Clock
 	syncInterval   time.Duration
+	locker         common.Locker
 }
 
 // NewEventDispatcher creates a new EventDispatcher
@@ -39,6 +40,7 @@ func NewEventDispatcher(
 	sequenceRepo db.TaskSequenceRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
+	locker common.Locker,
 ) *EventDispatcher {
 	return &EventDispatcher{
 		eventRepo:      eventRepo,
@@ -47,6 +49,7 @@ func NewEventDispatcher(
 		eventSender:    eventSender,
 		theClock:       clock.New(),
 		syncInterval:   syncInterval,
+		locker:         locker,
 	}
 }
 
@@ -125,8 +128,16 @@ func (e *EventDispatcher) Run(ctx context.Context) {
 				log.Info("cancelling event dispatcher loop")
 				return
 			case <-ticker.C:
+				lockID, err := e.locker.Lock("--sc-internal-event-dispatcher")
+				if err != nil {
+					log.Errorf("Could not acquire lock for EventDispatcher: %v", err)
+					continue
+				}
 				log.Debugf("%.2f seconds have passed. Dispatching events", e.syncInterval.Seconds())
 				e.dispatchEvents()
+				if err := e.locker.Unlock(lockID); err != nil {
+					log.Errorf("Could not release lock for EventDispatcher: %v", err)
+				}
 			}
 		}
 	}()

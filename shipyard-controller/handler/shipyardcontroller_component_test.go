@@ -1100,7 +1100,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	eventQueueRepo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceRepo := db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
-	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, time.Second, clock.New())
+	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, time.Second, clock.New(), common.GetSyncMutexLockerInstance())
 	sc := &shipyardController{
 		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
 		eventRepo:        eventRepo,

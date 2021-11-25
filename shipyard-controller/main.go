@@ -127,7 +127,15 @@ func main() {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	eventDispatcher := handler.NewEventDispatcher(
+		createEventsRepo(),
+		createEventQueueRepo(),
+		createTaskSequenceRepo(),
+		eventSender,
+		time.Duration(eventDispatcherSyncInterval)*time.Second,
+		distributedLocker,
+	)
+
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -135,6 +143,7 @@ func main() {
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		clock.New(),
+		distributedLocker,
 	)
 
 	sequenceTimeoutChannel := make(chan models.SequenceTimeout)
