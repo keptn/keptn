@@ -47,6 +47,7 @@ type shipyardController struct {
 	sequencePausedHooks        []sequencehooks.ISequencePausedHook
 	sequenceResumedHooks       []sequencehooks.ISequenceResumedHook
 	shipyardRetriever          IShipyardRetriever
+	locker                     common.Locker
 }
 
 func GetShipyardControllerInstance(
@@ -55,6 +56,7 @@ func GetShipyardControllerInstance(
 	sequenceDispatcher ISequenceDispatcher,
 	sequenceTimeoutChannel chan models.SequenceTimeout,
 	shipyardRetriever IShipyardRetriever,
+	locker common.Locker,
 ) *shipyardController {
 	if shipyardControllerInstance == nil {
 		cbConnectionInstance := db.GetMongoDBConnectionInstance()
@@ -68,6 +70,7 @@ func GetShipyardControllerInstance(
 			sequenceDispatcher:  sequenceDispatcher,
 			sequenceTimeoutChan: sequenceTimeoutChannel,
 			shipyardRetriever:   shipyardRetriever,
+			locker:              locker,
 		}
 		shipyardControllerInstance.run(ctx)
 	}
@@ -263,8 +266,17 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 		return nil
 	}
 
-	common.LockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
-	defer common.UnlockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service+":taskFinisher")
+	lockID, err := sc.locker.Lock(fmt.Sprintf("%s-%s-%s:taskFinisher", eventScope.Project, eventScope.Stage, eventScope.Service))
+	if err != nil {
+		log.Errorf("Could not acquire lock: %v", err)
+		return err
+	}
+	defer func() {
+		err := sc.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not release lock: %v", err.Error())
+		}
+	}()
 
 	startedEvents, err := sc.eventRepo.GetStartedEventsForTriggeredID(*eventScope)
 	if err != nil {

@@ -166,6 +166,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			sh := &ServiceHandler{
 				serviceManager: tt.fields.serviceManager,
 				EventSender:    tt.fields.EventSender,
+				locker:         common.GetSyncMutexLockerInstance(),
 			}
 
 			sh.CreateService(c)
@@ -271,6 +272,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 			sh := &ServiceHandler{
 				serviceManager: tt.fields.serviceManager,
 				EventSender:    tt.fields.EventSender,
+				locker:         common.GetSyncMutexLockerInstance(),
 			}
 
 			sh.DeleteService(c)
@@ -422,7 +424,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte{}))
 
-			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender)
+			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender, common.GetSyncMutexLockerInstance())
 
 			sh.GetService(c)
 
@@ -565,7 +567,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte{}))
 
-			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender)
+			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender, common.GetSyncMutexLockerInstance())
 
 			sh.GetServices(c)
 

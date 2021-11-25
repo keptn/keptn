@@ -22,6 +22,7 @@ type IServiceHandler interface {
 type ServiceHandler struct {
 	serviceManager IServiceManager
 	EventSender    common.EventSender
+	locker         common.Locker
 }
 
 // CreateService godoc
@@ -55,8 +56,17 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 
-	common.LockProject(projectName)
-	defer common.UnlockProject(projectName)
+	lockID, err := sh.locker.Lock(projectName)
+	if err != nil {
+		log.Errorf("Could not acquire lock for project collection: %v", err.Error())
+		SetInternalServerErrorResponse(errors.New("could not acquire lock for project collection"), c)
+	}
+	defer func() {
+		err := sh.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not unlock project collection: %v", err.Error())
+		}
+	}()
 
 	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
 		log.Errorf("could not send service.create.started event: %s", err.Error())
@@ -107,8 +117,17 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 		SetBadRequestErrorResponse(nil, c, "Must provide a service name")
 	}
 
-	common.LockProject(projectName)
-	defer common.UnlockProject(projectName)
+	lockID, err := sh.locker.Lock(projectName)
+	if err != nil {
+		log.Errorf("Could not acquire lock for project collection: %v", err.Error())
+		SetInternalServerErrorResponse(errors.New("could not acquire lock for project collection"), c)
+	}
+	defer func() {
+		err := sh.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not unlock project collection: %v", err.Error())
+		}
+	}()
 
 	if err := sh.sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName); err != nil {
 		log.Errorf("could not send service.delete.started event: %s", err.Error())
@@ -217,10 +236,11 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender) IServiceHandler {
+func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender, locker common.Locker) IServiceHandler {
 	return &ServiceHandler{
 		serviceManager: serviceManager,
 		EventSender:    eventSender,
+		locker:         locker,
 	}
 }
 

@@ -17,6 +17,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0
 	github.com/tryvium-travels/memongo v0.3.1
+	github.com/werf/lockgate v0.0.0-20211004100849-f85d5325b201
 	go.mongodb.org/mongo-driver v1.7.4
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.22.3

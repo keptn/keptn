@@ -17,6 +17,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"net/http"
@@ -90,6 +91,13 @@ func main() {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
 
+	dynamicKubeAPI, err := createDynamicKubeAPI()
+	if err != nil {
+		log.Fatalf("could not create dynamic kubernetes client: %s", err.Error())
+	}
+
+	distributedLocker := common.GetK8sDistributedLockerInstance(dynamicKubeAPI)
+
 	eventSender, err := v0_2_0.NewHTTPEventSender("")
 	if err != nil {
 		log.Fatal(err)
@@ -141,6 +149,7 @@ func main() {
 		sequenceDispatcher,
 		sequenceTimeoutChannel,
 		shipyardRetriever,
+		distributedLocker,
 	)
 
 	engine := gin.Default()
@@ -151,11 +160,11 @@ func main() {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(projectManager, eventSender)
+	projectService := handler.NewProjectHandler(projectManager, eventSender, distributedLocker)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
-	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender)
+	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender, distributedLocker)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
@@ -319,6 +328,21 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 	}
 
 	kubeAPI, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return kubeAPI, nil
+}
+
+func createDynamicKubeAPI() (dynamic.Interface, error) {
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kubeAPI, err := dynamic.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}

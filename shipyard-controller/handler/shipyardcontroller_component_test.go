@@ -1122,6 +1122,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 				return common.UnmarshalShipyard(shipyardContent)
 			},
 		},
+		locker: common.GetSyncMutexLockerInstance(),
 	}
 	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
 		ev := &models.Event{}

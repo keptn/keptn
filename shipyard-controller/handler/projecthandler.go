@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -22,12 +23,14 @@ type IProjectHandler interface {
 type ProjectHandler struct {
 	ProjectManager IProjectManager
 	EventSender    common.EventSender
+	locker         common.Locker
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, locker common.Locker) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager: projectManager,
 		EventSender:    eventSender,
+		locker:         locker,
 	}
 }
 
@@ -135,8 +138,17 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	common.LockProject(*createProjectParams.Name)
-	defer common.UnlockProject(*createProjectParams.Name)
+	lockID, err := ph.locker.Lock(*createProjectParams.Name)
+	if err != nil {
+		log.Errorf("Could not acquire lock for project collection: %v", err.Error())
+		SetInternalServerErrorResponse(errors.New("could not acquire lock for project collection"), c)
+	}
+	defer func() {
+		err := ph.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not unlock project collection: %v", err.Error())
+		}
+	}()
 
 	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
@@ -189,8 +201,17 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	common.LockProject(*params.Name)
-	defer common.UnlockProject(*params.Name)
+	lockID, err := ph.locker.Lock(*params.Name)
+	if err != nil {
+		log.Errorf("Could not acquire lock for project collection: %v", err.Error())
+		SetInternalServerErrorResponse(errors.New("could not acquire lock for project collection"), c)
+	}
+	defer func() {
+		err := ph.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not unlock project collection: %v", err.Error())
+		}
+	}()
 
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
@@ -225,8 +246,17 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 
-	common.LockProject(projectName)
-	defer common.UnlockProject(projectName)
+	lockID, err := ph.locker.Lock(projectName)
+	if err != nil {
+		log.Errorf("Could not acquire lock for project collection: %v", err.Error())
+		SetInternalServerErrorResponse(errors.New("could not acquire lock for project collection"), c)
+	}
+	defer func() {
+		err := ph.locker.Unlock(lockID)
+		if err != nil {
+			log.Errorf("Could not unlock project collection: %v", err.Error())
+		}
+	}()
 	responseMessage, err := ph.ProjectManager.Delete(projectName)
 	if err != nil {
 		log.Errorf("failed to delete project %s: %s", projectName, err.Error())
