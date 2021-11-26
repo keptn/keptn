@@ -3,12 +3,13 @@ import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Project } from '../../_models/project';
 import { By } from '@angular/platform-browser';
 import { take } from 'rxjs/operators';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbRootEventsListComponent', () => {
   let component: KtbRootEventsListComponent;
@@ -23,8 +24,8 @@ describe('KtbRootEventsListComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
-          provide: DataService,
-          useClass: DataServiceMock,
+          provide: ApiService,
+          useClass: ApiServiceMock,
         },
         {
           provide: ActivatedRoute,
@@ -63,29 +64,9 @@ describe('KtbRootEventsListComponent', () => {
     expect(component.events).toEqual(project.sequences);
   });
 
-  it('should load old sequences', () => {
+  it('should load old sequences and not show "show older sequences" when all loaded', () => {
     // given
     dataService.loadSequences(project);
-    component.events = project.sequences || [];
-    fixture.detectChanges();
-
-    // when
-    component.loadOldSequences();
-    component.events = project.sequences || [];
-    fixture.detectChanges();
-
-    // then
-    const sequences = fixture.nativeElement.querySelectorAll('ktb-selectable-tile');
-    const showMoreButton = fixture.nativeElement.querySelector('button[dt-show-more]');
-    expect(sequences.length).toEqual(35);
-    expect(showMoreButton).toBeTruthy();
-  });
-
-  it('should not show "show older sequences"', () => {
-    // given
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
-    component.loadOldSequences();
     component.events = project.sequences || [];
 
     // when
@@ -96,7 +77,7 @@ describe('KtbRootEventsListComponent', () => {
     // then
     const sequences = fixture.nativeElement.querySelectorAll('ktb-selectable-tile');
     const showMoreButton = fixture.nativeElement.querySelector('button[dt-show-more]');
-    expect(sequences.length).toEqual(36);
+    expect(sequences.length).toEqual(34);
     expect(showMoreButton).toBeFalsy();
   });
 

@@ -1,6 +1,6 @@
-import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
-import { UniformRegistration } from './uniform-registration';
-import { UniformRegistrationLocations } from '../../../shared/interfaces/uniform-registration-locations';
+import { UniformRegistrationResult } from '../../../../shared/interfaces/uniform-registration-result';
+import { UniformRegistration } from '../../_models/uniform-registration';
+import { UniformRegistrationLocations } from '../../../../shared/interfaces/uniform-registration-locations';
 
 const services: UniformRegistrationResult[] = [
   {

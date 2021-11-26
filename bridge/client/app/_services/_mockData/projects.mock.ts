@@ -1186,4 +1186,4 @@ const projects: Project[] = projectsData.map((project: Project) => {
   return Project.fromJSON(project);
 });
 
-export { projects as Projects };
+export { projects as ProjectsMock };

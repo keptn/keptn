@@ -1,4 +1,4 @@
-import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../../shared/interfaces/uniform-registration-log';
 
 const logs = [
   {

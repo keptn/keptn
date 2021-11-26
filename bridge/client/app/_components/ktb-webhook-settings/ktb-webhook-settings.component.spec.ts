@@ -4,13 +4,12 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
-import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbWebhookSettingsComponent', () => {
-  const secretPath = 'SecretA.key1';
   let component: KtbWebhookSettingsComponent;
   let fixture: ComponentFixture<KtbWebhookSettingsComponent>;
 
@@ -54,7 +53,7 @@ describe('KtbWebhookSettingsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: DataService, useClass: DataServiceMock }],
+      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbWebhookSettingsComponent);
@@ -236,75 +235,6 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(component.webhookConfigForm.valid).toEqual(true);
-  });
-
-  it('should insert the processed string as value to the payload form field', () => {
-    // given
-    component.getFormControl('url').setValue('');
-
-    // when
-    component.setSecret(secretPath, 'url', 0);
-
-    // then
-    expect(component.getFormControl('url').value).toEqual(`{{.secret.${secretPath}}}`);
-  });
-
-  it('should insert the processed string as value to the url form field at the given position', () => {
-    // given
-    component.getFormControl('url').setValue('https://example.com?somestringtoinsert');
-
-    // when
-    component.setSecret(secretPath, 'url', 30);
-
-    // then
-    expect(component.getFormControl('url').value).toEqual(
-      `https://example.com?somestring{{.secret.${secretPath}}}toinsert`
-    );
-  });
-
-  it('should insert the processed string as value to the url form field', () => {
-    // given
-    component.getFormControl('payload').setValue('');
-
-    // when
-    component.setSecret(secretPath, 'payload', 0);
-
-    // then
-    expect(component.getFormControl('payload').value).toEqual(`{{.secret.${secretPath}}}`);
-  });
-
-  it('should insert the processed string as value to the payload form field at the given position', () => {
-    // given
-    component.getFormControl('payload').setValue('{id: , project: sockshop}');
-
-    // when
-    component.setSecret(secretPath, 'payload', 5);
-
-    // then
-    expect(component.getFormControl('payload').value).toEqual(`{id: {{.secret.${secretPath}}}, project: sockshop}`);
-  });
-
-  it('should insert the processed string as value to the given header field in the form array', () => {
-    // given
-    component.addHeader('header1', 'value1');
-    component.addHeader('header2', '');
-
-    // when
-    component.setSecret(secretPath, 'header', 0, 1);
-
-    // then
-    expect(component.headerControls[1].get('value')?.value).toEqual(`{{.secret.${secretPath}}}`);
-  });
-
-  it('should insert the processed string as value to the header form field at the given position', () => {
-    // given
-    component.addHeader('header1', 'value1');
-    component.addHeader('header2', 'value2');
-    // when
-    component.setSecret(secretPath, 'header', 5, 1);
-
-    // then
-    expect(component.headerControls[1].get('value')?.value).toEqual(`value{{.secret.${secretPath}}}2`);
   });
 
   it('should map secrets to a tree when set', () => {

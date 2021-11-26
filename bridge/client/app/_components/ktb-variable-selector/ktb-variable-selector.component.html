@@ -1,0 +1,11 @@
+<button
+  dt-icon-button
+  variant="nested"
+  ktbTreeListSelect
+  [attr.aria-label]="label"
+  [data]="data"
+  [options]="options"
+  (selected)="setVariable($event)"
+>
+  <dt-icon [name]="iconName"></dt-icon>
+</button>

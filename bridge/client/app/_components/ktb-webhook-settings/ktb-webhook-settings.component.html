@@ -141,15 +141,16 @@
 </form>
 
 <ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
-  <button
-    dt-icon-button
-    variant="nested"
-    aria-label="Add secret"
-    ktbTreeListSelect
+  <ktb-variable-selector
     [data]="secretDataSource"
-    [options]="secretOptions"
-    (selected)="setSecret($event, controlName, selectionStart, index)"
-  >
-    <dt-icon name="resetpassword"></dt-icon>
-  </button>
+    [title]="'Select secret'"
+    [label]="'Add secret'"
+    [emptyText]="
+      'No secrets can be found.<p>Secrets can be configured under the menu entry &quot;Secrets&quot; in the Uniform.</p>'
+    "
+    [variablePrefix]="'.secret'"
+    [control]="getFormControl(controlName, index)"
+    [selectionStart]="selectionStart"
+    (changed)="onWebhookFormChange()"
+  ></ktb-variable-selector>
 </ng-template>

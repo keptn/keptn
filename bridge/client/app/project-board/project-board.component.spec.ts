@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectBoardComponent } from './project-board.component';
 import { AppModule } from '../app.module';
-import { DataServiceMock } from '../_services/data.service.mock';
 import { ActivatedRoute, convertToParamMap, ParamMap, UrlSegment } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DataService } from '../_services/data.service';
 import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
+import { ApiService } from '../_services/api.service';
+import { ApiServiceMock } from '../_services/api.service.mock';
+import { Trace } from '../_models/trace';
 
 describe('ProjectBoardComponent', () => {
   let component: ProjectBoardComponent;
@@ -28,7 +29,7 @@ describe('ProjectBoardComponent', () => {
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: DataService, useClass: DataServiceMock },
+        { provide: ApiService, useClass: ApiServiceMock },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
         {
           provide: ActivatedRoute,
@@ -61,12 +62,12 @@ describe('ProjectBoardComponent', () => {
     });
   });
 
-  it('should have a "trace" error when a trace can not be found with wrong shkeptncontext', (done) => {
+  it('should have a "trace" error when list of traces is empty', (done) => {
     // given
-    setupTraceTest(convertToParamMap({ shkeptncontext: 'asdf123asdf456789' }));
+    const traces: Trace[] = [];
 
     // when
-    fixture.detectChanges();
+    component.navigateToTrace(traces, null);
 
     // then
     component.error$.subscribe((err) => {
@@ -110,8 +111,10 @@ describe('ProjectBoardComponent', () => {
   it('should show a trace not found message when error is trace', () => {
     // given
     setupTraceTest(convertToParamMap({ shkeptncontext: 'asdf123asdf456789' }));
+    const traces: Trace[] = [];
 
     // when
+    component.navigateToTrace(traces, null);
     fixture.detectChanges();
 
     // then

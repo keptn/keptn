@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSliBreakdownComponent } from './ktb-sli-breakdown.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
-import { Evaluations } from '../../_services/_mockData/evaluations.mock';
+import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 
@@ -198,7 +198,7 @@ describe('KtbSliBreakdownComponent', () => {
       fixture.detectChanges();
     }
     // then
-    const selectedEvaluation = Evaluations.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
+    const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row > dt-cell:nth-child(${Column.NAME + 1})`);
     for (let i = 0; i < indices.length; ++i) {
       expect(indicatorNames[i].textContent).toEqual(
@@ -208,7 +208,7 @@ describe('KtbSliBreakdownComponent', () => {
   }
 
   function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex = -1, includeWeight = true): void {
-    const selectedEvaluation = Evaluations.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
+    const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     component.indicatorResults = selectedEvaluation.data.evaluation?.indicatorResults as IndicatorResult[];
     component.objectives = [
       {
@@ -263,7 +263,7 @@ describe('KtbSliBreakdownComponent', () => {
       comparedEvaluationIndex === -1
         ? []
         : [
-            Evaluations.data.evaluationHistory?.[comparedEvaluationIndex].data.evaluation
+            EvaluationsMock.data.evaluationHistory?.[comparedEvaluationIndex].data.evaluation
               ?.indicatorResults as IndicatorResult[],
           ];
   }

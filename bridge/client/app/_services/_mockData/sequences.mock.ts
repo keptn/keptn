@@ -1050,47 +1050,6 @@ let sequencesData = [
       },
     ],
   },
-  {
-    name: 'delivery',
-    service: 'carts',
-    project: 'sockshop',
-    time: '2021-07-05T13:10:34.235Z',
-    shkeptncontext: 'db6a190d-eea6-49b3-8c7c-aaea24c0015c',
-    state: 'finished',
-    stages: [
-      {
-        name: 'dev',
-        image: 'docker.io/keptnexamples/carts:0.12.3',
-        latestEvaluation: {
-          result: 'pass',
-          score: 0,
-        },
-        latestEvent: {
-          type: 'sh.keptn.event.dev.delivery.finished',
-          id: 'cac88040-0b0a-478f-a75e-57e17f6a1171',
-          time: '2021-07-05T13:14:26.464Z',
-        },
-      },
-      {
-        name: 'staging',
-        image: 'docker.io/keptnexamples/carts:0.12.3',
-        latestEvaluation: {
-          result: 'fail',
-          score: 33.33333333333333,
-        },
-        latestEvent: {
-          type: 'sh.keptn.event.staging.rollback.finished',
-          id: '88cd8f8c-def5-4868-aefd-8174ed94738a',
-          time: '2021-07-05T13:19:59.459Z',
-        },
-        latestFailedEvent: {
-          type: 'sh.keptn.event.staging.delivery.finished',
-          id: '4374b25b-03f6-449b-b9aa-a488d7ed7c4e',
-          time: '2021-07-05T13:19:48.958Z',
-        },
-      },
-    ],
-  },
 ] as Sequence[];
 sequencesData = sequencesData.map((sequence) => Sequence.fromJSON(sequence));
-export { sequencesData as SequencesData };
+export { sequencesData as SequencesMock };
