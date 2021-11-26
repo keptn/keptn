@@ -17,7 +17,11 @@ import (
 	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"os"
+	"sync"
 	"testing"
 	"time"
 )
@@ -1096,11 +1100,16 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	if shipyardContent == "" {
 		shipyardContent = testShipyardFile
 	}
+
+	client := getTestDynamicClient()
+
+	locker := common.GetK8sDistributedLockerInstance(client)
+
 	eventRepo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
 	eventQueueRepo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceRepo := db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
-	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, time.Second, clock.New(), common.GetSyncMutexLockerInstance())
+	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, time.Second, clock.New(), locker)
 	sc := &shipyardController{
 		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
 		eventRepo:        eventRepo,
@@ -1122,7 +1131,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 				return common.UnmarshalShipyard(shipyardContent)
 			},
 		},
-		locker: common.GetSyncMutexLockerInstance(),
+		locker: locker,
 	}
 	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
 		ev := &models.Event{}
@@ -1135,6 +1144,25 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 	}
 	sc.run(context.Background())
 	return sc
+}
+
+var testDynamicClientInstance *dynamicfake.FakeDynamicClient
+var testDynamicClientOnce = sync.Once{}
+
+func getTestDynamicClient() *dynamicfake.FakeDynamicClient {
+	testDynamicClientOnce.Do(func() {
+		cm := &unstructured.Unstructured{Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "ConfigMap",
+			"metadata": map[string]interface{}{
+				"name":      "sc-locks",
+				"namespace": "keptn",
+			},
+		}}
+		testDynamicClientInstance = dynamicfake.NewSimpleDynamicClient(runtime.NewScheme(), cm)
+	})
+
+	return testDynamicClientInstance
 }
 
 func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([]models.Event, error) {

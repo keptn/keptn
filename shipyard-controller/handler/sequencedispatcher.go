@@ -15,8 +15,6 @@ import (
 
 const sequenceDispatcherLockKey = "--sc-internal-sequence-dispatcher"
 
-var ErrSequenceDispatcherBlocked = errors.New("sequence dispatcher is currently blocked")
-
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
@@ -60,10 +58,8 @@ func NewSequenceDispatcher(
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	// try to dispatch the sequence immediately
-	// try to acquire the lock, but do not block until it is free - if it is currently blocked, the item will be added to the queue and will be considered
-	// in the next iteration of the dispatcher
-	acquired, lockID, err := sd.locker.TryLock(sequenceDispatcherLockKey)
-	if err == nil && acquired {
+	lockID, err := sd.locker.Lock(sequenceDispatcherLockKey)
+	if err == nil {
 		defer func() {
 			err := sd.locker.Unlock(lockID)
 			if err != nil {
@@ -78,6 +74,7 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 				return err
 			}
 		}
+		return nil
 	}
 	return sd.sequenceQueue.QueueSequence(queueItem)
 }
@@ -111,27 +108,31 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 				return
 			case <-ticker.C:
 				log.Debugf("%.2f seconds have passed. Dispatching sequences", sd.syncInterval.Seconds())
-				// try to lock, but do not block
-				// if the lock is currently held by another dispatcher instance (e.g. another pod of the shipyard controller), there is no need
-				// to wait until this one can run - in that case we can simply try to run the dispatcher again later
-				acquired, lockID, err := sd.locker.TryLock(sequenceDispatcherLockKey)
-				if err != nil {
-					log.Errorf("Could not acquire lock for SequenceDispatcher: %v", err)
-					continue
-				} else if !acquired {
-					log.Info("Sequence Dispatcher is currently blocked. will run again later")
-					continue
-				}
 				sd.dispatchSequences()
-				if err := sd.locker.Unlock(lockID); err != nil {
-					log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
-				}
 			}
 		}
 	}()
 }
 
 func (sd *SequenceDispatcher) dispatchSequences() {
+	// try to lock, but do not block
+	// if the lock is currently held by another dispatcher instance (e.g. another pod of the shipyard controller), there is no need
+	// to wait until this one can run - in that case we can simply try to run the dispatcher again later
+	acquired, lockID, err := sd.locker.TryLock(sequenceDispatcherLockKey)
+	if err != nil {
+		log.Errorf("Could not acquire lock for SequenceDispatcher: %v", err)
+		return
+	} else if !acquired {
+		log.Debug("Sequence Dispatcher is currently blocked. will run again later")
+		return
+	}
+
+	defer func() {
+		if err := sd.locker.Unlock(lockID); err != nil {
+			log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
+		}
+	}()
+
 	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
 	if err != nil {
 		if err == db.ErrNoEventFound {
@@ -146,8 +147,6 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
 			if errors.Is(err, ErrSequenceBlocked) {
 				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
-			} else if errors.Is(err, ErrSequenceDispatcherBlocked) {
-				log.Infof("Could not dispatch sequence with keptnCOntext %s. SequenceDispatcher is currently blocked", queuedSequence.Scope.KeptnContext)
 			} else {
 				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
 			}
