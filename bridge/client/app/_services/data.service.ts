@@ -333,7 +333,7 @@ export class DataService {
     const projects$ = this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
       map((result) => (result ? result.projects : [])),
       map((projects) => projects.map((project) => Project.fromJSON(project))),
-      tap(
+      map(
         (projects: Project[]) => {
           const existingProjects = this._projects.getValue();
           projects = projects.map((project) => {
