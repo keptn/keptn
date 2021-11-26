@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -98,9 +97,9 @@ func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials
 	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
-		return false, obfuscateErrorMessage(fmt.Errorf("failed to clone empty git repository"), &credentials)
+		return false, fmt.Errorf("failed to clone empty git repository")
 	} else if err != nil {
-		return false, obfuscateErrorMessage(fmt.Errorf("failed to reach git upstream"), &credentials)
+		return false, fmt.Errorf("failed to reach git upstream")
 	}
 	return true, nil
 }
@@ -120,7 +119,7 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
-			return obfuscateErrorMessage(fmt.Errorf("failed to pull upstream changes in project '%s'", project), credentials)
+			return fmt.Errorf("failed to pull upstream changes in project '%s'", project)
 		}
 	}
 	return nil
@@ -144,7 +143,7 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(fmt.Errorf("failed to set git upstream for project '%s'", project), credentials)
+			return fmt.Errorf("failed to set git upstream for project '%s'", project)
 		}
 	}
 
@@ -172,7 +171,7 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 					return err2
 				}
 
-				return obfuscateErrorMessage(fmt.Errorf("failed to set remote origin URL for project '%s'", project), credentials)
+				return fmt.Errorf("failed to set remote origin URL for project '%s'", project)
 			}
 		}
 		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
@@ -199,29 +198,29 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	projectConfigPath := config.ConfigDir + "/" + project
 	branches, err := g.GetBranches(project)
 	if err != nil {
-		return obfuscateErrorMessage(fmt.Errorf("failed to set upstream and push for project '%s'", project), credentials)
+		return fmt.Errorf("failed to set upstream and push for project '%s'", project)
 	}
 
 	defaultBranch, err := g.GetDefaultBranch(project)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		return err
 	}
 
 	// first, make sure to push the master/main branch first
 	err = g.CheckoutBranch(project, defaultBranch, true)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		return err
 	}
 	err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 	if err != nil {
 		// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 		if !isNoRemoteHeadFoundError(err) {
-			return obfuscateErrorMessage(fmt.Errorf("failed to set upstream and push for project '%s'", project), credentials)
+			return fmt.Errorf("failed to set upstream and push for project '%s'", project)
 		}
 	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
 	if err != nil {
-		return obfuscateErrorMessage(fmt.Errorf("failed to set upstream and push to default branch for project '%s'", project), credentials)
+		return fmt.Errorf("failed to set upstream and push to default branch for project '%s'", project)
 	}
 
 	for _, branch := range branches {
@@ -230,18 +229,18 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		}
 		err := g.CheckoutBranch(project, branch, true)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return err
 		}
 		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
 			// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 			if !isNoRemoteHeadFoundError(err) {
-				return obfuscateErrorMessage(fmt.Errorf("failed to set upstream and push for project '%s'", project), credentials)
+				return fmt.Errorf("failed to set upstream and push for project '%s'", project)
 			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(fmt.Errorf("failed to set upstream and push to branch '%s' for project '%s'", branch, project), credentials)
+			return fmt.Errorf("failed to set upstream and push to branch '%s' for project '%s'", branch, project)
 		}
 	}
 	return nil
@@ -249,9 +248,6 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 
 func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath string, credentials *common_models.GitCredentials) error {
 	_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
-	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
-	}
 	return err
 }
 
@@ -271,12 +267,12 @@ func (g *Git) StageAndCommitAll(project string, message string, withPull bool) e
 		if withPull {
 			_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 			if err != nil {
-				return obfuscateErrorMessage(fmt.Errorf("failed to pull upstream changes"), credentials)
+				return fmt.Errorf("failed to pull upstream changes")
 			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(fmt.Errorf("failed to push local changes to upstream"), credentials)
+			return fmt.Errorf("failed to push local changes to upstream")
 		}
 	}
 	return nil
@@ -318,7 +314,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 		for i := 0; i < retries; i = i + 1 {
 			out, err := g.Executor.ExecuteCommand("git", []string{"remote", "show", "origin"}, projectConfigPath)
 			if err != nil {
-				return "", fmt.Errorf("failed show remote origin for project '%s'", project)
+				return "", fmt.Errorf("failed to show remote origin for project '%s'", project)
 			}
 			lines := strings.Split(out, "\n")
 
@@ -328,7 +324,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 					if strings.Contains(line, "remote HEAD is ambiguous") {
 						branches, err := g.GetBranches(project)
 						if err != nil {
-							return "", obfuscateErrorMessage(fmt.Errorf("remote HEAD is ambiguous for project '%s'", project), credentials)
+							return "", fmt.Errorf("remote HEAD is ambiguous for project '%s'", project)
 						}
 						for _, branch := range branches {
 							if branch == masterBranch || branch == mainBranch {
@@ -443,14 +439,6 @@ func setUpstreamsAndPush(project string, credentials *common_models.GitCredentia
 func StageAndCommitAll(project string, message string, withPull bool) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
 	return g.StageAndCommitAll(project, message, withPull)
-}
-
-func obfuscateErrorMessage(err error, credentials *common_models.GitCredentials) error {
-	if err != nil && credentials != nil && credentials.Token != "" {
-		errorMessage := strings.ReplaceAll(err.Error(), credentials.Token, "********")
-		return errors.New(errorMessage)
-	}
-	return err
 }
 
 // GetCurrentVersion gets the latest version (i.e. commit hash) of the currently checked out branch
