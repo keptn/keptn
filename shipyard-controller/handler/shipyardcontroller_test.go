@@ -293,6 +293,7 @@ func TestHandleFinishedEvent(t *testing.T) {
 				projectMvRepo:    tt.fields.projectMvRepo,
 				eventRepo:        tt.fields.eventRepo,
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
+				locker:           common.GetSyncMutexLockerInstance(),
 			}
 
 			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
