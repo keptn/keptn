@@ -1,4 +1,5 @@
 import { ComponentFixture, tick } from '@angular/core/testing';
+import { Trace } from '../_models/trace';
 
 export class TestUtils {
   public static createNewDropEventWithFiles(files: File[]): DragEvent {
@@ -43,6 +44,25 @@ export class TestUtils {
     fixture.detectChanges();
     tick();
     fixture.detectChanges();
+  }
+
+  public static mapTraces(input: unknown): Trace[] {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return input.map((data: unknown): Trace => {
+      tracesMapper(data);
+      return Trace.fromJSON(data);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function tracesMapper(trace: any): void {
+        trace.traces?.forEach((t: Trace) => {
+          tracesMapper(t);
+        });
+        if (trace.traces) {
+          trace.traces = Trace.traceMapper(trace.traces);
+        }
+      }
+    });
   }
 }
 

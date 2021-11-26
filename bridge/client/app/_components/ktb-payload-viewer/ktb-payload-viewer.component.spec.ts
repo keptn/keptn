@@ -2,12 +2,13 @@ import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testi
 import { KtbPayloadViewerComponent } from './ktb-payload-viewer.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { DataService } from '../../_services/data.service';
 import { of, throwError } from 'rxjs';
 import { Trace } from '../../_models/trace';
-import { EvaluationTracesMock } from '../../_models/trace.mock';
+import { EvaluationTracesMock } from '../../_services/_mockData/trace.mock';
 import { TestUtils } from '../../_utils/test.utils';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbPayloadViewerComponent', () => {
   let component: KtbPayloadViewerComponent;
@@ -18,7 +19,7 @@ describe('KtbPayloadViewerComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
-      providers: [DataServiceMock],
+      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbPayloadViewerComponent);

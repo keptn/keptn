@@ -1,6 +1,6 @@
 import { Trace } from './trace';
 import { waitForAsync } from '@angular/core/testing';
-import { EvaluationTracesMock, MultipleEvaluationTracesMock, RootTracesMock } from './trace.mock';
+import { EvaluationTracesMock, MultipleEvaluationTracesMock, RootTracesMock } from '../_services/_mockData/trace.mock';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 
 describe('Trace', () => {

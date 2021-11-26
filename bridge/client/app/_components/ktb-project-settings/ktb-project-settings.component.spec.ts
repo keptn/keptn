@@ -4,8 +4,9 @@ import { DataService } from '../../_services/data.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
@@ -21,7 +22,7 @@ describe('KtbProjectSettingsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: DataService, useClass: DataServiceMock },
+        { provide: ApiService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

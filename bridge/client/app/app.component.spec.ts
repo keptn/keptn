@@ -3,12 +3,12 @@ import { AppComponent } from './app.component';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Location } from '@angular/common';
-import { DataService } from './_services/data.service';
-import { DataServiceMock } from './_services/data.service.mock';
 import { Router } from '@angular/router';
 import { AppModule } from './app.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from './app.routing';
+import { ApiService } from './_services/api.service';
+import { ApiServiceMock } from './_services/api.service.mock';
 
 describe('AppComponent', () => {
   let router: Router;
@@ -28,7 +28,7 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule, RouterTestingModule.withRoutes(routes)],
-      providers: [{ provide: DataService, useClass: DataServiceMock }],
+      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     router = TestBed.inject(Router);

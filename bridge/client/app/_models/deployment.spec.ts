@@ -6,17 +6,17 @@ import {
 import { ServiceRemediationInformation } from './service-remediation-information';
 import {
   ExpectedDeploymentMock,
-  MergedSubSequencesDeliveryRollback,
-  ServiceRemediationInformationDevWithRemediation,
-  ServiceRemediationInformationProductionWithRemediation,
-  StageDeploymentDeliveryFinishedPass,
-  StageDeploymentEmpty,
-  StageDeploymentRollbackFinishedPass,
-  SubSequencesFailedAndPassed,
-  SubSequencesPassed,
-  SubSequencesPassedLoading,
-  SubSequencesWarning,
-  SubSequencesWarningFailed,
+  MergedSubSequencesDeliveryRollbackMock,
+  ServiceRemediationInformationDevWithRemediationMock,
+  ServiceRemediationInformationProductionWithRemediationMock,
+  StageDeploymentDeliveryFinishedPassMock,
+  StageDeploymentEmptyMock,
+  StageDeploymentRollbackFinishedPassMock,
+  SubSequencesFailedAndPassedMock,
+  SubSequencesPassedLoadingMock,
+  SubSequencesPassedMock,
+  SubSequencesWarningFailedMock,
+  SubSequencesWarningMock,
   UpdatedDeploymentMock,
 } from '../_services/_mockData/deployments.mock';
 
@@ -38,16 +38,16 @@ describe('Deployment', () => {
   });
 
   it('should assign subSequences', () => {
-    const stageDeployment = StageDeployment.fromJSON(StageDeploymentEmpty);
-    const newStageDeployment = StageDeployment.fromJSON(StageDeploymentDeliveryFinishedPass);
+    const stageDeployment = StageDeployment.fromJSON(StageDeploymentEmptyMock);
+    const newStageDeployment = StageDeployment.fromJSON(StageDeploymentDeliveryFinishedPassMock);
     stageDeployment.update(newStageDeployment);
     expect(stageDeployment.subSequences).toEqual(newStageDeployment.subSequences);
   });
 
   it('should add subSequences', () => {
-    const stageDeployment = StageDeployment.fromJSON(StageDeploymentDeliveryFinishedPass);
-    const newStageDeployment = StageDeployment.fromJSON(StageDeploymentRollbackFinishedPass);
-    const expectedSubSequences = MergedSubSequencesDeliveryRollback;
+    const stageDeployment = StageDeployment.fromJSON(StageDeploymentDeliveryFinishedPassMock);
+    const newStageDeployment = StageDeployment.fromJSON(StageDeploymentRollbackFinishedPassMock);
+    const expectedSubSequences = MergedSubSequencesDeliveryRollbackMock;
     stageDeployment.update(newStageDeployment);
     expect(stageDeployment.subSequences).toEqual(expectedSubSequences);
   });
@@ -60,7 +60,7 @@ describe('Deployment', () => {
   it('should remove open remediations', () => {
     const deployment = Deployment.fromJSON(ServiceDeploymentMock);
     const serviceRemediationInformation = ServiceRemediationInformation.fromJSON(
-      ServiceRemediationInformationDevWithRemediation
+      ServiceRemediationInformationDevWithRemediationMock
     );
     deployment.updateRemediations(serviceRemediationInformation);
 
@@ -80,7 +80,7 @@ describe('Deployment', () => {
     deployment.stages[2].remediationConfig = undefined;
     deployment.stages[2].openRemediations = [];
     const serviceRemediationInformation = ServiceRemediationInformation.fromJSON(
-      ServiceRemediationInformationProductionWithRemediation
+      ServiceRemediationInformationProductionWithRemediationMock
     );
     deployment.updateRemediations(serviceRemediationInformation);
 
@@ -104,37 +104,37 @@ describe('Deployment', () => {
 
   it('should be faulty', () => {
     const stageDeployment = getStageDeployment();
-    stageDeployment.subSequences = SubSequencesFailedAndPassed;
+    stageDeployment.subSequences = SubSequencesFailedAndPassedMock;
     expect(stageDeployment.isFaulty()).toBe(true);
   });
 
   it('should not be faulty', () => {
     const stageDeployment = getStageDeployment();
-    stageDeployment.subSequences = SubSequencesPassedLoading;
+    stageDeployment.subSequences = SubSequencesPassedLoadingMock;
     expect(stageDeployment.isFaulty()).toBe(false);
   });
 
   it('should not be successful', () => {
     const stageDeployment = getStageDeployment();
-    stageDeployment.subSequences = SubSequencesPassedLoading;
+    stageDeployment.subSequences = SubSequencesPassedLoadingMock;
     expect(stageDeployment.isSuccessful()).toBe(false);
   });
 
   it('should be successful', () => {
     const stageDeployment = getStageDeployment();
-    stageDeployment.subSequences = SubSequencesPassed;
+    stageDeployment.subSequences = SubSequencesPassedMock;
     expect(stageDeployment.isSuccessful()).toBe(true);
   });
 
   it('should not be warning', () => {
     const stageDeployment = getStageDeployment();
-    stageDeployment.subSequences = SubSequencesWarningFailed;
+    stageDeployment.subSequences = SubSequencesWarningFailedMock;
     expect(stageDeployment.isWarning()).toBe(false);
   });
 
   it('should be warning', () => {
     const stageDeployment = getStageDeployment();
-    stageDeployment.subSequences = SubSequencesWarning;
+    stageDeployment.subSequences = SubSequencesWarningMock;
     expect(stageDeployment.isWarning()).toBe(true);
   });
 
