@@ -1343,9 +1343,15 @@ export class DataService {
       const child1 = array1[i];
       const child2 = array2[i];
       if (child1 instanceof Array && child2 instanceof Array) {
-        result.push(this.intersectArrays(child1, child2));
+        const array = this.intersectArrays(child1, child2);
+        if (array.length) {
+          result.push(array);
+        }
       } else if (this.isObject(child1) && this.isObject(child2)) {
-        result.push(this.intersectObjects(child1, child2));
+        const obj = this.intersectObjects(child1, child2);
+        if (Object.keys(obj).length) {
+          result.push(obj);
+        }
       } else if (!this.isObject(child1) && !this.isObject(child2)) {
         result.push(child1);
       }
