@@ -3,9 +3,14 @@
 
 :host {
   width: 100%;
-  overflow-y: auto;
   border: 1px solid $turquoise-600;
   background: #ffffff;
+}
+
+.scrollable {
+  display: block;
+  overflow-y: auto;
+  height: calc(100% - 32px);
 }
 
 .select-overlay-header {
