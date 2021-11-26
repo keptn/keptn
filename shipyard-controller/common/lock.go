@@ -1,9 +1,11 @@
 package common
 
 import (
+	"context"
 	"fmt"
 	"github.com/werf/lockgate"
 	"github.com/werf/lockgate/pkg/distributed_locker"
+	"golang.org/x/sync/semaphore"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"strings"
@@ -12,8 +14,11 @@ import (
 
 // Locker is an interface that provides functions to lock resources
 type Locker interface {
-	// Lock locks the specified resource
+	// Lock locks the specified resource. Will block until the lock is acquired
 	Lock(key string) (string, error)
+
+	// TryLock tries to acquire the lock. If it is currently blocked, the function will return an error
+	TryLock(key string) (bool, string, error)
 
 	// Unlock unlocks the specified resource
 	Unlock(key string) error
@@ -21,8 +26,8 @@ type Locker interface {
 
 // SyncMutexLocker locks resources using Golang's sync package
 type SyncMutexLocker struct {
-	mutex *sync.Mutex
-	locks map[string]*sync.Mutex
+	mutex sync.Mutex
+	locks map[string]*semaphore.Weighted
 }
 
 var syncMutexLockerInstance *SyncMutexLocker
@@ -32,8 +37,8 @@ var syncMutexLockerOnce sync.Once
 func GetSyncMutexLockerInstance() *SyncMutexLocker {
 	syncMutexLockerOnce.Do(func() {
 		syncMutexLockerInstance = &SyncMutexLocker{
-			mutex: &sync.Mutex{},
-			locks: map[string]*sync.Mutex{},
+			mutex: sync.Mutex{},
+			locks: map[string]*semaphore.Weighted{},
 		}
 	})
 	return syncMutexLockerInstance
@@ -41,20 +46,29 @@ func GetSyncMutexLockerInstance() *SyncMutexLocker {
 
 func (sml *SyncMutexLocker) Lock(key string) (string, error) {
 	sml.ensureLockKeyExists(key)
-	sml.locks[key].Lock()
+	err := sml.locks[key].Acquire(context.TODO(), 1)
+	if err != nil {
+		return "", err
+	}
 	return key, nil
+}
+
+func (sml *SyncMutexLocker) TryLock(key string) (bool, string, error) {
+	sml.ensureLockKeyExists(key)
+	acquired := sml.locks[key].TryAcquire(1)
+	return acquired, key, nil
 }
 
 func (sml *SyncMutexLocker) Unlock(key string) error {
 	sml.ensureLockKeyExists(key)
-	sml.locks[key].Unlock()
+	sml.locks[key].Release(1)
 	return nil
 }
 
 func (sml *SyncMutexLocker) ensureLockKeyExists(key string) {
 	if sml.locks[key] == nil {
 		sml.mutex.Lock()
-		sml.locks[key] = &sync.Mutex{}
+		sml.locks[key] = semaphore.NewWeighted(1)
 		sml.mutex.Unlock()
 	}
 }
@@ -91,6 +105,14 @@ func (kdl *K8sDistributedLocker) Lock(key string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%s:%s", lock.LockName, lock.UUID), nil
+}
+
+func (kdl *K8sDistributedLocker) TryLock(key string) (bool, string, error) {
+	acquired, lock, err := kdl.locker.Acquire(key, lockgate.AcquireOptions{NonBlocking: true})
+	if err != nil {
+		return false, "", err
+	}
+	return acquired, fmt.Sprintf("%s:%s", lock.LockName, lock.UUID), nil
 }
 
 func (kdl *K8sDistributedLocker) Unlock(key string) error {

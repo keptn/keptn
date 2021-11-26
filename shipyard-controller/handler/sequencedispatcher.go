@@ -13,7 +13,9 @@ import (
 	"time"
 )
 
-const sequenceDispatcherLockKey = "--sc-sequenceDispatcher"
+const sequenceDispatcherLockKey = "--sc-internal-sequence-dispatcher"
+
+var ErrSequenceDispatcherBlocked = errors.New("sequence dispatcher is currently blocked")
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
@@ -58,17 +60,26 @@ func NewSequenceDispatcher(
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	// try to dispatch the sequence immediately
-	if err := sd.dispatchSequence(queueItem); err != nil {
-		if err == ErrSequenceBlocked {
-			// if the sequence is currently blocked, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-				return err2
+	// try to acquire the lock, but do not block until it is free - if it is currently blocked, the item will be added to the queue and will be considered
+	// in the next iteration of the dispatcher
+	acquired, lockID, err := sd.locker.TryLock(sequenceDispatcherLockKey)
+	if err == nil && acquired {
+		defer func() {
+			err := sd.locker.Unlock(lockID)
+			if err != nil {
+				log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
 			}
-		} else {
-			return err
+		}()
+		if err := sd.dispatchSequence(queueItem); err != nil {
+			if errors.Is(err, ErrSequenceBlocked) {
+				// if the sequence is currently blocked, insert it into the queue
+				return sd.sequenceQueue.QueueSequence(queueItem)
+			} else {
+				return err
+			}
 		}
 	}
-	return nil
+	return sd.sequenceQueue.QueueSequence(queueItem)
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
@@ -100,7 +111,21 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 				return
 			case <-ticker.C:
 				log.Debugf("%.2f seconds have passed. Dispatching sequences", sd.syncInterval.Seconds())
+				// try to lock, but do not block
+				// if the lock is currently held by another dispatcher instance (e.g. another pod of the shipyard controller), there is no need
+				// to wait until this one can run - in that case we can simply try to run the dispatcher again later
+				acquired, lockID, err := sd.locker.TryLock(sequenceDispatcherLockKey)
+				if err != nil {
+					log.Errorf("Could not acquire lock for SequenceDispatcher: %v", err)
+					continue
+				} else if !acquired {
+					log.Info("Sequence Dispatcher is currently blocked. will run again later")
+					continue
+				}
 				sd.dispatchSequences()
+				if err := sd.locker.Unlock(lockID); err != nil {
+					log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
+				}
 			}
 		}
 	}()
@@ -121,6 +146,8 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
 			if errors.Is(err, ErrSequenceBlocked) {
 				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
+			} else if errors.Is(err, ErrSequenceDispatcherBlocked) {
+				log.Infof("Could not dispatch sequence with keptnCOntext %s. SequenceDispatcher is currently blocked", queuedSequence.Scope.KeptnContext)
 			} else {
 				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
 			}
@@ -129,18 +156,6 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
-	// TODO use non-blocking lock and return err if lock has not been obtained
-	lockID, err := sd.locker.Lock(sequenceDispatcherLockKey)
-	if err != nil {
-		return fmt.Errorf("could not acquire lock for SequenceDispatcher: %w", err)
-	}
-
-	defer func() {
-		err := sd.locker.Unlock(lockID)
-		if err != nil {
-			log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
-		}
-	}()
 	// first, check if the sequence is currently paused
 	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)

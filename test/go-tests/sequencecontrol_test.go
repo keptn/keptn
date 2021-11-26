@@ -104,7 +104,7 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	resp, err = ApiGETRequest("/controlPlane/v1/event/triggered/"+keptnv2.GetTriggeredEventType("task1"), 3)
+	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/event/triggered/%s?project=%s", keptnv2.GetTriggeredEventType("task1"), projectName), 3)
 	require.Nil(t, err)
 
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}

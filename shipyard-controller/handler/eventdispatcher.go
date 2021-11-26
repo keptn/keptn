@@ -128,9 +128,12 @@ func (e *EventDispatcher) Run(ctx context.Context) {
 				log.Info("cancelling event dispatcher loop")
 				return
 			case <-ticker.C:
-				lockID, err := e.locker.Lock("--sc-internal-event-dispatcher")
+				acquired, lockID, err := e.locker.TryLock("--sc-internal-event-dispatcher")
 				if err != nil {
 					log.Errorf("Could not acquire lock for EventDispatcher: %v", err)
+					continue
+				} else if !acquired {
+					log.Info("EventDispatcher is currently blocked by other instance. Will try again later")
 					continue
 				}
 				log.Debugf("%.2f seconds have passed. Dispatching events", e.syncInterval.Seconds())
