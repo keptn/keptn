@@ -3302,3 +3302,121 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 		})
 	}
 }
+
+func Test_aggregateValues(t *testing.T) {
+	type fields struct {
+		InPreviousResults []*keptnv2.SLIEvaluationResult
+		InComparison      *keptnmodelsv2.SLOComparison
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		wantedValue float64
+		shouldSkip  bool
+	}{
+
+		{name: "Aggregate 2 values with AVG",
+			fields: fields{
+				InPreviousResults: []*keptnv2.SLIEvaluationResult{
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   5.0,
+							Success: true,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   15.0,
+							Success: true,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+				},
+				InComparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+			},
+			wantedValue: 10.0,
+			shouldSkip:  false,
+		},
+		{name: "Skip because of no previous results",
+			fields: fields{
+				InComparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+			},
+			wantedValue: 0.0,
+			shouldSkip:  true,
+		},
+		{name: "Skip because of no previous success",
+			fields: fields{
+				InPreviousResults: []*keptnv2.SLIEvaluationResult{
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   5.0,
+							Success: false,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   15.0,
+							Success: false,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+				},
+				InComparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+			},
+			wantedValue: 0.0,
+			shouldSkip:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := aggregateValues(tt.fields.InPreviousResults, tt.fields.InComparison)
+			if got != tt.wantedValue {
+				t.Errorf("aggregateValues() got = %v, want %v", got, tt.wantedValue)
+			}
+			if got1 != tt.shouldSkip {
+				t.Errorf("aggregateValues() got1 = %v, want %v", got1, tt.shouldSkip)
+			}
+		})
+	}
+}
