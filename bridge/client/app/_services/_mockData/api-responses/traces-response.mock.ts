@@ -1,4 +1,4 @@
-import { Trace } from '../../_models/trace';
+import { TestUtils } from '../../../_utils/test.utils';
 
 export const traceData = [
   {
@@ -2020,17 +2020,6 @@ export const traceData = [
   },
 ];
 
-const traces = traceData.map((data: unknown): Trace => {
-  tracesMapper(data);
-  return Trace.fromJSON(data);
+const traces = TestUtils.mapTraces(traceData);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function tracesMapper(trace: any): void {
-    trace.traces.forEach((t: Trace) => {
-      tracesMapper(t);
-    });
-    trace.traces = Trace.traceMapper(trace.traces);
-  }
-});
-
-export { traces as Traces };
+export { traces as TracesResponseMock };

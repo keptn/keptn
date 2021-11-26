@@ -522,14 +522,14 @@ const stageDeploymentEmpty = {
 
 export { updatedDeploymentMock as UpdatedDeploymentMock };
 export { expectedDeploymentMock as ExpectedDeploymentMock };
-export { stageDeploymentDeliveryFinishedPass as StageDeploymentDeliveryFinishedPass };
-export { stageDeploymentRollBackFinishedPass as StageDeploymentRollbackFinishedPass };
-export { serviceRemediationInformationDevWithRemediation as ServiceRemediationInformationDevWithRemediation };
-export { serviceRemediationInformationProductionWithRemediation as ServiceRemediationInformationProductionWithRemediation };
-export { mergedSubsequencesDeliveryRollback as MergedSubSequencesDeliveryRollback };
-export { subSequencesFailedAndPassed as SubSequencesFailedAndPassed };
-export { subSequencesPassedLoading as SubSequencesPassedLoading };
-export { subSequencesPassed as SubSequencesPassed };
-export { subSequencesWarningFailed as SubSequencesWarningFailed };
-export { subSequencesWarning as SubSequencesWarning };
-export { stageDeploymentEmpty as StageDeploymentEmpty };
+export { stageDeploymentDeliveryFinishedPass as StageDeploymentDeliveryFinishedPassMock };
+export { stageDeploymentRollBackFinishedPass as StageDeploymentRollbackFinishedPassMock };
+export { serviceRemediationInformationDevWithRemediation as ServiceRemediationInformationDevWithRemediationMock };
+export { serviceRemediationInformationProductionWithRemediation as ServiceRemediationInformationProductionWithRemediationMock };
+export { mergedSubsequencesDeliveryRollback as MergedSubSequencesDeliveryRollbackMock };
+export { subSequencesFailedAndPassed as SubSequencesFailedAndPassedMock };
+export { subSequencesPassedLoading as SubSequencesPassedLoadingMock };
+export { subSequencesPassed as SubSequencesPassedMock };
+export { subSequencesWarningFailed as SubSequencesWarningFailedMock };
+export { subSequencesWarning as SubSequencesWarningMock };
+export { stageDeploymentEmpty as StageDeploymentEmptyMock };

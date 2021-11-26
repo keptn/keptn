@@ -2,10 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbModifyUniformSubscriptionComponent } from './ktb-modify-uniform-subscription.component';
 import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
-import { UniformRegistrationsMock } from '../../_models/uniform-registrations.mock';
+import { UniformRegistrationsMock } from '../../_services/_mockData/uniform-registrations.mock';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { UniformRegistrationLocations } from '../../../../shared/interfaces/uniform-registration-locations';
@@ -13,6 +12,8 @@ import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-r
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -29,7 +30,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: DataService, useClass: DataServiceMock },
+        { provide: ApiService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -40,6 +41,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;
+    TestBed.inject(DataService).loadProjects();
   });
 
   it('should create', () => {

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEditServiceComponent } from './ktb-edit-service.component';
 import { AppModule } from '../../app.module';
-import { DataServiceMock } from '../../_services/data.service.mock';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -10,8 +9,10 @@ import { DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProjectMock } from '../../_models/project.mock';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { FileTreeMock } from '../../_models/fileTree.mock';
+import { FileTreeMock } from '../../_services/_mockData/fileTree.mock';
 import { By } from '@angular/platform-browser';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 
 const paramMapSubject = new BehaviorSubject(
   convertToParamMap({
@@ -28,7 +29,7 @@ describe('KtbEditServiceComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: DataService, useClass: DataServiceMock },
+        { provide: ApiService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

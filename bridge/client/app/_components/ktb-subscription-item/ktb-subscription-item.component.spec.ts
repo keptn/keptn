@@ -1,13 +1,13 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSubscriptionItemComponent } from './ktb-subscription-item.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { UniformSubscription } from '../../_models/uniform-subscription';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
-import { DataServiceMock } from '../../_services/data.service.mock';
-import { TestUtils } from '../../_utils/test.utils';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -18,7 +18,7 @@ describe('KtbSubscriptionItemComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: DataService, useClass: DataServiceMock },
+        { provide: ApiService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -30,107 +30,30 @@ describe('KtbSubscriptionItemComponent', () => {
 
     fixture = TestBed.createComponent(KtbSubscriptionItemComponent);
     component = fixture.componentInstance;
+    TestBed.inject(DataService).loadProjects();
     fixture.detectChanges();
+
     subscription = new UniformSubscription('sockshop');
     subscription.id = 'mySubscriptionId';
   });
 
-  it('should create', () => {
+  it('should create and have given project set', () => {
     expect(component).toBeTruthy();
+    expect(component.project?.projectName).toEqual('sockshop');
   });
 
-  it('should have enabled buttons', () => {
+  it('should navigate to subscription to edit', () => {
     // given
-    component.subscription = subscription;
-    component.integrationId = 'myIntegrationId';
-    fixture.detectChanges();
-
-    // then
-    expect(fixture.nativeElement.querySelector('button.disabled')).toBeNull();
-  });
-
-  it('should have disabled buttons and functionality', () => {
-    // given
-    subscription.id = undefined;
-    component.subscription = subscription;
-    component.integrationId = 'myIntegrationId';
-    fixture.detectChanges();
     const router = TestBed.inject(Router);
-    const routeChange = jest.spyOn(router, 'navigate');
-    const subscriptionDeleted = jest.spyOn(component.subscriptionDeleted, 'emit');
+    const routerSpy = jest.spyOn(router, 'navigate');
+    component.integrationId = 'myIntegrationId';
 
     // when
-    fixture.nativeElement.querySelector('button[uitestid=subscriptionDeleteButton]').click();
-    fixture.nativeElement.querySelector('button[uitestid=subscriptionEditButton]').click();
+    component.editSubscription(subscription);
 
     // then
-    expect(fixture.nativeElement.querySelectorAll('button.disabled').length).toEqual(2);
-    expect(routeChange).not.toHaveBeenCalled();
-    expect(subscriptionDeleted).not.toHaveBeenCalled();
-  });
-
-  it('should delete subscription', fakeAsync(() => {
-    // given
-    component.subscription = subscription;
-    component.integrationId = 'myIntegrationId';
-    fixture.detectChanges();
-    const subscriptionDeleted = jest.spyOn(component.subscriptionDeleted, 'emit');
-
-    // when
-    fixture.nativeElement.querySelector('button[title=Delete]').click();
-    TestUtils.updateDialog(fixture);
-
-    expect(document.querySelector('dt-confirmation-dialog-state[name=confirm]')).toBeTruthy();
-    expect(
-      document.querySelector('dt-confirmation-dialog-state[name=confirm] *[uitestid=dialogWarningMessage]')
-    ).toBeFalsy();
-
-    component.deleteSubscription();
-    fixture.detectChanges();
-
-    // then
-    expect(subscriptionDeleted).toHaveBeenCalledWith(subscription);
-  }));
-
-  it('should show warning on delete subscription', fakeAsync(() => {
-    // given
-    subscription.filter.projects = [];
-    component.subscription = subscription;
-    component.integrationId = 'myIntegrationId';
-    fixture.detectChanges();
-    const subscriptionDeleted = jest.spyOn(component.subscriptionDeleted, 'emit');
-
-    // when
-    fixture.nativeElement.querySelector('button[title=Delete]').click();
-    TestUtils.updateDialog(fixture);
-
-    expect(document.querySelector('dt-confirmation-dialog-state[name=confirm]')).toBeTruthy();
-    expect(
-      document.querySelector('dt-confirmation-dialog-state[name=confirm] *[uitestid=dialogWarningMessage]')
-    ).toBeTruthy();
-
-    component.deleteSubscription();
-    fixture.detectChanges();
-
-    // then
-    expect(subscriptionDeleted).toHaveBeenCalledWith(subscription);
-  }));
-
-  it('should edit subscription', () => {
-    // given
-    component.subscription = subscription;
-    component.integrationId = 'myIntegrationId';
-    fixture.detectChanges();
-    const router = TestBed.inject(Router);
-    const routeChange = jest.spyOn(router, 'navigate');
-
-    // when
-    fixture.nativeElement.querySelector('button[title=Edit]').click();
-
-    component.deleteSubscription();
-    fixture.detectChanges();
-
-    expect(routeChange).toHaveBeenCalledWith([
+    expect(routerSpy).toHaveBeenCalled();
+    expect(routerSpy).toHaveBeenCalledWith([
       '/',
       'project',
       'sockshop',
@@ -141,5 +64,31 @@ describe('KtbSubscriptionItemComponent', () => {
       'mySubscriptionId',
       'edit',
     ]);
+  });
+
+  it('should trigger a deletion dialog', () => {
+    // given, when
+    component.triggerDeleteSubscription(subscription);
+
+    // then
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(component.currentSubscription).toEqual(subscription);
+    expect(component.deleteState).toEqual('confirm');
+  });
+
+  it('should delete a subscription', () => {
+    // given
+    component.integrationId = 'myIntegrationId';
+    component.subscription = subscription;
+    component.isWebhookService = false;
+    const dataService = TestBed.inject(DataService);
+    const spy = jest.spyOn(dataService, 'deleteSubscription');
+
+    // when
+    component.deleteSubscription();
+
+    // then
+    expect(spy).toHaveBeenCalledWith('myIntegrationId', 'mySubscriptionId', false);
   });
 });

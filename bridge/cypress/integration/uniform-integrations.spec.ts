@@ -23,6 +23,18 @@ describe('Integrations', () => {
     cy.get(uniformPage.SUBSCRIPTION_EXP_HEADER_LOC).last().should('have.text', 'Error events');
   });
 
+  it('should have disabled buttons for a subscription, when subscription id is not given', () => {
+    // given, when
+    cy.intercept('/api/uniform/registration', { fixture: 'registration-old-format.mock' });
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    const editButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionEditButton');
+    const deleteButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionDeleteButton');
+
+    // then
+    editButton.should('be.disabled');
+    deleteButton.should('be.disabled');
+  });
+
   it('should add a simple subscription', () => {
     // given, when
     cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
@@ -108,6 +120,47 @@ describe('Integrations', () => {
       'eq',
       '/project/sockshop/uniform/services/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscriptions/add'
     );
+  });
+
+  it('should delete a subscription', () => {
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
+      .first()
+      .find('dt-expandable-panel')
+      .byTestId('subscriptionDeleteButton')
+      .click();
+
+    // Check if confirmation dialog pops up
+    cy.byTestId('dialogWarningMessage').should(
+      'have.text',
+      'Deleting this subscription will affect all projects. Please be certain.'
+    );
+    cy.get('dt-confirmation-dialog-actions').should('exist');
+
+    // Check if it was removed from the list
+    cy.get('dt-confirmation-dialog-actions button').first().click();
+    cy.get(uniformPage.SUBSCRIPTION_DETAILS_LOC).should('have.length', 0);
+  });
+
+  it('should edit a subscription', () => {
+    // given
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
+      .first()
+      .find('dt-expandable-panel')
+      .byTestId('subscriptionEditButton')
+      .click();
+
+    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_TASK_ID).find('dt-select').focus().type('eval');
+    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type('fin');
+    cy.byTestId('edit-subscription-field-filterStageService')
+      .find('input')
+      .focus()
+      .type('St{enter}de{enter}Ser{enter}cart{enter}');
+    cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
+
+    // It should redirect to overview if edited successfully
+    cy.location('pathname').should('eq', '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297');
   });
 
   function addSecret(): void {

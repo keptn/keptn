@@ -6522,4 +6522,4 @@ const evaluationData = {
 };
 
 const evaluationsTop10: Trace = Trace.fromJSON(evaluationData);
-export { evaluationsTop10 as EvaluationsTop10 };
+export { evaluationsTop10 as EvaluationsTop10Mock };
