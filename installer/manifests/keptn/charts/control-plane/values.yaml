@@ -84,7 +84,7 @@ distributor:
       enabled: true
 
 shipyardController:
-  replicas: 1
+  replicas: 3
   image:
     repository: docker.io/keptn/shipyard-controller
     tag: ""
