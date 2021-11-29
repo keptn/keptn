@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.2](https://github.com/keptn/keptn/compare/0.11.1...0.11.2) (2021-11-29)
+
+
+### Bug Fixes
+
+* **bridge:** Fixed removal of sequences if project endpoint of bridge server responds before projects endpoint of shipyard ([#6183](https://github.com/keptn/keptn/issues/6183)) ([43bdc33](https://github.com/keptn/keptn/commit/43bdc3317beb7a169ec93fb9b8f386e1ecf2d871))
+
 ### [0.11.1](https://github.com/keptn/keptn/compare/0.11.0...0.11.1) (2021-11-25)
 
 
