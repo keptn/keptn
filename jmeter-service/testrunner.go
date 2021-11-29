@@ -109,25 +109,28 @@ func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, res
 
 func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf, resChan chan TestResult) {
 	var testStrategy = strings.ToLower(testInfo.TestStrategy)
+	var testStrategyWorkload *Workload
+	var err error
 	res := false
 
 	if testStrategy == "" {
 		logger.Info("No testStrategy specified therefore skipping further test execution and sending back success")
-	}
+		res = true
+	} else {
 
-	testStrategyWorkload, err := getWorkloadForStrategy(jmeterConf, testStrategy)
-	if err != nil {
-		logger.Errorf("Could not retrieve workload strategy: %v", err)
+		testStrategyWorkload, err = getWorkloadForStrategy(jmeterConf, testStrategy)
+		if err != nil {
+			logger.Errorf("Could not retrieve workload strategy: %v", err)
+		}
+		if testStrategyWorkload == nil {
+			logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
+		} else {
+			res, err = tr.runWorkload(testInfo, testStrategyWorkload)
+			if err != nil {
+				logger.Errorf("Could not run test workload: %v", err)
+			}
+		}
 	}
-	if testStrategyWorkload == nil {
-		logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
-	}
-
-	res, err = tr.runWorkload(testInfo, testStrategyWorkload)
-	if err != nil {
-		logger.Errorf("could not run test workload: %v", err)
-	}
-
 	resChan <- TestResult{res, err}
 }
 
@@ -229,11 +232,10 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	hostWithPort := fmt.Sprintf("%s:%s", serviceURL.Hostname(), derivePort(serviceURL))
 
 	var err error
-	retry.Retry(func() error {
+	err = retry.Retry(func() error {
 		if _, err = net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
 			return err
 		}
-
 		return nil
 	}, retry.DelayBetweenRetries(time.Second*5), retry.NumberOfRetries(3))
 	return err
