@@ -10,5 +10,23 @@
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,
   "stabilityDays": 7,
-  "timezone": "Europe/Vienna"
+  "timezone": "Europe/Vienna",
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "addLabels": ["javascript"]
+    },
+    {
+      "matchManagers": ["gomod"],
+      "addLabels": ["go"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"]
+    },
+    {
+      "matchManagers": ["docker"],
+      "addLabels": ["docker"]
+    }
+  ]
 }
