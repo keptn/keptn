@@ -427,6 +427,8 @@ spec:
               value: '/v1/event'
             - name: DISABLE_REGISTRATION
               value: "true"
+            - name: PUBSUB_GROUP
+              value: "shipyard-controller"
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
