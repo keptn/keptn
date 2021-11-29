@@ -6,6 +6,7 @@ const (
 	SequenceFinished       = "finished"
 	TimedOut               = "timedOut"
 	SequencePaused         = "paused"
+	SequenceAborted        = "aborted"
 )
 
 type GetSequenceStateParams struct {

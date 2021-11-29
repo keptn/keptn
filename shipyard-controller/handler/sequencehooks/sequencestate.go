@@ -149,6 +149,17 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 	smv.updateOverallSequenceState(*eventScope, models.SequenceFinished)
 }
 
+func (smv *SequenceStateMaterializedView) OnSequenceAborted(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.WithError(err).Errorf(eventScopeErrorMessage)
+		return
+	}
+	smv.updateOverallSequenceState(*eventScope, models.SequenceAborted)
+}
+
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()

@@ -85,6 +85,10 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 	})
 }
 
+func (e *EventDispatcher) OnSequenceAborted(event models.Event) {
+	e.cleanupQueueOfSequence(event)
+}
+
 func (e *EventDispatcher) OnSequenceFinished(event models.Event) {
 	e.cleanupQueueOfSequence(event)
 }

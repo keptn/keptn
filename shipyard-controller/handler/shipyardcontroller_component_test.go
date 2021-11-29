@@ -906,6 +906,9 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.Event) {}}
+	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
+
 	// insert the test data
 	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
 		Data: keptnv2.EventData{
@@ -946,7 +949,8 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	})
 
 	require.Nil(t, err)
-	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
+	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
+	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
 }
 
 func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
@@ -963,6 +967,9 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.Event) {}}
+	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
+
 	// insert the test data
 	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
 		Data: keptnv2.EventData{
@@ -983,7 +990,8 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	})
 
 	require.Nil(t, err)
-	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
+	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
+	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
 }
 
 func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testing.T) {
@@ -1000,6 +1008,9 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.Event) {}}
+	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
+
 	// insert the test data
 	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
 		Data: keptnv2.EventData{
@@ -1020,7 +1031,8 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	})
 
 	require.Nil(t, err)
-	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 1)
+	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
+	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
 }
 
 func Test_SequenceForUnavailableStage(t *testing.T) {

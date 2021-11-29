@@ -45,6 +45,10 @@ func (sc *shipyardController) AddSequenceResumedHook(hook sequencehooks.ISequenc
 	sc.sequenceResumedHooks = append(sc.sequenceResumedHooks, hook)
 }
 
+func (sc *shipyardController) AddSequenceAbortedHook(hook sequencehooks.ISequenceAbortedHook) {
+	sc.sequenceAbortedHooks = append(sc.sequenceAbortedHooks, hook)
+}
+
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
 	for _, hook := range sc.sequenceTriggeredHooks {
 		hook.OnSequenceTriggered(event)
@@ -84,6 +88,12 @@ func (sc *shipyardController) onSubSequenceFinished(event models.Event) {
 func (sc *shipyardController) onSequenceFinished(event models.Event) {
 	for _, hook := range sc.sequenceFinishedHooks {
 		hook.OnSequenceFinished(event)
+	}
+}
+
+func (sc *shipyardController) onSequenceAborted(event models.Event) {
+	for _, hook := range sc.sequenceAbortedHooks {
+		hook.OnSequenceAborted(event)
 	}
 }
 

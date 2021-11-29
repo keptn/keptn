@@ -43,6 +43,7 @@ type shipyardController struct {
 	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook
 	subSequenceFinishedHooks   []sequencehooks.ISubSequenceFinishedHook
 	sequenceFinishedHooks      []sequencehooks.ISequenceFinishedHook
+	sequenceAbortedHooks       []sequencehooks.ISequenceAbortedHook
 	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
 	sequencePausedHooks        []sequencehooks.ISequencePausedHook
 	sequenceResumedHooks       []sequencehooks.ISequenceResumedHook
@@ -384,14 +385,14 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 }
 
 func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, taskSequenceName string) error {
-	sc.onSequenceFinished(sequenceTriggeredEvent)
+	sc.onSequenceAborted(sequenceTriggeredEvent)
 	scope, err := models.NewEventScope(sequenceTriggeredEvent)
 	if err != nil {
 		return err
 	}
 
 	scope.Result = keptnv2.ResultPass
-	scope.Status = keptnv2.StatusUnknown // TODO: check which states should be set in case of cancellation
+	scope.Status = keptnv2.StatusAborted
 
 	return sc.completeTaskSequence(*scope, taskSequenceName, sequenceTriggeredEvent.ID)
 }
