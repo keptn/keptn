@@ -13,7 +13,7 @@ func Test_K8sDistributedLocker(t *testing.T) {
 		"apiVersion": "v1",
 		"kind":       "ConfigMap",
 		"metadata": map[string]interface{}{
-			"name":      "sc-locks",
+			"name":      "shipyard-controller-locks",
 			"namespace": "keptn",
 		},
 	}}

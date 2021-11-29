@@ -92,7 +92,7 @@ func GetK8sDistributedLockerInstance(client dynamic.Interface) *K8sDistributedLo
 				Group:    "",
 				Version:  "v1",
 				Resource: "configmaps",
-			}, "sc-locks", GetKeptnNamespace(),
+			}, "shipyard-controller-locks", GetKeptnNamespace(),
 		)
 		k8sDistributedLockerInstance = &K8sDistributedLocker{locker: locker}
 	})
