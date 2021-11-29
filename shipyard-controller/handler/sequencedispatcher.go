@@ -58,38 +58,38 @@ func NewSequenceDispatcher(
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	// try to dispatch the sequence immediately
-	if err := sd.dispatchSequence(queueItem); err != nil {
-		if err == ErrSequenceBlocked {
-			// if the sequence is currently blocked, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-				return err2
-			}
-		} else {
-			return err
-		}
-	}
-	return nil
+	//if err := sd.dispatchSequence(queueItem); err != nil {
+	//	if err == ErrSequenceBlocked {
+	//		// if the sequence is currently blocked, insert it into the queue
+	//		if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+	//			return err2
+	//		}
+	//	} else {
+	//		return err
+	//	}
+	//}
+	//return nil
 
 	// try to dispatch the sequence immediately
-	// lockID, err := sd.locker.Lock(sequenceDispatcherLockKey)
-	// if err == nil {
-	// 	defer func() {
-	// 		err := sd.locker.Unlock(lockID)
-	// 		if err != nil {
-	// 			log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
-	// 		}
-	// 	}()
-	// 	if err := sd.dispatchSequence(queueItem); err != nil {
-	// 		if errors.Is(err, ErrSequenceBlocked) {
-	// 			// if the sequence is currently blocked, insert it into the queue
-	// 			return sd.sequenceQueue.QueueSequence(queueItem)
-	// 		} else {
-	// 			return err
-	// 		}
-	// 	}
-	// 	return nil
-	// }
-	// return sd.sequenceQueue.QueueSequence(queueItem)
+	lockID, err := sd.locker.Lock(sequenceDispatcherLockKey)
+	if err == nil {
+		defer func() {
+			err := sd.locker.Unlock(lockID)
+			if err != nil {
+				log.Errorf("Could not release lock for SequenceDispatcher: %v", err)
+			}
+		}()
+		if err := sd.dispatchSequence(queueItem); err != nil {
+			if errors.Is(err, ErrSequenceBlocked) {
+				// if the sequence is currently blocked, insert it into the queue
+				return sd.sequenceQueue.QueueSequence(queueItem)
+			} else {
+				return err
+			}
+		}
+		return nil
+	}
+	return sd.sequenceQueue.QueueSequence(queueItem)
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
