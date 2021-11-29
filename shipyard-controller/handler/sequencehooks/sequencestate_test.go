@@ -938,3 +938,64 @@ func TestSequenceStateMaterializedView_OnSequencePaused(t *testing.T) {
 		})
 	}
 }
+
+func TestSequenceStateMaterializedView_OnSubSequenceFinished(t *testing.T) {
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name   string
+		fields SequenceStateMVTestFields
+		args   args
+	}{
+		{
+			name: "abort subsequence",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{
+							States: []models.SequenceState{
+								{
+									Name:           "my-sequence",
+									Service:        "my-service",
+									Project:        "my-project",
+									Shkeptncontext: "my-context",
+									State:          "triggered",
+									Stages: []models.SequenceStateStage{
+										{
+											Name:              "my-stage",
+											LatestEvent:       &models.SequenceStateEvent{},
+											LatestFailedEvent: &models.SequenceStateEvent{},
+										},
+									},
+								},
+							},
+						}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+						Status:  keptnv2.StatusAborted,
+					},
+					Shkeptncontext: "my-context",
+					Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
+			smv.OnSubSequenceFinished(tt.args.event)
+			require.Equal(t, "aborted", tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0].State.Stages[0].State)
+		})
+	}
+}
