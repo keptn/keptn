@@ -18,7 +18,7 @@ export class KtbVariableSelectorComponent {
   @Input() public selectionStart: number | null = null;
   @Input() public iconName: DtIconType = 'resetpassword';
   @Input() public label = '';
-  @Input() public data: SelectTreeNode[] = [];
+  @Input() public data: SelectTreeNode[] | undefined;
 
   @Input()
   set title(title: string) {

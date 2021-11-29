@@ -29,7 +29,7 @@ import { EventState } from '../../../../shared/models/event-state';
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
-  public eventPayload: Record<string, unknown> = {};
+  public eventPayload: Record<string, unknown> | undefined;
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
   public data$: Observable<{
@@ -204,6 +204,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
   private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
     if (this.isWebhookService && this.taskControl.value && this.taskSuffixControl.value) {
+      this.eventPayload = undefined;
       this.dataService
         .getIntersectedEvent(
           `${EventTypes.PREFIX}${this.taskControl.value}`,
@@ -213,7 +214,19 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
           services
         )
         .subscribe((event: Record<string, unknown>) => {
-          this.eventPayload = event;
+          this.eventPayload = Object.keys(event).length
+            ? event
+            : {
+                data: {
+                  project: undefined,
+                  service: undefined,
+                  stage: undefined,
+                },
+                id: undefined,
+                type: undefined,
+                time: undefined,
+                shkeptncontext: undefined,
+              };
         });
     }
   }

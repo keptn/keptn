@@ -31,18 +31,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     originY: 'center',
   };
   public _eventType?: string;
-  private defaultTrace = {
-    data: {
-      project: undefined,
-      service: undefined,
-      stage: undefined,
-    },
-    id: undefined,
-    type: undefined,
-    time: undefined,
-    shkeptncontext: undefined,
-  };
-  public eventDataSource: SelectTreeNode[] = this.setObject(this.defaultTrace);
+  public eventDataSource?: SelectTreeNode[];
 
   @Input()
   set eventType(eventType: string | undefined) {
@@ -81,11 +70,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   @Input()
   set eventPayload(event: Record<string, unknown> | undefined) {
-    if (event && Object.keys(event).length) {
-      this.eventDataSource = this.setObject(event);
-    } else {
-      this.eventDataSource = this.setObject(this.defaultTrace);
-    }
+    this.eventDataSource = event ? this.setObject(event) : undefined;
   }
 
   private setObject(data: Record<string, unknown>, path = '.event'): SelectTreeNode[] {

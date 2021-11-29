@@ -1290,7 +1290,7 @@ export class DataService {
       services
     )) as unknown as Record<string, unknown>[];
 
-    let result = objects[0];
+    let result = objects[0] ?? {};
     for (let i = 1; i < objects.length; ++i) {
       result = this.intersectObjects(result, objects[i]);
     }

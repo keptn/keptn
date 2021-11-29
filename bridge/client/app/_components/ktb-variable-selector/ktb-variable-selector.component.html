@@ -3,7 +3,8 @@
   variant="nested"
   ktbTreeListSelect
   [attr.aria-label]="label"
-  [data]="data"
+  [disabled]="!data"
+  [data]="data || []"
   [options]="options"
   (selected)="setVariable($event)"
 >

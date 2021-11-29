@@ -184,6 +184,32 @@ describe('Test /intersectEvents', () => {
     });
   });
 
+  it('should return empty object if there are no events for intersection', async () => {
+    const projectName = 'sockshop';
+    axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}`).reply(200, ProjectResponseIntersect);
+    axiosMock
+      .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_TRIGGERED}`, {
+        params: {
+          filter: `data.project:${projectName} AND id:1`,
+          excludeInvalidated: 'true',
+        },
+      })
+      .reply(200, {
+        events: [],
+      });
+    const response = await request(global.app)
+      .post(`/api/intersectEvents`)
+      .send({
+        projectName: 'sockshop',
+        stages: ['dev'],
+        services: ['carts'],
+        event: 'sh.keptn.event.deployment',
+        eventSuffix: 'triggered',
+      });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({});
+  });
+
   it('should send error if projectName is missing', async () => {
     const response = await request(global.app).post(`/api/intersectEvents`).send({
       event: 'sh.keptn.event.deployment',
