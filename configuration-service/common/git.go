@@ -51,7 +51,7 @@ type K8sCredentialReader struct{}
 func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get git credentials from client")
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	secretName := fmt.Sprintf("git-credentials-%s", project)
@@ -62,7 +62,7 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to get git credentials from client")
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	// secret found -> unmarshal it
@@ -198,7 +198,7 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	projectConfigPath := config.ConfigDir + "/" + project
 	branches, err := g.GetBranches(project)
 	if err != nil {
-		return fmt.Errorf("failed to set upstream and push for project '%s'", project)
+		return fmt.Errorf(setUpstreamFail, project)
 	}
 
 	defaultBranch, err := g.GetDefaultBranch(project)
@@ -215,7 +215,7 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	if err != nil {
 		// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 		if !isNoRemoteHeadFoundError(err) {
-			return fmt.Errorf("failed to set upstream and push for project '%s'", project)
+			return fmt.Errorf(setUpstreamFail, project)
 		}
 	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
@@ -235,7 +235,7 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		if err != nil {
 			// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 			if !isNoRemoteHeadFoundError(err) {
-				return fmt.Errorf("failed to set upstream and push for project '%s'", project)
+				return fmt.Errorf(setUpstreamFail, project)
 			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
@@ -507,7 +507,7 @@ func ServiceExists(project string, stage string, service string, disableUpstream
 func GetCredentials(project string) (*common_models.GitCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get git credentials from client")
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	secretName := fmt.Sprintf("git-credentials-%s", project)
@@ -518,7 +518,7 @@ func GetCredentials(project string) (*common_models.GitCredentials, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to get git credentials from client")
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	// secret found -> unmarshal it
