@@ -1,11 +1,10 @@
 package go_tests
 
 import (
+	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -23,22 +22,11 @@ spec:
                 deploymentstrategy: "direct"
             - name: "release"
 
-    - name: "staging"
+    - name: "prod"
       sequences:
         - name: "delivery"
           triggeredOn:
             - event: "dev.delivery.finished"
-          tasks:
-            - name: "deployment"
-              properties:
-                deploymentstrategy: "direct"
-            - name: "release"
-
-    - name: "production"
-      sequences:
-        - name: "delivery"
-          triggeredOn:
-            - event: "staging.delivery.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -64,12 +52,12 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
 	require.Nil(t, err)
 
-	t.Log("Adding jmeter config in staging")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
+	t.Log("Adding jmeter config in prod")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "prod", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
 	require.Nil(t, err)
 
-	t.Log("Adding load test resources for jmeter in staging")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
+	t.Log("Adding load test resources for jmeter in prod")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "prod", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
 	require.Nil(t, err)
 
 	t.Logf("Trigger delivery before backup of helloservice:v0.1.0")
@@ -80,12 +68,8 @@ func Test_BackupRestore(t *testing.T) {
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Logf("Verify Direct delivery before backup of %s in stage staging", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	require.Nil(t, err)
-
-	t.Logf("Verify Direct delivery before backup of %s in stage production", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	t.Logf("Verify Direct delivery before backup of %s in stage prod", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
 	//backup Configuration Service data
@@ -166,12 +150,8 @@ func Test_BackupRestore(t *testing.T) {
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Logf("Verify Direct delivery after restore of %s in stage staging", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	require.Nil(t, err)
-
-	t.Logf("Verify Direct delivery after restore of %s in stage production", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	t.Logf("Verify Direct delivery after restore of %s in stage prod", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
 }
