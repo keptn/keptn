@@ -139,6 +139,7 @@ func (k *Keptn) Start() error {
 	ctx := getGracefulContext()
 	err := k.eventReceiver.StartReceiver(ctx, k.gotEvent)
 	if k.gracefulShutdown {
+		//this is gonna change
 		val := ctx.Value(gracefulShutdownKey)
 		if val != nil {
 
