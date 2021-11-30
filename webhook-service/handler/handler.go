@@ -3,12 +3,13 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
 	logger "github.com/sirupsen/logrus"
-	"strings"
 )
 
 const webhookConfigFileName = "webhook/webhook.yaml"
@@ -174,9 +175,9 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 		}
 	} else {
 		// if sendFinished is set to false, we need to send a .started event for each webhook request to be executed
-		for range webhook.Requests {
+		for _, req := range webhook.Requests {
 			if err := keptnHandler.SendStartedEvent(event); err != nil {
-				return sdkError(fmt.Sprintf("could not send .started event: %s", err.Error()), err)
+				return sdkError(fmt.Sprintf("could not send .started event: request '%s': %s", req, err.Error()), err)
 			}
 		}
 	}
