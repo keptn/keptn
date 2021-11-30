@@ -24,6 +24,11 @@ const eventbroker = "EVENTBROKER"
 const datastore = "MONGODB_DATASTORE"
 const configurationServiceURL = "configuration-service:8080"
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var GracefulShutdownKey = gracefulShutdownKeyType{}
+
 func getDatastoreURL() string {
 	if os.Getenv(datastore) != "" {
 		return "http://" + os.Getenv(datastore)

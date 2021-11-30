@@ -3150,7 +3150,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 
 func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 	wg := &sync.WaitGroup{}
-	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg))
 	incomingEvent := cloudevents.NewEvent()
 	incomingEvent.SetID("my-id")
 	incomingEvent.SetSource("my-source")

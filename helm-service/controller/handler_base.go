@@ -22,6 +22,11 @@ type HandlerBase struct {
 	configServiceURL string
 }
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var GracefulShutdownKey = gracefulShutdownKeyType{}
+
 // NewHandlerBase creates a new HandlerBase
 func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor, configServiceURL string) *HandlerBase {
 
@@ -30,6 +35,10 @@ func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor,
 		helmExecutor:     helmExecutor,
 		configServiceURL: configServiceURL,
 	}
+}
+
+func (h *HandlerBase) HandleEvent(_ce cloudevents.Event) {
+	panic("implement me")
 }
 
 func (h *HandlerBase) getKeptnHandler() *keptnv2.Keptn {

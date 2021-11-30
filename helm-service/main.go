@@ -6,9 +6,13 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+
 	logger "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
@@ -97,21 +101,22 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
-		go deploymentHandler.HandleEvent(event)
+		go gracefulMiddleware(ctx, event, deploymentHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
-		go releaseHandler.HandleEvent(event)
+		go gracefulMiddleware(ctx, event, releaseHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName) {
 		rollbackHandler := createRollbackHandler(configServiceURL, mesh, keptnHandler)
-		go rollbackHandler.HandleEvent(event)
+		go gracefulMiddleware(ctx, event, rollbackHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
-		go actionHandler.HandleEvent(event)
+		go gracefulMiddleware(ctx, event, actionHandler)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
-		go deleteHandler.HandleEvent(event)
+		go gracefulMiddleware(ctx, event, deleteHandler)
 	} else {
 		logger.Error("Received unexpected keptn event")
+
 	}
 
 	return nil
@@ -184,8 +189,7 @@ func _main(args []string, env envConfig) int {
 		log.Println("Warning: helm-service is running without admin RBAC rights. See #3511 for details.")
 	}
 
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
@@ -216,4 +220,31 @@ func hasAdminRights() (bool, error) {
 		return false, err
 	}
 	return resp.Status.Allowed, nil
+}
+
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), controller.GracefulShutdownKey, wg)))
+	go func() {
+		<-ch
+		log.Fatal("Container termination triggered, starting graceful shutdown")
+		wg.Wait()
+		cancel()
+	}()
+
+	return ctx
+}
+
+func gracefulMiddleware(ctx context.Context, ce cloudevents.Event, handler controller.Handler) {
+	val := ctx.Value(controller.GracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
+			handler.HandleEvent(ce)
+			wg.Done()
+		}
+	}
 }

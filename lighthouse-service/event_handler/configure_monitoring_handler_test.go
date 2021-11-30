@@ -85,7 +85,7 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYet(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	wg := &sync.WaitGroup{}
-	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -110,7 +110,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYet(t *testi
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYetAndCreateFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	wg := &sync.WaitGroup{}
-	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -144,7 +144,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapDoesntExistYetAndCreate
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExists(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	wg := &sync.WaitGroup{}
-	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",
@@ -171,7 +171,7 @@ func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExists(t *testin
 func TestConfigureMonitoringHandler_HandleEvent_ConfigMapAlreadyExistsUpdateFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	wg := &sync.WaitGroup{}
-	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), "Wg", wg))
+	ctx := cloudevents.WithEncodingStructured(context.WithValue(context.Background(), GracefulShutdownKey, wg))
 	configureMonitoringData := &keptnevents.ConfigureMonitoringEventData{
 		Project: "my-project",
 		Service: "my-service",

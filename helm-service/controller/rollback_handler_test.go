@@ -13,6 +13,7 @@ import (
 )
 
 func TestCreateRollbackHandler(t *testing.T) {
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -26,7 +27,6 @@ func TestCreateRollbackHandler(t *testing.T) {
 }
 
 func TestHandleRollbackEvent(t *testing.T) {
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
@@ -12,7 +13,7 @@ type Handler interface {
 	getKeptnHandler() *keptnv2.Keptn
 	getHelmExecutor() helm.HelmExecutor
 	getConfigServiceURL() string
-
+	HandleEvent(ce cloudevents.Event)
 	getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error)
 	getUserChart(e keptnv2.EventData) (*chart.Chart, string, error)
 	existsGeneratedChart(e keptnv2.EventData) (bool, error)

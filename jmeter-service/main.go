@@ -8,6 +8,9 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 // JMeterServiceName is the name of the JMeter Keptn Service
@@ -37,8 +40,7 @@ func main() {
 		}
 	}
 
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
 	if err != nil {
 		logger.Fatalf("Failed to create cloud event client: %v", err)
@@ -56,4 +58,28 @@ func main() {
 	eventHandler := &EventHandler{testRunner: NewTestRunner(eventSender)}
 
 	logger.Fatal(c.StartReceiver(ctx, eventHandler.handleEvent))
+
+}
+
+//getGracefulContext returns a context with cancel and a waitgroup to sync handlers before shutdown
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), gracefulShutdownKey, wg))
+	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx = context.WithValue(ctx, testRunnerQuit, ch)
+	go func() {
+		<-ch
+		// In case of SIGINT or SIGTERM Jmeter needs to stop and send an error event
+		// a quit channel is preferred to ctx.Done to avoid context being closed
+		// too early by the cloudevents StartReceiver
+		close(ch)
+		logger.Fatal("Container termination triggered, starting graceful shutdown")
+		wg.Wait()
+		logger.Fatal("cancelling context")
+		cancel()
+	}()
+	return ctx
 }
