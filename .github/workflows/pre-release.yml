@@ -133,7 +133,7 @@ jobs:
         env:
           SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
         run: |
-          if [[ -z "$SEMVER_TYPE" ]]; then
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
               --skip.commit \
               --skip.tag \
@@ -271,7 +271,7 @@ jobs:
         env:
           SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
         run: |
-          if [[ -z "$SEMVER_TYPE" ]]; then
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
               --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
               -i "${{ env.RELEASE_NOTES_FILE }}" \
@@ -303,7 +303,7 @@ jobs:
         run: |
           echo "🚀 Creating release package now..."
 
-          if [[ -z "$SEMVER_TYPE" ]]; then
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
               --release-as "$SEMVER_TYPE" \
               --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
