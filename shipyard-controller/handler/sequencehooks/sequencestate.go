@@ -49,6 +49,12 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		State:          models.SequenceTriggeredState,
 		Stages:         []models.SequenceStateStage{},
 	}
+	if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
+		getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
+		if err := keptnv2.Decode(event.Data, getActionTriggeredData); err == nil {
+			state.ProblemTitle = getActionTriggeredData.Problem.ProblemTitle
+		}
+	}
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
 		if err == db.ErrStateAlreadyExists {
 			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)

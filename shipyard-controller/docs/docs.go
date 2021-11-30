@@ -15,7 +15,7 @@ var doc = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
-        "description": "{{.Description}}",
+        "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
             "name": "Keptn Team",
@@ -1042,7 +1042,7 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "The keptn context",
+                        "description": "Comma separated list of keptnContext IDs",
                         "name": "keptnContext",
                         "in": "query"
                     }
@@ -1392,7 +1392,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Subscription"
+                                "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                             }
                         }
                     },
@@ -1447,7 +1447,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                         }
                     }
                 ],
@@ -1514,7 +1514,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                         }
                     },
                     "400": {
@@ -1575,7 +1575,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                         }
                     }
                 ],
@@ -1663,6 +1663,37 @@ var doc = `{
         }
     },
     "definitions": {
+        "github.com_keptn_go-utils_pkg_api_models.Subscription": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "$ref": "#/definitions/models.SubscriptionFilter"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github.com_keptn_keptn_shipyard-controller_models.Subscription": {
+            "type": "object",
+            "properties": {
+                "event": {
+                    "type": "string"
+                },
+                "filter": {
+                    "$ref": "#/definitions/models.EventSubscriptionFilter"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateEvaluationParams": {
             "type": "object",
             "properties": {
@@ -1783,11 +1814,62 @@ var doc = `{
                 }
             }
         },
+        "models.Event": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "description": "contenttype",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "data\nRequired: true"
+                },
+                "extensions": {
+                    "description": "extensions"
+                },
+                "id": {
+                    "description": "id",
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source\nRequired: true",
+                    "type": "string"
+                },
+                "specversion": {
+                    "description": "specversion",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "time",
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "description": "triggeredid",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
         "models.EventContext": {
             "type": "object",
             "properties": {
+                "eventId": {
+                    "description": "ID of the event",
+                    "type": "string"
+                },
                 "keptnContext": {
-                    "description": "keptn context\nRequired: true",
+                    "description": "Keptn Context ID of the event",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "Time of the event",
                     "type": "string"
                 }
             }
@@ -1836,7 +1918,7 @@ var doc = `{
                     "description": "events",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.KeptnContextExtendedCE"
+                        "$ref": "#/definitions/models.Event"
                     }
                 },
                 "nextPageKey": {
@@ -1848,7 +1930,7 @@ var doc = `{
                     "type": "number"
                 },
                 "totalCount": {
-                    "description": "Total number of resources",
+                    "description": "Total number of events",
                     "type": "number"
                 }
             }
@@ -2037,62 +2119,13 @@ var doc = `{
                 },
                 "subscription": {
                     "description": "Deprecated: for backwards compatibility Subscription is populated\nbut new code shall use Subscriptions",
-                    "$ref": "#/definitions/models.Subscription"
+                    "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.Subscription"
                 },
                 "subscriptions": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.EventSubscription"
                     }
-                }
-            }
-        },
-        "models.KeptnContextExtendedCE": {
-            "type": "object",
-            "properties": {
-                "contenttype": {
-                    "description": "contenttype",
-                    "type": "string"
-                },
-                "data": {
-                    "description": "data\nRequired: true",
-                    "type": "object"
-                },
-                "extensions": {
-                    "description": "extensions",
-                    "type": "object"
-                },
-                "id": {
-                    "description": "id",
-                    "type": "string"
-                },
-                "shkeptncontext": {
-                    "description": "shkeptncontext",
-                    "type": "string"
-                },
-                "shkeptnspecversion": {
-                    "description": "shkeptnspecversion",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "source\nRequired: true",
-                    "type": "string"
-                },
-                "specversion": {
-                    "description": "specversion",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "time\nFormat: date-time",
-                    "type": "string"
-                },
-                "triggeredid": {
-                    "description": "triggeredid",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "type\nRequired: true",
-                    "type": "string"
                 }
             }
         },
@@ -2210,6 +2243,9 @@ var doc = `{
             "type": "object",
             "properties": {
                 "name": {
+                    "type": "string"
+                },
+                "problemTitle": {
                     "type": "string"
                 },
                 "project": {
@@ -2330,16 +2366,16 @@ var doc = `{
                 }
             }
         },
-        "models.Subscription": {
+        "models.SubscriptionFilter": {
             "type": "object",
             "properties": {
-                "event": {
+                "project": {
                     "type": "string"
                 },
-                "filter": {
-                    "$ref": "#/definitions/models.EventSubscriptionFilter"
+                "service": {
+                    "type": "string"
                 },
-                "id": {
+                "stage": {
                     "type": "string"
                 }
             }
@@ -2411,6 +2447,13 @@ func (s *s) ReadDoc() string {
 		"marshal": func(v interface{}) string {
 			a, _ := json.Marshal(v)
 			return string(a)
+		},
+		"escape": func(v interface{}) string {
+			// escape tabs
+			str := strings.Replace(v.(string), "\t", "\\t", -1)
+			// replace " with \", and if that results in \\", replace that with \\\"
+			str = strings.Replace(str, "\"", "\\\"", -1)
+			return strings.Replace(str, "\\\\\"", "\\\\\\\"", -1)
 		},
 	}).Parse(doc)
 	if err != nil {
