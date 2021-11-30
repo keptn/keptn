@@ -25,7 +25,7 @@
       "addLabels": ["github_actions"]
     },
     {
-      "matchManagers": ["docker"],
+      "matchManagers": ["dockerfile"],
       "addLabels": ["docker"]
     }
   ]
