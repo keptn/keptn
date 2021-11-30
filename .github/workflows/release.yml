@@ -132,7 +132,7 @@ jobs:
         env:
           SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
         run: |
-          if [[ -z "$SEMVER_TYPE" ]]; then
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
               --skip.commit \
               --skip.tag \
@@ -273,7 +273,7 @@ jobs:
           # Reference: https://github.com/conventional-changelog/standard-version/issues/203#issuecomment-872415140
           git tag -l | grep -vE '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' | xargs git tag -d
 
-          if [[ -z "$SEMVER_TYPE" ]]; then
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
               -i "${{ env.RELEASE_NOTES_FILE }}" \
               --skip.commit \
@@ -303,7 +303,7 @@ jobs:
         run: |
           echo "🚀 Creating release package now..."
 
-          if [[ -z "$SEMVER_TYPE" ]]; then
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
               --release-as "$SEMVER_TYPE"
           else
