@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -41,8 +42,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	}
 
 	keptn.Start()
-	ctx := getGracefulContext()
-	eventReceiver.NewEvent(ctx, newTestTaskTriggeredEvent())
+	eventReceiver.NewEvent(context.Background(), newTestTaskTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
 		return len(eventSender.SendEventCalls()) == 2
@@ -89,8 +89,7 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 	}
 
 	keptn.Start()
-	ctx := getGracefulContext()
-	eventReceiver.NewEvent(ctx, newTestTaskTriggeredEvent())
+	eventReceiver.NewEvent(context.Background(), newTestTaskTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
 		fmt.Println(len(eventSender.SendEventCalls()))
@@ -130,8 +129,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	}
 
 	keptn.Start()
-	ctx := getGracefulContext()
-	eventReceiver.NewEvent(ctx, newTestTaskBadTriggeredEvent())
+	eventReceiver.NewEvent(context.Background(), newTestTaskBadTriggeredEvent())
 
 	require.Eventuallyf(t, func() bool {
 		fmt.Println(len(eventSender.SendEventCalls()))

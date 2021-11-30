@@ -38,7 +38,7 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 
 func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
 	testReceiver := f.Keptn.eventReceiver.(*TestReceiver)
-	testReceiver.NewEvent(context.Background(), event)
+	testReceiver.NewEvent(context.WithValue(context.Background(), gracefulShutdownKey, &nopWG{}), event)
 }
 
 func (f *FakeKeptn) GetEventSender() *TestSender {
@@ -73,6 +73,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 			taskRegistry:           NewTasksMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
+			gracefulShutdown:       false,
 		},
 	}
 	return fakeKeptn
@@ -130,6 +131,9 @@ func (t *TestReceiver) StartReceiver(ctx context.Context, fn interface{}) error 
 }
 
 func (t *TestReceiver) NewEvent(ctx context.Context, e cloudevents.Event) {
+	if ctx.Value(gracefulShutdownKey) == nil {
+		ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
+	}
 	t.receiverFn.(func(context.Context, event.Event))(ctx, e)
 }
 

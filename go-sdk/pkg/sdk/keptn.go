@@ -64,6 +64,26 @@ type gracefulShutdownKeyType struct{}
 
 var gracefulShutdownKey = gracefulShutdownKeyType{}
 
+type wgInterface interface {
+	Add(delta int)
+	Done()
+	Wait()
+}
+
+type nopWG struct {
+	// --
+}
+
+func (w *nopWG) Add(delta int) {
+	// --
+}
+func (w *nopWG) Done() {
+	// --
+}
+func (w *nopWG) Wait() {
+	// --
+}
+
 type Error struct {
 	StatusType keptnv2.StatusType
 	ResultType keptnv2.ResultType
@@ -111,7 +131,7 @@ type Keptn struct {
 	syncProcessing         bool
 	automaticEventResponse bool
 	gracefulShutdown       bool
-	recievingEvent         interface{}
+	receivingEvent         interface{}
 }
 
 // NewKeptn creates a new Keptn
@@ -136,11 +156,9 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) Start() error {
-	ctx := getGracefulContext()
+	ctx := getContext(k.gracefulShutdown)
 	err := k.eventReceiver.StartReceiver(ctx, k.gotEvent)
-	if k.gracefulShutdown {
-		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
-	}
+	ctx.Value(gracefulShutdownKey).(wgInterface).Wait()
 	return err
 }
 
@@ -179,10 +197,10 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 		log.Errorf("event with event type %s is no valid keptn task event type", event.Type())
 		return
 	}
-	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
+	ctx.Value(gracefulShutdownKey).(wgInterface).Add(1)
 	k.runEventTaskAction(func() {
 		{
-			defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+			defer ctx.Value(gracefulShutdownKey).(wgInterface).Done()
 			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
@@ -396,12 +414,15 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	return &c, nil
 }
 
-// getGracefulContext returns a context with cancel and a wait group to sync before shutdown
-func getGracefulContext() context.Context {
-
+func getContext(graceful bool) context.Context {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	wg := &sync.WaitGroup{}
+	var wg wgInterface
+	if graceful {
+		wg = &sync.WaitGroup{}
+	} else {
+		wg = &nopWG{}
+	}
 	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), gracefulShutdownKey, wg)))
 
 	go func() {
