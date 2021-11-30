@@ -27,6 +27,7 @@ export class SelectTreeFlatNode implements SelectTreeNode {
   level!: number;
   path?: string;
   expandable!: boolean;
+  expanded = false;
 }
 
 export type TreeListSelectOptions = {
@@ -163,7 +164,12 @@ export class KtbTreeListSelectComponent {
 
   public handleClick(row: SelectTreeFlatNode): void {
     if (row.expandable) {
-      this.treeControl.expand(row);
+      if (row.expanded) {
+        this.treeControl.collapse(row);
+      } else {
+        this.treeControl.expand(row);
+      }
+      row.expanded = !row.expanded;
     } else {
       this.selected.emit(row.path);
     }

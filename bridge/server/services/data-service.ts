@@ -50,6 +50,7 @@ export class DataService {
   private apiService: ApiService;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
   private readonly MAX_TRACE_PAGE_SIZE = 50;
+  private readonly MAX_PAGE_SIZE = 100;
 
   constructor(apiUrl: string, apiToken: string) {
     this.apiService = new ApiService(apiUrl, apiToken);
@@ -124,12 +125,11 @@ export class DataService {
   }
 
   private async getLatestSequenceForServices(projectName: string, services: Service[]): Promise<Sequence[]> {
-    const chunkSize = 100;
     let sequences: Sequence[] = [];
 
-    for (let i = 0; i < services.length; i += chunkSize) {
+    for (let i = 0; i < services.length; i += this.MAX_PAGE_SIZE) {
       const keptnContexts: string[] = [];
-      const maxLength = Math.min(i + chunkSize, services.length);
+      const maxLength = Math.min(i + this.MAX_PAGE_SIZE, services.length);
 
       for (let y = i; y < maxLength; ++y) {
         const latestServiceEvent = services[y].getLatestEvent();
@@ -141,7 +141,7 @@ export class DataService {
       if (keptnContexts.length) {
         const response = await this.apiService.getSequences(
           projectName,
-          chunkSize,
+          this.MAX_PAGE_SIZE,
           undefined,
           undefined,
           undefined,
@@ -205,12 +205,11 @@ export class DataService {
     source?: KeptnService,
     resultType?: ResultTypes
   ): Promise<Trace[]> {
-    const chunkSize = 100; // because we have a pageSize limit of 100 and also the URL length has to be limited
     let traces: Trace[] = [];
 
-    for (let i = 0; i < services.length; i += chunkSize) {
+    for (let i = 0; i < services.length; i += this.MAX_PAGE_SIZE) {
       const eventIds: string[] = [];
-      const maxLength = Math.min(i + chunkSize, services.length);
+      const maxLength = Math.min(i + this.MAX_PAGE_SIZE, services.length);
       for (let y = i; y < maxLength; ++y) {
         const latestServiceEvent = getServiceEvent(services[y]);
         if (latestServiceEvent) {
@@ -219,11 +218,7 @@ export class DataService {
         }
       }
       if (eventIds.length) {
-        const response = await this.apiService.getTracesOfMultipleServices(
-          projectName,
-          eventType,
-          `id:${eventIds.join(',')}`
-        );
+        const response = await this.apiService.getTracesOfMultipleServices(projectName, eventType, eventIds.join(','));
         if (resultType || source) {
           await this.checkAndSetEventsWithResult(response.data.events, resultType, source);
         }
@@ -1278,5 +1273,157 @@ export class DataService {
       serviceRemediationInformation.stages.push({ name: stage, remediations: stageRemediations[stage], config });
     }
     return serviceRemediationInformation;
+  }
+
+  public async intersectEvents(
+    event: string,
+    eventSuffix: EventState | '>',
+    projectName: string,
+    stages: string[],
+    services: string[]
+  ): Promise<Record<string, unknown>> {
+    const objects = (await this.getMultipleLatestTracesOfMultipleServices(
+      event,
+      eventSuffix,
+      projectName,
+      stages,
+      services
+    )) as unknown as Record<string, unknown>[];
+
+    let result = objects[0] ?? {};
+    for (let i = 1; i < objects.length; ++i) {
+      result = this.intersectObjects(result, objects[i]);
+    }
+
+    return result;
+  }
+
+  public intersectObjects(object1: Record<string, unknown>, object2: Record<string, unknown>): Record<string, unknown> {
+    return Object.assign(
+      {},
+      ...Object.keys(object1).map((k) => {
+        if (!(k in object2)) {
+          return {};
+        }
+        const child1 = object1[k];
+        const child2 = object2[k];
+        if (child1 instanceof Array && child2 instanceof Array) {
+          const temp = this.intersectArrays(child1, child2);
+          return temp.length ? { [k]: temp } : {};
+        } else {
+          return this.validateAndIntersectObjects(child1, child2, k);
+        }
+      })
+    );
+  }
+
+  private validateAndIntersectObjects(child1: unknown, child2: unknown, k: string): Record<string, unknown> {
+    const isOneArray = child1 instanceof Array || child2 instanceof Array; // without this condition, it could be the case that child1 is an Array and child2 is object and typeof array is object
+    if (isOneArray) {
+      // type mismatch
+      return {};
+    } else if (this.isObject(child1) && this.isObject(child2)) {
+      const temp = this.intersectObjects(child1, child2);
+      return Object.keys(temp).length ? { [k]: temp } : {};
+    } else if (!this.isObject(child1) && !this.isObject(child2)) {
+      // string, number, null, ... is accepted
+      return { [k]: child1 };
+    }
+    return {};
+  }
+
+  private isObject(element: unknown): element is Record<string, unknown> {
+    return element !== null && typeof element === 'object';
+  }
+
+  private intersectArrays(array1: Array<unknown>, array2: Array<unknown>): Array<unknown> {
+    const maxLength = Math.min(array1.length, array2.length);
+    const result = [];
+    for (let i = 0; i < maxLength; ++i) {
+      const child1 = array1[i];
+      const child2 = array2[i];
+      if (child1 instanceof Array && child2 instanceof Array) {
+        const array = this.intersectArrays(child1, child2);
+        if (array.length) {
+          result.push(array);
+        }
+      } else if (this.isObject(child1) && this.isObject(child2)) {
+        const obj = this.intersectObjects(child1, child2);
+        if (Object.keys(obj).length) {
+          result.push(obj);
+        }
+      } else if (!this.isObject(child1) && !this.isObject(child2)) {
+        result.push(child1);
+      }
+    }
+    return result;
+  }
+
+  private async getMultipleLatestTracesOfMultipleServices(
+    event: string,
+    eventSuffix: EventState | '>',
+    projectName: string,
+    stages: string[],
+    services: string[]
+  ): Promise<Trace[]> {
+    const suffixes =
+      eventSuffix === '>' ? [EventState.TRIGGERED, EventState.STARTED, EventState.FINISHED] : [eventSuffix];
+    const project = await this.getPlainProject(projectName);
+    const filteredStages = stages.length ? stages : project.stages.map((s) => s.stageName);
+    const filteredServices = services.length ? services : project.stages[0].services.map((s) => s.serviceName);
+    const eventIds = this.getLatestServiceEventIds(project, filteredStages, filteredServices, event, suffixes);
+    const traces: Trace[] = [];
+
+    for (const suffix of suffixes) {
+      const array = eventIds[suffix];
+      for (let i = 0; i < array.length; i += this.MAX_PAGE_SIZE) {
+        const chunkIds = array.slice(i, i + this.MAX_PAGE_SIZE);
+        const response = await this.apiService.getTracesOfMultipleServices(
+          projectName,
+          `${event}.${suffix}` as EventTypes,
+          chunkIds.join(',')
+        );
+        traces.push(...response.data.events);
+      }
+    }
+    return traces;
+  }
+
+  private getLatestServiceEventIds(
+    project: Project,
+    stageFilter: string[],
+    serviceFilter: string[],
+    event: string,
+    suffixes: EventState[]
+  ): {
+    [EventState.TRIGGERED]: string[];
+    [EventState.STARTED]: string[];
+    [EventState.FINISHED]: string[];
+  } {
+    const eventIds: {
+      [EventState.TRIGGERED]: string[];
+      [EventState.STARTED]: string[];
+      [EventState.FINISHED]: string[];
+    } = {
+      triggered: [],
+      started: [],
+      finished: [],
+    };
+
+    for (const stage of project.stages) {
+      if (stageFilter.includes(stage.stageName)) {
+        for (const service of stage.services) {
+          if (serviceFilter.includes(service.serviceName)) {
+            for (const suffix of suffixes) {
+              const id = service.lastEventTypes[`${event}.${suffix}`]?.eventId;
+              if (id) {
+                eventIds[suffix].push(id);
+              }
+            }
+          }
+        }
+      }
+    }
+    return eventIds;
   }
 }

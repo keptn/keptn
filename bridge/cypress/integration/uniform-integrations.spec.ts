@@ -82,22 +82,26 @@ describe('Integrations', () => {
     cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type('fin');
     cy.byTestId('edit-webhook-field-method').find('dt-select').focus().type('GET');
 
-    // URL: insert text and add secret
+    // URL: insert text, add secret and add event variable
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID).find('input').focus().type('https://example.com?secret=');
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID).find('.dt-form-field-suffix button').click();
-    addSecret();
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_URL).find('button').click();
+    selectFirstItemOfVariableSelector();
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_URL).find('button').click();
+    selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID)
       .find('input')
-      .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}');
+      .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}{{.event.data.project}}');
 
-    // Payload: insert text and add secret
+    // Payload: insert text, add secret and add event variable
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').focus().type("{id: '123456789', secret: ");
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('.dt-form-field-suffix button').click();
-    addSecret();
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_PAYLOAD).find('button').click();
+    selectFirstItemOfVariableSelector();
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_PAYLOAD).find('button').click();
+    selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').focus().type('}');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID)
       .find('textarea')
-      .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}}");
+      .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}{{.event.data.project}}}");
 
     cy.byTestId('edit-webhook-field-proxy').find('input').focus().type('https://proxy.com');
 
@@ -108,11 +112,13 @@ describe('Integrations', () => {
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).should('exist');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_NAME_ID).find('input').focus().type('x-token');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('input').focus().type('Bearer: ');
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('.dt-form-field-suffix button').click();
-    addSecret();
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_HEADER).find('button').click();
+    selectFirstItemOfVariableSelector();
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_HEADER).find('button').click();
+    selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID)
       .find('input')
-      .should('have.value', 'Bearer: {{.secret.SecretA.key1}}');
+      .should('have.value', 'Bearer: {{.secret.SecretA.key1}}{{.event.data.project}}');
 
     cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
     // It should redirect after successfully sending the subscription
@@ -163,7 +169,7 @@ describe('Integrations', () => {
     cy.location('pathname').should('eq', '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297');
   });
 
-  function addSecret(): void {
+  function selectFirstItemOfVariableSelector(): void {
     cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').first().find('button').click();
     cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').eq(1).click();
   }

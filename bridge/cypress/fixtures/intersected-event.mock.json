@@ -1,0 +1,9 @@
+{
+  "data": {
+    "project": "dynatrace",
+    "service": "items",
+    "stage": "quality-gates"
+  },
+  "id": "id",
+  "keptnContext": "keptnContext"
+}

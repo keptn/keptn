@@ -177,7 +177,7 @@ export class ApiService {
   ): Promise<AxiosResponse<EventResult>> {
     const sourceString = source ? `AND source:${source} ` : '';
     const params = {
-      filter: `data.project:${projectName} ${sourceString}AND ${eventIds}`,
+      filter: `data.project:${projectName} ${sourceString}AND id:${eventIds}`,
       excludeInvalidated: 'true',
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, { params });

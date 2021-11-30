@@ -382,5 +382,17 @@ export class ApiServiceMock extends ApiService {
       stages: [],
     });
   }
+
+  public getIntersectedEvent(
+    event: string,
+    eventSuffix: string,
+    projectName: string,
+    stages: string[],
+    services: string[]
+  ): Observable<Record<string, unknown>> {
+    return of({
+      data: {},
+    });
+  }
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */

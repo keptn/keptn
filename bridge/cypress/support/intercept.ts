@@ -40,6 +40,7 @@ export function interceptIntegrations(): void {
   cy.intercept('/api/uniform/registration/webhook-service/config', { body: true });
   cy.intercept('/api/project/sockshop/tasks', { fixture: 'tasks.mock' });
   cy.intercept('/api/secrets/scope/keptn-webhook-service', { fixture: 'secrets.mock' });
+  cy.intercept('/api/intersectEvents', { fixture: 'intersected-event.mock' });
   cy.intercept(
     'DELETE',
     '/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription/0e021b71-1533-4cfe-875a-b756aa6107ba?isWebhookService=false',

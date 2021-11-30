@@ -460,4 +460,20 @@ export class ApiService {
       { params }
     );
   }
+
+  public getIntersectedEvent(
+    event: string,
+    eventSuffix: string,
+    projectName: string,
+    stages: string[],
+    services: string[]
+  ): Observable<Record<string, unknown>> {
+    return this.http.post<Record<string, unknown>>(`${this._baseUrl}/intersectEvents`, {
+      event,
+      eventSuffix,
+      projectName,
+      stages,
+      services,
+    });
+  }
 }

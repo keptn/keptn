@@ -19,15 +19,15 @@ describe('KtbWebhookSettingsComponent', () => {
       keys: [
         {
           name: 'key1',
-          path: 'SecretA.key1',
+          path: '.secret.SecretA.key1',
         },
         {
           name: 'key2',
-          path: 'SecretA.key2',
+          path: '.secret.SecretA.key2',
         },
         {
           name: 'key3',
-          path: 'SecretA.key3',
+          path: '.secret.SecretA.key3',
         },
       ],
     },
@@ -36,15 +36,15 @@ describe('KtbWebhookSettingsComponent', () => {
       keys: [
         {
           name: 'key1',
-          path: 'SecretB.key1',
+          path: '.secret.SecretB.key1',
         },
         {
           name: 'key2',
-          path: 'SecretB.key2',
+          path: '.secret.SecretB.key2',
         },
         {
           name: 'key3',
-          path: 'SecretB.key3',
+          path: '.secret.SecretB.key3',
         },
       ],
     },
@@ -52,6 +52,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      declarations: [],
       imports: [AppModule, HttpClientTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
@@ -122,9 +123,9 @@ describe('KtbWebhookSettingsComponent', () => {
     // when
     let headerRows = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form');
     const lengthBefore = headerRows.length;
-    const buttons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form button');
+    const buttons = fixture.nativeElement.querySelectorAll('div[formarrayname="header"] form>div>button');
 
-    buttons[1].click();
+    buttons[0].click();
     fixture.detectChanges();
 
     // then
@@ -366,6 +367,87 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(component.getFormControl('sendFinished').value).toEqual('false');
+  });
+
+  it('should correctly set event payload', () => {
+    component.eventPayload = {
+      data: {
+        myCustomData: [
+          [
+            {
+              myCustomKey: {
+                myCustomElement: undefined,
+              },
+            },
+            {
+              myCustomKey2: {
+                myCustomElement2: undefined,
+              },
+            },
+          ],
+        ],
+        project: undefined,
+      },
+      id: undefined,
+      keptnContext: undefined,
+    };
+    expect(component.eventDataSource).toEqual([
+      {
+        keys: [
+          {
+            keys: [
+              {
+                keys: [
+                  {
+                    keys: [
+                      {
+                        keys: [
+                          {
+                            name: 'myCustomElement',
+                            path: '(index (index .event.data.myCustomData 0) 0).myCustomKey.myCustomElement',
+                          },
+                        ],
+                        name: 'myCustomKey',
+                      },
+                    ],
+                    name: '[0]',
+                  },
+                  {
+                    keys: [
+                      {
+                        keys: [
+                          {
+                            name: 'myCustomElement2',
+                            path: '(index (index .event.data.myCustomData 0) 1).myCustomKey2.myCustomElement2',
+                          },
+                        ],
+                        name: 'myCustomKey2',
+                      },
+                    ],
+                    name: '[1]',
+                  },
+                ],
+                name: '[0]',
+              },
+            ],
+            name: 'myCustomData',
+          },
+          {
+            name: 'project',
+            path: '.event.data.project',
+          },
+        ],
+        name: 'data',
+      },
+      {
+        name: 'id',
+        path: '.event.id',
+      },
+      {
+        name: 'keptnContext',
+        path: '.event.keptnContext',
+      },
+    ]);
   });
 
   function getAddHeaderButton(): HTMLElement {

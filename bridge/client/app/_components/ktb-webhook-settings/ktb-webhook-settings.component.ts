@@ -30,7 +30,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
     pinnable: true,
     originY: 'center',
   };
-  public _eventType: string | undefined;
+  public _eventType?: string;
+  public eventDataSource?: SelectTreeNode[];
 
   @Input()
   set eventType(eventType: string | undefined) {
@@ -65,6 +66,44 @@ export class KtbWebhookSettingsComponent implements OnInit {
     if (secrets) {
       this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
     }
+  }
+
+  @Input()
+  set eventPayload(event: Record<string, unknown> | undefined) {
+    this.eventDataSource = event ? this.setObject(event) : undefined;
+  }
+
+  private setObject(data: Record<string, unknown>, path = '.event'): SelectTreeNode[] {
+    const result: SelectTreeNode[] = [];
+    for (const key of Object.keys(data)) {
+      const newItem = this.generateNewTreeNode(data[key], key, `${path}.${key}`);
+      result.push(newItem);
+    }
+    return result;
+  }
+
+  private generateNewTreeNode(property: unknown, itemName: string, itemPath: string): SelectTreeNode {
+    const newItem: SelectTreeNode = {
+      name: itemName,
+    };
+    if (property instanceof Array) {
+      newItem.keys = this.setArray(property, itemPath);
+    } else if (property && typeof property === 'object') {
+      newItem.keys = this.setObject(property as Record<string, unknown>, itemPath);
+    } else {
+      newItem.path = itemPath;
+    }
+    return newItem;
+  }
+
+  private setArray(array: Array<unknown>, path: string): SelectTreeNode[] {
+    const result: SelectTreeNode[] = [];
+    const data = array;
+    for (let i = 0; i < data.length; ++i) {
+      const newItem = this.generateNewTreeNode(data[i], `[${i}]`, `(index ${path} ${i})`);
+      result.push(newItem);
+    }
+    return result;
   }
 
   @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -134,7 +173,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     const scrt: SelectTreeNode = { name: secret.name };
     if (secret.keys) {
       scrt.keys = secret.keys.map((key: string) => {
-        return { name: key, path: `${secret.name}.${key}` };
+        return { name: key, path: `.secret.${secret.name}.${key}` };
       });
       scrt.keys.sort((a, b) => a.name.localeCompare(b.name));
     }

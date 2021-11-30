@@ -44,6 +44,20 @@ class Trace extends ts {
     return ts.traceMapperGlobal(traces);
   }
 
+  static get defaultTrace(): Partial<Trace> {
+    return {
+      data: {
+        project: undefined,
+        service: undefined,
+        stage: undefined,
+      },
+      id: undefined,
+      type: undefined,
+      time: undefined,
+      shkeptncontext: undefined,
+    };
+  }
+
   get project(): string | undefined {
     return this.data.project;
   }

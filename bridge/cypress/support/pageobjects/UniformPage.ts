@@ -15,5 +15,11 @@ class UniformPage {
   EDIT_SUBSCRIPTION_FIELD_TASK_ID = 'edit-subscription-field-task';
   EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID = 'edit-subscription-field-suffix';
   EDIT_WEBHOOK_FIELD_URL_ID = 'edit-webhook-field-url';
+  EDIT_WEBHOOK_SECRET_SELECTOR_URL = 'secret-url';
+  EDIT_WEBHOOK_EVENT_SELECTOR_URL = 'event-url';
+  EDIT_WEBHOOK_SECRET_SELECTOR_PAYLOAD = 'secret-payload';
+  EDIT_WEBHOOK_EVENT_SELECTOR_PAYLOAD = 'event-payload';
+  EDIT_WEBHOOK_SECRET_SELECTOR_HEADER = 'secret-header';
+  EDIT_WEBHOOK_EVENT_SELECTOR_HEADER = 'event-header';
 }
 export default UniformPage;

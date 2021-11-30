@@ -732,4 +732,14 @@ export class DataService {
       })
     );
   }
+
+  public getIntersectedEvent(
+    event: string,
+    eventSuffix: string,
+    projectName: string,
+    stages: string[],
+    services: string[]
+  ): Observable<Record<string, unknown>> {
+    return this.apiService.getIntersectedEvent(event, eventSuffix, projectName, stages, services);
+  }
 }

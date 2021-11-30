@@ -2126,6 +2126,146 @@ const approvalEvaluationResponse = {
   totalCount: 1,
 };
 
+const defaultDeploymentTriggeredEvent = {
+  data: {
+    configurationChange: {
+      values: {
+        image: 'docker.io/keptnexamples/carts:0.12.3',
+      },
+    },
+    project: 'sockshop',
+    service: 'carts',
+    stage: 'dev',
+  },
+  id: '8b65ab52-f1bb-4ecf-8559-48854acfa60d',
+  source: 'helm-service',
+  specversion: '1.0',
+  time: '2021-10-13T10:46:41.861Z',
+  type: 'sh.keptn.event.deployment.triggered',
+  shkeptncontext: keptnContext,
+  shkeptnspecversion: '0.2.3',
+  triggeredid: '89265987-90b9-4554-8d13-98deb7b44f9d',
+};
+
+const defaultDeploymentStartedEvent = {
+  ...defaultDeploymentTriggeredEvent,
+  type: 'sh.keptn.event.deployment.started',
+};
+
+const intersectDeploymentTriggeredResponse = {
+  events: [
+    {
+      ...defaultDeploymentTriggeredEvent,
+      data: {
+        ...defaultDeploymentTriggeredEvent.data,
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'dev',
+      },
+    },
+    {
+      ...defaultDeploymentTriggeredEvent,
+      data: {
+        ...defaultDeploymentTriggeredEvent.data,
+        project: 'sockshop',
+        service: 'carts-db',
+        stage: 'dev',
+      },
+    },
+    {
+      ...defaultDeploymentTriggeredEvent,
+      data: {
+        ...defaultDeploymentTriggeredEvent.data,
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'staging',
+      },
+    },
+    {
+      ...defaultDeploymentTriggeredEvent,
+      data: {
+        ...defaultDeploymentTriggeredEvent.data,
+        project: 'sockshop',
+        service: 'carts-db',
+        stage: 'staging',
+      },
+    },
+  ],
+};
+
+const intersectDeploymentStartedResponse = {
+  events: [
+    {
+      ...defaultDeploymentStartedEvent,
+      data: {
+        ...defaultDeploymentStartedEvent.data,
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'dev',
+      },
+    },
+    {
+      ...defaultDeploymentStartedEvent,
+      data: {
+        ...defaultDeploymentStartedEvent.data,
+        project: 'sockshop',
+        service: 'carts-db',
+        stage: 'dev',
+      },
+    },
+    {
+      ...defaultDeploymentStartedEvent,
+      data: {
+        ...defaultDeploymentStartedEvent.data,
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'staging',
+      },
+    },
+    {
+      ...defaultDeploymentStartedEvent,
+      data: {
+        ...defaultDeploymentStartedEvent.data,
+        project: 'sockshop',
+        service: 'carts-db',
+        stage: 'staging',
+      },
+    },
+  ],
+};
+
+const intersectDeploymentFinishedResponse = {
+  events: [
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        ...defaultDeploymentFinishedTrace.data,
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'dev',
+      },
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        ...defaultDeploymentFinishedTrace.data,
+        project: 'sockshop',
+        service: 'carts-db',
+        stage: 'dev',
+      },
+    },
+    {
+      ...defaultDeploymentFinishedTrace,
+      data: {
+        ...defaultDeploymentFinishedTrace.data,
+        project: 'sockshop',
+        service: 'carts',
+        stage: 'staging',
+      },
+    },
+  ],
+};
+
 export { deploymentTracesResponseMock as DeploymentTracesResponseMock };
 export { deploymentTracesWithPendingApprovalResponseMock as DeploymentTracesWithPendingApprovalResponseMock };
 export { evaluationFinishedProductionResponse as EvaluationFinishedProductionResponse };
@@ -2137,3 +2277,6 @@ export { approvalEvaluationResponse as ApprovalEvaluationResponse };
 export { defaultDeploymentFinishedTrace as DefaultDeploymentFinishedTrace };
 export { defaultDeploymentData as DefaultDeploymentData };
 export { defaultEvaluationFinishedTrace as DefaultEvaluationFinishedTrace };
+export { intersectDeploymentTriggeredResponse as IntersectDeploymentTriggeredResponse };
+export { intersectDeploymentStartedResponse as IntersectDeploymentStartedResponse };
+export { intersectDeploymentFinishedResponse as IntersectDeploymentFinishedResponse };

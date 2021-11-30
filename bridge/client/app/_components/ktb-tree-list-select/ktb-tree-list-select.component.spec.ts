@@ -26,6 +26,7 @@ describe('KtbTreeListSelectComponent', () => {
     level: 1,
     path: testSecretPath,
     expandable: false,
+    expanded: false,
   };
 
   beforeEach(async () => {
