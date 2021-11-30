@@ -104,7 +104,7 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	resp, err = ApiGETRequest("/controlPlane/v1/event/triggered/"+keptnv2.GetTriggeredEventType("task1"), 3)
+	resp, err = ApiGETRequest("/controlPlane/v1/event/triggered/"+keptnv2.GetTriggeredEventType("task1") + "?project=" + projectName, 3)
 	require.Nil(t, err)
 
 	openTriggeredEvents := &OpenTriggeredEventsResponse{}
@@ -118,7 +118,7 @@ func Test_SequenceControl_Abort(t *testing.T) {
 		Result: keptnv2.ResultPass,
 	}, source)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceFinished})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
 
 	require.Nil(t, err)
 }
@@ -178,7 +178,7 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceFinished})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
 }
 
 func Test_SequenceControl_PauseAndResume(t *testing.T) {

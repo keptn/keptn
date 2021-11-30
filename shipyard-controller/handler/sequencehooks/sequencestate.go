@@ -149,6 +149,17 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 	smv.updateOverallSequenceState(*eventScope, models.SequenceFinished)
 }
 
+func (smv *SequenceStateMaterializedView) OnSequenceAborted(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.WithError(err).Errorf(eventScopeErrorMessage)
+		return
+	}
+	smv.updateOverallSequenceState(*eventScope, models.SequenceAborted)
+}
+
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
@@ -311,7 +322,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		if stage.Name == eventScope.Stage {
 			stageFound = true
 			state.Stages[index].LatestEvent = newLastEvent
-			state.Stages[index].State = getStageState(eventScope.Stage, newLastEvent.Type)
+			state.Stages[index].State = getStageState(*eventScope)
 			if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
 				state.Stages[index].LatestFailedEvent = newLastEvent
 			}
@@ -321,7 +332,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		newStage := models.SequenceStateStage{
 			Name:        eventScope.Stage,
 			LatestEvent: newLastEvent,
-			State:       getStageState(eventScope.Stage, newLastEvent.Type),
+			State:       getStageState(*eventScope),
 		}
 		if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
 			newStage.LatestFailedEvent = newLastEvent
@@ -331,17 +342,11 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 	return state, nil
 }
 
-func getStageState(stageName, eventType string) string {
+func getStageState(eventScope models.EventScope) string {
 	stageState := models.SequenceTriggeredState
 	// check if this event was a <stage>.<sequence>.finished event - if yes, mark the stage as completed
-	if keptnv2.IsSequenceEventType(eventType) {
-		eventStageName, _, _, err := keptnv2.ParseSequenceEventType(eventType)
-		if err != nil {
-			return stageState
-		}
-		if stageName == eventStageName {
-			stageState = models.SequenceFinished
-		}
+	if keptnv2.IsSequenceEventType(eventScope.EventType) {
+		stageState = string(eventScope.Status)
 	}
 	return stageState
 }

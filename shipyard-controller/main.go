@@ -190,6 +190,7 @@ func main() {
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceAbortedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequencePausedHook(eventDispatcher)

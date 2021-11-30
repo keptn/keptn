@@ -38,6 +38,10 @@ type ISubSequenceFinishedHook interface {
 type ISequenceFinishedHook interface {
 	OnSequenceFinished(event models.Event)
 }
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequenceaborted.go . ISequenceAbortedHook
+type ISequenceAbortedHook interface {
+	OnSequenceAborted(event models.Event)
+}
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetimeout.go . ISequenceTimeoutHook
 type ISequenceTimeoutHook interface {
