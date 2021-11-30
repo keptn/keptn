@@ -41,7 +41,10 @@ func getCloudEvent(data interface{}, ceType string, shkeptncontext string, trigg
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
 	event.SetExtension("triggeredid", triggeredID)
-	event.SetData(cloudevents.ApplicationJSON, data)
+	err := event.SetData(cloudevents.ApplicationJSON, data)
+	if err != nil {
+		logger.Errorf("Could not set event data: %v", err)
+	}
 
 	return &event
 }

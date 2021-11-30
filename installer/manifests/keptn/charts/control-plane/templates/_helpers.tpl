@@ -62,6 +62,10 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{- define "control-plane.gracePeriod" -}}
+      terminationGracePeriodSeconds: 50
+{{- end }}
+
 {{- define "control-plane.dist.livenessProbe" -}}
 livenessProbe:
   httpGet:
@@ -79,6 +83,14 @@ readinessProbe:
   initialDelaySeconds: {{.initialDelaySeconds | default 5}}
   periodSeconds: 5
 {{- end }}
+
+{{- define "control-plane.dist.prestop" -}}
+lifecycle:
+   preStop:
+      exec:
+       command: ["/bin/sleep", "20"]
+{{- end }}
+
 
 {{- define "control-plane.dist.common.env.vars" -}}
 - name: VERSION

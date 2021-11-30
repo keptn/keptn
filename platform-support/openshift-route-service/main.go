@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
@@ -23,6 +26,11 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
 
+// Opaque key type used for graceful shutdown context value
+type gracefulShutdownKeyType struct{}
+
+var gracefulShutdownKey = gracefulShutdownKeyType{}
+
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -32,8 +40,7 @@ func main() {
 }
 
 func _main(args []string, env envConfig) int {
-	ctx := context.Background()
-	ctx = cloudevents.WithEncodingStructured(ctx)
+	ctx := getGracefulContext()
 
 	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
 	if err != nil {
@@ -66,9 +73,14 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
 	}
-
+	val := ctx.Value(gracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
+		}
+	}
 	go func() {
-		err := createRoutes(data)
+		err := createRoutes(ctx, data)
 		if err != nil {
 			logger.Error(err.Error())
 		}
@@ -76,7 +88,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func createRoutes(data *keptnv2.ProjectCreateFinishedEventData) error {
+func createRoutes(ctx context.Context, data *keptnv2.ProjectCreateFinishedEventData) error {
+	defer func() {
+		val := ctx.Value(gracefulShutdownKey)
+		if val == nil {
+			return
+		}
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Done()
+		}
+	}()
 	shipyard := keptn.Shipyard{}
 	decodedStr, err := base64.StdEncoding.DecodeString(data.CreatedProject.Shipyard)
 	if err != nil {
@@ -130,4 +151,22 @@ func getEnableMeshCommandArgs(project string, stage string) []string {
 		"-n",
 		project + "-" + stage,
 	}
+}
+
+// getGracefulContext stores a waitgroup into context to sync before shutdown
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), gracefulShutdownKey, wg)))
+
+	go func() {
+		<-ch
+		log.Fatal("Container termination triggered, waiting for graceful shutdown")
+		wg.Wait()
+		cancel()
+	}()
+
+	return ctx
 }

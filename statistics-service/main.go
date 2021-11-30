@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 
@@ -47,6 +51,9 @@ func main() {
 	_ = controller.GetStatisticsBucketInstance()
 
 	router := gin.Default()
+	/// setting up middleware to handle graceful shutdown
+	wg := &sync.WaitGroup{}
+	router.Use(controller.GracefulShutdownMiddleware(wg))
 
 	if os.Getenv("GIN_MODE") == "release" {
 		// disable GIN request logging in release mode
@@ -64,5 +71,31 @@ func main() {
 	apiHealth := router.Group("")
 	apiHealth.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
-	router.Run()
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Unable to start service: %s", err.Error())
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown: ", err)
+	}
+
+	log.Println("Server exiting")
 }

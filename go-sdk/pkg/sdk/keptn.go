@@ -139,7 +139,14 @@ func (k *Keptn) Start() error {
 	ctx := getGracefulContext()
 	err := k.eventReceiver.StartReceiver(ctx, k.gotEvent)
 	if k.gracefulShutdown {
-		ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Wait()
+		//this is gonna change
+		val := ctx.Value(gracefulShutdownKey)
+		if val != nil {
+
+			if wg, ok := val.(*sync.WaitGroup); ok {
+				wg.Wait()
+			}
+		}
 	}
 	return err
 }
@@ -179,10 +186,28 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 		log.Errorf("event with event type %s is no valid keptn task event type", event.Type())
 		return
 	}
-	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
+
+	var val interface{} = nil
+	if k.gracefulShutdown {
+		val = ctx.Value(gracefulShutdownKey)
+	}
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
+		}
+	}
+
 	k.runEventTaskAction(func() {
 		{
-			defer ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Done()
+			defer func() {
+				if val == nil {
+					return
+				}
+				if wg, ok := val.(*sync.WaitGroup); ok {
+					wg.Done()
+				}
+			}()
+
 			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
