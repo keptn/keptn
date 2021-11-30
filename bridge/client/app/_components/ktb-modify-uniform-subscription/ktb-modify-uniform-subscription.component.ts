@@ -19,6 +19,7 @@ import { NotificationType } from '../../_models/notification';
 import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 import { EventState } from '../../../../shared/models/event-state';
+import { Trace } from '../../_models/trace';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -214,19 +215,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
           services
         )
         .subscribe((event: Record<string, unknown>) => {
-          this.eventPayload = Object.keys(event).length
-            ? event
-            : {
-                data: {
-                  project: undefined,
-                  service: undefined,
-                  stage: undefined,
-                },
-                id: undefined,
-                type: undefined,
-                time: undefined,
-                shkeptncontext: undefined,
-              };
+          this.eventPayload = Object.keys(event).length ? event : Trace.defaultTrace;
         });
     }
   }
