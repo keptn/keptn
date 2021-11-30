@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/common/retry"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,7 +22,12 @@ type TestRunner struct {
 	eventSender *keptnv2.HTTPEventSender
 }
 
-const errMsgSendFinishedEvent = "Error sending '.test.finished' event for %v"
+type TestResult struct {
+	res bool
+	err error
+}
+
+const errMsgSendFinishedEvent = "Could not send '.test.finished' event for %v %s"
 
 // NewTestRunner creates a new TestRunner
 func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
@@ -29,11 +36,8 @@ func NewTestRunner(eventSender *keptnv2.HTTPEventSender) *TestRunner {
 
 // RunTests downloads the JMeter configuration, eventually run a basic health check
 // and executes the Jmeter test
-func (tr *TestRunner) RunTests(testInfo TestInfo) error {
-	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
-		logger.WithError(err).Error("Unable to send test '.started' event")
-		return err
-	}
+func (tr *TestRunner) RunTests(ctx context.Context, testInfo TestInfo) error {
+
 	testStartedAt := time.Now()
 
 	jmeterConfig, err := getJMeterConf(testInfo)
@@ -41,51 +45,93 @@ func (tr *TestRunner) RunTests(testInfo TestInfo) error {
 		return err
 	}
 
+	if err := tr.sendTestsStartedEvent(testInfo); err != nil {
+		logger.Errorf("Could not send test '.started' event: %v", err)
+		return err
+	}
+
 	if err := tr.runHealthCheck(testInfo, testStartedAt, jmeterConfig); err != nil {
 		return err
 	}
 
-	res, err := tr.runTests(testInfo, jmeterConfig)
-	if err != nil {
-		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, err.Error()); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+	val := ctx.Value(gracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Add(1)
 		}
 	}
-	msg := fmt.Sprintf("Tests for %s with status = %s. %v", testInfo.TestStrategy, strconv.FormatBool(res), testInfo)
-	if !res {
-		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
-		}
-	} else {
-		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
-		}
-	}
+
+	resChan := make(chan TestResult, 1)
+	go tr.runTests(testInfo, jmeterConfig, resChan)
+	go tr.sendTestResult(ctx, testInfo, resChan, testStartedAt)
+
 	return nil
 }
 
-func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf) (bool, error) {
+func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, resChan chan TestResult, testStartedAt time.Time) {
+
+	defer func() {
+		val := ctx.Value(gracefulShutdownKey)
+		if val == nil {
+			return
+		}
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Done()
+		}
+	}()
+
+	select {
+	case result := <-resChan:
+		logger.Info("Sending result ", testInfo, result.res)
+		if result.err != nil {
+			if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, result.err.Error()); err != nil {
+				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
+			}
+		}
+		msg := fmt.Sprintf("Tests for %s with status = %s. %v", testInfo.TestStrategy, strconv.FormatBool(result.res), testInfo)
+		if !result.res {
+			if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
+				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
+			}
+		} else {
+			if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultPass); err != nil {
+				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
+			}
+		}
+	case <-ctx.Value(testRunnerQuit).(chan os.Signal): /// this avoids to answer to context.Done from cloud event lib
+		logger.Errorf("Terminated, sending test finished event %v", ctx.Err())
+		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, "received a SIGTERM/SIGINT, jmeter terminated before the end of the test"); err != nil {
+			logger.Errorf("Could not send test finished event: %v.%s", err, testInfo.String())
+		}
+
+	}
+}
+
+func (tr *TestRunner) runTests(testInfo TestInfo, jmeterConf *JMeterConf, resChan chan TestResult) {
 	var testStrategy = strings.ToLower(testInfo.TestStrategy)
+	var testStrategyWorkload *Workload
+	var err error
+	res := false
 
 	if testStrategy == "" {
 		logger.Info("No testStrategy specified therefore skipping further test execution and sending back success")
-		return true, nil
-	}
+		res = true
+	} else {
 
-	testStrategyWorkload, err := getWorkloadForStrategy(jmeterConf, testStrategy)
-	if err != nil {
-		return false, err
+		testStrategyWorkload, err = getWorkloadForStrategy(jmeterConf, testStrategy)
+		if err != nil {
+			logger.Errorf("Could not retrieve workload strategy: %v", err)
+		}
+		if testStrategyWorkload == nil {
+			logger.Errorf("No workload definition found for testStrategy %s", testStrategy)
+		} else {
+			res, err = tr.runWorkload(testInfo, testStrategyWorkload)
+			if err != nil {
+				logger.Errorf("Could not run test workload: %v", err)
+			}
+		}
 	}
-	if testStrategyWorkload == nil {
-		return false, fmt.Errorf("No workload definition found for testStrategy %s", testStrategy)
-	}
-
-	res, err := tr.runWorkload(testInfo, testStrategyWorkload)
-	if err != nil {
-		return false, fmt.Errorf("could not run test workload: %w", err)
-	}
-
-	return res, nil
+	resChan <- TestResult{res, err}
 }
 
 func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time, jmeterConf *JMeterConf) error {
@@ -101,7 +147,7 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", testInfo.Service, err.Error())
 		logger.Error(msg)
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
 		return nil
 	}
@@ -110,14 +156,14 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 		logger.Error(msg)
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, msg); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
 		return nil
 	}
 	if !res {
 		msg := fmt.Sprintf("Tests for %s with status = %s. %v", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo)
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
-			logger.WithError(err).Errorf(errMsgSendFinishedEvent, testInfo)
+			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
 		return nil
 	}
@@ -186,11 +232,10 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	hostWithPort := fmt.Sprintf("%s:%s", serviceURL.Hostname(), derivePort(serviceURL))
 
 	var err error
-	retry.Retry(func() error {
+	err = retry.Retry(func() error {
 		if _, err = net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
 			return err
 		}
-
 		return nil
 	}, retry.DelayBetweenRetries(time.Second*5), retry.NumberOfRetries(3))
 	return err

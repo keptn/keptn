@@ -12,7 +12,6 @@ import (
 )
 
 func TestHandleReleaseTriggeredEvent_WhenDeploymentStrategyDirect_ThenNoActionRequired(t *testing.T) {
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")

@@ -141,3 +141,5 @@ ingress:
     []
 
 logLevel: info
+
+gracePeriod: 40
