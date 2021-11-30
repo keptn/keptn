@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.5.0
-	github.com/keptn/go-utils v0.11.0
+	github.com/keptn/go-utils v0.11.1-0.20211130082457-73b3de6b424d
 	github.com/keptn/keptn/go-sdk v0.0.0-20211102091047-cb9394f33dee
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
