@@ -55,6 +55,7 @@ func Generate(outputDir string) {
 	md.Bullet().Link("Service", "#service")
 	md.Bullet().Link("Approval", "#approval")
 	md.Bullet().Link("Deployment", "#deployment")
+	md.Bullet().Link("Rollback", "#rollback")
 	md.Bullet().Link("Test", "#test")
 	md.Bullet().Link("Evaluation", "#evaluation")
 	md.Bullet().Link("Release", "#release")
@@ -146,6 +147,11 @@ func Generate(outputDir string) {
 	createSection(md, "Deployment Started", keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName), deploymentStartedEventData)
 	createSection(md, "Deployment Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.DeploymentTaskName), deploymentStatusChangedEventData)
 	createSection(md, "Deployment Finished", keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), deploymentFinishedEventData)
+
+	createSectionTitle(md, "Rollback")
+	createSection(md, "Rollback Triggered", keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName), rollbackTriggeredEventData)
+	createSection(md, "Rollback Started", keptnv2.GetStartedEventType(keptnv2.RollbackTaskName), rollbackStartedEventData)
+	createSection(md, "Rollback Finished", keptnv2.GetFinishedEventType(keptnv2.RollbackTaskName), rollbackFinishedEventData)
 
 	createSectionTitle(md, "Test")
 	createSection(md, "Test Triggered", keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), testTriggeredEventData)
