@@ -160,7 +160,12 @@ async function init(): Promise<Express> {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", "'unsafe-eval'", "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='"],
+        'script-src': [
+          "'self'",
+          "'unsafe-eval'",
+          "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
+          `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
+        ],
         'upgrade-insecure-requests': null,
       },
     })
