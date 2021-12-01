@@ -312,8 +312,8 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.11.0 h1:cwr9BDkDQcsURwj9pkkTzTs4M2HDqlgv1mrllPfysxY=
-github.com/keptn/go-utils v0.11.0/go.mod h1:wOOwrQxPrKNzEzP7xK58MLikUuQXi/HPvKlOmuS5qMk=
+github.com/keptn/go-utils v0.11.1-0.20211201121710-08c82f03f59f h1:URZnLT5KXvOiIX/qJMXWtwOi6SJO5rqUqNBdBCKpjE0=
+github.com/keptn/go-utils v0.11.1-0.20211201121710-08c82f03f59f/go.mod h1:wOOwrQxPrKNzEzP7xK58MLikUuQXi/HPvKlOmuS5qMk=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
