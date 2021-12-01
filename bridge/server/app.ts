@@ -189,6 +189,7 @@ async function init(): Promise<Express> {
   });
 
   // error handler
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err: Error | AxiosError, req: Request, res: Response, _next: NextFunction) => {
     const status: number = handleError(err, req, res, authType);
     res.status(status).send(err.message);
@@ -322,7 +323,9 @@ function handleError(err: any, req: Request, res: Response, authType: string): n
   }
 
   if (isAxiosError(err)) {
-    console.error(`Error for ${err.request.method} ${err.request.path}: ${err.message}`);
+    const method = (err.request || err.config).method;
+    const url = err.request?.path ?? err.config.url;
+    console.error(`Error for ${method} ${url}: ${err.message}`);
   } else {
     console.error(err);
   }
