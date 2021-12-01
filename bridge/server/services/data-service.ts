@@ -1152,6 +1152,7 @@ export class DataService {
 
         deployment.stages.push({
           name: stage.name,
+          state: stage.state,
           lastTimeUpdated: (lastTimeUpdated ? new Date(lastTimeUpdated) : new Date()).toISOString(),
           openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
           remediationConfig: stageRemediationInformation?.config,

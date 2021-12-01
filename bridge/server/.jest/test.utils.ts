@@ -30,7 +30,8 @@ export class TestUtils {
           service: 'carts',
           stage: 'production',
           keptnContext: '35383737-3630-4639-b037-353138323631',
-          pageSize: '1',
+          pageSize: '50',
+          type: `sh.keptn.event.production.remediation.triggered`
         },
       })
       .reply(200, RemediationTraceResponse);

@@ -6,7 +6,8 @@
       [warning]="sequence.isFinished() && sequence.isWarning()"
       [success]="sequence.isSuccessful()"
       [highlight]="sequence.hasPendingApproval()"
-      [selected]="_selectedEvent == sequence"
+      [aborted]="sequence.isAborted()"
+      [selected]="_selectedEvent === sequence"
       [attr.uitestid]="'keptn-root-events-list-' + sequence.shkeptncontext"
       *ngIf="sequence"
     >

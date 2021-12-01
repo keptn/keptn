@@ -1,3 +1,4 @@
+@import '../../../variables';
 @import '~@dynatrace/barista-components/style/main';
 
 :host ::ng-deep {
@@ -11,7 +12,7 @@
       fill: $error-color;
     }
     &.highlight {
-      fill: $blue-400;
+      fill: $approval-color;
     }
   }
 }

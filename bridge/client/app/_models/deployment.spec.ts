@@ -19,6 +19,7 @@ import {
   SubSequencesWarningMock,
   UpdatedDeploymentMock,
 } from '../_services/_mockData/deployments.mock';
+import { SequenceState } from '../../../shared/models/sequence';
 
 describe('Deployment', () => {
   it('should correctly create new class', () => {
@@ -35,6 +36,16 @@ describe('Deployment', () => {
     deployment.update(newDeployment);
 
     expect(deployment).toEqual(expectedDeployment);
+  });
+
+  it('should not be finished', () => {
+    const deployment = Deployment.fromJSON(ExpectedDeploymentMock);
+    expect(deployment.isFinished()).toBe(true);
+  });
+
+  it('should not be finished', () => {
+    const deployment = Deployment.fromJSON(ServiceDeploymentWithApprovalMock);
+    expect(deployment.isFinished()).toBe(false);
   });
 
   it('should assign subSequences', () => {
@@ -136,6 +147,17 @@ describe('Deployment', () => {
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesWarningMock;
     expect(stageDeployment.isWarning()).toBe(true);
+  });
+
+  it('should not be aborted', () => {
+    const stageDeployment = getStageDeployment();
+    stageDeployment.state = SequenceState.ABORTED;
+    expect(stageDeployment.isAborted()).toBe(true);
+  });
+
+  it('should not be aborted', () => {
+    const stageDeployment = getStageDeployment();
+    expect(stageDeployment.isAborted()).toBe(false);
   });
 
   function getStageDeployment(): StageDeployment {

@@ -54,11 +54,21 @@
 
   &.ktb-stage-badge-highlight {
     .dt-tag {
-      border-color: $blue-400;
+      border-color: $approval-color;
     }
     .timeline-item:hover,
     .focused {
-      background-color: $blue-400;
+      background-color: $approval-color;
+    }
+  }
+
+  &.ktb-stage-badge-aborted {
+    .dt-tag {
+      border-color: $aborted-color;
+    }
+    .timeline-item:hover,
+    .focused {
+      background-color: $aborted-color;
     }
   }
 }
