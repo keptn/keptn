@@ -50,9 +50,9 @@ spec:
                  key: mongodb-user
           - name: MONGODB_PASSWORD
             valueFrom:
-              secretKeyRef:
-                name: mongodb-credentials
-                key: password
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-password
           - name: MONGODB_DATABASE
             value: 'keptn'
           - name: KEPTN_SPEC_VERSION
@@ -71,7 +71,7 @@ spec:
             memory: "256Mi"
             cpu: "100m"
       - name: distributor
-        image: keptn/distributor:0.8.4
+        image: keptn/distributor:latest
         ports:
           - containerPort: 8080
         lifecycle:
@@ -81,7 +81,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 10999
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
         resources:

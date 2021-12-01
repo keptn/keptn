@@ -56,9 +56,9 @@ spec:
               key: mongodb-user
         - name: MONGODB_PASSWORD
           valueFrom:
-            secretKeyRef:
+              secretKeyRef:
                 name: mongodb-credentials
-                key: password
+                key: mongodb-password
       - name: distributor
         image: keptn/distributor:latest
         imagePullPolicy: Always
