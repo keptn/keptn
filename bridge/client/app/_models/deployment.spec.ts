@@ -38,7 +38,7 @@ describe('Deployment', () => {
     expect(deployment).toEqual(expectedDeployment);
   });
 
-  it('should not be finished', () => {
+  it('should be finished', () => {
     const deployment = Deployment.fromJSON(ExpectedDeploymentMock);
     expect(deployment.isFinished()).toBe(true);
   });
@@ -149,7 +149,7 @@ describe('Deployment', () => {
     expect(stageDeployment.isWarning()).toBe(true);
   });
 
-  it('should not be aborted', () => {
+  it('should be aborted', () => {
     const stageDeployment = getStageDeployment();
     stageDeployment.state = SequenceState.ABORTED;
     expect(stageDeployment.isAborted()).toBe(true);
