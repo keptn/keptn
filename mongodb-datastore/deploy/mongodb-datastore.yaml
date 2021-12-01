@@ -52,8 +52,8 @@ spec:
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:
-                name: mongodb-credentials
-                key: user
+              name: mongodb-credentials
+              key: mongodb-user
         - name: MONGODB_PASSWORD
           valueFrom:
             secretKeyRef:
