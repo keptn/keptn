@@ -31,7 +31,7 @@ export class TestUtils {
           stage: 'production',
           keptnContext: '35383737-3630-4639-b037-353138323631',
           pageSize: '50',
-          type: `sh.keptn.event.production.remediation.triggered`
+          type: `sh.keptn.event.production.remediation.triggered`,
         },
       })
       .reply(200, RemediationTraceResponse);
