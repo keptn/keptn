@@ -42,19 +42,29 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: MONGODB_HOST
-            value: 'mongodb:27017'
+            value: 'keptn-mongo:27017'
           - name: MONGODB_USER
             valueFrom:
-               secretKeyRef:
-                 name: mongodb-credentials
-                 key: mongodb-user
+              secretKeyRef:
+                name: mongodb-credentials
+                key: mongodb-user
           - name: MONGODB_PASSWORD
             valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-password
+              secretKeyRef:
+                name: mongodb-credentials
+                key: mongodb-password
           - name: MONGODB_DATABASE
-            value: 'keptn'
+            value: "keptn"
+          - name: MONGODB_EXTERNAL_CONNECTION_STRING
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: external_connection_string
+                optional: true
+          - name: UNIFORM_INTEGRATION_TTL
+            value: "2m"
+          - name: LOG_LEVEL
+            value: "debug"
           - name: KEPTN_SPEC_VERSION
             value: "0.2.3"
           - name: TASK_STARTED_WAIT_DURATION
