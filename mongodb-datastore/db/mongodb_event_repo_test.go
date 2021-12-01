@@ -59,13 +59,16 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 
 	filter := "data.project:my-project"
 	pageSize := int64(0)
-	_, err := repo.GetEventsByType(
+	events, err := repo.GetEventsByType(
 		event.GetEventsByTypeParams{
 			EventType: "test",
 			Filter:    &filter,
 			Limit:     &pageSize,
 		},
 	)
+	require.Nil(t, err)
+	require.Empty(t, events.Events)
+
 	evaluationEventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
 
 	keptnContext := "my-context"
@@ -106,8 +109,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 
 	require.Nil(t, err)
 
-	//pageSize := int64(0)
-	events, err := repo.GetEvents(
+	events, err = repo.GetEvents(
 		event.GetEventsParams{
 			KeptnContext: &keptnContext,
 			PageSize:     &pageSize,
