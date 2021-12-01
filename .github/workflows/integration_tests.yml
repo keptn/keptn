@@ -72,7 +72,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
-            BACKUP_RESTORE: "false"
+            BACKUP_RESTORE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.21"
@@ -82,7 +82,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
-            BACKUP_RESTORE: "false"
+            BACKUP_RESTORE: "true"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
