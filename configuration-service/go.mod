@@ -3,7 +3,9 @@ module github.com/keptn/keptn/configuration-service
 go 1.16
 
 require (
+	github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/loads v0.21.0
 	github.com/go-openapi/runtime v0.21.0
@@ -12,7 +14,7 @@ require (
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
 	github.com/google/martian v2.1.0+incompatible
-	github.com/jessevdk/go-flags v1.4.0
+	github.com/jessevdk/go-flags v1.5.0
 	github.com/keptn/go-utils v0.11.0 // indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mholt/archiver/v3 v3.5.1

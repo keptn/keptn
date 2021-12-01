@@ -5,7 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-git/go-git/v5"
+	config2 "github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/keptn/configuration-service/common_models"
+	"gopkg.in/yaml.v3"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -72,6 +76,115 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 	return nil, nil
 }
 
+type GitClient struct {
+	CredentialReader CredentialReader
+}
+
+func NewGitClient() *GitClient {
+	return &GitClient{CredentialReader: &K8sCredentialReader{}}
+}
+
+func (g *GitClient) ProjectExists(project string) bool {
+	_, err := git.PlainOpen(GetProjectConfigPath(project))
+	if err == nil {
+		return true
+	}
+	return false
+}
+
+func (g *GitClient) CloneRepo(project string) error {
+
+	projectConfigPath := GetProjectConfigPath(project)
+	// check if we already have a repository
+	_, err := git.PlainOpen(projectConfigPath)
+	if err == nil {
+		return nil
+	}
+
+	credentials, err := g.CredentialReader.GetCredentials(project)
+	if err != nil {
+		return err
+	}
+	if credentials == nil {
+		return errors.New("no credentials")
+	}
+
+	clone, err := git.PlainClone(GetProjectConfigPath(project), false,
+		&git.CloneOptions{
+			URL: credentials.RemoteURI,
+			Auth: &http.BasicAuth{
+				Username: credentials.User,
+				Password: credentials.Token,
+			},
+		},
+	)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "empty") {
+			// TODO empty remote leads to an error
+			init, err := git.PlainInit(projectConfigPath, false)
+			if err != nil {
+				return err
+			}
+			clone = init
+		} else {
+			return err
+		}
+	}
+
+	_, err = clone.Head()
+	if err != nil {
+		// empty repository, create project metadata
+		newProjectMetadata := &ProjectMetadata{
+			ProjectName:       project,
+			CreationTimestamp: time.Now().String(),
+		}
+
+		metadataString, err := yaml.Marshal(newProjectMetadata)
+
+		err = WriteFile(GetProjectConfigPath(project)+"/metadata.yaml", metadataString)
+		if err != nil {
+			return obfuscateErrorMessage(fmt.Errorf("could not write metadata.yaml during creating project %s: %w", project, err), credentials)
+		}
+
+		_, err = clone.CreateRemote(&config2.RemoteConfig{
+			Name: "origin",
+			URLs: []string{credentials.RemoteURI},
+		})
+		if err != nil {
+			return err
+		}
+		workTree, err := clone.Worktree()
+		if err != nil {
+			return err
+		}
+
+		_, err = workTree.Add("metadata.yaml")
+		if err != nil {
+			return err
+		}
+		_, err = workTree.Commit("added resource", &git.CommitOptions{})
+		if err != nil {
+			return err
+		}
+		err = clone.Push(&git.PushOptions{
+			RemoteName: "origin",
+			Auth: &http.BasicAuth{
+				Username: credentials.User,
+				Password: credentials.Token,
+			}})
+		if err != nil {
+			if errors.Is(err, git.NoErrAlreadyUpToDate) {
+				return nil
+			}
+			return err
+		}
+		return nil
+	}
+
+	return nil
+}
+
 type Git struct {
 	Executor         CommandExecutor
 	CredentialReader CredentialReader
@@ -84,21 +197,6 @@ func NewGit(e CommandExecutor, c CredentialReader) Git {
 	}
 }
 
-// CloneRepoWithCredentials clones an upstream repository into a local folder "project" and returns
-// whether the Git repo is already initialized.
-func (g *Git) CloneRepoWithCredentials(project string, credentials common_models.GitCredentials) (bool, error) {
-	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-
-	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
-	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
-	if strings.Contains(msg, emptyRepoWarning) {
-		return false, obfuscateErrorMessage(err, &credentials)
-	} else if err != nil {
-		return false, obfuscateErrorMessage(err, &credentials)
-	}
-	return true, nil
-}
-
 func (g *Git) CloneRepo(project string) (bool, error) {
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err != nil {
@@ -106,9 +204,36 @@ func (g *Git) CloneRepo(project string) (bool, error) {
 	}
 	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 
+	if directoryExists(GetProjectConfigPath(project)) {
+		return true, nil
+	}
 	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
+		_, err := g.Executor.ExecuteCommand("git", []string{"init"}, GetProjectConfigPath(project))
+		if err != nil {
+			return false, obfuscateErrorMessage(fmt.Errorf("could not init repository for project %s: %w", project, err), credentials)
+		}
+		newProjectMetadata := &ProjectMetadata{
+			ProjectName:       project,
+			CreationTimestamp: time.Now().String(),
+		}
+
+		metadataString, err := yaml.Marshal(newProjectMetadata)
+
+		err = WriteFile(GetProjectConfigPath(project)+"/metadata.yaml", metadataString)
+		if err != nil {
+			return false, obfuscateErrorMessage(fmt.Errorf("could not write metadata.yaml during creating project %s: %w", project, err), credentials)
+		}
+
+		//if err := UpdateOrCreateOrigin(project); err != nil {
+		//	return false, obfuscateErrorMessage(fmt.Errorf("could not write metadata.yaml during creation of project %s: %w", project, err), credentials)
+		//}
+
+		err = g.StageAndCommitAll(project, "Added metadata.yaml", false)
+		if err != nil {
+			return false, obfuscateErrorMessage(fmt.Errorf("could not write metadata.yaml during creation of project %s: %w", project, err), credentials)
+		}
 		return false, obfuscateErrorMessage(err, credentials)
 	} else if err != nil {
 		return false, obfuscateErrorMessage(err, credentials)
@@ -245,7 +370,8 @@ func (g *Git) StageAndCommitAll(project string, message string, withPull bool) e
 				return obfuscateErrorMessage(err, credentials)
 			}
 		}
-		_, err = g.Executor.ExecuteCommand("git", []string{"push", repoURI}, projectConfigPath)
+		msg, err := g.Executor.ExecuteCommand("git", []string{"push", repoURI}, projectConfigPath)
+		fmt.Println(msg)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
@@ -265,9 +391,17 @@ func (g *Git) GetCurrentVersion(project string) (string, error) {
 
 // GetBranches returns a list of branches within the project
 func (g *Git) GetStages(project string) ([]string, error) {
-	projectConfigPath := config.ConfigDir + "/" + project + "/" + StageDirectoryName
+	stagesConfigPath := config.ConfigDir + "/" + project + "/" + StageDirectoryName
 	var stages = []string{}
-	err := filepath.Walk(projectConfigPath,
+	if _, err := os.Stat(stagesConfigPath); err != nil {
+		if os.IsNotExist(err) {
+			// in that case we simply don't have any stages
+			return stages, nil
+		}
+		return stages, err
+	}
+
+	err := filepath.Walk(stagesConfigPath,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -287,7 +421,7 @@ func (g *Git) GetStages(project string) ([]string, error) {
 
 // GetDefaultBranch returns the name of the default branch of the repo
 func (g *Git) GetDefaultBranch(project string) (string, error) {
-	projectConfigPath := config.ConfigDir + "/" + project
+	projectConfigPath := GetProjectConfigPath(project)
 
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err != nil {
@@ -345,9 +479,9 @@ func (g *Git) Reset(project string) error {
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func CloneRepo(project string, credentials common_models.GitCredentials) (bool, error) {
+func CloneRepo(project string) (bool, error) {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.CloneRepoWithCredentials(project, credentials)
+	return g.CloneRepo(project)
 }
 
 func isNoRemoteHeadFoundError(err error) bool {
@@ -441,23 +575,22 @@ func GetDefaultBranch(project string) (string, error) {
 
 // ProjectExists checks if a project exists
 func ProjectExists(project string) bool {
-	// if the repository is already there we can return true
-	if directoryExists(project) {
+	g := NewGitClient()
+
+	if g.ProjectExists(project) {
 		return true
 	}
 	// if not, try to clone
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	repoExists, err := g.CloneRepo(project)
+	err := g.CloneRepo(project)
 	if err != nil {
-		// TODO error handling, for now just return false
 		return false
 	}
-	return repoExists
+	return true
 }
 
-func directoryExists(project string) bool {
+func directoryExists(path string) bool {
 	// check if the project exists
-	info, err := os.Stat(GetProjectConfigPath(project))
+	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false
 	}

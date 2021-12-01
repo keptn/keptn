@@ -1,30 +1,25 @@
 package handlers
 
 import (
-	"github.com/google/martian/log"
-	logger "github.com/sirupsen/logrus"
-	"net/http"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/google/martian/log"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
-	"gopkg.in/yaml.v3"
+	logger "github.com/sirupsen/logrus"
+	"net/http"
+	"os"
+	"strings"
 )
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
-
 	// check if the project already exists
-	if common.ProjectExists(params.Project.ProjectName) {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Project already exists")})
-	}
+	//if common.ProjectExists(params.Project.ProjectName) {
+	//	return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Project already exists")})
+	//}
 
 	common.LockProject(params.Project.ProjectName)
 	defer common.UnlockProject(params.Project.ProjectName)
@@ -39,14 +34,15 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
-	var initializedGit bool
 	credentials, err := common.GetCredentials(params.Project.ProjectName)
 	if err != nil || credentials == nil {
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("No upstream credentials found")})
 	}
 
+	client := common.NewGitClient()
+
 	// try to clone the repo
-	initializedGit, err = common.CloneRepo(params.Project.ProjectName, *credentials)
+	err = client.CloneRepo(params.Project.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not clone git repository during creating project %s", params.Project.ProjectName)
 		rollbackFunc()
@@ -54,26 +50,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	}
 
 	////////////////////////////////////////////////////
-	newProjectMetadata := &common.ProjectMetadata{
-		ProjectName:       params.Project.ProjectName,
-		CreationTimestamp: time.Now().String(),
-	}
 
-	metadataString, err := yaml.Marshal(newProjectMetadata)
-
-	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
-	if err != nil {
-		logger.WithError(err).Errorf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName)
-		rollbackFunc()
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not store project metadata")})
-	}
-
-	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
-	if err != nil {
-		logger.WithError(err).Errorf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName)
-		rollbackFunc()
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not commit changes")})
-	}
 	return project.NewPostProjectNoContent()
 }
 

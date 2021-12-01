@@ -54,7 +54,7 @@ spec:
                 warning: "manual"`
 
 func Test_DeliveryAssistant(t *testing.T) {
-	projectName := "delivery-assistant"
+	projectName := "delivery-assistant-new"
 	serviceName := "my-service"
 
 	shipyardFilePath, err := CreateTmpShipyardFile(deliveryAssistantShipyard)

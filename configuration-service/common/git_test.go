@@ -336,17 +336,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 			}{
 				{
 					Command:   "git",
-					Args:      []string{"for-each-ref", "--format=%(refname:short)", "refs/heads/*"},
-					Directory: "./debug/config/my-project",
-				},
-				{
-					Command:   "git",
 					Args:      []string{"remote", "show", "origin"},
-					Directory: "./debug/config/my-project",
-				},
-				{
-					Command:   "git",
-					Args:      []string{"checkout", "master"},
 					Directory: "./debug/config/my-project",
 				},
 				{
@@ -401,17 +391,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 			}{
 				{
 					Command:   "git",
-					Args:      []string{"for-each-ref", "--format=%(refname:short)", "refs/heads/*"},
-					Directory: "./debug/config/my-project",
-				},
-				{
-					Command:   "git",
 					Args:      []string{"remote", "show", "origin"},
-					Directory: "./debug/config/my-project",
-				},
-				{
-					Command:   "git",
-					Args:      []string{"checkout", "master"},
 					Directory: "./debug/config/my-project",
 				},
 				{
@@ -461,17 +441,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 			}{
 				{
 					Command:   "git",
-					Args:      []string{"for-each-ref", "--format=%(refname:short)", "refs/heads/*"},
-					Directory: "./debug/config/my-project",
-				},
-				{
-					Command:   "git",
 					Args:      []string{"remote", "show", "origin"},
-					Directory: "./debug/config/my-project",
-				},
-				{
-					Command:   "git",
-					Args:      []string{"checkout", "master"},
 					Directory: "./debug/config/my-project",
 				},
 				{
