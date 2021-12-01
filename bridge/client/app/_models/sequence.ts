@@ -29,7 +29,12 @@ export class Sequence extends sq {
   }
 
   public static isFinished(state: SequenceState): boolean {
-    return state === SequenceState.FINISHED || state === SequenceState.TIMEDOUT || state === SequenceState.ABORTED;
+    return (
+      state === SequenceState.FINISHED ||
+      state === SequenceState.TIMEDOUT ||
+      state === SequenceState.ABORTED ||
+      state === SequenceState.SUCCEEDED
+    );
   }
 
   public static getShortType(type: string): string {
@@ -111,7 +116,17 @@ export class Sequence extends sq {
   }
 
   public isSuccessful(stageName?: string): boolean {
-    return !this.isFaulty(stageName) && !this.isWarning(stageName) && this.isFinished(stageName);
+    return (
+      this.isSucceeded(stageName) ||
+      (!this.isFaulty(stageName) &&
+        !this.isWarning(stageName) &&
+        !this.isAborted(stageName) &&
+        this.isFinished(stageName))
+    );
+  }
+
+  private isSucceeded(stageName?: string): boolean {
+    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.SUCCEEDED;
   }
 
   public isWarning(stageName?: string): boolean {

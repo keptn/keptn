@@ -78,9 +78,14 @@ describe('Sequence', () => {
     );
   });
 
-  it('should be finished if it is aborted, finished or timed out', () => {
+  it('should be finished if it is aborted, finished, succeeded or timed out', () => {
     const sequence = getDefaultSequence();
-    for (const state of [SequenceState.ABORTED, SequenceState.FINISHED, SequenceState.TIMEDOUT]) {
+    for (const state of [
+      SequenceState.ABORTED,
+      SequenceState.FINISHED,
+      SequenceState.TIMEDOUT,
+      SequenceState.SUCCEEDED,
+    ]) {
       sequence.state = state;
       expect(sequence.isFinished()).toBe(true);
     }
@@ -88,16 +93,21 @@ describe('Sequence', () => {
 
   it('should not be finished', () => {
     const sequence = getDefaultSequence();
-    const { ABORTED, FINISHED, TIMEDOUT, ...states } = SequenceState;
+    const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceState;
     for (const state of Object.values(states)) {
       sequence.state = state;
       expect(sequence.isFinished()).toBe(false);
     }
   });
 
-  it('should be finished stage if it is aborted, finished or timed out', () => {
+  it('should be finished stage if it is aborted, finished, succeeded or timed out', () => {
     const sequence = getDefaultSequence();
-    for (const state of [SequenceState.ABORTED, SequenceState.FINISHED, SequenceState.TIMEDOUT]) {
+    for (const state of [
+      SequenceState.ABORTED,
+      SequenceState.FINISHED,
+      SequenceState.TIMEDOUT,
+      SequenceState.SUCCEEDED,
+    ]) {
       sequence.stages[0].state = state;
       expect(sequence.isFinished('dev')).toBe(true);
     }
@@ -105,7 +115,7 @@ describe('Sequence', () => {
 
   it('should not be finished stage', () => {
     const sequence = getDefaultSequence();
-    const { ABORTED, FINISHED, TIMEDOUT, ...states } = SequenceState;
+    const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceState;
     for (const state of Object.values(states)) {
       sequence.stages[0].state = state;
       expect(sequence.isFinished('dev')).toBe(false);
@@ -625,7 +635,7 @@ describe('Sequence', () => {
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.FINISHED,
+          state: SequenceState.SUCCEEDED,
           latestEvent: {
             id: 'my Id',
             time: '',
