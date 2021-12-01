@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"testing"
+	"time"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -20,6 +21,16 @@ spec:
             - name: "deployment"
               properties:
                 deploymentstrategy: "direct"
+            - name: "test"
+              properties:
+                teststrategy: "functional"
+            - name: "evaluation"
+            - name: "release"
+        - name: "delivery-direct"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
             - name: "release"
 
     - name: "prod"
@@ -27,6 +38,27 @@ spec:
         - name: "delivery"
           triggeredOn:
             - event: "dev.delivery.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "blue_green_service"
+            - name: "test"
+              properties:
+                teststrategy: "performance"
+            - name: "evaluation"
+            - name: "release"
+        - name: "rollback"
+          triggeredOn:
+            - event: "prod.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
+
+        - name: "delivery-direct"
+          triggeredOn:
+            - event: "dev.delivery-direct.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -41,6 +73,7 @@ func Test_BackupRestore(t *testing.T) {
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
+	serviceHealthCheckEndpoint := "/metrics"
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
@@ -68,8 +101,20 @@ func Test_BackupRestore(t *testing.T) {
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	require.Nil(t, err)
+
 	t.Logf("Verify Direct delivery before backup of %s in stage prod", serviceName)
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage prod")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
 	//backup Configuration Service data
@@ -150,8 +195,20 @@ func Test_BackupRestore(t *testing.T) {
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	require.Nil(t, err)
+
 	t.Logf("Verify Direct delivery after restore of %s in stage prod", serviceName)
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage prod")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
 }
