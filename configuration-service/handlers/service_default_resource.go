@@ -47,33 +47,26 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		if branch == defaultBranch {
 			continue
 		}
-		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {
+		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName) {
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ServiceDoesNotExistErrorMsg)})
 		}
-		serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
+		serviceConfigPath := common.GetServiceConfigPath(params.ProjectName, branch, params.ServiceName)
 
 		logger.Debug("Creating new resource(s) in: " + serviceConfigPath + " in stage " + branch)
-		logger.Debug("Checking out branch: " + branch)
-		err := common.CheckoutBranch(params.ProjectName, branch, false)
-		if err != nil {
-			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
-			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
-		}
 
 		for _, res := range params.Resources.Resources {
 			filePath := serviceConfigPath + "/" + *res.ResourceURI
 			logger.Debug("Adding resource: " + filePath)
 			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 		}
-
-		logger.Debug("Staging Changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
-		if err != nil {
-			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
-			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
-		}
-		logger.Debug("Successfully added resources")
 	}
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not commit to project %s", params.ProjectName)
+		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+	}
+	logger.Debug("Successfully added resources")
 
 	return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceCreated()
 }
@@ -105,34 +98,25 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 		if branch == defaultBranch {
 			continue
 		}
-		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {
+		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName) {
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ServiceDoesNotExistErrorMsg)})
 		}
-		serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
-
-		logger.Debug("Creating new resource(s) in: " + serviceConfigPath + " in stage " + branch)
-		logger.Debug("Checking out branch: " + branch)
-		err := common.CheckoutBranch(params.ProjectName, branch, false)
-		if err != nil {
-			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
-			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
-		}
+		serviceConfigPath := common.GetServiceConfigPath(params.ProjectName, branch, params.ServiceName)
 
 		for _, res := range params.Resources.Resources {
 			filePath := serviceConfigPath + "/" + *res.ResourceURI
 			logger.Debug("Adding resource: " + filePath)
 			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 		}
-
-		logger.Debug("Staging Changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
-		if err != nil {
-			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
-			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
-		}
-		logger.Debug("Successfully added resources")
 	}
 
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not commit to project %s", params.ProjectName)
+		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+	}
+	logger.Debug("Successfully added resources")
 	return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceCreated()
 }
 
@@ -163,14 +147,14 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 		if branch == defaultBranch {
 			continue
 		}
-		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {
+		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName) {
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ServiceDoesNotExistErrorMsg)})
 		}
 		serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
 		logger.Debug("Creating new resource(s) in: " + serviceConfigPath + " in stage " + branch)
 		logger.Debug("Checking out branch: " + branch)
-		err := common.CheckoutBranch(params.ProjectName, branch, false)
+		err := common.PullUpstream(params.ProjectName)
 		if err != nil {
 			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -218,14 +202,14 @@ func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(pa
 		if branch == defaultBranch {
 			continue
 		}
-		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {
+		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName) {
 			return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String(common.ServiceDoesNotExistErrorMsg)})
 		}
 		serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
 		logger.Debug("Creating new resource(s) in: " + serviceConfigPath + " in stage " + branch)
 		logger.Debug("Checking out branch: " + branch)
-		err := common.CheckoutBranch(params.ProjectName, branch, false)
+		err := common.PullUpstream(params.ProjectName)
 		if err != nil {
 			logger.WithError(err).Errorf("Could not check out %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})

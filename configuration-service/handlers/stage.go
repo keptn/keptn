@@ -1,13 +1,15 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	logger "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+	"os"
+	"time"
 )
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
@@ -19,16 +21,25 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	stagePath := common.GetStageConfigPath(params.ProjectName, params.Stage.StageName)
+	err := os.MkdirAll(stagePath, os.ModePerm)
 	if err != nil {
-		logger.WithError(err).Errorf("Could not determine default branch for project %s", params.ProjectName)
-		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create stage.")})
+		logger.Error(err.Error())
+		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create stage directory")})
 	}
-	logger.Info(fmt.Sprintf("creating stage %s from base %s", params.Stage.StageName, defaultBranch))
-	err = common.CreateBranch(params.ProjectName, params.Stage.StageName, defaultBranch)
+
+	newStageMetadata := &common.StageMetadata{
+		StageName:         params.Stage.StageName,
+		CreationTimestamp: time.Now().String(),
+	}
+
+	metadataString, err := yaml.Marshal(newStageMetadata)
+	err = common.WriteFile(stagePath+"/metadata.yaml", metadataString)
+
+	err = common.StageAndCommitAll(params.ProjectName, "Added stage: "+params.Stage.StageName, true)
 	if err != nil {
-		logger.WithError(err).Errorf("Could not create %s branch for project %s", params.Stage.StageName, params.ProjectName)
-		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
+		logger.Error(err.Error())
+		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not commit changes")})
 	}
 
 	return stage.NewPostProjectProjectNameStageNoContent()

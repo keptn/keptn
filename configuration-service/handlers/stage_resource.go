@@ -22,12 +22,12 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
+	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
 	logger.Debug("Checking out " + params.StageName + " branch")
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
+	err := common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stage resources")})
@@ -43,7 +43,7 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
+	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
 
@@ -53,11 +53,11 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
 	}
 
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
-	resourcePath := projectConfigPath + "/" + unescapedResourceName
+	stageConfigPath := common.GetStageConfigPath(params.ProjectName, params.StageName)
+	resourcePath := stageConfigPath + "/" + unescapedResourceName
 
 	logger.Debug("Checking out " + params.StageName + " branch")
-	err = common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch containing stage config")})
@@ -93,28 +93,22 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
+	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	stageConfigPath := common.GetStageConfigPath(params.ProjectName, params.StageName)
 
-	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
-	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
-	if err != nil {
-		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
-		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch containing stage config")})
-	}
+	logger.Debug("Creating new resource(s) in: " + stageConfigPath + " in stage " + params.StageName)
 
 	for _, res := range params.Resources.Resources {
-		filePath := projectConfigPath + "/" + *res.ResourceURI
+		filePath := stageConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Adding resource: " + filePath)
 		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
+	err := common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -132,28 +126,21 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
+	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	stageConfigPath := common.GetStageConfigPath(params.ProjectName, params.StageName)
 
-	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
-	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
-
-	if err != nil {
-		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
-	}
+	logger.Debug("Creating new resource(s) in: " + stageConfigPath + " in stage " + params.StageName)
 
 	for _, res := range params.Resources.Resources {
-		filePath := projectConfigPath + "/" + *res.ResourceURI
+		filePath := stageConfigPath + "/" + *res.ResourceURI
 		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
+	err := common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -171,25 +158,19 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
+	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	stageConfigPath := common.GetStageConfigPath(params.ProjectName, params.StageName)
 
-	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
-	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
-	if err != nil {
-		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
-	}
+	logger.Debug("Creating new resource(s) in: " + stageConfigPath + " in stage " + params.StageName)
 
-	filePath := projectConfigPath + "/" + params.ResourceURI
+	filePath := stageConfigPath + "/" + params.ResourceURI
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
+	err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -206,19 +187,13 @@ func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
+	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	stageConfigPath := common.GetStageConfigPath(params.ProjectName, params.StageName)
 
-	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
-	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
-	if err != nil {
-		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
-		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
-	}
+	logger.Debug("Creating new resource(s) in: " + stageConfigPath + " in stage " + params.StageName)
 
 	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
 	if err != nil {
@@ -226,7 +201,7 @@ func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params
 			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
 	}
 
-	filePath := projectConfigPath + "/" + unescapedResourceName
+	filePath := stageConfigPath + "/" + unescapedResourceName
 
 	err = common.DeleteFile(filePath)
 	if err != nil {

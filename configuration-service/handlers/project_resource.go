@@ -30,7 +30,7 @@ func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProject
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.CheckoutBranch(params.ProjectName, defaultBranch, *params.DisableUpstreamSync)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -61,7 +61,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		return project_resource.NewPutProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -106,7 +106,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 		return project_resource.NewPostProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -147,7 +147,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
-	err = common.CheckoutBranch(params.ProjectName, defaultBranch, *params.DisableUpstreamSync)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -205,7 +205,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out branch: " + defaultBranch)
 
-	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -244,7 +244,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})

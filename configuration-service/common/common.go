@@ -1,5 +1,10 @@
 package common
 
+import (
+	"fmt"
+	"github.com/keptn/keptn/configuration-service/config"
+)
+
 const ConfigurationServiceName = "configuration-service"
 
 const ProjectDoesNotExistErrorMsg = "Project does not exist"
@@ -14,3 +19,18 @@ const WrongToken = "access token"
 
 const CannotAddResourceErrorMsg = "Could not add resource"
 const CannotUpdateResourceErrorMsg = "Could not update resource"
+
+const StageDirectoryName = "keptn-stages"
+const ServiceDirectoryName = "keptn-services"
+
+func GetProjectConfigPath(project string) string {
+	return fmt.Sprintf("%s/%s", config.ConfigDir, project)
+}
+
+func GetStageConfigPath(project, stage string) string {
+	return fmt.Sprintf("%s/%s/%s", GetProjectConfigPath(project), StageDirectoryName, stage)
+}
+
+func GetServiceConfigPath(project, stage, service string) string {
+	return fmt.Sprintf("%s/%s/%s", GetStageConfigPath(project, stage), ServiceDirectoryName, service)
+}

@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	k8sutils "github.com/keptn/kubernetes-utils/pkg"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/keptn/configuration-service/common"
@@ -18,11 +16,6 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
 	"gopkg.in/yaml.v3"
 )
-
-type projectMetadata struct {
-	ProjectName       string
-	CreationTimestamp string
-}
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
@@ -48,36 +41,20 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	////////////////////////////////////////////////////
 	var initializedGit bool
 	credentials, err := common.GetCredentials(params.Project.ProjectName)
-	if err == nil && credentials != nil {
-		// try to clone the repo
-		var err error
-
-		initializedGit, err = common.CloneRepo(params.Project.ProjectName, *credentials)
-		if err != nil {
-			logger.WithError(err).Errorf("Could not clone git repository during creating project %s", params.Project.ProjectName)
-			rollbackFunc()
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not clone git repository")})
-		}
-
-	} else {
-		// if no remote URI has been specified, create a new repo
-		///////////////////////////////////////////////////
-		err := os.MkdirAll(projectConfigPath, os.ModePerm)
-		if err != nil {
-			logger.WithError(err).Errorf("Could make directory during creating project %s", params.Project.ProjectName)
-			rollbackFunc()
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not create project")})
-		}
-
-		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
-		if err != nil {
-			logger.WithError(err).Errorf("Could not initialize git repository during creating project %s", params.Project.ProjectName)
-			rollbackFunc()
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
-		}
+	if err != nil || credentials == nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("No upstream credentials found")})
 	}
+
+	// try to clone the repo
+	initializedGit, err = common.CloneRepo(params.Project.ProjectName, *credentials)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not clone git repository during creating project %s", params.Project.ProjectName)
+		rollbackFunc()
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not clone git repository")})
+	}
+
 	////////////////////////////////////////////////////
-	newProjectMetadata := &projectMetadata{
+	newProjectMetadata := &common.ProjectMetadata{
 		ProjectName:       params.Project.ProjectName,
 		CreationTimestamp: time.Now().String(),
 	}

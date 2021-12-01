@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -83,9 +84,9 @@ func NewGit(e CommandExecutor, c CredentialReader) Git {
 	}
 }
 
-// CloneRepo clones an upstream repository into a local folder "project" and returns
+// CloneRepoWithCredentials clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials) (bool, error) {
+func (g *Git) CloneRepoWithCredentials(project string, credentials common_models.GitCredentials) (bool, error) {
 	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 
 	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
@@ -98,20 +99,28 @@ func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials
 	return true, nil
 }
 
-// CheckoutBranch checks out the given branch
-func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync bool) error {
-	projectConfigPath := config.ConfigDir + "/" + project
-	_, err := g.Executor.ExecuteCommand("git", []string{"checkout", branch}, projectConfigPath)
+func (g *Git) CloneRepo(project string) (bool, error) {
+	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err != nil {
-		return err
+		return false, err
 	}
-	if disableUpstreamSync {
-		return nil
+	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+
+	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
+	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
+	if strings.Contains(msg, emptyRepoWarning) {
+		return false, obfuscateErrorMessage(err, credentials)
+	} else if err != nil {
+		return false, obfuscateErrorMessage(err, credentials)
 	}
+	return true, nil
+}
+
+func (g *Git) PullUpstream(project string) error {
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
+		err = g.pullUpstreamChanges(err, repoURI, GetProjectConfigPath(project), credentials)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
@@ -119,10 +128,10 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 	return nil
 }
 
-// CreateBranch creates a new branch
-func (g *Git) CreateBranch(project string, branch string, sourceBranch string) error {
+// CreateStage creates a new stage
+func (g *Git) CreateStage(project string, branch string, sourceBranch string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
-	err := g.CheckoutBranch(project, sourceBranch, false)
+	err := g.PullUpstream(project)
 	if err != nil {
 		return err
 	}
@@ -187,21 +196,12 @@ func (g *Git) removeRemoteOrigin(project string) error {
 
 func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.GitCredentials, repoURI string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
-	branches, err := g.GetBranches(project)
-	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
-	}
 
 	defaultBranch, err := g.GetDefaultBranch(project)
 	if err != nil {
 		return obfuscateErrorMessage(err, credentials)
 	}
 
-	// first, make sure to push the master/main branch first
-	err = g.CheckoutBranch(project, defaultBranch, true)
-	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
-	}
 	err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 	if err != nil {
 		// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
@@ -214,26 +214,6 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		return obfuscateErrorMessage(err, credentials)
 	}
 
-	for _, branch := range branches {
-		if branch == defaultBranch {
-			continue
-		}
-		err := g.CheckoutBranch(project, branch, true)
-		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
-		}
-		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
-		if err != nil {
-			// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
-			if !isNoRemoteHeadFoundError(err) {
-				return obfuscateErrorMessage(err, credentials)
-			}
-		}
-		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
-		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
-		}
-	}
 	return nil
 }
 
@@ -257,6 +237,7 @@ func (g *Git) StageAndCommitAll(project string, message string, withPull bool) e
 	// in this case, ignore errors since the only instance when this can occur at this stage is when there is nothing to commit (no delta)
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
+		// TODO: likely we'll need a retry loop here when multiple replicas can write
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		if withPull {
 			_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
@@ -283,15 +264,25 @@ func (g *Git) GetCurrentVersion(project string) (string, error) {
 }
 
 // GetBranches returns a list of branches within the project
-func (g *Git) GetBranches(project string) ([]string, error) {
-	projectConfigPath := config.ConfigDir + "/" + project
-	out, err := g.Executor.ExecuteCommand("git", []string{"for-each-ref", `--format=%(refname:short)`, "refs/heads/*"}, projectConfigPath)
-	if err != nil {
-		return nil, err
-	}
-	branches := strings.Split(strings.TrimSpace(out), "\n")
+func (g *Git) GetStages(project string) ([]string, error) {
+	projectConfigPath := config.ConfigDir + "/" + project + "/" + StageDirectoryName
+	var stages = []string{}
+	err := filepath.Walk(projectConfigPath,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if strings.Contains(path, ".git") {
+				return nil
+			}
 
-	return branches, nil
+			// TODO: for now assume that all directories in StageDirectoryName are representing a stage
+			if info.IsDir() {
+				stages = append(stages, strings.Trim(info.Name(), "/"))
+			}
+			return nil
+		})
+	return stages, err
 }
 
 // GetDefaultBranch returns the name of the default branch of the repo
@@ -316,7 +307,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 				if strings.Contains(line, "HEAD branch") {
 					// if we get an ambiguous HEAD, we need to fall back to master/main
 					if strings.Contains(line, "remote HEAD is ambiguous") {
-						branches, err := g.GetBranches(project)
+						branches, err := g.GetStages(project)
 						if err != nil {
 							return "", obfuscateErrorMessage(err, credentials)
 						}
@@ -356,7 +347,7 @@ func (g *Git) Reset(project string) error {
 // whether the Git repo is already initialized.
 func CloneRepo(project string, credentials common_models.GitCredentials) (bool, error) {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.CloneRepo(project, credentials)
+	return g.CloneRepoWithCredentials(project, credentials)
 }
 
 func isNoRemoteHeadFoundError(err error) bool {
@@ -381,10 +372,10 @@ func getRepoURI(uri string, user string, token string) string {
 	return uri
 }
 
-// CheckoutBranch checks out the given branch
-func CheckoutBranch(project string, branch string, disableUpstreamSync bool) error {
+// PullUpstream pulls changes from the upstream
+func PullUpstream(project string) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.CheckoutBranch(project, branch, disableUpstreamSync)
+	return g.PullUpstream(project)
 }
 
 // Reset resets the current branch to the latest commit
@@ -393,10 +384,10 @@ func Reset(project string) error {
 	return g.Reset(project)
 }
 
-// CreateBranch creates a new branch
-func CreateBranch(project string, branch string, sourceBranch string) error {
+// CreateStage creates a new stage directory
+func CreateStage(project string, branch string, sourceBranch string) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.CreateBranch(project, branch, sourceBranch)
+	return g.CreateStage(project, branch, sourceBranch)
 }
 
 // UpdateOrCreateOrigin tries to update the remote origin.
@@ -439,7 +430,7 @@ func GetCurrentVersion(project string) (string, error) {
 // GetBranches returns a list of branches within the project
 func GetBranches(project string) ([]string, error) {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.GetBranches(project)
+	return g.GetStages(project)
 }
 
 // GetDefaultBranch returns the name of the default branch of the repo
@@ -450,46 +441,64 @@ func GetDefaultBranch(project string) (string, error) {
 
 // ProjectExists checks if a project exists
 func ProjectExists(project string) bool {
-	projectConfigPath := config.ConfigDir + "/" + project
+	// if the repository is already there we can return true
+	if directoryExists(project) {
+		return true
+	}
+	// if not, try to clone
+	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
+	repoExists, err := g.CloneRepo(project)
+	if err != nil {
+		// TODO error handling, for now just return false
+		return false
+	}
+	return repoExists
+}
+
+func directoryExists(project string) bool {
 	// check if the project exists
-	_, err := os.Stat(projectConfigPath)
-	// create file if not exists
+	info, err := os.Stat(GetProjectConfigPath(project))
 	if os.IsNotExist(err) {
+		return false
+	}
+	if !info.IsDir() {
 		return false
 	}
 	return true
 }
 
 // StageExists checks if a stage in a given project exists
-func StageExists(project string, stage string, disableUpstreamSync bool) bool {
+func StageExists(project string, stage string) bool {
 	if !ProjectExists(project) {
 		return false
 	}
-	// try to checkout the branch containing the stage config
-	err := CheckoutBranch(project, stage, disableUpstreamSync)
+	stageDir := GetStageConfigPath(project, stage)
+	if directoryExists(stageDir) {
+		return true
+	}
+	// if not found, try to pull the upstream
+	err := PullUpstream(project)
 	if err != nil {
 		return false
 	}
-	return true
+	return directoryExists(stageDir)
 }
 
 // ServiceExists checks if a service exists in a given stage of a project
-func ServiceExists(project string, stage string, service string, disableUpstreamSync bool) bool {
-	if !ProjectExists(project) {
+func ServiceExists(project string, stage string, service string) bool {
+	if !StageExists(project, stage) {
 		return false
 	}
-	// try to checkout the branch containing the stage config
-	err := CheckoutBranch(project, stage, disableUpstreamSync)
+	serviceDir := GetServiceConfigPath(project, stage, service)
+	if directoryExists(serviceDir) {
+		return true
+	}
+	// if not found, try to pull the upstream
+	err := PullUpstream(project)
 	if err != nil {
 		return false
 	}
-	serviceConfigPath := config.ConfigDir + "/" + project + "/" + service
-	_, err = os.Stat(serviceConfigPath)
-	// create file if not exists
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
+	return directoryExists(serviceDir)
 }
 
 // GetCredentials returns the git upstream credentials for a given project (stored as a secret), if available
