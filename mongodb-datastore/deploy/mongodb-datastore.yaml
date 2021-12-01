@@ -46,7 +46,7 @@ spec:
         - name: PREFIX_PATH
           value: ""
         - name: MONGODB_HOST
-          value: 'mongodb:27017'
+          value: 'keptn-mongo:27017'
         - name: MONGODB_DATABASE
           value: 'keptn'
         - name: MONGODB_USER

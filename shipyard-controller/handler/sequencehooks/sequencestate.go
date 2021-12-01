@@ -49,12 +49,13 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		State:          models.SequenceTriggeredState,
 		Stages:         []models.SequenceStateStage{},
 	}
-	if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
-		getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
-		if err := keptnv2.Decode(event.Data, getActionTriggeredData); err == nil {
-			state.ProblemTitle = getActionTriggeredData.Problem.ProblemTitle
-		}
+
+	//if the next event in sequence is an action we get the problem title form it
+	getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
+	if err := keptnv2.Decode(event.Data, getActionTriggeredData); err == nil && state.ProblemTitle == "" {
+		state.ProblemTitle = getActionTriggeredData.Problem.ProblemTitle
 	}
+
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
 		if err == db.ErrStateAlreadyExists {
 			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)
@@ -78,6 +79,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
+
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -303,6 +305,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 			KeptnContext: eventScope.KeptnContext,
 		},
 	})
+
 	if err != nil {
 		return models.SequenceState{}, fmt.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
 	}

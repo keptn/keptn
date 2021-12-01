@@ -14,6 +14,8 @@
       "problemTitle": "Response time degradation",
       "rootCause": "Response time degradation"
     },
-    "actionIndex": 1
+    "get-action" : {
+      "actionIndex": 1
+    }
   }
 }
