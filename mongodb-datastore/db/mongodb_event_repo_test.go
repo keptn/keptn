@@ -57,6 +57,15 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	repo := NewMongoDBEventRepo(GetMongoDBConnectionInstance())
 
+	filter := "data.project:my-project"
+	pageSize := int64(0)
+	_, err := repo.GetEventsByType(
+		event.GetEventsByTypeParams{
+			EventType: "test",
+			Filter:    &filter,
+			Limit:     &pageSize,
+		},
+	)
 	evaluationEventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
 
 	keptnContext := "my-context"
@@ -75,7 +84,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 		Triggeredid:        "my-triggered-id",
 	}
 
-	err := repo.InsertEvent(testEvent)
+	err = repo.InsertEvent(testEvent)
 	require.Nil(t, err)
 
 	invalidatedEvent := models.KeptnContextExtendedCE{
@@ -97,7 +106,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 
 	require.Nil(t, err)
 
-	pageSize := int64(0)
+	//pageSize := int64(0)
 	events, err := repo.GetEvents(
 		event.GetEventsParams{
 			KeptnContext: &keptnContext,
@@ -111,7 +120,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	require.Len(t, events.Events, 1)
 	require.Equal(t, testEvent, *events.Events[0])
 
-	filter := "data.project:my-project"
+	filter = "data.project:my-project"
 	eventsByType, err := repo.GetEventsByType(
 		event.GetEventsByTypeParams{
 			EventType: evaluationEventType,
