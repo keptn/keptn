@@ -1,8 +1,9 @@
 package lib
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestDecodeWebHookConfigYAML(t *testing.T) {
@@ -61,6 +62,65 @@ spec:
 			name: "invalid input",
 			args: args{
 				webhookConfigYaml: []byte("hulumulu"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "bad padding invalid input",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1alpha1
+						kind: WebhookConfig
+						metadata:
+						name: webhook-configuration
+						spec:
+						webhooks:
+							- type: "sh.keptn.event.webhook.triggered"
+							subscriptionID: "my-subscription-id"
+							envFrom:
+								- secretRef:
+								name: mysecret
+							requests:
+								- "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "misspeling keyworkds invalid input",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionIDs: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "missing requests invalid input",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionIDs: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:`),
 			},
 			want:    nil,
 			wantErr: true,

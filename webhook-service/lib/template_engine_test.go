@@ -1,8 +1,10 @@
 package lib_test
 
 import (
-	"github.com/keptn/keptn/webhook-service/lib"
+	"strings"
 	"testing"
+
+	"github.com/keptn/keptn/webhook-service/lib"
 )
 
 func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
@@ -15,6 +17,7 @@ func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
 		args    args
 		want    string
 		wantErr bool
+		errMsg  string
 	}{
 		{
 			name: "parse template",
@@ -28,6 +31,7 @@ func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
 			},
 			want:    "foo bar",
 			wantErr: false,
+			errMsg:  "",
 		},
 		{
 			name: "wrong template syntax",
@@ -41,6 +45,35 @@ func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
 			},
 			want:    "",
 			wantErr: true,
+			errMsg:  "unexpected",
+		},
+		{
+			name: "non-existing key",
+			args: args{
+				data: map[string]interface{}{
+					"env": map[string]interface{}{
+						"bar": "foo",
+					},
+				},
+				templateStr: "foo {{.env.foo}}",
+			},
+			want:    "",
+			wantErr: true,
+			errMsg:  ".env.foo",
+		},
+		{
+			name: "empty value",
+			args: args{
+				data: map[string]interface{}{
+					"env": map[string]interface{}{
+						"bar": "",
+					},
+				},
+				templateStr: "foo {{.env.barz}}",
+			},
+			want:    "",
+			wantErr: true,
+			errMsg:  ".env.barz",
 		},
 	}
 	for _, tt := range tests {
@@ -53,6 +86,9 @@ func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
 			}
 			if got != tt.want {
 				t1.Errorf("ParseTemplate() got = %v, want %v", got, tt.want)
+			}
+			if err != nil && !strings.Contains(err.Error(), tt.errMsg) {
+				t1.Errorf("ParseTemplate() errMsg = %v, want %v", err.Error(), tt.errMsg)
 			}
 		})
 	}
