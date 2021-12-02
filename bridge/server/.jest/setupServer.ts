@@ -11,7 +11,7 @@ const setup = async () => {
       rejectUnauthorized: false,
     }),
     headers: {
-      'x-token': process.env.API_TOKEN,
+      'x-token': process.env.API_TOKEN ?? '',
       'Content-Type': 'application/json',
     },
   });
