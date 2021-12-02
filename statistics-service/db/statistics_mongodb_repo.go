@@ -75,7 +75,7 @@ func (s *StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.
 func (s *StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics) error {
 	encodedStats, err := encodeKeys(&statistics)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	err = s.getCollection()
