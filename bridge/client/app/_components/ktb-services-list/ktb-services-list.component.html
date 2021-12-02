@@ -91,7 +91,7 @@
       *ngIf="services.length > DEFAULT_PAGE_SIZE"
       uitestid="keptn-services-list-showMoreServices"
       dt-show-more
-      [showLess]="pageSize > DEFAULT_PAGE_SIZE"
+      [showLess]="expanded"
       (click)="toggleAllServices()"
     >
       Show all <span [textContent]="services.length"></span> services

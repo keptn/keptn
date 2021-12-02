@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DtToggleButtonChange, DtToggleButtonItem } from '@dynatrace/barista-components/toggle-button-group';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Project } from '../../_models/project';
@@ -8,6 +8,8 @@ import { DataService } from '../../_services/data.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
+export type ServiceFilterType = 'evaluation' | 'problem' | 'approval' | undefined;
+
 @Component({
   selector: 'ktb-stage-details',
   templateUrl: './ktb-stage-details.component.html',
@@ -16,7 +18,7 @@ import { Subject } from 'rxjs';
 export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   public _project?: Project;
   public selectedStage?: Stage;
-  public filterEventType?: string;
+  public filterEventType: ServiceFilterType;
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
   };
@@ -37,7 +39,6 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     if (this._project !== project) {
       this._project = project;
       this.selectedStage = undefined;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -47,11 +48,10 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
 
   set filteredServices(services: string[]) {
     this._filteredServices = services;
-    this.resetFilter();
-    this._changeDetectorRef.markForCheck();
+    this.resetFilter(undefined);
   }
 
-  constructor(private dataService: DataService, private _changeDetectorRef: ChangeDetectorRef) {}
+  constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
@@ -59,14 +59,14 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectStage($event: { stage: Stage; filterType?: string }): void {
+  selectStage($event: { stage: Stage; filterType: ServiceFilterType }): void {
     this.selectedStage = $event.stage;
     if (this.filterEventType !== $event.filterType) {
       this.resetFilter($event.filterType);
     }
   }
 
-  private resetFilter(eventType?: string): void {
+  private resetFilter(eventType: ServiceFilterType): void {
     this.problemFilterEventButton?.deselect();
     this.evaluationFilterEventButton?.deselect();
     this.approvalFilterEventButton?.deselect();
@@ -84,10 +84,28 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     return ['service', service.serviceName, 'context', service.deploymentContext ?? '', 'stage', service.stage];
   }
 
-  public filterServices(services: Service[]): Service[] {
-    return this.filteredServices.length === 0
-      ? services
-      : services.filter((service) => this.filteredServices.includes(service.serviceName));
+  public filterServices(services: Service[], type: ServiceFilterType): Service[] {
+    const filteredServices =
+      this.filteredServices.length === 0
+        ? services
+        : services.filter((service) => this.filteredServices.includes(service.serviceName));
+    this.resetFilterIfEmpty(filteredServices, type);
+    return filteredServices;
+  }
+
+  private resetFilterIfEmpty(filteredServices: Service[], type: ServiceFilterType): void {
+    if (type && filteredServices.length === 0) {
+      if (type === 'evaluation' && this.filterEventType === 'evaluation') {
+        this.filterEventType = undefined;
+        this.evaluationFilterEventButton?.deselect();
+      } else if (type === 'problem' && this.filterEventType === 'problem') {
+        this.filterEventType = undefined;
+        this.problemFilterEventButton?.deselect();
+      } else if (type === 'approval' && this.filterEventType === 'approval') {
+        this.filterEventType = undefined;
+        this.approvalFilterEventButton?.deselect();
+      }
+    }
   }
 
   ngOnDestroy(): void {

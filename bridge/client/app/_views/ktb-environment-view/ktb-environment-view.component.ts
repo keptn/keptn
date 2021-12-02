@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostBinding } from '@angular/core';
+import { Component, HostBinding } from '@angular/core';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -15,11 +15,7 @@ export class KtbEnvironmentViewComponent {
   @HostBinding('class') cls = 'ktb-environment-view';
   public project$: Observable<Project | undefined>;
 
-  constructor(
-    private dataService: DataService,
-    private route: ActivatedRoute,
-    private _changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor(private dataService: DataService, private route: ActivatedRoute) {
     const projectName$ = this.route.paramMap.pipe(
       map((params) => params.get('projectName')),
       filter((projectName): projectName is string => !!projectName)

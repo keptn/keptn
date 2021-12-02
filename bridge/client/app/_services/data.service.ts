@@ -306,7 +306,7 @@ export class DataService {
           let projects = this._projects.getValue();
           const existingProject = projects?.find((p) => p.projectName === project.projectName);
           if (existingProject) {
-            Object.assign(existingProject, project.reduced);
+            existingProject.update(project);
             existingProject.projectDetailsLoaded = true;
           } else {
             project.projectDetailsLoaded = true;

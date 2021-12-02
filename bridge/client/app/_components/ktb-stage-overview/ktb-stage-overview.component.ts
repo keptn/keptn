@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Project } from '../../_models/project';
 import { Stage } from '../../_models/stage';
 import { DataService } from '../../_services/data.service';
@@ -10,13 +10,14 @@ import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
+import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.component';
 
 @Component({
   selector: 'ktb-stage-overview',
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
 })
-export class KtbStageOverviewComponent implements OnDestroy {
+export class KtbStageOverviewComponent implements OnDestroy, OnInit {
   public project?: Project;
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
@@ -25,10 +26,13 @@ export class KtbStageOverviewComponent implements OnDestroy {
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private unsubscribe$: Subject<void> = new Subject<void>();
 
-  @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType?: string }> = new EventEmitter();
-  @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
+  @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
+  @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {
+  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
+
+  public ngOnInit(): void {
+    // needs to be in init because of emitter
     const project$ = this.route.params.pipe(
       map((params) => params.projectName),
       filter((projectName) => !!projectName),
@@ -36,12 +40,13 @@ export class KtbStageOverviewComponent implements OnDestroy {
       takeUntil(this.unsubscribe$)
     );
     project$.subscribe((project) => {
+      const differentProject = project?.projectName !== this.project?.projectName;
       this.project = project;
-      this.setFilter();
+      this.setFilter(differentProject);
     });
   }
 
-  private setFilter(): void {
+  private setFilter(projectChanged: boolean): void {
     this._dataSource.data = {
       autocomplete: [
         {
@@ -54,25 +59,30 @@ export class KtbStageOverviewComponent implements OnDestroy {
       ],
     };
     this.globalFilter = this.apiService.environmentFilter;
+    let newFilter: string[];
     if (this.project) {
+      // services can be deleted or added; adjust filter
       const services = this.globalFilter[this.project.projectName]?.services || [];
-      this.filteredServices = services.filter((service) =>
+      newFilter = services.filter((service) =>
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.project!.getServices().some((pService) => pService.serviceName === service)
       );
     } else {
-      this.filteredServices = [];
+      newFilter = [];
     }
-    this.filterChange.emit(this.filteredServices);
-    this.filter = [
-      ...this.filteredServices.map(
-        (service) =>
-          [
-            (this._dataSource.data as DtFilterFieldDefaultDataSourceAutocomplete).autocomplete[0],
-            { name: service },
-          ] as DtFilterArray
-      ),
-    ];
+    if (projectChanged || newFilter.length !== this.filteredServices.length) {
+      this.filteredServices = newFilter;
+      this.filteredServicesChange.emit(this.filteredServices);
+      this.filter = [
+        ...this.filteredServices.map(
+          (service) =>
+            [
+              (this._dataSource.data as DtFilterFieldDefaultDataSourceAutocomplete).autocomplete[0],
+              { name: service },
+            ] as DtFilterArray
+        ),
+      ];
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,7 +93,7 @@ export class KtbStageOverviewComponent implements OnDestroy {
       this.globalFilter[this.project.projectName] = { services: this.filteredServices };
     }
     this.apiService.environmentFilter = this.globalFilter;
-    this.filterChange.emit(this.filteredServices);
+    this.filteredServicesChange.emit(this.filteredServices);
   }
 
   public filterServices(services: Service[]): Service[] {
@@ -104,7 +114,7 @@ export class KtbStageOverviewComponent implements OnDestroy {
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, stage: Stage, filterType?: string): void {
+  public selectStage($event: MouseEvent, stage: Stage, filterType: ServiceFilterType): void {
     this.selectedStage = stage;
     $event.stopPropagation();
     this.selectedStageChange.emit({ stage, filterType });

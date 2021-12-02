@@ -18,8 +18,8 @@ export class KtbServicesListComponent {
   @HostBinding('class') cls = 'ktb-services-list';
   public ServiceClass = Service;
   public _services: Service[] = [];
-  public _pageSize: number = DEFAULT_PAGE_SIZE;
   public dataSource: DtTableDataSource<Service> = new DtTableDataSource<Service>();
+  private _expanded = false;
 
   @Input()
   get services(): Service[] {
@@ -33,13 +33,13 @@ export class KtbServicesListComponent {
     }
   }
 
-  get pageSize(): number {
-    return this._pageSize;
+  get expanded(): boolean {
+    return this._expanded;
   }
 
-  set pageSize(value: number) {
-    if (this._pageSize !== value) {
-      this._pageSize = value;
+  set expanded(value: boolean) {
+    if (this._expanded !== value) {
+      this._expanded = value;
       this.updateDataSource();
     }
   }
@@ -51,28 +51,11 @@ export class KtbServicesListComponent {
   constructor(public dataService: DataService, public dateUtil: DateUtil) {}
 
   updateDataSource(): void {
-    this.services.sort(this.compare());
-    this.dataSource = new DtTableDataSource(this.services.slice(0, this.pageSize));
-  }
-
-  private compare() {
-    return (a: Service, b: Service): number => {
-      if (!a.latestSequence) {
-        return 1;
-      } else if (!b.latestSequence) {
-        return -1;
-      } else {
-        return new Date(b.latestSequence.time).getTime() - new Date(a.latestSequence.time).getTime();
-      }
-    };
+    this.dataSource = new DtTableDataSource(this.expanded ? this.services : this.services.slice(0, DEFAULT_PAGE_SIZE));
   }
 
   toggleAllServices(): void {
-    if (this.services.length > this.pageSize) {
-      this.pageSize = this.services.length;
-    } else if (this.pageSize > DEFAULT_PAGE_SIZE) {
-      this.pageSize = DEFAULT_PAGE_SIZE;
-    }
+    this.expanded = !this.expanded;
   }
 
   getServiceLink(service: Service): string[] {
