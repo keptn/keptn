@@ -186,10 +186,28 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	if params.Shipyard == nil && *params.Shipyard != "" {
-		newProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
-		if err != nil {
-			return ErrInvalidStageChange, nilRollback
+		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
+		shipyard, _ := common.UnmarshalShipyard(string(decodedShipyard))
+		var expandedStages []*models.ExpandedStage
+
+		for _, s := range shipyard.Spec.Stages {
+			es := &models.ExpandedStage{
+				Services:  []*models.ExpandedService{},
+				StageName: s.Name,
+			}
+			expandedStages = append(expandedStages, es)
 		}
+
+		newProject := &models.ExpandedProject{
+			CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
+			GitRemoteURI:    params.GitRemoteURL,
+			GitUser:         params.GitUser,
+			ProjectName:     *params.Name,
+			Shipyard:        string(decodedShipyard),
+			ShipyardVersion: shipyardVersion,
+			Stages:          expandedStages,
+		}
+
 		err = pm.validateShipyardStagesUnchaged(oldProject, newProject)
 		if err != nil {
 			return ErrInvalidStageChange, nilRollback
