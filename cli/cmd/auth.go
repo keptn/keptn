@@ -132,7 +132,7 @@ func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthPa
 func addCorrectHttpPrefix(authParams *authCmdParams) string {
 	prefix := "http://"
 
-	if *authParams.secure {
+	if *authParams.secure || strings.HasPrefix(*authParams.endPoint, "https://") {
 		prefix = "https://"
 	}
 
