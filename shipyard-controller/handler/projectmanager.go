@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -12,9 +16,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const shipyardVersion = "spec.keptn.sh/0.2.0"
@@ -184,6 +185,13 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return ErrProjectNotFound, nilRollback
 	}
 
+	if params.Shipyard == nil && *params.Shipyard != "" {
+		err = pm.validateShipyardStagesUnchaged(oldProject, params)
+		if err != nil {
+			return ErrInvalidStageChange, nilRollback
+		}
+	}
+
 	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
@@ -234,9 +242,9 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	// try to update shipyard project resource
-	if params.Shipyard != "" {
+	if *params.Shipyard != "" && params.Shipyard != nil {
 		shipyardResource := apimodels.Resource{
-			ResourceContent: params.Shipyard,
+			ResourceContent: *params.Shipyard,
 			ResourceURI:     common.Stringp("shipyard.yaml"),
 		}
 		err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &shipyardResource)
@@ -259,8 +267,8 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
-	if params.Shipyard != "" {
-		updateProject.Shipyard = params.Shipyard
+	if *params.Shipyard != "" && params.Shipyard != nil {
+		updateProject.Shipyard = *params.Shipyard
 	}
 
 	// try to update project information in database
@@ -470,6 +478,24 @@ func toModelProject(project models.ExpandedProject) apimodels.Project {
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
+}
+
+func (pm *ProjectManager) validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, params *models.UpdateProjectParams) error {
+	newProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
+	if err != nil {
+		return fmt.Errorf("failed to get updated project %s", *params.Name)
+	}
+	if len(newProject.Stages) != len(oldProject.Stages) {
+		return fmt.Errorf("unallowed addition/removal of project stages")
+	}
+
+	for i, oldStage := range oldProject.Stages {
+		if oldStage.StageName != newProject.Stages[i].StageName {
+			return fmt.Errorf("unallowed rename of project stages")
+		}
+	}
+
+	return nil
 }
 
 type gitCredentials struct {

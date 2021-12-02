@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
+
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"gopkg.in/yaml.v3"
-	"net/http"
 )
 
 type UpdateProjectParams struct {
@@ -25,7 +26,7 @@ type UpdateProjectParams struct {
 	Name *string `json:"name"`
 
 	// shipyard
-	Shipyard string `json:"shipyard"`
+	Shipyard *string `json:"shipyard"`
 }
 
 type CreateProjectParams struct {
@@ -117,7 +118,32 @@ func (updateProjectParams *UpdateProjectParams) Validate() error {
 		return errors.New("project name missing")
 	}
 	if !keptncommon.ValidateKeptnEntityName(*updateProjectParams.Name) {
-		return errors.New("provided project name is not a valid Keptn entity name")
+		errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
+		errorMsg += "Keptn relies on the following conventions: "
+		errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
+		errorMsg += "Please update project name and try again."
+		return errors.New(errorMsg)
+	}
+
+	if updateProjectParams.Shipyard == nil && *updateProjectParams.Shipyard != "" {
+		shipyard := &keptnv2.Shipyard{}
+		decodeString, err := base64.StdEncoding.DecodeString(*updateProjectParams.Shipyard)
+		if err != nil {
+			return errors.New("could not decode shipyard content using base64 decoder: " + err.Error())
+		}
+
+		err = yaml.Unmarshal(decodeString, shipyard)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal provided shipyard content: %s", err.Error())
+		}
+
+		if err := common.ValidateShipyardVersion(shipyard); err != nil {
+			return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+		}
+
+		if err := common.ValidateShipyardStages(shipyard); err != nil {
+			return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+		}
 	}
 
 	return nil
