@@ -18,8 +18,11 @@ import (
 
 var mongoDbVersion = "4.4.9"
 
-func setupLocalMongoDB() func() {
+func setupLocalMongoDB(t *testing.T) func() {
 	mongoServer, err := memongo.Start(mongoDbVersion)
+	if err != nil {
+		t.Errorf("Unable to start in-memory mongo server: %v", err)
+	}
 	randomDbName := memongo.RandomDatabase()
 
 	os.Setenv("MONGODB_DATABASE", randomDbName)
@@ -39,7 +42,7 @@ func setupLocalMongoDB() func() {
 }
 
 func TestStatisticsMongoDBRepo_Store_And_Get_Statistics(t *testing.T) {
-	defer setupLocalMongoDB()()
+	defer setupLocalMongoDB(t)()
 	type args struct {
 		statistics operations.Statistics
 	}
@@ -99,7 +102,7 @@ func TestStatisticsMongoDBRepo_Store_And_Get_Statistics(t *testing.T) {
 }
 
 func TestStatisticsMongoDBRepo_MigrateKeys(t *testing.T) {
-	defer setupLocalMongoDB()()
+	defer setupLocalMongoDB(t)()
 	type args struct {
 		statistics operations.Statistics
 	}
@@ -174,7 +177,7 @@ func TestStatisticsMongoDBRepo_MigrateKeys(t *testing.T) {
 }
 
 func TestStatisticsMongoDBRepo_MigrateKeys_SkipDocumentsWithoutProjects(t *testing.T) {
-	defer setupLocalMongoDB()()
+	defer setupLocalMongoDB(t)()
 	type args struct {
 		statistics operations.Statistics
 	}
