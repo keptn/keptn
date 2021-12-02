@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/keptn/keptn/statistics-service/db"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -36,9 +37,7 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 func main() {
-
 	log.SetLevel(log.InfoLevel)
-
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
 		if err != nil {
@@ -47,6 +46,15 @@ func main() {
 			log.SetLevel(logLevel)
 		}
 	}
+
+	// migration of data
+	log.Info("Migrating data")
+	repo := db.StatisticsMongoDBRepo{}
+	numMigratedDocs, err := repo.MigrateKeys()
+	if err != nil {
+		return
+	}
+	log.Infof("Migrated %d documents", numMigratedDocs)
 
 	_ = controller.GetStatisticsBucketInstance()
 

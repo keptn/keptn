@@ -1,18 +1,46 @@
 package controller
 
 import (
+	"context"
+	"fmt"
+	"github.com/go-test/deep"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	logger "github.com/sirupsen/logrus"
+	"github.com/tryvium-travels/memongo"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"os"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/go-test/deep"
-
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
 )
+
+var mongoDbVersion = "4.4.9"
+
+func setupLocalMongoDB() func() {
+	mongoServer, err := memongo.Start(mongoDbVersion)
+	randomDbName := memongo.RandomDatabase()
+
+	os.Setenv("MONGODB_DATABASE", randomDbName)
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+
+	var mongoDBClient *mongo.Client
+	mongoDBClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
+	if err != nil {
+		logger.Fatalf("Mongo Client setup failed: %s", err)
+	}
+	err = mongoDBClient.Connect(context.TODO())
+	if err != nil {
+		log.Fatalf("Mongo Server setup failed: %s", err)
+	}
+
+	return func() { mongoServer.Stop() }
+}
 
 // MockStatisticsRepo godoc
 type MockStatisticsRepo struct {
@@ -101,8 +129,8 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 }
 
 func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
+	defer setupLocalMongoDB()()
 	type fields struct {
-		StatisticsRepo  *MockStatisticsRepo
 		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
@@ -117,16 +145,11 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 		{
 			name: "Store current bucket",
 			fields: fields{
-				StatisticsRepo: &MockStatisticsRepo{
-					GetStatisticsFunc:    nil,
-					StoreStatisticsFunc:  nil,
-					DeleteStatisticsFunc: nil,
-				},
 				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
 					Projects: map[string]*operations.Project{
-						"my-project": &operations.Project{
+						"my-project": {
 							Name: "my-project",
 						},
 					},
@@ -140,24 +163,13 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			sb := &StatisticsBucket{
-				StatisticsRepo:  tt.fields.StatisticsRepo,
+				StatisticsRepo: &db.StatisticsMongoDBRepo{DbConnection: db.MongoDBConnection{}},
+				//StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
 				lock:            tt.fields.lock,
 				cutoffTime:      tt.fields.cutoffTime,
-			}
-			tt.fields.StatisticsRepo.StoreStatisticsFunc = func(statistics operations.Statistics) error {
-				diff := deep.Equal(statistics, sb.Statistics)
-				if len(diff) > 0 {
-					t.Error("StatisticsRepo did not receive expected value")
-					for _, d := range diff {
-						t.Log(d)
-					}
-
-				}
-				return nil
 			}
 			sb.storeCurrentBucket()
 		})
@@ -166,7 +178,6 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 
 func Test_statisticsBucket_AddEvent(t *testing.T) {
 	type fields struct {
-		StatisticsRepo  db.StatisticsRepo
 		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
@@ -186,7 +197,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 		{
 			name: "Add event to empty bucket",
 			fields: fields{
-				StatisticsRepo: nil,
 				Statistics: operations.Statistics{
 					From:     time.Time{},
 					To:       time.Time{},
@@ -241,7 +251,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 		{
 			name: "Add event to existing bucket",
 			fields: fields{
-				StatisticsRepo: nil,
 				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
@@ -317,7 +326,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 		{
 			name: "Add event to existing bucket for second event of same context",
 			fields: fields{
-				StatisticsRepo: nil,
 				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
@@ -388,7 +396,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sb := &StatisticsBucket{
-				StatisticsRepo:  tt.fields.StatisticsRepo,
+				StatisticsRepo:  &db.StatisticsMongoDBRepo{DbConnection: db.MongoDBConnection{}},
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
 				lock:            tt.fields.lock,
