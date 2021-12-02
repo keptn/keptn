@@ -150,7 +150,8 @@ func Test_SelfHealing(t *testing.T) {
 func performRemediation(t *testing.T, projectName string, serviceName string) *models.KeptnContextExtendedCE {
 	keptnContext, err := TriggerSequence(projectName, serviceName, "production", "remediation", &RemediationTriggered{
 		Problem: keptnv2.ProblemDetails{
-			RootCause: "Response time degradation",
+			RootCause:    "Response time degradation",
+			ProblemTitle: "My Problem",
 		},
 	})
 

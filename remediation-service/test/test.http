@@ -17,6 +17,8 @@ Content-Type: application/cloudevents+json
       "problemTitle": "Response time degradation",
       "rootCause": "Response time degradation"
     },
-    "actionIndex": 0
+    "get-action" : {
+      "actionIndex": 0
+    }
   }
 }

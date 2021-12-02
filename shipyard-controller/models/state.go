@@ -64,6 +64,7 @@ type SequenceStateEvaluation struct {
 type SequenceStateEvent struct {
 	Type string `json:"type" bson:"type"`
 	ID   string `json:"id" bson:"id"`
+
 	Time string `json:"time" bson:"time"`
 }
 
@@ -84,6 +85,7 @@ type SequenceState struct {
 	Shkeptncontext string               `json:"shkeptncontext" bson:"shkeptncontext"`
 	State          string               `json:"state" bson:"state"`
 	Stages         []SequenceStateStage `json:"stages" bson:"stages"`
+	ProblemTitle   string               `json:"problemTitle,omitempty" bson:"problemTitle"`
 }
 
 type SequenceStates struct {
