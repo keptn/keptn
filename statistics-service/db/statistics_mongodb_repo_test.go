@@ -131,7 +131,7 @@ func TestStatisticsMongoDBRepo_MigrateKeys(t *testing.T) {
 										},
 									},
 									ExecutedSequencesPerType: map[string]int{
-										"my.keptn.event.type": 1,
+										"my.keptn.event.t~ype": 1,
 									},
 								},
 							},
@@ -145,23 +145,33 @@ func TestStatisticsMongoDBRepo_MigrateKeys(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &StatisticsMongoDBRepo{}
 
+			// insert data containing "." in keys
 			insertStat(t, s, tt.args.statistics)
+
+			// insert data which is already encoded
+			err := s.StoreStatistics(tt.args.statistics)
+			require.Nil(t, err)
+
+			// start migration of all data
 			numDocsMigrated, err := s.MigrateKeys()
 			require.Nil(t, err)
-			assert.Equal(t, uint(1), numDocsMigrated)
+			assert.Equal(t, uint(2), numDocsMigrated)
 
+			// fetch data again
 			fetchedStats, err := s.GetStatistics(time.Time{}, time.Now().Add(time.Second*10))
 			if err != nil {
 				t.Errorf("GetStatistics() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			assert.Equal(t, len([]operations.Statistics{tt.args.statistics}), len(fetchedStats))
+			// check data is not mutated
+			assert.Equal(t, 2, len(fetchedStats))
 			assert.Equal(t, tt.args.statistics.Projects, fetchedStats[0].Projects)
+			assert.Equal(t, tt.args.statistics.Projects, fetchedStats[1].Projects)
 		})
 	}
 }
 
-func TestStatisticsMongoDBRepo_ReMigrateKeys(t *testing.T) {
+func TestStatisticsMongoDBRepo_MigrateKeys_SkipDocumentsWithoutProjects(t *testing.T) {
 	defer setupLocalMongoDB()()
 	type args struct {
 		statistics operations.Statistics
@@ -171,35 +181,12 @@ func TestStatisticsMongoDBRepo_ReMigrateKeys(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{name: "repo - migrate already migrated keys",
+		{name: "repo - migrateKeys - skip documents without projects",
 			args: args{
 				statistics: operations.Statistics{
-					From: time.Now(),
-					To:   time.Now().Add(time.Second),
-					Projects: map[string]*operations.Project{
-						"my-project": {
-							Name: "my-project",
-							Services: map[string]*operations.Service{
-								"my-service": {
-									Name: "my-service",
-									Events: map[string]int{
-										"my.keptn.event.type": 2,
-									},
-									KeptnServiceExecutions: map[string]*operations.KeptnService{
-										"my-keptn-service": {
-											Name: "my-keptn-service",
-											Executions: map[string]int{
-												"my.keptn.event.type": 1,
-											},
-										},
-									},
-									ExecutedSequencesPerType: map[string]int{
-										"my.keptn.event.type": 1,
-									},
-								},
-							},
-						},
-					},
+					From:     time.Now(),
+					To:       time.Now().Add(time.Second),
+					Projects: map[string]*operations.Project{},
 				},
 			},
 			wantErr: false},
@@ -211,16 +198,19 @@ func TestStatisticsMongoDBRepo_ReMigrateKeys(t *testing.T) {
 			err := s.StoreStatistics(tt.args.statistics)
 			require.Nil(t, err)
 
+			// start migration of all data
 			numDocsMigrated, err := s.MigrateKeys()
 			require.Nil(t, err)
-			assert.Equal(t, uint(1), numDocsMigrated)
+			assert.Equal(t, uint(0), numDocsMigrated)
 
+			// fetch data again
 			fetchedStats, err := s.GetStatistics(time.Time{}, time.Now().Add(time.Second*10))
 			if err != nil {
 				t.Errorf("GetStatistics() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			assert.Equal(t, len([]operations.Statistics{tt.args.statistics}), len(fetchedStats))
+			// check data is not mutated
+			assert.Equal(t, 1, len(fetchedStats))
 			assert.Equal(t, tt.args.statistics.Projects, fetchedStats[0].Projects)
 		})
 	}

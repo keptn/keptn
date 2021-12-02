@@ -94,7 +94,8 @@ func (s *StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics
 	return nil
 }
 
-// MigrateKeys godoc
+// MigrateKeys goes through each and every document and escapes keys which are known to dots (".")
+// https://github.com/keptn/keptn/issues/6250
 func (s *StatisticsMongoDBRepo) MigrateKeys() (uint, error) {
 	err := s.getCollection()
 	if err != nil {
@@ -116,6 +117,9 @@ func (s *StatisticsMongoDBRepo) MigrateKeys() (uint, error) {
 		hexID := &HexID{}
 		stats := &operations.Statistics{}
 		err := cur.Decode(stats)
+		if len(stats.Projects) == 0 {
+			continue
+		}
 		if err != nil {
 			return 0, err
 		}
@@ -139,7 +143,6 @@ func (s *StatisticsMongoDBRepo) MigrateKeys() (uint, error) {
 	}
 
 	return docsMigrated, nil
-
 }
 
 func (s *StatisticsMongoDBRepo) DeleteStatistics(from, to time.Time) error {

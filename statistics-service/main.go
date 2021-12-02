@@ -56,7 +56,7 @@ func main() {
 	}
 	log.Infof("Migrated %d documents", numMigratedDocs)
 
-	_ = controller.GetStatisticsBucketInstance()
+	controller.GetStatisticsBucketInstance()
 
 	router := gin.Default()
 	/// setting up middleware to handle graceful shutdown
