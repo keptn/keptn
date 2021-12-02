@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -35,6 +36,7 @@ import (
 // @BasePath /v1
 
 const envVarLogLevel = "LOG_LEVEL"
+const envDisableMigration = "DISABLE_DATA_MIGRATION"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -47,14 +49,17 @@ func main() {
 		}
 	}
 
-	// migration of data
-	log.Info("Migrating data")
-	repo := db.StatisticsMongoDBRepo{}
-	numMigratedDocs, err := repo.MigrateKeys()
-	if err != nil {
-		log.Errorf("Unable to migrate data: %v", err)
+	// data migration
+	dataMigrationDisabled := os.Getenv(envDisableMigration)
+	if strings.ToLower(dataMigrationDisabled) != "true" {
+		log.Info("Migrating data")
+		repo := db.StatisticsMongoDBRepo{}
+		numMigratedDocs, err := repo.MigrateKeys()
+		if err != nil {
+			log.Errorf("Unable to migrate data: %v", err)
+		}
+		log.Infof("Migrated %d documents", numMigratedDocs)
 	}
-	log.Infof("Migrated %d documents", numMigratedDocs)
 
 	controller.GetStatisticsBucketInstance()
 
