@@ -101,7 +101,7 @@ func (s *StatisticsMongoDBRepo) MigrateKeys() (uint, error) {
 	if err != nil {
 		return 0, err
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 1*time.Minute)
 	defer cancel()
 
 	searchOptions := bson.M{}
@@ -117,16 +117,25 @@ func (s *StatisticsMongoDBRepo) MigrateKeys() (uint, error) {
 		hexID := &HexID{}
 		stats := &operations.Statistics{}
 		err := cur.Decode(stats)
-		if len(stats.Projects) == 0 {
-			continue
-		}
 		if err != nil {
 			return 0, err
 		}
+		// if there is no project data, there is nothing to do
+		if len(stats.Projects) == 0 {
+			continue
+		}
+
+		// if there are no dots in keys, there is nothing to do
+		if noDotsInKeys(stats) {
+			continue
+		}
+
+		// get mongoDB "_id"
 		err = cur.Decode(hexID)
 		if err != nil {
 			return docsMigrated, err
 		}
+
 		decodedKeys, err := decodeKeys([]operations.Statistics{*stats})
 		if err != nil {
 			return docsMigrated, err
@@ -192,6 +201,31 @@ func decodeKeys(statistics []operations.Statistics) ([]operations.Statistics, er
 		newStatistics = append(newStatistics, *s)
 	}
 	return newStatistics, nil
+}
+
+func noDotsInKeys(statistics *operations.Statistics) bool {
+	for _, stat := range statistics.Projects {
+		for _, service := range stat.Services {
+			for eventType := range service.ExecutedSequencesPerType {
+				if strings.Contains(eventType, ".") {
+					return false
+				}
+			}
+			for eventType := range service.Events {
+				if strings.Contains(eventType, ".") {
+					return false
+				}
+			}
+			for _, keptnService := range service.KeptnServiceExecutions {
+				for eventType := range keptnService.Executions {
+					if strings.Contains(eventType, ".") {
+						return false
+					}
+				}
+			}
+		}
+	}
+	return true
 }
 
 func transform(statistics *operations.Statistics, tansformFn func(string) string) (*operations.Statistics, error) {

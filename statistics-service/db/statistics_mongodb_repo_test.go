@@ -155,7 +155,9 @@ func TestStatisticsMongoDBRepo_MigrateKeys(t *testing.T) {
 			// start migration of all data
 			numDocsMigrated, err := s.MigrateKeys()
 			require.Nil(t, err)
-			assert.Equal(t, uint(2), numDocsMigrated)
+
+			// one document should've been migrated
+			assert.Equal(t, uint(1), numDocsMigrated)
 
 			// fetch data again
 			fetchedStats, err := s.GetStatistics(time.Time{}, time.Now().Add(time.Second*10))
