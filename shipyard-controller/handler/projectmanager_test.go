@@ -442,11 +442,13 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
+		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -472,11 +474,13 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
+		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -502,11 +506,13 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
+		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -1119,4 +1125,128 @@ func TestDelete(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	instance.Delete("my-project")
+}
+
+func TestValidateShipyardStagesUnchaged(t *testing.T) {
+	secretStore := &common_mock.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+
+	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+		return nil
+	}
+
+	projectMVRepo.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+
+	oldStages := []*models.ExpandedStage{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}}
+	newStages := [][]*models.ExpandedStage{
+		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}},
+		{{StageName: "dev2"}, {StageName: "staging2"}, {StageName: "prod-ab"}, {StageName: "prod-ba"}},
+		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}},
+		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}, {StageName: "prod-c"}},
+	}
+	oldProject := &models.ExpandedProject{
+		CreationDate:    "creationdate",
+		GitRemoteURI:    "http://my-remote.uri",
+		GitUser:         "my-user",
+		ProjectName:     "my-project",
+		Shipyard:        "",
+		ShipyardVersion: "v2",
+		Stages:          oldStages,
+	}
+
+	var tests = []struct {
+		oldProject *models.ExpandedProject
+		newProject *models.ExpandedProject
+		err        bool
+	}{
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[0],
+			},
+			err: false,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[1],
+			},
+			err: true,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[2],
+			},
+			err: true,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[3],
+			},
+			err: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			err := instance.validateShipyardStagesUnchaged(tt.oldProject, tt.newProject)
+			if (err != nil) != tt.err {
+				t.Errorf("validateShipyardStagesUnchaged(): got %s, want %t", err.Error(), tt.err)
+			}
+		})
+	}
 }

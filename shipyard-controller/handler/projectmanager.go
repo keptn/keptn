@@ -186,7 +186,11 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	if params.Shipyard == nil && *params.Shipyard != "" {
-		err = pm.validateShipyardStagesUnchaged(oldProject, params)
+		newProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
+		if err != nil {
+			return ErrInvalidStageChange, nilRollback
+		}
+		err = pm.validateShipyardStagesUnchaged(oldProject, newProject)
 		if err != nil {
 			return ErrInvalidStageChange, nilRollback
 		}
@@ -480,11 +484,7 @@ func toModelProject(project models.ExpandedProject) apimodels.Project {
 	}
 }
 
-func (pm *ProjectManager) validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, params *models.UpdateProjectParams) error {
-	newProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
-	if err != nil {
-		return fmt.Errorf("failed to get updated project %s", *params.Name)
-	}
+func (pm *ProjectManager) validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProject *models.ExpandedProject) error {
 	if len(newProject.Stages) != len(oldProject.Stages) {
 		return fmt.Errorf("unallowed addition/removal of project stages")
 	}
