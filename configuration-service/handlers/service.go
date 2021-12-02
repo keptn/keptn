@@ -52,7 +52,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	metadataString, err := yaml.Marshal(newServiceMetadata)
 	err = common.WriteFile(servicePath+"/metadata.yaml", metadataString)
 
-	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName, true)
+	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName)
 
 	return service.NewPostProjectProjectNameStageStageNameServiceNoContent()
 }
@@ -91,7 +91,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory: " + err.Error())})
 	}
 
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted service: "+params.ServiceName, true)
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted service: "+params.ServiceName)
 	if err != nil {
 		logger.Error(err.Error())
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory: " + err.Error())})

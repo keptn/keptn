@@ -57,8 +57,8 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 
 	secret, err := clientSet.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
-		// if no secret was found, we just assume the user doesn't want a git upstream repo for this project
-		return nil, nil
+		// secret must be available since upstream repo is mandatory now
+		return nil, err
 	}
 	if err != nil {
 		return nil, err
@@ -84,12 +84,121 @@ func NewGitClient() *GitClient {
 	return &GitClient{CredentialReader: &K8sCredentialReader{}}
 }
 
-func (g *GitClient) ProjectExists(project string) bool {
+func (g *GitClient) ProjectRepoExists(project string) bool {
 	_, err := git.PlainOpen(GetProjectConfigPath(project))
 	if err == nil {
 		return true
 	}
 	return false
+}
+
+func (g *GitClient) StageAndCommitAll(project, message string) error {
+	credentials, err := g.CredentialReader.GetCredentials(project)
+	if err != nil {
+		return err
+	}
+
+	err = g.CommitChanges(project, credentials, message)
+	if err != nil {
+		return err
+	}
+
+	err = g.PullUpstreamChanges(project, credentials)
+	if err != nil {
+		return err
+	}
+
+	err = g.PushUpstreamChanges(project, credentials)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GitClient) PullUpstreamChanges(project string, credentials *common_models.GitCredentials) error {
+	var err error
+	if credentials == nil {
+		credentials, err = g.CredentialReader.GetCredentials(project)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, worktree, err := g.getWorkTree(project, credentials)
+	if err != nil {
+		return err
+	}
+
+	err = worktree.Pull(&git.PullOptions{
+		RemoteName: "origin",
+		Auth: &http.BasicAuth{
+			Username: credentials.User,
+			Password: credentials.Token,
+		},
+		Force: true,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *GitClient) CommitChanges(project string, credentials *common_models.GitCredentials, message string) error {
+	var err error
+	if credentials == nil {
+		credentials, err = g.CredentialReader.GetCredentials(project)
+		if err != nil {
+			return err
+		}
+	}
+	_, workTree, err := g.getWorkTree(project, credentials)
+	if err != nil {
+		return err
+	}
+
+	_, err = workTree.Add(".")
+	if err != nil {
+		return err
+	}
+	if message == "" {
+		message = "commit changes"
+	}
+	_, err = workTree.Commit(message, &git.CommitOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *GitClient) PushUpstreamChanges(project string, credentials *common_models.GitCredentials) error {
+	var err error
+	if credentials == nil {
+		credentials, err = g.CredentialReader.GetCredentials(project)
+		if err != nil {
+			return err
+		}
+	}
+	repo, _, err := g.getWorkTree(project, credentials)
+	if err != nil {
+		return err
+	}
+
+	err = repo.Push(&git.PushOptions{
+		RemoteName: "origin",
+		Auth: &http.BasicAuth{
+			Username: credentials.User,
+			Password: credentials.Token,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *GitClient) CloneRepo(project string) error {
@@ -104,9 +213,6 @@ func (g *GitClient) CloneRepo(project string) error {
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err != nil {
 		return err
-	}
-	if credentials == nil {
-		return errors.New("no credentials")
 	}
 
 	clone, err := git.PlainClone(GetProjectConfigPath(project), false,
@@ -182,6 +288,48 @@ func (g *GitClient) CloneRepo(project string) error {
 		return nil
 	}
 
+	return nil
+}
+
+func (g *GitClient) getWorkTree(project string, credentials *common_models.GitCredentials) (*git.Repository, *git.Worktree, error) {
+	projectConfigPath := GetProjectConfigPath(project)
+	// check if we already have a repository
+	repo, err := git.PlainOpen(projectConfigPath)
+	if err == nil {
+		return nil, nil, err
+	}
+
+	// check if remote matches with the credentials
+	err = g.ensureRemoteMatchesCredentials(repo, credentials)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return nil, nil, err
+	}
+	return repo, worktree, nil
+}
+
+func (g *GitClient) ensureRemoteMatchesCredentials(repo *git.Repository, credentials *common_models.GitCredentials) error {
+	remote, err := repo.Remote("origin")
+	if err != nil {
+		return err
+	}
+	if remote.Config().URLs[0] != credentials.RemoteURI {
+		err := repo.DeleteRemote("origin")
+		if err != nil {
+			return err
+		}
+		_, err = repo.CreateRemote(&config2.RemoteConfig{
+			Name: "origin",
+			URLs: []string{credentials.RemoteURI},
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -542,9 +690,9 @@ func setUpstreamsAndPush(project string, credentials *common_models.GitCredentia
 }
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
-func StageAndCommitAll(project string, message string, withPull bool) error {
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.StageAndCommitAll(project, message, withPull)
+func StageAndCommitAll(project string, message string) error {
+	g := NewGitClient()
+	return g.StageAndCommitAll(project, message)
 }
 
 func obfuscateErrorMessage(err error, credentials *common_models.GitCredentials) error {
@@ -577,7 +725,7 @@ func GetDefaultBranch(project string) (string, error) {
 func ProjectExists(project string) bool {
 	g := NewGitClient()
 
-	if g.ProjectExists(project) {
+	if g.ProjectRepoExists(project) {
 		return true
 	}
 	// if not, try to clone

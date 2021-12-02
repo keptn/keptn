@@ -162,7 +162,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+unescapedResourceName, true)
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+unescapedResourceName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -227,7 +227,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Added resources", true)
+	err := common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -337,7 +337,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
+	err := common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -399,7 +399,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
+	err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().

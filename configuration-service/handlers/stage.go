@@ -36,7 +36,7 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 	metadataString, err := yaml.Marshal(newStageMetadata)
 	err = common.WriteFile(stagePath+"/metadata.yaml", metadataString)
 
-	err = common.StageAndCommitAll(params.ProjectName, "Added stage: "+params.Stage.StageName, true)
+	err = common.StageAndCommitAll(params.ProjectName, "Added stage: "+params.Stage.StageName)
 	if err != nil {
 		logger.Error(err.Error())
 		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not commit changes")})
