@@ -384,6 +384,10 @@ func evaluateSingleCriteria(sliResult *keptnv2.SLIResult, criteria string, previ
 	}
 
 	if !co.IsComparison {
+		//compared value is used only if the criteria is a comparison without fixed threshold,
+		//anyway we calculate it here to allow Bridge to display it
+		sliResult.ComparedValue, _ = aggregateValues(previousResults, comparison)
+
 		// do a fixed threshold comparison
 		return evaluateFixedThreshold(sliResult, co, violation)
 	}
@@ -496,9 +500,6 @@ func calculatePercentile(values sort.Float64Slice, perc float64) float64 {
 
 func evaluateFixedThreshold(sliResult *keptnv2.SLIResult, co *criteriaObject, violation *keptnv2.SLITarget) (bool, error) {
 	violation.TargetValue = co.Value
-	//compared value is used only if the criteria is a comparison,
-	//otherwise we just need to set targetValue
-	//sliResult.ComparedValue = co.Value
 	return evaluateValue(sliResult.Value, co.Value, co.Operator)
 }
 
