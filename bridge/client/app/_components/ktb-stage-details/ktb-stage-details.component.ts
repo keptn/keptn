@@ -89,23 +89,10 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
       this.filteredServices.length === 0
         ? services
         : services.filter((service) => this.filteredServices.includes(service.serviceName));
-    this.resetFilterIfEmpty(filteredServices, type);
-    return filteredServices;
-  }
-
-  private resetFilterIfEmpty(filteredServices: Service[], type: ServiceFilterType): void {
-    if (type && filteredServices.length === 0) {
-      if (type === 'evaluation' && this.filterEventType === 'evaluation') {
-        this.filterEventType = undefined;
-        this.evaluationFilterEventButton?.deselect();
-      } else if (type === 'problem' && this.filterEventType === 'problem') {
-        this.filterEventType = undefined;
-        this.problemFilterEventButton?.deselect();
-      } else if (type === 'approval' && this.filterEventType === 'approval') {
-        this.filterEventType = undefined;
-        this.approvalFilterEventButton?.deselect();
-      }
+    if (this.filterEventType && filteredServices.length === 0 && this.filterEventType === type) {
+      this.resetFilter(undefined);
     }
+    return filteredServices;
   }
 
   ngOnDestroy(): void {

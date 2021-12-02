@@ -1,4 +1,12 @@
-import { Component, HostBinding, Input, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  DoCheck,
+  HostBinding,
+  Input,
+  IterableDiffer,
+  IterableDiffers,
+  ViewEncapsulation,
+} from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Service } from '../../_models/service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -14,12 +22,13 @@ const DEFAULT_PAGE_SIZE = 3;
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
 })
-export class KtbServicesListComponent {
+export class KtbServicesListComponent implements DoCheck {
   @HostBinding('class') cls = 'ktb-services-list';
   public ServiceClass = Service;
   public _services: Service[] = [];
   public dataSource: DtTableDataSource<Service> = new DtTableDataSource<Service>();
   private _expanded = false;
+  private iterableDiffer: IterableDiffer<unknown>;
 
   @Input()
   get services(): Service[] {
@@ -29,7 +38,6 @@ export class KtbServicesListComponent {
   set services(value: Service[]) {
     if (this._services !== value) {
       this._services = value;
-      this.updateDataSource();
     }
   }
 
@@ -48,7 +56,16 @@ export class KtbServicesListComponent {
     return DEFAULT_PAGE_SIZE;
   }
 
-  constructor(public dataService: DataService, public dateUtil: DateUtil) {}
+  constructor(public dataService: DataService, public dateUtil: DateUtil, private iterableDiffers: IterableDiffers) {
+    this.iterableDiffer = iterableDiffers.find([]).create();
+  }
+
+  public ngDoCheck(): void {
+    const changes = this.iterableDiffer.diff(this._services);
+    if (changes) {
+      this.updateDataSource();
+    }
+  }
 
   updateDataSource(): void {
     this.dataSource = new DtTableDataSource(this.expanded ? this.services : this.services.slice(0, DEFAULT_PAGE_SIZE));
