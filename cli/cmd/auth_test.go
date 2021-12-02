@@ -3,9 +3,9 @@ package cmd
 import (
 	"errors"
 	"os"
+	"strings"
 	"testing"
 	"time"
-	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -43,8 +43,8 @@ func TestSmartFetchKeptnAuthParameters(t *testing.T) {
 	var endPoint = "keptn.github.io"
 	var apiToken = "someApiToken"
 	var falseValue = false
-	var authParams = authCmdParams {
-		endPoint:			  &endPoint,
+	var authParams = authCmdParams{
+		endPoint:             &endPoint,
 		apiToken:             &apiToken,
 		exportConfig:         &falseValue,
 		acceptContext:        true,
@@ -66,6 +66,32 @@ func TestSmartFetchKeptnAuthParameters(t *testing.T) {
 
 	if !strings.HasPrefix(*authParams.endPoint, "http://") {
 		t.Errorf("TestSmartFetchKeptnAuthParameters: endpoint %s does not have the required http prefix", *authParams.endPoint)
+	}
+}
+
+func TestAddCorrectHttpPrefix(t *testing.T) {
+	var falseValue = false
+	var trueValue = true
+	var endpoint = []string{"http://some.url", "https://some.url", "some.url"}
+	var tests = []struct {
+		in  authCmdParams
+		out string
+	}{
+		{authCmdParams{secure: &trueValue, endPoint: &endpoint[0]}, "https://some.url"},
+		{authCmdParams{secure: &falseValue, endPoint: &endpoint[0]}, "http://some.url"},
+		{authCmdParams{secure: &trueValue, endPoint: &endpoint[1]}, "https://some.url"},
+		{authCmdParams{secure: &falseValue, endPoint: &endpoint[1]}, "https://some.url"},
+		{authCmdParams{secure: &trueValue, endPoint: &endpoint[2]}, "https://some.url"},
+		{authCmdParams{secure: &falseValue, endPoint: &endpoint[2]}, "http://some.url"},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			s := addCorrectHttpPrefix(&tt.in)
+			if s != tt.out {
+				t.Errorf("addCorrectHttpPrefix(): got %s, want %s", s, tt.out)
+			}
+		})
 	}
 }
 
