@@ -52,7 +52,7 @@ func main() {
 	repo := db.StatisticsMongoDBRepo{}
 	numMigratedDocs, err := repo.MigrateKeys()
 	if err != nil {
-		return
+		log.Errorf("Unable to migrate data: %v", err)
 	}
 	log.Infof("Migrated %d documents", numMigratedDocs)
 
