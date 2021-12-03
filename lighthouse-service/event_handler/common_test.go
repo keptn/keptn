@@ -230,6 +230,52 @@ total_score:
 			ExpectedError: nil,
 		},
 		{
+			Name: "Issue 6096 SLO file",
+			SLOFileContent: `---
+spec_version: ""
+filter: {}
+comparison:
+  compare_with: single_result
+  include_result_with_score: pass
+  number_of_comparison_results: 1
+  aggregate_function: avg
+objectives:
+- null
+- sli: srt
+  displayName: ""
+  pass: []
+  warning: []
+  weight: 1
+  key_sli: false
+total_score:
+  pass: 90%
+  warning: 75%`,
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
+				SpecVersion: "",
+				Filter:      map[string]string{},
+				Comparison: &keptn.SLOComparison{
+					CompareWith:               "single_result",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 1,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptn.SLO{
+					{
+						SLI:     "srt",
+						Pass:    []*keptn.SLOCriteria{},
+						Warning: []*keptn.SLOCriteria{},
+						Weight:  1,
+						KeySLI:  false,
+					},
+				},
+				TotalScore: &keptn.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			ExpectedError: nil,
+		},
+		{
 			Name: "Simple SLO file",
 			SLOFileContent: `---
 spec_version: '1.0'
