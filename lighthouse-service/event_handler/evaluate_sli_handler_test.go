@@ -1603,10 +1603,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
