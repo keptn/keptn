@@ -139,6 +139,9 @@ func (g *GitClient) PullUpstreamChanges(project string, credentials *common_mode
 	})
 
 	if err != nil {
+		if errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return nil
+		}
 		return err
 	}
 
@@ -165,7 +168,9 @@ func (g *GitClient) CommitChanges(project string, credentials *common_models.Git
 	if message == "" {
 		message = "commit changes"
 	}
-	_, err = workTree.Commit(message, &git.CommitOptions{})
+	_, err = workTree.Commit(message, &git.CommitOptions{
+		All: true,
+	})
 	if err != nil {
 		return err
 	}
@@ -295,7 +300,7 @@ func (g *GitClient) getWorkTree(project string, credentials *common_models.GitCr
 	projectConfigPath := GetProjectConfigPath(project)
 	// check if we already have a repository
 	repo, err := git.PlainOpen(projectConfigPath)
-	if err == nil {
+	if err != nil {
 		return nil, nil, err
 	}
 
@@ -656,8 +661,8 @@ func getRepoURI(uri string, user string, token string) string {
 
 // PullUpstream pulls changes from the upstream
 func PullUpstream(project string) error {
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.PullUpstream(project)
+	g := NewGitClient()
+	return g.PullUpstreamChanges(project, nil)
 }
 
 // Reset resets the current branch to the latest commit
