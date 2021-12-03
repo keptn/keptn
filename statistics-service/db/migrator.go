@@ -56,7 +56,7 @@ func (m *Migrator) Run(ctx context.Context) (uint, error) {
 func (m *Migrator) migrateBatch(ctx context.Context) (bool, error) {
 	skips := m.batchSize * (m.nextBatchNum - 1)
 	m.nextBatchNum++
-	ctx, cancel := context.WithTimeout(ctx, 100*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	cur, err := m.statsCollection.Find(ctx, bson.M{}, &options.FindOptions{
