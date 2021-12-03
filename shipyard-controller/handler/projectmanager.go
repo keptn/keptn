@@ -265,7 +265,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	// try to update shipyard project resource
-	if *params.Shipyard != "" && params.Shipyard != nil {
+	if params.Shipyard != nil && *params.Shipyard != "" {
 		shipyardResource := apimodels.Resource{
 			ResourceContent: *params.Shipyard,
 			ResourceURI:     common.Stringp("shipyard.yaml"),
@@ -290,7 +290,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
-	if *params.Shipyard != "" && params.Shipyard != nil {
+	if params.Shipyard != nil && *params.Shipyard != "" {
 		updateProject.Shipyard = *params.Shipyard
 	}
 
@@ -510,11 +510,22 @@ func (pm *ProjectManager) validateShipyardStagesUnchaged(oldProject *models.Expa
 
 	for i, oldStage := range oldProject.Stages {
 		if oldStage.StageName != newProject.Stages[i].StageName {
-			return fmt.Errorf("unallowed rename of project stages")
+			if !stageInArrayOfStages(oldStage.StageName, newProject.Stages) {
+				return fmt.Errorf("unallowed rename of project stages")
+			}
 		}
 	}
 
 	return nil
+}
+
+func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) bool {
+	for _, arrayStage := range stages {
+		if arrayStage.StageName == comparedStage {
+			return true
+		}
+	}
+	return false
 }
 
 type gitCredentials struct {

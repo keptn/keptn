@@ -1161,6 +1161,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		{{StageName: "dev2"}, {StageName: "staging2"}, {StageName: "prod-ab"}, {StageName: "prod-ba"}},
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}},
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}, {StageName: "prod-c"}},
+		{{StageName: "staging"}, {StageName: "dev"}, {StageName: "prod-b"}, {StageName: "prod-a"}},
 	}
 	oldProject := &models.ExpandedProject{
 		CreationDate:    "creationdate",
@@ -1228,6 +1229,19 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 				Stages:          newStages[3],
 			},
 			err: true,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[4],
+			},
+			err: false,
 		},
 	}
 

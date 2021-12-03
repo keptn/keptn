@@ -10,7 +10,7 @@ var ErrServiceNotFound = errors.New("service not found")
 
 var ErrProjectNotFound = errors.New("project not found")
 
-var ErrInvalidStageChange = errors.New("stage name cannot be changed/removed/updated")
+var ErrInvalidStageChange = errors.New("stage name cannot be changed or removed")
 
 var ErrStageNotFound = errors.New("stage not found")
 

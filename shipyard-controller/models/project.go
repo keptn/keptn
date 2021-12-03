@@ -26,7 +26,7 @@ type UpdateProjectParams struct {
 	Name *string `json:"name"`
 
 	// shipyard
-	Shipyard *string `json:"shipyard"`
+	Shipyard *string `json:"shipyard,omitempty"`
 }
 
 type CreateProjectParams struct {
@@ -81,11 +81,7 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 		return errors.New("project name missing")
 	}
 	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
-		errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
-		errorMsg += "Keptn relies on the following conventions: "
-		errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
-		errorMsg += "Please update project name and try again."
-		return errors.New(errorMsg)
+		return errors.New("provided project name is not a valid Keptn entity name")
 	}
 	if createProjectParams.Shipyard == nil || *createProjectParams.Shipyard == "" {
 		return errors.New("shipyard must contain a valid shipyard spec encoded in base64")
@@ -93,12 +89,12 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 	shipyard := &keptnv2.Shipyard{}
 	decodeString, err := base64.StdEncoding.DecodeString(*createProjectParams.Shipyard)
 	if err != nil {
-		return errors.New("could not decode shipyard content using base64 decoder: " + err.Error())
+		return errors.New("could not decode shipyard content")
 	}
 
 	err = yaml.Unmarshal(decodeString, shipyard)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal provided shipyard content: %s", err.Error())
+		return fmt.Errorf("could not unmarshal provided shipyard content")
 	}
 
 	if err := common.ValidateShipyardVersion(shipyard); err != nil {
@@ -118,23 +114,19 @@ func (updateProjectParams *UpdateProjectParams) Validate() error {
 		return errors.New("project name missing")
 	}
 	if !keptncommon.ValidateKeptnEntityName(*updateProjectParams.Name) {
-		errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
-		errorMsg += "Keptn relies on the following conventions: "
-		errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
-		errorMsg += "Please update project name and try again."
-		return errors.New(errorMsg)
+		return errors.New("provided project name is not a valid Keptn entity name")
 	}
 
 	if updateProjectParams.Shipyard != nil && *updateProjectParams.Shipyard != "" {
 		shipyard := &keptnv2.Shipyard{}
 		decodeString, err := base64.StdEncoding.DecodeString(*updateProjectParams.Shipyard)
 		if err != nil {
-			return errors.New("could not decode shipyard content using base64 decoder: " + err.Error())
+			return errors.New("could not decode shipyard content")
 		}
 
 		err = yaml.Unmarshal(decodeString, shipyard)
 		if err != nil {
-			return fmt.Errorf("could not unmarshal provided shipyard content: %s", err.Error())
+			return fmt.Errorf("could not unmarshal provided shipyard content")
 		}
 
 		if err := common.ValidateShipyardVersion(shipyard); err != nil {
