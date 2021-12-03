@@ -20,46 +20,51 @@ type Migrator struct {
 	batchSize       int
 	interval        time.Duration
 	migratedCount   uint
+	nextBatchNum    int
 }
 
+// NewMigrator creates a new instance of a Migrator
 func NewMigrator(batchSize int, interval time.Duration) *Migrator {
 	return &Migrator{
 		dbConnection: MongoDBConnection{},
 		batchSize:    batchSize,
 		interval:     interval,
+		nextBatchNum: 1,
 	}
 }
 
-func (m *Migrator) Migrate() (uint, error) {
+func (m *Migrator) Run(ctx context.Context) (uint, error) {
 	err := m.getCollection()
 	if err != nil {
 		return m.migratedCount, err
 	}
 
-	nextPageNum := 1
-	for nextPageNum != -1 {
-		nextPageNum, err = m.migrateBatch(m.batchSize, nextPageNum)
-		if err != nil {
-			return m.migratedCount, err
+	for {
+		select {
+		case <-ctx.Done():
+			return m.migratedCount, nil
+		case <-time.After(m.interval):
+			done, err := m.migrateBatch(ctx)
+			if done || err != nil {
+				return m.migratedCount, err
+			}
+			log.Infof("Migrated documents: %d", m.migratedCount)
 		}
-		log.Infof("Migrated documents: %d", m.migratedCount)
-		time.Sleep(m.interval)
 	}
-	return m.migratedCount, nil
 }
 
-func (m *Migrator) migrateBatch(batchSize int, batchNum int) (int, error) {
-	skips := batchSize * (batchNum - 1)
-	nextBatchNum := batchNum + 1
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+func (m *Migrator) migrateBatch(ctx context.Context) (bool, error) {
+	skips := m.batchSize * (m.nextBatchNum - 1)
+	m.nextBatchNum++
+	ctx, cancel := context.WithTimeout(ctx, 100*time.Second)
 	defer cancel()
 
 	cur, err := m.statsCollection.Find(ctx, bson.M{}, &options.FindOptions{
-		Limit: crateInt64P(batchSize),
+		Limit: crateInt64P(m.batchSize),
 		Skip:  crateInt64P(skips),
 	})
 	if err != nil {
-		return nextBatchNum, err
+		return false, err
 	}
 	defer cur.Close(ctx)
 
@@ -68,7 +73,7 @@ func (m *Migrator) migrateBatch(batchSize int, batchNum int) (int, error) {
 		stats := &operations.Statistics{}
 		err := cur.Decode(stats)
 		if err != nil {
-			return nextBatchNum, err
+			return false, err
 		}
 		currBatchSize++
 
@@ -84,27 +89,27 @@ func (m *Migrator) migrateBatch(batchSize int, batchNum int) (int, error) {
 		hexID := &HexID{}
 		err = cur.Decode(hexID)
 		if err != nil {
-			return nextBatchNum, err
+			return false, err
 		}
 
 		decodedKeys, err := decodeKeys([]operations.Statistics{*stats})
 		if err != nil {
-			return nextBatchNum, err
+			return false, err
 		}
 		statsWithEncodedKeys, err := encodeKeys(&decodedKeys[0])
 		if err != nil {
-			return nextBatchNum, err
+			return false, err
 		}
 		_, err = m.statsCollection.ReplaceOne(ctx, bson.M{"_id": hexID.ID}, statsWithEncodedKeys)
 		if err != nil {
-			return nextBatchNum, err
+			return false, err
 		}
 		m.migratedCount++
 	}
-	if currBatchSize < batchSize {
-		return -1, nil
+	if currBatchSize < m.batchSize {
+		return true, nil
 	}
-	return nextBatchNum, nil
+	return false, nil
 }
 func noDotsInKeys(statistics *operations.Statistics) bool {
 	for _, stat := range statistics.Projects {

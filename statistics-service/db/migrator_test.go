@@ -34,7 +34,7 @@ func Test_Migrate(t *testing.T) {
 							},
 						},
 						ExecutedSequencesPerType: map[string]int{
-							"my.keptn.event.type": 1,
+							"my~keptn.event.type": 1,
 						},
 					},
 				},
@@ -43,43 +43,33 @@ func Test_Migrate(t *testing.T) {
 	}
 
 	repo := StatisticsMongoDBRepo{}
-	err := repo.StoreStatistics(statistics)
-	require.Nil(t, err)
+
 	statistics.From = time.Now().Add(time.Second * 1)
 	statistics.From = time.Now().Add(time.Second * 2)
 	insertStat(t, &repo, statistics)
+
 	statistics.From = time.Now().Add(time.Second * 3)
 	statistics.From = time.Now().Add(time.Second * 4)
-	insertStat(t, &repo, statistics)
+	repo.StoreStatistics(statistics)
+
 	statistics.From = time.Now().Add(time.Second * 5)
 	statistics.From = time.Now().Add(time.Second * 6)
 	insertStat(t, &repo, statistics)
+
 	statistics.From = time.Now().Add(time.Second * 7)
-	statistics.From = time.Now().Add(time.Second * 8)
-	insertStat(t, &repo, statistics)
-	statistics.From = time.Now().Add(time.Second * 9)
-	statistics.From = time.Now().Add(time.Second * 10)
-	insertStat(t, &repo, statistics)
-
-	statistics.From = time.Now().Add(time.Second * 11)
-	statistics.From = time.Now().Add(time.Second * 12)
+	statistics.From = time.Now().Add(time.Second * 7)
 	repo.StoreStatistics(statistics)
 
-	statistics.From = time.Now().Add(time.Second * 13)
-	statistics.From = time.Now().Add(time.Second * 14)
-	repo.StoreStatistics(statistics)
-
-	statistics.From = time.Now().Add(time.Second * 15)
-	statistics.From = time.Now().Add(time.Second * 16)
-	repo.StoreStatistics(statistics)
-
-	migratedDocs, err := migrator.Migrate()
+	migratedDocs, err := migrator.Run(context.TODO())
 	require.Nil(t, err)
-	assert.Equal(t, uint(5), migratedDocs)
+	assert.Equal(t, uint(2), migratedDocs)
 
 	fetchedStats, err := repo.GetStatistics(time.Time{}, time.Now().Add(10*time.Hour))
 	require.Nil(t, err)
-	assert.Equal(t, statistics.Projects, fetchedStats[0].Projects)
+	require.Equal(t, 4, len(fetchedStats))
+	for _, f := range fetchedStats {
+		assert.Equal(t, statistics.Projects, f.Projects)
+	}
 }
 
 func insertStat(t *testing.T, s *StatisticsMongoDBRepo, statistics operations.Statistics) {

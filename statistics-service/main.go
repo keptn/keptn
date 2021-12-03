@@ -51,7 +51,7 @@ func main() {
 		go func() {
 			log.Infof("Migrating data (%d entries every %d seconds)", envConfig.DataMigrationBatchSize, envConfig.DataMigrationIntervalSec)
 			migrator := db.NewMigrator(envConfig.DataMigrationBatchSize, time.Second*time.Duration(envConfig.DataMigrationIntervalSec))
-			_, err := migrator.Migrate()
+			_, err := migrator.Run(context.Background())
 			if err != nil {
 				log.Errorf("Error during migration: %v", err)
 			}
