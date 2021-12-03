@@ -175,7 +175,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Success 200 {object} models.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Bad Request"
 // @Failure 424 {object} models.Error "Failed Dependency"
-// @Failure 403 {object} models.Error "Not Found"
+// @Failure 404 {object} models.Error "Not Found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {

@@ -442,13 +442,11 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -474,13 +472,11 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -506,13 +502,11 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -542,13 +536,11 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 		return &models.ExpandedProject{}, nil
 	}
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -606,13 +598,11 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-	shipyardTest := "my-old-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)

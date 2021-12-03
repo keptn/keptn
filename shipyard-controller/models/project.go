@@ -125,7 +125,7 @@ func (updateProjectParams *UpdateProjectParams) Validate() error {
 		return errors.New(errorMsg)
 	}
 
-	if updateProjectParams.Shipyard == nil && *updateProjectParams.Shipyard != "" {
+	if updateProjectParams.Shipyard != nil && *updateProjectParams.Shipyard != "" {
 		shipyard := &keptnv2.Shipyard{}
 		decodeString, err := base64.StdEncoding.DecodeString(*updateProjectParams.Shipyard)
 		if err != nil {

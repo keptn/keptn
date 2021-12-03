@@ -185,9 +185,10 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return ErrProjectNotFound, nilRollback
 	}
 
-	if params.Shipyard == nil && *params.Shipyard != "" {
+	if params.Shipyard != nil && *params.Shipyard != "" {
+		shipyard := &keptnv2.Shipyard{}
 		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
-		shipyard, _ := common.UnmarshalShipyard(string(decodedShipyard))
+		_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
 		var expandedStages []*models.ExpandedStage
 
 		for _, s := range shipyard.Spec.Stages {
