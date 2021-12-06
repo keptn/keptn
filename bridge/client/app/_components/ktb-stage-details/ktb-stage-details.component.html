@@ -52,7 +52,7 @@
               [value]="'approval'"
               [class.highlight]="approvalServices.length > 0"
               [disabled]="approvalServices.length === 0"
-              [selected]="filterEventType == 'approval'"
+              [selected]="filterEventType === 'approval'"
             >
               <dt-toggle-button-item-icon>
                 <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
@@ -63,7 +63,7 @@
             </button>
           </dt-toggle-button-group>
 
-          <ng-container *ngIf="selectedStage.services.length == 0">
+          <ng-container *ngIf="selectedStage.services.length === 0">
             <ktb-no-service-info></ktb-no-service-info>
           </ng-container>
 
@@ -72,7 +72,7 @@
               class="mt-1"
               [expanded]="service.getOpenApprovals().length > 0"
               [disabled]="
-                !service.hasFailedEvaluation() && !service.hasRemediations() && service.getOpenApprovals().length == 0
+                !service.hasFailedEvaluation() && !service.hasRemediations() && service.getOpenApprovals().length === 0
               "
               *ngIf="
                 !filterEventType ||
