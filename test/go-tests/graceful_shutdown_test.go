@@ -102,6 +102,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	err = waitAndKill(t, shipyardPod, 20)
 	require.Nil(t, err)
 
+	time.Sleep(5)
 	err = WaitForPodOfDeployment("shipyard-controller")
 	require.Nil(t, err)
 
