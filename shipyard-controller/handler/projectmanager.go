@@ -185,36 +185,6 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return ErrProjectNotFound, nilRollback
 	}
 
-	if params.Shipyard != nil && *params.Shipyard != "" {
-		shipyard := &keptnv2.Shipyard{}
-		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
-		_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
-		var expandedStages []*models.ExpandedStage
-
-		for _, s := range shipyard.Spec.Stages {
-			es := &models.ExpandedStage{
-				Services:  []*models.ExpandedService{},
-				StageName: s.Name,
-			}
-			expandedStages = append(expandedStages, es)
-		}
-
-		newProject := &models.ExpandedProject{
-			CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-			GitRemoteURI:    params.GitRemoteURL,
-			GitUser:         params.GitUser,
-			ProjectName:     *params.Name,
-			Shipyard:        string(decodedShipyard),
-			ShipyardVersion: shipyardVersion,
-			Stages:          expandedStages,
-		}
-
-		err = pm.validateShipyardStagesUnchaged(oldProject, newProject)
-		if err != nil {
-			return ErrInvalidStageChange, nilRollback
-		}
-	}
-
 	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
@@ -264,8 +234,14 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 	}
 
+	var isShipyardPresent = params.Shipyard != nil && *params.Shipyard != ""
+
 	// try to update shipyard project resource
-	if params.Shipyard != nil && *params.Shipyard != "" {
+	if isShipyardPresent {
+		if err = pm.validateShipyardUpdate(params, oldProject); err != nil {
+			return err, nilRollback
+		}
+
 		shipyardResource := apimodels.Resource{
 			ResourceContent: *params.Shipyard,
 			ResourceURI:     common.Stringp("shipyard.yaml"),
@@ -290,7 +266,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
-	if params.Shipyard != nil && *params.Shipyard != "" {
+	if isShipyardPresent {
 		updateProject.Shipyard = *params.Shipyard
 	}
 
@@ -526,6 +502,37 @@ func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) 
 		}
 	}
 	return false
+}
+
+func (pm *ProjectManager) validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *models.ExpandedProject) error {
+	shipyard := &keptnv2.Shipyard{}
+	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
+	_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
+	var expandedStages []*models.ExpandedStage
+
+	for _, s := range shipyard.Spec.Stages {
+		es := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: s.Name,
+		}
+		expandedStages = append(expandedStages, es)
+	}
+
+	newProject := &models.ExpandedProject{
+		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI:    params.GitRemoteURL,
+		GitUser:         params.GitUser,
+		ProjectName:     *params.Name,
+		Shipyard:        string(decodedShipyard),
+		ShipyardVersion: shipyardVersion,
+		Stages:          expandedStages,
+	}
+
+	err := pm.validateShipyardStagesUnchaged(oldProject, newProject)
+	if err != nil {
+		return ErrInvalidStageChange
+	}
+	return nil
 }
 
 type gitCredentials struct {
