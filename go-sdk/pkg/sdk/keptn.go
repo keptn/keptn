@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,7 +16,6 @@ import (
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
 const KeptnContextCEExtension = "shkeptncontext"
 const TriggeredIDCEExtension = "triggeredid"
-const ConfigurationServiceURL = "configuration-service:8080"
 
 //go:generate moq  -out ./resourcehhandler_mock.go . ResourceHandler
 type ResourceHandler interface {
@@ -121,6 +119,13 @@ func WithGracefulShutdown(gracefulShutdown bool) KeptnOption {
 	}
 }
 
+// WithLogger configures keptn to use another logger
+func WithLogger(logger Logger) KeptnOption {
+	return func(k *Keptn) {
+		k.logger = logger
+	}
+}
+
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
 	eventSender            EventSender
@@ -132,6 +137,7 @@ type Keptn struct {
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	receivingEvent         interface{}
+	logger                 Logger
 }
 
 // NewKeptn creates a new Keptn
@@ -139,6 +145,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 	client := NewHTTPClientFromEnv()
 	resourceHandler := NewResourceHandlerFromEnv()
 	taskRegistry := NewTasksMap()
+	logger := NewDefaultLogger()
 	keptn := &Keptn{
 		eventSender:            &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: client},
 		eventReceiver:          client,
@@ -148,6 +155,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		automaticEventResponse: true,
 		gracefulShutdown:       true,
 		syncProcessing:         false,
+		logger:                 logger,
 	}
 	for _, opt := range opts {
 		opt(keptn)
@@ -194,7 +202,7 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 
 func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 	if !keptnv2.IsTaskEventType(event.Type()) {
-		log.Errorf("event with event type %s is no valid keptn task event type", event.Type())
+		k.logger.Errorf("event with event type %s is no valid keptn task event type", event.Type())
 		return
 	}
 	ctx.Value(gracefulShutdownKey).(wgInterface).Add(1)
@@ -206,12 +214,12 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
 					errorLogEvent, err := k.createErrorLogEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})
 					if err != nil {
-						log.Errorf("unable to create '.error.log' event from '.triggered' event: %v", err)
+						k.logger.Errorf("unable to create '.error.log' event from '.triggered' event: %v", err)
 						return
 					}
 					// no started event sent yet, so it only makes sense to Send an error log event at this point
 					if err := k.send(*errorLogEvent); err != nil {
-						log.Errorf("unable to send '.finished' event: %v", err)
+						k.logger.Errorf("unable to send '.finished' event: %v", err)
 						return
 					}
 				}
@@ -220,7 +228,7 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 				// only if all functions return true, the event will be handled
 				for _, filterFn := range handler.EventFilters {
 					if !filterFn(k, *keptnEvent) {
-						log.Infof("Will not handle incoming %s event", event.Type())
+						k.logger.Infof("Will not handle incoming %s event", event.Type())
 						return
 					}
 				}
@@ -229,41 +237,41 @@ func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
 				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
 					startedEvent, err := k.createStartedEventForTriggeredEvent(event)
 					if err != nil {
-						log.Errorf("unable to create '.started' event from '.triggered' event: %v", err)
+						k.logger.Errorf("unable to create '.started' event from '.triggered' event: %v", err)
 						return
 					}
 					if err := k.send(*startedEvent); err != nil {
-						log.Errorf("unable to send '.started' event: %v", err)
+						k.logger.Errorf("unable to send '.started' event: %v", err)
 						return
 					}
 				}
 
 				result, err := handler.TaskHandler.Execute(k, *keptnEvent)
 				if err != nil {
-					log.Errorf("error during task execution %v", err.Err)
+					k.logger.Errorf("error during task execution %v", err.Err)
 					if k.automaticEventResponse {
 						errorEvent, err := k.createErrorEvent(event, result, err)
 						if err != nil {
-							log.Errorf("unable to create '.error' event: %v", err)
+							k.logger.Errorf("unable to create '.error' event: %v", err)
 							return
 						}
 						if err := k.send(*errorEvent); err != nil {
-							log.Errorf("unable to send '.error' event: %v", err)
+							k.logger.Errorf("unable to send '.error' event: %v", err)
 							return
 						}
 					}
 					return
 				}
 				if result == nil {
-					log.Infof("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
+					k.logger.Infof("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
 				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
 					finishedEvent, err := k.createFinishedEventForReceivedEvent(event, result)
 					if err != nil {
-						log.Errorf("unable to create '.finished' event: %v", err)
+						k.logger.Errorf("unable to create '.finished' event: %v", err)
 						return
 					}
 					if err := k.send(*finishedEvent); err != nil {
-						log.Errorf("unable to send '.finished' event: %v", err)
+						k.logger.Errorf("unable to send '.finished' event: %v", err)
 						return
 					}
 				}
@@ -281,9 +289,9 @@ func (k *Keptn) runEventTaskAction(fn func()) {
 }
 
 func (k *Keptn) send(event cloudevents.Event) error {
-	log.Infof("Sending %s event", event.Type())
+	k.logger.Infof("Sending %s event", event.Type())
 	if err := k.eventSender.SendEvent(event); err != nil {
-		log.Println("Error sending .started event")
+		k.logger.Error("Error sending .started event")
 	}
 	return nil
 }

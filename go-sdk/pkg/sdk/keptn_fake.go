@@ -62,7 +62,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 	eventReceiver := &TestReceiver{}
 	eventSender := &TestSender{}
 	resourceHandler := &TestResourceHandler{}
-
+	logger := NewDefaultLogger()
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler: resourceHandler,
 		Keptn: &Keptn{
@@ -74,6 +74,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 			syncProcessing:         true,
 			automaticEventResponse: true,
 			gracefulShutdown:       false,
+			logger:                 logger,
 		},
 	}
 	return fakeKeptn

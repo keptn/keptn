@@ -39,6 +39,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		eventReceiver:          eventReceiver,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
+		logger:                 NewDefaultLogger(),
 	}
 
 	keptn.Start()
@@ -86,6 +87,7 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 		eventReceiver:          eventReceiver,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: false,
+		logger:                 NewDefaultLogger(),
 	}
 
 	keptn.Start()
@@ -126,6 +128,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 		eventReceiver:          eventReceiver,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
+		logger:                 NewDefaultLogger(),
 	}
 
 	keptn.Start()
