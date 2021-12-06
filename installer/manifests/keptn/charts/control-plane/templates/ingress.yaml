@@ -9,7 +9,7 @@ metadata:
   {{- end }}
 {{- end }}
   name: keptn-ingress
-  namespace: keptn
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: ingress
     app.kubernetes.io/instance: {{ .Release.Name }}
