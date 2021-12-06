@@ -56,7 +56,7 @@ total_score:
 const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
-	projectName := "quality-gates"
+	projectName := "quality-gates2"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)

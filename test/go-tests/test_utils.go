@@ -29,6 +29,31 @@ const (
 	KeptnSpecVersion      = "0.2.0"
 	KeptnNamespaceEnvVar  = "KEPTN_NAMESPACE"
 	DefaultKeptnNamespace = "keptn"
+
+	ProjectUpstreamRecreationJob = `apiVersion: batch/v1
+kind: Job
+metadata:
+  name: recreate-gitea-repo
+  namespace: <KEPTN_NAMESPACE_PLACEHOLDER>
+spec:
+  template:
+    spec:
+      containers:
+        - name: delete-repo
+          image: curlimages/curl:7.80.0
+          command:
+            - sh
+            - -c
+          args:
+            - 'curl -X DELETE "http://gitea-http:3000/api/v1/repos/<USER_PLACEHOLDER>/<REPOSITORY_PLACEHOLDER>?access_token=<TOKEN_PLACEHOLDER>"'
+        - name: create-repo
+          image: curlimages/curl:7.80.0
+          command:
+            - sh
+            - -c
+          args:
+            - 'curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=<TOKEN_PLACEHOLDER>" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"<REPOSITORY_PLACEHOLDER>\", \"description\": \"Sample description\"}"'
+      restartPolicy: Never`
 )
 
 type APIEventSender struct {
@@ -73,7 +98,30 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s", projectName, shipyardFilePath))
+		upstreamCreationJob := strings.ReplaceAll(ProjectUpstreamRecreationJob, "<USER_PLACEHOLDER>", os.Getenv("GITEA_ADMIN_USER"))
+		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<TOKEN_PLACEHOLDER>", os.Getenv("GITEA_TOKEN"))
+		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<REPOSITORY_PLACEHOLDER>", projectName)
+		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<KEPTN_NAMESPACE_PLACEHOLDER>", GetKeptnNameSpaceFromEnv())
+
+		file, err := CreateTmpFile("project-recreate.yaml", upstreamCreationJob)
+		if err != nil {
+			return err
+		}
+
+		defer func() {
+			_, _ = ExecuteCommandf("kubectl delete -f %s", file)
+			_ = os.Remove(file)
+		}()
+
+		_, err = ExecuteCommandf("kubectl apply -f %s", file)
+		if err != nil {
+			return err
+		}
+
+		<-time.After(20 * time.Second) // TODO: wait for job to be completed, for now just wait a couple of seconds
+
+		// apply the k8s job for creating the git upstream
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", projectName, shipyardFilePath, os.Getenv("GITEA_ADMIN_USER"), projectName, os.Getenv("GITEA_ADMIN_USER"), os.Getenv("GITEA_TOKEN")))
 
 		if err == nil {
 			return nil

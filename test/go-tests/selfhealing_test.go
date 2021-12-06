@@ -166,6 +166,6 @@ func performRemediation(t *testing.T, projectName string, serviceName string) *m
 		}
 		remediationFinishedEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 	return remediationFinishedEvent
 }

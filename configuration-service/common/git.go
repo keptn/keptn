@@ -632,8 +632,8 @@ func (g *Git) Reset(project string) error {
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func CloneRepo(project string) (bool, error) {
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
+func CloneRepo(project string) error {
+	g := NewGitClient()
 	return g.CloneRepo(project)
 }
 
@@ -671,17 +671,11 @@ func Reset(project string) error {
 	return g.Reset(project)
 }
 
-// CreateStage creates a new stage directory
-func CreateStage(project string, branch string, sourceBranch string) error {
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.CreateStage(project, branch, sourceBranch)
-}
-
 // UpdateOrCreateOrigin tries to update the remote origin.
 // If no remote origin exists, it will add one
 func UpdateOrCreateOrigin(project string) error {
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.UpdateOrCreateOrigin(project)
+	g := NewGitClient()
+	return g.PullUpstreamChanges(project, nil)
 }
 
 func removeRemoteOrigin(project string) error {
