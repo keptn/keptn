@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Logger interface used by the go sdk
 type Logger interface {
 	Debug(v ...interface{})
 	Debugf(format string, v ...interface{})
@@ -16,14 +17,14 @@ type Logger interface {
 	Errorf(format string, v ...interface{})
 	Fatal(v ...interface{})
 	Fatalf(format string, v ...interface{})
-	Panic(v ...interface{})
-	Panicf(format string, v ...interface{})
 }
 
+// DefaultLogger implementation of Logger using the go log package
 type DefaultLogger struct {
 	logger *log.Logger
 }
 
+// NewDefaultLogger creates a new Default Logger
 func NewDefaultLogger() *DefaultLogger {
 	return &DefaultLogger{logger: log.New(os.Stdout, "", 5)}
 }
@@ -66,12 +67,4 @@ func (d DefaultLogger) Fatal(v ...interface{}) {
 
 func (d DefaultLogger) Fatalf(format string, v ...interface{}) {
 	d.logger.Fatalf(format, v...)
-}
-
-func (d DefaultLogger) Panic(v ...interface{}) {
-	d.logger.Panic(v...)
-}
-
-func (d DefaultLogger) Panicf(format string, v ...interface{}) {
-	d.logger.Panicf(format, v...)
 }
