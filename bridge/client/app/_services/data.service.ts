@@ -15,7 +15,7 @@ import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
-import { KeptnInfoResult } from '../_models/keptn-info-result';
+import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';

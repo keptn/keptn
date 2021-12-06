@@ -1,14 +1,18 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
-import { FeatureFlags } from '../../../shared/interfaces/feature-flags';
+import { DataService } from './data.service';
+import { KeptnInfo } from '../_models/keptn-info';
+import { filter } from 'rxjs/operators';
+import { IClientFeatureFlags } from '../../../shared/interfaces/feature-flags';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeatureFlagsService {
-  public featureFlags: FeatureFlags;
+  public featureFlags?: IClientFeatureFlags;
 
-  constructor() {
-    this.featureFlags = environment.featureFlags;
+  constructor(dataService: DataService) {
+    dataService.keptnInfo.pipe(filter((info): info is KeptnInfo => !!info)).subscribe((info) => {
+      this.featureFlags = info.bridgeInfo.featureFlags;
+    });
   }
 }

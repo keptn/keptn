@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable, of } from 'rxjs';
-import { KeptnInfoResult } from '../_models/keptn-info-result';
+import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
 import { KeptnVersions } from '../_models/keptn-versions';
 import { Project } from '../_models/project';
