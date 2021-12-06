@@ -215,11 +215,13 @@ func main() {
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
 
+	log.Info("Migrating project key format")
 	projectsMigrator := migration.NewProjectMVMigrator(db.GetMongoDBConnectionInstance())
 	err = projectsMigrator.MigrateKeys()
 	if err != nil {
 		log.Errorf("Unable to run projects migrator: %v", err)
 	}
+	log.Info("Finished migrating project key format")
 
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)
