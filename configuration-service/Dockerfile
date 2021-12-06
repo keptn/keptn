@@ -76,7 +76,7 @@ ENV GOTRACEBACK=all
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
-RUN adduser -D nonroot -u 65532
+RUN adduser -D nonroot -u 1001 -g 1001
 USER nonroot
 
 # Run the web service on container startup.

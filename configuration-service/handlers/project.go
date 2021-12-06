@@ -57,6 +57,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not clone git repository")})
 		}
+		err = common.SetGitConfig(params.Project.ProjectName)
+		if err != nil {
+			logger.Errorf("Could not set git config for project %s: %v", params.Project.ProjectName, err.Error())
+			rollbackFunc()
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
+		}
 
 	} else {
 		// if no remote URI has been specified, create a new repo
@@ -71,6 +77,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
 			logger.WithError(err).Errorf("Could not initialize git repository during creating project %s", params.Project.ProjectName)
+			rollbackFunc()
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
+		}
+		err = common.SetGitConfig(params.Project.ProjectName)
+		if err != nil {
+			logger.Errorf("Could not set git config for project %s: %v", params.Project.ProjectName, err.Error())
 			rollbackFunc()
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
 		}
