@@ -29,6 +29,10 @@ func (f *FakeKeptn) SendFinishedEvent(event KeptnEvent, result interface{}) erro
 	return f.Keptn.SendFinishedEvent(event, result)
 }
 
+func (f *FakeKeptn) Logger() Logger {
+	return f.Keptn.Logger()
+}
+
 func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 	if f.TestResourceHandler == nil {
 		return &TestResourceHandler{}

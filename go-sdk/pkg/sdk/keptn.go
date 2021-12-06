@@ -43,6 +43,10 @@ type IKeptn interface {
 	SendStartedEvent(event KeptnEvent) error
 	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
 	SendFinishedEvent(event KeptnEvent, result interface{}) error
+	// Logger returns the logger used by the sdk
+	// Per default DefaultLogger is used which internally just uses the go logging package
+	// Another logger can be configured using the sdk.WithLogger function
+	Logger() Logger
 }
 
 //go:generate moq -out ./taskhandler_mock.go . TaskHandler
@@ -198,6 +202,10 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 		return err
 	}
 	return k.send(*finishedEvent)
+}
+
+func (k *Keptn) Logger() Logger {
+	return k.logger
 }
 
 func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
