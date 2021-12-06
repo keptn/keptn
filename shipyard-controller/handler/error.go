@@ -14,6 +14,8 @@ var ErrInvalidStageChange = errors.New("stage name cannot be changed or removed"
 
 var ErrStageNotFound = errors.New("stage not found")
 
+var ErrChangesRollback = errors.New("failed to rollback changes")
+
 var ErrOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
 
 var ErrSequencePaused = errors.New("sequence is paused")
