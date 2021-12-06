@@ -25,7 +25,30 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
-FROM builder-base as builder-test
+FROM golang:1.16.2 as builder-test
+
+# install additional dependencies
+RUN apt-get install -y gcc libc-dev git
+
+# Force the go compiler to use modules
+ENV GO111MODULE=on
+ENV BUILDFLAGS=""
+ENV GOPROXY=https://proxy.golang.org
+
+# Pre-Req for gin-gonic/go-swagger: Install swag cli to generate swagger.yaml and swagger.json
+RUN go get -u github.com/swaggo/swag/cmd/swag@v1.7.0
+
+WORKDIR /go/src/github.com/keptn/keptn/shipyard-controller
+
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy local code to the container image.
+COPY . .
 
 CMD go test -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
