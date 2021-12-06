@@ -27,8 +27,8 @@
       >
         <ktb-selectable-tile
           *ngFor="let stage of project.getStages(parentStage)"
-          (click)="selectStage($event, stage)"
-          [selected]="selectedStage == stage"
+          (click)="selectStage($event, stage, undefined)"
+          [selected]="selectedStage === stage"
         >
           <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
           <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
