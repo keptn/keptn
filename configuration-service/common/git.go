@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	config2 "github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"gopkg.in/yaml.v3"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -82,6 +84,18 @@ type GitClient struct {
 
 func NewGitClient() *GitClient {
 	return &GitClient{CredentialReader: &K8sCredentialReader{}}
+}
+
+func (g *GitClient) ProjectExists(project string) bool {
+	if g.ProjectRepoExists(project) {
+		return true
+	}
+	// if not, try to clone
+	err := g.CloneRepo(project)
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 func (g *GitClient) ProjectRepoExists(project string) bool {
@@ -247,8 +261,9 @@ func (g *GitClient) CloneRepo(project string) error {
 	if err != nil {
 		// empty repository, create project metadata
 		newProjectMetadata := &ProjectMetadata{
-			ProjectName:       project,
-			CreationTimestamp: time.Now().String(),
+			ProjectName:               project,
+			CreationTimestamp:         time.Now().String(),
+			IsUsingDirectoryStructure: true,
 		}
 
 		metadataString, err := yaml.Marshal(newProjectMetadata)
@@ -291,6 +306,113 @@ func (g *GitClient) CloneRepo(project string) error {
 			return err
 		}
 		return nil
+	}
+
+	return nil
+}
+
+// MigrateProject checks whether a project has already been migrated to the directory-based structure for branches. if not, it will do the migration
+func (g *GitClient) MigrateProject(project string) error {
+	if !g.ProjectExists(project) {
+		return errors.New("project does not exist")
+	}
+	credentials, err := g.CredentialReader.GetCredentials(project)
+	if err != nil {
+		return err
+	}
+	err = g.PullUpstreamChanges(project, credentials)
+
+	metadata := &ProjectMetadata{}
+	metadataFileContent, err := os.ReadFile(GetProjectConfigPath(project) + "/metadata.yaml")
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(metadataFileContent, metadata)
+	if err != nil {
+		return err
+	}
+
+	// check metadata if already migrated - if yes, no need to do anything
+	if metadata.IsUsingDirectoryStructure {
+		return nil
+	}
+
+	tmpProjectPath := GetTmpProjectConfigPath(project)
+	// create a new repo from the previous upstream - store it in a tmp directory
+	tmpClone, err := git.PlainClone(tmpProjectPath, false,
+		&git.CloneOptions{
+			URL: credentials.RemoteURI,
+			Auth: &http.BasicAuth{
+				Username: credentials.User,
+				Password: credentials.Token,
+			},
+		},
+	)
+
+	// check out branches of the remote and store the content in the master branch of the tmp repo
+	oldRepo, oldRepoWorktree, err := g.getWorkTree(project, credentials)
+	if err != nil {
+		return err
+	}
+
+	branches, err := oldRepo.Branches()
+
+	err = branches.ForEach(func(branch *plumbing.Reference) error {
+		err = oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
+		if err != nil {
+			return err
+		}
+		//newStageMetadata := &StageMetadata{
+		//	StageName:         branch.Name().String(),
+		//	CreationTimestamp: time.Now().String(),
+		//}
+		//
+		//metadataString, err := yaml.Marshal(newStageMetadata)
+		//if err != nil {
+		//	return err
+		//}
+		files, err := ioutil.ReadDir(GetProjectConfigPath(project))
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			err := os.Rename(GetProjectConfigPath(project)+"/"+file.Name(), GetTmpProjectConfigPath(project)+"/keptn-stages/"+branch.Name().String()+"/"+file.Name())
+			if err != nil {
+				return err
+			}
+		}
+		//err = WriteFile(tmpProjectPath+"/keptn-stages/"+"/metadata.yaml", metadataString)
+		//if err != nil {
+		//	return err
+		//}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	tmpWorktree, err := tmpClone.Worktree()
+	_, err = tmpWorktree.Add(".")
+	if err != nil {
+		return err
+	}
+	_, err = tmpWorktree.Commit("migrated project structure", &git.CommitOptions{
+		All: true,
+	})
+
+	err = tmpClone.Push(&git.PushOptions{
+		RemoteName: "origin",
+		Auth: &http.BasicAuth{
+			Username: credentials.User,
+			Password: credentials.Token,
+		},
+	})
+
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -720,19 +842,17 @@ func GetDefaultBranch(project string) (string, error) {
 	return g.GetDefaultBranch(project)
 }
 
+func MigrateProject(project string) error {
+	g := NewGitClient()
+
+	return g.MigrateProject(project)
+}
+
 // ProjectExists checks if a project exists
 func ProjectExists(project string) bool {
 	g := NewGitClient()
 
-	if g.ProjectRepoExists(project) {
-		return true
-	}
-	// if not, try to clone
-	err := g.CloneRepo(project)
-	if err != nil {
-		return false
-	}
-	return true
+	return g.ProjectExists(project)
 }
 
 func directoryExists(path string) bool {

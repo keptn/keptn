@@ -27,10 +27,14 @@ func GetProjectConfigPath(project string) string {
 	return fmt.Sprintf("%s/%s", config.ConfigDir, project)
 }
 
+func GetTmpProjectConfigPath(project string) string {
+	return fmt.Sprintf("%s/tmp_projects_migration/%s", config.ConfigDir, project)
+}
+
 func GetStageConfigPath(project, stage string) string {
 	return fmt.Sprintf("%s/%s/%s", GetProjectConfigPath(project), StageDirectoryName, stage)
 }
 
 func GetServiceConfigPath(project, stage, service string) string {
-	return fmt.Sprintf("%s/%s/%s", GetStageConfigPath(project, stage), ServiceDirectoryName, service)
+	return fmt.Sprintf("%s/%s", GetStageConfigPath(project, stage), service)
 }

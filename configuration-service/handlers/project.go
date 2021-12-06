@@ -81,6 +81,10 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 				return project.NewPutProjectProjectNameDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 			}
+			// try to migrate project
+			if err := common.MigrateProject(projectName); err != nil {
+				return project.NewPutProjectProjectNameDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
+			}
 		}
 	} else {
 		return project.NewPutProjectProjectNameDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(common.ProjectDoesNotExistErrorMsg)})

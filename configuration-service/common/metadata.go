@@ -1,8 +1,9 @@
 package common
 
 type ProjectMetadata struct {
-	ProjectName       string
-	CreationTimestamp string
+	ProjectName               string `yaml:"projectName"`
+	CreationTimestamp         string `yaml:"creationTimestamp"`
+	IsUsingDirectoryStructure bool   `yaml:"isUsingDirectoryStructure"`
 }
 
 type StageMetadata struct {
