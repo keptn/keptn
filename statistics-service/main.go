@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/keptn/keptn/statistics-service/config"
+	"github.com/keptn/keptn/statistics-service/db"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +11,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -33,24 +36,33 @@ import (
 
 // @BasePath /v1
 
-const envVarLogLevel = "LOG_LEVEL"
-
 func main() {
-
-	log.SetLevel(log.InfoLevel)
-
-	if os.Getenv(envVarLogLevel) != "" {
-		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
-		if err != nil {
-			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
-		} else {
-			log.SetLevel(logLevel)
-		}
+	envConfig := config.GetConfig()
+	logLevel, err := log.ParseLevel(envConfig.LogLevel)
+	if err != nil {
+		log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(logLevel)
 	}
 
-	_ = controller.GetStatisticsBucketInstance()
+	if !envConfig.DataMigrationDisabled {
+		// data migration
+		go func() {
+			log.Infof("Migrating data (%d entries every %d seconds)", envConfig.DataMigrationBatchSize, envConfig.DataMigrationIntervalSec)
+			migrator := db.NewMigrator(envConfig.DataMigrationBatchSize, time.Second*time.Duration(envConfig.DataMigrationIntervalSec))
+			_, err := migrator.Run(context.Background())
+			if err != nil {
+				log.Errorf("Error during migration: %v", err)
+			}
+			log.Info("Migration finished")
+		}()
+	}
 
-	router := gin.Default()
+	controller.GetStatisticsBucketInstance()
+
+	router := gin.New()
+	router.Use(gin.Recovery())
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	router.Use(controller.GracefulShutdownMiddleware(wg))

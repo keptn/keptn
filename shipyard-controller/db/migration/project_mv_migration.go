@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewProjectMVMigrator creates a new ProjectMVMigrator
@@ -25,7 +24,6 @@ type ProjectMVMigrator struct {
 // This way, projects containing old key formats for the LastEventTypes field are migrated
 // to the new format
 func (p *ProjectMVMigrator) MigrateKeys() error {
-	log.Info("Migrating project key format")
 	projects, err := p.projectRepo.GetProjects()
 	if err != nil {
 		return fmt.Errorf("could not migrate keys for last event types in project mv collection: %w", err)
