@@ -87,7 +87,7 @@ const sequenceDeliveryTillStagingResponseMock = {
         {
           name: 'staging',
           image: 'docker.io/keptnexamples/carts:0.12.1',
-          state: 'triggered',
+          state: 'started',
           latestEvaluation: {
             result: 'pass',
             score: 100,

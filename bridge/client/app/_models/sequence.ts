@@ -3,7 +3,7 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { EVENT_ICONS } from './event-icons';
 import { RemediationAction } from '../../../shared/models/remediation-action';
-import { Sequence as sq, SequenceStage, SequenceState } from '../../../shared/models/sequence';
+import { Sequence as sq, SequenceEvent, SequenceStage, SequenceState } from '../../../shared/models/sequence';
 import { DtIconType } from '@dynatrace/barista-icons';
 import { ResultTypes } from '../../../shared/models/result-types';
 
@@ -26,6 +26,15 @@ export class Sequence extends sq {
       }
     }
     return sequence;
+  }
+
+  public static isFinished(state: SequenceState): boolean {
+    return (
+      state === SequenceState.FINISHED ||
+      state === SequenceState.TIMEDOUT ||
+      state === SequenceState.ABORTED ||
+      state === SequenceState.SUCCEEDED
+    );
   }
 
   public static getShortType(type: string): string {
@@ -52,15 +61,16 @@ export class Sequence extends sq {
   }
 
   public isFaulty(stageName?: string): boolean {
-    return stageName
-      ? !!this.getStage(stageName)?.latestFailedEvent
-      : this.stages.some((stage) => stage.latestFailedEvent);
+    return (
+      (stageName
+        ? !!this.getStage(stageName)?.latestFailedEvent
+        : this.stages.some((stage) => stage.latestFailedEvent)) || this.isTimedOut(stageName)
+    );
   }
 
   public isFinished(stageName?: string): boolean {
-    return stageName
-      ? this.getStage(stageName)?.latestEvent?.type.endsWith(SequenceState.FINISHED) ?? false
-      : this.state === SequenceState.FINISHED || this.state === SequenceState.TIMEDOUT;
+    const state = stageName ? this.getStage(stageName)?.state : this.state;
+    return !!state && Sequence.isFinished(state);
   }
 
   public getEvaluation(stage: string): EvaluationResult | undefined {
@@ -90,8 +100,12 @@ export class Sequence extends sq {
       } else {
         status = 'succeeded';
       }
+    } else if (this.isAborted()) {
+      status = 'aborted';
     } else if (this.isWaiting()) {
       status = 'waiting';
+    } else if (this.isTimedOut()) {
+      status = 'timed out';
     }
     return status;
   }
@@ -102,7 +116,17 @@ export class Sequence extends sq {
   }
 
   public isSuccessful(stageName?: string): boolean {
-    return !this.isFaulty(stageName) && !this.isWarning(stageName) && this.isFinished(stageName);
+    return (
+      this.isSucceeded(stageName) ||
+      (!this.isFaulty(stageName) &&
+        !this.isWarning(stageName) &&
+        !this.isAborted(stageName) &&
+        this.isFinished(stageName))
+    );
+  }
+
+  private isSucceeded(stageName?: string): boolean {
+    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.SUCCEEDED;
   }
 
   public isWarning(stageName?: string): boolean {
@@ -136,11 +160,19 @@ export class Sequence extends sq {
     return this.state === SequenceState.PAUSED;
   }
 
-  public isUnkownState(): boolean {
+  public isUnknownState(): boolean {
     return this.state === SequenceState.UNKNOWN;
   }
 
-  public getLatestEvent(): { id: string; time: string; type: string } | undefined {
+  public isAborted(stageName?: string): boolean {
+    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.ABORTED;
+  }
+
+  public isTimedOut(stageName?: string): boolean {
+    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.TIMEDOUT;
+  }
+
+  public getLatestEvent(): SequenceEvent | undefined {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
 

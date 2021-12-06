@@ -98,7 +98,7 @@ span.success {
 
 p.highlight,
 span.highlight {
-  color: $blue-400;
+  color: $approval-color;
 }
 
 p.error-line,
@@ -367,7 +367,7 @@ pre.code {
   }
 
   &.warning {
-    fill: $orange-400;
+    fill: $warning-color;
   }
 
   &.success {
@@ -375,7 +375,11 @@ pre.code {
   }
 
   &.highlight {
-    fill: $blue-400;
+    fill: $approval-color;
+  }
+
+  &.aborted {
+    fill: $aborted-color;
   }
 }
 
@@ -499,7 +503,7 @@ button.small-btn {
   }
 
   &.highlight {
-    border-color: $blue-400;
+    border-color: $approval-color;
   }
 }
 

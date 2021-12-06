@@ -10,6 +10,7 @@ const updatedDeploymentMock = {
   stages: [
     {
       name: 'dev',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [],
@@ -53,6 +54,7 @@ const updatedDeploymentMock = {
     },
     {
       name: 'staging',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:54:43.315Z',
       openRemediations: [OpenRemediationsResponse.states[0]],
       subSequences: [
@@ -138,6 +140,7 @@ const updatedDeploymentMock = {
     },
     {
       name: 'production',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:54:43.315Z',
       openRemediations: [],
       subSequences: [
@@ -168,6 +171,7 @@ const expectedDeploymentMock = {
   stages: [
     {
       name: 'dev',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [
@@ -222,6 +226,7 @@ const expectedDeploymentMock = {
     },
     {
       name: 'staging',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:54:43.315Z',
       openRemediations: [OpenRemediationsResponse.states[0]],
       subSequences: [
@@ -307,6 +312,7 @@ const expectedDeploymentMock = {
     },
     {
       name: 'production',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:54:43.315Z',
       openRemediations: [],
       subSequences: [
@@ -332,6 +338,7 @@ const expectedDeploymentMock = {
 
 const stageDeploymentDeliveryFinishedPass = {
   name: 'dev',
+  state: SequenceState.FINISHED,
   lastTimeUpdated: '2021-10-13T10:49:30.005Z',
   openRemediations: [],
   subSequences: [
@@ -351,6 +358,7 @@ const stageDeploymentDeliveryFinishedPass = {
 
 const stageDeploymentRollBackFinishedPass = {
   name: 'dev',
+  state: SequenceState.FINISHED,
   lastTimeUpdated: '2021-10-13T10:49:30.005Z',
   openRemediations: [],
   subSequences: [
@@ -514,6 +522,7 @@ const subSequencesWarning = [
 
 const stageDeploymentEmpty = {
   name: 'dev',
+  state: SequenceState.STARTED,
   lastTimeUpdated: '2021-10-13T10:49:30.005Z',
   openRemediations: [],
   subSequences: [],

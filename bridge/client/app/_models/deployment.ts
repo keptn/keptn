@@ -8,6 +8,7 @@ import { ServiceRemediationInformation } from './service-remediation-information
 
 export class StageDeployment implements IStageDeployment {
   name!: string;
+  state!: SequenceState;
   deploymentURL?: string;
   hasEvaluation!: boolean;
   lastTimeUpdated!: string;
@@ -45,6 +46,10 @@ export class StageDeployment implements IStageDeployment {
     return this.subSequences.some((seq) => seq.result === ResultTypes.FAILED);
   }
 
+  public isAborted(): boolean {
+    return this.state === SequenceState.ABORTED;
+  }
+
   public removeApproval(): void {
     this.approvalInformation = undefined;
     for (const subSequence of this.subSequences) {
@@ -59,6 +64,7 @@ export class StageDeployment implements IStageDeployment {
     this.openRemediations = stage.openRemediations;
     this.deploymentURL ??= stage.deploymentURL;
     this.evaluationResult ??= stage.evaluationResult;
+    this.state = stage.state;
 
     if ((stage.hasEvaluation && !this.hasEvaluation) || !this.latestEvaluation) {
       this.latestEvaluation = stage.latestEvaluation;
@@ -102,6 +108,10 @@ export class Deployment implements dp {
     const deployment: Deployment = Object.assign(new this(), data);
     deployment.stages = deployment.stages.map((stage) => StageDeployment.fromJSON(stage));
     return deployment;
+  }
+
+  public isFinished(): boolean {
+    return Sequence.isFinished(this.state);
   }
 
   public getStage(stageName: string): StageDeployment | undefined {

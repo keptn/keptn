@@ -7,7 +7,6 @@ import { Location } from '@angular/common';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
 import { ServiceState } from '../../_models/service-state';
-import { SequenceState } from '../../../../shared/models/sequence';
 import { Deployment } from '../../_models/deployment';
 import { ServiceRemediationInformation } from '../../_models/service-remediation-information';
 
@@ -167,7 +166,7 @@ export class KtbServiceViewComponent implements OnDestroy {
       update$ = this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
     } else {
       // update deployment
-      if (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT) {
+      if (originalDeployment.isFinished()) {
         // deployment is finished. Just update open remediations
         update$ = this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
       } else {

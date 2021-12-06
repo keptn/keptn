@@ -1437,3 +1437,4 @@ const evaluationData = {
 
 const evaluations: Trace = Trace.fromJSON(evaluationData);
 export { evaluations as EvaluationsMock };
+export { evaluationData as EvaluationTraceResponse };

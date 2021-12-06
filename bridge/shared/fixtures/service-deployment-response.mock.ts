@@ -7,6 +7,7 @@ const serviceDeploymentMock = {
   stages: [
     {
       name: 'dev',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [
@@ -61,6 +62,7 @@ const serviceDeploymentMock = {
     },
     {
       name: 'staging',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:59:45.104Z',
       openRemediations: [],
       subSequences: [
@@ -147,6 +149,7 @@ const serviceDeploymentMock = {
     },
     {
       name: 'production',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T11:03:12.215Z',
       openRemediations: [
         {
@@ -237,6 +240,7 @@ const serviceDeploymentWithFromTimeMock = {
   stages: [
     {
       name: 'dev',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [],
@@ -280,6 +284,7 @@ const serviceDeploymentWithFromTimeMock = {
     },
     {
       name: 'staging',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:59:45.104Z',
       openRemediations: [],
       subSequences: [],
@@ -355,6 +360,7 @@ const serviceDeploymentWithFromTimeMock = {
     },
     {
       name: 'production',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T11:03:12.215Z',
       openRemediations: [
         {
@@ -445,6 +451,7 @@ const serviceDeploymentWithApprovalMock = {
   stages: [
     {
       name: 'dev',
+      state: 'finished',
       lastTimeUpdated: '2021-10-13T10:49:30.005Z',
       openRemediations: [],
       subSequences: [
@@ -499,6 +506,7 @@ const serviceDeploymentWithApprovalMock = {
     },
     {
       name: 'staging',
+      state: 'started',
       lastTimeUpdated: '2021-10-13T10:54:43.315Z',
       openRemediations: [],
       subSequences: [

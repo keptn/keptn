@@ -35,6 +35,10 @@
     border-color: $cta-color;
   }
   &.ktb-tile-highlight .ktb-selectable-tile-container {
-    border-color: $blue-400;
+    border-color: $approval-color;
+  }
+
+  &.ktb-tile-aborted .ktb-selectable-tile-container {
+    border-color: $aborted-color;
   }
 }

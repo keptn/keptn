@@ -21,6 +21,8 @@ export enum SequenceState {
   FINISHED = 'finished',
   PAUSED = 'paused',
   TIMEDOUT = 'timedOut',
+  ABORTED = 'aborted',
+  SUCCEEDED = 'succeeded', //currently only for stages
   UNKNOWN = '',
 }
 

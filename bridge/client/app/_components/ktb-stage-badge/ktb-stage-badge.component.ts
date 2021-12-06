@@ -17,4 +17,5 @@ export class KtbStageBadgeComponent {
   @Input() public warning = false;
   @Input() public success = false;
   @Input() public highlight = false;
+  @Input() public aborted = false;
 }
