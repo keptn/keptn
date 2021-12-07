@@ -369,6 +369,8 @@ jobs:
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
 
           wait_for_statefulset_in_namespace "gitea" ${KEPTN_NAMESPACE}
+          #TODO: for now, just sleep some time before trying to port forward. need a better check later
+          sleep 30
 
           kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
 
