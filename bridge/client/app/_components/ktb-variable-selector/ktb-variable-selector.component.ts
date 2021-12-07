@@ -11,6 +11,7 @@ export class KtbVariableSelectorComponent {
   public options: TreeListSelectOptions = {
     headerText: 'Select element',
     emptyText: 'No elements available.',
+    hintText: '',
   };
   @Output() changed: EventEmitter<void> = new EventEmitter<void>();
 
@@ -28,6 +29,11 @@ export class KtbVariableSelectorComponent {
   @Input()
   set emptyText(text: string) {
     this.options.emptyText = text;
+  }
+
+  @Input()
+  set hintText(text: string) {
+    this.options.hintText = text;
   }
 
   public setVariable(variable: string): void {

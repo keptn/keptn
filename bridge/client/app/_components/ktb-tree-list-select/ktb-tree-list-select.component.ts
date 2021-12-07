@@ -33,6 +33,7 @@ export class SelectTreeFlatNode implements SelectTreeNode {
 export type TreeListSelectOptions = {
   headerText: string;
   emptyText: string;
+  hintText: string;
 };
 
 @Directive({
@@ -43,7 +44,7 @@ export class KtbTreeListSelectDirective implements OnInit {
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
 
   @Input() data: SelectTreeNode[] = [];
-  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '' };
+  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();
 
   @HostListener('click')
@@ -136,7 +137,7 @@ export class KtbTreeListSelectComponent {
     this.dataSource.data = data;
   }
 
-  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '' };
+  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
 
   @Output() closeDialog: EventEmitter<void> = new EventEmitter<void>();
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();
