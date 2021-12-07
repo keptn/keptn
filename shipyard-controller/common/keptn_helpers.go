@@ -3,6 +3,11 @@ package common
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/Masterminds/semver/v3"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -10,10 +15,6 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"gopkg.in/yaml.v3"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 const defaultKeptnNamespace = "keptn"
@@ -68,7 +69,7 @@ func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 	c, err := semver.NewConstraint(shipyardVersionConstraint)
 	if err != nil {
 		// Handle constraint not being parsable.
-		return fmt.Errorf("could not initialize shipyard version constraint: %s", err.Error())
+		return fmt.Errorf("could not initialize shipyard version constraint")
 	}
 
 	apiVersion := strings.TrimPrefix(shipyard.ApiVersion, shipyardVersionPrefix)
@@ -76,7 +77,7 @@ func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 	v, err := semver.NewVersion(apiVersion)
 	if err != nil {
 		// Handle version not being parsable.
-		return fmt.Errorf("could not parse shipyard version: %s", err.Error())
+		return fmt.Errorf("could not parse shipyard version")
 	}
 	// Check if the version meets the constraints. The a variable will be true.
 	if !c.Check(v) {

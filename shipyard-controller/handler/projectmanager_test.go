@@ -676,12 +676,13 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     "my-shipyard",
+		Shipyard:     &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -769,12 +770,13 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     "my-shipyard",
+		Shipyard:     &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -792,12 +794,12 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		GitRemoteURI:    "git-url",
 		GitUser:         "git-user",
 		ProjectName:     "my-project",
-		Shipyard:        "my-shipyard",
+		Shipyard:        myShipyard,
 		ShipyardVersion: "v1",
 	}
 
 	updateShipyardResourceData := &keptnapimodels.Resource{
-		ResourceContent: params.Shipyard,
+		ResourceContent: *params.Shipyard,
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	rollbackShipyardResourceData := &keptnapimodels.Resource{
@@ -874,12 +876,13 @@ func TestUpdate(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     "my-shipyard",
+		Shipyard:     &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)
@@ -902,7 +905,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	expectedUpdateShipyardResourceData := &keptnapimodels.Resource{
-		ResourceContent: params.Shipyard,
+		ResourceContent: *params.Shipyard,
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
@@ -962,12 +965,13 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	shipyardTest := ""
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     "",
+		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)
@@ -1027,12 +1031,13 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	shipyardTest := ""
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "",
 		GitToken:     "",
 		GitUser:      "",
 		Name:         common.Stringp("my-project"),
-		Shipyard:     "",
+		Shipyard:     &shipyardTest,
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)
@@ -1110,4 +1115,105 @@ func TestDelete(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	instance.Delete("my-project")
+}
+
+func TestValidateShipyardStagesUnchaged(t *testing.T) {
+	oldStages := []*models.ExpandedStage{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}}
+	newStages := [][]*models.ExpandedStage{
+		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}},
+		{{StageName: "dev2"}, {StageName: "staging2"}, {StageName: "prod-ab"}, {StageName: "prod-ba"}},
+		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}},
+		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}, {StageName: "prod-c"}},
+		{{StageName: "staging"}, {StageName: "dev"}, {StageName: "prod-b"}, {StageName: "prod-a"}},
+	}
+	oldProject := &models.ExpandedProject{
+		CreationDate:    "creationdate",
+		GitRemoteURI:    "http://my-remote.uri",
+		GitUser:         "my-user",
+		ProjectName:     "my-project",
+		Shipyard:        "",
+		ShipyardVersion: "v2",
+		Stages:          oldStages,
+	}
+
+	var tests = []struct {
+		oldProject *models.ExpandedProject
+		newProject *models.ExpandedProject
+		err        bool
+	}{
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[0],
+			},
+			err: false,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[1],
+			},
+			err: true,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[2],
+			},
+			err: true,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[3],
+			},
+			err: true,
+		},
+		{
+			oldProject: oldProject,
+			newProject: &models.ExpandedProject{
+				CreationDate:    "creationdate",
+				GitRemoteURI:    "http://my-remote.uri",
+				GitUser:         "my-user",
+				ProjectName:     "my-project",
+				Shipyard:        "",
+				ShipyardVersion: "v2",
+				Stages:          newStages[4],
+			},
+			err: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			err := validateShipyardStagesUnchaged(tt.oldProject, tt.newProject)
+			if (err != nil) != tt.err {
+				t.Errorf("validateShipyardStagesUnchaged(): got %s, want %t", err.Error(), tt.err)
+			}
+		})
+	}
 }
