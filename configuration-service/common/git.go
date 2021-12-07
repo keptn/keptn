@@ -138,13 +138,23 @@ func (g *GitClient) PullUpstreamChanges(project string, credentials *common_mode
 		}
 	}
 
-	_, worktree, err := g.getWorkTree(project, credentials)
+	repo, worktree, err := g.getWorkTree(project, credentials)
+	if err != nil {
+		return err
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return err
+	}
+	err = worktree.Checkout(&git.CheckoutOptions{Branch: head.Name()})
 	if err != nil {
 		return err
 	}
 
 	err = worktree.Pull(&git.PullOptions{
-		RemoteName: "origin",
+		ReferenceName: head.Name(),
+		RemoteName:    "origin",
 		Auth: &http.BasicAuth{
 			Username: credentials.User,
 			Password: credentials.Token,
@@ -175,7 +185,7 @@ func (g *GitClient) CommitChanges(project string, credentials *common_models.Git
 		return err
 	}
 
-	_, err = workTree.Add(".")
+	err = workTree.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
 		return err
 	}
@@ -363,6 +373,15 @@ func (g *GitClient) MigrateProject(project string) error {
 		if err != nil {
 			return err
 		}
+		err = ensureDirectoryExists(GetTmpProjectConfigPath(project) + "/keptn-stages")
+		if err != nil {
+			return err
+		}
+
+		err = ensureDirectoryExists(GetTmpProjectConfigPath(project) + "/keptn-stages/" + branch.Name().Short())
+		if err != nil {
+			return err
+		}
 		//newStageMetadata := &StageMetadata{
 		//	StageName:         branch.Name().String(),
 		//	CreationTimestamp: time.Now().String(),
@@ -378,15 +397,18 @@ func (g *GitClient) MigrateProject(project string) error {
 		}
 
 		for _, file := range files {
-			err := os.Rename(GetProjectConfigPath(project)+"/"+file.Name(), GetTmpProjectConfigPath(project)+"/keptn-stages/"+branch.Name().String()+"/"+file.Name())
+			if file.Name() == ".git" {
+				continue
+			}
+			err := os.Rename(GetProjectConfigPath(project)+"/"+file.Name(), GetTmpProjectConfigPath(project)+"/keptn-stages/"+branch.Name().Short()+"/"+file.Name())
 			if err != nil {
 				return err
 			}
 		}
-		//err = WriteFile(tmpProjectPath+"/keptn-stages/"+"/metadata.yaml", metadataString)
-		//if err != nil {
-		//	return err
-		//}
+		err = oldRepoWorktree.Reset(&git.ResetOptions{Mode: git.HardReset})
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
@@ -395,13 +417,16 @@ func (g *GitClient) MigrateProject(project string) error {
 	}
 
 	tmpWorktree, err := tmpClone.Worktree()
-	_, err = tmpWorktree.Add(".")
+	err = tmpWorktree.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
 		return err
 	}
 	_, err = tmpWorktree.Commit("migrated project structure", &git.CommitOptions{
 		All: true,
 	})
+	if err != nil {
+		return err
+	}
 
 	err = tmpClone.Push(&git.PushOptions{
 		RemoteName: "origin",
@@ -415,6 +440,21 @@ func (g *GitClient) MigrateProject(project string) error {
 		return err
 	}
 
+	// TODO: remove old repository, move migrated from tmp to /data/config, update metadata.yaml of project with isUsingDirectoryStructure = true
+
+	return nil
+}
+
+func ensureDirectoryExists(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			if err := os.Mkdir(path, os.ModePerm); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
 	return nil
 }
 
