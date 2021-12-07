@@ -1,5 +1,8 @@
 <div class="select-overlay-header pl-3" fxLayout="row" fxLayoutAlign="space-between center">
-  <div>{{ options.headerText }}</div>
+  <div fxLayout="row">
+    {{ options.headerText }}
+    <dt-icon *ngIf="options.hintText" name="information" [dtOverlay]="overlay"></dt-icon>
+  </div>
   <button dt-icon-button variant="primary" (click)="closeDialog.emit()">
     <dt-icon name="abort"></dt-icon>
   </button>
@@ -18,4 +21,8 @@
 
 <ng-template #empty>
   <div class="container" [innerHTML]="options.emptyText"></div>
+</ng-template>
+
+<ng-template #overlay>
+  {{ options.hintText }}
 </ng-template>
