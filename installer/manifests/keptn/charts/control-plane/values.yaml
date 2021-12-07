@@ -42,6 +42,7 @@ remediationService:
     tag: ""
 
 apiService:
+  existingSecret:
   image:
     repository: docker.io/keptn/api
     tag: ""

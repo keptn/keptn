@@ -10,6 +10,7 @@
 {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
 {{- end -}}
 
+{{- if not .Values.apiService.existingSecret }}
 ---
 apiVersion: v1
 kind: Secret
@@ -25,6 +26,7 @@ metadata:
 type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
+{{- end -}}
 ---
 {{- if .Values.bridge.secret.enabled }}
 apiVersion: v1
@@ -112,7 +114,7 @@ spec:
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: keptn-api-token
+                  name: {{ default "keptn-api-token" .Values.apiService.existingSecret }} 
                   key: keptn-api-token
             - name: POD_NAMESPACE
               valueFrom:
@@ -211,7 +213,7 @@ spec:
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: keptn-api-token
+                  name: {{ default "keptn-api-token" .Values.apiService.existingSecret }} 
                   key: keptn-api-token
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
