@@ -357,7 +357,7 @@ function wait_for_statefulset_in_namespace() {
       echo "Retry: ${RETRY}/${RETRY_MAX} - statefulset not found - waiting 15s for statefulset ${DEPLOYMENT} in namespace ${NAMESPACE}"
       sleep 15
     else
-      READY_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT" -n "$NAMESPACE" -o=jsonpath='{$.status.availableReplicas}')
+      READY_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT" -n "$NAMESPACE" -o=jsonpath='{$.status.currentReplicas}')
       WANTED_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT"  -n "$NAMESPACE" -o=jsonpath='{$.spec.replicas}')
       UNAVAILABLE_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT"  -n "$NAMESPACE" -o=jsonpath='{$.status.unavailableReplicas}')
       if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" && "$UNAVAILABLE_REPLICAS" = "" ]]; then
