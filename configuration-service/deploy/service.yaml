@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: configuration-service
       app.kubernetes.io/instance: keptn
-  replicas: 1
+  replicas: 2
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -43,7 +43,7 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 5
-        image: keptn/configuration-service:latest
+        image: keptn/configuration-service:0.11.3-dev
         env:
           - name: PREFIX_PATH
             value: ""
@@ -71,8 +71,7 @@ spec:
           name: configuration-volume
       volumes:
       - name: configuration-volume
-        persistentVolumeClaim:
-          claimName: configuration-volume
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
