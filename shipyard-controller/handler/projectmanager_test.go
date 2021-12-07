@@ -1118,43 +1118,6 @@ func TestDelete(t *testing.T) {
 }
 
 func TestValidateShipyardStagesUnchaged(t *testing.T) {
-	secretStore := &common_mock.SecretStoreMock{}
-	projectMVRepo := &db_mock.ProjectMVRepoMock{}
-	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &common_mock.ConfigurationStoreMock{}
-	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{}
-
-	oldSecretsData, _ := json.Marshal(gitCredentials{
-		User:      "my-old-user",
-		Token:     "my-old-token",
-		RemoteURI: "http://my-old-remote.uri",
-	})
-
-	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
-
-		return map[string][]byte{"git-credentials": oldSecretsData}, nil
-	}
-
-	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
-		return nil
-	}
-
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
-		return nil
-	}
-
-	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
-		return nil
-	}
-
-	projectMVRepo.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
-		return nil
-	}
-
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
-
 	oldStages := []*models.ExpandedStage{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}}
 	newStages := [][]*models.ExpandedStage{
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}},
@@ -1247,7 +1210,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			err := instance.validateShipyardStagesUnchaged(tt.oldProject, tt.newProject)
+			err := validateShipyardStagesUnchaged(tt.oldProject, tt.newProject)
 			if (err != nil) != tt.err {
 				t.Errorf("validateShipyardStagesUnchaged(): got %s, want %t", err.Error(), tt.err)
 			}

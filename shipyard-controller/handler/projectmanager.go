@@ -238,7 +238,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	// try to update shipyard project resource
 	if isShipyardPresent {
-		if err = pm.validateShipyardUpdate(params, oldProject); err != nil {
+		if err = validateShipyardUpdate(params, oldProject); err != nil {
 			return err, nilRollback
 		}
 
@@ -479,7 +479,7 @@ func toModelProject(project models.ExpandedProject) apimodels.Project {
 	}
 }
 
-func (pm *ProjectManager) validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProject *models.ExpandedProject) error {
+func validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProject *models.ExpandedProject) error {
 	if len(newProject.Stages) != len(oldProject.Stages) {
 		return fmt.Errorf("unallowed addition/removal of project stages")
 	}
@@ -504,7 +504,7 @@ func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) 
 	return false
 }
 
-func (pm *ProjectManager) validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *models.ExpandedProject) error {
+func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *models.ExpandedProject) error {
 	shipyard := &keptnv2.Shipyard{}
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 	_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
@@ -528,7 +528,7 @@ func (pm *ProjectManager) validateShipyardUpdate(params *models.UpdateProjectPar
 		Stages:          expandedStages,
 	}
 
-	err := pm.validateShipyardStagesUnchaged(oldProject, newProject)
+	err := validateShipyardStagesUnchaged(oldProject, newProject)
 	if err != nil {
 		return ErrInvalidStageChange
 	}
