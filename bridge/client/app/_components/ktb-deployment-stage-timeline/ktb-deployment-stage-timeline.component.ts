@@ -1,7 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { Deployment } from '../../_models/deployment';
-import { ActivatedRoute } from '@angular/router';
-import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -13,14 +11,7 @@ export class KtbDeploymentStageTimelineComponent implements OnDestroy {
   @Input() deployment?: Deployment;
   @Input() selectedStage?: string;
   @Output() selectedStageChange: EventEmitter<string> = new EventEmitter<string>();
-  public serviceName?: string;
   private unsubscribe$: Subject<void> = new Subject();
-
-  constructor(route: ActivatedRoute) {
-    route.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
-      this.serviceName = params.get('serviceName') ?? undefined;
-    });
-  }
 
   public selectStage(stage: string): void {
     if (this.selectedStage !== stage) {
