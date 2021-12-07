@@ -3,7 +3,6 @@ module github.com/keptn/keptn/configuration-service
 go 1.16
 
 require (
-	github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/errors v0.20.1
