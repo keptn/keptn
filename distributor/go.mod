@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.6.1
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.11.1-0.20211124091533-fe1fb0c473a4
+	github.com/keptn/go-utils v0.11.1-0.20211207071935-7fa496e9da1c
 	github.com/nats-io/nats-server/v2 v2.6.3
 	github.com/nats-io/nats.go v1.13.1-0.20211018182449-f2416a8b1483
 	github.com/sirupsen/logrus v1.8.1
