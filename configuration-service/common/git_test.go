@@ -3,7 +3,6 @@ package common
 import (
 	"errors"
 	"fmt"
-	"github.com/bmizerany/assert"
 	common_mock "github.com/keptn/keptn/configuration-service/common/fake"
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -473,7 +472,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 			}
 			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
 
-			assert.Equal(t, tt.expectedCommands, executedCommands)
+			require.Equal(t, tt.expectedCommands, executedCommands)
 		})
 	}
 }
@@ -535,7 +534,7 @@ func TestGit_Reset(t *testing.T) {
 			}
 			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
 
-			assert.Equal(t, tt.expectedCommands, executedCommands)
+			require.Equal(t, tt.expectedCommands, executedCommands)
 		})
 	}
 }
