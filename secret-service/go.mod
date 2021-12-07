@@ -9,7 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.6
-	k8s.io/api v0.22.3
-	k8s.io/apimachinery v0.22.3
+	k8s.io/api v0.23.0
+	k8s.io/apimachinery v0.23.0
 	k8s.io/client-go v0.22.3
 )
