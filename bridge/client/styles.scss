@@ -358,6 +358,32 @@ pre.code {
   border-radius: 6px;
 }
 
+ktb-root {
+  .dt-icon {
+    height: 20px;
+    width: 20px;
+  }
+}
+
+.inline-text-icon {
+  position: relative;
+  top: 1px;
+}
+
+.icon-inline-left {
+  .inline-text-icon {
+    margin-right: 5px;
+  }
+}
+
+.icon-inline-right {
+  margin-left: 5px;
+}
+
+.icon-inline-center {
+  margin: 0 5px;
+}
+
 .dt-icon.event-icon {
   width: 20px;
   height: 20px;
