@@ -38,7 +38,10 @@ ktb-root {
   display: flex;
   flex-direction: column;
   place-content: stretch stretch;
+}
 
+ktb-root,
+.cdk-overlay-container {
   .dt-icon {
     height: 20px;
     width: 20px;

@@ -21,6 +21,8 @@
   padding: 0 6px;
 
   .dt-icon {
+    position: relative;
+    top: 5px;
     fill: $white;
   }
 }
