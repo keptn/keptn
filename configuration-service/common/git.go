@@ -107,6 +107,53 @@ func (g *GitClient) ProjectExists(project string) bool {
 	return true
 }
 
+func (g *GitClient) getCommitIdFromPath(path string) (string, error) {
+	r, err := git.PlainOpen(path)
+	ref, err := r.Head()
+	commit, err := r.CommitObject(ref.Hash())
+	if err != nil {
+		return "", err
+	}
+	return commit.Hash.String(), nil
+}
+
+func (g *GitClient) getFileByPath(path string) (string, error) {
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return "", err
+	}
+	wt, err := r.Worktree()
+	if err != nil {
+		return "", err
+	}
+	result, err := wt.Grep(&git.GrepOptions{
+		ReferenceName: plumbing.ReferenceName(path),
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return result[0].Content, nil
+}
+
+func (g *GitClient) getFileFromCommitId(path string, commitId string) (string, error) {
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return "", err
+	}
+	wt, err := r.Worktree()
+	if err != nil {
+		return "", err
+	}
+	result, err := wt.Grep(&git.GrepOptions{
+		CommitHash: plumbing.NewHash(commitId),
+	})
+	if err != nil {
+		return "", err
+	}
+	return result[0].Content, nil
+}
+
 func (g *GitClient) ProjectRepoExists(project string) bool {
 	_, err := git.PlainOpen(GetProjectConfigPath(project))
 	if err == nil {
@@ -115,15 +162,15 @@ func (g *GitClient) ProjectRepoExists(project string) bool {
 	return false
 }
 
-func (g *GitClient) StageAndCommitAll(project, message string) error {
+func (g *GitClient) StageAndCommitAll(project, message string) (string, error) {
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	err = g.CommitChanges(project, credentials, message)
+	commitID, err := g.CommitChanges(project, credentials, message)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = retry.Retry(func() error {
@@ -138,13 +185,13 @@ func (g *GitClient) StageAndCommitAll(project, message string) error {
 			logger.WithError(err).Warn("could not push")
 			return err
 		}
-		return nil
+		return  nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 
 	if err != nil {
-		return err
+		return "",err
 	}
-	return nil
+	return commitID, nil
 }
 
 func (g *GitClient) PullUpstreamChanges(project string, credentials *common_models.GitCredentials) error {
@@ -195,27 +242,27 @@ func (g *GitClient) PullUpstreamChanges(project string, credentials *common_mode
 	//return nil
 }
 
-func (g *GitClient) CommitChanges(project string, credentials *common_models.GitCredentials, message string) error {
+func (g *GitClient) CommitChanges(project string, credentials *common_models.GitCredentials, message string) (string, error) {
 	var err error
 	if credentials == nil {
 		credentials, err = g.CredentialReader.GetCredentials(project)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 	_, workTree, err := g.getWorkTree(project, credentials)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = workTree.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
-		return err
+		return "", err
 	}
 	if message == "" {
 		message = "commit changes"
 	}
-	_, err = workTree.Commit(message, &git.CommitOptions{
+	hash, err := workTree.Commit(message, &git.CommitOptions{
 		All: true,
 		Author: &object.Signature{
 			Name:  getGitKeptnUser(),
@@ -223,10 +270,10 @@ func (g *GitClient) CommitChanges(project string, credentials *common_models.Git
 		},
 	})
 	if err != nil {
-		return err
+		return "",err
 	}
 
-	return nil
+	return hash.String(), nil
 }
 
 func (g *GitClient) PushUpstreamChanges(project string, credentials *common_models.GitCredentials) error {
@@ -906,7 +953,7 @@ func setUpstreamsAndPush(project string, credentials *common_models.GitCredentia
 }
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
-func StageAndCommitAll(project string, message string) error {
+func StageAndCommitAll(project string, message string) (string, error) {
 	g := NewGitClient()
 	return g.StageAndCommitAll(project, message)
 }

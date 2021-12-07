@@ -74,7 +74,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	err := common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -132,7 +132,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(metadata)
 }
 
-// GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
+// GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource without specifying commitID
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
@@ -147,6 +147,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
+
 	err = common.PullUpstream(params.ProjectName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
@@ -173,7 +174,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	}
 
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
-
+	resourceContent = getFileFromCommitId(GetProjectConfigPath(project), commitid)
 	resource := &models.Resource{
 		ResourceURI:     &params.ResourceURI,
 		ResourceContent: resourceContent,
