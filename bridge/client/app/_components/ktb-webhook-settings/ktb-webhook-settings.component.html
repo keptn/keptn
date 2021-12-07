@@ -177,9 +177,9 @@
     [title]="'Select secret'"
     [label]="'Add secret'"
     [emptyText]="
-      'No secrets for the scope keptn-webhook-service are available.<p>Configure secrets for the scope keptn-webhook-service under the menu entry &quot;Secrets&quot; in the Uniform to make them available for configuration.</p>'
+      'No secrets for the scope keptn-webhook-service are available.<p>Configure secrets for the scope keptn-webhook-service under the menu entry <span class=&quot;bold&quot;>Secrets</span> in the Uniform.</p>'
     "
-    [hintText]="'Only secrets of scope keptn-webhook-service are available for configuration.'"
+    [hintText]="'Only secrets of scope keptn-webhook-secret can be referenced.'"
     [control]="getFormControl(controlName, index)"
     [selectionStart]="selectionStart"
     (changed)="onWebhookFormChange()"
