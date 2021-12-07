@@ -13,7 +13,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/swaggo/swag v1.7.4
+	github.com/swaggo/swag v1.7.6
 	github.com/tryvium-travels/memongo v0.3.1
 	github.com/ugorji/go v1.1.8 // indirect
 	go.mongodb.org/mongo-driver v1.7.4
