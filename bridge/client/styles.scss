@@ -38,6 +38,11 @@ ktb-root {
   display: flex;
   flex-direction: column;
   place-content: stretch stretch;
+
+  .dt-icon {
+    height: 20px;
+    width: 20px;
+  }
 }
 
 .nobreak {
@@ -356,13 +361,6 @@ pre.code {
   line-height: 1.45;
   background-color: #f6f8fa;
   border-radius: 6px;
-}
-
-ktb-root {
-  .dt-icon {
-    height: 20px;
-    width: 20px;
-  }
 }
 
 .inline-text-icon {
