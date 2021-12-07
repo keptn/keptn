@@ -345,6 +345,38 @@ function wait_for_deployment_in_namespace() {
   fi
 }
 
+# wait for a deployment to be up and running
+function wait_for_statefulset_in_namespace() {
+  DEPLOYMENT=$1; NAMESPACE=$2;
+  RETRY=0; RETRY_MAX=40;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DEPLOYMENT_LIST=$(eval "kubectl get statefulset -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
+    if [[ -z "$DEPLOYMENT_LIST" ]]; then
+      RETRY=$((RETRY+1))
+      echo "Retry: ${RETRY}/${RETRY_MAX} - statefulset not found - waiting 15s for statefulset ${DEPLOYMENT} in namespace ${NAMESPACE}"
+      sleep 15
+    else
+      READY_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT" -n "$NAMESPACE" -o=jsonpath='{$.status.availableReplicas}')
+      WANTED_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT"  -n "$NAMESPACE" -o=jsonpath='{$.spec.replicas}')
+      UNAVAILABLE_REPLICAS=$(eval kubectl get statefulset "$DEPLOYMENT"  -n "$NAMESPACE" -o=jsonpath='{$.status.unavailableReplicas}')
+      if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" && "$UNAVAILABLE_REPLICAS" = "" ]]; then
+        echo "Found statefulset ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
+        break
+      else
+          RETRY=$((RETRY+1))
+          echo "Retry: ${RETRY}/${RETRY_MAX} - Unsufficient replicas for statefulset - waiting 15s for statefulset ${DEPLOYMENT} in namespace ${NAMESPACE}"
+          sleep 15
+      fi
+    fi
+  done
+
+  if [[ $RETRY == "$RETRY_MAX" ]]; then
+    print_error "Could not find statefulset ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    exit 1
+  fi
+}
+
 function wait_for_deployment_with_image_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;  IMAGE=$3
   RETRY=0; RETRY_MAX=40;
