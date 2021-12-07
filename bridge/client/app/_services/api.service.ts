@@ -10,7 +10,7 @@ import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
-import { KeptnInfoResult } from '../_models/keptn-info-result';
+import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
