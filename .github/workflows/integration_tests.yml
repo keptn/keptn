@@ -493,6 +493,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run LogIngestion -v
 
       - name: Test Log Forwarding
@@ -503,6 +505,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run LogForwarding -v
 
       - name: Test Sequence States
@@ -513,6 +517,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run SequenceState -v
 
       - name: Test Sequence Loop
@@ -523,6 +529,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
 
       - name: Test Quality Gates Standalone
@@ -533,6 +541,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run Test_QualityGates -v
 
       - name: Test Self Healing
@@ -544,6 +554,8 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run Test_SelfHealing -v
 
       - name: Test Delivery Assistant
@@ -554,6 +566,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
 
       - name: Test Backup and Restore
@@ -563,6 +577,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run Test_BackupRestore -v
 
       - name: Test User Managed Delivery
@@ -572,6 +588,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
 
       - name: Install Remote Execution Plane
@@ -602,6 +620,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run ContinuousDelivery -v
 
       - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
@@ -611,6 +631,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run ContinuousDelivery -v
 
       - name: Test Manage Secrets
@@ -621,6 +643,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run:  cd test/go-tests && go test -run ManageSecrets -v
 
       - name: Test Webhook Integration
@@ -631,6 +655,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run Test_Webhook -v
 
       #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
@@ -652,6 +678,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run SequenceTimeout -v
 
       - name: Test Sequence Control
@@ -662,6 +690,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run SequenceControl -v
 
       - name: Test Sequence Queue
@@ -672,6 +702,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run SequenceQueue -v -timeout 15m
 
       - name: Test Graceful Shutdown
@@ -682,6 +714,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run GracefulShutdown -v
 
       - name: Test Uniform Registration
@@ -692,6 +726,8 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          GITEA_ADMIN_USER: ${{ steps.install_gitea.outputs.GITEA_ADMIN_USER }}
+          GITEA_TOKEN: ${{ steps.install_gitea.outputs.GITEA_TOKEN }}
         run: cd test/go-tests && go test -run UniformRegistration -v
 
       - name: keptn generate support-archive
