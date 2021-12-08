@@ -26,7 +26,7 @@ metadata:
 type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
-{{- end -}}
+{{- end }}
 ---
 {{- if .Values.bridge.secret.enabled }}
 apiVersion: v1

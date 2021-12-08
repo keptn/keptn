@@ -160,13 +160,13 @@ spec:
             {{- if not .Values.remoteControlPlane.api.existingSecret }}
             - name: KEPTN_API_TOKEN
               value: "{{ .Values.remoteControlPlane.api.token }}"
-            {{- else -}}
+            {{- else }}
             - name: KEPTN_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: .Values.remoteControlPlane.api.existingSecret
+                  name: {{ .Values.remoteControlPlane.api.existingSecret }}
                   key: keptn-api-token
-            {{- end -}}
+            {{- end }}
             - name: HTTP_SSL_VERIFY
               {{- $apiValidateTls := .Values.remoteControlPlane.api.apiValidateTls | ternary "true" "false" }}
               value: "{{ $apiValidateTls }}"
