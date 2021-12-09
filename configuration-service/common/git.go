@@ -24,6 +24,9 @@ var namespace = os.Getenv("POD_NAMESPACE")
 const masterBranch = "master"
 const mainBranch = "main"
 
+const gitKeptnUser = "keptn"
+const gitKeptnEmail = "keptn@keptn.sh"
+
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/command_executor_mock.go . CommandExecutor
 type CommandExecutor interface {
 	ExecuteCommand(command string, args []string, directory string) (string, error)
@@ -350,6 +353,19 @@ func (g *Git) Reset(project string) error {
 	return nil
 }
 
+func (g *Git) ConfigureGitUser(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	_, err := g.Executor.ExecuteCommand("git", []string{"config", "user.name", gitKeptnUser}, projectConfigPath)
+	if err != nil {
+		return fmt.Errorf("could not set git user.name: %w", err)
+	}
+	_, err = g.Executor.ExecuteCommand("git", []string{"config", "user.email", gitKeptnEmail}, projectConfigPath)
+	if err != nil {
+		return fmt.Errorf("could not set git user.email: %w", err)
+	}
+	return nil
+}
+
 // ==============================
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
@@ -548,6 +564,12 @@ func GetResourceMetadata(project string) *models.Version {
 	}
 	addVersionToMetadata(project, result)
 	return result
+}
+
+// ConfigureGitUser sets the properties user.name and user.email needed for interacting with git in the given project's git repository
+func ConfigureGitUser(project string) error {
+	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
+	return g.ConfigureGitUser(project)
 }
 
 func addRepoURIToMetadata(credentials *common_models.GitCredentials, metadata *models.Version) {

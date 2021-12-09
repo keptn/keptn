@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 
 	errors "github.com/go-openapi/errors"
@@ -135,22 +134,6 @@ func configureServer(s *http.Server, scheme, addr string) {
 		log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
 	} else {
 		log.SetLevel(logLevel)
-	}
-	if os.Getenv("env") == "production" {
-		///////// initialize git ////////////
-		log.Debug("Configuring git user.email")
-		cmd := exec.Command("git", "config", "--global", "user.email", "keptn@keptn.com")
-		_, err := cmd.Output()
-		if err != nil {
-			log.Error("Could not configure git user.email: " + err.Error())
-		}
-		log.Debug("Configuring git user.name")
-		cmd = exec.Command("git", "config", "--global", "user.name", "keptn")
-		_, err = cmd.Output()
-		if err != nil {
-			log.Error("Could not configure git user.name: " + err.Error())
-		}
-		////////////////////////////////////
 	}
 }
 
