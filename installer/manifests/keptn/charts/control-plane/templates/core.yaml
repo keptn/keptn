@@ -608,7 +608,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: configuration-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 2
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -673,8 +673,7 @@ spec:
             allowPrivilegeEscalation: false
       volumes:
         - name: configuration-volume
-          persistentVolumeClaim:
-            claimName: configuration-volume
+          emptyDir: {}
       serviceAccountName: keptn-configuration-service
 ---
 apiVersion: v1
