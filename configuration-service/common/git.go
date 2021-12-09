@@ -11,6 +11,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/configuration-service/common_models"
+	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"net/url"
@@ -121,11 +122,13 @@ func (g *GitClient) StageAndCommitAll(project, message string) error {
 	err = retry.Retry(func() error {
 		err = g.PullUpstreamChanges(project, credentials)
 		if err != nil {
+			logger.WithError(err).Warn("could not pull")
 			return err
 		}
 
 		err = g.PushUpstreamChanges(project, credentials)
 		if err != nil {
+			logger.WithError(err).Warn("could not pull")
 			return err
 		}
 		return nil
