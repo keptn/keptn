@@ -76,6 +76,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not initialize git repo")})
 		}
 	}
+	err = common.ConfigureGitUser(params.Project.ProjectName)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not configure git during creating project %s", params.Project.ProjectName)
+		rollbackFunc()
+		return project.NewPostProjectDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String("Could not configure git in project repo")})
+	}
 	////////////////////////////////////////////////////
 	newProjectMetadata := &projectMetadata{
 		ProjectName:       params.Project.ProjectName,
