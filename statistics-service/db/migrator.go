@@ -157,8 +157,8 @@ func transform(statistics *operations.Statistics, tansformFn func(string) string
 	if err != nil {
 		return nil, err
 	}
-	for _, stat := range copiedStatistics.(*operations.Statistics).Projects {
-		for _, service := range stat.Services {
+	for _, proj := range copiedStatistics.(*operations.Statistics).Projects {
+		for _, service := range proj.Services {
 			newExecutedSequencesPerType := make(map[string]int)
 			for eventType, numExecutedSequencesPerType := range service.ExecutedSequencesPerType {
 				newExecutedSequencesPerType[tansformFn(eventType)] = numExecutedSequencesPerType
@@ -171,13 +171,16 @@ func transform(statistics *operations.Statistics, tansformFn func(string) string
 			}
 			service.Events = newEvents
 
-			for _, keptnService := range service.KeptnServiceExecutions {
+			newKeptnServiceExecutions := make(map[string]*operations.KeptnService)
+			for keptnServiceExecutionKey, keptnService := range service.KeptnServiceExecutions {
 				newServiceExecutions := make(map[string]int)
 				for eventType2, numExecutions := range keptnService.Executions {
 					newServiceExecutions[tansformFn(eventType2)] = numExecutions
 				}
 				keptnService.Executions = newServiceExecutions
+				newKeptnServiceExecutions[tansformFn(keptnServiceExecutionKey)] = keptnService
 			}
+			service.KeptnServiceExecutions = newKeptnServiceExecutions
 		}
 	}
 	return copiedStatistics.(*operations.Statistics), nil

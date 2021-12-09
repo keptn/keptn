@@ -23,39 +23,41 @@ func Test_Migrate(t *testing.T) {
 					"my-service": {
 						Name: "my-service",
 						Events: map[string]int{
-							"my.keptn.event.type": 2,
+							"my.keptn.event.type": 2, // <-DOT
 						},
 						KeptnServiceExecutions: map[string]*operations.KeptnService{
-							"my-keptn-service": {
+							"my.keptn-service": { // <- DOT
 								Name: "my-keptn-service",
 								Executions: map[string]int{
-									"my.keptn.event.type": 1,
+									"my.keptn.event.type": 1, // <- DOT
 								},
 							},
 						},
 						ExecutedSequencesPerType: map[string]int{
-							"my~keptn.event.type": 1,
+							"my~keptn.event.type": 1, // <- DOT
 						},
 					},
 				},
 			},
 		},
 	}
-
 	repo := StatisticsMongoDBRepo{}
-
+	// old data
 	statistics.From = time.Now().Add(time.Second * 1)
 	statistics.From = time.Now().Add(time.Second * 2)
 	insertStat(t, &repo, statistics)
 
+	// new data (already migrated)
 	statistics.From = time.Now().Add(time.Second * 3)
 	statistics.From = time.Now().Add(time.Second * 4)
 	repo.StoreStatistics(statistics)
 
+	// old data
 	statistics.From = time.Now().Add(time.Second * 5)
 	statistics.From = time.Now().Add(time.Second * 6)
 	insertStat(t, &repo, statistics)
 
+	// new data (already migrated)
 	statistics.From = time.Now().Add(time.Second * 7)
 	statistics.From = time.Now().Add(time.Second * 7)
 	repo.StoreStatistics(statistics)
@@ -70,6 +72,73 @@ func Test_Migrate(t *testing.T) {
 	for _, f := range fetchedStats {
 		assert.Equal(t, statistics.Projects, f.Projects)
 	}
+}
+
+func Test_Transform_Encode_Decode(t *testing.T) {
+	statIn := operations.Statistics{
+		From: time.Now(),
+		To:   time.Now().Add(time.Second),
+		Projects: map[string]*operations.Project{
+			"my-project": {
+				Name: "my-project",
+				Services: map[string]*operations.Service{
+					"my-service": {
+						Name: "my-service",
+						Events: map[string]int{
+							"my.keptn.event.type": 2, // <-DOT
+						},
+						KeptnServiceExecutions: map[string]*operations.KeptnService{
+							"my.keptn.service": { // <- DOT
+								Name: "my-keptn-service",
+								Executions: map[string]int{
+									"my.keptn.event.type": 1, // <- DOT
+								},
+							},
+						},
+						ExecutedSequencesPerType: map[string]int{
+							"my.keptn.event.type": 1, // <- DOT
+						},
+					},
+				},
+			},
+		},
+	}
+
+	statOut := operations.Statistics{
+		From: time.Now(),
+		To:   time.Now().Add(time.Second),
+		Projects: map[string]*operations.Project{
+			"my-project": {
+				Name: "my-project",
+				Services: map[string]*operations.Service{
+					"my-service": {
+						Name: "my-service",
+						Events: map[string]int{
+							"my~pkeptn~pevent~ptype": 2,
+						},
+						KeptnServiceExecutions: map[string]*operations.KeptnService{
+							"my~pkeptn~pservice": {
+								Name: "my-keptn-service",
+								Executions: map[string]int{
+									"my~pkeptn~pevent~ptype": 1,
+								},
+							},
+						},
+						ExecutedSequencesPerType: map[string]int{
+							"my~pkeptn~pevent~ptype": 1,
+						},
+					},
+				},
+			},
+		},
+	}
+	result, err := transform(&statIn, encodeKey)
+	require.Nil(t, err)
+	assert.Equal(t, statOut.Projects, result.Projects)
+
+	result, err = transform(result, decodeKey)
+	require.Nil(t, err)
+	assert.Equal(t, statIn.Projects, result.Projects)
 }
 
 func insertStat(t *testing.T, s *StatisticsMongoDBRepo, statistics operations.Statistics) {
