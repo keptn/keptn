@@ -112,19 +112,25 @@ func (m *Migrator) migrateBatch(ctx context.Context) (bool, error) {
 	return false, nil
 }
 func noDotsInKeys(statistics *operations.Statistics) bool {
-	for _, stat := range statistics.Projects {
-		for _, service := range stat.Services {
-			for eventType := range service.ExecutedSequencesPerType {
+	for projKey, proj := range statistics.Projects {
+		if strings.Contains(projKey, ".") {
+			return false
+		}
+		for svcKey, svc := range proj.Services {
+			if strings.Contains(svcKey, ".") {
+				return false
+			}
+			for eventType := range svc.ExecutedSequencesPerType {
 				if strings.Contains(eventType, ".") {
 					return false
 				}
 			}
-			for eventType := range service.Events {
+			for eventType := range svc.Events {
 				if strings.Contains(eventType, ".") {
 					return false
 				}
 			}
-			for keptnServiceExecutionsKey, keptnService := range service.KeptnServiceExecutions {
+			for keptnServiceExecutionsKey, keptnService := range svc.KeptnServiceExecutions {
 				if strings.Contains(keptnServiceExecutionsKey, ".") {
 					return false
 				}
@@ -155,22 +161,24 @@ func decodeKeys(statistics []operations.Statistics) ([]operations.Statistics, er
 	return newStatistics, nil
 }
 
-func transform(statistics *operations.Statistics, tansformFn func(string) string) (*operations.Statistics, error) {
+func transform(statistics *operations.Statistics, transformFn func(string) string) (*operations.Statistics, error) {
 	copiedStatistics, err := copystructure.Copy(statistics)
 	if err != nil {
 		return nil, err
 	}
-	for _, proj := range copiedStatistics.(*operations.Statistics).Projects {
-		for _, service := range proj.Services {
+	newProjects := make(map[string]*operations.Project)
+	for projKey, proj := range copiedStatistics.(*operations.Statistics).Projects {
+		newServices := make(map[string]*operations.Service)
+		for serviceKey, service := range proj.Services {
 			newExecutedSequencesPerType := make(map[string]int)
 			for eventType, numExecutedSequencesPerType := range service.ExecutedSequencesPerType {
-				newExecutedSequencesPerType[tansformFn(eventType)] = numExecutedSequencesPerType
+				newExecutedSequencesPerType[transformFn(eventType)] = numExecutedSequencesPerType
 			}
 			service.ExecutedSequencesPerType = newExecutedSequencesPerType
 
 			newEvents := make(map[string]int)
 			for eventType, event := range service.Events {
-				newEvents[tansformFn(eventType)] = event
+				newEvents[transformFn(eventType)] = event
 			}
 			service.Events = newEvents
 
@@ -178,14 +186,18 @@ func transform(statistics *operations.Statistics, tansformFn func(string) string
 			for keptnServiceExecutionKey, keptnService := range service.KeptnServiceExecutions {
 				newServiceExecutions := make(map[string]int)
 				for eventType2, numExecutions := range keptnService.Executions {
-					newServiceExecutions[tansformFn(eventType2)] = numExecutions
+					newServiceExecutions[transformFn(eventType2)] = numExecutions
 				}
 				keptnService.Executions = newServiceExecutions
-				newKeptnServiceExecutions[tansformFn(keptnServiceExecutionKey)] = keptnService
+				newKeptnServiceExecutions[transformFn(keptnServiceExecutionKey)] = keptnService
 			}
 			service.KeptnServiceExecutions = newKeptnServiceExecutions
+			newServices[transformFn(serviceKey)] = service
 		}
+		proj.Services = newServices
+		newProjects[transformFn(projKey)] = proj
 	}
+	copiedStatistics.(*operations.Statistics).Projects = newProjects
 	return copiedStatistics.(*operations.Statistics), nil
 }
 

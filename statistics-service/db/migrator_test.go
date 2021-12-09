@@ -17,11 +17,9 @@ func Test_Migrate(t *testing.T) {
 		From: time.Now(),
 		To:   time.Now().Add(time.Second),
 		Projects: map[string]*operations.Project{
-			"my-project": {
-				Name: "my-project",
+			"my.project": {
 				Services: map[string]*operations.Service{
-					"my-service": {
-						Name: "my-service",
+					"my.service": {
 						Events: map[string]int{
 							"my.keptn.event.type": 2, // <-DOT
 						},
@@ -79,11 +77,9 @@ func Test_Transform_Encode_Decode(t *testing.T) {
 		From: time.Now(),
 		To:   time.Now().Add(time.Second),
 		Projects: map[string]*operations.Project{
-			"my-project": {
-				Name: "my-project",
+			"my.project": {
 				Services: map[string]*operations.Service{
-					"my-service": {
-						Name: "my-service",
+					"my.service": {
 						Events: map[string]int{
 							"my.keptn.event.type": 2, // <-DOT
 						},
@@ -108,11 +104,9 @@ func Test_Transform_Encode_Decode(t *testing.T) {
 		From: time.Now(),
 		To:   time.Now().Add(time.Second),
 		Projects: map[string]*operations.Project{
-			"my-project": {
-				Name: "my-project",
+			"my~pproject": {
 				Services: map[string]*operations.Service{
-					"my-service": {
-						Name: "my-service",
+					"my~pservice": {
 						Events: map[string]int{
 							"my~pkeptn~pevent~ptype": 2,
 						},
@@ -241,6 +235,54 @@ func Test_noDotsInKeys(t *testing.T) {
 						"a": {
 							Events: map[string]int{
 								".": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								"a": {
+									Executions: map[string]int{
+										"a": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								"a": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, false},
+		{"dots in Service field", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				"my-project": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						".": {
+							Events: map[string]int{
+								"a": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								"a": {
+									Executions: map[string]int{
+										"a": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								"a": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, false},
+		{"dots in Project field", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				".": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						"a": {
+							Events: map[string]int{
+								"a": 2,
 							},
 							KeptnServiceExecutions: map[string]*operations.KeptnService{
 								"a": {
