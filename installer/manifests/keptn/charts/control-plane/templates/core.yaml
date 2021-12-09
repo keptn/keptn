@@ -667,6 +667,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       volumes:
         - name: configuration-volume

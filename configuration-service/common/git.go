@@ -24,8 +24,11 @@ var namespace = os.Getenv("POD_NAMESPACE")
 const masterBranch = "master"
 const mainBranch = "main"
 
-const gitKeptnUser = "keptn"
-const gitKeptnEmail = "keptn@keptn.sh"
+const gitKeptnUserEnvVar = "GIT_KEPTN_USER"
+const gitKeptnEmailEnvVar = "GIT_KEPTN_EMAIL"
+
+const gitKeptnUserDefault = "keptn"
+const gitKeptnEmailDefault = "keptn@keptn.sh"
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/command_executor_mock.go . CommandExecutor
 type CommandExecutor interface {
@@ -355,11 +358,11 @@ func (g *Git) Reset(project string) error {
 
 func (g *Git) ConfigureGitUser(project string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
-	_, err := g.Executor.ExecuteCommand("git", []string{"config", "user.name", gitKeptnUser}, projectConfigPath)
+	_, err := g.Executor.ExecuteCommand("git", []string{"config", "user.name", getGitKeptnUser()}, projectConfigPath)
 	if err != nil {
 		return fmt.Errorf("could not set git user.name: %w", err)
 	}
-	_, err = g.Executor.ExecuteCommand("git", []string{"config", "user.email", gitKeptnEmail}, projectConfigPath)
+	_, err = g.Executor.ExecuteCommand("git", []string{"config", "user.email", getGitKeptnEmail()}, projectConfigPath)
 	if err != nil {
 		return fmt.Errorf("could not set git user.email: %w", err)
 	}
@@ -584,4 +587,18 @@ func addVersionToMetadata(project string, metadata *models.Version) {
 	if err == nil {
 		metadata.Version = version
 	}
+}
+
+func getGitKeptnUser() string {
+	if keptnUser := os.Getenv(gitKeptnUserEnvVar); keptnUser != "" {
+		return keptnUser
+	}
+	return gitKeptnUserDefault
+}
+
+func getGitKeptnEmail() string {
+	if keptnEmail := os.Getenv(gitKeptnEmailEnvVar); keptnEmail != "" {
+		return keptnEmail
+	}
+	return gitKeptnEmailDefault
 }
