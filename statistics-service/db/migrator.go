@@ -124,7 +124,10 @@ func noDotsInKeys(statistics *operations.Statistics) bool {
 					return false
 				}
 			}
-			for _, keptnService := range service.KeptnServiceExecutions {
+			for keptnServiceExecutionsKey, keptnService := range service.KeptnServiceExecutions {
+				if strings.Contains(keptnServiceExecutionsKey, ".") {
+					return false
+				}
 				for eventType := range keptnService.Executions {
 					if strings.Contains(eventType, ".") {
 						return false

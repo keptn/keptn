@@ -151,3 +151,142 @@ func insertStat(t *testing.T, s *StatisticsMongoDBRepo, statistics operations.St
 	_, err = s.statsCollection.InsertOne(ctx, statistics)
 	require.Nil(t, err)
 }
+
+func Test_noDotsInKeys(t *testing.T) {
+	type args struct {
+		statistics *operations.Statistics
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"dots in executedSequencePerType field", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				"my-project": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						"a": {
+							Events: map[string]int{
+								"a": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								"a": {
+									Executions: map[string]int{
+										"a": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								".": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, false},
+		{"dots in Executions field", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				"my-project": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						"a": {
+							Events: map[string]int{
+								"a": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								"a": {
+									Executions: map[string]int{
+										".": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								"a": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, false},
+		{"dots in KeptnServiceExecutions field", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				"my-project": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						"a": {
+							Events: map[string]int{
+								"a": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								".": {
+									Executions: map[string]int{
+										"a": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								"a": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, false},
+		{"dots in Events field", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				"my-project": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						"a": {
+							Events: map[string]int{
+								".": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								"a": {
+									Executions: map[string]int{
+										"a": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								"a": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, false},
+		{"no dots", args{&operations.Statistics{
+			Projects: map[string]*operations.Project{
+				"my-project": {
+					Name: "a",
+					Services: map[string]*operations.Service{
+						"a": {
+							Events: map[string]int{
+								"a": 2,
+							},
+							KeptnServiceExecutions: map[string]*operations.KeptnService{
+								"a": {
+									Executions: map[string]int{
+										"a": 1,
+									},
+								},
+							},
+							ExecutedSequencesPerType: map[string]int{
+								"a": 0,
+							},
+						},
+					},
+				},
+			},
+		}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := noDotsInKeys(tt.args.statistics); got != tt.want {
+				t.Errorf("noDotsInKeys() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
