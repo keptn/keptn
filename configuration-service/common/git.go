@@ -9,6 +9,7 @@ import (
 	config2 "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
@@ -117,12 +118,19 @@ func (g *GitClient) StageAndCommitAll(project, message string) error {
 		return err
 	}
 
-	err = g.PullUpstreamChanges(project, credentials)
-	if err != nil {
-		return err
-	}
+	err = retry.Retry(func() error {
+		err = g.PullUpstreamChanges(project, credentials)
+		if err != nil {
+			return err
+		}
 
-	err = g.PushUpstreamChanges(project, credentials)
+		err = g.PushUpstreamChanges(project, credentials)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+
 	if err != nil {
 		return err
 	}
