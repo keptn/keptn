@@ -25,6 +25,8 @@ nats:
 
   natsbox:
     enabled: false
+  reloader:
+    enabled: false
 
 apiGatewayNginx:
   type: ClusterIP
