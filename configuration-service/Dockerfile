@@ -4,7 +4,7 @@ FROM golang:1.16.2-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/configuration-service
 
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
@@ -33,8 +33,8 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
-# Build the command inside the container. 
-# (You may fetch or manage dependencies here, 
+# Build the command inside the container.
+# (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/configuration-service-server/main.go
 
