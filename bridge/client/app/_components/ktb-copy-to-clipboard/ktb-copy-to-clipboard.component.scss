@@ -18,10 +18,11 @@
 
 .dt-copy-to-clipboard-btn-button {
   min-width: 10px !important;
-  padding: 0px 6px;
+  padding: 0 6px;
 
   .dt-icon {
-    width: 20px;
+    position: relative;
+    top: 5px;
     fill: $white;
   }
 }

@@ -24,6 +24,7 @@ export interface SubSequence {
 
 export interface IStageDeployment {
   name: string;
+  state: SequenceState;
   lastTimeUpdated: string;
   hasEvaluation: boolean;
   latestEvaluation?: Trace;

@@ -1,13 +1,12 @@
 import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
 import { ServiceState } from '../../_models/service-state';
-import { SequenceState } from '../../../../shared/models/sequence';
 import { Deployment } from '../../_models/deployment';
 import { ServiceRemediationInformation } from '../../_models/service-remediation-information';
 
@@ -47,38 +46,40 @@ export class KtbServiceViewComponent implements OnDestroy {
     );
 
     const serviceStatesInitial$ = projectName$.pipe(
+      tap(() => {
+        // service states of another project are loaded; change to loading state
+        this.serviceStates = undefined;
+      }),
       switchMap((projectName) => this.dataService.getServiceStates(projectName)),
       takeUntil(this.unsubscribe$)
     );
 
-    combineLatest([params$, projectName$, serviceStatesInitial$])
-      .pipe(take(1))
-      .subscribe(([params, projectName, serviceStates]) => {
-        this.updateServiceStates(serviceStates);
-        const keptnContext = params.get('shkeptncontext');
-        this.serviceName = params.get('serviceName') ?? undefined;
-        if (keptnContext && this.serviceName) {
-          const serviceState = serviceStates.find((state) => state.name === this.serviceName);
-          const selectedDeploymentInformation = serviceState?.deploymentInformation.find(
-            (deployment) => deployment.keptnContext === keptnContext
-          );
-          if (selectedDeploymentInformation) {
-            const selection = {
-              deploymentInformation: selectedDeploymentInformation,
-              stage: params.get('stage') ?? '',
-            };
-            this.deploymentSelected(selection, projectName);
-          } else if (serviceState) {
-            // remove context and stage parameter if it does not exist
-            const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', serviceState.name]);
-            this.location.go(routeUrl.toString());
-          } else {
-            // remove service parameter, if it does not exist
-            const routeUrl = this.router.createUrlTree(['/project', projectName, 'service']);
-            this.location.go(routeUrl.toString());
-          }
+    combineLatest([params$, projectName$, serviceStatesInitial$]).subscribe(([params, projectName, serviceStates]) => {
+      this.updateServiceStates(serviceStates);
+      const keptnContext = params.get('shkeptncontext');
+      this.serviceName = params.get('serviceName') ?? undefined;
+      if (keptnContext && this.serviceName) {
+        const serviceState = serviceStates.find((state) => state.name === this.serviceName);
+        const selectedDeploymentInformation = serviceState?.deploymentInformation.find(
+          (deployment) => deployment.keptnContext === keptnContext
+        );
+        if (selectedDeploymentInformation) {
+          const selection = {
+            deploymentInformation: selectedDeploymentInformation,
+            stage: params.get('stage') ?? '',
+          };
+          this.deploymentSelected(selection, projectName);
+        } else if (serviceState) {
+          // remove context and stage parameter if it does not exist
+          const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', serviceState.name]);
+          this.location.go(routeUrl.toString());
+        } else {
+          // remove service parameter, if it does not exist
+          const routeUrl = this.router.createUrlTree(['/project', projectName, 'service']);
+          this.location.go(routeUrl.toString());
         }
-      });
+      }
+    });
 
     projectName$.subscribe((projectName) => {
       this.projectName = projectName;
@@ -165,7 +166,7 @@ export class KtbServiceViewComponent implements OnDestroy {
       update$ = this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
     } else {
       // update deployment
-      if (originalDeployment.state === SequenceState.FINISHED || originalDeployment.state === SequenceState.TIMEDOUT) {
+      if (originalDeployment.isFinished()) {
         // deployment is finished. Just update open remediations
         update$ = this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
       } else {

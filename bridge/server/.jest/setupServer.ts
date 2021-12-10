@@ -2,7 +2,7 @@ import { init } from '../app';
 import Axios from 'axios';
 import https from 'https';
 
-const setup = async () => {
+const setup = async (): Promise<void> => {
   global.baseUrl = 'http://localhost/api/';
 
   global.axiosInstance = Axios.create({
@@ -11,7 +11,7 @@ const setup = async () => {
       rejectUnauthorized: false,
     }),
     headers: {
-      'x-token': process.env.API_TOKEN,
+      'x-token': process.env.API_TOKEN ?? '',
       'Content-Type': 'application/json',
     },
   });

@@ -56,6 +56,14 @@ class BasePage {
       .click();
   }
 
+  selectProjectThroughHeader(projectName: string): void {
+    cy.byTestId('keptn-nav-projectSelect')
+      .click()
+      .get('.cdk-overlay-container dt-option')
+      .contains(projectName)
+      .click();
+  }
+
   clickProjectTile(projectName: string): EnvironmentPage {
     cy.wait(500).get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click();
     return new EnvironmentPage();

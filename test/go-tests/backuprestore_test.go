@@ -1,11 +1,11 @@
 package go_tests
 
 import (
+	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
-
-	"github.com/stretchr/testify/require"
+	"time"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -21,9 +21,19 @@ spec:
             - name: "deployment"
               properties:
                 deploymentstrategy: "direct"
+            - name: "test"
+              properties:
+                teststrategy: "functional"
+            - name: "evaluation"
+            - name: "release"
+        - name: "delivery-direct"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
             - name: "release"
 
-    - name: "staging"
+    - name: "prod"
       sequences:
         - name: "delivery"
           triggeredOn:
@@ -31,14 +41,24 @@ spec:
           tasks:
             - name: "deployment"
               properties:
-                deploymentstrategy: "direct"
+                deploymentstrategy: "blue_green_service"
+            - name: "test"
+              properties:
+                teststrategy: "performance"
+            - name: "evaluation"
             - name: "release"
-
-    - name: "production"
-      sequences:
-        - name: "delivery"
+        - name: "rollback"
           triggeredOn:
-            - event: "staging.delivery.finished"
+            - event: "prod.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
+
+        - name: "delivery-direct"
+          triggeredOn:
+            - event: "dev.delivery-direct.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -53,6 +73,7 @@ func Test_BackupRestore(t *testing.T) {
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
+	serviceHealthCheckEndpoint := "/metrics"
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
@@ -64,12 +85,12 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
 	require.Nil(t, err)
 
-	t.Log("Adding jmeter config in staging")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
+	t.Log("Adding jmeter config in prod")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "prod", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
 	require.Nil(t, err)
 
-	t.Log("Adding load test resources for jmeter in staging")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
+	t.Log("Adding load test resources for jmeter in prod")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "prod", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
 	require.Nil(t, err)
 
 	t.Logf("Trigger delivery before backup of helloservice:v0.1.0")
@@ -80,12 +101,20 @@ func Test_BackupRestore(t *testing.T) {
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Logf("Verify Direct delivery before backup of %s in stage staging", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Logf("Verify Direct delivery before backup of %s in stage production", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	t.Logf("Verify Direct delivery before backup of %s in stage prod", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage prod")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
 	//backup Configuration Service data
@@ -158,20 +187,28 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
 	require.Nil(t, err)
 
-	t.Logf("Trigger delivery after restore of helloservice:v0.1.1")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
+	t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Verify Direct delivery after restore of %s in stage dev", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Logf("Verify Direct delivery after restore of %s in stage staging", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	t.Log("Verify network access to public URI of helloservice in stage dev")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Logf("Verify Direct delivery after restore of %s in stage production", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "production", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	t.Logf("Verify Direct delivery after restore of %s in stage prod", serviceName)
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
+
+	t.Log("Verify network access to public URI of helloservice in stage prod")
+	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod")
+	require.Nil(t, err)
+	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
 }

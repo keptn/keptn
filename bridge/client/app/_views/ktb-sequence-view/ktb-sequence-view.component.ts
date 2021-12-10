@@ -60,6 +60,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         autocomplete: [
           { name: 'Active', value: 'started' },
           { name: 'Failed', value: 'failed' },
+          { name: 'Aborted', value: 'aborted' },
           { name: 'Succeeded', value: 'succeeded' },
         ],
       },

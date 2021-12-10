@@ -870,6 +870,7 @@ const projectDetailsResponse = {
           },
           openRemediations: [
             {
+              problemTitle: 'Response time degradation',
               stages: [
                 {
                   name: 'production',

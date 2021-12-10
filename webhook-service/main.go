@@ -53,6 +53,7 @@ func main() {
 			taskHandler,
 		),
 		sdk.WithAutomaticResponse(false),
+		sdk.WithLogger(log.New()),
 	).Start())
 }
 

@@ -20,6 +20,7 @@
             [class.success]="currentSequence.isSuccessful(stage)"
             [class.highlight]="currentSequence.hasPendingApproval(stage)"
             [class.warning]="currentSequence.isWarning(stage)"
+            [class.aborted]="currentSequence.isAborted(stage)"
           ></dt-icon>
           <ng-template #showLoading>
             <button
@@ -39,6 +40,7 @@
             [class.success]="!currentSequence.hasPendingApproval(stage) && !currentSequence.isFaulty(stage)"
             [class.highlight]="currentSequence.hasPendingApproval(stage)"
             [class.warning]="currentSequence.isWarning(stage)"
+            [class.aborted]="currentSequence.isAborted(stage)"
             [class.focused]="stage === selectedStage"
             [textContent]="stage"
           ></span>

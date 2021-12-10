@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'ktb-sequence-state-list',
   templateUrl: './ktb-sequence-state-list.component.html',
-  styleUrls: ['./ktb-sequence-state-list.component.scss'],
+  styleUrls: [],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
 })

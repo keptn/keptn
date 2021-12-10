@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/remediation-service/handler"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
@@ -15,5 +16,6 @@ func main() {
 		sdk.WithTaskHandler(
 			getActionTriggeredEventType,
 			handler.NewGetActionEventHandler()),
+		sdk.WithLogger(logrus.New()),
 	).Start())
 }

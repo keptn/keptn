@@ -8,10 +8,12 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
-import admZip from 'adm-zip';
+import AdmZip from 'adm-zip';
 import { apiRouter } from './api';
 import { execSync } from 'child_process';
 import { AxiosError } from 'axios';
+import { EnvironmentUtils } from './utils/environment.utils';
+import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,84 +29,18 @@ const cleanBucketsInterval = +(process.env.CLEAN_BUCKET_INTERVAL || 60) * 60 * 1
 const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, '../../../');
 const serverFolder = join(rootFolder, 'server');
+const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
+const serverFeatureFlags = new ServerFeatureFlags();
+const clientFeatureFlags = new ClientFeatureFlags();
+EnvironmentUtils.setFeatureFlags(process.env, serverFeatureFlags);
+EnvironmentUtils.setFeatureFlags(process.env, clientFeatureFlags);
 
 if (process.env.NODE_ENV !== 'test') {
-  try {
-    console.log('Installing default Look-and-Feel');
-
-    const destDir = join(rootFolder, 'dist/assets/branding');
-    const srcDir = join(
-      rootFolder,
-      `${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`
-    );
-    const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
-
-    if (!existsSync(destDir)) {
-      mkdirSync(destDir, { recursive: true });
-    }
-
-    brandingFiles.forEach((file) => {
-      copyFileSync(join(srcDir, file), join(destDir, file));
-    });
-  } catch (e) {
-    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
-    process.exit(1);
-  }
+  setupDefaultLookAndFeel();
 }
 if (lookAndFeelUrl) {
-  let fl: WriteStream | undefined;
-
-  try {
-    console.log('Downloading custom Look-and-Feel file from', lookAndFeelUrl);
-
-    const destDir = join(rootFolder, 'dist/assets/branding');
-    const destFile = join(destDir, '/lookandfeel.zip');
-
-    if (!existsSync(destDir)) {
-      mkdirSync(destDir, { recursive: true });
-    }
-
-    fl = createWriteStream(destFile);
-    const file: WriteStream = fl;
-    const parsedUrl = new URL(lookAndFeelUrl);
-    const lib = parsedUrl.protocol === 'https:' ? https : http;
-
-    lib
-      .get(lookAndFeelUrl, async (response) => {
-        response.pipe(file);
-        file.on('finish', () => {
-          file.end();
-          try {
-            const zip = new admZip(destFile);
-            zip.extractAllToAsync(destDir, true, () => {
-              unlinkSync(destFile);
-              console.log('Custom Look-and-Feel downloaded and extracted successfully');
-            });
-          } catch (err) {
-            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
-          }
-        });
-        file.on('error', async (err) => {
-          file.end();
-          try {
-            await unlink(destFile);
-          } catch (error) {
-            console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
-          }
-          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
-        });
-      })
-      .on('error', (err) => {
-        file.end();
-        console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
-      });
-  } catch (err) {
-    fl?.end();
-    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
-  }
+  setupLookAndFeel(lookAndFeelUrl);
 }
-
-const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
 
 async function init(): Promise<Express> {
   if (!apiUrl) {
@@ -160,7 +96,12 @@ async function init(): Promise<Express> {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", "'unsafe-eval'", "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='"],
+        'script-src': [
+          "'self'",
+          "'unsafe-eval'",
+          "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
+          `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
+        ],
         'upgrade-insecure-requests': null,
       },
     })
@@ -175,7 +116,7 @@ async function init(): Promise<Express> {
   const authType: string = await setAuth();
 
   // everything starting with /api is routed to the api implementation
-  app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType }));
+  app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags }));
 
   // fallback: go to index.html
   app.use((req, res) => {
@@ -184,6 +125,7 @@ async function init(): Promise<Express> {
   });
 
   // error handler
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err: Error | AxiosError, req: Request, res: Response, _next: NextFunction) => {
     const status: number = handleError(err, req, res, authType);
     res.status(status).send(err.message);
@@ -246,7 +188,7 @@ async function setBasisAUTH(): Promise<void> {
 
 async function setAuth(): Promise<string> {
   let authType;
-  if (process.env.OAUTH_ENABLED === 'true') {
+  if (serverFeatureFlags.OAUTH_ENABLED) {
     await setOAUTH();
     authType = 'OAUTH';
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
@@ -258,6 +200,83 @@ async function setAuth(): Promise<string> {
   }
 
   return authType;
+}
+
+function setupDefaultLookAndFeel(): void {
+  try {
+    console.log('Installing default Look-and-Feel');
+
+    const destDir = join(rootFolder, 'dist/assets/branding');
+    const srcDir = join(
+      rootFolder,
+      `${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`
+    );
+    const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
+
+    if (!existsSync(destDir)) {
+      mkdirSync(destDir, { recursive: true });
+    }
+
+    brandingFiles.forEach((file) => {
+      copyFileSync(join(srcDir, file), join(destDir, file));
+    });
+  } catch (e) {
+    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+    process.exit(1);
+  }
+}
+
+function setupLookAndFeel(url: string): void {
+  let fl: WriteStream | undefined;
+
+  try {
+    console.log('Downloading custom Look-and-Feel file from', lookAndFeelUrl);
+
+    const destDir = join(rootFolder, 'dist/assets/branding');
+    const destFile = join(destDir, '/lookandfeel.zip');
+
+    if (!existsSync(destDir)) {
+      mkdirSync(destDir, { recursive: true });
+    }
+
+    fl = createWriteStream(destFile);
+    const file: WriteStream = fl;
+    const parsedUrl = new URL(url);
+    const lib = parsedUrl.protocol === 'https:' ? https : http;
+
+    lib
+      .get(url, async (response) => {
+        response.pipe(file);
+        file.on('finish', () => {
+          file.end();
+          try {
+            const zip = new AdmZip(destFile);
+            zip.extractAllToAsync(destDir, true, () => {
+              unlinkSync(destFile);
+              console.log('Custom Look-and-Feel downloaded and extracted successfully');
+            });
+          } catch (err) {
+            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
+          }
+        });
+        file.on('error', async (err) => {
+          file.end();
+          try {
+            await unlink(destFile);
+          } catch (error) {
+            console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
+          }
+          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+        });
+      })
+      .on('error', (err) => {
+        file.end();
+        console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+      });
+  } catch (err) {
+    fl?.end();
+    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+  }
 }
 
 function updateBucket(loginAttempt: boolean, userIP?: string): void {
@@ -317,7 +336,9 @@ function handleError(err: any, req: Request, res: Response, authType: string): n
   }
 
   if (isAxiosError(err)) {
-    console.error(`Error for ${err.request.method} ${err.request.path}: ${err.message}`);
+    const method = (err.request || err.config).method;
+    const url = err.request?.path ?? err.config.url;
+    console.error(`Error for ${method} ${url}: ${err.message}`);
   } else {
     console.error(err);
   }

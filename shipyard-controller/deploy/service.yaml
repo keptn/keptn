@@ -42,19 +42,29 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: MONGODB_HOST
-            value: 'mongodb:27017'
+            value: 'keptn-mongo:27017'
           - name: MONGODB_USER
             valueFrom:
               secretKeyRef:
                 name: mongodb-credentials
-                key: user
+                key: mongodb-user
           - name: MONGODB_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: mongodb-credentials
-                key: password
+                key: mongodb-password
           - name: MONGODB_DATABASE
-            value: 'keptn'
+            value: "keptn"
+          - name: MONGODB_EXTERNAL_CONNECTION_STRING
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: external_connection_string
+                optional: true
+          - name: UNIFORM_INTEGRATION_TTL
+            value: "2m"
+          - name: LOG_LEVEL
+            value: "debug"
           - name: KEPTN_SPEC_VERSION
             value: "0.2.3"
           - name: TASK_STARTED_WAIT_DURATION
@@ -71,7 +81,7 @@ spec:
             memory: "256Mi"
             cpu: "100m"
       - name: distributor
-        image: keptn/distributor:0.8.4
+        image: keptn/distributor:latest
         ports:
           - containerPort: 8080
         lifecycle:
@@ -81,7 +91,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 10999
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
         resources:

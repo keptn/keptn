@@ -56,11 +56,20 @@
 
     &.ktb-tile-highlight:hover .ktb-selectable-tile-container,
     &.ktb-tile-highlight .ktb-selectable-tile-container {
-      border-color: $blue-400;
+      border-color: $approval-color;
     }
 
     &.ktb-tile-selected.ktb-tile-highlight .ktb-selectable-tile-container:before {
-      background: $blue-400;
+      background: $approval-color;
+    }
+
+    &.ktb-tile-aborted:hover .ktb-selectable-tile-container,
+    &.ktb-tile-aborted .ktb-selectable-tile-container {
+      border-color: $aborted-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-aborted .ktb-selectable-tile-container:before {
+      background: $aborted-color;
     }
   }
 }

@@ -1,3 +1,4 @@
+@import '../../../variables';
 @import '~@dynatrace/barista-components/style/main';
 
 .dt-toggle-button-group {
@@ -42,23 +43,23 @@
 
     &.highlight:not(.dt-toggle-button-item-disabled) {
       .dt-toggle-button-item-icon {
-        background-color: $blue-400;
+        background-color: $approval-color;
       }
       &.dt-toggle-button-item-selected {
-        border-color: $blue-400;
+        border-color: $approval-color;
         .dt-toggle-button-item-icon {
-          background-color: $blue-400;
+          background-color: $approval-color;
         }
       }
     }
     &.highlight:not(.dt-toggle-button-item-disabled):hover {
       .dt-toggle-button-item-icon {
-        background-color: $blue-500;
+        background-color: $approval-color-hover;
       }
       &.dt-toggle-button-item-selected {
-        border-color: $blue-500;
+        border-color: $approval-color-hover;
         .dt-toggle-button-item-icon {
-          background-color: $blue-500;
+          background-color: $approval-color-hover;
         }
       }
     }

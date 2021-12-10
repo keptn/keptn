@@ -1603,10 +1603,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -1746,10 +1747,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 0.5,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   16.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         16.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -1900,10 +1902,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -2066,10 +2069,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 10.0,
+								Success:       true,
+								Message:       "",
 							},
 							WarningTargets: []*keptnv2.SLITarget{
 								{
@@ -2101,10 +2105,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						{
 							Score: 0,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-log-metric",
-								Value:   30.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-log-metric",
+								Value:         30.0,
+								ComparedValue: 0.0,
+								Success:       true,
+								Message:       "",
 							},
 							Status: "info",
 						},
@@ -2322,6 +2327,115 @@ func TestEvaluateObjectives(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
+				},
+			},
+			ExpectedMaximumScore: 1,
+			ExpectedKeySLIFailed: false,
+		},
+		{
+			Name: "6096 if SLI does not have objective have a message",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Result:  "fail",
+				},
+				GetSLI: keptnv2.GetSLIFinished{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "my-test-metric-1",
+							Value:   10.0,
+							Success: true,
+							Message: "",
+						},
+					},
+				},
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "a_different_metric",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
+				{
+					Evaluation: keptnv2.EvaluationDetails{
+						TimeStart: "",
+						TimeEnd:   "",
+						Result:    "pass",
+						Score:     2,
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "my-test-metric-1",
+									Value:   10.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+						},
+					},
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
+				},
+			},
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart:        "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:          "2019-10-22T08:57:27.152330783Z",
+					Result:           "", // not set by the tested function
+					Score:            0,  // not calculated by tested function
+					IndicatorResults: nil,
+				},
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Message: "Lighthouse received additional SLIs, which are not specified as SLO: my-test-metric-1 . Please consider using them as an SLO.",
 				},
 			},
 			ExpectedMaximumScore: 1,
@@ -2986,10 +3100,11 @@ func TestCalculateScore(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-test-metric-1",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-test-metric-1",
+								Value:         10.0,
+								ComparedValue: 0.0,
+								Success:       true,
+								Message:       "",
 							},
 							PassTargets:    nil,
 							WarningTargets: nil,
@@ -2999,10 +3114,11 @@ func TestCalculateScore(t *testing.T) {
 						{
 							Score: 1,
 							Value: &keptnv2.SLIResult{
-								Metric:  "my-key-metric",
-								Value:   10.0,
-								Success: true,
-								Message: "",
+								Metric:        "my-key-metric",
+								Value:         10.0,
+								ComparedValue: 0.0,
+								Success:       true,
+								Message:       "",
 							},
 							PassTargets:    nil,
 							WarningTargets: nil,
@@ -3139,10 +3255,10 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+				t.Errorf("getPreviousEvaluations() got = %v, found %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+				t.Errorf("getPreviousEvaluations() got = %v, found %v", got, tt.want)
 			}
 		})
 	}
@@ -3290,6 +3406,253 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				}
 				assert.EqualValues(t, tt.wantEvents[index].EventData, (*evaluationFinishedEvent).EventData)
 			}
+
+		})
+	}
+}
+
+func Test_aggregateValues(t *testing.T) {
+	type fields struct {
+		InPreviousResults []*keptnv2.SLIEvaluationResult
+		InComparison      *keptnmodelsv2.SLOComparison
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		wantedValue float64
+		shouldSkip  bool
+	}{
+
+		{name: "Aggregate 2 values with AVG",
+			fields: fields{
+				InPreviousResults: []*keptnv2.SLIEvaluationResult{
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   5.0,
+							Success: true,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   15.0,
+							Success: true,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+				},
+				InComparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+			},
+			wantedValue: 10.0,
+			shouldSkip:  false,
+		},
+		{name: "Skip because of no previous results",
+			fields: fields{
+				InComparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+			},
+			wantedValue: 0.0,
+			shouldSkip:  true,
+		},
+		{name: "Skip because of no previous success",
+			fields: fields{
+				InPreviousResults: []*keptnv2.SLIEvaluationResult{
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   5.0,
+							Success: false,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+					{
+						Score: 2,
+						Value: &keptnv2.SLIResult{
+							Metric:  "my-test-metric",
+							Value:   15.0,
+							Success: false,
+							Message: "",
+						},
+						PassTargets:    nil,
+						WarningTargets: nil,
+						KeySLI:         false,
+						Status:         "pass",
+					},
+				},
+				InComparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+			},
+			wantedValue: 0.0,
+			shouldSkip:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := aggregateValues(tt.fields.InPreviousResults, tt.fields.InComparison)
+			if got != tt.wantedValue {
+				t.Errorf("aggregateValues() got = %v, want %v", got, tt.wantedValue)
+			}
+			if got1 != tt.shouldSkip {
+				t.Errorf("aggregateValues() got1 = %v, want %v", got1, tt.shouldSkip)
+			}
+		})
+	}
+}
+
+func Test_getSLIResult(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		results *[]*keptnv2.SLIResult
+		sli     string
+		found   *keptnv2.SLIResult
+		left    []*keptnv2.SLIResult
+	}{
+		{
+			name: "none found",
+			sli:  "not_this_metric",
+			results: &[]*keptnv2.SLIResult{
+				{
+					Metric:  "response_time_p50",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+			found: nil,
+			left: []*keptnv2.SLIResult{
+				{
+					Metric:  "response_time_p50",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+		},
+		{
+			name: "none left",
+			sli:  "response_time_p50",
+			results: &[]*keptnv2.SLIResult{
+				{
+					Metric:  "response_time_p50",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+			found: &keptnv2.SLIResult{
+				Metric:  "response_time_p50",
+				Value:   100,
+				Success: true,
+				Message: "",
+			},
+			left: []*keptnv2.SLIResult{},
+		},
+
+		{
+			name: "one sli left",
+			sli:  "response_time_p50",
+			results: &[]*keptnv2.SLIResult{
+				{
+					Metric:  "response_time_p50",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+				{
+					Metric:  "wrong_metric",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+			found: &keptnv2.SLIResult{
+				Metric:  "response_time_p50",
+				Value:   100,
+				Success: true,
+				Message: "",
+			},
+			left: []*keptnv2.SLIResult{
+				{
+					Metric:  "wrong_metric",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+		},
+		{
+			name: "found last",
+			sli:  "response_time_p50",
+			results: &[]*keptnv2.SLIResult{
+
+				{
+					Metric:  "wrong_metric",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+				{
+					Metric:  "response_time_p50",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+			found: &keptnv2.SLIResult{
+				Metric:  "response_time_p50",
+				Value:   100,
+				Success: true,
+				Message: "",
+			},
+			left: []*keptnv2.SLIResult{
+				{
+					Metric:  "wrong_metric",
+					Value:   100,
+					Success: true,
+					Message: "",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getSLIResult(tt.results, tt.sli)
+			if !reflect.DeepEqual(got, tt.found) {
+				t.Errorf("getSLIResult() = %v, found %v", got, tt.found)
+			}
+			assert.Equal(t, len(tt.left), len(*tt.results))
 
 		})
 	}

@@ -7,13 +7,13 @@ It provides a simple API for creating, updating or deleting secrets in a specifi
 
 **NOTE:** The current implementation only supports "kubernetes" as a secret backend.
 
-## Secrets and Scopes
+## Secret and Scopes
 
-A secret created by the **SecretService** is bound to a **Scope**. 
-A **Scope** contains a set of **Capabilities** which in turn is a set of permissions.
-Currently scopes are hardcoded into a file called `scopes.yaml`.
+A secret created by the secret-service is bound to a scope.
+A scope contains a set of capabilities which in turn is a set of permissions.
+Currently scopes are hardcoded into a file called `scopes.yaml` which is read by the secret-service during startup.
 
-Default `scopes.yaml`:
+The default scope for Keptn looks like this:
 ```
 Scopes:
   keptn-default:
@@ -21,10 +21,29 @@ Scopes:
       keptn-secrets-default-read:
         Permissions:
           - get
+  keptn-webhook-service:
+    Capabilities:
+      keptn-webhook-svc-read:
+        Permissions:
+          - get
+  dynatrace-service:
+    Capabilities:
+      keptn-dynatrace-svc-read:
+        Permissions:
+          - get
 ```
 
-**NOTE:** Thus, services making use of a secret in the `default-scope` are only allowed to read the secret.
-THe `scopes.yaml` needs to be modified manually in order to add, modify or delete any scopes. Currently,
+In Kubernetes, *scope* maps to a K8S *ServiceAccount* and a capability maps to a K8S *Role*.
+
+Based on the `scopes.yaml` file above, when a secret with scope `keptn-webhook-service` is created, the secret-service will:
+- create a K8S secret
+- create a *Role* named `keptn-webhook-svc-read` containing rules to access the created secret with permissions `get`
+- create a *Rolebinding* `keptn-webhook-service-rolebinding` with *subjects* set to the *ServiceAccount* named `keptn-webhook-service`
+-
+
+Thus, every K8S Pod bound to the service account *keptn-webhook-service* is able to read the secret.
+
+**NOTE:** The `scopes.yaml` needs to be modified manually in order to add, modify or delete any scopes. Currently,
 there is no API endpoint for that.
 
 ## Generate  Swagger doc from source

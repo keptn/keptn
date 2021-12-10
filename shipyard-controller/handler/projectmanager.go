@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -12,9 +16,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const shipyardVersion = "spec.keptn.sh/0.2.0"
@@ -233,10 +234,16 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 	}
 
+	var isShipyardPresent = params.Shipyard != nil && *params.Shipyard != ""
+
 	// try to update shipyard project resource
-	if params.Shipyard != "" {
+	if isShipyardPresent {
+		if err = validateShipyardUpdate(params, oldProject); err != nil {
+			return err, nilRollback
+		}
+
 		shipyardResource := apimodels.Resource{
-			ResourceContent: params.Shipyard,
+			ResourceContent: *params.Shipyard,
 			ResourceURI:     common.Stringp("shipyard.yaml"),
 		}
 		err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &shipyardResource)
@@ -259,8 +266,8 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
-	if params.Shipyard != "" {
-		updateProject.Shipyard = params.Shipyard
+	if isShipyardPresent {
+		updateProject.Shipyard = *params.Shipyard
 	}
 
 	// try to update project information in database
@@ -470,6 +477,62 @@ func toModelProject(project models.ExpandedProject) apimodels.Project {
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
+}
+
+func validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProject *models.ExpandedProject) error {
+	if len(newProject.Stages) != len(oldProject.Stages) {
+		return fmt.Errorf("unallowed addition/removal of project stages")
+	}
+
+	for i, oldStage := range oldProject.Stages {
+		if oldStage.StageName != newProject.Stages[i].StageName {
+			if !stageInArrayOfStages(oldStage.StageName, newProject.Stages) {
+				return fmt.Errorf("unallowed rename of project stages")
+			}
+		}
+	}
+
+	return nil
+}
+
+func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) bool {
+	for _, arrayStage := range stages {
+		if arrayStage.StageName == comparedStage {
+			return true
+		}
+	}
+	return false
+}
+
+func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *models.ExpandedProject) error {
+	shipyard := &keptnv2.Shipyard{}
+	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
+	_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
+	var expandedStages []*models.ExpandedStage
+
+	for _, s := range shipyard.Spec.Stages {
+		es := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: s.Name,
+		}
+		expandedStages = append(expandedStages, es)
+	}
+
+	newProject := &models.ExpandedProject{
+		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI:    params.GitRemoteURL,
+		GitUser:         params.GitUser,
+		ProjectName:     *params.Name,
+		Shipyard:        string(decodedShipyard),
+		ShipyardVersion: shipyardVersion,
+		Stages:          expandedStages,
+	}
+
+	err := validateShipyardStagesUnchaged(oldProject, newProject)
+	if err != nil {
+		return ErrInvalidStageChange
+	}
+	return nil
 }
 
 type gitCredentials struct {

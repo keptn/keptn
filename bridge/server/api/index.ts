@@ -3,6 +3,9 @@ import { Method } from 'axios';
 import { currentPrincipal } from '../user/session';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
+import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
+import { EnvironmentUtils } from '../utils/environment.utils';
+import { ClientFeatureFlags } from '../feature-flags';
 
 const router = Router();
 
@@ -12,22 +15,31 @@ const apiRouter = (params: {
   cliDownloadLink: string;
   integrationsPageLink: string;
   authType: string;
+  clientFeatureFlags: ClientFeatureFlags;
 }): Router => {
   // fetch parameters for bridgeInfo endpoint
-  const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
+  const {
+    apiUrl,
+    apiToken,
+    cliDownloadLink,
+    integrationsPageLink,
+    authType,
+    clientFeatureFlags: featureFlags,
+  } = params;
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
   const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
   const bridgeVersion = process.env.VERSION;
-  const projectsPageSize = process.env.PROJECTS_PAGE_SIZE;
-  const servicesPageSize = process.env.SERVICES_PAGE_SIZE;
+  const projectsPageSize = EnvironmentUtils.getNumber(process.env.PROJECTS_PAGE_SIZE);
+  const servicesPageSize = EnvironmentUtils.getNumber(process.env.SERVICES_PAGE_SIZE);
   const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
   const dataService = new DataService(apiUrl, apiToken);
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
     const user = currentPrincipal(req);
-    const bridgeInfo = {
+    const bridgeInfo: KeptnInfoResult = {
       bridgeVersion,
+      featureFlags,
       keptnInstallationType,
       apiUrl,
       ...(showApiToken && { apiToken }),

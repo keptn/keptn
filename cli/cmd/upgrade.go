@@ -53,8 +53,8 @@ var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker())
 func NewUpgraderCommand(vChecker *version.KeptnVersionChecker) *cobra.Command {
 	upgradeCmd := &cobra.Command{
 		Use:   "upgrade",
-		Short: "Upgrades Keptn on a Kubernetes cluster and supports upgrading the shipyard of a project to a new specification.",
-		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift. Also, it supports upgrading the shipyard of an existing project to a new specification.
+		Short: "Upgrades Keptn on a Kubernetes cluster.",
+		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/operate/upgrade/)
 `,
@@ -312,11 +312,7 @@ func doUpgrade() error {
 	}
 
 	logging.PrintLog("Keptn has been successfully upgraded on your cluster.", logging.InfoLevel)
-	// when upgrading from 0.7.x to 0.8.x, display information about how to upgrade projects to the new shipyard format
-	if strings.HasPrefix(installedKeptnVersion, "0.7") && strings.HasPrefix(getAppVersion(keptnUpgradeChart), "0.8") {
-		logging.PrintLog("Please upgrade your projects using keptn upgrade project.", logging.InfoLevel)
-		logging.PrintLog("For detailed instructions about upgrading your projects, head to keptn.sh/docs/0.8.x/operate/upgrade", logging.InfoLevel)
-	}
+
 	return nil
 }
 

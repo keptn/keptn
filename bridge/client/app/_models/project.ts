@@ -26,6 +26,19 @@ export class Project extends pj {
     return copyProject;
   }
 
+  // replace project with a new one, but keep references
+  public update(project: Project): void {
+    this.gitRemoteURI = project.gitRemoteURI;
+    this.gitUser = project.gitUser;
+    for (const newStage of project.stages) {
+      const existingStage = this.stages.find((stage) => stage.stageName === newStage.stageName);
+      if (existingStage) {
+        existingStage.update(newStage);
+      }
+      // at the moment deleting/adding stages is not supported, so we don't need to consider this case for now
+    }
+  }
+
   getServices(stageName?: string): Service[] {
     if (!stageName) {
       if (!this.services) {

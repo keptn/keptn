@@ -104,31 +104,38 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	triggeredID := triggeredEvents[0].ID
 
 	logger.Debug("Start to evaluate SLIs")
+
+	evaluationDetails := keptnv2.EvaluationDetails{
+		IndicatorResults: nil,
+		TimeStart:        e.GetSLI.Start,
+		TimeEnd:          e.GetSLI.End,
+		Result:           string(keptnv2.ResultPass),
+	}
+
+	evalResult := keptnv2.EvaluationFinishedEventData{
+		Evaluation: evaluationDetails,
+		EventData: keptnv2.EventData{
+			Status:  keptnv2.StatusSucceeded,
+			Project: e.Project,
+			Service: e.Service,
+			Stage:   e.Stage,
+			Labels:  e.Labels,
+		},
+	}
+	if e.Result == "fail" {
+		evalResult.EventData.Result = keptnv2.ResultFailed
+		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evalResult)
+	}
+
 	// compare the results based on the evaluation strategy
 	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
+
 	if err != nil {
 		if err == ErrSLOFileNotFound {
-			evaluationDetails := keptnv2.EvaluationDetails{
-				IndicatorResults: nil,
-				TimeStart:        e.GetSLI.Start,
-				TimeEnd:          e.GetSLI.End,
-				Result:           string(keptnv2.ResultPass),
-			}
-
-			evaluationResult := keptnv2.EvaluationFinishedEventData{
-				Evaluation: evaluationDetails,
-				EventData: keptnv2.EventData{
-					Result:  keptnv2.ResultPass,
-					Status:  keptnv2.StatusSucceeded,
-					Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
-					Project: e.Project,
-					Service: e.Service,
-					Stage:   e.Stage,
-					Labels:  e.Labels,
-				},
-			}
-
-			return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationResult)
+			evalResult.EventData.Result = keptnv2.ResultPass
+			evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project)
+			return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evalResult)
 		}
 
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), "", eh.KeptnHandler, e)
@@ -199,7 +206,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			maximumAchievableScore += float64(objective.Weight)
 		}
 		sliEvaluationResult := &keptnv2.SLIEvaluationResult{}
-		result := getSLIResult(e.GetSLI.IndicatorValues, objective.SLI)
+		result := getSLIResult(&e.GetSLI.IndicatorValues, objective.SLI)
 
 		if result == nil {
 			// no result available => fail the objective
@@ -266,9 +273,31 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 
 		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 	}
+
+	// now we check if any metric from the SLI has not been handled
+	checkLeftoverSLI(e.GetSLI.IndicatorValues, evaluationResult)
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 
 	return evaluationResult, maximumAchievableScore, keySLIFailed
+}
+
+func checkLeftoverSLI(results []*keptnv2.SLIResult, evaluationResult *keptnv2.EvaluationFinishedEventData) {
+	if len(results) > 0 {
+		//collect SLIs that did not have objectives defined
+		sliEvaluations := ""
+		for _, Values := range results {
+			if sliEvaluations != "" {
+				sliEvaluations += ", "
+			}
+			sliEvaluations += Values.Metric
+		}
+		if sliEvaluations != "" {
+			evaluationResult.Message += fmt.Sprintf("Lighthouse received additional SLIs,"+
+				" which are not specified as SLO: %s . "+
+				"Please consider using them as an SLO.", sliEvaluations,
+			)
+		}
+	}
 }
 
 func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.EvaluationFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, keySLIFailed bool) error {
@@ -323,13 +352,18 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	return nil
 }
 
-func getSLIResult(results []*keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
-	for _, sliResult := range results {
+func getSLIResult(results *[]*keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
+	var r = *results
+	for i, sliResult := range *results {
 		if sliResult.Metric == sli {
+			// remove already processed SLI
+			r[i] = r[len(r)-1] // Copy last element to index i.
+			r[len(r)-1] = nil  // Erase last element.
+			r = r[:len(r)-1]   // Truncate slice.
+			*results = r
 			return sliResult
 		}
 	}
-
 	return nil
 }
 
@@ -384,6 +418,10 @@ func evaluateSingleCriteria(sliResult *keptnv2.SLIResult, criteria string, previ
 	}
 
 	if !co.IsComparison {
+		//compared value is used only if the criteria is a comparison without fixed threshold,
+		//anyway we calculate it here to allow Bridge to display it
+		sliResult.ComparedValue, _ = aggregateValues(previousResults, comparison)
+
 		// do a fixed threshold comparison
 		return evaluateFixedThreshold(sliResult, co, violation)
 	}
@@ -395,39 +433,12 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	// aggregate previous results
 	var aggregatedValue float64
 	var targetValue float64
-	var previousValues []float64
 
-	if len(previousResults) == 0 {
-		// if no comparison values are available, the evaluation passes
+	aggregatedValue, skip := aggregateValues(previousResults, comparison)
+	sliResult.ComparedValue = aggregatedValue
+	if skip {
 		return true, nil
 	}
-
-	for _, val := range previousResults {
-		if val.Value.Success == true {
-			// always include
-			previousValues = append(previousValues, val.Value.Value)
-		}
-	}
-
-	if len(previousValues) == 0 {
-		// if no comparison values are available, the evaluation passes
-		return true, nil
-	}
-
-	// aggregate the previous values based on the passed aggregation function
-	switch comparison.AggregateFunction {
-	case "avg":
-		aggregatedValue = calculateAverage(previousValues)
-	case "p50":
-		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.5)
-	case "p90":
-		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.9)
-	case "p95":
-		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.95)
-	default:
-		break
-	}
-
 	// calculate the comparison value
 	if co.CheckPercentage && co.CheckIncrease {
 		targetValue = (aggregatedValue * (100.0 + co.Value)) / 100.0
@@ -441,6 +452,44 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	violation.TargetValue = targetValue
 	// compare!
 	return evaluateValue(sliResult.Value, targetValue, co.Operator)
+}
+
+//aggregateValues combines the previous values into a single one, based on the aggregation function
+//it returns the aggregated value and a boolean telling if the rest of the evaluation should be skipped
+//(no previous results or no successful previous results)
+func aggregateValues(previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison) (float64, bool) {
+
+	if len(previousResults) == 0 {
+		// if no comparison values are available, the evaluation passes
+		return 0, true
+	}
+	var previousValues []float64
+	for _, val := range previousResults {
+		if val.Value.Success == true {
+			// always include
+			previousValues = append(previousValues, val.Value.Value)
+		}
+	}
+
+	if len(previousValues) == 0 {
+		// if no comparison values are available, the evaluation passes
+		return 0, true
+	}
+	var aggregatedValue float64
+	// aggregate the previous values based on the passed aggregation function
+	switch comparison.AggregateFunction {
+	case "avg":
+		aggregatedValue = calculateAverage(previousValues)
+	case "p50":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.5)
+	case "p90":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.9)
+	case "p95":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.95)
+	default:
+		break
+	}
+	return aggregatedValue, false
 }
 
 func calculateAverage(values []float64) float64 {

@@ -540,7 +540,7 @@ func GetDiagnostics(service string, container string) string {
 }
 
 func VerifyDirectDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {
-	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*3, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
+	return WaitAndCheckDeployment(serviceName, projectName+"-"+stageName, time.Minute*5, WaitForDeploymentOptions{WithImageName: artifactImage + ":" + artifactTag})
 }
 
 func VerifyBlueGreenDeployment(serviceName, projectName, stageName, artifactImage, artifactTag string) error {

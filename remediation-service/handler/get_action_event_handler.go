@@ -40,15 +40,17 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 	}
 
 	// determine next action
-	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.ActionIndex)
+	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.GetAction.ActionIndex)
 	if err != nil {
 		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: err.Error()}
 	}
 
 	finishedEventData := keptnv2.GetActionFinishedEventData{
-		EventData:   getActionTriggeredData.EventData,
-		Action:      *action,
-		ActionIndex: getActionTriggeredData.ActionIndex + 1,
+		EventData: getActionTriggeredData.EventData,
+		Action:    *action,
+		GetAction: keptnv2.GetActionData{
+			ActionIndex: getActionTriggeredData.GetAction.ActionIndex + 1,
+		},
 	}
 
 	return finishedEventData, nil

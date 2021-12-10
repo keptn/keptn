@@ -750,6 +750,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		stage                       string
 		keptnContext                string
 		sequenceName                string
+		problemTitle                string
 	}{
 		{
 			name: "create a new sequence state",
@@ -766,6 +767,23 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 			stage:                       "my-stage",
 			keptnContext:                "my-context",
 			sequenceName:                "my-sequence",
+		},
+		{
+			name: "create a new remediation sequence",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					CreateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			expectCreateStateToBeCalled: true,
+			project:                     "my-project",
+			service:                     "my-service",
+			stage:                       "my-stage",
+			keptnContext:                "my-context",
+			sequenceName:                "remediation",
+			problemTitle:                "This is a very serious issue",
 		},
 		{
 			name: "no project available",
@@ -826,19 +844,36 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			event := models.Event{
-				Data: keptnv2.EventData{
-					Project: tt.project,
-					Stage:   tt.stage,
-					Service: tt.service,
-				},
-				Shkeptncontext: tt.keptnContext,
-				Type:           common.Stringp("sh.keptn.event." + tt.stage + "." + tt.sequenceName + ".triggered"),
-			}
 
+			Data := keptnv2.EventData{
+				Project: tt.project,
+				Stage:   tt.stage,
+				Service: tt.service,
+			}
+			var event models.Event
+			//construnct a remediation event
+			if tt.problemTitle != "" {
+				event = models.Event{
+					Data: keptnv2.GetActionTriggeredEventData{
+						EventData: Data,
+						Problem: keptnv2.ProblemDetails{
+							ProblemTitle: tt.problemTitle,
+						}},
+					Shkeptncontext: tt.keptnContext,
+					Type:           common.Stringp("sh.keptn.event." + tt.stage + "." + tt.sequenceName + ".triggered"),
+				}
+			} else {
+				//construct a simple event
+				event = models.Event{
+					Data:           Data,
+					Shkeptncontext: tt.keptnContext,
+					Type:           common.Stringp("sh.keptn.event." + tt.stage + "." + tt.sequenceName + ".triggered"),
+				}
+			}
 			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 
 			smv.OnSequenceTriggered(event)
+
 			if tt.expectCreateStateToBeCalled {
 				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.CreateSequenceStateCalls()))
 				call := tt.fields.SequenceStateRepo.CreateSequenceStateCalls()[0]
@@ -847,6 +882,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 				require.Equal(t, tt.sequenceName, call.State.Name)
 				require.Equal(t, tt.keptnContext, call.State.Shkeptncontext)
 				require.Equal(t, "triggered", call.State.State)
+				require.Equal(t, tt.problemTitle, call.State.ProblemTitle)
 
 			} else {
 				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.CreateSequenceStateCalls()))

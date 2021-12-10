@@ -30,11 +30,6 @@
     z-index: 1;
   }
 
-  .icon {
-    width: 20px;
-    height: 20px;
-  }
-
   .dt-button-nested,
   .dt-button-nested:hover:not([disabled]) {
     .dt-button-icon .dt-icon.error svg {
@@ -56,6 +51,11 @@
     height: auto !important;
     cursor: pointer;
     border-radius: 0;
+
+    .dt-icon {
+      height: 30px;
+      width: 30px;
+    }
   }
 
   button.dt-menu-item.dt-button-nested:disabled,

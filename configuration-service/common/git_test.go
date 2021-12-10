@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/stretchr/testify/require"
+	"os"
 	"strings"
 	"testing"
 )
@@ -535,6 +536,184 @@ func TestGit_Reset(t *testing.T) {
 			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
 
 			require.Equal(t, tt.expectedCommands, executedCommands)
+		})
+	}
+}
+
+func TestGit_ConfigureGitUser(t *testing.T) {
+	type fields struct {
+		Executor         *common_mock.CommandExecutorMock
+		CredentialReader CredentialReader
+	}
+	type args struct {
+		project string
+	}
+	tests := []struct {
+		name             string
+		fields           fields
+		args             args
+		wantErr          bool
+		expectedCommands []struct {
+			Command   string
+			Args      []string
+			Directory string
+		}
+	}{
+		{
+			name: "configure user and email",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						return "", nil
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args:    args{project: "my-project"},
+			wantErr: false,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"config", "user.name", gitKeptnUserDefault},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"config", "user.email", gitKeptnEmailDefault},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
+		{
+			name: "configure user and email - configuring user fails",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						if strings.Contains(strings.Join(args, " "), "user.name") {
+							return "", errors.New("oops")
+						}
+						return "", nil
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args:    args{project: "my-project"},
+			wantErr: true,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"config", "user.name", gitKeptnUserDefault},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
+		{
+			name: "configure user and email - configuring email fails",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						if strings.Contains(strings.Join(args, " "), "user.email") {
+							return "", errors.New("oops")
+						}
+						return "", nil
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args:    args{project: "my-project"},
+			wantErr: true,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"config", "user.name", gitKeptnUserDefault},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"config", "user.email", gitKeptnEmailDefault},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Git{
+				Executor:         tt.fields.Executor,
+				CredentialReader: tt.fields.CredentialReader,
+			}
+			if err := g.ConfigureGitUser(tt.args.project); (err != nil) != tt.wantErr {
+				t.Errorf("ConfigureGitUser() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
+
+			assert.Equal(t, tt.expectedCommands, executedCommands)
+		})
+	}
+}
+
+func Test_getGitKeptnUser(t *testing.T) {
+	tests := []struct {
+		name        string
+		envVarValue string
+		want        string
+	}{
+		{
+			name:        "default value",
+			envVarValue: "",
+			want:        gitKeptnUserDefault,
+		},
+		{
+			name:        "env var value",
+			envVarValue: "my-user",
+			want:        "my-user",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = os.Setenv(gitKeptnUserEnvVar, tt.envVarValue)
+			if got := getGitKeptnUser(); got != tt.want {
+				t.Errorf("getGitKeptnUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getGitKeptnEmail(t *testing.T) {
+	tests := []struct {
+		name        string
+		envVarValue string
+		want        string
+	}{
+		{
+			name:        "default value",
+			envVarValue: "",
+			want:        gitKeptnEmailDefault,
+		},
+		{
+			name:        "env var value",
+			envVarValue: "my-user@keptn.sh",
+			want:        "my-user@keptn.sh",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = os.Setenv(gitKeptnEmailEnvVar, tt.envVarValue)
+			if got := getGitKeptnEmail(); got != tt.want {
+				t.Errorf("getGitKeptnEmail() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

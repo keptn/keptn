@@ -2,22 +2,122 @@
   "nextPageKey": "0",
   "projects": [
     {
-      "creationDate": "1631101710806442946",
-      "projectName": "dynatrace",
-      "shipyard": "apiVersion: \"spec.keptn.sh/0.2.0\"\nkind: \"Shipyard\"\nmetadata:\n name: \"shipyard-quality-gates\"\nspec:\n stages:\n - name: \"quality-gate-planes\"",
-      "shipyardVersion": "spec.keptn.sh/0.2.0",
       "stages": [
         {
           "services": [
             {
-              "creationDate": "1631101971684077234",
+              "lastEventTypes": {},
+              "creationDate": "1629190178019300348",
+              "serviceName": "cartsc"
+            },
+            {
+              "lastEventTypes": {},
               "openRemediations": null,
-              "serviceName": "meeting-service"
+              "creationDate": "1633232077002690194",
+              "serviceName": "bridge_env_service119"
+            },
+            {
+              "lastEventTypes": {
+                "sh.keptn.event.evaluation.finished": {
+                  "eventId": "2ac5bb8e-ab6e-40b2-9e8a-8440a2d490ca",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339401236746505"
+                },
+                "sh.keptn.event.evaluation.started": {
+                  "eventId": "889c49e4-f66c-4446-a800-93c065e97df1",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339378988660020"
+                },
+                "sh.keptn.event.evaluation.triggered": {
+                  "eventId": "9b49ce9e-e7b8-47b9-bb3d-cea8b50b6b44",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339378985376454"
+                },
+                "sh.keptn.event.get-sli.finished": {
+                  "eventId": "9fdec094-af39-4d13-9e1d-bde153207f1a",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339396552657695"
+                },
+                "sh.keptn.event.get-sli.started": {
+                  "eventId": "a0bed3a9-17db-44cb-b5bc-50b65e0839e8",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339387026881644"
+                },
+                "sh.keptn.event.get-sli.triggered": {
+                  "eventId": "1163e6fd-c5f9-4d9d-8101-adeb3970001d",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339381314622805"
+                },
+                "sh.keptn.event.quality-gate.evaluation.finished": {
+                  "eventId": "7bce4060-8d4c-45e1-a8e2-753423fe8195",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339401332378348"
+                },
+                "sh.keptn.event.quality-gate.evaluation.triggered": {
+                  "eventId": "3ce45b2f-7b89-4770-80bb-f1f4475e3b25",
+                  "keptnContext": "786ca3ce-407d-45bd-92be-2bec7e0bdb32",
+                  "time": "1633339377828093365"
+                }
+              },
+              "creationDate": "1633339357114336020",
+              "serviceName": "health"
+            },
+            {
+              "lastEventTypes": {
+                "sh.keptn.event.evaluation.finished": {
+                  "eventId": "fc511923-2ef4-4a6a-824f-33b6e770b765",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339399913172646"
+                },
+                "sh.keptn.event.evaluation.started": {
+                  "eventId": "9aa7f663-14da-4eb9-8fea-7cba42747703",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339378093405531"
+                },
+                "sh.keptn.event.evaluation.triggered": {
+                  "eventId": "ee70aedb-b55d-4655-9135-25368a9f6dc2",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339378090146216"
+                },
+                "sh.keptn.event.get-sli.finished": {
+                  "eventId": "d802ac58-779f-4d1a-b535-659d9e5f0798",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339395282422830"
+                },
+                "sh.keptn.event.get-sli.started": {
+                  "eventId": "d9eff141-6eac-4cbc-8fda-ec1574afc66d",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339385922014186"
+                },
+                "sh.keptn.event.get-sli.triggered": {
+                  "eventId": "4871e129-02fe-4382-bb57-4dcd85fe4f77",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339380016075375"
+                },
+                "sh.keptn.event.quality-gate.evaluation.finished": {
+                  "eventId": "b688237c-2e71-459b-8a89-a258b5888d41",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339399988350294"
+                },
+                "sh.keptn.event.quality-gate.evaluation.triggered": {
+                  "eventId": "878102a2-e038-4321-b617-60fa671d15d7",
+                  "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+                  "time": "1633339377166979248"
+                }
+              },
+              "creationDate": "1633339367577663994",
+              "serviceName": "items"
             }
           ],
-          "stageName": "quality-gate-planes"
+          "stageName": "quality-gate"
         }
-      ]
+      ],
+      "creationDate": "1621493016550266259",
+      "gitRemoteURI": "https://github.com/carpe-github/claus-tenant-dev.git",
+      "gitUser": "carpe-github",
+      "projectName": "dynatrace",
+      "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n    name: shipyard-quality-gates\nspec:\n    stages:\n        - name: quality-gate\n          sequences: []\n",
+      "shipyardVersion": "spec.keptn.sh/0.2.0"
     }
   ],
   "totalCount": 1

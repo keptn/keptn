@@ -21,6 +21,7 @@ export class KtbSelectableTileComponent {
   private _warning = false;
   private _success = false;
   private _highlight = false;
+  private _aborted = false;
 
   /** Whether the tile is selected. */
   @Input()
@@ -73,6 +74,19 @@ export class KtbSelectableTileComponent {
   set warning(value: boolean) {
     if (this._warning !== value) {
       this._warning = value;
+    }
+  }
+
+  @Input()
+  @HostBinding('attr.aria-aborted')
+  @HostBinding('class.ktb-tile-aborted')
+  get aborted(): boolean {
+    return this._aborted;
+  }
+
+  set aborted(value: boolean) {
+    if (this._aborted !== value) {
+      this._aborted = value;
     }
   }
 

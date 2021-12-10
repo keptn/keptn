@@ -15,7 +15,7 @@ import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
-import { KeptnInfoResult } from '../_models/keptn-info-result';
+import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
@@ -306,7 +306,7 @@ export class DataService {
           let projects = this._projects.getValue();
           const existingProject = projects?.find((p) => p.projectName === project.projectName);
           if (existingProject) {
-            Object.assign(existingProject, project.reduced);
+            existingProject.update(project);
             existingProject.projectDetailsLoaded = true;
           } else {
             project.projectDetailsLoaded = true;
