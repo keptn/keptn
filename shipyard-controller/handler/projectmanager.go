@@ -492,6 +492,17 @@ func validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProje
 	}
 
 	for i, oldStage := range oldProject.Stages {
+		// It is more effective to check the names of the stages in two steps.
+		// In typical user scenario, the user probably won't want to change the order
+		// of the stages, at least it is unlikely. In most of the cases, he will try
+		// to edit the name of the stage.
+		// Let's consider a check, where the user did not changed the
+		// names and the number of stages. If the first condition was not there, for each stage
+		// in oldProject.Stages the code needs to jump to another function and cycle through the stages
+		// of newProject.Stages -> N/2 string comparisons (assuming N is number of stages)
+		// for checking each stage, so in total N*N/2 comparisons.
+		// If the condition is there, we will have only 1 comparison for each stage,
+		// total N*1 comparisons.
 		if oldStage.StageName != newProject.Stages[i].StageName {
 			if !stageInArrayOfStages(oldStage.StageName, newProject.Stages) {
 				return fmt.Errorf("unallowed rename of project stages")
