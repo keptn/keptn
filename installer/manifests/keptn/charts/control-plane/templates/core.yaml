@@ -624,19 +624,7 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
-        fsGroup: 65532
-      initContainers:
-      - name: change-user-init
-        image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-        securityContext:
-          runAsUser: 0
-        volumeMounts:
-          - mountPath: /data/config
-            name: configuration-volume
-        command:
-          - sh
-          - -c
-          - chown -R 65532 /data/config
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
@@ -680,8 +668,8 @@ spec:
               name: configuration-volume
           securityContext:
             runAsNonRoot: true
-            runAsUser: 65532
-            readOnlyRootFilesystem: false # False is necessary because we have to write the git config file
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       volumes:
         - name: configuration-volume
