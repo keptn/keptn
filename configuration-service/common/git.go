@@ -8,6 +8,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	config2 "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/configuration-service/common_models"
@@ -32,6 +33,12 @@ var namespace = os.Getenv("POD_NAMESPACE")
 
 const masterBranch = "master"
 const mainBranch = "main"
+
+const gitKeptnUserEnvVar = "GIT_KEPTN_USER"
+const gitKeptnEmailEnvVar = "GIT_KEPTN_EMAIL"
+
+const gitKeptnUserDefault = "keptn"
+const gitKeptnEmailDefault = "keptn@keptn.sh"
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/command_executor_mock.go . CommandExecutor
 type CommandExecutor interface {
@@ -128,7 +135,7 @@ func (g *GitClient) StageAndCommitAll(project, message string) error {
 
 		err = g.PushUpstreamChanges(project, credentials)
 		if err != nil {
-			logger.WithError(err).Warn("could not pull")
+			logger.WithError(err).Warn("could not push")
 			return err
 		}
 		return nil
@@ -141,46 +148,51 @@ func (g *GitClient) StageAndCommitAll(project, message string) error {
 }
 
 func (g *GitClient) PullUpstreamChanges(project string, credentials *common_models.GitCredentials) error {
-	var err error
-	if credentials == nil {
-		credentials, err = g.CredentialReader.GetCredentials(project)
-		if err != nil {
-			return err
-		}
-	}
 
-	repo, worktree, err := g.getWorkTree(project, credentials)
-	if err != nil {
-		return err
-	}
+	gitCLIExecutor := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
 
-	head, err := repo.Head()
-	if err != nil {
-		return err
-	}
-	err = worktree.Checkout(&git.CheckoutOptions{Branch: head.Name()})
-	if err != nil {
-		return err
-	}
+	return gitCLIExecutor.PullUpstream(project)
 
-	err = worktree.Pull(&git.PullOptions{
-		ReferenceName: head.Name(),
-		RemoteName:    "origin",
-		Auth: &http.BasicAuth{
-			Username: credentials.User,
-			Password: credentials.Token,
-		},
-		Force: true,
-	})
-
-	if err != nil {
-		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			return nil
-		}
-		return err
-	}
-
-	return nil
+	//var err error
+	//if credentials == nil {
+	//	credentials, err = g.CredentialReader.GetCredentials(project)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+	//
+	//repo, worktree, err := g.getWorkTree(project, credentials)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//head, err := repo.Head()
+	//if err != nil {
+	//	return err
+	//}
+	//err = worktree.Checkout(&git.CheckoutOptions{Branch: head.Name()})
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = worktree.Pull(&git.PullOptions{
+	//	ReferenceName: head.Name(),
+	//	RemoteName:    "origin",
+	//	Auth: &http.BasicAuth{
+	//		Username: credentials.User,
+	//		Password: credentials.Token,
+	//	},
+	//	Force: true,
+	//})
+	//
+	//if err != nil {
+	//	if errors.Is(err, git.NoErrAlreadyUpToDate) {
+	//		return nil
+	//	}
+	//	return err
+	//}
+	//
+	//return nil
 }
 
 func (g *GitClient) CommitChanges(project string, credentials *common_models.GitCredentials, message string) error {
@@ -205,6 +217,10 @@ func (g *GitClient) CommitChanges(project string, credentials *common_models.Git
 	}
 	_, err = workTree.Commit(message, &git.CommitOptions{
 		All: true,
+		Author: &object.Signature{
+			Name:  getGitKeptnUser(),
+			Email: getGitKeptnEmail(),
+		},
 	})
 	if err != nil {
 		return err
@@ -278,6 +294,11 @@ func (g *GitClient) CloneRepo(project string) error {
 		}
 	}
 
+	err = ConfigureGitUser(project)
+	if err != nil {
+		return err
+	}
+
 	_, err = clone.Head()
 	if err != nil {
 		// empty repository, create project metadata
@@ -310,7 +331,13 @@ func (g *GitClient) CloneRepo(project string) error {
 		if err != nil {
 			return err
 		}
-		_, err = workTree.Commit("added resource", &git.CommitOptions{})
+		_, err = workTree.Commit("added resource", &git.CommitOptions{
+			All: true,
+			Author: &object.Signature{
+				Name:  getGitKeptnUser(),
+				Email: getGitKeptnEmail(),
+			},
+		})
 		if err != nil {
 			return err
 		}
@@ -434,6 +461,10 @@ func (g *GitClient) MigrateProject(project string) error {
 	}
 	_, err = tmpWorktree.Commit("migrated project structure", &git.CommitOptions{
 		All: true,
+		Author: &object.Signature{
+			Name:  getGitKeptnUser(),
+			Email: getGitKeptnEmail(),
+		},
 	})
 	if err != nil {
 		return err
@@ -801,6 +832,19 @@ func (g *Git) Reset(project string) error {
 	return nil
 }
 
+func (g *Git) ConfigureGitUser(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	_, err := g.Executor.ExecuteCommand("git", []string{"config", "user.name", getGitKeptnUser()}, projectConfigPath)
+	if err != nil {
+		return fmt.Errorf("could not set git user.name: %w", err)
+	}
+	_, err = g.Executor.ExecuteCommand("git", []string{"config", "user.email", getGitKeptnEmail()}, projectConfigPath)
+	if err != nil {
+		return fmt.Errorf("could not set git user.email: %w", err)
+	}
+	return nil
+}
+
 // ==============================
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
@@ -897,6 +941,26 @@ func MigrateProject(project string) error {
 	g := NewGitClient()
 
 	return g.MigrateProject(project)
+}
+
+// ConfigureGitUser sets the properties user.name and user.email needed for interacting with git in the given project's git repository
+func ConfigureGitUser(project string) error {
+	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
+	return g.ConfigureGitUser(project)
+}
+
+func getGitKeptnUser() string {
+	if keptnUser := os.Getenv(gitKeptnUserEnvVar); keptnUser != "" {
+		return keptnUser
+	}
+	return gitKeptnUserDefault
+}
+
+func getGitKeptnEmail() string {
+	if keptnEmail := os.Getenv(gitKeptnEmailEnvVar); keptnEmail != "" {
+		return keptnEmail
+	}
+	return gitKeptnEmailDefault
 }
 
 // ProjectExists checks if a project exists
