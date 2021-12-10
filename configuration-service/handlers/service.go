@@ -89,7 +89,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory: " + err.Error())})
 	}
 
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted service: "+params.ServiceName)
+	_, err = common.StageAndCommitAll(params.ProjectName, "Deleted service: "+params.ServiceName)
 	if err != nil {
 		logger.Error(err.Error())
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory: " + err.Error())})

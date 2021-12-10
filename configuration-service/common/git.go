@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/common_models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -107,7 +109,7 @@ func (g *GitClient) ProjectExists(project string) bool {
 	return true
 }
 
-func (g *GitClient) getCommitIdFromPath(path string) (string, error) {
+func (g *GitClient) GetCommitIdFromPath(path string) (string, error) {
 	r, err := git.PlainOpen(path)
 	ref, err := r.Head()
 	commit, err := r.CommitObject(ref.Hash())
@@ -117,41 +119,73 @@ func (g *GitClient) getCommitIdFromPath(path string) (string, error) {
 	return commit.Hash.String(), nil
 }
 
-func (g *GitClient) getFileByPath(path string) (string, error) {
+func (g *GitClient) GetFileByPath(path string, revision string, file string) (string, error) {
 	r, err := git.PlainOpen(path)
 	if err != nil {
 		return "", err
 	}
-	wt, err := r.Worktree()
-	if err != nil {
-		return "", err
+
+	h, err := r.ResolveRevision(plumbing.Revision(revision))
+	if h == nil {
+		return "", errors.New("resolved nil hash " + revision)
 	}
-	result, err := wt.Grep(&git.GrepOptions{
-		ReferenceName: plumbing.ReferenceName(path),
-	})
+
+	obj, err := r.Object(plumbing.CommitObject, *h)
 
 	if err != nil {
 		return "", err
 	}
-	return result[0].Content, nil
+	if obj == nil {
+		return "", errors.New("not found")
+	}
+	blob, err := resolve(obj, file)
+
+	if err != nil {
+		return "", err
+	}
+
+	var re (io.Reader)
+	re, err = blob.Reader()
+
+	if err != nil {
+		return "", err
+	}
+	//buf := new(bytes.Buffer)
+	//buf.ReadFrom(read)
+	data, err := ioutil.ReadAll(re)
+	if err != nil {
+		return "", err
+	}
+	newStr := base64.StdEncoding.EncodeToString(data)
+	return newStr, nil
 }
 
-func (g *GitClient) getFileFromCommitId(path string, commitId string) (string, error) {
-	r, err := git.PlainOpen(path)
-	if err != nil {
-		return "", err
+// resolve blob at given path from obj. obj can be a commit, tag, tree, or blob.
+func resolve(obj object.Object, path string) (*object.Blob, error) {
+	switch o := obj.(type) {
+	case *object.Commit:
+		t, err := o.Tree()
+		if err != nil {
+			return nil, err
+		}
+		return resolve(t, path)
+	case *object.Tag:
+		target, err := o.Object()
+		if err != nil {
+			return nil, err
+		}
+		return resolve(target, path)
+	case *object.Tree:
+		file, err := o.File(path)
+		if err != nil {
+			return nil, err
+		}
+		return &file.Blob, nil
+	case *object.Blob:
+		return o, nil
+	default:
+		return nil, object.ErrUnsupportedObject
 	}
-	wt, err := r.Worktree()
-	if err != nil {
-		return "", err
-	}
-	result, err := wt.Grep(&git.GrepOptions{
-		CommitHash: plumbing.NewHash(commitId),
-	})
-	if err != nil {
-		return "", err
-	}
-	return result[0].Content, nil
 }
 
 func (g *GitClient) ProjectRepoExists(project string) bool {
@@ -929,6 +963,12 @@ func PullUpstream(project string) error {
 	return g.PullUpstreamChanges(project, nil)
 }
 
+//GetFileByPath returns a file resource as a string taking the latest version of it
+func GetFileByPath(project string, revision string, file string) (string, error) {
+	g := NewGitClient()
+	return g.GetFileByPath(project, revision, file)
+}
+
 // Reset resets the current branch to the latest commit
 func Reset(project string) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
@@ -1098,6 +1138,7 @@ func GetResourceMetadata(project string) *models.Version {
 		addRepoURIToMetadata(credentials, result)
 	}
 	addVersionToMetadata(project, result)
+
 	return result
 }
 

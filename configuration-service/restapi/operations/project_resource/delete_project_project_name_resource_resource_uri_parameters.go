@@ -22,10 +22,13 @@ func NewDeleteProjectProjectNameResourceResourceURIParams() DeleteProjectProject
 	var (
 		// initialize parameters with default values
 
+		commitIDDefault            = string("")
 		disableUpstreamSyncDefault = bool(false)
 	)
 
 	return DeleteProjectProjectNameResourceResourceURIParams{
+		CommitID: &commitIDDefault,
+
 		DisableUpstreamSync: &disableUpstreamSyncDefault,
 	}
 }
@@ -39,6 +42,11 @@ type DeleteProjectProjectNameResourceResourceURIParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*Refer to the version of the resource
+	  In: query
+	  Default: ""
+	*/
+	CommitID *string
 	/*Disable sync of upstream repo before reading content
 	  In: query
 	  Default: false
@@ -67,6 +75,11 @@ func (o *DeleteProjectProjectNameResourceResourceURIParams) BindRequest(r *http.
 
 	qs := runtime.Values(r.URL.Query())
 
+	qCommitID, qhkCommitID, _ := qs.GetOK("commitId")
+	if err := o.bindCommitID(qCommitID, qhkCommitID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	qDisableUpstreamSync, qhkDisableUpstreamSync, _ := qs.GetOK("disableUpstreamSync")
 	if err := o.bindDisableUpstreamSync(qDisableUpstreamSync, qhkDisableUpstreamSync, route.Formats); err != nil {
 		res = append(res, err)
@@ -84,6 +97,25 @@ func (o *DeleteProjectProjectNameResourceResourceURIParams) BindRequest(r *http.
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindCommitID binds and validates parameter CommitID from query.
+func (o *DeleteProjectProjectNameResourceResourceURIParams) bindCommitID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewDeleteProjectProjectNameResourceResourceURIParams()
+		return nil
+	}
+	o.CommitID = &raw
+
 	return nil
 }
 

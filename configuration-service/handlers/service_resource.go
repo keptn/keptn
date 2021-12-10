@@ -162,7 +162,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+unescapedResourceName)
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+unescapedResourceName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -171,6 +171,9 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 	metadata.Branch = params.StageName
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(metadata)
 }
 
@@ -227,7 +230,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Added resources")
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -237,6 +240,9 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 	metadata.Branch = params.StageName
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated().
 		WithPayload(metadata)
 }
@@ -337,7 +343,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -355,6 +361,9 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		defaultBranch = "master"
 	}
 	metadata.Branch = defaultBranch
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(metadata)
 }
 
@@ -399,7 +408,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().
@@ -417,6 +426,9 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		defaultBranch = "master"
 	}
 	metadata.Branch = defaultBranch
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated().
 		WithPayload(metadata)
 }

@@ -45,8 +45,8 @@ kubectl delete -f deploy/service.yaml
 
 ### Generate source from Swagger
 
-If the `swagger.yaml` is updated with new endpoints or models, generate the new source by executing:
+If the `swagger.yaml` is updated with new endpoints or models, generate the new source from  /restapi folder by executing:
 
 ```console
-swagger generate server -A configuration-service -f ./swagger.yaml
+swagger generate server --target ../../configuration-service --name ConfigurationService --spec ../swagger.yaml
 ```

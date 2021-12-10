@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="INTEGRATION TEST with debug" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="keptn" />
+    <working_directory value="$PROJECT_DIR$/test/go-tests" />
+    <envs>
+      <env name="KEPTN_ENDPOINT" value="http://34.79.182.223.nip.io/api" />
+      <env name="GITEA_TOKEN" value="e237cb9553bea709a6e0b21ba9d8b303a9412230" />
+      <env name="GITEA_ADMIN_USER" value="gitea_admin" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="github.com/keptn/keptn/test/go-tests" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>

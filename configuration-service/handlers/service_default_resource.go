@@ -61,7 +61,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		}
 	}
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	_, err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to project %s", params.ProjectName)
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -111,7 +111,7 @@ func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_d
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	_, err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to project %s", params.ProjectName)
 		return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -164,7 +164,7 @@ func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 		common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 		logger.Debug("Staging Changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+		_, err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 		if err != nil {
 			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -222,7 +222,7 @@ func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(pa
 		}
 
 		logger.Debug("Staging Changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+		_, err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 		if err != nil {
 			logger.WithError(err).Errorf("Could not commit to %s branch of project %s", branch, params.ProjectName)
 			return service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})

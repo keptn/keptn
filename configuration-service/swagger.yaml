@@ -202,6 +202,14 @@ parameters:
     type: string
     description: Pointer to the next set of items
 
+  commitId:
+    in: query
+    name: commitId
+    required: false
+    default: ""
+    type: string
+    description: Refer to the version of the resource
+
 paths:
 
   '/project':
@@ -332,6 +340,7 @@ paths:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/resourceURI'
       - $ref: '#/parameters/disableUpstreamSync'
+      - $ref: '#/parameters/commitId'
     get:
       tags:
         - Project Resource

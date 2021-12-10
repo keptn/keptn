@@ -1,18 +1,14 @@
 package handlers
 
 import (
-	"encoding/base64"
-	logger "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/url"
-	"path/filepath"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
+	logger "github.com/sirupsen/logrus"
+	"net/url"
 )
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
@@ -74,7 +70,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	}
 
 	logger.Debug("Staging Changes")
-	err := common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -83,7 +79,9 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 	metadata.Branch = defaultBranch
-
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return project_resource.NewPutProjectProjectNameResourceCreated().WithPayload(metadata)
 }
 
@@ -119,7 +117,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -128,11 +126,14 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 	metadata.Branch = defaultBranch
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 
 	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(metadata)
 }
 
-// GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource without specifying commitID
+// GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
@@ -166,15 +167,20 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project resource not found")})
 	}
 
-	resourcePath = filepath.Clean(resourcePath)
-	dat, err := ioutil.ReadFile(resourcePath)
+	//dat, err := ioutil.ReadFile(resourcePath)
+	var resourceContent string
+	//resourceContent := base64.StdEncoding.EncodeToString(dat)
+	if params.CommitID == nil || *params.CommitID == "" {
+		resourceContent, err = common.GetFileByPath(common.GetProjectConfigPath(params.ProjectName), defaultBranch, unescapedResourceName)
+	} else {
+		resourceContent, err = common.GetFileByPath(projectConfigPath, *params.CommitID, unescapedResourceName)
+	}
+	logger.Error("WE! ", resourceContent)
 	if err != nil {
 		logger.Error(err.Error())
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
-	resourceContent := base64.StdEncoding.EncodeToString(dat)
-	resourceContent = getFileFromCommitId(GetProjectConfigPath(project), commitid)
 	resource := &models.Resource{
 		ResourceURI:     &params.ResourceURI,
 		ResourceContent: resourceContent,
@@ -216,7 +222,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -225,7 +231,9 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
 	metadata.Branch = defaultBranch
-
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return project_resource.NewPutProjectProjectNameResourceResourceURICreated().WithPayload(metadata)
 
 }
@@ -267,7 +275,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources"+unescapedResourceName)
+	commitId, err := common.StageAndCommitAll(params.ProjectName, "Deleted resources"+unescapedResourceName)
 	if err != nil {
 		logger.WithError(err).Errorf("Could not commit to %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not commit changes")})
@@ -275,6 +283,8 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	logger.Debugf("Successfully deleted resource: %s", unescapedResourceName)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-
+	if commitId != "" {
+		metadata.Version = commitId
+	}
 	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent().WithPayload(metadata)
 }

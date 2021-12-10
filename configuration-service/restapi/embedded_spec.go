@@ -322,6 +322,9 @@ func init() {
         },
         {
           "$ref": "#/parameters/disableUpstreamSync"
+        },
+        {
+          "$ref": "#/parameters/commitId"
         }
       ]
     },
@@ -1301,6 +1304,13 @@ func init() {
     }
   },
   "parameters": {
+    "commitId": {
+      "type": "string",
+      "default": "",
+      "description": "Refer to the version of the resource",
+      "name": "commitId",
+      "in": "query"
+    },
     "disableUpstreamSync": {
       "type": "boolean",
       "default": false,
@@ -1776,6 +1786,13 @@ func init() {
           "default": false,
           "description": "Disable sync of upstream repo before reading content",
           "name": "disableUpstreamSync",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "default": "",
+          "description": "Refer to the version of the resource",
+          "name": "commitId",
           "in": "query"
         }
       ]
@@ -3014,6 +3031,13 @@ func init() {
     }
   },
   "parameters": {
+    "commitId": {
+      "type": "string",
+      "default": "",
+      "description": "Refer to the version of the resource",
+      "name": "commitId",
+      "in": "query"
+    },
     "disableUpstreamSync": {
       "type": "boolean",
       "default": false,

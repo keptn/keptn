@@ -19,6 +19,7 @@ type PutProjectProjectNameResourceResourceURIURL struct {
 	ProjectName string
 	ResourceURI string
 
+	CommitID            *string
 	DisableUpstreamSync *bool
 
 	_basePath string
@@ -68,6 +69,14 @@ func (o *PutProjectProjectNameResourceResourceURIURL) Build() (*url.URL, error) 
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
+
+	var commitIDQ string
+	if o.CommitID != nil {
+		commitIDQ = *o.CommitID
+	}
+	if commitIDQ != "" {
+		qs.Set("commitId", commitIDQ)
+	}
 
 	var disableUpstreamSyncQ string
 	if o.DisableUpstreamSync != nil {
