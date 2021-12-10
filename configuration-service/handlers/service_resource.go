@@ -255,7 +255,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 func untarHelm(res *models.Resource, filePath string) error {
 	// unarchive the Helm chart
 	logger.Debug("Unarchive the Helm chart: " + *res.ResourceURI)
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := ioutil.TempDir(config.ConfigDir, "*")
 	if err != nil {
 		log.Fatal(err)
 	}
