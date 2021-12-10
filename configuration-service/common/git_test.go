@@ -659,7 +659,7 @@ func TestGit_ConfigureGitUser(t *testing.T) {
 			}
 			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
 
-			assert.Equal(t, tt.expectedCommands, executedCommands)
+			require.Equal(t, tt.expectedCommands, executedCommands)
 		})
 	}
 }

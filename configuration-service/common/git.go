@@ -943,26 +943,6 @@ func MigrateProject(project string) error {
 	return g.MigrateProject(project)
 }
 
-// ConfigureGitUser sets the properties user.name and user.email needed for interacting with git in the given project's git repository
-func ConfigureGitUser(project string) error {
-	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.ConfigureGitUser(project)
-}
-
-func getGitKeptnUser() string {
-	if keptnUser := os.Getenv(gitKeptnUserEnvVar); keptnUser != "" {
-		return keptnUser
-	}
-	return gitKeptnUserDefault
-}
-
-func getGitKeptnEmail() string {
-	if keptnEmail := os.Getenv(gitKeptnEmailEnvVar); keptnEmail != "" {
-		return keptnEmail
-	}
-	return gitKeptnEmailDefault
-}
-
 // ProjectExists checks if a project exists
 func ProjectExists(project string) bool {
 	g := NewGitClient()
