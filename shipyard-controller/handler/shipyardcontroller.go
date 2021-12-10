@@ -191,12 +191,13 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	}
 
 	// fetching cached shipyard file from project git repo
-	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
+	shipyard, commitId, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
 		msg := fmt.Sprintf("Unable to retrieve Shipyard file: %v", err)
 		log.Errorf(msg)
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
+	eventScope.CommitID = commitId
 
 	// check if the sequence is available in the given stage
 	_, err = GetTaskSequenceInStage(eventScope.Stage, taskSequenceName, shipyard)

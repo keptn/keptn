@@ -13,12 +13,13 @@ type EventScope struct {
 	v0_2_0.EventData `bson:",inline"`
 	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
 	TriggeredID      string `json:"triggeredId" bson:"triggeredId"`
+	CommitID         string `json:"commitId" bson:"commitId"`
 	EventType        string `json:"eventType" bson:"eventType"`
 	EventSource      string `json:"-" bson:"-"`
 	WrappedEvent     Event  `json:"-" bson:"-"`
 }
 
-func NewEventScope(event Event) (*EventScope, error) {
+func NewEventScope(event Event) (*EventScope, error) { //TODO should the field be mandatory?? I do not think it is needed
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
 		return nil, err

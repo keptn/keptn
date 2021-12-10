@@ -12,7 +12,7 @@ import (
 // IShipyardRetriever godoc
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardretriever_mock.go . IShipyardRetriever
 type IShipyardRetriever interface {
-	GetShipyard(projectName string) (*keptnv2.Shipyard, error)
+	GetShipyard(projectName string) (*keptnv2.Shipyard, string, error)
 	GetCachedShipyard(projectName string) (*keptnv2.Shipyard, error)
 }
 
@@ -28,15 +28,15 @@ func NewShipyardRetriever(configurationStore common.ConfigurationStore, projectR
 	}
 }
 
-func (sr *ShipyardRetriever) GetShipyard(projectName string) (*keptnv2.Shipyard, error) {
+func (sr *ShipyardRetriever) GetShipyard(projectName string) (*keptnv2.Shipyard, string, error) {
 	resource, err := sr.configurationStore.GetProjectResource(projectName, "shipyard.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve shipyard.yaml for project %s: %w", projectName, err)
+		return nil, "", fmt.Errorf("could not retrieve shipyard.yaml for project %s: %w", projectName, err)
 	}
 
 	shipyard, err := common.UnmarshalShipyard(resource.ResourceContent)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal shipyard.yaml of project %s: %w", projectName, err)
+		return nil, "", fmt.Errorf("could not unmarshal shipyard.yaml of project %s: %w", projectName, err)
 	}
 
 	// update the shipyard content of the project
@@ -53,10 +53,10 @@ func (sr *ShipyardRetriever) GetShipyard(projectName string) (*keptnv2.Shipyard,
 	// validate the shipyard version - only shipyard files following the current keptn spec are supported by the shipyard controller
 	if err = common.ValidateShipyardVersion(shipyard); err != nil {
 		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
-		return nil, fmt.Errorf("invalid shipyard version: %w", err)
+		return nil, "", fmt.Errorf("invalid shipyard version: %w", err)
 	}
 
-	return shipyard, nil
+	return shipyard, resource.Metadata.Version, nil
 }
 
 // GetCachedShipyard returns the shipyard that is stored for the project in the materialized view, instead of pulling it from the upstream
