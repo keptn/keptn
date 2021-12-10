@@ -69,7 +69,7 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 	var credentials common_models.GitCredentials
 	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal git credentials")
+		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
 	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
@@ -525,7 +525,7 @@ func GetCredentials(project string) (*common_models.GitCredentials, error) {
 	var credentials common_models.GitCredentials
 	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal git credentials")
+		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
 	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
