@@ -376,6 +376,8 @@ jobs:
           curl -vkL --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
 
           GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
+
+          kubectl create secret -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN}
           rm gitea-token.txt
           echo "##[set-output name=GITEA_ADMIN_USER;]$(echo ${GITEA_ADMIN_USER})"
           echo "##[set-output name=GITEA_TOKEN;]$(echo ${GITEA_TOKEN})"

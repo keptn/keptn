@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"reflect"
@@ -98,8 +99,8 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		upstreamCreationJob := strings.ReplaceAll(ProjectUpstreamRecreationJob, "<USER_PLACEHOLDER>", os.Getenv("GITEA_ADMIN_USER"))
-		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<TOKEN_PLACEHOLDER>", os.Getenv("GITEA_TOKEN"))
+		upstreamCreationJob := strings.ReplaceAll(ProjectUpstreamRecreationJob, "<USER_PLACEHOLDER>", getGiteaUser())
+		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<TOKEN_PLACEHOLDER>", getGiteaToken())
 		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<REPOSITORY_PLACEHOLDER>", projectName)
 		upstreamCreationJob = strings.ReplaceAll(upstreamCreationJob, "<KEPTN_NAMESPACE_PLACEHOLDER>", GetKeptnNameSpaceFromEnv())
 
@@ -121,7 +122,7 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		<-time.After(20 * time.Second) // TODO: wait for job to be completed, for now just wait a couple of seconds
 
 		// apply the k8s job for creating the git upstream
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", projectName, shipyardFilePath, os.Getenv("GITEA_ADMIN_USER"), projectName, os.Getenv("GITEA_ADMIN_USER"), os.Getenv("GITEA_TOKEN")))
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", projectName, shipyardFilePath, getGiteaUser(), projectName, getGiteaUser(), getGiteaToken()))
 
 		if err == nil {
 			return nil
@@ -129,6 +130,32 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 	}
 
 	return err
+}
+
+func getGiteaToken() string {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return os.Getenv("GITEA_TOKEN")
+	}
+
+	giteaAccessSecret, err := clientset.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "gitea-access", v1.GetOptions{})
+	if err != nil {
+		return os.Getenv("GITEA_TOKEN")
+	}
+
+	token := string(giteaAccessSecret.Data["password"])
+	if token != "" {
+		return token
+	}
+
+	return os.Getenv("GITEA_TOKEN")
+}
+
+func getGiteaUser() string {
+	if os.Getenv("GITEA_ADMIN_USER") != "" {
+		return os.Getenv("GITEA_ADMIN_USER")
+	}
+	return "gitea_admin"
 }
 
 func TriggerSequence(projectName, serviceName, stageName, sequenceName string, eventData keptncommon.EventProperties) (string, error) {
