@@ -34,6 +34,7 @@ func (sr *ShipyardRetriever) GetShipyard(projectName string) (*keptnv2.Shipyard,
 		return nil, "", fmt.Errorf("could not retrieve shipyard.yaml for project %s: %w", projectName, err)
 	}
 
+	log.Infof("current resource: %s", resource)
 	shipyard, err := common.UnmarshalShipyard(resource.ResourceContent)
 	if err != nil {
 		return nil, "", fmt.Errorf("could not unmarshal shipyard.yaml of project %s: %w", projectName, err)
