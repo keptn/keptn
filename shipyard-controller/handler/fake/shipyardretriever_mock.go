@@ -31,7 +31,7 @@ type IShipyardRetrieverMock struct {
 	GetCachedShipyardFunc func(projectName string) (*keptnv2.Shipyard, error)
 
 	// GetShipyardFunc mocks the GetShipyard method.
-	GetShipyardFunc func(projectName string) (*keptnv2.Shipyard, error)
+	GetShipyardFunc func(projectName string) (*keptnv2.Shipyard, string, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -82,7 +82,7 @@ func (mock *IShipyardRetrieverMock) GetCachedShipyardCalls() []struct {
 }
 
 // GetShipyard calls GetShipyardFunc.
-func (mock *IShipyardRetrieverMock) GetShipyard(projectName string) (*keptnv2.Shipyard, error) {
+func (mock *IShipyardRetrieverMock) GetShipyard(projectName string) (*keptnv2.Shipyard, string, error) {
 	if mock.GetShipyardFunc == nil {
 		panic("IShipyardRetrieverMock.GetShipyardFunc: method is nil but IShipyardRetriever.GetShipyard was just called")
 	}

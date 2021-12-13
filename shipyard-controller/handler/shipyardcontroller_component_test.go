@@ -1127,8 +1127,10 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		},
 		sequenceDispatcher: sequenceDispatcher,
 		shipyardRetriever: &fake.IShipyardRetrieverMock{
-			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
-				return common.UnmarshalShipyard(shipyardContent)
+			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, string, error) {
+
+				ship, err := common.UnmarshalShipyard(shipyardContent)
+				return ship, "master", err //returning default revision
 			},
 			GetCachedShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 				return common.UnmarshalShipyard(shipyardContent)

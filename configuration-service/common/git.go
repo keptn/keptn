@@ -219,11 +219,11 @@ func (g *GitClient) StageAndCommitAll(project, message string) (string, error) {
 			logger.WithError(err).Warn("could not push")
 			return err
 		}
-		return  nil
+		return nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	return commitID, nil
 }
@@ -304,7 +304,7 @@ func (g *GitClient) CommitChanges(project string, credentials *common_models.Git
 		},
 	})
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	return hash.String(), nil
@@ -856,9 +856,12 @@ func (g *Git) GetStages(project string) ([]string, error) {
 		})
 	return stages, err
 }
+func (g *Git) GetDefaultBranch(project string) (string, error) {
+	return masterBranch, nil
+}
 
 // GetDefaultBranch returns the name of the default branch of the repo
-func (g *Git) GetDefaultBranch(project string) (string, error) {
+func (g *Git) OLDGetDefaultBranch(project string) (string, error) {
 	projectConfigPath := GetProjectConfigPath(project)
 
 	credentials, err := g.CredentialReader.GetCredentials(project)
