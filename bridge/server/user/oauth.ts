@@ -6,8 +6,8 @@ import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
 
-async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: string): Promise<void> {
-  const redirectUri = `${getRootLocation()}/oauth/redirect`;
+async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: string, clientUrl: string): Promise<void> {
+  const redirectUri = `${clientUrl}/oauth/redirect`;
   // Initialise session middleware
   app.use(sessionRouter(app));
   const client = await setupClient(discoveryEndpoint, clientId, redirectUri);

@@ -8,15 +8,14 @@ const codeVerifiers: { [state: string]: { codeVerifier: string; nonce: string; e
 /**
  * Build the root path. The exact path depends on the deployment & PREFIX_PATH value
  *
- * If PREFIX_PATH is defined, root location is set to <PREFIX_PATH> or <PREFIX_PATH>/bridge for production environments. Otherwise, root is set to / .
+ * If PREFIX_PATH is defined, root location is set to <PREFIX_PATH>/bridge. Otherwise, root is set to / .
  *
  * Redirection to / will be either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
  */
 function getRootLocation(): string {
   if (prefixPath !== undefined) {
-    return process.env.NODE_ENV === 'production' ? `${prefixPath}/bridge` : prefixPath;
+    return `${prefixPath}/bridge`;
   }
-
   return '/';
 }
 

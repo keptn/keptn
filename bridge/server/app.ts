@@ -136,19 +136,21 @@ async function init(): Promise<Express> {
 }
 
 async function setOAUTH(): Promise<void> {
+  const errorSuffix =
+    'must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+    ' Please check your environment variables.';
+
   if (!process.env.OAUTH_DISCOVERY) {
-    throw Error(
-      'OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-        ' Please check your environment variables.'
-    );
+    throw Error(`OAUTH_DISCOVERY ${errorSuffix}`);
   }
   if (!process.env.OAUTH_CLIENT_ID) {
-    throw Error(
-      'OAUTH_CLIENT_ID must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-        ' Please check your environment variables.'
-    );
+    throw Error(`OAUTH_CLIENT_ID ${errorSuffix}`);
   }
-  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID);
+  if (!process.env.OAUTH_CLIENT_URL) {
+    throw Error(`OAUTH_CLIENT_URL ${errorSuffix}`);
+  }
+
+  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_CLIENT_URL);
 }
 
 async function setBasisAUTH(): Promise<void> {
