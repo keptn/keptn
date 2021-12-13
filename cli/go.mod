@@ -12,7 +12,7 @@ require (
 	github.com/keptn/go-utils v0.11.1-0.20211206141641-bf58a65bf8c3
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/mitchellh/mapstructure v1.4.2
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
