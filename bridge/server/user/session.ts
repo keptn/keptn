@@ -2,13 +2,19 @@ import { Express, Request, Router } from 'express';
 import expressSession from 'express-session';
 import mS from 'memorystore';
 import random from 'crypto-random-string';
+import { TokenSet, TokenSetParameters } from 'openid-client';
 
 declare module 'express-session' {
   export interface SessionData {
-    authenticated: boolean;
-    principal: string;
-    logoutHint: string;
+    authenticated?: boolean;
+    tokenSet?: TokenSetParameters;
+    principal?: string;
   }
+}
+export interface ValidSession extends expressSession.Session {
+  authenticated: boolean;
+  tokenSet: TokenSetParameters;
+  principal?: string;
 }
 const memoryStore = mS(expressSession);
 const router = Router();
@@ -45,12 +51,14 @@ const sessionConfig = {
 /**
  * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
  */
-function isAuthenticated(req: Request): boolean {
-  if (req.session.authenticated) {
+function isAuthenticated(
+  session: expressSession.Session & Partial<expressSession.SessionData>
+): session is ValidSession {
+  if (session.authenticated) {
     return true;
   }
 
-  req.session.authenticated = false;
+  session.authenticated = false;
   return false;
 }
 
@@ -60,21 +68,16 @@ function isAuthenticated(req: Request): boolean {
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function authenticateSession(req: Request, principal: string, logoutHint: string, callback: () => void): void {
-  if (!principal) {
-    throw Error('Invalid session initialisation. Principal is mandatory.');
-  }
+function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
+  return new Promise((resolve) => {
+    // Regenerate session for the successful login
+    req.session.regenerate(() => {
+      req.session.authenticated = true;
+      req.session.tokenSet = tokenSet;
+      req.session.principal = tokenSet.claims().name;
 
-  // Regenerate session for the successful login
-  req.session.regenerate(() => {
-    req.session.authenticated = true;
-    req.session.principal = principal;
-
-    if (logoutHint) {
-      req.session.logoutHint = logoutHint;
-    }
-
-    callback();
+      resolve();
+    });
   });
 }
 
@@ -82,25 +85,25 @@ function authenticateSession(req: Request, principal: string, logoutHint: string
  * Returns the current principal if session is authenticated. Otherwise returns undefined
  */
 function getCurrentPrincipal(req: Request): string | undefined {
-  if (req.session !== undefined && req.session.authenticated) {
-    return req.session.principal;
-  }
-
-  return undefined;
+  return req.session.principal;
 }
 
 /**
  * Returns the logout hint bound to this session
  */
 function getLogoutHint(req: Request): string | undefined {
-  return req.session?.logoutHint;
+  return req.session?.tokenSet?.id_token;
 }
 
 /**
  * Destroy the session comes with this request
  */
 function removeSession(req: Request): void {
-  req.session.destroy(console.error);
+  req.session.destroy((error) => {
+    if (error) {
+      console.error(error);
+    }
+  });
 }
 
 function sessionRouter(app: Express): Router {

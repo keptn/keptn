@@ -14,6 +14,7 @@ import { execSync } from 'child_process';
 import { AxiosError } from 'axios';
 import { EnvironmentUtils } from './utils/environment.utils';
 import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
+import { setupOAuth } from './user/oauth';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -135,23 +136,19 @@ async function init(): Promise<Express> {
 }
 
 async function setOAUTH(): Promise<void> {
-  const sessionRouter = (await import('./user/session.js')).sessionRouter(app);
-  const oauthRouter = await (await import('./user/oauth.js')).oauthRouter;
-  const authCheck = (await import('./user/session.js')).isAuthenticated;
-
-  // Initialise session middleware
-  app.use(sessionRouter);
-  // Initializing OAuth middleware.
-  app.use(oauthRouter);
-
-  // Authentication filter for API requests
-  app.use('/api', (req, resp, next) => {
-    if (!authCheck(req)) {
-      next({ response: { status: 401 } });
-      return;
-    }
-    return next();
-  });
+  if (!process.env.OAUTH_DISCOVERY) {
+    throw Error(
+      'OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+        ' Please check your environment variables.'
+    );
+  }
+  if (!process.env.OAUTH_CLIENT_ID) {
+    throw Error(
+      'OAUTH_CLIENT_ID must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+        ' Please check your environment variables.'
+    );
+  }
+  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID);
 }
 
 async function setBasisAUTH(): Promise<void> {
