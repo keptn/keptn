@@ -364,8 +364,10 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 	}
 
-	updateProject.GitUser = params.GitUser
-	updateProject.GitRemoteURI = params.GitRemoteURL
+	if params.GitUser != "" && params.GitRemoteURL != "" {
+		updateProject.GitUser = params.GitUser
+		updateProject.GitRemoteURI = params.GitRemoteURL
+	}
 	if isShipyardPresent {
 		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 		updateProject.Shipyard = string(decodedShipyard)
