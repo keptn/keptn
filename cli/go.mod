@@ -7,10 +7,9 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/docker/docker-credential-helpers v0.6.4
-	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.11.0
+	github.com/keptn/go-utils v0.11.1-0.20211206141641-bf58a65bf8c3
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.2
