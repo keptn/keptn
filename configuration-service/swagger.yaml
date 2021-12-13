@@ -16,7 +16,7 @@ definitions:
     type: object
     required:
       - message
-    properties: 
+    properties:
       code:
         type: integer
         format: int64
@@ -85,7 +85,7 @@ definitions:
     properties:
       resourceURI:
         type: string
-        description: Resource URI
+        description: Resource URI in URL-encoded format
       resourceContent:
         type: string
         # format: byte
@@ -96,13 +96,13 @@ definitions:
   Resources:
     type: object
     properties:
-      nextPageKey: 
+      nextPageKey:
         type: string
         description: Pointer to next page, base64 encoded
-      totalCount: 
+      totalCount:
         type: number
         description: Total number of resources
-      pageSize: 
+      pageSize:
         type: number
         description: Size of returned page
       resources:
@@ -132,7 +132,7 @@ parameters:
     description: Stage entity
     schema:
       $ref: '#/definitions/Stage'
-    
+
   stageName:
     in: path
     name: stageName
@@ -146,7 +146,7 @@ parameters:
     description: Service entity
     schema:
       $ref: '#/definitions/Service'
-    
+
   serviceName:
     in: path
     name: serviceName
@@ -175,7 +175,7 @@ parameters:
     description: Resource
     schema:
       $ref: '#/definitions/Resource'
-    
+
   resources:
     in: body
     name: resources
@@ -185,7 +185,7 @@ parameters:
         resources:
           type: array
           items:
-            $ref: '#/definitions/Resource'    
+            $ref: '#/definitions/Resource'
 
   pageSize:
     in: query
@@ -195,7 +195,7 @@ parameters:
     maximum: 50
     default: 20
     description: The number of items to return
-    
+
   nextPageKey:
     in: query
     name: nextPageKey
@@ -244,7 +244,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Project
@@ -272,7 +272,7 @@ paths:
         - Project Resource
       summary: Create list of new resources for the project
       parameters:
-        - $ref: '#/parameters/resources'        
+        - $ref: '#/parameters/resources'
       responses:
         '201':
           description: Success. Project resource has been created. The version of the new configuration is returned.
@@ -285,7 +285,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Project Resource
@@ -306,7 +306,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error'  
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Project Resource
@@ -348,13 +348,13 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error'            
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Project Resource
       summary: Update the specified resource
       parameters:
-        - $ref: '#/parameters/resource' 
+        - $ref: '#/parameters/resource'
       responses:
         '201':
           description: Success. Project resource has been updated. The version of the new configuration is returned.
@@ -385,7 +385,7 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
-          
+
   '/project/{projectName}/stage':
     parameters:
       - $ref: '#/parameters/projectName'
@@ -458,7 +458,7 @@ paths:
         - Stage Resource
       summary: Create list of new resources for the stage
       parameters:
-        - $ref: '#/parameters/resources'   
+        - $ref: '#/parameters/resources'
       responses:
         '201':
           description: Success. Stage resource has been created. The version of the new configuration is returned.
@@ -488,7 +488,7 @@ paths:
         '404':
           description: Failed. Stage could not be found.
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
         'default':
           description: Error
           schema:
@@ -536,7 +536,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Stage Resource
@@ -601,7 +601,7 @@ paths:
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
-      - $ref: '#/parameters/serviceName'      
+      - $ref: '#/parameters/serviceName'
 
     put:
       tags:
@@ -648,7 +648,7 @@ paths:
         - Service Resource
       summary: Create list of new resources for the service
       parameters:
-        - $ref: '#/parameters/resources'   
+        - $ref: '#/parameters/resources'
       responses:
         '201':
           description: Success. Service resource has been created. The version of the new configuration is returned.
@@ -682,7 +682,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Service Resource
@@ -727,7 +727,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Service Resource
@@ -771,10 +771,10 @@ paths:
       - $ref: '#/parameters/serviceName'
     post:
       tags:
-        - Service Default Resource 
+        - Service Default Resource
       summary: Create list of default resources for the service used in all stages
       parameters:
-        - $ref: '#/parameters/resources' 
+        - $ref: '#/parameters/resources'
       responses:
         '201':
           description: Success. Service default resource has been created. The version of the new configuration is returned.
@@ -790,7 +790,7 @@ paths:
             $ref: '#/definitions/Error'
     get:
       tags:
-        - Service Default Resource 
+        - Service Default Resource
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
@@ -809,7 +809,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Service Default Resource
@@ -855,7 +855,7 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Service Default Resource

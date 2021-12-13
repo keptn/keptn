@@ -99,6 +99,8 @@ func (o *PostProjectProjectNameStageStageNameResourceBody) validateResources(for
 			if err := o.Resources[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -131,6 +133,8 @@ func (o *PostProjectProjectNameStageStageNameResourceBody) contextValidateResour
 			if err := o.Resources[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
