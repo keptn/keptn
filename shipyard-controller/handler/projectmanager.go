@@ -306,7 +306,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 				}
 			}
 			if !stageFound {
-				removeStages = append(addStages, es)
+				removeStages = append(removeStages, es)
+				for idx, stg := range updateProject.Stages {
+					if es.StageName == stg.StageName {
+						updateProject.Stages = append(updateProject.Stages[:idx], updateProject.Stages[idx+1:]...)
+					}
+				}
 			}
 		}
 
@@ -362,7 +367,6 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
 	if isShipyardPresent {
-		fmt.Println("updating shipyard of materialized view")
 		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 		updateProject.Shipyard = string(decodedShipyard)
 	}
