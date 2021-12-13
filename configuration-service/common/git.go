@@ -483,6 +483,7 @@ func (g *GitClient) MigrateProject(project string) error {
 	}
 
 	// TODO: remove old repository, move migrated from tmp to /data/config, update metadata.yaml of project with isUsingDirectoryStructure = true
+	// TODO: check out main branch, and do git reset --hard origin/main
 
 	return nil
 }
