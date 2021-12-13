@@ -8,10 +8,16 @@ end in `-next.ID`, no backwards-incompatible changes will be made unless increme
 version number. Patch releases with urgent cherry-picked bugfixes will be made by incrementing the
 `PATCH` version.
 
-A backwards-incompatible change affects the public API. The public API is any public reachable endpoint
-that is not marked as `internal`. We refer to a backwards-incompatible API change, a change that could
-potentially cause failures in the applications that consume that API, e.g., removing an endpoint,
-changing the response code, requiring additional parameters, or changing the entity models.
+A backwards-incompatible change affects the public API. The public API is any of the following:
+
+- public reachable endpoints that are **not** marked as `internal`;
+- readiness and liveness probes endpoints;
+- changes in mandatory fields in the CLI;
+- CloudEvents definition.
+
+We refer to a backwards-incompatible API change, a change that could potentially cause failures in the
+applications that consume that API, e.g., removing an endpoint, changing the response code, requiring
+additional parameters, or changing the entity models.
 
 Such changes will be avoided - if they must be made, the affected endpoint will be marked as `deprecated`
 and supported for one further `MINOR` version. After that, the affected API may be made backwards-incompatible.
