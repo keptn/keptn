@@ -234,16 +234,24 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 	}
 
+	// copy by value
+	updateProject := *oldProject
+
 	var isShipyardPresent = params.Shipyard != nil && *params.Shipyard != ""
 
 	// try to update shipyard project resource
 	if isShipyardPresent {
-		if err = validateShipyardUpdate(params, oldProject); err != nil {
-			return err, nilRollback
+		//if err = validateShipyardUpdate(params, oldProject); err != nil {
+		//	return err, nilRollback
+		//}
+		previousServices := []*models.ExpandedService{}
+		for _, svc := range oldProject.Stages[0].Services {
+			previousServices = append(previousServices, &models.ExpandedService{ServiceName: svc.ServiceName})
 		}
 
+		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 		shipyardResource := apimodels.Resource{
-			ResourceContent: *params.Shipyard,
+			ResourceContent: string(decodedShipyard),
 			ResourceURI:     common.Stringp("shipyard.yaml"),
 		}
 		err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &shipyardResource)
@@ -260,19 +268,109 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 				return pm.ConfigurationStore.UpdateProject(projectToRollback)
 			}
 		}
+
+		// check if stages have been added/removed
+		shipyard := &keptnv2.Shipyard{}
+		_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
+
+		addStages := []*models.ExpandedStage{}
+		removeStages := []*models.ExpandedStage{}
+		for _, s := range shipyard.Spec.Stages {
+			es := &models.ExpandedStage{
+				Services:  previousServices,
+				StageName: s.Name,
+			}
+			stageFound := false
+			for _, oldStage := range oldProject.Stages {
+				if oldStage.StageName == s.Name {
+					stageFound = true
+					break
+				}
+			}
+			if !stageFound {
+				addStages = append(addStages, es)
+				updateProject.Stages = append(updateProject.Stages, es)
+			}
+		}
+
+		for _, oldStage := range oldProject.Stages {
+			es := &models.ExpandedStage{
+				Services:  []*models.ExpandedService{},
+				StageName: oldStage.StageName,
+			}
+			stageFound := false
+			for _, newStage := range shipyard.Spec.Stages {
+				if oldStage.StageName == newStage.Name {
+					stageFound = true
+					break
+				}
+			}
+			if !stageFound {
+				removeStages = append(addStages, es)
+			}
+		}
+
+		for _, newStage := range addStages {
+
+			if err := pm.ConfigurationStore.CreateStage(projectToUpdate.ProjectName, newStage.StageName); err != nil {
+				return err, func() error {
+					// try to rollback already updated git repository secret
+					if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
+						User:      oldSecret.User,
+						Token:     oldSecret.Token,
+						RemoteURI: oldSecret.RemoteURI}); err != nil {
+						return err
+					}
+					// try to rollback already updated project in configuration store
+					return pm.ConfigurationStore.UpdateProject(projectToRollback)
+				}
+			}
+			for _, svc := range previousServices {
+				if err := pm.ConfigurationStore.CreateService(projectToUpdate.ProjectName, newStage.StageName, svc.ServiceName); err != nil {
+					return err, func() error {
+						// try to rollback already updated git repository secret
+						if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
+							User:      oldSecret.User,
+							Token:     oldSecret.Token,
+							RemoteURI: oldSecret.RemoteURI}); err != nil {
+							return err
+						}
+						// try to rollback already updated project in configuration store
+						return pm.ConfigurationStore.UpdateProject(projectToRollback)
+					}
+				}
+			}
+		}
+
+		for _, removeStage := range removeStages {
+			if err := pm.ConfigurationStore.DeleteStage(projectToUpdate.ProjectName, removeStage.StageName); err != nil {
+				return err, func() error {
+					// try to rollback already updated git repository secret
+					if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
+						User:      oldSecret.User,
+						Token:     oldSecret.Token,
+						RemoteURI: oldSecret.RemoteURI}); err != nil {
+						return err
+					}
+					// try to rollback already updated project in configuration store
+					return pm.ConfigurationStore.UpdateProject(projectToRollback)
+				}
+			}
+		}
 	}
 
-	// copy by value
-	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
 	if isShipyardPresent {
-		updateProject.Shipyard = *params.Shipyard
+		fmt.Println("updating shipyard of materialized view")
+		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
+		updateProject.Shipyard = string(decodedShipyard)
 	}
 
 	// try to update project information in database
 	err = pm.ProjectMaterializedView.UpdateProject(&updateProject)
 	if err != nil {
+		log.Errorf("%v", err)
 		return err, func() error {
 			// try to rollback already updated project resource in configuration service
 			if err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &apimodels.Resource{

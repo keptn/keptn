@@ -45,6 +45,7 @@ type ConfigurationStore interface {
 	UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error
 	DeleteProject(projectName string) error
 	CreateStage(projectName string, stage string) error
+	DeleteStage(projectName string, stage string) error
 	CreateService(projectName string, stageName string, serviceName string) error
 	GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
 	DeleteService(projectName string, stageName string, serviceName string) error
@@ -111,6 +112,13 @@ func (g GitConfigurationStore) UpdateProjectResource(projectName string, resourc
 
 func (g GitConfigurationStore) CreateStage(projectName string, stageName string) error {
 	if _, err := g.stagesAPI.CreateStage(projectName, stageName); err != nil {
+		return g.buildErrResponse(err)
+	}
+	return nil
+}
+
+func (g GitConfigurationStore) DeleteStage(projectName string, stageName string) error {
+	if _, err := g.stagesAPI.DeleteStage(projectName, stageName); err != nil {
 		return g.buildErrResponse(err)
 	}
 	return nil

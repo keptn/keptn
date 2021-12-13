@@ -150,6 +150,31 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 	return nil
 }
 
+// DeleteBranch deletes branch
+func (g *Git) DeleteBranch(project string, branch string, sourceBranch string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	err := g.CheckoutBranch(project, sourceBranch, false)
+	if err != nil {
+		return err
+	}
+	_, err = g.Executor.ExecuteCommand("git", []string{"branch", "-d", branch}, projectConfigPath)
+	if err != nil {
+		return err
+	}
+
+	// if an upstream has been defined, push the new branch
+	credentials, err := g.CredentialReader.GetCredentials(project)
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI, "--delete", branch}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+	}
+
+	return nil
+}
+
 // UpdateOrCreateOrigin tries to update the remote origin.
 // If no remote origin exists, it will add one
 func (g *Git) UpdateOrCreateOrigin(project string) error {
@@ -416,6 +441,12 @@ func Reset(project string) error {
 func CreateBranch(project string, branch string, sourceBranch string) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
 	return g.CreateBranch(project, branch, sourceBranch)
+}
+
+// DeleteBranch deletes a branch
+func DeleteBranch(project string, branch string, sourceBranch string) error {
+	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
+	return g.DeleteBranch(project, branch, sourceBranch)
 }
 
 // UpdateOrCreateOrigin tries to update the remote origin.

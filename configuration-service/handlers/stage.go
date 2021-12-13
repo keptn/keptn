@@ -41,5 +41,24 @@ func PutProjectProjectNameStageStageNameHandlerFunc(params stage.PutProjectProje
 
 // DeleteProjectProjectNameStageStageNameHandlerFunc deletes a stage
 func DeleteProjectProjectNameStageStageNameHandlerFunc(params stage.DeleteProjectProjectNameStageStageNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation stage.DeleteProjectProjectNameStageStageName has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return stage.NewDeleteProjectProjectNameStageStageNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
+	}
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not determine default branch for project %s", params.ProjectName)
+		return stage.NewDeleteProjectProjectNameStageStageNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create stage.")})
+	}
+	logger.Info(fmt.Sprintf("creating stage %s from base %s", params.StageName, defaultBranch))
+	err = common.DeleteBranch(params.ProjectName, params.StageName, defaultBranch)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not create %s branch for project %s", params.StageName, params.ProjectName)
+		return stage.NewDeleteProjectProjectNameStageStageNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
+	}
+
+	return stage.NewPostProjectProjectNameStageNoContent()
 }

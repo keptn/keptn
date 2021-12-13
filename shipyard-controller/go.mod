@@ -7,11 +7,10 @@ require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.11.1-0.20211201105141-7a265f3364fe
+	github.com/keptn/go-utils v0.11.1-0.20211213092641-be976850819c
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

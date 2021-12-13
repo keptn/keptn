@@ -37,6 +37,9 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 // 			DeleteServiceFunc: func(projectName string, stageName string, serviceName string) error {
 // 				panic("mock out the DeleteService method")
 // 			},
+// 			DeleteStageFunc: func(projectName string, stage string) error {
+// 				panic("mock out the DeleteStage method")
+// 			},
 // 			GetProjectResourceFunc: func(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
 // 				panic("mock out the GetProjectResource method")
 // 			},
@@ -70,6 +73,9 @@ type ConfigurationStoreMock struct {
 
 	// DeleteServiceFunc mocks the DeleteService method.
 	DeleteServiceFunc func(projectName string, stageName string, serviceName string) error
+
+	// DeleteStageFunc mocks the DeleteStage method.
+	DeleteStageFunc func(projectName string, stage string) error
 
 	// GetProjectResourceFunc mocks the GetProjectResource method.
 	GetProjectResourceFunc func(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
@@ -124,6 +130,13 @@ type ConfigurationStoreMock struct {
 			// ServiceName is the serviceName argument value.
 			ServiceName string
 		}
+		// DeleteStage holds details about calls to the DeleteStage method.
+		DeleteStage []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// Stage is the stage argument value.
+			Stage string
+		}
 		// GetProjectResource holds details about calls to the GetProjectResource method.
 		GetProjectResource []struct {
 			// ProjectName is the projectName argument value.
@@ -150,6 +163,7 @@ type ConfigurationStoreMock struct {
 	lockCreateStage           sync.RWMutex
 	lockDeleteProject         sync.RWMutex
 	lockDeleteService         sync.RWMutex
+	lockDeleteStage           sync.RWMutex
 	lockGetProjectResource    sync.RWMutex
 	lockUpdateProject         sync.RWMutex
 	lockUpdateProjectResource sync.RWMutex
@@ -362,6 +376,41 @@ func (mock *ConfigurationStoreMock) DeleteServiceCalls() []struct {
 	mock.lockDeleteService.RLock()
 	calls = mock.calls.DeleteService
 	mock.lockDeleteService.RUnlock()
+	return calls
+}
+
+// DeleteStage calls DeleteStageFunc.
+func (mock *ConfigurationStoreMock) DeleteStage(projectName string, stage string) error {
+	if mock.DeleteStageFunc == nil {
+		panic("ConfigurationStoreMock.DeleteStageFunc: method is nil but ConfigurationStore.DeleteStage was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+		Stage       string
+	}{
+		ProjectName: projectName,
+		Stage:       stage,
+	}
+	mock.lockDeleteStage.Lock()
+	mock.calls.DeleteStage = append(mock.calls.DeleteStage, callInfo)
+	mock.lockDeleteStage.Unlock()
+	return mock.DeleteStageFunc(projectName, stage)
+}
+
+// DeleteStageCalls gets all the calls that were made to DeleteStage.
+// Check the length with:
+//     len(mockedConfigurationStore.DeleteStageCalls())
+func (mock *ConfigurationStoreMock) DeleteStageCalls() []struct {
+	ProjectName string
+	Stage       string
+} {
+	var calls []struct {
+		ProjectName string
+		Stage       string
+	}
+	mock.lockDeleteStage.RLock()
+	calls = mock.calls.DeleteStage
+	mock.lockDeleteStage.RUnlock()
 	return calls
 }
 
