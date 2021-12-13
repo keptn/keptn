@@ -1230,7 +1230,7 @@ func init() {
           "type": "string"
         },
         "resourceURI": {
-          "description": "Resource URI",
+          "description": "Resource URI in URL-encoded format",
           "type": "string"
         }
       }
@@ -2943,7 +2943,7 @@ func init() {
           "type": "string"
         },
         "resourceURI": {
-          "description": "Resource URI",
+          "description": "Resource URI in URL-encoded format",
           "type": "string"
         }
       }

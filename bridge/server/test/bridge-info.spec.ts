@@ -10,6 +10,7 @@ describe('Test /bridgeInfo', () => {
       cliDownloadLink: 'https://github.com/keptn/keptn/releases',
       enableVersionCheckFeature: true,
       showApiToken: true,
+      featureFlags: {},
       authType: 'NONE',
     });
     expect(response.statusCode).toBe(200);

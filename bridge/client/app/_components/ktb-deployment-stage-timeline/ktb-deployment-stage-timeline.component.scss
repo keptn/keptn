@@ -11,18 +11,21 @@
 }
 
 .timeline-icon {
+  &.dt-button.dt-button-nested:hover:not([disabled]) {
+    background-color: $gray-200;
+  }
+}
+
+.timeline-icon,
+.timeline-icon .dt-icon{
   height: 25px;
   width: 25px;
 }
+
 :host::ng-deep {
-  .dt-icon-button.active,
-  .dt-icon-button:hover {
-    background: $gray-100 !important;
-  }
   .dt-button-icon {
     margin-top: 0;
-    height: 25px !important;
-    width: 25px !important;
+    margin-left: -1px;
   }
 }
 
