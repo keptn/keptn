@@ -192,7 +192,6 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 
 	// fetching cached shipyard file from project git repo
 	shipyard, commitId, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
-	log.Infof("SHIPYARD: %s commitID: %s", shipyard, commitId) //TODO rm me
 	if err != nil {
 		msg := fmt.Sprintf("Unable to retrieve Shipyard file: %v", err)
 		log.Errorf(msg)

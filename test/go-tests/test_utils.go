@@ -91,6 +91,7 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			if recreateIfAlreadyThere {
 				// delete project if it exists
 				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+
 				if err != nil {
 					continue
 				}
@@ -108,6 +109,9 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		if err != nil {
 			return err
 		}
+
+		_, _ = ExecuteCommand("kubectl delete job recreate-gitea-repo -n keptn")
+		time.Sleep(20 * time.Second)
 
 		defer func() {
 			_, _ = ExecuteCommandf("kubectl delete -f %s", file)

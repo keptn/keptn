@@ -27,7 +27,7 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	}
 
 	logger.Debug("Checking out " + params.StageName + " branch")
-	err := common.PullUpstream(params.ProjectName)
+	err := common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stage resources")})

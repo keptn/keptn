@@ -36,7 +36,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
 
-	err := common.PullUpstream(params.ProjectName)
+	err := common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).
@@ -67,7 +67,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
 
-	err = common.PullUpstream(params.ProjectName)
+	err = common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).
@@ -140,7 +140,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
 
-	err := common.PullUpstream(params.ProjectName)
+	err := common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", params.StageName, params.ProjectName)
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).

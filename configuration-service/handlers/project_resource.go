@@ -26,7 +26,7 @@ func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProject
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.PullUpstream(params.ProjectName)
+	err = common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -57,7 +57,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		return project_resource.NewPutProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.PullUpstream(params.ProjectName)
+	err = common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -104,7 +104,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 		return project_resource.NewPostProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.PullUpstream(params.ProjectName)
+	err = common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -149,11 +149,11 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.PullUpstream(params.ProjectName)
-	if err != nil {
+	//err = common.PullUpstream(params.ProjectName)
+	/*if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
-	}
+	}*/
 
 	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
 	if err != nil {
@@ -171,11 +171,27 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	var resourceContent string
 	//resourceContent := base64.StdEncoding.EncodeToString(dat)
 	if params.CommitID == nil || *params.CommitID == "" {
+		err = common.PullUpstream(params.ProjectName)
+		if err != nil {
+			logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
+			return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
+		}
 		resourceContent, err = common.GetFileByPath(common.GetProjectConfigPath(params.ProjectName), defaultBranch, unescapedResourceName)
+
 	} else {
 		resourceContent, err = common.GetFileByPath(projectConfigPath, *params.CommitID, unescapedResourceName)
+		if err != nil {
+			logger.Info(err.Error())
+			logger.Info("trying to update repository")
+			err = common.PullUpstream(params.ProjectName)
+			if err != nil {
+				logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
+				return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
+			}
+			resourceContent, err = common.GetFileByPath(projectConfigPath, *params.CommitID, unescapedResourceName)
+		}
 	}
-	logger.Error("WE! ", resourceContent)
+	//logger.Error("WE! ", resourceContent)
 	if err != nil {
 		logger.Error(err.Error())
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
@@ -212,7 +228,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out branch: " + defaultBranch)
 
-	err = common.PullUpstream(params.ProjectName)
+	err = common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
@@ -253,7 +269,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
-	err = common.PullUpstream(params.ProjectName)
+	err = common.PullUpstream(params.ProjectName) //TODO remove pull upstream and try local first
 	if err != nil {
 		logger.WithError(err).Errorf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName)
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
