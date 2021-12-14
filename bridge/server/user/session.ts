@@ -2,7 +2,7 @@ import { Express, Request, Router } from 'express';
 import expressSession from 'express-session';
 import mS from 'memorystore';
 import random from 'crypto-random-string';
-import { TokenSet, TokenSetParameters } from 'openid-client';
+import { IdTokenClaims, TokenSet, TokenSetParameters } from 'openid-client';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -72,13 +72,19 @@ function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
   return new Promise((resolve) => {
     // Regenerate session for the successful login
     req.session.regenerate(() => {
+      const userIdentifier = process.env.OAUTH_NAME_PROPERTY || 'name';
+      const claims = tokenSet.claims();
       req.session.authenticated = true;
       req.session.tokenSet = tokenSet;
-      req.session.principal = tokenSet.claims().name;
+      req.session.principal = (claims[userIdentifier] as string | undefined) || getUserIdentifier(claims);
 
       resolve();
     });
   });
+}
+
+function getUserIdentifier(claims: IdTokenClaims): string | undefined {
+  return claims.name || claims.nickname || claims.preferred_username || claims.email;
 }
 
 /**
