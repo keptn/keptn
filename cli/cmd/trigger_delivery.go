@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -14,10 +19,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/docker"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 type deliveryStruct struct {
@@ -100,6 +101,15 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		} else {
 			return fmt.Errorf("Could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
 		}
+
+		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		projectServices, err := servicesHandler.GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
+		if err != nil {
+			return fmt.Errorf("Error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
+		}
+		if !serviceInSlice(*deliveryInputData.Service, projectServices) {
+			return fmt.Errorf("Could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
+		}
 	}
 
 	jsonStr, err := internal.JSONPathToJSONObj(*deliveryInputData.Values)
@@ -168,6 +178,15 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	}
 
 	return nil
+}
+
+func serviceInSlice(a string, list []*apimodels.Service) bool {
+	for _, b := range list {
+		if b.ServiceName == a {
+			return true
+		}
+	}
+	return false
 }
 
 func doTriggerDeliveryPreRunCheck(deliveryInputData deliveryStruct) error {

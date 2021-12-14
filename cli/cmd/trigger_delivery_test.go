@@ -206,3 +206,64 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 		}
 	}
 }
+
+// TestTriggerDelivery tests the trigger delivery command.
+func TestTriggerDeliveryNonExistingService(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+
+	receivedEvent := make(chan bool)
+	mocking = true
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			if strings.Contains(r.RequestURI, "v1/project") {
+				project := &apimodels.Project{
+					ProjectName: "sockshop",
+					Stages: []*apimodels.Stage{
+						{
+							StageName: "dev",
+						},
+					},
+				}
+				marshal, _ := json.Marshal(project)
+				w.Write(marshal)
+			}
+			if strings.Contains(r.RequestURI, "v1/event") {
+				defer r.Body.Close()
+				bytes, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Errorf("could not read received event payload: %s", err.Error())
+				}
+				event := &apimodels.KeptnContextExtendedCE{}
+				if err := json.Unmarshal(bytes, event); err != nil {
+					t.Errorf("could not decode received event: %s", err.Error())
+				}
+				if *event.Type != keptnv2.GetTriggeredEventType("dev.artifact-delivery") {
+					t.Errorf("did not receive correct event: %s", err.Error())
+				}
+				go func() {
+					receivedEvent <- true
+				}()
+			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
+				defer r.Body.Close()
+				w.Write([]byte(metadataMockResponse))
+				return
+			}
+			return
+		}),
+	)
+	defer ts.Close()
+
+	os.Setenv("MOCK_SERVER", ts.URL)
+
+	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --sequence=%s "+
+		"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts888", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
+	_, err := executeActionCommandC(cmd)
+
+	if err == nil {
+		t.Errorf(unexpectedNoErrMsg)
+	}
+}
