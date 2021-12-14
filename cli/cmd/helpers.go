@@ -130,9 +130,9 @@ func CheckEndpointStatus(endPoint string) error {
 	return nil
 }
 
-func ServiceInSlice(a string, list []*apimodels.Service) bool {
-	for _, b := range list {
-		if b.ServiceName == a {
+func ServiceInSlice(service string, serviceList []*apimodels.Service) bool {
+	for _, s := range serviceList {
+		if s.ServiceName == service {
 			return true
 		}
 	}
