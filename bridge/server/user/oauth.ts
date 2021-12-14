@@ -6,8 +6,11 @@ import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
 
-async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: string, clientUrl: string): Promise<void> {
-  const redirectUri = `${clientUrl}/oauth/redirect`;
+async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: string, baseUrl: string): Promise<void> {
+  let prefix = getRootLocation();
+  baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+  prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
+  const redirectUri = `${baseUrl}${prefix}oauth/redirect`;
   // Initialise session middleware
   app.use(sessionRouter(app));
   const client = await setupClient(discoveryEndpoint, clientId, redirectUri);

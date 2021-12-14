@@ -146,11 +146,11 @@ async function setOAUTH(): Promise<void> {
   if (!process.env.OAUTH_CLIENT_ID) {
     throw Error(`OAUTH_CLIENT_ID ${errorSuffix}`);
   }
-  if (!process.env.OAUTH_CLIENT_URL) {
+  if (!process.env.OAUTH_BASE_URL) {
     throw Error(`OAUTH_CLIENT_URL ${errorSuffix}`);
   }
 
-  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_CLIENT_URL);
+  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
 }
 
 async function setBasisAUTH(): Promise<void> {
