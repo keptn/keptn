@@ -91,7 +91,7 @@ function getUserIdentifier(claims: IdTokenClaims): string | undefined {
  * Returns the current principal if session is authenticated. Otherwise returns undefined
  */
 function getCurrentPrincipal(req: Request): string | undefined {
-  return req.session.principal;
+  return req.session?.principal;
 }
 
 /**

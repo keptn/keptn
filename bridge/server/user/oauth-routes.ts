@@ -1,9 +1,11 @@
 import { Request, Response, Router } from 'express';
 import { authenticateSession, getLogoutHint, isAuthenticated, removeSession } from './session';
 import { BaseClient, errors, generators, TokenSet } from 'openid-client';
+import { EndSessionData } from '../../shared/interfaces/end-session-data';
 
 const prefixPath = process.env.PREFIX_PATH;
 const codeVerifiers: { [state: string]: { codeVerifier: string; nonce: string; expiresAt: number } } = {};
+const stateExpireMilliSeconds = 60 * 60_000; // expires in 60 minutes
 
 /**
  * Build the root path. The exact path depends on the deployment & PREFIX_PATH value
@@ -30,7 +32,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
     const codeChallenge = generators.codeChallenge(codeVerifier);
     const nonce = generators.nonce();
     const state = generators.state();
-    codeVerifiers[state] = { codeVerifier, nonce, expiresAt: new Date().getTime() + 5 * 60_000 }; // expires in 5 minutes
+    codeVerifiers[state] = { codeVerifier, nonce, expiresAt: new Date().getTime() + stateExpireMilliSeconds };
 
     const authorizationUrl = client.authorizationUrl({
       scope: 'openid',
@@ -60,9 +62,8 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       params.state = undefined;
     } else {
       return res.render('error', {
-        title: 'Error',
-        message: 'Error while handling request. State does not exist.',
-        location: getRootLocation(),
+        title: 'Permission denied',
+        message: 'Forbidden',
       });
     }
 
@@ -103,21 +104,23 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
   router.get('/logout', async (req: Request, res: Response) => {
     if (!isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
-      return res.redirect(getRootLocation());
+      return res.json();
     }
 
-    let logoutUrl;
+    const hint = getLogoutHint(req) ?? '';
+    removeSession(req);
+
     if (client.issuer.metadata.end_session_endpoint) {
-      logoutUrl = client.endSessionUrl({
-        id_token_hint: getLogoutHint(req),
+      const params: EndSessionData = {
+        id_token_hint: hint,
         state: generators.state(),
         post_logout_redirect_uri: redirectUri,
-      });
+        end_session_endpoint: client.issuer.metadata.end_session_endpoint,
+      };
+      return res.json(params);
     } else {
-      logoutUrl = getRootLocation();
+      res.json();
     }
-    removeSession(req);
-    return res.redirect(logoutUrl);
   });
 
   return router;
