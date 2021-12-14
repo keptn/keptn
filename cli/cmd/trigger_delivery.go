@@ -107,7 +107,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		if err != nil {
 			return fmt.Errorf("Error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
 		}
-		if !serviceInSlice(*deliveryInputData.Service, projectServices) {
+		if !ServiceInSlice(*deliveryInputData.Service, projectServices) {
 			return fmt.Errorf("Could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
 		}
 	}
@@ -178,15 +178,6 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	}
 
 	return nil
-}
-
-func serviceInSlice(a string, list []*apimodels.Service) bool {
-	for _, b := range list {
-		if b.ServiceName == a {
-			return true
-		}
-	}
-	return false
 }
 
 func doTriggerDeliveryPreRunCheck(deliveryInputData deliveryStruct) error {

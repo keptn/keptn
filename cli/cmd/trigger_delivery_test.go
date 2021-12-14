@@ -207,7 +207,8 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 	}
 }
 
-// TestTriggerDelivery tests the trigger delivery command.
+// TestTriggerDeliveryNonExistingService tests the trigger delivery
+// with non-existing service.
 func TestTriggerDeliveryNonExistingService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
