@@ -1,22 +1,11 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-#webhook-config-form {
-  > div:first-of-type {
-    min-width: calc(100% - 170px);
-
-    &.full-width {
-      min-width: 100%;
-    }
-
-    > div .dt-form-field {
-      width: 50%;
-    }
-  }
+.resize-vertical {
+  resize: vertical;
 }
 
-.resize-textarea {
-  resize: vertical;
+.code {
   font-family: monospace;
 }
 
@@ -35,11 +24,20 @@
     .dt-form-field-suffix {
       align-items: start;
       position: absolute;
-      right: 1px;
+      right: 0;
+      top: -10px;
     }
   }
 
   .dt-suffix:last-child:not(.dt-button) {
     margin-right: 0;
   }
+}
+
+.settings-section {
+  margin-bottom: 2em;
+}
+
+h2 {
+  margin-top: 2em;
 }
