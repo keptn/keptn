@@ -9,3 +9,7 @@
 .settings-section {
   margin-bottom: 2em;
 }
+
+.settings-section:first-of-type > .dt-form-field {
+  width: 50%;
+}

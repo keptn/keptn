@@ -41,3 +41,7 @@
 h2 {
   margin-top: 2em;
 }
+
+.settings-section:first-of-type .dt-form-field {
+  width: calc(50% - 0.2em);
+}
