@@ -38,6 +38,12 @@ spec:
         - name: "loopbacksequence"
           tasks:
             - name: "loopback"
+        - name: "loopbacksequence2"
+          tasks:
+            - name: "loopback2"
+        - name: "loopbacksequence3"
+          tasks:
+            - name: "loopback3"
         - name: "mysequence"
           tasks:
             - name: "mytask"`
@@ -78,6 +84,16 @@ spec:
       sendFinished: true
       requests:
         - "curl http://localhost:8080"
+    - type: "sh.keptn.event.loopback2.triggered"
+      subscriptionID: ${loopback2-sub-id}
+      sendFinished: true
+      requests:
+        - "curl http://127.0.0.1:8080"
+    - type: "sh.keptn.event.loopback3.triggered"
+      subscriptionID: ${loopback3-sub-id}
+      sendFinished: true
+      requests:
+        - "curl http://[::1]:8080"
     - type: "sh.keptn.event.mytask.finished"
       subscriptionID: ${mytask-finished-sub-id}
       sendFinished: true
@@ -199,7 +215,7 @@ func Test_Webhook(t *testing.T) {
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
-	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback"}
+	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
 	for _, taskType := range taskTypes {
@@ -293,6 +309,24 @@ func Test_Webhook(t *testing.T) {
 	sequencename = "loopbacksequence"
 
 	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "loopback", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["loopback"])
+	})
+
+	// Now, trigger another sequence that tries to execute a webhook with a call to the 127.0.0.1 - this one should fail as well
+	sequencename = "loopbacksequence2"
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "loopback2", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["loopback"])
+	})
+
+	// Now, trigger another sequence that tries to execute a webhook with a call to the 127.0.0.1 - this one should fail as well
+	sequencename = "loopbacksequence3"
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "loopback3", func(t *testing.T, decodedEvent map[string]interface{}) {
 		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
 		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
 		require.Nil(t, decodedEvent["loopback"])
