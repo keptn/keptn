@@ -110,8 +110,9 @@ github.com/aws/aws-sdk-go v1.15.11/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZo
 github.com/aws/aws-sdk-go v1.27.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
 github.com/benbjohnson/clock v1.0.3/go.mod h1:bGMdMPoPVvcYyt1gHDf4J2KE153Yf9BuiUKYMaxlTDM=
-github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
+github.com/benbjohnson/clock v1.3.0 h1:ip6w0uFQkncKQ979AypyG0ER7mqUSBdKLOgAle/AT8A=
+github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
@@ -508,8 +509,8 @@ github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.10.0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
-github.com/keptn/go-utils v0.11.1-0.20211206141641-bf58a65bf8c3 h1:vcOvalthsObVZCn+VWYIqjPRYD4MFD+JYkF+bna4PA8=
-github.com/keptn/go-utils v0.11.1-0.20211206141641-bf58a65bf8c3/go.mod h1:gjrWX2loNCKhray5NGVtNk/t2/L1XleveU3UlhzY184=
+github.com/keptn/go-utils v0.11.1-0.20211215075500-dcfdacb80594 h1:0sAg3bA8zl+5VJfz3fhlBAVqTuf5Zm3b6zPcdODu9kI=
+github.com/keptn/go-utils v0.11.1-0.20211215075500-dcfdacb80594/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b h1:L+1m9DuYPfQCEv82/u05jj7EgeeZ/8tDkwf4JoRzMbw=
 github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b/go.mod h1:vSj1n58CWHBrh4DzMhODGU1Z6BKYl9wEFzsg4XmuaJ0=
 github.com/kinbiko/jsonassert v1.0.2 h1:UzNDYv5K8UsSHXS3Opsf0ZNz2NQCHl96OC3dlTytUtE=
