@@ -1,6 +1,72 @@
 import { Sequence } from '../../_models/sequence';
+import { SequenceState } from '../../../../shared/models/sequence';
+import { ResultTypes } from '../../../../shared/models/result-types';
 
-let sequencesData = [
+const deliveryWithDevAndStaging = {
+  name: 'delivery',
+  service: 'carts',
+  project: 'sockshop',
+  time: '2021-07-15T15:17:08.530Z',
+  shkeptncontext: '2ae520ec-31ce-4be0-a284-cfbb77a473a3',
+  state: SequenceState.FINISHED,
+  stages: [
+    {
+      name: 'dev',
+      state: SequenceState.FINISHED,
+      image: 'docker.io/keptnexamples/carts:0.12.2',
+      latestEvaluation: {
+        result: ResultTypes.PASSED,
+        score: 0,
+      },
+      latestEvent: {
+        type: 'sh.keptn.event.dev.delivery.finished',
+        id: '4a6d31f2-a6fd-41c4-b673-430c834c6442',
+        time: '2021-07-15T15:20:57.191Z',
+      },
+    },
+    {
+      name: 'staging',
+      state: SequenceState.FINISHED,
+      image: 'docker.io/keptnexamples/carts:0.12.2',
+      latestEvent: {
+        type: 'sh.keptn.event.staging.rollback.finished',
+        id: 'b05b8f69-4854-46cd-82d7-69ce3ee73652',
+        time: '2021-07-15T15:27:14.208Z',
+      },
+      latestFailedEvent: {
+        type: 'sh.keptn.event.staging.rollback.finished',
+        id: 'b05b8f69-4854-46cd-82d7-69ce3ee73652',
+        time: '2021-07-15T15:27:14.208Z',
+      },
+    },
+  ],
+};
+
+const evaluationSequence = {
+  name: 'evaluation',
+  service: 'carts',
+  project: 'sockshop',
+  time: '2021-07-28T06:51:32.244Z',
+  shkeptncontext: '9509bdf0-fcc9-452d-8287-c66f28c42858',
+  state: SequenceState.FINISHED,
+  stages: [
+    {
+      name: 'dev',
+      state: SequenceState.FINISHED,
+      latestEvaluation: {
+        result: ResultTypes.PASSED,
+        score: 0,
+      },
+      latestEvent: {
+        type: 'sh.keptn.event.dev.evaluation.finished',
+        id: '83516013-cf51-468d-a46d-51ecdbbbcadf',
+        time: '2021-07-28T06:51:41.945Z',
+      },
+    },
+  ],
+};
+
+const sequencesData = [
   {
     name: 'delivery',
     service: 'carts',
@@ -11,6 +77,7 @@ let sequencesData = [
     stages: [
       {
         name: 'dev',
+        state: 'finished',
         image: 'docker.io/keptnexamples/carts:0.12.1',
         latestEvent: {
           type: 'sh.keptn.event.dev.delivery.finished',
@@ -96,28 +163,7 @@ let sequencesData = [
       },
     ],
   },
-  {
-    name: 'evaluation',
-    service: 'carts',
-    project: 'sockshop',
-    time: '2021-07-28T06:51:32.244Z',
-    shkeptncontext: '9509bdf0-fcc9-452d-8287-c66f28c42858',
-    state: 'finished',
-    stages: [
-      {
-        name: 'dev',
-        latestEvaluation: {
-          result: 'pass',
-          score: 0,
-        },
-        latestEvent: {
-          type: 'sh.keptn.event.dev.evaluation.finished',
-          id: '83516013-cf51-468d-a46d-51ecdbbbcadf',
-          time: '2021-07-28T06:51:41.945Z',
-        },
-      },
-    ],
-  },
+  evaluationSequence,
   {
     name: 'remediation',
     service: 'carts',
@@ -154,43 +200,7 @@ let sequencesData = [
       },
     ],
   },
-  {
-    name: 'delivery',
-    service: 'carts',
-    project: 'sockshop',
-    time: '2021-07-15T15:17:08.530Z',
-    shkeptncontext: '2ae520ec-31ce-4be0-a284-cfbb77a473a3',
-    state: 'finished',
-    stages: [
-      {
-        name: 'dev',
-        image: 'docker.io/keptnexamples/carts:0.12.2',
-        latestEvaluation: {
-          result: 'pass',
-          score: 0,
-        },
-        latestEvent: {
-          type: 'sh.keptn.event.dev.delivery.finished',
-          id: '4a6d31f2-a6fd-41c4-b673-430c834c6442',
-          time: '2021-07-15T15:20:57.191Z',
-        },
-      },
-      {
-        name: 'staging',
-        image: 'docker.io/keptnexamples/carts:0.12.2',
-        latestEvent: {
-          type: 'sh.keptn.event.staging.rollback.finished',
-          id: 'b05b8f69-4854-46cd-82d7-69ce3ee73652',
-          time: '2021-07-15T15:27:14.208Z',
-        },
-        latestFailedEvent: {
-          type: 'sh.keptn.event.staging.rollback.finished',
-          id: 'b05b8f69-4854-46cd-82d7-69ce3ee73652',
-          time: '2021-07-15T15:27:14.208Z',
-        },
-      },
-    ],
-  },
+  deliveryWithDevAndStaging,
   {
     name: 'delivery',
     service: 'carts',
@@ -1051,5 +1061,8 @@ let sequencesData = [
     ],
   },
 ] as Sequence[];
-sequencesData = sequencesData.map((sequence) => Sequence.fromJSON(sequence));
-export { sequencesData as SequencesMock };
+const data = sequencesData.map((sequence) => Sequence.fromJSON(sequence));
+export { data as SequencesMock };
+export { sequencesData as SequenceResponseMock };
+export { deliveryWithDevAndStaging as SequenceResponseWithDevAndStagingMock };
+export { evaluationSequence as SequenceResponseWithoutFailing };

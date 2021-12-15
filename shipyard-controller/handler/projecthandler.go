@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"net/http"
+	"sort"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"sort"
 )
 
 type IProjectHandler interface {
@@ -174,7 +175,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Success 200 {object} models.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Bad Request"
 // @Failure 424 {object} models.Error "Failed Dependency"
-// @Failure 403 {object} models.Error "Not Found"
+// @Failure 404 {object} models.Error "Not Found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
@@ -201,6 +202,10 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		}
 		if err == ErrProjectNotFound {
 			SetNotFoundErrorResponse(err, c)
+			return
+		}
+		if err == ErrInvalidStageChange {
+			SetBadRequestErrorResponse(err, c, err.Error())
 			return
 		}
 		SetInternalServerErrorResponse(err, c)

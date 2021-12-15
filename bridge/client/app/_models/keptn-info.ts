@@ -1,4 +1,4 @@
-import { KeptnInfoResult } from './keptn-info-result';
+import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from './keptn-versions';
 import { Metadata } from './metadata';
 

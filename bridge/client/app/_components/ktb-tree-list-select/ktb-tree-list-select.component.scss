@@ -33,6 +33,15 @@
     border-color: transparent transparent $turquoise-600 transparent;
   }
 
+  > div > .dt-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 5px;
+    position: relative;
+    top: 1px;
+    fill: #ffffff;
+  }
+
 }
 
 .tree-entry-selectable {

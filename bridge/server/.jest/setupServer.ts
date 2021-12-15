@@ -2,7 +2,7 @@ import { init } from '../app';
 import Axios from 'axios';
 import https from 'https';
 
-const setup = async () => {
+const setup = async (): Promise<void> => {
   global.baseUrl = 'http://localhost/api/';
 
   global.axiosInstance = Axios.create({

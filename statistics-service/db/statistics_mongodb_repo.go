@@ -2,12 +2,12 @@ package db
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
 	"github.com/globalsign/mgo/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/keptn/keptn/statistics-service/operations"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const keptnStatsCollection = "keptn-stats"
@@ -16,6 +16,10 @@ const keptnStatsCollection = "keptn-stats"
 type StatisticsMongoDBRepo struct {
 	DbConnection    MongoDBConnection
 	statsCollection *mongo.Collection
+}
+
+type HexID struct {
+	ID primitive.ObjectID `bson:"_id"`
 }
 
 // GetStatistics godoc
@@ -57,12 +61,22 @@ func (s *StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.
 		result = append(result, *stats)
 	}
 
-	return result, nil
+	decodedResult, err := decodeKeys(result)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodedResult, nil
 }
 
 // StoreStatistics godoc
 func (s *StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics) error {
-	err := s.getCollection()
+	encodedStats, err := encodeKeys(&statistics)
+	if err != nil {
+		return err
+	}
+
+	err = s.getCollection()
 	if err != nil {
 		return err
 	}
@@ -70,7 +84,7 @@ func (s *StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	_, err = s.statsCollection.InsertOne(ctx, statistics)
+	_, err = s.statsCollection.InsertOne(ctx, encodedStats)
 	if err != nil {
 		return err
 	}
@@ -78,7 +92,6 @@ func (s *StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics
 	return nil
 }
 
-// DeleteStatistics godoc
 func (s *StatisticsMongoDBRepo) DeleteStatistics(from, to time.Time) error {
 	err := s.getCollection()
 	if err != nil {

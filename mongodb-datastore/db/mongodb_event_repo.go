@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/jeremywohl/flatten"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/common"
@@ -122,9 +123,14 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 	defer cancel()
 
 	mongoDBName := getDatabaseName()
-	projectCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(projectName)
-	rootEventsCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(projectName + rootEventCollectionSuffix)
-	invalidatedEventsCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(getInvalidatedCollectionName(projectName))
+
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return err
+	}
+	projectCollection := mdbClient.Database(mongoDBName).Collection(projectName)
+	rootEventsCollection := mdbClient.Database(mongoDBName).Collection(projectName + rootEventCollectionSuffix)
+	invalidatedEventsCollection := mdbClient.Database(mongoDBName).Collection(getInvalidatedCollectionName(projectName))
 
 	for _, indexName := range projectEventsIndexes {
 		mr.skipCreateIndex[getIndexIDForCollection(projectCollection.Name(), indexName)] = false
@@ -138,7 +144,7 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 
 	logger.Debugf("Delete all events of project %s", projectName)
 
-	err := projectCollection.Drop(ctx)
+	err = projectCollection.Drop(ctx)
 	const dropCollectionErrorMsg = "failed to drop collection %s: %v"
 	if err != nil {
 		err := fmt.Errorf(dropCollectionErrorMsg, projectCollection.Name(), err)
@@ -166,7 +172,7 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExte
 	}
 
 	logger.Debugf("Delete context-to-project mappings of project %s", projectName)
-	contextToProjectCollection := mr.DBConnection.Client.Database(mongoDBName).Collection(contextToProjectCollection)
+	contextToProjectCollection := mdbClient.Database(mongoDBName).Collection(contextToProjectCollection)
 	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": projectName}); err != nil {
 		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", projectName, err)
 		logger.WithError(err).Error("Could not delete context-to-project mapping.")
@@ -242,14 +248,19 @@ func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) 
 func (mr *MongoDBEventRepo) storeEvaluationInvalidatedEvent(ctx context.Context, collection *mongo.Collection, eventInterface interface{}) error {
 	invalidatedCollectionName := getInvalidatedCollectionName(collection.Name())
 	logger.Debug("Storing invalidated event to dedicated collection " + invalidatedCollectionName)
-	invalidatedCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(invalidatedCollectionName)
+
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return err
+	}
+	invalidatedCollection := mdbClient.Database(getDatabaseName()).Collection(invalidatedCollectionName)
 
 	mr.ensureIndexExistsOnCollection(
 		ctx,
 		invalidatedCollection,
 		triggeredIDPropertyPath,
 	)
-	_, err := invalidatedCollection.InsertOne(ctx, eventInterface)
+	_, err = invalidatedCollection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		return fmt.Errorf("failed to insert into collection: %v", err)
 	}
@@ -257,11 +268,11 @@ func (mr *MongoDBEventRepo) storeEvaluationInvalidatedEvent(ctx context.Context,
 }
 
 func (mr *MongoDBEventRepo) getCollectionAndContext(collectionName string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
-	err := mr.DBConnection.EnsureDBConnection()
+	mdbClient, err := mr.DBConnection.GetClient()
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	collection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(collectionName)
+	collection := mdbClient.Database(getDatabaseName()).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	return collection, ctx, cancel, nil
@@ -300,9 +311,13 @@ func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, ev
 	}
 
 	logger.Debugf("Storing mapping %s->%s", event.Shkeptncontext, collectionName)
-	contextToProjectCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(contextToProjectCollection)
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return err
+	}
+	contextToProjectCollection := mdbClient.Database(getDatabaseName()).Collection(contextToProjectCollection)
 
-	_, err := contextToProjectCollection.InsertOne(ctx,
+	_, err = contextToProjectCollection.InsertOne(ctx,
 		bson.M{"_id": event.Shkeptncontext, keptnContextPropertyPath: event.Shkeptncontext, "project": collectionName},
 	)
 	if err != nil {
@@ -326,7 +341,12 @@ func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName s
 		return nil
 	}
 
-	rootEventsForProjectCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(collectionName + rootEventCollectionSuffix)
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return err
+	}
+
+	rootEventsForProjectCollection := mdbClient.Database(getDatabaseName()).Collection(collectionName + rootEventCollectionSuffix)
 
 	for _, indexName := range rootEventsIndexes {
 		mr.ensureIndexExistsOnCollection(
@@ -421,10 +441,16 @@ func (mr *MongoDBEventRepo) getCollectionNameForQuery(searchOptions bson.M) (str
 func (mr *MongoDBEventRepo) getProjectForContext(keptnContext string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	contextToProjectCollection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(contextToProjectCollection)
+
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return "", err
+	}
+
+	contextToProjectCollection := mdbClient.Database(getDatabaseName()).Collection(contextToProjectCollection)
 	result := contextToProjectCollection.FindOne(ctx, bson.M{keptnContextPropertyPath: keptnContext})
 	var resultMap bson.M
-	err := result.Decode(&resultMap)
+	err = result.Decode(&resultMap)
 	if err != nil {
 		return "", err
 	}
@@ -436,7 +462,12 @@ func (mr *MongoDBEventRepo) getProjectForContext(keptnContext string) (string, e
 }
 
 func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mongo.Pipeline) (*EventsResult, error) {
-	collection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(collectionName)
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return nil, err
+	}
+
+	collection := mdbClient.Database(getDatabaseName()).Collection(collectionName)
 
 	result := &EventsResult{
 		Events: []*models.KeptnContextExtendedCE{},
@@ -484,7 +515,12 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 		sortOptions = options.Find().SetSort(bson.D{{Key: timePropertyPath, Value: -1}})
 	}
 
-	collection := mr.DBConnection.Client.Database(getDatabaseName()).Collection(collectionName)
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		return nil, err
+	}
+
+	collection := mdbClient.Database(getDatabaseName()).Collection(collectionName)
 
 	result := &EventsResult{}
 

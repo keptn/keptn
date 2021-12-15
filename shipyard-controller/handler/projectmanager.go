@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -12,12 +16,10 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const shipyardVersion = "spec.keptn.sh/0.2.0"
+const errUpdateProject = "failed to update project '%s'"
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/projectmanager.go . IProjectManager
 type IProjectManager interface {
@@ -85,7 +87,8 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 
 	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
-		return err, nilRollback
+		log.Errorf("Error occurred while getting project: %s", err.Error())
+		return fmt.Errorf("failed to get project: '%s'", *params.Name), nilRollback
 	}
 	if existingProject != nil {
 		return ErrProjectAlreadyExists, nilRollback
@@ -111,7 +114,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
 		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
 			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
-			return err
+			return ErrChangesRollback
 		}
 		return nil
 	}
@@ -127,12 +130,12 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		log.Infof("Rollback: Try to delete project %s from configuration service", *params.Name)
 		if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
 			log.Errorf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error())
-			return err
+			return ErrChangesRollback
 		}
 		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
 		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
 			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
-			return err
+			return ErrChangesRollback
 		}
 		return nil
 	}
@@ -141,7 +144,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 	shipyard, _ := common.UnmarshalShipyard(string(decodedShipyard))
 	for _, shipyardStage := range shipyard.Spec.Stages {
 		if err := pm.ConfigurationStore.CreateStage(*params.Name, shipyardStage.Name); err != nil {
-			return err, rollbackFunc
+			return fmt.Errorf("failed to create stage '%s' for project '%s'", shipyardStage.Name, *params.Name), rollbackFunc
 		}
 		log.Infof("Stage %s created", shipyardStage.Name)
 	}
@@ -156,11 +159,12 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 	}
 	if err := pm.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
 		log.Errorf("Error occurred while uploading shipyard resource to configuration service: %s", err.Error())
-		return err, rollbackFunc
+		return fmt.Errorf("failed to upload shipyard resource for project '%s'", *params.Name), rollbackFunc
 	}
 
 	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard); err != nil {
-		return err, rollbackFunc
+		log.Errorf("Error occurred creating project in respository: %s", err.Error())
+		return fmt.Errorf("failed to create project '%s'", *params.Name), rollbackFunc
 	}
 
 	// make sure mongodb collections from previous project with the same name are emptied
@@ -179,7 +183,8 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	// old project for rollback
 	oldProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
-		return err, nilRollback
+		log.Errorf("Error occurred while getting project: %s", err.Error())
+		return fmt.Errorf("failed to get project: '%s'", *params.Name), nilRollback
 	} else if oldProject == nil {
 		return ErrProjectNotFound, nilRollback
 	}
@@ -219,35 +224,43 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	err = pm.ConfigurationStore.UpdateProject(projectToUpdate)
 
 	if err != nil {
-		return err, func() error {
+		log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
+		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName), func() error {
 			// try to rollback already updated git repository secret
 			if err := pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 				User:      oldSecret.User,
 				Token:     oldSecret.Token,
 				RemoteURI: oldSecret.RemoteURI,
 			}); err != nil {
-				return err
+				return ErrChangesRollback
 			}
 			// try to rollback already updated project in configuration store
 			return pm.ConfigurationStore.UpdateProject(projectToRollback)
 		}
 	}
 
+	var isShipyardPresent = params.Shipyard != nil && *params.Shipyard != ""
+
 	// try to update shipyard project resource
-	if params.Shipyard != "" {
+	if isShipyardPresent {
+		if err = validateShipyardUpdate(params, oldProject); err != nil {
+			return err, nilRollback
+		}
+
 		shipyardResource := apimodels.Resource{
-			ResourceContent: params.Shipyard,
+			ResourceContent: *params.Shipyard,
 			ResourceURI:     common.Stringp("shipyard.yaml"),
 		}
 		err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &shipyardResource)
 		if err != nil {
-			return err, func() error {
+			log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
+			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName), func() error {
 				// try to rollback already updated git repository secret
 				if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 					User:      oldSecret.User,
 					Token:     oldSecret.Token,
 					RemoteURI: oldSecret.RemoteURI}); err != nil {
-					return err
+					return ErrChangesRollback
 				}
 				// try to rollback already updated project in configuration store
 				return pm.ConfigurationStore.UpdateProject(projectToRollback)
@@ -259,24 +272,25 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
-	if params.Shipyard != "" {
-		updateProject.Shipyard = params.Shipyard
+	if isShipyardPresent {
+		updateProject.Shipyard = *params.Shipyard
 	}
 
 	// try to update project information in database
 	err = pm.ProjectMaterializedView.UpdateProject(&updateProject)
 	if err != nil {
-		return err, func() error {
+		log.Errorf("Error occurred while updating the project in materialized view: %s", err.Error())
+		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName), func() error {
 			// try to rollback already updated project resource in configuration service
 			if err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &apimodels.Resource{
 				ResourceContent: oldProject.Shipyard,
 				ResourceURI:     common.Stringp("shipyard.yaml")}); err != nil {
-				return err
+				return ErrChangesRollback
 			}
 
 			// try to rollback already updated project information in configuration service
 			if err = pm.ConfigurationStore.UpdateProject(projectToRollback); err != nil {
-				return err
+				return ErrChangesRollback
 			}
 
 			// try to rollback already updated git repository secret
@@ -396,7 +410,7 @@ func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*gitCreden
 	if marshalledSecret, ok := secret["git-credentials"]; ok {
 		secretObj := &gitCredentials{}
 		if err := json.Unmarshal(marshalledSecret, secretObj); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unmarshal git-credentials secret")
 		}
 		return secretObj, nil
 	}
@@ -470,6 +484,73 @@ func toModelProject(project models.ExpandedProject) apimodels.Project {
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
+}
+
+func validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProject *models.ExpandedProject) error {
+	if len(newProject.Stages) != len(oldProject.Stages) {
+		return fmt.Errorf("unallowed addition/removal of project stages")
+	}
+
+	for i, oldStage := range oldProject.Stages {
+		// It is more effective to check the names of the stages in two steps.
+		// In typical user scenario, the user probably won't want to change the order
+		// of the stages, at least it is unlikely. In most of the cases, he will try
+		// to edit the name of the stage.
+		// Let's consider a check, where the user did not changed the
+		// names and the number of stages. If the first condition was not there, for each stage
+		// in oldProject.Stages the code needs to jump to another function and cycle through the stages
+		// of newProject.Stages -> N/2 string comparisons (assuming N is number of stages)
+		// for checking each stage, so in total N*N/2 comparisons.
+		// If the condition is there, we will have only 1 comparison for each stage,
+		// total N*1 comparisons.
+		if oldStage.StageName != newProject.Stages[i].StageName {
+			if !stageInArrayOfStages(oldStage.StageName, newProject.Stages) {
+				return fmt.Errorf("unallowed rename of project stages")
+			}
+		}
+	}
+
+	return nil
+}
+
+func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) bool {
+	for _, arrayStage := range stages {
+		if arrayStage.StageName == comparedStage {
+			return true
+		}
+	}
+	return false
+}
+
+func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *models.ExpandedProject) error {
+	shipyard := &keptnv2.Shipyard{}
+	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
+	_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
+	var expandedStages []*models.ExpandedStage
+
+	for _, s := range shipyard.Spec.Stages {
+		es := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: s.Name,
+		}
+		expandedStages = append(expandedStages, es)
+	}
+
+	newProject := &models.ExpandedProject{
+		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI:    params.GitRemoteURL,
+		GitUser:         params.GitUser,
+		ProjectName:     *params.Name,
+		Shipyard:        string(decodedShipyard),
+		ShipyardVersion: shipyardVersion,
+		Stages:          expandedStages,
+	}
+
+	err := validateShipyardStagesUnchaged(oldProject, newProject)
+	if err != nil {
+		return ErrInvalidStageChange
+	}
+	return nil
 }
 
 type gitCredentials struct {

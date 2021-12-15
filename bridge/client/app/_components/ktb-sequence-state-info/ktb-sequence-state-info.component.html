@@ -8,6 +8,7 @@
       [class.warning]="sequence.isWarning()"
       [class.error]="sequence.isFaulty()"
       [class.highlight]="sequence.hasPendingApproval()"
+      [class.aborted]="sequence.isAborted()"
     ></dt-icon>
     <ng-template #showLoading>
       <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="sequence.isLoading() && !sequence.isWaiting()">
@@ -47,8 +48,9 @@
         [evaluationResult]="sequence.getEvaluation(stage)"
         [success]="sequence.isSuccessful(stage)"
         [error]="sequence.isFaulty(stage)"
-        [class.warning]="sequence.isWarning(stage)"
+        [warning]="sequence.isWarning(stage)"
         [highlight]="sequence.hasPendingApproval(stage)"
+        [aborted]="sequence.isAborted(stage)"
         (click)="$event.stopPropagation(); stageClick(sequence, stage)"
       ></ktb-stage-badge>
     </ng-container>

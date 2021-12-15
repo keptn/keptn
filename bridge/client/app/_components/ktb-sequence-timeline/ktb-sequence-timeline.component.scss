@@ -47,10 +47,13 @@
       background-color: $cta-color-active;
     }
     &.highlight {
-      background-color: $blue-400;
+      background-color: $approval-color;
     }
     &.warning {
       background-color: $warning-color;
+    }
+    &.aborted {
+      background-color: $aborted-color;
     }
   }
 }

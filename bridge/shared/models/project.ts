@@ -1,5 +1,4 @@
 import { Stage } from './stage';
-import { Service } from './service';
 
 export class Project {
   projectName!: string;
@@ -7,5 +6,4 @@ export class Project {
   gitRemoteURI?: string;
   shipyardVersion?: string;
   stages: Stage[] = [];
-  services?: Service[];
 }

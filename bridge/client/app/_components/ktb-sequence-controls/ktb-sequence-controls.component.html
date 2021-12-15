@@ -7,7 +7,7 @@
       variant="nested"
       title="Pause sequence"
       (click)="$event.stopPropagation(); triggerPauseSequence(sequence)"
-      [disabled]="sequence.isFinished() || sequence?.isUnkownState()"
+      [disabled]="sequence.isFinished() || sequence?.isUnknownState()"
       uitestid="sequencePauseButton"
     >
       <dt-icon name="pause"></dt-icon>
@@ -19,7 +19,7 @@
       variant="nested"
       title="Resume sequence"
       (click)="$event.stopPropagation(); triggerResumeSequence(sequence)"
-      [disabled]="sequence.isFinished() || sequence?.isUnkownState()"
+      [disabled]="sequence.isFinished() || sequence?.isUnknownState()"
       uitestid="sequenceResumeButton"
     >
       <dt-icon name="resume"></dt-icon>
@@ -30,7 +30,7 @@
       variant="nested"
       title="Abort sequence"
       (click)="$event.stopPropagation(); triggerAbortSequence(sequence)"
-      [disabled]="sequence?.isFinished() || sequence?.isUnkownState()"
+      [disabled]="sequence?.isFinished() || sequence?.isUnknownState()"
       uitestid="sequenceAbortButton"
     >
       <dt-icon name="abort"></dt-icon>
@@ -44,7 +44,7 @@
       variant="nested"
       title="Pause sequence"
       (click)="$event.stopPropagation(); triggerPauseSequence(sequence)"
-      [disabled]="sequence.isFinished() || sequence?.isUnkownState()"
+      [disabled]="sequence.isFinished() || sequence?.isUnknownState()"
       uitestid="sequencePauseButton"
     >
       <dt-icon name="pause"></dt-icon> Pause
@@ -56,7 +56,7 @@
       variant="nested"
       title="Resume sequence"
       (click)="$event.stopPropagation(); triggerResumeSequence(sequence)"
-      [disabled]="sequence.isFinished() || sequence?.isUnkownState()"
+      [disabled]="sequence.isFinished() || sequence?.isUnknownState()"
       uitestid="sequenceResumeButton"
     >
       <dt-icon name="resume"></dt-icon> Resume
@@ -67,7 +67,7 @@
       variant="nested"
       title="Abort sequence"
       (click)="$event.stopPropagation(); triggerAbortSequence(sequence)"
-      [disabled]="sequence?.isFinished() || sequence?.isUnkownState()"
+      [disabled]="sequence?.isFinished() || sequence?.isUnknownState()"
       uitestid="sequenceAbortButton"
     >
       <dt-icon name="abort"></dt-icon> Abort

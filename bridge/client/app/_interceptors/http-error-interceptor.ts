@@ -48,23 +48,27 @@ export class HttpErrorInterceptor implements HttpInterceptor {
 
   private _handleUnauthorizedError(error: HttpErrorResponse): void {
     const authType = error.headers.get('keptn-auth-type');
-    if (authType === 'OAUTH' && !this.isReloading) {
-      this.isReloading = true;
-      this.toast.create('Login required. Redirecting to login.');
-      // Wait for few moments to let user see the toast message and navigate to external login route
-      setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/login')), 1000);
-    } else if (authType === 'BASIC' && !this.isAuthorizedErrorShown) {
-      this.isAuthorizedErrorShown = true;
-      this.notificationService.addNotification(
-        NotificationType.ERROR,
-        'Login credentials invalid. Please check your provided username and password.'
-      );
+    if (authType === 'OAUTH') {
+      if (!this.isReloading) {
+        this.isReloading = true;
+        this.toast.create('Login required. Redirecting to login.');
+        // Wait for few moments to let user see the toast message and navigate to external login route
+        setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/login')), 1000);
+      }
+    } else if (authType === 'BASIC') {
+      if (!this.isAuthorizedErrorShown) {
+        this.isAuthorizedErrorShown = true;
+        this.notificationService.addNotification(
+          NotificationType.ERROR,
+          'Login credentials invalid. Please check your provided username and password.'
+        );
+      }
     } else if (!this.isAuthorizedErrorShown) {
       let errorInfo;
       if (error.error === 'incorrect api key auth') {
         errorInfo = 'Could not authorize API token. Please check the configured API token.';
       } else {
-        errorInfo = 'Could not authorize. ' + error.error;
+        errorInfo = 'Could not authorize.';
       }
       this.isAuthorizedErrorShown = true;
       this.notificationService.addNotification(NotificationType.ERROR, ' ' + errorInfo);
