@@ -95,7 +95,7 @@ func (r *RollbackHandler) getFinishedEventData(inEventData keptnv2.EventData, st
 	inEventData.Status = status
 	inEventData.Result = result
 	inEventData.Message = message
-
+	// TODO should helm update git commit?
 	return keptnv2.RollbackFinishedEventData{
 		EventData: inEventData,
 	}

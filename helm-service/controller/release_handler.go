@@ -185,6 +185,7 @@ func (h *ReleaseHandler) getFinishedEventData(inEventData keptnv2.EventData, sta
 		EventData: inEventData,
 		Release:   keptnv2.ReleaseData{GitCommit: gitCommit},
 	}
+	//TODO should helm update gitcommit?
 }
 
 func (h *ReleaseHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.ReleaseFinishedEventData {

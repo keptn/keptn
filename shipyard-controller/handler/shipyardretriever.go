@@ -13,7 +13,7 @@ import (
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardretriever_mock.go . IShipyardRetriever
 type IShipyardRetriever interface {
 	GetShipyard(projectName string) (*keptnv2.Shipyard, string, error)
-	GetCachedShipyard(projectName string) (*keptnv2.Shipyard, error)
+	GetCachedShipyard(projectName string) (*keptnv2.Shipyard, error) //TODO: what to do with this?
 }
 
 type ShipyardRetriever struct {
