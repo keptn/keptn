@@ -18,5 +18,5 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tryvium-travels/memongo v0.3.1
 	go.mongodb.org/mongo-driver v1.7.4
-	golang.org/x/net v0.0.0-20211206223403-eba003a116a9
+	golang.org/x/net v0.0.0-20211215060638-4ddde0e984e9
 )
