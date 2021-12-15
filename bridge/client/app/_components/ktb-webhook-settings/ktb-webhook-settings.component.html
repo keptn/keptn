@@ -51,7 +51,7 @@
       </div>
     </dt-form-field>
   </div>
-  <div>
+  <div class="settings-section">
     <p>Custom headers</p>
     <button
       type="button"
@@ -69,13 +69,13 @@
   <div formArrayName="header" class="settings-section">
     <ng-container *ngFor="let headerGroup of headerControls; let i = index">
       <form [formGroup]="headerGroup">
-        <div class="mb-1" fxLayout="row" fxLayoutAlign="start end">
+        <div class="mb-2" fxLayout="row" fxLayoutAlign="start end">
           <dt-form-field class="mr-2" uitestid="edit-webhook-field-headerName">
             <dt-label class="required">Name</dt-label>
             <input formControlName="name" type="text" dtInput placeholder="e.g. Content-Type" autocomplete="false" />
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
-          <dt-form-field uitestid="edit-webhook-field-headerValue">
+          <dt-form-field class="mr-2" uitestid="edit-webhook-field-headerValue">
             <dt-label class="required">Value</dt-label>
             <input
               #headerInput

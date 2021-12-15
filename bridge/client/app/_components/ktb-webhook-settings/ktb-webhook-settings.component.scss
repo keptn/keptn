@@ -20,7 +20,7 @@
 }
 
 ::ng-deep {
-  .dt-form-field.text-area {
+  .dt-form-field {
     .dt-form-field-suffix {
       align-items: start;
       position: absolute;
@@ -36,6 +36,10 @@
 
 .settings-section {
   margin-bottom: 2em;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 h2 {
