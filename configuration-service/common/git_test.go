@@ -13,57 +13,6 @@ import (
 	"testing"
 )
 
-func Test_obfuscateErrorMessage(t *testing.T) {
-	type args struct {
-		err         error
-		credentials *common_models.GitCredentials
-	}
-	tests := []struct {
-		name             string
-		args             args
-		wantErr          bool
-		wantErrorMessage string
-	}{
-		{
-			name: "remove credentials",
-			args: args{
-				err: errors.New("error message containing token: token"),
-				credentials: &common_models.GitCredentials{
-					User:      "",
-					Token:     "token",
-					RemoteURI: "",
-				},
-			},
-			wantErr:          true,
-			wantErrorMessage: "error message containing ********: ********",
-		},
-		{
-			name: "remove credentials: empty token",
-			args: args{
-				err: errors.New("error message containing no token"),
-				credentials: &common_models.GitCredentials{
-					User:      "",
-					Token:     "",
-					RemoteURI: "",
-				},
-			},
-			wantErr:          true,
-			wantErrorMessage: "error message containing no token",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := obfuscateErrorMessage(tt.args.err, tt.args.credentials)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("obfuscateErrorMessage() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if err.Error() != tt.wantErrorMessage {
-				t.Errorf("obfuscateErrorMessage() error = %s, wantErrorMessage %s", err.Error(), tt.wantErrorMessage)
-			}
-		})
-	}
-}
-
 func Test_addRepoURIToMetadata(t *testing.T) {
 	type args struct {
 		credentials *common_models.GitCredentials

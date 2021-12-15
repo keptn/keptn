@@ -3,13 +3,13 @@ package common
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/keptn/keptn/configuration-service/common_models"
 	"net/url"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/keptn/keptn/configuration-service/common_models"
 
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -51,7 +51,7 @@ type K8sCredentialReader struct{}
 func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	secretName := fmt.Sprintf("git-credentials-%s", project)
@@ -62,14 +62,14 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 		return nil, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	// secret found -> unmarshal it
 	var credentials common_models.GitCredentials
 	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
 	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
@@ -97,9 +97,9 @@ func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials
 	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
-		return false, obfuscateErrorMessage(err, &credentials)
+		return false, fmt.Errorf("failed to clone empty git repository")
 	} else if err != nil {
-		return false, obfuscateErrorMessage(err, &credentials)
+		return false, fmt.Errorf("failed to reach git upstream")
 	}
 	return true, nil
 }
@@ -109,7 +109,7 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := g.Executor.ExecuteCommand("git", []string{"checkout", branch}, projectConfigPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to checkout requested branch '%s' in project '%s'", branch, project)
 	}
 	if disableUpstreamSync {
 		return nil
@@ -119,7 +119,7 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return fmt.Errorf("failed to pull upstream changes in project '%s'", project)
 		}
 	}
 	return nil
@@ -134,7 +134,7 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"checkout", "-b", branch}, projectConfigPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create requested branch '%s' in project '%s'", branch, project)
 	}
 
 	// if an upstream has been defined, push the new branch
@@ -143,7 +143,7 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return fmt.Errorf("failed to set git upstream for project '%s'", project)
 		}
 	}
 
@@ -171,7 +171,7 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 					return err2
 				}
 
-				return obfuscateErrorMessage(err, credentials)
+				return fmt.Errorf("failed to set remote origin URL for project '%s'", project)
 			}
 		}
 		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
@@ -179,7 +179,7 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 			if err2 != nil {
 				return err2
 			}
-			return fmt.Errorf("failed to set upstream: %v", err)
+			return err
 		}
 	}
 	return nil
@@ -188,36 +188,39 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 func (g *Git) removeRemoteOrigin(project string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := g.Executor.ExecuteCommand("git", []string{"remote", "remove", "origin"}, projectConfigPath)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to remove remote origin URL for project %s", project)
+	}
+	return nil
 }
 
 func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.GitCredentials, repoURI string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	branches, err := g.GetBranches(project)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		return fmt.Errorf(setUpstreamFail, project)
 	}
 
 	defaultBranch, err := g.GetDefaultBranch(project)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		return err
 	}
 
 	// first, make sure to push the master/main branch first
 	err = g.CheckoutBranch(project, defaultBranch, true)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		return err
 	}
 	err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 	if err != nil {
 		// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 		if !isNoRemoteHeadFoundError(err) {
-			return obfuscateErrorMessage(err, credentials)
+			return fmt.Errorf(setUpstreamFail, project)
 		}
 	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
 	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
+		return fmt.Errorf("failed to set upstream and push to default branch for project '%s'", project)
 	}
 
 	for _, branch := range branches {
@@ -226,18 +229,18 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		}
 		err := g.CheckoutBranch(project, branch, true)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return err
 		}
 		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
 			// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 			if !isNoRemoteHeadFoundError(err) {
-				return obfuscateErrorMessage(err, credentials)
+				return fmt.Errorf(setUpstreamFail, project)
 			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return fmt.Errorf("failed to set upstream and push to branch '%s' for project '%s'", branch, project)
 		}
 	}
 	return nil
@@ -245,9 +248,6 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 
 func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath string, credentials *common_models.GitCredentials) error {
 	_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
-	if err != nil {
-		return obfuscateErrorMessage(err, credentials)
-	}
 	return err
 }
 
@@ -256,7 +256,7 @@ func (g *Git) StageAndCommitAll(project string, message string, withPull bool) e
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := g.Executor.ExecuteCommand("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to stage requested files")
 	}
 
 	_, err = g.Executor.ExecuteCommand("git", []string{"commit", "-m", message}, projectConfigPath)
@@ -267,12 +267,12 @@ func (g *Git) StageAndCommitAll(project string, message string, withPull bool) e
 		if withPull {
 			_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 			if err != nil {
-				return obfuscateErrorMessage(err, credentials)
+				return fmt.Errorf("failed to pull upstream changes")
 			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return fmt.Errorf("failed to push local changes to upstream")
 		}
 	}
 	return nil
@@ -283,7 +283,7 @@ func (g *Git) GetCurrentVersion(project string) (string, error) {
 	projectConfigPath := config.ConfigDir + "/" + project
 	out, err := g.Executor.ExecuteCommand("git", []string{"rev-parse", "HEAD"}, projectConfigPath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get the latest version of the current checked out branch")
 	}
 	return strings.TrimSuffix(out, "\n"), nil
 }
@@ -293,7 +293,7 @@ func (g *Git) GetBranches(project string) ([]string, error) {
 	projectConfigPath := config.ConfigDir + "/" + project
 	out, err := g.Executor.ExecuteCommand("git", []string{"for-each-ref", `--format=%(refname:short)`, "refs/heads/*"}, projectConfigPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get list of branches for project '%s'", project)
 	}
 	branches := strings.Split(strings.TrimSpace(out), "\n")
 
@@ -306,7 +306,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err != nil {
-		return "", errors.New("could not determine default branch: " + err.Error())
+		return "", fmt.Errorf("failed to get default branch for project '%s'", project)
 	}
 	if credentials != nil {
 		retries := 2
@@ -314,7 +314,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 		for i := 0; i < retries; i = i + 1 {
 			out, err := g.Executor.ExecuteCommand("git", []string{"remote", "show", "origin"}, projectConfigPath)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("failed to show remote origin for project '%s'", project)
 			}
 			lines := strings.Split(out, "\n")
 
@@ -324,7 +324,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 					if strings.Contains(line, "remote HEAD is ambiguous") {
 						branches, err := g.GetBranches(project)
 						if err != nil {
-							return "", obfuscateErrorMessage(err, credentials)
+							return "", fmt.Errorf("remote HEAD is ambiguous for project '%s'", project)
 						}
 						for _, branch := range branches {
 							if branch == masterBranch || branch == mainBranch {
@@ -351,7 +351,7 @@ func (g *Git) Reset(project string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := g.Executor.ExecuteCommand("git", []string{"reset", "--hard"}, projectConfigPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reset --hard repository for project '%s'", project)
 	}
 	return nil
 }
@@ -441,14 +441,6 @@ func StageAndCommitAll(project string, message string, withPull bool) error {
 	return g.StageAndCommitAll(project, message, withPull)
 }
 
-func obfuscateErrorMessage(err error, credentials *common_models.GitCredentials) error {
-	if err != nil && credentials != nil && credentials.Token != "" {
-		errorMessage := strings.ReplaceAll(err.Error(), credentials.Token, "********")
-		return errors.New(errorMessage)
-	}
-	return err
-}
-
 // GetCurrentVersion gets the latest version (i.e. commit hash) of the currently checked out branch
 func GetCurrentVersion(project string) (string, error) {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
@@ -515,7 +507,7 @@ func ServiceExists(project string, stage string, service string, disableUpstream
 func GetCredentials(project string) (*common_models.GitCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	secretName := fmt.Sprintf("git-credentials-%s", project)
@@ -526,14 +518,14 @@ func GetCredentials(project string) (*common_models.GitCredentials, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(gitCredentialsFail)
 	}
 
 	// secret found -> unmarshal it
 	var credentials common_models.GitCredentials
 	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
 	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
