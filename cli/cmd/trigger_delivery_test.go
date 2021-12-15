@@ -206,3 +206,47 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 		}
 	}
 }
+
+// TestTriggerDeliveryNonExistingService tests the trigger delivery
+// with non-existing service.
+func TestTriggerDeliveryNonExistingService(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+	projectName := "sockshop"
+
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
+
+	cmd := fmt.Sprintf("create project %s --shipyard=%s --mock", projectName, shipyardFilePath)
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	tests := []struct {
+		service string
+		wantErr bool
+	}{
+		{
+			service: "some-service",
+			wantErr: true,
+		},
+		{
+			service: "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --sequence=%s "+
+				"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e --mock", projectName, tt.service, "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
+			_, err := executeActionCommandC(cmd)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("wanted error: %t, got: %v", tt.wantErr, err)
+			}
+		})
+	}
+}
