@@ -119,7 +119,7 @@
   },
   "resolutions": {
     "minimist": "1.2.5",
-    "css-what": "~5.0.1",
+    "css-what": "~5.1.0",
     "glob-parent": "~5.1.2"
   }
 }
