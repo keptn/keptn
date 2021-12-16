@@ -351,46 +351,39 @@ export class DataService {
         const stage = { ...sequence.stages[0], actions: [] };
         const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
 
-        await this.setRemediationDetails(
-          remediation,
-          includeProblemTitle,
-          includeActions,
-          projectName,
-          stageName,
-          sequence.service,
-          sequence.shkeptncontext
-        );
+        if (includeActions) {
+          await this.loadRemediationActions(
+            remediation,
+            projectName,
+            stageName,
+            sequence.service,
+            sequence.shkeptncontext
+          );
+        }
         remediations.push(remediation);
       }
     }
     return remediations;
   }
 
-  private async setRemediationDetails(
+  private async loadRemediationActions(
     remediation: Remediation,
-    includeProblemTitle: boolean,
-    includeActions: boolean,
     projectName: string,
     stageName: string,
     serviceName: string,
     keptnContext: string
   ): Promise<void> {
-    if (includeProblemTitle) {
-      const response = await this.apiService.getTraces(
-        includeActions ? undefined : `${EventTypes.PREFIX}${stageName}.remediation.triggered`,
-        this.MAX_TRACE_PAGE_SIZE,
-        projectName,
-        stageName,
-        serviceName,
-        keptnContext
-      );
-      const traces = response.data.events;
-      remediation.problemTitle = traces[traces.length - 1]?.data.problem?.ProblemTitle;
-      if (includeActions) {
-        const actions = this.getRemediationActions(Trace.traceMapper(traces));
-        remediation.stages[0].actions.push(...actions);
-      }
-    }
+    const response = await this.apiService.getTraces(
+      `${EventTypes.PREFIX}${stageName}.remediation.triggered`,
+      this.MAX_TRACE_PAGE_SIZE,
+      projectName,
+      stageName,
+      serviceName,
+      keptnContext
+    );
+    const traces = response.data.events;
+    const actions = this.getRemediationActions(Trace.traceMapper(traces));
+    remediation.stages[0].actions.push(...actions);
   }
 
   private getRemediationActions(traces: Trace[]): IRemediationAction[] {
