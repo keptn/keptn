@@ -454,7 +454,7 @@ describe('KtbWebhookSettingsComponent', () => {
     // given
     const payloadControl = component.getFormControl('payload');
 
-    const chars = ['$', '|', ';', '>', '&', '`', '/var/run', '/VAR/RUN', '/vAr/RuN'];
+    const chars = ['$', '$(', '|', ';', '>', '&', '&&', '`', '/var/run', '/VAR/RUN', '/vAr/RuN'];
 
     for (let i = 0; i < chars.length; i++) {
       const val = `{id: 12345${chars[i]}678}`;
