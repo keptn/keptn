@@ -67,6 +67,9 @@ func _main(env config.EnvConfig) int {
 	register := shallRegister()
 	if register {
 		id := uniformWatch.Start(executionContext)
+		if id == "" {
+			logger.Fatal("Could not register Uniform")
+		}
 		uniformLogger := controlplane.NewEventUniformLog(id, uniformLogHandler)
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
 	}
