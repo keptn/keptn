@@ -85,7 +85,7 @@ export class DataService {
     const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
 
     if (includeRemediation) {
-      openRemediations = await this.getOpenRemediations(projectName, true, true);
+      openRemediations = await this.getOpenRemediations(projectName, true);
     }
 
     if (includeApproval) {
@@ -338,7 +338,6 @@ export class DataService {
 
   public async getOpenRemediations(
     projectName: string,
-    includeProblemTitle: boolean,
     includeActions: boolean,
     serviceName?: string
   ): Promise<Remediation[]> {
@@ -374,7 +373,7 @@ export class DataService {
     keptnContext: string
   ): Promise<void> {
     const response = await this.apiService.getTraces(
-      `${EventTypes.PREFIX}${stageName}.remediation.triggered`,
+      undefined,
       this.MAX_TRACE_PAGE_SIZE,
       projectName,
       stageName,
@@ -1008,7 +1007,7 @@ export class DataService {
   public async getServiceStates(projectName: string): Promise<ServiceState[]> {
     const projectResponse = await this.apiService.getProject(projectName);
     const project = Project.fromJSON(projectResponse.data);
-    const openRemediations = await this.getOpenRemediations(projectName, false, false);
+    const openRemediations = await this.getOpenRemediations(projectName, false);
     const serviceStates: ServiceState[] = [];
     for (const stage of project.stages) {
       for (const service of stage.services) {
@@ -1210,7 +1209,7 @@ export class DataService {
     openRemediations?: Remediation[]
   ): Promise<StageRemediationInformation> {
     if (!openRemediations) {
-      openRemediations = await this.getOpenRemediations(projectName, true, false, serviceName);
+      openRemediations = await this.getOpenRemediations(projectName, false, serviceName);
     }
     let remediationConfig: string | undefined;
     const openRemediationsForStage = openRemediations
@@ -1244,7 +1243,7 @@ export class DataService {
     includeConfig: boolean
   ): Promise<ServiceRemediationInformation> {
     const serviceRemediationInformation: ServiceRemediationInformation = { stages: [] };
-    const openRemediations = await this.getOpenRemediations(projectName, true, false, serviceName);
+    const openRemediations = await this.getOpenRemediations(projectName, false, serviceName);
     const stageRemediations = openRemediations.reduce((stagesAcc: { [key: string]: Sequence[] }, remediation) => {
       const stageName = remediation.stages[0].name;
       if (!stagesAcc[stageName]) {
