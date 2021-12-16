@@ -624,7 +624,7 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
-        fsGroup: {{ .Values.configurationService.fsGroup | default 65532 }}
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
 {{- if .Values.configurationService.initContainer }}
       initContainers:
         - name: change-user-init
@@ -637,7 +637,7 @@ spec:
           command:
             - sh
             - -c
-            - chown -R {{ .Values.configurationService.fsGroup | default 65532 }} /data/config
+            - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
 {{- end }}
       containers:
         - name: configuration-service
@@ -682,7 +682,7 @@ spec:
               name: configuration-volume
           securityContext:
             runAsNonRoot: true
-            runAsUser: {{ .Values.configurationService.fsGroup | default 65532 }}
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       volumes:
