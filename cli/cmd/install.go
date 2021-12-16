@@ -271,9 +271,6 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 	values := map[string]interface{}{
 		"continuous-delivery": map[string]interface{}{
 			"enabled": installParams.UseCase == ContinuousDelivery,
-			"openshift": map[string]interface{}{
-				"enabled": *installParams.PlatformIdentifier == "openshift",
-			},
 		},
 		"control-plane": map[string]interface{}{
 			"enabled": true,
