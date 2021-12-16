@@ -134,7 +134,9 @@
         cols="60"
         rows="5"
       ></textarea>
-      <dt-error>Payload must not be empty</dt-error>
+      <dt-error *ngIf="getFormControl('payload').errors?.specialChar"
+        >Not allowed characters: $ | ; > & ` /var/run</dt-error
+      >
       <div dtSuffix uitestid="event-payload">
         <ng-container
           [ngTemplateOutlet]="payloadButton"
