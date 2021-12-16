@@ -40,3 +40,24 @@ func (t LocalFileTokenStore) StoreToken(token *oauth2.Token) error {
 	// persist token
 	return nil // or error
 }
+
+type TokenStoreMock struct {
+	storedToken  *oauth2.Token
+	getTokenFn   func() (*oauth2.Token, error)
+	storeTokenFn func(*oauth2.Token) error
+}
+
+func (t *TokenStoreMock) GetToken() (*oauth2.Token, error) {
+	if t != nil && t.getTokenFn != nil {
+		return t.getTokenFn()
+	}
+	return t.storedToken, nil
+}
+
+func (t *TokenStoreMock) StoreToken(token *oauth2.Token) error {
+	if t != nil && t.storeTokenFn != nil {
+		return t.storeTokenFn(token)
+	}
+	t.storedToken = token
+	return nil
+}

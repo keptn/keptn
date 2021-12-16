@@ -6,6 +6,10 @@ import (
 	"runtime"
 )
 
+type URLOpener interface {
+	Open(url string) error
+}
+
 type Browser struct {
 }
 
@@ -22,4 +26,15 @@ func (b Browser) Open(url string) error {
 		err = fmt.Errorf("unsupported platform")
 	}
 	return err
+}
+
+type BrowserMock struct {
+	openFn func(string) error
+}
+
+func (b *BrowserMock) Open(url string) error {
+	if b != nil && b.openFn != nil {
+		return b.openFn(url)
+	}
+	return nil
 }

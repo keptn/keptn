@@ -47,3 +47,15 @@ func (d StaticOauthDiscovery) Discover() (*OauthDiscoveryResult, error) {
 		IntrospectionEndpoint:  "https://sso-dev.dynatracelabs.com:443/sso/oauth2/tokeninfo",
 	}, nil
 }
+
+type OauthDiscoveryMock struct {
+	discoverFn func() (*OauthDiscoveryResult, error)
+}
+
+func (o *OauthDiscoveryMock) Discover() (*OauthDiscoveryResult, error) {
+	if o != nil && o.discoverFn != nil {
+		return o.discoverFn()
+	}
+	return &OauthDiscoveryResult{}, nil
+
+}

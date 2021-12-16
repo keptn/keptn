@@ -4,13 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"golang.org/x/oauth2"
-	"io"
-	"net"
 	"net/http"
-	"net/url"
-	"os"
 	"strings"
 )
 
@@ -21,25 +16,33 @@ type Authenticator interface {
 }
 
 type OauthAuthenticator struct {
-	discovery   OauthLocationGetter
-	tokenStore  TokenStore
-	browser     Browser
-	redirectURL string
+	discovery  OauthLocationGetter
+	tokenStore TokenStore
+	browser    URLOpener
 }
 
-func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore TokenStore, browser Browser) *OauthAuthenticator {
+func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore TokenStore, browser URLOpener) *OauthAuthenticator {
 	return &OauthAuthenticator{
-		discovery:   discovery,
-		tokenStore:  tokenStore,
-		browser:     browser,
-		redirectURL: "http://localhost:3000/oauth/redirect",
+		discovery:  discovery,
+		tokenStore: tokenStore,
+		browser:    browser,
 	}
 }
 
-func (a *OauthAuthenticator) Authorize() error {
-	oauthConfig, err := a.discover()
+func (a *OauthAuthenticator) Auth() error {
+	r, err := a.discovery.Discover()
 	if err != nil {
 		return err
+	}
+	oauthConfig := &oauth2.Config{
+		ClientID:     "dt0s03.cloudautomation-keptn-local",
+		ClientSecret: "",
+		Scopes:       []string{"openid"},
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  r.AuthorizationEndpoint,
+			TokenURL: r.TokenEndpoint,
+		},
+		RedirectURL: "http://localhost:3000/oauth/redirect",
 	}
 
 	codeVerifier, err := GenerateCodeVerifier()
@@ -54,63 +57,43 @@ func (a *OauthAuthenticator) Authorize() error {
 	if err != nil {
 		return err
 	}
-	server := &http.Server{Addr: a.redirectURL}
-	http.HandleFunc("/oauth/redirect", func(w http.ResponseWriter, r *http.Request) {
-		defer cleanup(server)
-		queryParts, _ := url.ParseQuery(r.URL.RawQuery)
-		code := queryParts["code"][0]
 
-		tok, err := oauthConfig.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", string(codeVerifier)))
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		err = a.tokenStore.StoreToken(tok)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		fmt.Fprint(w, loginSuccessHTML)
-	})
-
-	l, err := net.Listen("tcp", ":3000")
-	if err != nil {
-		fmt.Printf("can't listen to port %s: %s\n", ":3000", err)
-		os.Exit(1)
+	redirectHandler := ClosingRedirectHandler{
+		codeVerifier: codeVerifier,
+		oauthConfig:  oauthConfig,
 	}
-	server.Serve(l)
+
+	token, err := redirectHandler.Handle()
+	if err != nil {
+		return err
+	}
+
+	err = a.tokenStore.StoreToken(token)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func cleanup(server io.Closer) {
-	go server.Close()
-}
-
-func (a *OauthAuthenticator) GetOauthClient(ctx context.Context, tokenStore TokenStore) (*http.Client, error) {
-	oauthConfig, err := a.discover()
-	if err != nil {
-		return nil, err
-	}
-	nrts := &NotifyRefreshTokenSource{
-		config:     oauthConfig,
-		tokenStore: tokenStore,
-	}
-	return oauth2.NewClient(ctx, nrts), nil
-}
-
-func (a *OauthAuthenticator) discover() (*oauth2.Config, error) {
+func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, error) {
 	r, err := a.discovery.Discover()
 	if err != nil {
 		return nil, err
 	}
-	return &oauth2.Config{
-		ClientID:     "dt0s03.cloudautomation-keptn-local",
-		ClientSecret: "",
-		Scopes:       []string{"openid"},
+	oauthConfig := &oauth2.Config{
+		ClientID: "dt0s03.cloudautomation-keptn-local",
+		Scopes:   []string{"openid"},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  r.AuthorizationEndpoint,
 			TokenURL: r.TokenEndpoint,
 		},
-		RedirectURL: a.redirectURL,
-	}, nil
+		RedirectURL: "http://localhost:3000/oauth/redirect",
+	}
+
+	nrts := &NotifyRefreshTokenSource{
+		config:     oauthConfig,
+		tokenStore: a.tokenStore,
+	}
+	return oauth2.NewClient(ctx, nrts), nil
 }
