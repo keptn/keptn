@@ -5,3 +5,11 @@
 ::ng-deep .dt-form-field-disabled .dt-form-field-infix {
   height: 22px;
 }
+
+.settings-section {
+  margin-bottom: 2em;
+}
+
+form > div:last-of-type {
+  margin-top: 2em;
+}
