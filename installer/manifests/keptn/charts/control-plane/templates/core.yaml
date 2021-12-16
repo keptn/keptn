@@ -624,7 +624,21 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
-        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        fsGroup: {{ .Values.configurationService.fsGroup | default 65532 }}
+{{- if .Values.configurationService.initContainer }}
+      initContainers:
+        - name: change-user-init
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
+          command:
+            - sh
+            - -c
+            - chown -R {{ .Values.configurationService.fsGroup | default 65532 }} /data/config
+{{- end }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
@@ -668,7 +682,7 @@ spec:
               name: configuration-volume
           securityContext:
             runAsNonRoot: true
-            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            runAsUser: {{ .Values.configurationService.fsGroup | default 65532 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       volumes:
