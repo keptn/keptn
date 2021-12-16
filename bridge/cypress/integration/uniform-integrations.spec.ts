@@ -83,13 +83,13 @@ describe('Integrations', () => {
     cy.byTestId('edit-webhook-field-method').find('dt-select').focus().type('GET');
 
     // URL: insert text, add secret and add event variable
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID).find('input').focus().type('https://example.com?secret=');
+    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID).find('textarea').focus().type('https://example.com?secret=');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_URL).find('button').click();
     selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_URL).find('button').click();
     selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID)
-      .find('input')
+      .find('textarea')
       .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}{{.event.data.project}}');
 
     // Payload: insert text, add secret and add event variable

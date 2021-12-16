@@ -4,16 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	models "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"io"
 	"math"
 	"net/http"
 	"strings"
 	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	models "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 // AddWatchFlag ads the --watch flag to the command
@@ -126,4 +128,13 @@ func CheckEndpointStatus(endPoint string) error {
 	}
 
 	return nil
+}
+
+func ServiceInSlice(service string, serviceList []*apimodels.Service) bool {
+	for _, s := range serviceList {
+		if s.ServiceName == service {
+			return true
+		}
+	}
+	return false
 }
