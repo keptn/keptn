@@ -8,11 +8,9 @@ end in `-next.ID`, no backwards-incompatible changes will be made unless increme
 version number. Patch releases with urgent cherry-picked bugfixes will be made by incrementing the
 `PATCH` version.
 
-A backwards-incompatible change affects the public API. The public API is any of the following:
+A backwards-incompatible change affects the public REST API. The public REST API is any of the following:
 
 - public reachable endpoints that are **not** marked as `internal`;
-- readiness and liveness probes endpoints;
-- changes in mandatory fields in the CLI;
 - CloudEvents definition.
 
 We refer to a backwards-incompatible API change, a change that could potentially cause failures in the
