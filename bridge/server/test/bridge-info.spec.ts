@@ -1,6 +1,11 @@
 import request from 'supertest';
+import { setupServer } from '../.jest/setupServer';
 
 describe('Test /bridgeInfo', () => {
+  beforeAll(async () => {
+    await setupServer();
+  });
+
   it('should return bridgeInfo', async () => {
     const response = await request(global.app).get('/api/bridgeInfo');
     expect(response.body).toEqual({

@@ -478,7 +478,7 @@ export class ApiService {
     });
   }
 
-  public logout(): Observable<EndSessionData | undefined> {
-    return this.http.get<EndSessionData | undefined>(`./logout`);
+  public logout(): Observable<EndSessionData | null> {
+    return this.http.get<EndSessionData | null>(`./logout`);
   }
 }

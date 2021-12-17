@@ -1,11 +1,13 @@
 import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { ShipyardResponse } from '../fixtures/shipyard-response.mock';
+import { setupServer } from '../.jest/setupServer';
 
 let axiosMock: MockAdapter;
 
 describe('Test /project/:projectName/tasks', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 

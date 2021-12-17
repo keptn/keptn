@@ -31,11 +31,13 @@ import {
 import { KeptnService } from '../../shared/models/keptn-service';
 import { ProjectDetailsResponse } from '../fixtures/project-details-response.mock';
 import { ResultTypes } from '../../shared/models/result-types';
+import { setupServer } from '../.jest/setupServer';
 
 let axiosMock: MockAdapter;
 
 describe('Test project resources', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 

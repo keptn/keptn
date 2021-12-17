@@ -8,6 +8,7 @@ declare global {
       app: Express;
       baseUrl: string;
       axiosInstance: AxiosInstance;
+      issuer?: unknown;
     }
   }
 }

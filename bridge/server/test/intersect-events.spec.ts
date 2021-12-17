@@ -8,11 +8,13 @@ import {
   IntersectDeploymentTriggeredResponse,
 } from '../../shared/fixtures/traces-response.mock';
 import { IntersectEventResponse } from '../fixtures/intersect-event-response.mock';
+import { setupServer } from '../.jest/setupServer';
 
 let axiosMock: MockAdapter;
 
 describe('Test /intersectEvents', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 

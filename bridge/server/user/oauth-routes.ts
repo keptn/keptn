@@ -1,8 +1,9 @@
 import { Request, Response, Router } from 'express';
 import { authenticateSession, getLogoutHint, isAuthenticated, removeSession } from './session';
-import { BaseClient, errors, generators, TokenSet } from 'openid-client';
+import oClient, { BaseClient, errors, TokenSet } from 'openid-client';
 import { EndSessionData } from '../../shared/interfaces/end-session-data';
 
+const generators = oClient.generators; // else jest isn't working
 const prefixPath = process.env.PREFIX_PATH;
 const codeVerifiers: { [state: string]: { codeVerifier: string; nonce: string; expiresAt: number } } = {};
 const stateExpireMilliSeconds = 60 * 60_000; // expires in 60 minutes

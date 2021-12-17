@@ -744,7 +744,7 @@ export class DataService {
     return this.apiService.getIntersectedEvent(event, eventSuffix, projectName, stages, services);
   }
 
-  public logout(): Observable<EndSessionData | undefined> {
+  public logout(): Observable<EndSessionData | null> {
     return this.apiService.logout();
   }
 }

@@ -6,11 +6,13 @@ import {
   ServiceStateQualityGatesOnlyResponse,
   ServiceStateResponse,
 } from '../../shared/fixtures/service-state-response.mock';
+import { setupServer } from '../.jest/setupServer';
 
 let axiosMock: MockAdapter;
 
 describe('Test project/:projectName/serviceStates', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 

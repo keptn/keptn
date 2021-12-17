@@ -18,7 +18,9 @@ async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: str
 }
 
 async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
-  const ssoIssuer = await Issuer.discover(discoveryEndpoint);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const ssoIssuer = await (global.issuer ?? Issuer).discover(discoveryEndpoint);
   const clientSecret = process.env.OAUTH_CLIENT_SECRET;
 
   if (!ssoIssuer.metadata.authorization_endpoint) {

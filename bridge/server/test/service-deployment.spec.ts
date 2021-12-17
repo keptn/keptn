@@ -19,11 +19,13 @@ import {
   SequenceDeliveryTillStagingResponseMock,
 } from '../fixtures/sequence-response.mock';
 import { TestUtils } from '../.jest/test.utils';
+import { setupServer } from '../.jest/setupServer';
 
 let axiosMock: MockAdapter;
 
 describe('Test /project/:projectName/deployment/:keptnContext', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 

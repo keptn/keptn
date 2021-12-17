@@ -5,11 +5,13 @@ import {
   ServiceRemediationWithConfigResponse,
   ServiceRemediationWithoutConfigResponse,
 } from '../../shared/fixtures/open-remediations-response.mock';
+import { setupServer } from '../.jest/setupServer';
 
 let axiosMock: MockAdapter;
 
 describe('Test /project/:projectName/service/:serviceName/openRemediations', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
