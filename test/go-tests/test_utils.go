@@ -634,13 +634,19 @@ func recreateGitUpstreamRepository(project string) error {
 	deleteCmd := fmt.Sprintf(`curl -X DELETE "http://gitea-http:3000/api/v1/repos/%s/%s?access_token=%s"`, user, project, token)
 	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\", \"default_branch\": \"main\"}"`, token, project)
 
+	parallelPods := int32(0)
+
 	recreateJob := &batchv1.Job{
 		TypeMeta: v1.TypeMeta{},
 		ObjectMeta: v1.ObjectMeta{
 			Name:      jobName,
 			Namespace: GetKeptnNameSpaceFromEnv(),
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "go-tests",
+			},
 		},
 		Spec: batchv1.JobSpec{
+			Parallelism: &parallelPods,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
 					RestartPolicy: corev1.RestartPolicyNever,
