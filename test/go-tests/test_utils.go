@@ -613,7 +613,7 @@ func getGiteaUser() string {
 
 // recreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
 func recreateGitUpstreamRepository(project string) error {
-	jobName := fmt.Sprintf("recreate-upstream-repo", project)
+	jobName := "recreate-upstream-repo"
 	clientset, err := keptnkubeutils.GetClientset(false)
 
 	// check if the job for recreating the project already exists (e.g. due to a previous run
@@ -632,7 +632,7 @@ func recreateGitUpstreamRepository(project string) error {
 	user := getGiteaUser()
 
 	deleteCmd := fmt.Sprintf(`curl -X DELETE "http://gitea-http:3000/api/v1/repos/%s/%s?access_token=%s"`, user, project, token)
-	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\"}"`, token, project)
+	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\", \"default_branch\": \"main\"}"`, token, project)
 
 	recreateJob := &batchv1.Job{
 		TypeMeta: v1.TypeMeta{},
