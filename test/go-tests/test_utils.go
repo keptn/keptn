@@ -613,7 +613,7 @@ func getGiteaUser() string {
 
 // recreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
 func recreateGitUpstreamRepository(project string) error {
-	jobName := fmt.Sprintf("recreate-%s-upstream-repo", project)
+	jobName := fmt.Sprintf("recreate-upstream-repo", project)
 	clientset, err := keptnkubeutils.GetClientset(false)
 
 	// check if the job for recreating the project already exists (e.g. due to a previous run
