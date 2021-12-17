@@ -7,3 +7,6 @@ service:
     type: ClusterIP
     port: 22
     clusterIP:
+
+persistence:
+  enabled: false
