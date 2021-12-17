@@ -97,7 +97,8 @@ func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials
 	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
-		return false, fmt.Errorf("failed to clone empty git repository")
+		// if the repository is uninitialised, this is not an error, but it will have to be set up afterwards
+		return false, nil
 	} else if err != nil {
 		return false, fmt.Errorf("failed to reach git upstream")
 	}
