@@ -98,13 +98,20 @@ func Test_GracefulShutdown(t *testing.T) {
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	require.Nil(t, err)
 
 	err = waitAndKill(t, shipyardPod, 20)
 	require.Nil(t, err)
 
-	time.Sleep(5)
+	t.Logf("Sleeping for 15s...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
 	err = WaitForPodOfDeployment("shipyard-controller")
 	require.Nil(t, err)
+
+	t.Logf("Sleeping for 60s...")
+	time.Sleep(60 * time.Second)
+	t.Logf("Continue to work...")
 
 	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
