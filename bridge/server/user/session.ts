@@ -16,7 +16,6 @@ export interface ValidSession extends expressSession.Session {
   tokenSet: TokenSetParameters;
   principal?: string;
 }
-const memoryStore = mS(expressSession);
 const router = Router();
 const CHECK_PERIOD = 600_000; // check every 10 minutes
 const SESSION_TIME = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
@@ -24,6 +23,17 @@ const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
 const SESSION_SECRET = random({ length: 200 });
+const memoryStore = mS(expressSession);
+const store = new memoryStore({
+  checkPeriod: CHECK_PERIOD,
+  ttl: SESSION_TIME,
+});
+
+if (process.env.NODE_ENV === 'test') {
+  // else interval does not stop and so Jest does not terminate
+  // jest.fakeTimers would lead to an infinite loop when accessing the store
+  store.stopInterval();
+}
 
 /**
  * Uses a session cookie backed by in-memory cookies store.
@@ -42,10 +52,7 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
-  store: new memoryStore({
-    checkPeriod: CHECK_PERIOD,
-    ttl: SESSION_TIME,
-  }),
+  store,
 };
 
 /**

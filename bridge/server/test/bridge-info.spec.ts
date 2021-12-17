@@ -1,13 +1,16 @@
 import request from 'supertest';
 import { setupServer } from '../.jest/setupServer';
+import { Express } from 'express';
 
 describe('Test /bridgeInfo', () => {
+  let app: Express;
+
   beforeAll(async () => {
-    await setupServer();
+    app = await setupServer();
   });
 
   it('should return bridgeInfo', async () => {
-    const response = await request(global.app).get('/api/bridgeInfo');
+    const response = await request(app).get('/api/bridgeInfo');
     expect(response.body).toEqual({
       bridgeVersion: 'develop',
       apiUrl: global.baseUrl,

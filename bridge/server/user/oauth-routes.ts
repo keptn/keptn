@@ -147,6 +147,8 @@ function validateStateTimes(): void {
   }
 }
 
-setInterval(validateStateTimes, 5_000);
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(validateStateTimes, 5_000); // could lead to missing exit of jest without using fakeTimers
+}
 
 export { oauthRouter, getRootLocation, reduceRefreshDateBy };

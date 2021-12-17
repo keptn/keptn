@@ -9,12 +9,15 @@ import {
 } from '../../shared/fixtures/traces-response.mock';
 import { IntersectEventResponse } from '../fixtures/intersect-event-response.mock';
 import { setupServer } from '../.jest/setupServer';
+import { Express } from 'express';
 
 let axiosMock: MockAdapter;
 
 describe('Test /intersectEvents', () => {
+  let app: Express;
+
   beforeAll(async () => {
-    await setupServer();
+    app = await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
@@ -45,7 +48,7 @@ describe('Test /intersectEvents', () => {
       .reply(200, {
         events: [event1],
       });
-    const response = await request(global.app)
+    const response = await request(app)
       .post(`/api/intersectEvents`)
       .send({
         projectName: 'sockshop',
@@ -85,7 +88,7 @@ describe('Test /intersectEvents', () => {
         },
       })
       .reply(200, IntersectDeploymentFinishedResponse);
-    const response = await request(global.app).post(`/api/intersectEvents`).send({
+    const response = await request(app).post(`/api/intersectEvents`).send({
       projectName: 'sockshop',
       stages: [],
       services: [],
@@ -156,7 +159,7 @@ describe('Test /intersectEvents', () => {
           },
         ],
       });
-    const response = await request(global.app)
+    const response = await request(app)
       .post(`/api/intersectEvents`)
       .send({
         projectName: 'sockshop',
@@ -199,7 +202,7 @@ describe('Test /intersectEvents', () => {
       .reply(200, {
         events: [],
       });
-    const response = await request(global.app)
+    const response = await request(app)
       .post(`/api/intersectEvents`)
       .send({
         projectName: 'sockshop',
@@ -213,7 +216,7 @@ describe('Test /intersectEvents', () => {
   });
 
   it('should send error if projectName is missing', async () => {
-    const response = await request(global.app).post(`/api/intersectEvents`).send({
+    const response = await request(app).post(`/api/intersectEvents`).send({
       event: 'sh.keptn.event.deployment',
       eventSuffix: 'finished',
     });
@@ -221,7 +224,7 @@ describe('Test /intersectEvents', () => {
   });
 
   it('should send error if event is missing', async () => {
-    const response = await request(global.app).post(`/api/intersectEvents`).send({
+    const response = await request(app).post(`/api/intersectEvents`).send({
       projectName: 'sockshop',
       eventSuffix: 'finished',
     });
@@ -229,7 +232,7 @@ describe('Test /intersectEvents', () => {
   });
 
   it('should send error if eventSuffix is missing', async () => {
-    const response = await request(global.app).post(`/api/intersectEvents`).send({
+    const response = await request(app).post(`/api/intersectEvents`).send({
       projectName: 'sockshop',
       event: 'sh.keptn.event.deployment',
     });

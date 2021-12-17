@@ -127,6 +127,37 @@ describe('Test OAuth', () => {
     const response = await request(app).get(`/logout`);
     expect(response.body).toBe('');
   });
+
+  it('should not be able to fetch data if not authenticated', async () => {
+    const response = await request(app).get(`/api/bridgeInfo`);
+    expect(response.status).toBe(401);
+  });
+
+  it('should be able to fetch data if authenticated', async () => {
+    const { response } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    expect(dataResponse.status).not.toBe(401);
+  });
+});
+
+describe('Test expired token', () => {
+  it('should fail refresh of token and remove session', async () => {
+    mockOpenId(true, true, true);
+    const app = await setupOAuth();
+    const { response } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    expect(dataResponse.status).toBe(302);
+    expect(dataResponse.redirect).toBe(true);
+    expect(dataResponse.headers['set-cookie']?.length ?? 0).toBe(0);
+  });
+
+  it('should refresh token if expired', async () => {
+    mockOpenId(true, true);
+    const app = await setupOAuth();
+    const { response } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    expect(dataResponse.status).not.toBe(401);
+  });
 });
 
 describe('Test OAuth logout without end session endpoint', () => {
@@ -144,7 +175,7 @@ describe('Test OAuth logout without end session endpoint', () => {
   });
 });
 
-function mockOpenId(includeEndSessionEndpoint: boolean): void {
+function mockOpenId(includeEndSessionEndpoint: boolean, expiredToken = false, failRefresh = false): void {
   // jest currently does not really support mocking of ESM
 
   const issuer = {
@@ -171,8 +202,16 @@ function mockOpenId(includeEndSessionEndpoint: boolean): void {
         id_token: idToken,
         refresh_token: 'myRefreshToken',
         scope: 'openid',
-        expires_at: new Date().getTime() / 1000 + 10 * 60 * 1000,
+        expires_at: new Date().getTime() / 1000 + (expiredToken ? -1 : 10 * 60 * 1000),
       });
+    }
+
+    async refresh(tokenSet: TokenSet): Promise<TokenSet> {
+      if (failRefresh) {
+        throw new Error('Refresh failed');
+      }
+      tokenSet.expires_at = new Date().getTime() / 1000 + 10 * 60 * 1000;
+      return tokenSet;
     }
 
     authorizationUrl({ state }: { state: string }): string {
