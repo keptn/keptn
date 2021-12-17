@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,11 +24,13 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 			}, nil
 		},
 	}
+
+	config, _ := GetOauthConfig(discovery)
 	tokenStore := &TokenStoreMock{}
 	browser := &BrowserMock{
 		openFn: func(string) error { return nil },
 	}
-	authenticator := NewOauthAuthenticator(discovery, tokenStore, browser)
+	authenticator := NewOauthAuthenticator(config, tokenStore, browser)
 	go func() {
 		err := authenticator.Auth()
 		assert.Nil(t, err)
@@ -42,8 +46,16 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 }
 
 func TestOauthAuthenticator_Auth1(t *testing.T) {
+	discovery := &OauthDiscoveryMock{
+		discoverFn: func() (*OauthDiscoveryResult, error) {
+			return &OauthDiscoveryResult{}, nil
+		},
+	}
+
+	config, _ := GetOauthConfig(discovery)
+
 	type fields struct {
-		discovery  OauthLocationGetter
+		config     *oauth2.Config
 		tokenStore TokenStore
 		browser    URLOpener
 	}
@@ -52,13 +64,8 @@ func TestOauthAuthenticator_Auth1(t *testing.T) {
 		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"discovery fails", fields{
-			discovery: &OauthDiscoveryMock{
-				discoverFn: func() (*OauthDiscoveryResult, error) { return nil, errors.New("NOPE") }},
-		}, assert.Error,
-		},
 		{"open browser fails", fields{
-			discovery: &OauthDiscoveryMock{},
+			config: config,
 			browser: &BrowserMock{
 				openFn: func(string) error { return errors.New("NOPE") },
 			},
@@ -68,11 +75,47 @@ func TestOauthAuthenticator_Auth1(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &OauthAuthenticator{
-				discovery:  tt.fields.discovery,
+				config:     tt.fields.config,
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
 			tt.wantErr(t, a.Auth(), fmt.Sprintf("Auth()"))
+		})
+	}
+}
+
+func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
+	type fields struct {
+		config     *oauth2.Config
+		tokenStore TokenStore
+		browser    URLOpener
+	}
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantClient assert.ValueAssertionFunc
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{"", fields{config: &oauth2.Config{}}, args{context.TODO()}, assert.NotNil, assert.NoError},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &OauthAuthenticator{
+				config:     tt.fields.config,
+				tokenStore: tt.fields.tokenStore,
+				browser:    tt.fields.browser,
+			}
+			got, err := a.GetOauthClient(tt.args.ctx)
+			if !tt.wantErr(t, err, fmt.Sprintf("GetOauthClient(%v)", tt.args.ctx)) {
+				return
+			}
+			if !tt.wantClient(t, got, fmt.Sprintf("GetOauthClient(%v)", tt.args.ctx)) {
+				return
+			}
 		})
 	}
 }
