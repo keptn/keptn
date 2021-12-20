@@ -25,6 +25,5 @@ gitea:
       DB_TYPE: postgresql
       HOST: gitea-postgresql:5432
       NAME: gitea
-      USER: root
+      USER: gitea
       PASSWD: gitea
-      SCHEMA: gitea
