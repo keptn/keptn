@@ -10,7 +10,7 @@ service:
 
 cache:
   builtIn:
-    enabled: false
+    enabled: true
 
 gitea:
   database:
@@ -18,11 +18,11 @@ gitea:
       postgresql:
         enabled: true
 
-    config:
-      database:
-        DB_TYPE: postgresql
-        HOST: gitea-postresql:5432
-        NAME: gitea
-        USER: root
-        PASSWD: gitea
-        SCHEMA: gitea
+  config:
+    database:
+      DB_TYPE: postgresql
+      HOST: gitea-postresql:5432
+      NAME: gitea
+      USER: root
+      PASSWD: gitea
+      SCHEMA: gitea
