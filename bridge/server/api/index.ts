@@ -171,6 +171,15 @@ const apiRouter = (params: {
     }
   });
 
+  router.get('/project/:projectName/sequences/metadata', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await dataService.getSequencesMetadata(req.params.projectName);
+      return res.json(data);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.post('/uniform/registration', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const uniformDates: { [key: string]: string } = req.body;

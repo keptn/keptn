@@ -32,6 +32,8 @@ import { ServiceRemediationInformation } from '../../shared/interfaces/service-r
 import { Stage } from '../models/stage';
 import { IServiceEvent } from '../../shared/interfaces/service';
 import { Remediation } from '../models/remediation';
+import { IStage } from '../../shared/interfaces/stage';
+import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -553,6 +555,11 @@ export class DataService {
   public async getServiceNames(projectName: string): Promise<string[]> {
     const resp = await this.apiService.getStages(projectName);
     const stages = resp.data.stages;
+
+    return this.reduceServiceNames(stages);
+  }
+
+  private reduceServiceNames(stages: IStage[]): string[] {
     const services: { [serviceName: string]: boolean | undefined } = {};
 
     for (const stage of stages) {
@@ -1274,6 +1281,32 @@ export class DataService {
       serviceRemediationInformation.stages.push({ name: stage, remediations: stageRemediations[stage], config });
     }
     return serviceRemediationInformation;
+  }
+
+  public async getSequencesMetadata(projectName: string): Promise<ISequencesMetadata> {
+    const res = await this.apiService.getStages(projectName);
+    const stages = res.data.stages;
+    const stageNames = stages.map((stage) => stage.stageName);
+    const services = this.reduceServiceNames(stages);
+    const deployments: SequenceMetadataDeployment[] = [];
+
+    for (const stg of stages) {
+      for (const svc of stg.services) {
+        let image = '';
+        if (svc.deployedImage) {
+          image = svc.deployedImage.split('/').pop() ?? '';
+        }
+        deployments.push({ service: svc.serviceName, stage: stg.stageName, image });
+      }
+    }
+
+    return {
+      deployments,
+      filter: {
+        stages: stageNames,
+        services,
+      },
+    };
   }
 
   public async intersectEvents(
