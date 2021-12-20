@@ -116,10 +116,10 @@ objectives:
       #       be considered as a pass if it is less than 200 ms
       - criteria:
           - "<=+10%" # relative values require a prefixed sign (plus or minus)
-          - "<1000"   # absolute values only require a logical operator
+          - "<200"   # absolute values only require a logical operator
     warning:     # allow small relative changes, and response time has to be < 500 ms
-      - criteria:  # criteria connected by AND
-          - "<=800"
+      - criteria:  # criteria connected by AND 
+          - "<=500,<=+20%"
   - sli: error_rate
     weight: 2   # default weight: 1
     pass:       # do not allow any security vulnerabilities
