@@ -8,5 +8,13 @@ service:
     port: 22
     clusterIP:
 
-persistence:
-  enabled: false
+#persistence:
+#  enabled: false
+
+gitea:
+  database:
+    builtIn:
+      postgresql:
+        enabled: false
+      mysql:
+        enabled: true
