@@ -38,6 +38,7 @@ jobs:
             bridge
             cli
             configuration-service
+            new-configuration-service
             deps
             deps-dev
             distributor

@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: new-configuration-service
+  name: configuration-service
   namespace: keptn
   labels:
-    app.kubernetes.io/name: new-configuration-service
+    app.kubernetes.io/name: configuration-service
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
     app.kubernetes.io/component: control-plane
@@ -13,7 +13,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: new-configuration-service
+      app.kubernetes.io/name: configuration-service
       app.kubernetes.io/instance: keptn
   replicas: 2
   strategy:
@@ -21,15 +21,15 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: new-configuration-service
+        app.kubernetes.io/name: configuration-service
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/part-of: keptn-keptn
         app.kubernetes.io/component: control-plane
         app.kubernetes.io/version: develop
     spec:
-      serviceAccountName: keptn-new-configuration-service
+      serviceAccountName: keptn-configuration-service
       containers:
-      - name: new-configuration-service
+      - name: configuration-service
         livenessProbe:
           httpGet:
             path: /health
@@ -73,10 +73,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: new-configuration-service
+  name: configuration-service
   namespace: keptn
   labels:
-    app.kubernetes.io/name: new-configuration-service
+    app.kubernetes.io/name: configuration-service
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
     app.kubernetes.io/component: control-plane
@@ -86,5 +86,5 @@ spec:
     targetPort: 8080
     protocol: TCP
   selector:
-    app.kubernetes.io/name: new-configuration-service
+    app.kubernetes.io/name: configuration-service
     app.kubernetes.io/instance: keptn

@@ -2,8 +2,6 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.16.2-alpine as builder-base
 
-WORKDIR /go/src/github.com/keptn/keptn/new-configuration-service
-
 # Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
@@ -13,6 +11,8 @@ RUN apk add --no-cache gcc libc-dev git
 
 # Pre-Req for gin-gonic/go-swagger: Install swag cli to generate swagger.yaml and swagger.json
 RUN go get -u github.com/swaggo/swag/cmd/swag@v1.7.0
+
+WORKDIR /go/src/github.com/keptn/keptn/new-configuration-service
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -39,7 +39,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/new-configuration-service-server/main.go
+RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.15 as production
@@ -83,4 +83,5 @@ RUN adduser -D nonroot -u 65532
 USER nonroot
 
 # Run the web service on container startup.
-CMD ["/new-configuration-service", "--host=0.0.0.0", "--port=8080"]
+ENV GIN_MODE=release
+CMD ["/configuration-service", "--host=0.0.0.0", "--port=8080"]
