@@ -61,21 +61,3 @@ func (m *ExpandedServiceWithStageInfo) validateStageInfo(formats strfmt.Registry
 
 	return nil
 }
-
-// MarshalBinary interface implementation
-func (m *ExpandedServiceWithStageInfo) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *ExpandedServiceWithStageInfo) UnmarshalBinary(b []byte) error {
-	var res ExpandedServiceWithStageInfo
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}

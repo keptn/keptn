@@ -64,21 +64,3 @@ func (m *Stages) validateStages(formats strfmt.Registry) error {
 
 	return nil
 }
-
-// MarshalBinary interface implementation
-func (m *Stages) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Stages) UnmarshalBinary(b []byte) error {
-	var res Stages
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}

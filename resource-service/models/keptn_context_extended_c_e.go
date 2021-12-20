@@ -109,21 +109,3 @@ func (m *KeptnContextExtendedCE) validateType(formats strfmt.Registry) error {
 
 	return nil
 }
-
-// MarshalBinary interface implementation
-func (m *KeptnContextExtendedCE) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *KeptnContextExtendedCE) UnmarshalBinary(b []byte) error {
-	var res KeptnContextExtendedCE
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}

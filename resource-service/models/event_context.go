@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // EventContext event context
@@ -22,23 +21,5 @@ type EventContext struct {
 
 // Validate validates this event context
 func (m *EventContext) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *EventContext) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *EventContext) UnmarshalBinary(b []byte) error {
-	var res EventContext
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }

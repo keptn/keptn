@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // Version version
@@ -29,23 +28,5 @@ func (m *Version) Validate(formats strfmt.Registry) error {
 
 // ContextValidate validates this version based on context it is used
 func (m *Version) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *Version) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Version) UnmarshalBinary(b []byte) error {
-	var res Version
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }

@@ -103,21 +103,3 @@ func (m *Project) contextValidateStages(ctx context.Context, formats strfmt.Regi
 
 	return nil
 }
-
-// MarshalBinary interface implementation
-func (m *Project) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Project) UnmarshalBinary(b []byte) error {
-	var res Project
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}

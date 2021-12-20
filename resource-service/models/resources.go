@@ -100,21 +100,3 @@ func (m *Resources) contextValidateResources(ctx context.Context, formats strfmt
 
 	return nil
 }
-
-// MarshalBinary interface implementation
-func (m *Resources) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Resources) UnmarshalBinary(b []byte) error {
-	var res Resources
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}

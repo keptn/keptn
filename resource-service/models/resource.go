@@ -100,21 +100,3 @@ func (m *Resource) contextValidateMetadata(ctx context.Context, formats strfmt.R
 
 	return nil
 }
-
-// MarshalBinary interface implementation
-func (m *Resource) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Resource) UnmarshalBinary(b []byte) error {
-	var res Resource
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
