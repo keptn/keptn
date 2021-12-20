@@ -111,15 +111,17 @@ objectives:
   - sli: request_latency_p50
     # pass is optional
     # it defines the pass criteria for the SLI values
-    pass:        # pass if (relative change <= 10% OR absolute value is < 200)
+    pass:        # pass if (relative change <= 10% AND absolute value is < 200)
       # e.g.: If response time changes by more than 10%, it should still
-      #       be considered as a pass if it is less than 200 ms
-      - criteria:
+      #       be considered as a fail if it is less than 200 ms 
+      - criteria: # criteria inside here are connected by AND
           - "<=+10%" # relative values require a prefixed sign (plus or minus)
           - "<200"   # absolute values only require a logical operator
+      - criteria:   #this criteria is in OR with the previous one
+          - "<=1000"  
     warning:     # allow small relative changes, and response time has to be < 500 ms
-      - criteria:  # criteria connected by AND 
-          - "<=500,<=+20%"
+      - criteria:  
+          - "<=500"
   - sli: error_rate
     weight: 2   # default weight: 1
     pass:       # do not allow any security vulnerabilities
