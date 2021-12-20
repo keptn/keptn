@@ -28,8 +28,6 @@ The *resource-service* is installed as a part of [keptn](https://keptn.sh)
 To deploy the current version of the *resource-service* in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it.
 
 ```console
-kubectl apply -f deploy/pvc.yaml
-
 kubectl apply -f deploy/service.yaml
 ```
 
