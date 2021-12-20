@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: configuration-service
+  name: resource-service
   namespace: keptn
   labels:
-    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/name: resource-service
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
     app.kubernetes.io/component: control-plane
@@ -13,7 +13,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: configuration-service
+      app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: keptn
   replicas: 2
   strategy:
@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: configuration-service
+        app.kubernetes.io/name: resource-service
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/part-of: keptn-keptn
         app.kubernetes.io/component: control-plane
@@ -29,7 +29,7 @@ spec:
     spec:
       serviceAccountName: keptn-configuration-service
       containers:
-      - name: configuration-service
+      - name: resource-service
         livenessProbe:
           httpGet:
             path: /health
@@ -65,9 +65,9 @@ spec:
             cpu: "100m"
         volumeMounts:
         - mountPath: /data/config
-          name: configuration-volume
+          name: resource-volume
       volumes:
-      - name: configuration-volume
+      - name: resource-volume
         emptyDir: {}
 ---
 apiVersion: v1
@@ -86,5 +86,5 @@ spec:
     targetPort: 8080
     protocol: TCP
   selector:
-    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/name: resource-service
     app.kubernetes.io/instance: keptn
