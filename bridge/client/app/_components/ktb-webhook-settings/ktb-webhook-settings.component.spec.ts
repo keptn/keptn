@@ -404,7 +404,7 @@ describe('KtbWebhookSettingsComponent', () => {
                         keys: [
                           {
                             name: 'myCustomElement',
-                            path: '(index (index .event.data.myCustomData 0) 0).myCustomKey.myCustomElement',
+                            path: '(index (index .data.myCustomData 0) 0).myCustomKey.myCustomElement',
                           },
                         ],
                         name: 'myCustomKey',
@@ -418,7 +418,7 @@ describe('KtbWebhookSettingsComponent', () => {
                         keys: [
                           {
                             name: 'myCustomElement2',
-                            path: '(index (index .event.data.myCustomData 0) 1).myCustomKey2.myCustomElement2',
+                            path: '(index (index .data.myCustomData 0) 1).myCustomKey2.myCustomElement2',
                           },
                         ],
                         name: 'myCustomKey2',
@@ -434,18 +434,18 @@ describe('KtbWebhookSettingsComponent', () => {
           },
           {
             name: 'project',
-            path: '.event.data.project',
+            path: '.data.project',
           },
         ],
         name: 'data',
       },
       {
         name: 'id',
-        path: '.event.id',
+        path: '.id',
       },
       {
         name: 'keptnContext',
-        path: '.event.keptnContext',
+        path: '.keptnContext',
       },
     ]);
   });

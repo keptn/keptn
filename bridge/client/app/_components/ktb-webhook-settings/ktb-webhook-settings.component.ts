@@ -73,7 +73,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this.eventDataSource = event ? this.setObject(event) : undefined;
   }
 
-  private setObject(data: Record<string, unknown>, path = '.event'): SelectTreeNode[] {
+  private setObject(data: Record<string, unknown>, path = ''): SelectTreeNode[] {
     const result: SelectTreeNode[] = [];
     for (const key of Object.keys(data)) {
       const newItem = this.generateNewTreeNode(data[key], key, `${path}.${key}`);

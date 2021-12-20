@@ -90,7 +90,7 @@ describe('Integrations', () => {
     selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID)
       .find('textarea')
-      .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}{{.event.data.project}}');
+      .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}{{.data.project}}');
 
     // Payload: insert text, add secret and add event variable
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').focus().type("{id: '123456789', secret: ");
@@ -101,7 +101,7 @@ describe('Integrations', () => {
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').focus().type('}');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID)
       .find('textarea')
-      .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}{{.event.data.project}}}");
+      .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}{{.data.project}}}");
 
     cy.byTestId('edit-webhook-field-proxy').find('input').focus().type('https://proxy.com');
 
@@ -118,7 +118,7 @@ describe('Integrations', () => {
     selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID)
       .find('input')
-      .should('have.value', 'Bearer: {{.secret.SecretA.key1}}{{.event.data.project}}');
+      .should('have.value', 'Bearer: {{.secret.SecretA.key1}}{{.data.project}}');
 
     cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
     // It should redirect after successfully sending the subscription
