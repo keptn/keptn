@@ -634,7 +634,7 @@ func recreateGitUpstreamRepository(project string) error {
 	deleteCmd := fmt.Sprintf(`curl -X DELETE "http://gitea-http:3000/api/v1/repos/%s/%s?access_token=%s"`, user, project, token)
 	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\", \"default_branch\": \"main\"}"`, token, project)
 
-	parallelPods := int32(0)
+	parallelPods := int32(1)
 
 	recreateJob := &batchv1.Job{
 		TypeMeta: v1.TypeMeta{},

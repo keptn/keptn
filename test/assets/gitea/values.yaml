@@ -8,10 +8,21 @@ service:
     port: 22
     clusterIP:
 
+cache:
+  builtIn:
+    enabled: false
+
 gitea:
   database:
     builtIn:
       postgresql:
-        enabled: false
-      mariadb:
         enabled: true
+
+    config:
+      database:
+        DB_TYPE: postgresql
+        HOST: gitea-postresql:5432
+        NAME: gitea
+        USER: root
+        PASSWD: gitea
+        SCHEMA: gitea
