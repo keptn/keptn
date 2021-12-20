@@ -56,8 +56,6 @@ flags:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   mongodb-datastore:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
-  openshift-route-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   remediation-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   shipyard-controller:
