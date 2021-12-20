@@ -570,23 +570,23 @@ spec:
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # configuration-service
-{{- if .Values.newConfigurationService.enabled }}
+{{- if .Values.resourceService.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: configuration-service
+  name: resource-service
   labels:
-    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/name: resource-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: {{ .Values.newConfigurationService.image.tag | default .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: configuration-service
+      app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 2
   strategy:
@@ -594,17 +594,17 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: configuration-service
+        app.kubernetes.io/name: resource-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: {{ .Values.newConfigurationService.image.tag | default .Chart.AppVersion }}
+        app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       containers:
-        - name: configuration-service
-          image: {{ .Values.newConfigurationService.image.repository }}:{{ .Values.newConfigurationService.image.tag | default .Chart.AppVersion }}
+        - name: resource-service
+          image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
               path: /health
@@ -627,7 +627,7 @@ spec:
               value: mongodb-datastore:8080
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-            {{- range $key, $value := .Values.newConfigurationService.env }}
+            {{- range $key, $value := .Values.resourceService.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
@@ -642,14 +642,14 @@ spec:
               cpu: "100m"
           volumeMounts:
             - mountPath: /data/config
-              name: configuration-volume
+              name: resource-volume
           securityContext:
             runAsNonRoot: true
-            runAsUser: {{ .Values.newConfigurationService.fsGroup | default 1001 }}
+            runAsUser: {{ .Values.resourceService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       volumes:
-        - name: configuration-volume
+        - name: resource-volume
           emptyDir: {}
       serviceAccountName: keptn-configuration-service
 {{- else }}
@@ -792,7 +792,11 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/name: resource-service
+    {{- else }}
     app.kubernetes.io/name: configuration-service
+    {{- end }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # statistics-service

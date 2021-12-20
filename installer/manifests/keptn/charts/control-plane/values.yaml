@@ -107,10 +107,10 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
 
-newConfigurationService:
+resourceService:
   enabled: false
   image:
-    repository: docker.io/keptn/new-configuration-service
+    repository: docker.io/keptn/resource-service
     tag: ""
   env:
     GIT_KEPTN_USER: "keptn"
