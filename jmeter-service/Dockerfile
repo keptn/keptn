@@ -48,7 +48,7 @@ LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.version="${version}"
 
 ENV env=production
-ARG JMETER_VERSION="5.4.1"
+ARG JMETER_VERSION="5.4.2"
 ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
 ENV	JMETER_BIN	${JMETER_HOME}/bin
 ENV	JMETER_DOWNLOAD_URL  https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
