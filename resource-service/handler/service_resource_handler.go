@@ -5,47 +5,47 @@ import (
 	"github.com/keptn/keptn/resource-service/common"
 )
 
-type IServiceDefaultResourceHandler interface {
-	CreateServiceDefaultResources(context *gin.Context)
-	GetServiceDefaultResources(context *gin.Context)
-	UpdateServiceDefaultResources(context *gin.Context)
-	GetServiceDefaultResource(context *gin.Context)
-	UpdateServiceDefaultResource(context *gin.Context)
-	DeleteServiceDefaultResource(context *gin.Context)
+type IServiceResourceHandler interface {
+	CreateServiceResources(context *gin.Context)
+	GetServiceResources(context *gin.Context)
+	UpdateServiceResources(context *gin.Context)
+	GetServiceResource(context *gin.Context)
+	UpdateServiceResource(context *gin.Context)
+	DeleteServiceResource(context *gin.Context)
 }
 
-type ServiceDefaultResourceHandler struct {
-	ServiceDefaultResourceManager IServiceDefaultResourceManager
-	EventSender                   common.EventSender
+type ServiceResourceHandler struct {
+	ServiceResourceManager IServiceResourceManager
+	EventSender            common.EventSender
 }
 
-func NewServiceDefaultResourceHandler(serviceDefaultResourceManager IServiceDefaultResourceManager, eventSender common.EventSender) *ServiceDefaultResourceHandler {
-	return &ServiceDefaultResourceHandler{
-		ServiceDefaultResourceManager: serviceDefaultResourceManager,
-		EventSender:                   eventSender,
+func NewServiceResourceHandler(serviceResourceManager IServiceResourceManager, eventSender common.EventSender) *ServiceResourceHandler {
+	return &ServiceResourceHandler{
+		ServiceResourceManager: serviceResourceManager,
+		EventSender:            eventSender,
 	}
 }
 
-func (ph *ServiceDefaultResourceHandler) CreateServiceDefaultResources(c *gin.Context) {
+func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 
 }
 
-func (ph *ServiceDefaultResourceHandler) GetServiceDefaultResources(c *gin.Context) {
+func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 
 }
 
-func (ph *ServiceDefaultResourceHandler) UpdateServiceDefaultResources(c *gin.Context) {
+func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 
 }
 
-func (ph *ServiceDefaultResourceHandler) GetServiceDefaultResource(c *gin.Context) {
+func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 
 }
 
-func (ph *ServiceDefaultResourceHandler) UpdateServiceDefaultResource(c *gin.Context) {
+func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 
 }
 
-func (ph *ServiceDefaultResourceHandler) DeleteServiceDefaultResource(c *gin.Context) {
+func (ph *ServiceResourceHandler) DeleteServiceResource(c *gin.Context) {
 
 }
