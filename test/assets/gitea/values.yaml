@@ -19,6 +19,8 @@ gitea:
         enabled: true
 
   config:
+    cache:
+      HOST: gitea-memcached:11211
     database:
       DB_TYPE: postgresql
       HOST: gitea-postresql:5432
