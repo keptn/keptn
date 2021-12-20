@@ -23,7 +23,7 @@ gitea:
       HOST: gitea-memcached:11211
     database:
       DB_TYPE: postgresql
-      HOST: gitea-postresql:5432
+      HOST: gitea-postgresql:5432
       NAME: gitea
       USER: root
       PASSWD: gitea
