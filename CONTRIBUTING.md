@@ -241,7 +241,7 @@ Your PR will usually be reviewed by the Keptn team within a couple of days, but 
 - bridge
 - cli
 - configuration-service
-- new-configuration-service
+- resource-service
 - distributor
 - docs
 - helm-service

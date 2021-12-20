@@ -18,7 +18,7 @@ IMAGES=(
   "api"
   "bridge2"
   "configuration-service"
-  "new-configuration-service"
+  "resource-service"
   "openshift-route-service"
   "distributor"
   "approval-service"
