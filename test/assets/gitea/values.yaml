@@ -8,13 +8,10 @@ service:
     port: 22
     clusterIP:
 
-#persistence:
-#  enabled: false
-
 gitea:
   database:
     builtIn:
       postgresql:
         enabled: false
-      mysql:
+      mariadb:
         enabled: true
