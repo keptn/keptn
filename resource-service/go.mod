@@ -3,6 +3,7 @@ module github.com/keptn/keptn/resource-service
 go 1.16
 
 require (
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/runtime v0.21.0 // indirect
 	github.com/go-openapi/strfmt v0.21.0
