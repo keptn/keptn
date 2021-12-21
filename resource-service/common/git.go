@@ -22,5 +22,6 @@ type IGit interface {
 	Pull(gitContext GitContext) error
 	CreateBranch(gitContext GitContext, branch string, sourceBranch string) error
 	CheckoutBranch(gitContext GitContext, branch string) error
+	GetFileRevision(gitContext GitContext, path string, revision string, file string) ([]byte, error)
 	GetDefaultBranch(gitContext GitContext)
 }

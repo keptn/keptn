@@ -26,6 +26,9 @@ import (
 // 			GetDefaultBranchFunc: func(gitContext common.GitContext)  {
 // 				panic("mock out the GetDefaultBranch method")
 // 			},
+// 			GetFileRevisionFunc: func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
+// 				panic("mock out the GetFileRevision method")
+// 			},
 // 			ProjectExistsFunc: func(gitContext common.GitContext) bool {
 // 				panic("mock out the ProjectExists method")
 // 			},
@@ -56,6 +59,9 @@ type IGitMock struct {
 
 	// GetDefaultBranchFunc mocks the GetDefaultBranch method.
 	GetDefaultBranchFunc func(gitContext common.GitContext)
+
+	// GetFileRevisionFunc mocks the GetFileRevision method.
+	GetFileRevisionFunc func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error)
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common.GitContext) bool
@@ -97,6 +103,17 @@ type IGitMock struct {
 			// GitContext is the gitContext argument value.
 			GitContext common.GitContext
 		}
+		// GetFileRevision holds details about calls to the GetFileRevision method.
+		GetFileRevision []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common.GitContext
+			// Path is the path argument value.
+			Path string
+			// Revision is the revision argument value.
+			Revision string
+			// File is the file argument value.
+			File string
+		}
 		// ProjectExists holds details about calls to the ProjectExists method.
 		ProjectExists []struct {
 			// GitContext is the gitContext argument value.
@@ -124,6 +141,7 @@ type IGitMock struct {
 	lockCloneRepo         sync.RWMutex
 	lockCreateBranch      sync.RWMutex
 	lockGetDefaultBranch  sync.RWMutex
+	lockGetFileRevision   sync.RWMutex
 	lockProjectExists     sync.RWMutex
 	lockPull              sync.RWMutex
 	lockPush              sync.RWMutex
@@ -263,6 +281,49 @@ func (mock *IGitMock) GetDefaultBranchCalls() []struct {
 	mock.lockGetDefaultBranch.RLock()
 	calls = mock.calls.GetDefaultBranch
 	mock.lockGetDefaultBranch.RUnlock()
+	return calls
+}
+
+// GetFileRevision calls GetFileRevisionFunc.
+func (mock *IGitMock) GetFileRevision(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
+	if mock.GetFileRevisionFunc == nil {
+		panic("IGitMock.GetFileRevisionFunc: method is nil but IGit.GetFileRevision was just called")
+	}
+	callInfo := struct {
+		GitContext common.GitContext
+		Path       string
+		Revision   string
+		File       string
+	}{
+		GitContext: gitContext,
+		Path:       path,
+		Revision:   revision,
+		File:       file,
+	}
+	mock.lockGetFileRevision.Lock()
+	mock.calls.GetFileRevision = append(mock.calls.GetFileRevision, callInfo)
+	mock.lockGetFileRevision.Unlock()
+	return mock.GetFileRevisionFunc(gitContext, path, revision, file)
+}
+
+// GetFileRevisionCalls gets all the calls that were made to GetFileRevision.
+// Check the length with:
+//     len(mockedIGit.GetFileRevisionCalls())
+func (mock *IGitMock) GetFileRevisionCalls() []struct {
+	GitContext common.GitContext
+	Path       string
+	Revision   string
+	File       string
+} {
+	var calls []struct {
+		GitContext common.GitContext
+		Path       string
+		Revision   string
+		File       string
+	}
+	mock.lockGetFileRevision.RLock()
+	calls = mock.calls.GetFileRevision
+	mock.lockGetFileRevision.RUnlock()
 	return calls
 }
 
