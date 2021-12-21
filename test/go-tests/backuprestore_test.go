@@ -1,11 +1,12 @@
 package go_tests
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -97,6 +98,10 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
+	t.Logf("Sleeping for 60s...")
+	time.Sleep(60 * time.Second)
+	t.Logf("Continue to work...")
+
 	t.Logf("Verify Direct delivery before backup of %s in stage dev", serviceName)
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
@@ -171,6 +176,10 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("keptn delete project %s", keptnProjectName)
 	require.Nil(t, err)
 
+	t.Logf("Sleeping for 15s...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
 	//restore Configuration Service data
 
 	t.Logf("Restoring configuration-service data")
@@ -187,9 +196,17 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
 	require.Nil(t, err)
 
+	t.Logf("Sleeping for 15s...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
 	t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
+
+	t.Logf("Sleeping for 60s...")
+	time.Sleep(60 * time.Second)
+	t.Logf("Continue to work...")
 
 	t.Logf("Verify Direct delivery after restore of %s in stage dev", serviceName)
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")

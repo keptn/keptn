@@ -19,7 +19,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
     url: new FormControl('', [Validators.required, FormUtils.isUrlValidator]),
-    payload: new FormControl('', []),
+    payload: new FormControl('', [FormUtils.payloadSpecialCharValidator]),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
     sendFinished: new FormControl('true', []),
@@ -73,7 +73,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this.eventDataSource = event ? this.setObject(event) : undefined;
   }
 
-  private setObject(data: Record<string, unknown>, path = '.event'): SelectTreeNode[] {
+  private setObject(data: Record<string, unknown>, path = ''): SelectTreeNode[] {
     const result: SelectTreeNode[] = [];
     for (const key of Object.keys(data)) {
       const newItem = this.generateNewTreeNode(data[key], key, `${path}.${key}`);

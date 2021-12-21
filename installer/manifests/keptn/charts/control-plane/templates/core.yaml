@@ -625,6 +625,20 @@ spec:
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+{{- if .Values.configurationService.initContainer }}
+      initContainers:
+        - name: change-user-init
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
+          command:
+            - sh
+            - -c
+            - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
+{{- end }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}

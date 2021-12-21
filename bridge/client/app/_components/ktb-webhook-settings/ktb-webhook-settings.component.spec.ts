@@ -404,7 +404,7 @@ describe('KtbWebhookSettingsComponent', () => {
                         keys: [
                           {
                             name: 'myCustomElement',
-                            path: '(index (index .event.data.myCustomData 0) 0).myCustomKey.myCustomElement',
+                            path: '(index (index .data.myCustomData 0) 0).myCustomKey.myCustomElement',
                           },
                         ],
                         name: 'myCustomKey',
@@ -418,7 +418,7 @@ describe('KtbWebhookSettingsComponent', () => {
                         keys: [
                           {
                             name: 'myCustomElement2',
-                            path: '(index (index .event.data.myCustomData 0) 1).myCustomKey2.myCustomElement2',
+                            path: '(index (index .data.myCustomData 0) 1).myCustomKey2.myCustomElement2',
                           },
                         ],
                         name: 'myCustomKey2',
@@ -434,20 +434,49 @@ describe('KtbWebhookSettingsComponent', () => {
           },
           {
             name: 'project',
-            path: '.event.data.project',
+            path: '.data.project',
           },
         ],
         name: 'data',
       },
       {
         name: 'id',
-        path: '.event.id',
+        path: '.id',
       },
       {
         name: 'keptnContext',
-        path: '.event.keptnContext',
+        path: '.keptnContext',
       },
     ]);
+  });
+
+  it('should have an error when payload contains one of these characters: $ | ; > & ` /var/run', () => {
+    // given
+    const payloadControl = component.getFormControl('payload');
+
+    const chars = ['$', '$(', '|', ';', '>', '&', '&&', '`', '/var/run', '/VAR/RUN', '/vAr/RuN'];
+
+    for (let i = 0; i < chars.length; i++) {
+      const val = `{id: 12345${chars[i]}678}`;
+      // when
+      payloadControl.setValue(val);
+      payloadControl.updateValueAndValidity();
+
+      // then
+      expect(payloadControl.valid).toEqual(false);
+    }
+  });
+
+  it('should be an invalid form when payload contains a special character', () => {
+    // given
+    const payloadControl = component.getFormControl('payload');
+
+    // when
+    payloadControl.setValue('{id: 12345$$678}');
+    payloadControl.updateValueAndValidity();
+
+    // then
+    expect(component.webhookConfigForm.valid).toEqual(false);
   });
 
   function getAddHeaderButton(): HTMLElement {

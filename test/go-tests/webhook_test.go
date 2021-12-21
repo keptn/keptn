@@ -35,6 +35,15 @@ spec:
         - name: "failedsequence"
           tasks:
             - name: "failedtask"
+        - name: "loopbacksequence"
+          tasks:
+            - name: "loopback"
+        - name: "loopbacksequence2"
+          tasks:
+            - name: "loopback2"
+        - name: "loopbacksequence3"
+          tasks:
+            - name: "loopback3"
         - name: "mysequence"
           tasks:
             - name: "mytask"`
@@ -70,6 +79,21 @@ spec:
             key: "my-key"
       requests:
         - "curl http://kubernetes.default.svc.cluster.local:443/v1"
+    - type: "sh.keptn.event.loopback.triggered"
+      subscriptionID: ${loopback-sub-id}
+      sendFinished: true
+      requests:
+        - "curl http://localhost:8080"
+    - type: "sh.keptn.event.loopback2.triggered"
+      subscriptionID: ${loopback2-sub-id}
+      sendFinished: true
+      requests:
+        - "curl http://127.0.0.1:8080"
+    - type: "sh.keptn.event.loopback3.triggered"
+      subscriptionID: ${loopback3-sub-id}
+      sendFinished: true
+      requests:
+        - "curl http://[::1]:8080"
     - type: "sh.keptn.event.mytask.finished"
       subscriptionID: ${mytask-finished-sub-id}
       sendFinished: true
@@ -163,7 +187,12 @@ func Test_Webhook(t *testing.T) {
 
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
-	defer os.Remove(shipyardFilePath)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 
 	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
@@ -186,7 +215,7 @@ func Test_Webhook(t *testing.T) {
 	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
-	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask"}
+	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
 	for _, taskType := range taskTypes {
@@ -214,7 +243,12 @@ func Test_Webhook(t *testing.T) {
 	// now, let's add an webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
-	defer os.Remove(webhookFilePath)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 
 	t.Log("Adding webhook.yaml to our service")
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
@@ -271,6 +305,33 @@ func Test_Webhook(t *testing.T) {
 		require.Nil(t, decodedEvent["unallowedtask"])
 	})
 
+	// Now, trigger another sequence that tries to execute a webhook with a call to the localhost - this one should fail as well
+	sequencename = "loopbacksequence"
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "loopback", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["loopback"])
+	})
+
+	// Now, trigger another sequence that tries to execute a webhook with a call to the 127.0.0.1 - this one should fail as well
+	sequencename = "loopbacksequence2"
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "loopback2", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["loopback"])
+	})
+
+	// Now, trigger another sequence that tries to execute a webhook with a call to the 127.0.0.1 - this one should fail as well
+	sequencename = "loopbacksequence3"
+
+	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, "loopback3", func(t *testing.T, decodedEvent map[string]interface{}) {
+		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+		require.Nil(t, decodedEvent["loopback"])
+	})
+
 	// Now, trigger another sequence that contains a task for which we don't have a webhook configured - this one should fail as well
 	sequencename = "sequencewithunknowntask"
 
@@ -299,7 +360,12 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
-	defer os.Remove(shipyardFilePath)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 
 	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
@@ -352,7 +418,12 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 	// now, let's add a webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
-	defer os.Remove(webhookFilePath)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 
 	t.Log("Adding webhook.yaml to our service")
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
@@ -381,7 +452,12 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
-	defer os.Remove(shipyardFilePath)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 
 	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
@@ -428,7 +504,12 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	// now, let's add an webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
-	defer os.Remove(webhookFilePath)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 
 	t.Log("Adding webhook.yaml to our service")
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))

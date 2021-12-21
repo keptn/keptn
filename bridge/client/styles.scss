@@ -456,6 +456,12 @@ pre.code {
   &.notification-open {
     padding-bottom: 100px;
   }
+
+  &.column-2 {
+    > dt-form-field {
+      width: 50%;
+    }
+  }
 }
 
 [fxFLex] {
