@@ -247,8 +247,10 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	// try to update shipyard project resource
 	if isShipyardPresent {
 		previousServices := []*models.ExpandedService{}
-		for _, svc := range oldProject.Stages[0].Services {
-			previousServices = append(previousServices, &models.ExpandedService{ServiceName: svc.ServiceName})
+		if len(oldProject.Stages) > 0 {
+			for _, svc := range oldProject.Stages[0].Services {
+				previousServices = append(previousServices, &models.ExpandedService{ServiceName: svc.ServiceName})
+			}
 		}
 
 		decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)

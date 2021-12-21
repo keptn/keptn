@@ -794,12 +794,12 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		GitRemoteURI:    "git-url",
 		GitUser:         "git-user",
 		ProjectName:     "my-project",
-		Shipyard:        myShipyard,
+		Shipyard:        "",
 		ShipyardVersion: "v1",
 	}
 
 	updateShipyardResourceData := &keptnapimodels.Resource{
-		ResourceContent: *params.Shipyard,
+		ResourceContent: "",
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	rollbackShipyardResourceData := &keptnapimodels.Resource{
@@ -900,12 +900,12 @@ func TestUpdate(t *testing.T) {
 		GitRemoteURI:    "git-url",
 		GitUser:         "git-user",
 		ProjectName:     "my-project",
-		Shipyard:        "my-shipyard",
+		Shipyard:        "",
 		ShipyardVersion: "v1",
 	}
 
 	expectedUpdateShipyardResourceData := &keptnapimodels.Resource{
-		ResourceContent: *params.Shipyard,
+		ResourceContent: "",
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
