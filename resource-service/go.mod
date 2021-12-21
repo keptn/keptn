@@ -9,7 +9,9 @@ require (
 	github.com/go-openapi/strfmt v0.21.0
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
-	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/google/uuid v1.3.0 // indirect
-	golang.org/x/net v0.0.0-20211215060638-4ddde0e984e9 // indirect
+	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6 // indirect
+	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	k8s.io/apimachinery v0.23.1
+	k8s.io/client-go v0.23.1
 )
