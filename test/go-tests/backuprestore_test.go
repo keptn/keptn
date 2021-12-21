@@ -1,6 +1,8 @@
 package go_tests
 
 import (
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"os"
 	"path"
 	"testing"
@@ -115,6 +117,11 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Verify Direct delivery before backup of %s in stage prod", serviceName)
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
+
+	sequenceStates, _, err := GetState(keptnProjectName)
+	require.Nil(t, err)
+	require.NotEmpty(t, sequenceStates.States)
+	VerifySequenceEndsUpInState(t, keptnProjectName, &keptnapimodels.EventContext{KeptnContext: &sequenceStates.States[0].Shkeptncontext}, 2*time.Minute, []string{models.SequenceFinished})
 
 	t.Log("Verify network access to public URI of helloservice in stage prod")
 	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "prod")

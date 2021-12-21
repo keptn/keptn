@@ -358,6 +358,7 @@ jobs:
 
       - name: Install Gitea
         id: install_gitea
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         timeout-minutes: 5
         run: |
           helm repo add gitea-charts https://dl.gitea.io/charts/
