@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -169,7 +170,7 @@ func (g *Git) DeleteBranch(project string, branch string, sourceBranch string) e
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI, "--delete", branch}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
+			return errors.New("could not push to upstream repo")
 		}
 	}
 
