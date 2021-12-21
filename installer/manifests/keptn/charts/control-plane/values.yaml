@@ -136,7 +136,7 @@ webhookService:
 alpine:
   image:
     repository: docker.io/alpine
-    tag: "3.13"
+    tag: "3.15"
 
 ingress:
   enabled: false
