@@ -150,9 +150,6 @@ func Test_SequenceState(t *testing.T) {
 		if !IsEqual(t, "dev", stage.Name, "stage.Name") {
 			return false
 		}
-		if !IsEqual(t, "carts:test", stage.Image, "stage.Image") {
-			return false
-		}
 
 		if !IsEqual(t, keptnv2.GetTriggeredEventType("delivery"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
