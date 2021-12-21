@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
 )
 
 type IStageHandler interface {
@@ -13,13 +12,11 @@ type IStageHandler interface {
 
 type StageHandler struct {
 	StageManager IStageManager
-	EventSender  common.EventSender
 }
 
-func NewStageHandler(stageManager IStageManager, eventSender common.EventSender) *StageHandler {
+func NewStageHandler(stageManager IStageManager) *StageHandler {
 	return &StageHandler{
 		StageManager: stageManager,
-		EventSender:  eventSender,
 	}
 }
 

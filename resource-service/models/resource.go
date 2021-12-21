@@ -1,14 +1,5 @@
 package models
 
-import (
-	"context"
-
-	"github.com/go-openapi/errors"
-	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
-)
-
 // Resource resource
 //
 // swagger:model Resource
@@ -22,81 +13,47 @@ type Resource struct {
 
 	// Resource URI in URL-encoded format
 	// Required: true
-	ResourceURI *string `json:"resourceURI"`
+	ResourceURI string `json:"resourceURI"`
 }
 
-// Validate validates this resource
-func (m *Resource) Validate(formats strfmt.Registry) error {
-	var res []error
+type CreateResourceParams struct {
+	// Resource content
+	ResourceContent string `json:"resourceContent,omitempty"`
 
-	if err := m.validateMetadata(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateResourceURI(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
+	// Resource URI in URL-encoded format
+	// Required: true
+	ResourceURI string `json:"resourceURI"`
 }
 
-func (m *Resource) validateMetadata(formats strfmt.Registry) error {
-	if swag.IsZero(m.Metadata) { // not required
-		return nil
-	}
+type UpdateResourceParams CreateResourceParams
 
-	if m.Metadata != nil {
-		if err := m.Metadata.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("metadata")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("metadata")
-			}
-			return err
-		}
-	}
-
-	return nil
+type CreateResourcesParams struct {
+	Resources []CreateResourceParams `json:"resources"`
 }
 
-func (m *Resource) validateResourceURI(formats strfmt.Registry) error {
-
-	if err := validate.Required("resourceURI", "body", m.ResourceURI); err != nil {
-		return err
-	}
-
-	return nil
+type UpdateResourcesParams struct {
+	Resources []UpdateResourceParams `json:"resources"`
 }
 
-// ContextValidate validate this resource based on the context it is used
-func (m *Resource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
+// GetResourcesResponse resources
+//
+// swagger:model GetResourcesResponse
+type GetResourcesResponse struct {
 
-	if err := m.contextValidateMetadata(ctx, formats); err != nil {
-		res = append(res, err)
-	}
+	// Pointer to next page, base64 encoded
+	NextPageKey string `json:"nextPageKey,omitempty"`
 
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
+	// Size of returned page
+	PageSize float64 `json:"pageSize,omitempty"`
+
+	// resources
+	Resources []*Resource `json:"resources"`
+
+	// Total number of resources
+	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
-func (m *Resource) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Metadata != nil {
-		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("metadata")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("metadata")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
+// GetResourceResponse resources
+//
+// swagger:model GetResourceResponse
+type GetResourceResponse Resource

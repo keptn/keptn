@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
 )
 
 type IServiceHandler interface {
@@ -13,13 +12,11 @@ type IServiceHandler interface {
 
 type ServiceHandler struct {
 	ServiceManager IServiceManager
-	EventSender    common.EventSender
 }
 
-func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender) *ServiceHandler {
+func NewServiceHandler(serviceManager IServiceManager) *ServiceHandler {
 	return &ServiceHandler{
 		ServiceManager: serviceManager,
-		EventSender:    eventSender,
 	}
 }
 
