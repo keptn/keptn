@@ -107,15 +107,11 @@ func Test_GracefulShutdown(t *testing.T) {
 	err = waitAndKill(t, shipyardPod, 20)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 15s...")
-	time.Sleep(15 * time.Second)
-	t.Logf("Continue to work...")
-	err = WaitForPodOfDeployment("shipyard-controller")
-	require.Nil(t, err)
-
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
+	err = WaitForPodOfDeployment(shipyardPod)
+	require.Nil(t, err)
 
 	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
@@ -137,6 +133,9 @@ func Test_GracefulShutdown(t *testing.T) {
 	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
 	require.Nil(t, err)
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	if err != nil {
+		t.Log(GetDiagnostics(shipyardPod, ""))
+	}
 	require.Nil(t, err)
 
 }
