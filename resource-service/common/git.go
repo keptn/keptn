@@ -40,7 +40,15 @@ type IGit interface {
 	GetDefaultBranch(gitContext GitContext) (string, error)
 }
 
-type Git struct{}
+type Git struct {
+	git Gogit
+}
+
+func NewGit(g Gogit) Git {
+	return Git{
+		git: g,
+	}
+}
 
 func (g Git) CloneRepo(gitContext GitContext) (bool, error) {
 	projectPath := GetProjectConfigPath(gitContext.Project)
@@ -49,7 +57,7 @@ func (g Git) CloneRepo(gitContext GitContext) (bool, error) {
 		return true, nil
 	}
 
-	clone, err := git.PlainClone(projectPath, false,
+	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
 			URL: gitContext.Credentials.RemoteURI,
 			Auth: &http.BasicAuth{
@@ -63,7 +71,7 @@ func (g Git) CloneRepo(gitContext GitContext) (bool, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "empty") {
 			// TODO empty remote leads to an error
-			init, err := git.PlainInit(projectPath, false)
+			init, err := g.git.PlainInit(projectPath, false)
 			if err != nil {
 				return false, err
 			}
@@ -89,7 +97,7 @@ func (g Git) Push(gitContext GitContext) error {
 	if gitContext.Credentials == nil {
 		return errors.New("Could not push, invalid credentials")
 	}
-	repo, _, err := getWorkTree(gitContext)
+	repo, _, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return err
 	}
@@ -109,30 +117,30 @@ func (g Git) Push(gitContext GitContext) error {
 	return nil
 }
 
-func (g Git) Pull(gitContext GitContext) error {
+func (g *Git) Pull(gitContext GitContext) error {
 	panic("implement me")
 }
 
-func (g Git) CreateBranch(gitContext GitContext, branch string, sourceBranch string) error {
+func (g *Git) CreateBranch(gitContext GitContext, branch string, sourceBranch string) error {
 	// move head to sourceBranch
 	g.CheckoutBranch(gitContext, sourceBranch)
 
 	//create new branch
-	return checkoutBranch(gitContext, &git.CheckoutOptions{
+	return g.checkoutBranch(gitContext, &git.CheckoutOptions{
 		Branch: plumbing.ReferenceName(branch),
 		Create: true,
 	})
 }
 
-func (g Git) CheckoutBranch(gitContext GitContext, branch string) error {
+func (g *Git) CheckoutBranch(gitContext GitContext, branch string) error {
 
-	return checkoutBranch(gitContext, &git.CheckoutOptions{
+	return g.checkoutBranch(gitContext, &git.CheckoutOptions{
 		Branch: plumbing.ReferenceName(branch),
 	})
 }
 
-func checkoutBranch(gitContext GitContext, options *git.CheckoutOptions) error {
-	_, w, err := getWorkTree(gitContext)
+func (g *Git) checkoutBranch(gitContext GitContext, options *git.CheckoutOptions) error {
+	_, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return err
 	}
@@ -140,9 +148,9 @@ func checkoutBranch(gitContext GitContext, options *git.CheckoutOptions) error {
 	return err
 }
 
-func (g Git) GetFileRevision(gitContext GitContext, revision string, file string) ([]byte, error) {
+func (g *Git) GetFileRevision(gitContext GitContext, revision string, file string) ([]byte, error) {
 	path := GetProjectConfigPath(gitContext.Project)
-	r, err := git.PlainOpen(path)
+	r, err := g.git.PlainOpen(path)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -171,7 +179,7 @@ func (g Git) GetFileRevision(gitContext GitContext, revision string, file string
 	return ioutil.ReadAll(re)
 }
 
-func (g Git) GetDefaultBranch(gitContext GitContext) (string, error) {
+func (g *Git) GetDefaultBranch(gitContext GitContext) (string, error) {
 	//checkoutBranch(gitContext, &git.CheckoutOptions{Branch: masterBranch})
 	return "", nil
 }
@@ -188,18 +196,18 @@ func (g *Git) ProjectExists(gitContext GitContext) bool {
 	return true
 }
 
-func (g Git) ProjectRepoExists(project string) bool {
-	_, err := git.PlainOpen(GetProjectConfigPath(project))
+func (g *Git) ProjectRepoExists(project string) bool {
+	_, err := g.git.PlainOpen(GetProjectConfigPath(project))
 	if err == nil {
 		return true
 	}
 	return false
 }
 
-func getWorkTree(gitContext GitContext) (*git.Repository, *git.Worktree, error) {
+func (g *Git) getWorkTree(gitContext GitContext) (*git.Repository, *git.Worktree, error) {
 	projectConfigPath := GetProjectConfigPath(gitContext.Project)
 	// check if we already have a repository
-	repo, err := git.PlainOpen(projectConfigPath)
+	repo, err := g.git.PlainOpen(projectConfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
