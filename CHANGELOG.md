@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.4](https://github.com/keptn/keptn/compare/0.11.3...0.11.4) (2021-12-22)
+
+
+### Bug Fixes
+
+* Update the JMeter Service to JMeter 5.4.2 ([#6429](https://github.com/keptn/keptn/issues/6429)) ([ef8b728](https://github.com/keptn/keptn/commit/ef8b728be0a7796700a877c5c1b8d698cb3cbb96))
+
 ### [0.11.3](https://github.com/keptn/keptn/compare/0.11.2...0.11.3) (2021-12-10)
 
 
