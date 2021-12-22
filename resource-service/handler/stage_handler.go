@@ -24,10 +24,6 @@ func (ph *StageHandler) CreateStage(c *gin.Context) {
 
 }
 
-func (ph *StageHandler) UpdateStage(c *gin.Context) {
-
-}
-
 func (ph *StageHandler) DeleteStage(c *gin.Context) {
 
 }

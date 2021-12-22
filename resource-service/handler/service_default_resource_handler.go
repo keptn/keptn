@@ -40,23 +40,3 @@ func NewServiceDefaultResourceHandler(serviceDefaultResourceManager IServiceDefa
 func (ph *ServiceDefaultResourceHandler) CreateServiceDefaultResources(c *gin.Context) {
 
 }
-
-func (ph *ServiceDefaultResourceHandler) GetServiceDefaultResources(c *gin.Context) {
-
-}
-
-func (ph *ServiceDefaultResourceHandler) UpdateServiceDefaultResources(c *gin.Context) {
-
-}
-
-func (ph *ServiceDefaultResourceHandler) GetServiceDefaultResource(c *gin.Context) {
-
-}
-
-func (ph *ServiceDefaultResourceHandler) UpdateServiceDefaultResource(c *gin.Context) {
-
-}
-
-func (ph *ServiceDefaultResourceHandler) DeleteServiceDefaultResource(c *gin.Context) {
-
-}

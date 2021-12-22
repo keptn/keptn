@@ -51,6 +51,8 @@ func (ph *StageResourceHandler) CreateStageResources(c *gin.Context) {
 // @Param	project				path	string	true	"The name of the project"
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param commitID              query string false "The commit ID to be checked out"
+// @Param pageSize              query int false "The number of items to return"
+// @Param nextPageKey              query string false "Pointer to the next set of items"
 // @Success 200 {object} models.GetResourcesResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"

@@ -6,7 +6,6 @@ import (
 
 type IServiceHandler interface {
 	CreateService(context *gin.Context)
-	UpdateService(context *gin.Context)
 	DeleteService(context *gin.Context)
 }
 
