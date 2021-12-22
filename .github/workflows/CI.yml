@@ -286,11 +286,12 @@ jobs:
           load: true
           push: false
 
-      - name: Upload test image as artifact artifact
+      - name: Upload base image as artifact artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.config.artifact }}-base
           path: /tmp/${{ matrix.config.artifact }}-base.tar
+          retention-days: 1
 
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
