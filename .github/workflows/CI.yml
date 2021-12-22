@@ -265,6 +265,17 @@ jobs:
         with:
           install: true
 
+      - name: Build ${{ matrix.config.artifact }} base image as cache
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.config.working-dir }}
+          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
+          target: builder-base
+          load: true
+          push: false
+          outputs: type=docker,dest=/tmp/${{ matrix.config.artifact }}-base.tar
+
       - name: Build ${{ matrix.config.artifact }} test image for testing
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         uses: docker/build-push-action@v2
@@ -275,23 +286,11 @@ jobs:
           load: true
           push: false
 
-      - name: Build ${{ matrix.config.artifact }} test image for exporting
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: docker/build-push-action@v2
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
-          target: ${{ matrix.config.docker-test-target }}
-          load: true
-          push: false
-          outputs: |
-            type=docker,dest=/tmp/${{ matrix.config.artifact }}-test-image.tar
-
       - name: Upload test image as artifact artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.config.artifact }}-test-image
-          path: /tmp/${{ matrix.config.artifact }}-test-image.tar
+          name: ${{ matrix.config.artifact }}-base
+          path: /tmp/${{ matrix.config.artifact }}-base.tar
 
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
@@ -402,12 +401,12 @@ jobs:
       - name: Download test image artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ matrix.config.artifact }}-test-image
+          name: ${{ matrix.config.artifact }}-base
           path: /tmp
 
       - name: Load docker image
         run: |
-          docker load --input /tmp/${{ matrix.config.artifact }}-test-image.tar
+          docker load --input /tmp/${{ matrix.config.artifact }}-base.tar
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
