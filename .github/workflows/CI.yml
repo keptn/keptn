@@ -274,7 +274,9 @@ jobs:
           target: ${{ matrix.config.docker-test-target }}
           load: true
           push: false
-          outputs: type=docker,dest=/tmp/${{ matrix.config.artifact }}-test-image.tar
+          outputs: |
+            type=docker,dest=/tmp/${{ matrix.config.artifact }}-test-image.tar
+            type=image,name=${{ matrix.config.artifact }}-test-${{ github.sha }}
 
       - name: Upload test image as artifact artifact
         uses: actions/upload-artifact@v2
