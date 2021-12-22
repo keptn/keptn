@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked handler.IStageManager
 // 		mockedIStageManager := &IStageManagerMock{
-// 			CreateStageFunc: func(projectName string, params models.CreateStageParams) error {
+// 			CreateStageFunc: func(params models.CreateStageParams) error {
 // 				panic("mock out the CreateStage method")
 // 			},
 // 			DeleteStageFunc: func(projectName string, stageName string) error {
@@ -28,7 +28,7 @@ import (
 // 	}
 type IStageManagerMock struct {
 	// CreateStageFunc mocks the CreateStage method.
-	CreateStageFunc func(projectName string, params models.CreateStageParams) error
+	CreateStageFunc func(params models.CreateStageParams) error
 
 	// DeleteStageFunc mocks the DeleteStage method.
 	DeleteStageFunc func(projectName string, stageName string) error
@@ -37,8 +37,6 @@ type IStageManagerMock struct {
 	calls struct {
 		// CreateStage holds details about calls to the CreateStage method.
 		CreateStage []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
 			// Params is the params argument value.
 			Params models.CreateStageParams
 		}
@@ -55,33 +53,29 @@ type IStageManagerMock struct {
 }
 
 // CreateStage calls CreateStageFunc.
-func (mock *IStageManagerMock) CreateStage(projectName string, params models.CreateStageParams) error {
+func (mock *IStageManagerMock) CreateStage(params models.CreateStageParams) error {
 	if mock.CreateStageFunc == nil {
 		panic("IStageManagerMock.CreateStageFunc: method is nil but IStageManager.CreateStage was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		Params      models.CreateStageParams
+		Params models.CreateStageParams
 	}{
-		ProjectName: projectName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockCreateStage.Lock()
 	mock.calls.CreateStage = append(mock.calls.CreateStage, callInfo)
 	mock.lockCreateStage.Unlock()
-	return mock.CreateStageFunc(projectName, params)
+	return mock.CreateStageFunc(params)
 }
 
 // CreateStageCalls gets all the calls that were made to CreateStage.
 // Check the length with:
 //     len(mockedIStageManager.CreateStageCalls())
 func (mock *IStageManagerMock) CreateStageCalls() []struct {
-	ProjectName string
-	Params      models.CreateStageParams
+	Params models.CreateStageParams
 } {
 	var calls []struct {
-		ProjectName string
-		Params      models.CreateStageParams
+		Params models.CreateStageParams
 	}
 	mock.lockCreateStage.RLock()
 	calls = mock.calls.CreateStage

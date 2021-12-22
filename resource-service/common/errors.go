@@ -26,3 +26,8 @@ var ErrResourceAlreadyExists = errors.New("resource already exists")
 
 var ErrInvalidGitToken = errors.New("invalid git token")
 var ErrRepositoryNotFound = errors.New("upstream repository not found")
+
+// Credential specific errors
+
+var ErrCredentialsNotFound = errors.New("could not find upstream repository credentials")
+var ErrMalformedCredentials = errors.New("could not decode upstream repository credentials")
