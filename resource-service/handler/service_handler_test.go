@@ -71,7 +71,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 					return errors.New("should not have been called")
 				}},
 			},
-			request:    httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createStageWithoutNameTestPayload))),
+			request:    httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceWithoutNameTestPayload))),
 			wantParams: nil,
 			wantStatus: http.StatusBadRequest,
 		},
