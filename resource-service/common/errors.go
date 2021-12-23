@@ -21,6 +21,8 @@ var ErrServiceAlreadyExists = errors.New("project already exists")
 
 var ErrResourceNotFound = errors.New("resource not found")
 var ErrResourceAlreadyExists = errors.New("resource already exists")
+var ErrResourceNotBase64Encoded = errors.New("resource content is not base64 encoded")
+var ErrResourceInvalidResourceURI = errors.New("invalid resource uri")
 
 // Git specific errors
 

@@ -14,22 +14,22 @@ import (
 //
 // 		// make and configure a mocked handler.IProjectResourceManager
 // 		mockedIProjectResourceManager := &IProjectResourceManagerMock{
-// 			CreateProjectResourcesFunc: func(projectName string, params models.CreateResourcesParams)  {
+// 			CreateProjectResourcesFunc: func(params models.CreateResourcesParams) error {
 // 				panic("mock out the CreateProjectResources method")
 // 			},
-// 			DeleteProjectResourceFunc: func(projectName string, resourceURI string) error {
+// 			DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
 // 				panic("mock out the DeleteProjectResource method")
 // 			},
-// 			GetProjectResourceFunc: func(projectName string, resourceURI string) (models.GetResourceResponse, error) {
+// 			GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 // 				panic("mock out the GetProjectResource method")
 // 			},
-// 			GetProjectResourcesFunc: func(projectName string, gitCommitID string) (models.GetResourcesResponse, error) {
+// 			GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 // 				panic("mock out the GetProjectResources method")
 // 			},
-// 			UpdateProjectResourceFunc: func(projectName string, params models.UpdateResourceParams) error {
+// 			UpdateProjectResourceFunc: func(params models.UpdateResourceParams) error {
 // 				panic("mock out the UpdateProjectResource method")
 // 			},
-// 			UpdateProjectResourcesFunc: func(projectName string, params models.UpdateResourcesParams) error {
+// 			UpdateProjectResourcesFunc: func(params models.UpdateResourcesParams) error {
 // 				panic("mock out the UpdateProjectResources method")
 // 			},
 // 		}
@@ -40,64 +40,52 @@ import (
 // 	}
 type IProjectResourceManagerMock struct {
 	// CreateProjectResourcesFunc mocks the CreateProjectResources method.
-	CreateProjectResourcesFunc func(projectName string, params models.CreateResourcesParams)
+	CreateProjectResourcesFunc func(params models.CreateResourcesParams) error
 
 	// DeleteProjectResourceFunc mocks the DeleteProjectResource method.
-	DeleteProjectResourceFunc func(projectName string, resourceURI string) error
+	DeleteProjectResourceFunc func(params models.DeleteResourceParams) error
 
 	// GetProjectResourceFunc mocks the GetProjectResource method.
-	GetProjectResourceFunc func(projectName string, resourceURI string) (models.GetResourceResponse, error)
+	GetProjectResourceFunc func(params models.GetResourceParams) (*models.GetResourceResponse, error)
 
 	// GetProjectResourcesFunc mocks the GetProjectResources method.
-	GetProjectResourcesFunc func(projectName string, gitCommitID string) (models.GetResourcesResponse, error)
+	GetProjectResourcesFunc func(params models.GetResourcesParams) (*models.GetResourcesResponse, error)
 
 	// UpdateProjectResourceFunc mocks the UpdateProjectResource method.
-	UpdateProjectResourceFunc func(projectName string, params models.UpdateResourceParams) error
+	UpdateProjectResourceFunc func(params models.UpdateResourceParams) error
 
 	// UpdateProjectResourcesFunc mocks the UpdateProjectResources method.
-	UpdateProjectResourcesFunc func(projectName string, params models.UpdateResourcesParams) error
+	UpdateProjectResourcesFunc func(params models.UpdateResourcesParams) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateProjectResources holds details about calls to the CreateProjectResources method.
 		CreateProjectResources []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
 			// Params is the params argument value.
 			Params models.CreateResourcesParams
 		}
 		// DeleteProjectResource holds details about calls to the DeleteProjectResource method.
 		DeleteProjectResource []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// ResourceURI is the resourceURI argument value.
-			ResourceURI string
+			// Params is the params argument value.
+			Params models.DeleteResourceParams
 		}
 		// GetProjectResource holds details about calls to the GetProjectResource method.
 		GetProjectResource []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// ResourceURI is the resourceURI argument value.
-			ResourceURI string
+			// Params is the params argument value.
+			Params models.GetResourceParams
 		}
 		// GetProjectResources holds details about calls to the GetProjectResources method.
 		GetProjectResources []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// GitCommitID is the gitCommitID argument value.
-			GitCommitID string
+			// Params is the params argument value.
+			Params models.GetResourcesParams
 		}
 		// UpdateProjectResource holds details about calls to the UpdateProjectResource method.
 		UpdateProjectResource []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
 			// Params is the params argument value.
 			Params models.UpdateResourceParams
 		}
 		// UpdateProjectResources holds details about calls to the UpdateProjectResources method.
 		UpdateProjectResources []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
 			// Params is the params argument value.
 			Params models.UpdateResourcesParams
 		}
@@ -111,33 +99,29 @@ type IProjectResourceManagerMock struct {
 }
 
 // CreateProjectResources calls CreateProjectResourcesFunc.
-func (mock *IProjectResourceManagerMock) CreateProjectResources(projectName string, params models.CreateResourcesParams) {
+func (mock *IProjectResourceManagerMock) CreateProjectResources(params models.CreateResourcesParams) error {
 	if mock.CreateProjectResourcesFunc == nil {
 		panic("IProjectResourceManagerMock.CreateProjectResourcesFunc: method is nil but IProjectResourceManager.CreateProjectResources was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		Params      models.CreateResourcesParams
+		Params models.CreateResourcesParams
 	}{
-		ProjectName: projectName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockCreateProjectResources.Lock()
 	mock.calls.CreateProjectResources = append(mock.calls.CreateProjectResources, callInfo)
 	mock.lockCreateProjectResources.Unlock()
-	mock.CreateProjectResourcesFunc(projectName, params)
+	return mock.CreateProjectResourcesFunc(params)
 }
 
 // CreateProjectResourcesCalls gets all the calls that were made to CreateProjectResources.
 // Check the length with:
 //     len(mockedIProjectResourceManager.CreateProjectResourcesCalls())
 func (mock *IProjectResourceManagerMock) CreateProjectResourcesCalls() []struct {
-	ProjectName string
-	Params      models.CreateResourcesParams
+	Params models.CreateResourcesParams
 } {
 	var calls []struct {
-		ProjectName string
-		Params      models.CreateResourcesParams
+		Params models.CreateResourcesParams
 	}
 	mock.lockCreateProjectResources.RLock()
 	calls = mock.calls.CreateProjectResources
@@ -146,33 +130,29 @@ func (mock *IProjectResourceManagerMock) CreateProjectResourcesCalls() []struct 
 }
 
 // DeleteProjectResource calls DeleteProjectResourceFunc.
-func (mock *IProjectResourceManagerMock) DeleteProjectResource(projectName string, resourceURI string) error {
+func (mock *IProjectResourceManagerMock) DeleteProjectResource(params models.DeleteResourceParams) error {
 	if mock.DeleteProjectResourceFunc == nil {
 		panic("IProjectResourceManagerMock.DeleteProjectResourceFunc: method is nil but IProjectResourceManager.DeleteProjectResource was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		ResourceURI string
+		Params models.DeleteResourceParams
 	}{
-		ProjectName: projectName,
-		ResourceURI: resourceURI,
+		Params: params,
 	}
 	mock.lockDeleteProjectResource.Lock()
 	mock.calls.DeleteProjectResource = append(mock.calls.DeleteProjectResource, callInfo)
 	mock.lockDeleteProjectResource.Unlock()
-	return mock.DeleteProjectResourceFunc(projectName, resourceURI)
+	return mock.DeleteProjectResourceFunc(params)
 }
 
 // DeleteProjectResourceCalls gets all the calls that were made to DeleteProjectResource.
 // Check the length with:
 //     len(mockedIProjectResourceManager.DeleteProjectResourceCalls())
 func (mock *IProjectResourceManagerMock) DeleteProjectResourceCalls() []struct {
-	ProjectName string
-	ResourceURI string
+	Params models.DeleteResourceParams
 } {
 	var calls []struct {
-		ProjectName string
-		ResourceURI string
+		Params models.DeleteResourceParams
 	}
 	mock.lockDeleteProjectResource.RLock()
 	calls = mock.calls.DeleteProjectResource
@@ -181,33 +161,29 @@ func (mock *IProjectResourceManagerMock) DeleteProjectResourceCalls() []struct {
 }
 
 // GetProjectResource calls GetProjectResourceFunc.
-func (mock *IProjectResourceManagerMock) GetProjectResource(projectName string, resourceURI string) (models.GetResourceResponse, error) {
+func (mock *IProjectResourceManagerMock) GetProjectResource(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 	if mock.GetProjectResourceFunc == nil {
 		panic("IProjectResourceManagerMock.GetProjectResourceFunc: method is nil but IProjectResourceManager.GetProjectResource was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		ResourceURI string
+		Params models.GetResourceParams
 	}{
-		ProjectName: projectName,
-		ResourceURI: resourceURI,
+		Params: params,
 	}
 	mock.lockGetProjectResource.Lock()
 	mock.calls.GetProjectResource = append(mock.calls.GetProjectResource, callInfo)
 	mock.lockGetProjectResource.Unlock()
-	return mock.GetProjectResourceFunc(projectName, resourceURI)
+	return mock.GetProjectResourceFunc(params)
 }
 
 // GetProjectResourceCalls gets all the calls that were made to GetProjectResource.
 // Check the length with:
 //     len(mockedIProjectResourceManager.GetProjectResourceCalls())
 func (mock *IProjectResourceManagerMock) GetProjectResourceCalls() []struct {
-	ProjectName string
-	ResourceURI string
+	Params models.GetResourceParams
 } {
 	var calls []struct {
-		ProjectName string
-		ResourceURI string
+		Params models.GetResourceParams
 	}
 	mock.lockGetProjectResource.RLock()
 	calls = mock.calls.GetProjectResource
@@ -216,33 +192,29 @@ func (mock *IProjectResourceManagerMock) GetProjectResourceCalls() []struct {
 }
 
 // GetProjectResources calls GetProjectResourcesFunc.
-func (mock *IProjectResourceManagerMock) GetProjectResources(projectName string, gitCommitID string) (models.GetResourcesResponse, error) {
+func (mock *IProjectResourceManagerMock) GetProjectResources(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 	if mock.GetProjectResourcesFunc == nil {
 		panic("IProjectResourceManagerMock.GetProjectResourcesFunc: method is nil but IProjectResourceManager.GetProjectResources was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		GitCommitID string
+		Params models.GetResourcesParams
 	}{
-		ProjectName: projectName,
-		GitCommitID: gitCommitID,
+		Params: params,
 	}
 	mock.lockGetProjectResources.Lock()
 	mock.calls.GetProjectResources = append(mock.calls.GetProjectResources, callInfo)
 	mock.lockGetProjectResources.Unlock()
-	return mock.GetProjectResourcesFunc(projectName, gitCommitID)
+	return mock.GetProjectResourcesFunc(params)
 }
 
 // GetProjectResourcesCalls gets all the calls that were made to GetProjectResources.
 // Check the length with:
 //     len(mockedIProjectResourceManager.GetProjectResourcesCalls())
 func (mock *IProjectResourceManagerMock) GetProjectResourcesCalls() []struct {
-	ProjectName string
-	GitCommitID string
+	Params models.GetResourcesParams
 } {
 	var calls []struct {
-		ProjectName string
-		GitCommitID string
+		Params models.GetResourcesParams
 	}
 	mock.lockGetProjectResources.RLock()
 	calls = mock.calls.GetProjectResources
@@ -251,33 +223,29 @@ func (mock *IProjectResourceManagerMock) GetProjectResourcesCalls() []struct {
 }
 
 // UpdateProjectResource calls UpdateProjectResourceFunc.
-func (mock *IProjectResourceManagerMock) UpdateProjectResource(projectName string, params models.UpdateResourceParams) error {
+func (mock *IProjectResourceManagerMock) UpdateProjectResource(params models.UpdateResourceParams) error {
 	if mock.UpdateProjectResourceFunc == nil {
 		panic("IProjectResourceManagerMock.UpdateProjectResourceFunc: method is nil but IProjectResourceManager.UpdateProjectResource was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		Params      models.UpdateResourceParams
+		Params models.UpdateResourceParams
 	}{
-		ProjectName: projectName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockUpdateProjectResource.Lock()
 	mock.calls.UpdateProjectResource = append(mock.calls.UpdateProjectResource, callInfo)
 	mock.lockUpdateProjectResource.Unlock()
-	return mock.UpdateProjectResourceFunc(projectName, params)
+	return mock.UpdateProjectResourceFunc(params)
 }
 
 // UpdateProjectResourceCalls gets all the calls that were made to UpdateProjectResource.
 // Check the length with:
 //     len(mockedIProjectResourceManager.UpdateProjectResourceCalls())
 func (mock *IProjectResourceManagerMock) UpdateProjectResourceCalls() []struct {
-	ProjectName string
-	Params      models.UpdateResourceParams
+	Params models.UpdateResourceParams
 } {
 	var calls []struct {
-		ProjectName string
-		Params      models.UpdateResourceParams
+		Params models.UpdateResourceParams
 	}
 	mock.lockUpdateProjectResource.RLock()
 	calls = mock.calls.UpdateProjectResource
@@ -286,33 +254,29 @@ func (mock *IProjectResourceManagerMock) UpdateProjectResourceCalls() []struct {
 }
 
 // UpdateProjectResources calls UpdateProjectResourcesFunc.
-func (mock *IProjectResourceManagerMock) UpdateProjectResources(projectName string, params models.UpdateResourcesParams) error {
+func (mock *IProjectResourceManagerMock) UpdateProjectResources(params models.UpdateResourcesParams) error {
 	if mock.UpdateProjectResourcesFunc == nil {
 		panic("IProjectResourceManagerMock.UpdateProjectResourcesFunc: method is nil but IProjectResourceManager.UpdateProjectResources was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		Params      models.UpdateResourcesParams
+		Params models.UpdateResourcesParams
 	}{
-		ProjectName: projectName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockUpdateProjectResources.Lock()
 	mock.calls.UpdateProjectResources = append(mock.calls.UpdateProjectResources, callInfo)
 	mock.lockUpdateProjectResources.Unlock()
-	return mock.UpdateProjectResourcesFunc(projectName, params)
+	return mock.UpdateProjectResourcesFunc(params)
 }
 
 // UpdateProjectResourcesCalls gets all the calls that were made to UpdateProjectResources.
 // Check the length with:
 //     len(mockedIProjectResourceManager.UpdateProjectResourcesCalls())
 func (mock *IProjectResourceManagerMock) UpdateProjectResourcesCalls() []struct {
-	ProjectName string
-	Params      models.UpdateResourcesParams
+	Params models.UpdateResourcesParams
 } {
 	var calls []struct {
-		ProjectName string
-		Params      models.UpdateResourcesParams
+		Params models.UpdateResourcesParams
 	}
 	mock.lockUpdateProjectResources.RLock()
 	calls = mock.calls.UpdateProjectResources
