@@ -109,6 +109,7 @@ configurationService:
 
 resourceService:
   enabled: false
+  replicas: 2
   image:
     repository: docker.io/keptn/resource-service
     tag: ""

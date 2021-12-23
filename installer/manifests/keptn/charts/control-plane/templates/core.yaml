@@ -588,7 +588,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 2
+  replicas: {{ .Values.resourceService.replicas }}
   strategy:
     type: Recreate
   template:
@@ -623,8 +623,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: DATASTORE_URI
-              value: mongodb-datastore:8080
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
             {{- range $key, $value := .Values.resourceService.env }}
