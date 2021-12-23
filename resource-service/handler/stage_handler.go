@@ -61,6 +61,26 @@ func (ph *StageHandler) CreateStage(c *gin.Context) {
 	c.String(http.StatusNoContent, "")
 }
 
-func (ph *StageHandler) DeleteStage(c *gin.Context) {
+func (sh *StageHandler) DeleteStage(c *gin.Context) {
+	params := &models.DeleteStageParams{
+		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		Stage:   models.Stage{StageName: c.Param(pathParamStageName)},
+	}
 
+	if err := params.Validate(); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
+	if err := sh.StageManager.DeleteStage(*params); err != nil {
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, "Project does not exist")
+		} else if errors.Is(err, common.ErrStageNotFound) {
+			SetNotFoundErrorResponse(c, "Stage does not exist")
+		} else {
+			SetInternalServerErrorResponse(c, "Internal server error")
+		}
+		return
+	}
+	c.String(http.StatusNoContent, "")
 }

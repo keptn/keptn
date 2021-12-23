@@ -1,26 +1,12 @@
 package models
 
-import (
-	"errors"
-	"strings"
-)
-
 type Project struct {
 	// ProjectName the name of the project
 	ProjectName string `form:"projectName" json:"projectName,omitempty"`
 }
 
 func (p Project) Validate() error {
-	if strings.Contains(p.ProjectName, " ") {
-		return errors.New("project name must not contain whitespaces")
-	}
-	if strings.Contains(p.ProjectName, "/") {
-		return errors.New("project name must not contain '/'")
-	}
-	if strings.ReplaceAll(p.ProjectName, " ", "") == "" {
-		return errors.New("project name must not be empty")
-	}
-	return nil
+	return validateEntityName(p.ProjectName)
 }
 
 // CreateProjectParams contains information about the project to be created

@@ -16,7 +16,7 @@ import (
 const createStageTestPayload = `{"stageName": "my-stage"}`
 const createStageWithoutNameTestPayload = `{"stageName": ""}`
 
-func TestProjectHandler_CreateStage(t *testing.T) {
+func TestStageHandler_CreateStage(t *testing.T) {
 	type fields struct {
 		StageManager *handler_mock.IStageManagerMock
 	}
@@ -189,6 +189,133 @@ func TestProjectHandler_CreateStage(t *testing.T) {
 				require.Equal(t, *tt.wantParams, tt.fields.StageManager.CreateStageCalls()[0].Params)
 			} else {
 				require.Empty(t, tt.fields.StageManager.CreateStageCalls())
+			}
+		})
+	}
+}
+
+func TestStageHandler_DeleteStage(t *testing.T) {
+	type fields struct {
+		StageManager *handler_mock.IStageManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.DeleteStageParams
+		wantStatus int
+	}{
+		{
+			name: "delete stage successful",
+			fields: fields{
+				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
+					return nil
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage", nil),
+			wantParams: &models.DeleteStageParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: models.Stage{
+					StageName: "my-stage",
+				},
+			},
+			wantStatus: http.StatusNoContent,
+		},
+		{
+			name: "project not found",
+			fields: fields{
+				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
+					return common.ErrProjectNotFound
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage", nil),
+			wantParams: &models.DeleteStageParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: models.Stage{
+					StageName: "my-stage",
+				},
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "stage not found",
+			fields: fields{
+				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
+					return common.ErrStageNotFound
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage", nil),
+			wantParams: &models.DeleteStageParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: models.Stage{
+					StageName: "my-stage",
+				},
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "random error",
+			fields: fields{
+				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage", nil),
+			wantParams: &models.DeleteStageParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: models.Stage{
+					StageName: "my-stage",
+				},
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "project name empty",
+			fields: fields{
+				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/project/%20/stage/my-stage", nil),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "stage name empty",
+			fields: fields{
+				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/%20", nil),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sh := NewStageHandler(tt.fields.StageManager)
+
+			router := gin.Default()
+			router.DELETE("/project/:projectName/stage/:stageName", sh.DeleteStage)
+
+			resp := performRequest(router, tt.request)
+
+			require.Equal(t, tt.wantStatus, resp.Code)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.StageManager.DeleteStageCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.StageManager.DeleteStageCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.StageManager.DeleteStageCalls())
 			}
 		})
 	}

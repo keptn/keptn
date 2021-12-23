@@ -17,7 +17,7 @@ import (
 // 			CreateStageFunc: func(params models.CreateStageParams) error {
 // 				panic("mock out the CreateStage method")
 // 			},
-// 			DeleteStageFunc: func(projectName string, stageName string) error {
+// 			DeleteStageFunc: func(params models.DeleteStageParams) error {
 // 				panic("mock out the DeleteStage method")
 // 			},
 // 		}
@@ -31,7 +31,7 @@ type IStageManagerMock struct {
 	CreateStageFunc func(params models.CreateStageParams) error
 
 	// DeleteStageFunc mocks the DeleteStage method.
-	DeleteStageFunc func(projectName string, stageName string) error
+	DeleteStageFunc func(params models.DeleteStageParams) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -42,10 +42,8 @@ type IStageManagerMock struct {
 		}
 		// DeleteStage holds details about calls to the DeleteStage method.
 		DeleteStage []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
+			// Params is the params argument value.
+			Params models.DeleteStageParams
 		}
 	}
 	lockCreateStage sync.RWMutex
@@ -84,33 +82,29 @@ func (mock *IStageManagerMock) CreateStageCalls() []struct {
 }
 
 // DeleteStage calls DeleteStageFunc.
-func (mock *IStageManagerMock) DeleteStage(projectName string, stageName string) error {
+func (mock *IStageManagerMock) DeleteStage(params models.DeleteStageParams) error {
 	if mock.DeleteStageFunc == nil {
 		panic("IStageManagerMock.DeleteStageFunc: method is nil but IStageManager.DeleteStage was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
+		Params models.DeleteStageParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
+		Params: params,
 	}
 	mock.lockDeleteStage.Lock()
 	mock.calls.DeleteStage = append(mock.calls.DeleteStage, callInfo)
 	mock.lockDeleteStage.Unlock()
-	return mock.DeleteStageFunc(projectName, stageName)
+	return mock.DeleteStageFunc(params)
 }
 
 // DeleteStageCalls gets all the calls that were made to DeleteStage.
 // Check the length with:
 //     len(mockedIStageManager.DeleteStageCalls())
 func (mock *IStageManagerMock) DeleteStageCalls() []struct {
-	ProjectName string
-	StageName   string
+	Params models.DeleteStageParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
+		Params models.DeleteStageParams
 	}
 	mock.lockDeleteStage.RLock()
 	calls = mock.calls.DeleteStage

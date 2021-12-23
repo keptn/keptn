@@ -7,8 +7,8 @@ import (
 //IServiceManager provides an interface for stage CRUD operations
 //go:generate moq -pkg handler_mock -skip-ensure -out ./fake/service_manager_mock.go . IServiceManager
 type IServiceManager interface {
-	CreateService(projectName, stageName string, params models.CreateStageParams) error
-	DeleteService(projectName, stageName, serviceName string) error
+	CreateService(params models.CreateServiceParams) error
+	DeleteService(params models.DeleteServiceParams) error
 }
 
 type ServiceManager struct {

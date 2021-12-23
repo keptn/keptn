@@ -14,10 +14,10 @@ import (
 //
 // 		// make and configure a mocked handler.IServiceManager
 // 		mockedIServiceManager := &IServiceManagerMock{
-// 			CreateServiceFunc: func(projectName string, stageName string, params models.CreateStageParams) error {
+// 			CreateServiceFunc: func(params models.CreateServiceParams) error {
 // 				panic("mock out the CreateService method")
 // 			},
-// 			DeleteServiceFunc: func(projectName string, stageName string, serviceName string) error {
+// 			DeleteServiceFunc: func(params models.DeleteServiceParams) error {
 // 				panic("mock out the DeleteService method")
 // 			},
 // 		}
@@ -28,30 +28,22 @@ import (
 // 	}
 type IServiceManagerMock struct {
 	// CreateServiceFunc mocks the CreateService method.
-	CreateServiceFunc func(projectName string, stageName string, params models.CreateStageParams) error
+	CreateServiceFunc func(params models.CreateServiceParams) error
 
 	// DeleteServiceFunc mocks the DeleteService method.
-	DeleteServiceFunc func(projectName string, stageName string, serviceName string) error
+	DeleteServiceFunc func(params models.DeleteServiceParams) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateService holds details about calls to the CreateService method.
 		CreateService []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
 			// Params is the params argument value.
-			Params models.CreateStageParams
+			Params models.CreateServiceParams
 		}
 		// DeleteService holds details about calls to the DeleteService method.
 		DeleteService []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
-			// ServiceName is the serviceName argument value.
-			ServiceName string
+			// Params is the params argument value.
+			Params models.DeleteServiceParams
 		}
 	}
 	lockCreateService sync.RWMutex
@@ -59,37 +51,29 @@ type IServiceManagerMock struct {
 }
 
 // CreateService calls CreateServiceFunc.
-func (mock *IServiceManagerMock) CreateService(projectName string, stageName string, params models.CreateStageParams) error {
+func (mock *IServiceManagerMock) CreateService(params models.CreateServiceParams) error {
 	if mock.CreateServiceFunc == nil {
 		panic("IServiceManagerMock.CreateServiceFunc: method is nil but IServiceManager.CreateService was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		Params      models.CreateStageParams
+		Params models.CreateServiceParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockCreateService.Lock()
 	mock.calls.CreateService = append(mock.calls.CreateService, callInfo)
 	mock.lockCreateService.Unlock()
-	return mock.CreateServiceFunc(projectName, stageName, params)
+	return mock.CreateServiceFunc(params)
 }
 
 // CreateServiceCalls gets all the calls that were made to CreateService.
 // Check the length with:
 //     len(mockedIServiceManager.CreateServiceCalls())
 func (mock *IServiceManagerMock) CreateServiceCalls() []struct {
-	ProjectName string
-	StageName   string
-	Params      models.CreateStageParams
+	Params models.CreateServiceParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		Params      models.CreateStageParams
+		Params models.CreateServiceParams
 	}
 	mock.lockCreateService.RLock()
 	calls = mock.calls.CreateService
@@ -98,37 +82,29 @@ func (mock *IServiceManagerMock) CreateServiceCalls() []struct {
 }
 
 // DeleteService calls DeleteServiceFunc.
-func (mock *IServiceManagerMock) DeleteService(projectName string, stageName string, serviceName string) error {
+func (mock *IServiceManagerMock) DeleteService(params models.DeleteServiceParams) error {
 	if mock.DeleteServiceFunc == nil {
 		panic("IServiceManagerMock.DeleteServiceFunc: method is nil but IServiceManager.DeleteService was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		ServiceName string
+		Params models.DeleteServiceParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		ServiceName: serviceName,
+		Params: params,
 	}
 	mock.lockDeleteService.Lock()
 	mock.calls.DeleteService = append(mock.calls.DeleteService, callInfo)
 	mock.lockDeleteService.Unlock()
-	return mock.DeleteServiceFunc(projectName, stageName, serviceName)
+	return mock.DeleteServiceFunc(params)
 }
 
 // DeleteServiceCalls gets all the calls that were made to DeleteService.
 // Check the length with:
 //     len(mockedIServiceManager.DeleteServiceCalls())
 func (mock *IServiceManagerMock) DeleteServiceCalls() []struct {
-	ProjectName string
-	StageName   string
-	ServiceName string
+	Params models.DeleteServiceParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		ServiceName string
+		Params models.DeleteServiceParams
 	}
 	mock.lockDeleteService.RLock()
 	calls = mock.calls.DeleteService

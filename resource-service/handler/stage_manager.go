@@ -8,7 +8,7 @@ import (
 //go:generate moq -pkg handler_mock -skip-ensure -out ./fake/stage_manager_mock.go . IStageManager
 type IStageManager interface {
 	CreateStage(params models.CreateStageParams) error
-	DeleteStage(projectName, stageName string) error
+	DeleteStage(params models.DeleteStageParams) error
 }
 
 type StageManager struct {
