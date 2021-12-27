@@ -35,6 +35,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
@@ -44,6 +45,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
@@ -53,6 +55,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
@@ -63,6 +66,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.19"
@@ -73,6 +77,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
             BACKUP_RESTORE: "true"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.21"
@@ -83,6 +88,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
             BACKUP_RESTORE: "true"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
@@ -95,6 +101,7 @@ jobs:
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       BACKUP_RESTORE: ${{ matrix.BACKUP_RESTORE }}
+      RESOURCE_SERVICE: ${{ matrix.RESOURCE_SERVICE }}
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
@@ -577,6 +584,15 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run Test_BackupRestore -v
 
+      - name: Test Resource Service
+        id: test_resource_service
+        if: env.RESOURCE_SERVICE == 'true'
+        timeout-minutes: 7
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_ResourceServiceBasic -v
+
       - name: Test User Managed Delivery
         id: test_user_managed_delivery
         if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
@@ -738,7 +754,7 @@ jobs:
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
           # please check with headings in print_test_report task roughly 50 lines below
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_backup_restore.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} | ${{ steps.test_graceful_shutdown.outcome }} | ${{ steps.test_uniform_registration.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_backup_restore.outcome }} | ${{ steps.test_resource_service.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} | ${{ steps.test_graceful_shutdown.outcome }} | ${{ steps.test_uniform_registration.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -783,8 +799,8 @@ jobs:
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
           # please check with output in write_test_report task roughly 50 lines above
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  Self Healing  |  Del-Assist  |  Backup-Restore  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration | Graceful Shutdown | Uniform Registration   |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | -------------- | ------------ | ---------------- | ----------------- |----------- | ------------------------ | -------------- | ------------------- | ----------------- | ---------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  Self Healing  |  Del-Assist  |  Backup-Restore  |  Resource Service  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration | Graceful Shutdown | Uniform Registration   |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | -------------- | ------------ | ---------------- | ------------------ | ----------------- |----------- | ------------------------ | -------------- | ------------------- | ----------------- | ---------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
