@@ -13,11 +13,6 @@ cache:
     enabled: true
 
 gitea:
-  database:
-    builtIn:
-      postgresql:
-        enabled: true
-
   config:
     cache:
       HOST: gitea-memcached:11211
