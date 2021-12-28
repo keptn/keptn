@@ -581,3 +581,251 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 		})
 	}
 }
+
+func TestStageResourceHandler_GetStageResource(t *testing.T) {
+	type fields struct {
+		StageResourceManager *handler_mock.IResourceManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.GetResourceParams
+		wantResult *models.GetResourceResponse
+		wantStatus int
+	}{
+		{
+			name: "get resource",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return &testGetResourceResponse, nil
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: &models.Stage{
+					StageName: "my-stage",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: &testGetResourceResponse,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "get resource in parent directory- should return error",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return &testGetResourceResponse, nil
+					},
+				},
+			},
+			request:    httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/..my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: nil,
+			wantResult: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "resource not found",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return nil, common.ErrResourceNotFound
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: &models.Stage{
+					StageName: "my-stage",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: nil,
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "project not found",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return nil, common.ErrProjectNotFound
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: &models.Stage{
+					StageName: "my-stage",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: nil,
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "stage not found",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return nil, common.ErrStageNotFound
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: &models.Stage{
+					StageName: "my-stage",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: nil,
+			wantStatus: http.StatusNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ph := NewStageResourceHandler(tt.fields.StageResourceManager)
+
+			router := gin.Default()
+			router.GET("/project/:projectName/stage/:stageName/resource/:resourceURI", ph.GetStageResource)
+
+			resp := performRequest(router, tt.request)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.StageResourceManager.GetResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.StageResourceManager.GetResourceCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.StageResourceManager.GetResourceCalls())
+			}
+
+			require.Equal(t, tt.wantStatus, resp.Code)
+
+			if tt.wantResult != nil {
+				result := &models.GetResourceResponse{}
+				err := json.Unmarshal(resp.Body.Bytes(), result)
+				require.Nil(t, err)
+				require.Equal(t, tt.wantResult, result)
+			}
+		})
+	}
+}
+
+func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
+	type fields struct {
+		StageResourceManager *handler_mock.IResourceManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.DeleteResourceParams
+		wantStatus int
+	}{
+		{
+			name: "delete resource",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
+					return nil
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/resource/resource.yaml", nil),
+			wantParams: &models.DeleteResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: &models.Stage{
+					StageName: "my-stage",
+				},
+				ResourceURI: "resource.yaml",
+			},
+			wantStatus: http.StatusNoContent,
+		},
+		{
+			name: "project name empty",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/project/%20/stage/my-stage/resource/resource.yaml", nil),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "stage name empty",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/%20/resource/resource.yaml", nil),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "random error",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/resource/resource.yaml", nil),
+			wantParams: &models.DeleteResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				Stage: &models.Stage{
+					StageName: "my-stage",
+				},
+				ResourceURI: "resource.yaml",
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ph := NewStageResourceHandler(tt.fields.StageResourceManager)
+
+			router := gin.Default()
+			router.DELETE("/project/:projectName/stage/:stageName/resource/:resourceURI", ph.DeleteStageResource)
+
+			resp := performRequest(router, tt.request)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.StageResourceManager.DeleteResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.StageResourceManager.DeleteResourceCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.StageResourceManager.DeleteResourceCalls())
+			}
+
+			require.Equal(t, tt.wantStatus, resp.Code)
+		})
+	}
+}
