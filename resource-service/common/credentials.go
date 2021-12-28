@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/resource-service/common_models"
 	utils "github.com/keptn/kubernetes-utils/pkg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,12 +19,12 @@ var ErrNoCredentialsFound = errors.New("no credentials found")
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/credential_reader_mock.go . CredentialReader
 type CredentialReader interface {
-	GetCredentials(project string) (*GitCredentials, error)
+	GetCredentials(project string) (*common_models.GitCredentials, error)
 }
 
 type K8sCredentialReader struct{}
 
-func (K8sCredentialReader) GetCredentials(project string) (*GitCredentials, error) {
+func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
 		return nil, ErrCouldNotReadCredentials
@@ -40,7 +41,7 @@ func (K8sCredentialReader) GetCredentials(project string) (*GitCredentials, erro
 	}
 
 	// secret found -> unmarshal it
-	var credentials GitCredentials
+	var credentials common_models.GitCredentials
 	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
 	if err != nil {
 		return nil, ErrDecodeCredentialsError

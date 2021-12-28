@@ -2,7 +2,7 @@ package common
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/configuration-service/config"
+	"github.com/keptn/keptn/resource-service/config"
 )
 
 const ErrReadOnly = "read-only filesystem"

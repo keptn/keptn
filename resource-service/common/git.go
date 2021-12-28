@@ -3,42 +3,15 @@ package common
 import (
 	"errors"
 	"github.com/go-git/go-git/v5"
-	config2 "github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"io"
 	"io/ioutil"
 	"strings"
 )
-
-const masterBranch = "master"
-
-// GitCredentials contains git credentials info
-type GitCredentials struct {
-	User      string `json:"user,omitempty"`
-	Token     string `json:"token,omitempty"`
-	RemoteURI string `json:"remoteURI,omitempty"`
-}
-
-type GitContext struct {
-	Project     string //TODO would it make sense to store branch ? no
-	Credentials *GitCredentials
-}
-
-// IGit provides functions to interact with the git repository of a project
-//go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
-type IGit interface {
-	ProjectExists(gitContext GitContext) bool
-	CloneRepo(gitContext GitContext) (bool, error)
-	StageAndCommitAll(gitContext GitContext, message string) error
-	Push(gitContext GitContext) error
-	Pull(gitContext GitContext) error
-	CreateBranch(gitContext GitContext, branch string, sourceBranch string) error
-	CheckoutBranch(gitContext GitContext, branch string) error
-	GetFileRevision(gitContext GitContext, revision string, file string) ([]byte, error)
-	GetDefaultBranch(gitContext GitContext) (string, error)
-}
 
 type Git struct {
 	git Gogit
@@ -50,7 +23,7 @@ func NewGit(g Gogit) Git {
 	}
 }
 
-func (g Git) CloneRepo(gitContext GitContext) (bool, error) {
+func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	projectPath := GetProjectConfigPath(gitContext.Project)
 	if g.ProjectRepoExists(gitContext.Project) {
 		// if project exist we do not clone again
@@ -88,11 +61,11 @@ func (g Git) CloneRepo(gitContext GitContext) (bool, error) {
 	return true, nil
 }
 
-func (g Git) StageAndCommitAll(gitContext GitContext, message string) error {
+func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) error {
 	panic("implement me")
 }
 
-func (g Git) Push(gitContext GitContext) error {
+func (g Git) Push(gitContext common_models.GitContext) error {
 	var err error
 	if gitContext.Credentials == nil {
 		return errors.New("Could not push, invalid credentials")
@@ -117,11 +90,11 @@ func (g Git) Push(gitContext GitContext) error {
 	return nil
 }
 
-func (g *Git) Pull(gitContext GitContext) error {
+func (g *Git) Pull(gitContext common_models.GitContext) error {
 	panic("implement me")
 }
 
-func (g *Git) CreateBranch(gitContext GitContext, branch string, sourceBranch string) error {
+func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 	// move head to sourceBranch
 	g.CheckoutBranch(gitContext, sourceBranch)
 
@@ -132,23 +105,26 @@ func (g *Git) CreateBranch(gitContext GitContext, branch string, sourceBranch st
 	})
 }
 
-func (g *Git) CheckoutBranch(gitContext GitContext, branch string) error {
+func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string) error {
 
 	return g.checkoutBranch(gitContext, &git.CheckoutOptions{
 		Branch: plumbing.ReferenceName(branch),
 	})
 }
 
-func (g *Git) checkoutBranch(gitContext GitContext, options *git.CheckoutOptions) error {
-	_, w, err := g.getWorkTree(gitContext)
-	if err != nil {
+func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
+	if g.ProjectExists(gitContext) {
+		_, w, err := g.getWorkTree(gitContext)
+		if err != nil {
+			return err
+		}
+		err = w.Checkout(options)
 		return err
 	}
-	err = w.Checkout(options)
-	return err
+	return errors.New("Could not find project")
 }
 
-func (g *Git) GetFileRevision(gitContext GitContext, revision string, file string) ([]byte, error) {
+func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 	path := GetProjectConfigPath(gitContext.Project)
 	r, err := g.git.PlainOpen(path)
 	if err != nil {
@@ -179,12 +155,12 @@ func (g *Git) GetFileRevision(gitContext GitContext, revision string, file strin
 	return ioutil.ReadAll(re)
 }
 
-func (g *Git) GetDefaultBranch(gitContext GitContext) (string, error) {
+func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, error) {
 	//checkoutBranch(gitContext, &git.CheckoutOptions{Branch: masterBranch})
 	return "", nil
 }
 
-func (g *Git) ProjectExists(gitContext GitContext) bool {
+func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 	if g.ProjectRepoExists(gitContext.Project) {
 		return true
 	}
@@ -204,7 +180,7 @@ func (g *Git) ProjectRepoExists(project string) bool {
 	return false
 }
 
-func (g *Git) getWorkTree(gitContext GitContext) (*git.Repository, *git.Worktree, error) {
+func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository, *git.Worktree, error) {
 	projectConfigPath := GetProjectConfigPath(gitContext.Project)
 	// check if we already have a repository
 	repo, err := g.git.PlainOpen(projectConfigPath)
@@ -225,7 +201,7 @@ func (g *Git) getWorkTree(gitContext GitContext) (*git.Repository, *git.Worktree
 	return repo, worktree, nil
 }
 
-func ensureRemoteMatchesCredentials(repo *git.Repository, gitContext GitContext) error {
+func ensureRemoteMatchesCredentials(repo *git.Repository, gitContext common_models.GitContext) error {
 	remote, err := repo.Remote("origin")
 	if err != nil {
 		return err
@@ -235,7 +211,7 @@ func ensureRemoteMatchesCredentials(repo *git.Repository, gitContext GitContext)
 		if err != nil {
 			return err
 		}
-		_, err = repo.CreateRemote(&config2.RemoteConfig{
+		_, err = repo.CreateRemote(&config.RemoteConfig{
 			Name: "origin",
 			URLs: []string{gitContext.Credentials.RemoteURI},
 		})

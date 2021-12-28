@@ -1,44 +1,85 @@
 package common
 
 import (
+	"github.com/go-git/go-billy/v5/memfs"
+	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/storage/memory"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
 	"testing"
 )
 
+func NewTestGit() *common_mock.GogitMock {
+	fs, _ := memfs.New().Chroot(".debug/config")
+	mem := memory.NewStorage()
+	url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
+
+	return &common_mock.GogitMock{
+		PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+			return git.Clone(mem, fs, &git.CloneOptions{URL: url})
+		},
+		PlainOpenFunc: func(path string) (*git.Repository, error) {
+			return git.Open(mem, fs)
+		},
+	}
+
+}
+
 func TestGit_CheckoutBranch(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		gitContext GitContext
+		gitContext common_models.GitContext
 		branch     string
 		wantErr    bool
 	}{
-		{name: "checkout master branch",
-			gitContext: git.context,
-			branch:     "master",
-			wantErr:    false,
+		{
+			name: "checkout master branch",
+			gitContext: common_models.GitContext{
+				Project: "go",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			branch:  "refs/heads/master",
+			wantErr: false,
+		},
+		{
+			name: "checkout existing branch",
+			gitContext: common_models.GitContext{
+				Project: "go",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			branch:  "branch",
+			wantErr: false,
+		},
+		{
+			name: "checkout existing origin branch",
+			gitContext: common_models.GitContext{
+				Project: "go",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			branch:  "refs/remotes/origin/branch",
+			wantErr: false,
 		},
 	}
+	g := Git{
+		git: NewTestGit(),
+	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockedGogit := &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 
-				},
-				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
-					panic("mock out the PlainInit method")
-				},
-				PlainOpenFunc: func(path string) (*git.Repository, error) {
-					panic("mock out the PlainOpen method")
-				},
-			}
-			g := Git{
-				git: mockedGogit,
-			}
+		t.Run(tt.name, func(t *testing.T) {
 			if err := g.CheckoutBranch(tt.gitContext, tt.branch); (err != nil) != tt.wantErr {
 				t.Errorf("CheckoutBranch() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -48,7 +89,7 @@ func TestGit_CheckoutBranch(t *testing.T) {
 
 func TestGit_CloneRepo(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 	}
 	tests := []struct {
 		name    string
@@ -75,7 +116,7 @@ func TestGit_CloneRepo(t *testing.T) {
 
 func TestGit_CreateBranch(t *testing.T) {
 	type args struct {
-		gitContext   GitContext
+		gitContext   common_models.GitContext
 		branch       string
 		sourceBranch string
 	}
@@ -98,7 +139,7 @@ func TestGit_CreateBranch(t *testing.T) {
 
 func TestGit_GetDefaultBranch(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 	}
 	tests := []struct {
 		name    string
@@ -125,7 +166,7 @@ func TestGit_GetDefaultBranch(t *testing.T) {
 
 func TestGit_GetFileRevision(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 		revision   string
 		file       string
 	}
@@ -154,7 +195,7 @@ func TestGit_GetFileRevision(t *testing.T) {
 
 func TestGit_ProjectExists(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 	}
 	tests := []struct {
 		name string
@@ -196,7 +237,7 @@ func TestGit_ProjectRepoExists(t *testing.T) {
 
 func TestGit_Pull(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 	}
 	tests := []struct {
 		name    string
@@ -217,7 +258,7 @@ func TestGit_Pull(t *testing.T) {
 
 func TestGit_Push(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 	}
 	tests := []struct {
 		name    string
@@ -238,7 +279,7 @@ func TestGit_Push(t *testing.T) {
 
 func TestGit_StageAndCommitAll(t *testing.T) {
 	type args struct {
-		gitContext GitContext
+		gitContext common_models.GitContext
 		message    string
 	}
 	tests := []struct {
@@ -265,7 +306,7 @@ func TestK8sCredentialReader_GetCredentials(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *GitCredentials
+		want    *common_models.GitCredentials
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -285,31 +326,10 @@ func TestK8sCredentialReader_GetCredentials(t *testing.T) {
 	}
 }
 
-func Test_checkoutBranch(t *testing.T) {
-	type args struct {
-		gitContext GitContext
-		options    *git.CheckoutOptions
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := checkoutBranch(tt.args.gitContext, tt.args.options); (err != nil) != tt.wantErr {
-				t.Errorf("checkoutBranch() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func Test_ensureRemoteMatchesCredentials(t *testing.T) {
 	type args struct {
 		repo       *git.Repository
-		gitContext GitContext
+		gitContext common_models.GitContext
 	}
 	tests := []struct {
 		name    string
@@ -344,36 +364,6 @@ func Test_getK8sClient(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getK8sClient() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_getWorkTree(t *testing.T) {
-	type args struct {
-		gitContext GitContext
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *git.Repository
-		want1   *git.Worktree
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := getWorkTree(tt.args.gitContext)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getWorkTree() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getWorkTree() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("getWorkTree() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

@@ -4,7 +4,7 @@
 package common_mock
 
 import (
-	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"sync"
 )
 
@@ -25,7 +25,7 @@ import (
 // 	}
 type CredentialReaderMock struct {
 	// GetCredentialsFunc mocks the GetCredentials method.
-	GetCredentialsFunc func(project string) (*common.GitCredentials, error)
+	GetCredentialsFunc func(project string) (*common_models.GitCredentials, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,7 +39,7 @@ type CredentialReaderMock struct {
 }
 
 // GetCredentials calls GetCredentialsFunc.
-func (mock *CredentialReaderMock) GetCredentials(project string) (*common.GitCredentials, error) {
+func (mock *CredentialReaderMock) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	if mock.GetCredentialsFunc == nil {
 		panic("CredentialReaderMock.GetCredentialsFunc: method is nil but CredentialReader.GetCredentials was just called")
 	}
