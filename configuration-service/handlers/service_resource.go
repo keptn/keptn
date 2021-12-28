@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -171,11 +170,9 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
-	logger.Debugf("Successfully updated resource: %s", unescapedResourceName)
+	logger.Debugf("Successfully deleted resource: %s", unescapedResourceName)
 
-	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = params.StageName
-	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(metadata)
+	return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINoContent()
 }
 
 func AddUpdateHelmResources(resource string, actionType string, filePath string, projectName string) error {
