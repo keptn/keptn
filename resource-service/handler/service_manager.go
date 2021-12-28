@@ -18,3 +18,11 @@ func NewServiceManager() *ServiceManager {
 	serviceManager := &ServiceManager{}
 	return serviceManager
 }
+
+func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
+	panic("implement me")
+}
+
+func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
+	panic("implement me")
+}

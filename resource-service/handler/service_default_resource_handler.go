@@ -38,5 +38,5 @@ func NewServiceDefaultResourceHandler(serviceDefaultResourceManager IServiceDefa
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/service/{service}/resource [post]
 func (ph *ServiceDefaultResourceHandler) CreateServiceDefaultResources(c *gin.Context) {
-
+	// TODO
 }

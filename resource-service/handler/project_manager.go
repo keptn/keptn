@@ -19,3 +19,15 @@ func NewProjectManager() *ProjectManager {
 	projectManager := &ProjectManager{}
 	return projectManager
 }
+
+func (p ProjectManager) CreateProject(project models.CreateProjectParams) error {
+	panic("implement me")
+}
+
+func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error {
+	panic("implement me")
+}
+
+func (p ProjectManager) DeleteProject(projectName string) error {
+	panic("implement me")
+}

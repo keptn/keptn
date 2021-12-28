@@ -18,3 +18,11 @@ func NewStageManager() *StageManager {
 	stageManager := &StageManager{}
 	return stageManager
 }
+
+func (s StageManager) CreateStage(params models.CreateStageParams) error {
+	panic("implement me")
+}
+
+func (s StageManager) DeleteStage(params models.DeleteStageParams) error {
+	panic("implement me")
+}
