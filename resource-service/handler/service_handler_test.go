@@ -38,7 +38,9 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			wantParams: &models.CreateServiceParams{
 				Project: models.Project{ProjectName: "my-project"},
 				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
+				CreateServicePayload: models.CreateServicePayload{
+					Service: models.Service{ServiceName: "my-service"},
+				},
 			},
 			wantStatus: http.StatusNoContent,
 		},
@@ -86,7 +88,9 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			wantParams: &models.CreateServiceParams{
 				Project: models.Project{ProjectName: "my-project"},
 				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
+				CreateServicePayload: models.CreateServicePayload{
+					Service: models.Service{ServiceName: "my-service"},
+				},
 			},
 			wantStatus: http.StatusNotFound,
 		},
@@ -101,7 +105,9 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			wantParams: &models.CreateServiceParams{
 				Project: models.Project{ProjectName: "my-project"},
 				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
+				CreateServicePayload: models.CreateServicePayload{
+					Service: models.Service{ServiceName: "my-service"},
+				},
 			},
 			wantStatus: http.StatusNotFound,
 		},
@@ -116,7 +122,9 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			wantParams: &models.CreateServiceParams{
 				Project: models.Project{ProjectName: "my-project"},
 				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
+				CreateServicePayload: models.CreateServicePayload{
+					Service: models.Service{ServiceName: "my-service"},
+				},
 			},
 			wantStatus: http.StatusConflict,
 		},
@@ -131,7 +139,9 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			wantParams: &models.CreateServiceParams{
 				Project: models.Project{ProjectName: "my-project"},
 				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
+				CreateServicePayload: models.CreateServicePayload{
+					Service: models.Service{ServiceName: "my-service"},
+				},
 			},
 			wantStatus: http.StatusInternalServerError,
 		},
@@ -146,52 +156,9 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			wantParams: &models.CreateServiceParams{
 				Project: models.Project{ProjectName: "my-project"},
 				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "invalid git token",
-			fields: fields{
-				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrInvalidGitToken
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
-			wantParams: &models.CreateServiceParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project not available",
-			fields: fields{
-				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrCredentialsNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
-			wantParams: &models.CreateServiceParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project could not be decoded",
-			fields: fields{
-				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrMalformedCredentials
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
-			wantParams: &models.CreateServiceParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-				Service: models.Service{ServiceName: "my-service"},
+				CreateServicePayload: models.CreateServicePayload{
+					Service: models.Service{ServiceName: "my-service"},
+				},
 			},
 			wantStatus: http.StatusBadRequest,
 		},

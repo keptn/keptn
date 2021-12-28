@@ -9,12 +9,16 @@ func (s Stage) Validate() error {
 	return validateEntityName(s.StageName)
 }
 
+type CreateStagePayload struct {
+	Stage
+}
+
 // CreateStageParams contains information about the stage to be created
 //
 // swagger:model CreateStageParams
 type CreateStageParams struct {
 	Project
-	Stage
+	CreateStagePayload
 }
 
 func (s CreateStageParams) Validate() error {

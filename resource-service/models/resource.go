@@ -6,13 +6,23 @@ import (
 	"strings"
 )
 
+type ResourceContent string
+
+func (rc ResourceContent) Validate() error {
+	_, err := base64.StdEncoding.DecodeString(string(rc))
+	if err != nil {
+		return common.ErrResourceNotBase64Encoded
+	}
+	return nil
+}
+
 // Resource resource
 //
 // swagger:model Resource
 type Resource struct {
 
 	// Resource content - must be base64 encoded
-	ResourceContent string `json:"resourceContent,omitempty"`
+	ResourceContent ResourceContent `json:"resourceContent,omitempty"`
 
 	// Resource URI in URL-encoded format
 	// Required: true
@@ -20,8 +30,7 @@ type Resource struct {
 }
 
 func (r Resource) Validate() error {
-	_, err := base64.StdEncoding.DecodeString(r.ResourceContent)
-	if err != nil {
+	if err := r.ResourceContent.Validate(); err != nil {
 		return common.ErrResourceNotBase64Encoded
 	}
 	if err := validateResourceURI(r.ResourceURI); err != nil {
@@ -30,13 +39,17 @@ func (r Resource) Validate() error {
 	return nil
 }
 
-type GetResourcesParams struct {
-	Project
-	Stage       *Stage
-	Service     *Service
+type GetResourcesQuery struct {
 	GitCommitID string  `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
 	NextPageKey string  `json:"nextPageKey,omitempty" form:"nextPageKey"`
 	PageSize    float64 `json:"pageSize,omitempty" form:"pageSize"`
+}
+
+type GetResourcesParams struct {
+	Project
+	Stage   *Stage
+	Service *Service
+	GetResourcesQuery
 }
 
 func (p GetResourcesParams) Validate() error {
@@ -56,12 +69,16 @@ func (p GetResourcesParams) Validate() error {
 	return nil
 }
 
+type GetResourceQuery struct {
+	GitCommitID string `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
+}
+
 type GetResourceParams struct {
 	Project
 	Stage       *Stage
 	Service     *Service
 	ResourceURI string
-	GitCommitID string
+	GetResourceQuery
 }
 
 func (p GetResourceParams) Validate() error {
@@ -118,11 +135,16 @@ type CreateResourceParams struct {
 	Resource
 }
 
+type UpdateResourcePayload struct {
+	ResourceContent ResourceContent `json:"resourceContent"`
+}
+
 type UpdateResourceParams struct {
 	Project
-	Stage   *Stage
-	Service *Service
-	Resource
+	Stage       *Stage
+	Service     *Service
+	ResourceURI string
+	UpdateResourcePayload
 }
 
 func (p UpdateResourceParams) Validate() error {
@@ -139,17 +161,24 @@ func (p UpdateResourceParams) Validate() error {
 			return err
 		}
 	}
-	if err := p.Resource.Validate(); err != nil {
+	if err := validateResourceURI(p.ResourceURI); err != nil {
+		return err
+	}
+	if err := p.ResourceContent.Validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
+type CreateResourcesPayload struct {
+	Resources []Resource `json:"resources"`
+}
+
 type CreateResourcesParams struct {
 	Project
-	Stage     *Stage
-	Service   *Service
-	Resources []Resource `json:"resources"`
+	Stage   *Stage
+	Service *Service
+	CreateResourcesPayload
 }
 
 func (p CreateResourcesParams) Validate() error {
@@ -174,11 +203,15 @@ func (p CreateResourcesParams) Validate() error {
 	return nil
 }
 
+type UpdateResourcesPayload struct {
+	Resources []Resource `json:"resources"`
+}
+
 type UpdateResourcesParams struct {
 	Project
-	Stage     *Stage
-	Service   *Service
-	Resources []Resource `json:"resources"`
+	Stage   *Stage
+	Service *Service
+	UpdateResourcesPayload
 }
 
 func (p UpdateResourcesParams) Validate() error {

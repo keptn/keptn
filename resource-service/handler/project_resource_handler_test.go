@@ -39,6 +39,14 @@ const createResourcesInvalidResourceURITestPayload = `{
   ]
 }`
 
+const updateResourceTestPayload = `{
+  "resourceContent": "c3RyaW5n"
+}`
+
+const updateResourceWithoutBase64EncodingTestPayload = `{
+  "resourceContent": "string"
+}`
+
 var testGetResourceResponse = models.GetResourceResponse{
 	Resource: models.Resource{
 		ResourceContent: "resource.yaml",
@@ -81,10 +89,12 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
+				CreateResourcesPayload: models.CreateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
 					},
 				},
 			},
@@ -122,10 +132,12 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
+				CreateResourcesPayload: models.CreateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
 					},
 				},
 			},
@@ -141,90 +153,16 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
+				CreateResourcesPayload: models.CreateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
 					},
 				},
 			},
 			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "upstream repo not found",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
-					return common.ErrRepositoryNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "invalid git token",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
-					return common.ErrInvalidGitToken
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project not available",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
-					return common.ErrCredentialsNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project could not be decoded",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
-					return common.ErrMalformedCredentials
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "invalid payload",
@@ -263,9 +201,6 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 	type fields struct {
 		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
 	}
-	type args struct {
-		c *gin.Context
-	}
 	tests := []struct {
 		name       string
 		fields     fields
@@ -283,10 +218,12 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
+				UpdateResourcesPayload: models.UpdateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
 					},
 				},
 			},
@@ -324,10 +261,12 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
+				UpdateResourcesPayload: models.UpdateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
 					},
 				},
 			},
@@ -343,90 +282,16 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
+				UpdateResourcesPayload: models.UpdateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
 					},
 				},
 			},
 			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "upstream repo not found",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return common.ErrRepositoryNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "invalid git token",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return common.ErrInvalidGitToken
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project not available",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return common.ErrCredentialsNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project could not be decoded",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return common.ErrMalformedCredentials
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
-			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Resources: []models.Resource{
-					{
-						ResourceURI:     "resource.yaml",
-						ResourceContent: "c3RyaW5n",
-					},
-				},
-			},
-			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "invalid payload",
@@ -487,9 +352,11 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 				Project: models.Project{
 					ProjectName: "my-project",
 				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
+				GetResourcesQuery: models.GetResourcesQuery{
+					GitCommitID: "commit-id",
+					PageSize:    3,
+					NextPageKey: "2",
+				},
 			},
 			wantResult: &testGetResourcesResponse,
 			wantStatus: http.StatusOK,
@@ -508,8 +375,10 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 				Project: models.Project{
 					ProjectName: "my-project",
 				},
-				GitCommitID: "commit-id",
-				PageSize:    20,
+				GetResourcesQuery: models.GetResourcesQuery{
+					GitCommitID: "commit-id",
+					PageSize:    20,
+				},
 			},
 			wantResult: &testGetResourcesResponse,
 			wantStatus: http.StatusOK,
@@ -528,7 +397,9 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 				Project: models.Project{
 					ProjectName: "my-project",
 				},
-				PageSize: 20,
+				GetResourcesQuery: models.GetResourcesQuery{
+					PageSize: 20,
+				},
 			},
 			wantResult: &testGetResourcesResponse,
 			wantStatus: http.StatusOK,
@@ -561,54 +432,14 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 				Project: models.Project{
 					ProjectName: "my-project",
 				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
+				GetResourcesQuery: models.GetResourcesQuery{
+					GitCommitID: "commit-id",
+					PageSize:    3,
+					NextPageKey: "2",
+				},
 			},
 			wantResult: nil,
 			wantStatus: http.StatusNotFound,
-		},
-		{
-			name: "invalid git token",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
-						return nil, common.ErrInvalidGitToken
-					},
-				},
-			},
-			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
-			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
-			},
-			wantResult: nil,
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "upstream repo not found",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
-						return nil, common.ErrRepositoryNotFound
-					},
-				},
-			},
-			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
-			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
-			},
-			wantResult: nil,
-			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "random error",
@@ -624,9 +455,11 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 				Project: models.Project{
 					ProjectName: "my-project",
 				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
+				GetResourcesQuery: models.GetResourcesQuery{
+					GitCommitID: "commit-id",
+					PageSize:    3,
+					NextPageKey: "2",
+				},
 			},
 			wantResult: nil,
 			wantStatus: http.StatusInternalServerError,
@@ -642,48 +475,6 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			},
 			request:    httptest.NewRequest(http.MethodGet, "/project/%20/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
 			wantParams: nil,
-			wantResult: nil,
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "no credentials found",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
-						return nil, common.ErrCredentialsNotFound
-					},
-				},
-			},
-			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
-			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
-			},
-			wantResult: nil,
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "malformed credentials",
-			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
-						return nil, common.ErrMalformedCredentials
-					},
-				},
-			},
-			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
-			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				GitCommitID: "commit-id",
-				NextPageKey: "2",
-				PageSize:    3,
-			},
 			wantResult: nil,
 			wantStatus: http.StatusBadRequest,
 		},
@@ -712,6 +503,299 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 				require.Nil(t, err)
 				require.Equal(t, tt.wantResult, result)
 			}
+		})
+	}
+}
+
+func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
+	type fields struct {
+		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.GetResourceParams
+		wantResult *models.GetResourceResponse
+		wantStatus int
+	}{
+		{
+			name: "get resource",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
+					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return &testGetResourceResponse, nil
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: &testGetResourceResponse,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "get resource in parent directory- should return error",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
+					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return &testGetResourceResponse, nil
+					},
+				},
+			},
+			request:    httptest.NewRequest(http.MethodGet, "/project/my-project/resource/..my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: nil,
+			wantResult: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "resource not found",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
+					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return nil, common.ErrResourceNotFound
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: nil,
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "project not found",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
+					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						return nil, common.ErrProjectNotFound
+					},
+				},
+			},
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			wantParams: &models.GetResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				ResourceURI: "my-resource.yaml",
+				GetResourceQuery: models.GetResourceQuery{
+					GitCommitID: "commit-id",
+				},
+			},
+			wantResult: nil,
+			wantStatus: http.StatusNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ph := NewProjectResourceHandler(tt.fields.ProjectResourceManager)
+
+			router := gin.Default()
+			router.GET("/project/:projectName/resource/:resourceURI", ph.GetProjectResource)
+
+			resp := performRequest(router, tt.request)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.ProjectResourceManager.GetProjectResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.GetProjectResourceCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.ProjectResourceManager.GetProjectResourceCalls())
+			}
+
+			require.Equal(t, tt.wantStatus, resp.Code)
+
+			if tt.wantResult != nil {
+				result := &models.GetResourceResponse{}
+				err := json.Unmarshal(resp.Body.Bytes(), result)
+				require.Nil(t, err)
+				require.Equal(t, tt.wantResult, result)
+			}
+		})
+	}
+}
+
+func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
+	type fields struct {
+		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.UpdateResourceParams
+		wantStatus int
+	}{
+		{
+			name: "update resource successful",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+					return nil
+				}},
+			},
+			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
+			wantParams: &models.UpdateResourceParams{
+				Project:               models.Project{ProjectName: "my-project"},
+				ResourceURI:           "resource.yaml",
+				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
+			},
+			wantStatus: http.StatusNoContent,
+		},
+		{
+			name: "resource content not base64 encoded",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+					return errors.New("should not have been called")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceWithoutBase64EncodingTestPayload))),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "resourceUri contains invalid string",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+					return errors.New("should not have been called")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/resource/..resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "internal error",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
+			wantParams: &models.UpdateResourceParams{
+				Project:               models.Project{ProjectName: "my-project"},
+				ResourceURI:           "resource.yaml",
+				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "invalid payload",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+					return errors.New("should not have been called")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/resource/resource.yaml", bytes.NewBuffer([]byte("invalid"))),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ph := NewProjectResourceHandler(tt.fields.ProjectResourceManager)
+
+			router := gin.Default()
+			router.PUT("/project/:projectName/resource/:resourceURI", ph.UpdateProjectResource)
+
+			resp := performRequest(router, tt.request)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.ProjectResourceManager.UpdateProjectResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.UpdateProjectResourceCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.ProjectResourceManager.UpdateProjectResourceCalls())
+			}
+
+			require.Equal(t, tt.wantStatus, resp.Code)
+		})
+	}
+}
+
+func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
+	type fields struct {
+		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.DeleteResourceParams
+		wantStatus int
+	}{
+		{
+			name: "delete resource",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
+					return nil
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/resource/resource.yaml", nil),
+			wantParams: &models.DeleteResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				ResourceURI: "resource.yaml",
+			},
+			wantStatus: http.StatusNoContent,
+		},
+		{
+			name: "project name empty",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/project/%20/resource/resource.yaml", nil),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "random error",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
+					return errors.New("oops")
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/resource/resource.yaml", nil),
+			wantParams: &models.DeleteResourceParams{
+				Project: models.Project{
+					ProjectName: "my-project",
+				},
+				ResourceURI: "resource.yaml",
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ph := NewProjectResourceHandler(tt.fields.ProjectResourceManager)
+
+			router := gin.Default()
+			router.DELETE("/project/:projectName/resource/:resourceURI", ph.DeleteProjectResource)
+
+			resp := performRequest(router, tt.request)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.ProjectResourceManager.DeleteProjectResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.DeleteProjectResourceCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.ProjectResourceManager.DeleteProjectResourceCalls())
+			}
+
+			require.Equal(t, tt.wantStatus, resp.Code)
 		})
 	}
 }

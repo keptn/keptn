@@ -15,7 +15,7 @@ import (
 // 		// make and configure a mocked handler.IServiceManager
 // 		mockedIServiceManager := &IServiceManagerMock{
 // 			CreateServiceFunc: func(params models.CreateServiceParams) error {
-// 				panic("mock out the CreateService method")
+// 				panic("mock out the CreateServicePayload method")
 // 			},
 // 			DeleteServiceFunc: func(params models.DeleteServiceParams) error {
 // 				panic("mock out the DeleteService method")
@@ -27,7 +27,7 @@ import (
 //
 // 	}
 type IServiceManagerMock struct {
-	// CreateServiceFunc mocks the CreateService method.
+	// CreateServiceFunc mocks the CreateServicePayload method.
 	CreateServiceFunc func(params models.CreateServiceParams) error
 
 	// DeleteServiceFunc mocks the DeleteService method.
@@ -35,7 +35,7 @@ type IServiceManagerMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// CreateService holds details about calls to the CreateService method.
+		// CreateServicePayload holds details about calls to the CreateServicePayload method.
 		CreateService []struct {
 			// Params is the params argument value.
 			Params models.CreateServiceParams
@@ -50,10 +50,10 @@ type IServiceManagerMock struct {
 	lockDeleteService sync.RWMutex
 }
 
-// CreateService calls CreateServiceFunc.
+// CreateServicePayload calls CreateServiceFunc.
 func (mock *IServiceManagerMock) CreateService(params models.CreateServiceParams) error {
 	if mock.CreateServiceFunc == nil {
-		panic("IServiceManagerMock.CreateServiceFunc: method is nil but IServiceManager.CreateService was just called")
+		panic("IServiceManagerMock.CreateServiceFunc: method is nil but IServiceManager.CreateServicePayload was just called")
 	}
 	callInfo := struct {
 		Params models.CreateServiceParams
@@ -66,7 +66,7 @@ func (mock *IServiceManagerMock) CreateService(params models.CreateServiceParams
 	return mock.CreateServiceFunc(params)
 }
 
-// CreateServiceCalls gets all the calls that were made to CreateService.
+// CreateServiceCalls gets all the calls that were made to CreateServicePayload.
 // Check the length with:
 //     len(mockedIServiceManager.CreateServiceCalls())
 func (mock *IServiceManagerMock) CreateServiceCalls() []struct {

@@ -37,7 +37,9 @@ func TestStageHandler_CreateStage(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
 			wantParams: &models.CreateStageParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
+				CreateStagePayload: models.CreateStagePayload{
+					Stage: models.Stage{StageName: "my-stage"},
+				},
 			},
 			wantStatus: http.StatusNoContent,
 		},
@@ -73,7 +75,9 @@ func TestStageHandler_CreateStage(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
 			wantParams: &models.CreateStageParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
+				CreateStagePayload: models.CreateStagePayload{
+					Stage: models.Stage{StageName: "my-stage"},
+				},
 			},
 			wantStatus: http.StatusNotFound,
 		},
@@ -87,7 +91,9 @@ func TestStageHandler_CreateStage(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
 			wantParams: &models.CreateStageParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
+				CreateStagePayload: models.CreateStagePayload{
+					Stage: models.Stage{StageName: "my-stage"},
+				},
 			},
 			wantStatus: http.StatusConflict,
 		},
@@ -101,65 +107,11 @@ func TestStageHandler_CreateStage(t *testing.T) {
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
 			wantParams: &models.CreateStageParams{
 				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
+				CreateStagePayload: models.CreateStagePayload{
+					Stage: models.Stage{StageName: "my-stage"},
+				},
 			},
 			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "upstream repo not found",
-			fields: fields{
-				StageManager: &handler_mock.IStageManagerMock{CreateStageFunc: func(project models.CreateStageParams) error {
-					return common.ErrRepositoryNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
-			wantParams: &models.CreateStageParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "invalid git token",
-			fields: fields{
-				StageManager: &handler_mock.IStageManagerMock{CreateStageFunc: func(project models.CreateStageParams) error {
-					return common.ErrInvalidGitToken
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
-			wantParams: &models.CreateStageParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project not available",
-			fields: fields{
-				StageManager: &handler_mock.IStageManagerMock{CreateStageFunc: func(project models.CreateStageParams) error {
-					return common.ErrCredentialsNotFound
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
-			wantParams: &models.CreateStageParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "credentials for project could not be decoded",
-			fields: fields{
-				StageManager: &handler_mock.IStageManagerMock{CreateStageFunc: func(project models.CreateStageParams) error {
-					return common.ErrMalformedCredentials
-				}},
-			},
-			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
-			wantParams: &models.CreateStageParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   models.Stage{StageName: "my-stage"},
-			},
-			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "invalid payload",

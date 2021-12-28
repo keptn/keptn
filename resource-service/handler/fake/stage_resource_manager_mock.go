@@ -14,22 +14,22 @@ import (
 //
 // 		// make and configure a mocked handler.IStageResourceManager
 // 		mockedIStageResourceManager := &IStageResourceManagerMock{
-// 			CreateStageResourcesFunc: func(projectName string, stageName string, params models.CreateResourcesParams)  {
+// 			CreateStageResourcesFunc: func(params models.CreateResourcesParams) error {
 // 				panic("mock out the CreateStageResources method")
 // 			},
-// 			DeleteStageResourceFunc: func(projectName string, stageName string, resourceURI string) error {
+// 			DeleteStageResourceFunc: func(params models.DeleteResourceParams) error {
 // 				panic("mock out the DeleteStageResource method")
 // 			},
-// 			GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (models.GetResourceResponse, error) {
+// 			GetStageResourceFunc: func(params models.GetResourceParams) (models.GetResourceResponse, error) {
 // 				panic("mock out the GetStageResource method")
 // 			},
-// 			GetStageResourcesFunc: func(projectName string, stageName string, gitCommitID string) (models.GetResourcesResponse, error) {
+// 			GetStageResourcesFunc: func(params models.GetResourcesParams) (models.GetResourcesResponse, error) {
 // 				panic("mock out the GetStageResources method")
 // 			},
-// 			UpdateStageResourceFunc: func(projectName string, stageName string, params models.UpdateResourceParams) error {
+// 			UpdateStageResourceFunc: func(params models.UpdateResourceParams) error {
 // 				panic("mock out the UpdateStageResource method")
 // 			},
-// 			UpdateStageResourcesFunc: func(projectName string, stageName string, params models.UpdateResourcesParams) error {
+// 			UpdateStageResourcesFunc: func(params models.UpdateResourcesParams) error {
 // 				panic("mock out the UpdateStageResources method")
 // 			},
 // 		}
@@ -40,76 +40,52 @@ import (
 // 	}
 type IStageResourceManagerMock struct {
 	// CreateStageResourcesFunc mocks the CreateStageResources method.
-	CreateStageResourcesFunc func(projectName string, stageName string, params models.CreateResourcesParams)
+	CreateStageResourcesFunc func(params models.CreateResourcesParams) error
 
 	// DeleteStageResourceFunc mocks the DeleteStageResource method.
-	DeleteStageResourceFunc func(projectName string, stageName string, resourceURI string) error
+	DeleteStageResourceFunc func(params models.DeleteResourceParams) error
 
 	// GetStageResourceFunc mocks the GetStageResource method.
-	GetStageResourceFunc func(projectName string, stageName string, resourceURI string) (models.GetResourceResponse, error)
+	GetStageResourceFunc func(params models.GetResourceParams) (models.GetResourceResponse, error)
 
 	// GetStageResourcesFunc mocks the GetStageResources method.
-	GetStageResourcesFunc func(projectName string, stageName string, gitCommitID string) (models.GetResourcesResponse, error)
+	GetStageResourcesFunc func(params models.GetResourcesParams) (models.GetResourcesResponse, error)
 
 	// UpdateStageResourceFunc mocks the UpdateStageResource method.
-	UpdateStageResourceFunc func(projectName string, stageName string, params models.UpdateResourceParams) error
+	UpdateStageResourceFunc func(params models.UpdateResourceParams) error
 
 	// UpdateStageResourcesFunc mocks the UpdateStageResources method.
-	UpdateStageResourcesFunc func(projectName string, stageName string, params models.UpdateResourcesParams) error
+	UpdateStageResourcesFunc func(params models.UpdateResourcesParams) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateStageResources holds details about calls to the CreateStageResources method.
 		CreateStageResources []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
 			// Params is the params argument value.
 			Params models.CreateResourcesParams
 		}
 		// DeleteStageResource holds details about calls to the DeleteStageResource method.
 		DeleteStageResource []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
-			// ResourceURI is the resourceURI argument value.
-			ResourceURI string
+			// Params is the params argument value.
+			Params models.DeleteResourceParams
 		}
 		// GetStageResource holds details about calls to the GetStageResource method.
 		GetStageResource []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
-			// ResourceURI is the resourceURI argument value.
-			ResourceURI string
+			// Params is the params argument value.
+			Params models.GetResourceParams
 		}
 		// GetStageResources holds details about calls to the GetStageResources method.
 		GetStageResources []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
-			// GitCommitID is the gitCommitID argument value.
-			GitCommitID string
+			// Params is the params argument value.
+			Params models.GetResourcesParams
 		}
 		// UpdateStageResource holds details about calls to the UpdateStageResource method.
 		UpdateStageResource []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
 			// Params is the params argument value.
 			Params models.UpdateResourceParams
 		}
 		// UpdateStageResources holds details about calls to the UpdateStageResources method.
 		UpdateStageResources []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-			// StageName is the stageName argument value.
-			StageName string
 			// Params is the params argument value.
 			Params models.UpdateResourcesParams
 		}
@@ -123,37 +99,29 @@ type IStageResourceManagerMock struct {
 }
 
 // CreateStageResources calls CreateStageResourcesFunc.
-func (mock *IStageResourceManagerMock) CreateStageResources(projectName string, stageName string, params models.CreateResourcesParams) {
+func (mock *IStageResourceManagerMock) CreateStageResources(params models.CreateResourcesParams) error {
 	if mock.CreateStageResourcesFunc == nil {
 		panic("IStageResourceManagerMock.CreateStageResourcesFunc: method is nil but IStageResourceManager.CreateStageResources was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		Params      models.CreateResourcesParams
+		Params models.CreateResourcesParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockCreateStageResources.Lock()
 	mock.calls.CreateStageResources = append(mock.calls.CreateStageResources, callInfo)
 	mock.lockCreateStageResources.Unlock()
-	mock.CreateStageResourcesFunc(projectName, stageName, params)
+	return mock.CreateStageResourcesFunc(params)
 }
 
 // CreateStageResourcesCalls gets all the calls that were made to CreateStageResources.
 // Check the length with:
 //     len(mockedIStageResourceManager.CreateStageResourcesCalls())
 func (mock *IStageResourceManagerMock) CreateStageResourcesCalls() []struct {
-	ProjectName string
-	StageName   string
-	Params      models.CreateResourcesParams
+	Params models.CreateResourcesParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		Params      models.CreateResourcesParams
+		Params models.CreateResourcesParams
 	}
 	mock.lockCreateStageResources.RLock()
 	calls = mock.calls.CreateStageResources
@@ -162,37 +130,29 @@ func (mock *IStageResourceManagerMock) CreateStageResourcesCalls() []struct {
 }
 
 // DeleteStageResource calls DeleteStageResourceFunc.
-func (mock *IStageResourceManagerMock) DeleteStageResource(projectName string, stageName string, resourceURI string) error {
+func (mock *IStageResourceManagerMock) DeleteStageResource(params models.DeleteResourceParams) error {
 	if mock.DeleteStageResourceFunc == nil {
 		panic("IStageResourceManagerMock.DeleteStageResourceFunc: method is nil but IStageResourceManager.DeleteStageResource was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		ResourceURI string
+		Params models.DeleteResourceParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		ResourceURI: resourceURI,
+		Params: params,
 	}
 	mock.lockDeleteStageResource.Lock()
 	mock.calls.DeleteStageResource = append(mock.calls.DeleteStageResource, callInfo)
 	mock.lockDeleteStageResource.Unlock()
-	return mock.DeleteStageResourceFunc(projectName, stageName, resourceURI)
+	return mock.DeleteStageResourceFunc(params)
 }
 
 // DeleteStageResourceCalls gets all the calls that were made to DeleteStageResource.
 // Check the length with:
 //     len(mockedIStageResourceManager.DeleteStageResourceCalls())
 func (mock *IStageResourceManagerMock) DeleteStageResourceCalls() []struct {
-	ProjectName string
-	StageName   string
-	ResourceURI string
+	Params models.DeleteResourceParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		ResourceURI string
+		Params models.DeleteResourceParams
 	}
 	mock.lockDeleteStageResource.RLock()
 	calls = mock.calls.DeleteStageResource
@@ -201,37 +161,29 @@ func (mock *IStageResourceManagerMock) DeleteStageResourceCalls() []struct {
 }
 
 // GetStageResource calls GetStageResourceFunc.
-func (mock *IStageResourceManagerMock) GetStageResource(projectName string, stageName string, resourceURI string) (models.GetResourceResponse, error) {
+func (mock *IStageResourceManagerMock) GetStageResource(params models.GetResourceParams) (models.GetResourceResponse, error) {
 	if mock.GetStageResourceFunc == nil {
 		panic("IStageResourceManagerMock.GetStageResourceFunc: method is nil but IStageResourceManager.GetStageResource was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		ResourceURI string
+		Params models.GetResourceParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		ResourceURI: resourceURI,
+		Params: params,
 	}
 	mock.lockGetStageResource.Lock()
 	mock.calls.GetStageResource = append(mock.calls.GetStageResource, callInfo)
 	mock.lockGetStageResource.Unlock()
-	return mock.GetStageResourceFunc(projectName, stageName, resourceURI)
+	return mock.GetStageResourceFunc(params)
 }
 
 // GetStageResourceCalls gets all the calls that were made to GetStageResource.
 // Check the length with:
 //     len(mockedIStageResourceManager.GetStageResourceCalls())
 func (mock *IStageResourceManagerMock) GetStageResourceCalls() []struct {
-	ProjectName string
-	StageName   string
-	ResourceURI string
+	Params models.GetResourceParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		ResourceURI string
+		Params models.GetResourceParams
 	}
 	mock.lockGetStageResource.RLock()
 	calls = mock.calls.GetStageResource
@@ -240,37 +192,29 @@ func (mock *IStageResourceManagerMock) GetStageResourceCalls() []struct {
 }
 
 // GetStageResources calls GetStageResourcesFunc.
-func (mock *IStageResourceManagerMock) GetStageResources(projectName string, stageName string, gitCommitID string) (models.GetResourcesResponse, error) {
+func (mock *IStageResourceManagerMock) GetStageResources(params models.GetResourcesParams) (models.GetResourcesResponse, error) {
 	if mock.GetStageResourcesFunc == nil {
 		panic("IStageResourceManagerMock.GetStageResourcesFunc: method is nil but IStageResourceManager.GetStageResources was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		GitCommitID string
+		Params models.GetResourcesParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		GitCommitID: gitCommitID,
+		Params: params,
 	}
 	mock.lockGetStageResources.Lock()
 	mock.calls.GetStageResources = append(mock.calls.GetStageResources, callInfo)
 	mock.lockGetStageResources.Unlock()
-	return mock.GetStageResourcesFunc(projectName, stageName, gitCommitID)
+	return mock.GetStageResourcesFunc(params)
 }
 
 // GetStageResourcesCalls gets all the calls that were made to GetStageResources.
 // Check the length with:
 //     len(mockedIStageResourceManager.GetStageResourcesCalls())
 func (mock *IStageResourceManagerMock) GetStageResourcesCalls() []struct {
-	ProjectName string
-	StageName   string
-	GitCommitID string
+	Params models.GetResourcesParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		GitCommitID string
+		Params models.GetResourcesParams
 	}
 	mock.lockGetStageResources.RLock()
 	calls = mock.calls.GetStageResources
@@ -279,37 +223,29 @@ func (mock *IStageResourceManagerMock) GetStageResourcesCalls() []struct {
 }
 
 // UpdateStageResource calls UpdateStageResourceFunc.
-func (mock *IStageResourceManagerMock) UpdateStageResource(projectName string, stageName string, params models.UpdateResourceParams) error {
+func (mock *IStageResourceManagerMock) UpdateStageResource(params models.UpdateResourceParams) error {
 	if mock.UpdateStageResourceFunc == nil {
 		panic("IStageResourceManagerMock.UpdateStageResourceFunc: method is nil but IStageResourceManager.UpdateStageResource was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		Params      models.UpdateResourceParams
+		Params models.UpdateResourceParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockUpdateStageResource.Lock()
 	mock.calls.UpdateStageResource = append(mock.calls.UpdateStageResource, callInfo)
 	mock.lockUpdateStageResource.Unlock()
-	return mock.UpdateStageResourceFunc(projectName, stageName, params)
+	return mock.UpdateStageResourceFunc(params)
 }
 
 // UpdateStageResourceCalls gets all the calls that were made to UpdateStageResource.
 // Check the length with:
 //     len(mockedIStageResourceManager.UpdateStageResourceCalls())
 func (mock *IStageResourceManagerMock) UpdateStageResourceCalls() []struct {
-	ProjectName string
-	StageName   string
-	Params      models.UpdateResourceParams
+	Params models.UpdateResourceParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		Params      models.UpdateResourceParams
+		Params models.UpdateResourceParams
 	}
 	mock.lockUpdateStageResource.RLock()
 	calls = mock.calls.UpdateStageResource
@@ -318,37 +254,29 @@ func (mock *IStageResourceManagerMock) UpdateStageResourceCalls() []struct {
 }
 
 // UpdateStageResources calls UpdateStageResourcesFunc.
-func (mock *IStageResourceManagerMock) UpdateStageResources(projectName string, stageName string, params models.UpdateResourcesParams) error {
+func (mock *IStageResourceManagerMock) UpdateStageResources(params models.UpdateResourcesParams) error {
 	if mock.UpdateStageResourcesFunc == nil {
 		panic("IStageResourceManagerMock.UpdateStageResourcesFunc: method is nil but IStageResourceManager.UpdateStageResources was just called")
 	}
 	callInfo := struct {
-		ProjectName string
-		StageName   string
-		Params      models.UpdateResourcesParams
+		Params models.UpdateResourcesParams
 	}{
-		ProjectName: projectName,
-		StageName:   stageName,
-		Params:      params,
+		Params: params,
 	}
 	mock.lockUpdateStageResources.Lock()
 	mock.calls.UpdateStageResources = append(mock.calls.UpdateStageResources, callInfo)
 	mock.lockUpdateStageResources.Unlock()
-	return mock.UpdateStageResourcesFunc(projectName, stageName, params)
+	return mock.UpdateStageResourcesFunc(params)
 }
 
 // UpdateStageResourcesCalls gets all the calls that were made to UpdateStageResources.
 // Check the length with:
 //     len(mockedIStageResourceManager.UpdateStageResourcesCalls())
 func (mock *IStageResourceManagerMock) UpdateStageResourcesCalls() []struct {
-	ProjectName string
-	StageName   string
-	Params      models.UpdateResourcesParams
+	Params models.UpdateResourcesParams
 } {
 	var calls []struct {
-		ProjectName string
-		StageName   string
-		Params      models.UpdateResourcesParams
+		Params models.UpdateResourcesParams
 	}
 	mock.lockUpdateStageResources.RLock()
 	calls = mock.calls.UpdateStageResources

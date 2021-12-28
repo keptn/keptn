@@ -9,13 +9,17 @@ func (s Service) Validate() error {
 	return validateEntityName(s.ServiceName)
 }
 
+type CreateServicePayload struct {
+	Service
+}
+
 // CreateServiceParams contains information about the service to be created
 //
 // swagger:model CreateServiceParams
 type CreateServiceParams struct {
 	Project
 	Stage
-	Service
+	CreateServicePayload
 }
 
 func (s CreateServiceParams) Validate() error {

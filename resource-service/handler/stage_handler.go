@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/http"
 )
@@ -28,10 +26,14 @@ func (ph *StageHandler) CreateStage(c *gin.Context) {
 	params := &models.CreateStageParams{
 		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
 	}
-	if err := c.ShouldBindJSON(params); err != nil {
+
+	createStage := &models.CreateStagePayload{}
+	if err := c.ShouldBindJSON(createStage); err != nil {
 		SetBadRequestErrorResponse(c, "Invalid request format")
 		return
 	}
+
+	params.CreateStagePayload = *createStage
 
 	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -40,21 +42,7 @@ func (ph *StageHandler) CreateStage(c *gin.Context) {
 
 	err := ph.StageManager.CreateStage(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrStageAlreadyExists) {
-			SetConflictErrorResponse(c, "Stage already exists")
-		} else if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -73,13 +61,7 @@ func (sh *StageHandler) DeleteStage(c *gin.Context) {
 	}
 
 	if err := sh.StageManager.DeleteStage(*params); err != nil {
-		if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project does not exist")
-		} else if errors.Is(err, common.ErrStageNotFound) {
-			SetNotFoundErrorResponse(c, "Stage does not exist")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 	c.String(http.StatusNoContent, "")

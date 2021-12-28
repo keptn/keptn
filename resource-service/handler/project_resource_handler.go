@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/http"
 )
@@ -35,7 +33,7 @@ func NewProjectResourceHandler(projectResourceManager IProjectResourceManager) *
 // @Accept  json
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
-// @Param   resources     body    models.CreateResourcesParams     true        "List of resources"
+// @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
 // @Success 204 {string} "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
@@ -44,10 +42,14 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
 		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
 	}
-	if err := c.ShouldBindJSON(params); err != nil {
+
+	createResources := &models.CreateResourcesPayload{}
+	if err := c.ShouldBindJSON(createResources); err != nil {
 		SetBadRequestErrorResponse(c, "Invalid request format")
 		return
 	}
+
+	params.CreateResourcesPayload = *createResources
 
 	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -56,19 +58,7 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 
 	err := ph.ProjectResourceManager.CreateProjectResources(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -92,13 +82,16 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 // @Router /project/{project}/resource [get]
 func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
-		Project:  models.Project{ProjectName: c.Param(pathParamProjectName)},
-		PageSize: 20,
+		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
 	}
-	if err := c.ShouldBindQuery(params); err != nil {
+
+	getResources := &models.GetResourcesQuery{PageSize: 20}
+	if err := c.ShouldBindQuery(getResources); err != nil {
 		SetBadRequestErrorResponse(c, "Invalid request format")
 		return
 	}
+
+	params.GetResourcesQuery = *getResources
 
 	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -107,19 +100,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 
 	resources, err := ph.ProjectResourceManager.GetProjectResources(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -134,7 +115,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
-// @Param   resources     body    models.UpdateResourcesParams     true        "List of resources"
+// @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
 // @Success 201 {string} "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
@@ -143,10 +124,14 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
 		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
 	}
-	if err := c.ShouldBindJSON(params); err != nil {
+
+	updateResources := &models.UpdateResourcesPayload{}
+	if err := c.ShouldBindJSON(updateResources); err != nil {
 		SetBadRequestErrorResponse(c, "Invalid request format")
 		return
 	}
+
+	params.UpdateResourcesPayload = *updateResources
 
 	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -155,19 +140,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 
 	err := ph.ProjectResourceManager.UpdateProjectResources(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -190,12 +163,16 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 // @Router /project/{project}/resource/{resourceURI} [get]
 func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 	params := &models.GetResourceParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceURI: c.Param(pathParamResourceURI),
 	}
-	if err := c.ShouldBindJSON(params); err != nil {
+	getResources := &models.GetResourceQuery{}
+	if err := c.ShouldBindQuery(getResources); err != nil {
 		SetBadRequestErrorResponse(c, "Invalid request format")
 		return
 	}
+
+	params.GetResourceQuery = *getResources
 
 	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -204,19 +181,7 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 
 	resource, err := ph.ProjectResourceManager.GetProjectResource(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -232,19 +197,23 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param   resources     body    models.UpdateResourceParams     true        "resource"
+// @Param   resources     body    models.UpdateResourcePayload     true        "resource"
 // @Success 200 {string} "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource/{resourceURI} [put]
 func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceURI: c.Param(pathParamResourceURI),
 	}
-	if err := c.ShouldBindJSON(params); err != nil {
+	updateResource := &models.UpdateResourcePayload{}
+	if err := c.ShouldBindJSON(updateResource); err != nil {
 		SetBadRequestErrorResponse(c, "Invalid request format")
 		return
 	}
+
+	params.UpdateResourcePayload = *updateResource
 
 	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -253,19 +222,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 
 	err := ph.ProjectResourceManager.UpdateProjectResource(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -287,11 +244,8 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 // @Router /project/{project}/resource/{resourceURI} [delete]
 func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
-	}
-	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
-		return
+		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceURI: c.Param(pathParamResourceURI),
 	}
 
 	if err := params.Validate(); err != nil {
@@ -301,19 +255,7 @@ func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 
 	err := ph.ProjectResourceManager.DeleteProjectResource(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project not found")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 

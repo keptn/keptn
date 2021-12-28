@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/http"
 )
@@ -50,19 +48,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	err := ph.ProjectManager.CreateProject(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrProjectAlreadyExists) {
-			SetConflictErrorResponse(c, "Project already exists")
-		} else if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -95,19 +81,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 
 	err := ph.ProjectManager.UpdateProject(*params)
 	if err != nil {
-		if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project does not exist")
-		} else if errors.Is(err, common.ErrInvalidGitToken) {
-			SetBadRequestErrorResponse(c, "Invalid git token")
-		} else if errors.Is(err, common.ErrRepositoryNotFound) {
-			SetBadRequestErrorResponse(c, "Upstream repository not found")
-		} else if errors.Is(err, common.ErrCredentialsNotFound) {
-			SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
-		} else if errors.Is(err, common.ErrMalformedCredentials) {
-			SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
@@ -137,11 +111,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	}
 
 	if err := ph.ProjectManager.DeleteProject(params.ProjectName); err != nil {
-		if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, "Project does not exist")
-		} else {
-			SetInternalServerErrorResponse(c, "Internal server error")
-		}
+		OnAPIError(c, err)
 		return
 	}
 
