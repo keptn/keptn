@@ -37,7 +37,7 @@ func TestGit_CheckoutBranch(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "checkout master branch",
+			name: "checkout master branch full ref",
 			gitContext: common_models.GitContext{
 				Project: "go",
 				Credentials: &common_models.GitCredentials{
@@ -46,6 +46,17 @@ func TestGit_CheckoutBranch(t *testing.T) {
 					RemoteURI: "https://github.com/git-fixtures/basic.git"},
 			},
 			branch: "refs/heads/master",
+		},
+		{
+			name: "checkout master branch",
+			gitContext: common_models.GitContext{
+				Project: "go",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			branch: "master",
 		},
 		{
 			name: "checkout not existing branch",
@@ -162,23 +173,34 @@ func TestGit_GetDefaultBranch(t *testing.T) {
 }
 
 func TestGit_GetFileRevision(t *testing.T) {
-	type args struct {
+
+	tests := []struct {
+		name       string
 		gitContext common_models.GitContext
 		revision   string
 		file       string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []byte
-		wantErr bool
+		want       []byte
+		wantErr    bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "get from commitID",
+			gitContext: common_models.GitContext{
+				Project: "go",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			file:     "example.go",
+			revision: "918c48b83bd081e863dbe1b80f8998f058cd8294",
+			want:     []byte{},
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := Git{}
-			got, err := g.GetFileRevision(tt.args.gitContext, tt.args.revision, tt.args.file)
+			g := Git{NewTestGit()}
+			got, err := g.GetFileRevision(tt.gitContext, tt.revision, tt.file)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetFileRevision() error = %v, wantErr %v", err, tt.wantErr)
 				return

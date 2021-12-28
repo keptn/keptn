@@ -106,9 +106,16 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 }
 
 func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string) error {
+	//  short path
+	b := plumbing.NewBranchReferenceName(branch)
+
+	//  complete reference path
+	if strings.HasPrefix(branch, "refs") {
+		b = plumbing.ReferenceName(branch)
+	}
 
 	return g.checkoutBranch(gitContext, &git.CheckoutOptions{
-		Branch: plumbing.ReferenceName(branch),
+		Branch: b,
 	})
 }
 
@@ -118,8 +125,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 		if err != nil {
 			return err
 		}
-		err = w.Checkout(options)
-		return err
+		return w.Checkout(options)
 	}
 	return errors.New("Could not find project")
 }
