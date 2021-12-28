@@ -16,10 +16,10 @@ type IProjectResourceHandler interface {
 }
 
 type ProjectResourceHandler struct {
-	ProjectResourceManager IProjectResourceManager
+	ProjectResourceManager IResourceManager
 }
 
-func NewProjectResourceHandler(projectResourceManager IProjectResourceManager) *ProjectResourceHandler {
+func NewProjectResourceHandler(projectResourceManager IResourceManager) *ProjectResourceHandler {
 	return &ProjectResourceHandler{
 		ProjectResourceManager: projectResourceManager,
 	}
@@ -56,7 +56,7 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.CreateProjectResources(*params)
+	err := ph.ProjectResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -98,7 +98,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 		return
 	}
 
-	resources, err := ph.ProjectResourceManager.GetProjectResources(*params)
+	resources, err := ph.ProjectResourceManager.GetResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -138,7 +138,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.UpdateProjectResources(*params)
+	err := ph.ProjectResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -179,7 +179,7 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 		return
 	}
 
-	resource, err := ph.ProjectResourceManager.GetProjectResource(*params)
+	resource, err := ph.ProjectResourceManager.GetResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -220,7 +220,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.UpdateProjectResource(*params)
+	err := ph.ProjectResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -253,7 +253,7 @@ func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.DeleteProjectResource(*params)
+	err := ph.ProjectResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return

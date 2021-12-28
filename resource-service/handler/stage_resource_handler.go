@@ -16,10 +16,10 @@ type IStageResourceHandler interface {
 }
 
 type StageResourceHandler struct {
-	StageResourceManager IStageResourceManager
+	StageResourceManager IResourceManager
 }
 
-func NewStageResourceHandler(stageResourceManager IStageResourceManager) *StageResourceHandler {
+func NewStageResourceHandler(stageResourceManager IResourceManager) *StageResourceHandler {
 	return &StageResourceHandler{
 		StageResourceManager: stageResourceManager,
 	}
@@ -58,7 +58,7 @@ func (ph *StageResourceHandler) CreateStageResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.CreateStageResources(*params)
+	err := ph.StageResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -102,7 +102,7 @@ func (ph *StageResourceHandler) GetStageResources(c *gin.Context) {
 		return
 	}
 
-	resources, err := ph.StageResourceManager.GetStageResources(*params)
+	resources, err := ph.StageResourceManager.GetResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -144,7 +144,7 @@ func (ph *StageResourceHandler) UpdateStageResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.UpdateStageResources(*params)
+	err := ph.StageResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -187,7 +187,7 @@ func (ph *StageResourceHandler) GetStageResource(c *gin.Context) {
 		return
 	}
 
-	resource, err := ph.StageResourceManager.GetStageResource(*params)
+	resource, err := ph.StageResourceManager.GetResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -230,7 +230,7 @@ func (ph *StageResourceHandler) UpdateStageResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.UpdateStageResource(*params)
+	err := ph.StageResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -265,7 +265,7 @@ func (ph *StageResourceHandler) DeleteStageResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.DeleteStageResource(*params)
+	err := ph.StageResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return

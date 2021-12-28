@@ -70,7 +70,7 @@ var testGetResourcesResponse = models.GetResourcesResponse{
 
 func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 	type fields struct {
-		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+		ProjectResourceManager *handler_mock.IResourceManagerMock
 	}
 	tests := []struct {
 		name       string
@@ -82,7 +82,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 		{
 			name: "create resource successful",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
 					return nil
 				}},
 			},
@@ -103,7 +103,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 		{
 			name: "resource content not base64 encoded",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -114,7 +114,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 		{
 			name: "resourceUri contains invalid string",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -125,7 +125,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 		{
 			name: "project not found",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
 					return common.ErrProjectNotFound
 				}},
 			},
@@ -146,7 +146,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 		{
 			name: "internal error",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
 					return errors.New("oops")
 				}},
 			},
@@ -167,7 +167,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 		{
 			name: "invalid payload",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{CreateProjectResourcesFunc: func(project models.CreateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -188,10 +188,10 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			require.Equal(t, tt.wantStatus, resp.Code)
 
 			if tt.wantParams != nil {
-				require.Len(t, tt.fields.ProjectResourceManager.CreateProjectResourcesCalls(), 1)
-				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.CreateProjectResourcesCalls()[0].Params)
+				require.Len(t, tt.fields.ProjectResourceManager.CreateResourcesCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.CreateResourcesCalls()[0].Params)
 			} else {
-				require.Empty(t, tt.fields.ProjectResourceManager.CreateProjectResourcesCalls())
+				require.Empty(t, tt.fields.ProjectResourceManager.CreateResourcesCalls())
 			}
 		})
 	}
@@ -199,7 +199,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 
 func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 	type fields struct {
-		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+		ProjectResourceManager *handler_mock.IResourceManagerMock
 	}
 	tests := []struct {
 		name       string
@@ -209,9 +209,9 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name: "create resource successful",
+			name: "update resource successful",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return nil
 				}},
 			},
@@ -232,7 +232,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 		{
 			name: "resource content not base64 encoded",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -243,7 +243,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 		{
 			name: "resourceUri contains invalid string",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -254,7 +254,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 		{
 			name: "project not found",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return common.ErrProjectNotFound
 				}},
 			},
@@ -275,7 +275,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 		{
 			name: "internal error",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return errors.New("oops")
 				}},
 			},
@@ -296,7 +296,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 		{
 			name: "invalid payload",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -317,10 +317,10 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			require.Equal(t, tt.wantStatus, resp.Code)
 
 			if tt.wantParams != nil {
-				require.Len(t, tt.fields.ProjectResourceManager.UpdateProjectResourcesCalls(), 1)
-				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.UpdateProjectResourcesCalls()[0].Params)
+				require.Len(t, tt.fields.ProjectResourceManager.UpdateResourcesCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.UpdateResourcesCalls()[0].Params)
 			} else {
-				require.Empty(t, tt.fields.ProjectResourceManager.UpdateProjectResourcesCalls())
+				require.Empty(t, tt.fields.ProjectResourceManager.UpdateResourcesCalls())
 			}
 		})
 	}
@@ -328,7 +328,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 
 func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 	type fields struct {
-		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+		ProjectResourceManager *handler_mock.IResourceManagerMock
 	}
 	tests := []struct {
 		name       string
@@ -341,8 +341,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "get resource list",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return &testGetResourcesResponse, nil
 					},
 				},
@@ -364,8 +364,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "get resource list - use default pageSize",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return &testGetResourcesResponse, nil
 					},
 				},
@@ -386,8 +386,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "get resource list - use default pageSize and no git commit ID",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return &testGetResourcesResponse, nil
 					},
 				},
@@ -407,8 +407,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "get resource list - invalid value for pageSize",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return nil, errors.New("should not have been called")
 					},
 				},
@@ -421,8 +421,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "project not found",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return nil, common.ErrProjectNotFound
 					},
 				},
@@ -444,8 +444,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "random error",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -467,8 +467,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 		{
 			name: "project not set",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -489,10 +489,10 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			resp := performRequest(router, tt.request)
 
 			if tt.wantParams != nil {
-				require.Len(t, tt.fields.ProjectResourceManager.GetProjectResourcesCalls(), 1)
-				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.GetProjectResourcesCalls()[0].Params)
+				require.Len(t, tt.fields.ProjectResourceManager.GetResourcesCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.GetResourcesCalls()[0].Params)
 			} else {
-				require.Empty(t, tt.fields.ProjectResourceManager.GetProjectResourcesCalls())
+				require.Empty(t, tt.fields.ProjectResourceManager.GetResourcesCalls())
 			}
 
 			require.Equal(t, tt.wantStatus, resp.Code)
@@ -509,7 +509,7 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 
 func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 	type fields struct {
-		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+		ProjectResourceManager *handler_mock.IResourceManagerMock
 	}
 	tests := []struct {
 		name       string
@@ -522,8 +522,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 		{
 			name: "get resource",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 						return &testGetResourceResponse, nil
 					},
 				},
@@ -544,8 +544,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 		{
 			name: "get resource in parent directory- should return error",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 						return &testGetResourceResponse, nil
 					},
 				},
@@ -558,8 +558,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 		{
 			name: "resource not found",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 						return nil, common.ErrResourceNotFound
 					},
 				},
@@ -580,8 +580,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 		{
 			name: "project not found",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{
-					GetProjectResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{
+					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 						return nil, common.ErrProjectNotFound
 					},
 				},
@@ -610,10 +610,10 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 			resp := performRequest(router, tt.request)
 
 			if tt.wantParams != nil {
-				require.Len(t, tt.fields.ProjectResourceManager.GetProjectResourceCalls(), 1)
-				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.GetProjectResourceCalls()[0].Params)
+				require.Len(t, tt.fields.ProjectResourceManager.GetResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.GetResourceCalls()[0].Params)
 			} else {
-				require.Empty(t, tt.fields.ProjectResourceManager.GetProjectResourceCalls())
+				require.Empty(t, tt.fields.ProjectResourceManager.GetResourceCalls())
 			}
 
 			require.Equal(t, tt.wantStatus, resp.Code)
@@ -630,7 +630,7 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 
 func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 	type fields struct {
-		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+		ProjectResourceManager *handler_mock.IResourceManagerMock
 	}
 	tests := []struct {
 		name       string
@@ -642,7 +642,7 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 		{
 			name: "update resource successful",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(project models.UpdateResourceParams) error {
 					return nil
 				}},
 			},
@@ -657,7 +657,7 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 		{
 			name: "resource content not base64 encoded",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(project models.UpdateResourceParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -668,7 +668,7 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 		{
 			name: "resourceUri contains invalid string",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(project models.UpdateResourceParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -679,7 +679,7 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 		{
 			name: "internal error",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourceFunc: func(project models.UpdateResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(project models.UpdateResourceParams) error {
 					return errors.New("oops")
 				}},
 			},
@@ -694,7 +694,7 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 		{
 			name: "invalid payload",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{UpdateProjectResourcesFunc: func(project models.UpdateResourcesParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
 					return errors.New("should not have been called")
 				}},
 			},
@@ -713,10 +713,10 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 			resp := performRequest(router, tt.request)
 
 			if tt.wantParams != nil {
-				require.Len(t, tt.fields.ProjectResourceManager.UpdateProjectResourceCalls(), 1)
-				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.UpdateProjectResourceCalls()[0].Params)
+				require.Len(t, tt.fields.ProjectResourceManager.UpdateResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.UpdateResourceCalls()[0].Params)
 			} else {
-				require.Empty(t, tt.fields.ProjectResourceManager.UpdateProjectResourceCalls())
+				require.Empty(t, tt.fields.ProjectResourceManager.UpdateResourceCalls())
 			}
 
 			require.Equal(t, tt.wantStatus, resp.Code)
@@ -726,7 +726,7 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 
 func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 	type fields struct {
-		ProjectResourceManager *handler_mock.IProjectResourceManagerMock
+		ProjectResourceManager *handler_mock.IResourceManagerMock
 	}
 	tests := []struct {
 		name       string
@@ -738,7 +738,7 @@ func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 		{
 			name: "delete resource",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
 					return nil
 				}},
 			},
@@ -754,7 +754,7 @@ func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 		{
 			name: "project name empty",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
 					return errors.New("oops")
 				}},
 			},
@@ -765,7 +765,7 @@ func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 		{
 			name: "random error",
 			fields: fields{
-				ProjectResourceManager: &handler_mock.IProjectResourceManagerMock{DeleteProjectResourceFunc: func(params models.DeleteResourceParams) error {
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
 					return errors.New("oops")
 				}},
 			},
@@ -789,10 +789,10 @@ func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 			resp := performRequest(router, tt.request)
 
 			if tt.wantParams != nil {
-				require.Len(t, tt.fields.ProjectResourceManager.DeleteProjectResourceCalls(), 1)
-				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.DeleteProjectResourceCalls()[0].Params)
+				require.Len(t, tt.fields.ProjectResourceManager.DeleteResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.DeleteResourceCalls()[0].Params)
 			} else {
-				require.Empty(t, tt.fields.ProjectResourceManager.DeleteProjectResourceCalls())
+				require.Empty(t, tt.fields.ProjectResourceManager.DeleteResourceCalls())
 			}
 
 			require.Equal(t, tt.wantStatus, resp.Code)

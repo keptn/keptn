@@ -14,10 +14,10 @@ type IServiceResourceHandler interface {
 }
 
 type ServiceResourceHandler struct {
-	ServiceResourceManager IServiceResourceManager
+	ServiceResourceManager IResourceManager
 }
 
-func NewServiceResourceHandler(serviceResourceManager IServiceResourceManager) *ServiceResourceHandler {
+func NewServiceResourceHandler(serviceResourceManager IResourceManager) *ServiceResourceHandler {
 	return &ServiceResourceHandler{
 		ServiceResourceManager: serviceResourceManager,
 	}
