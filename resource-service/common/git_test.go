@@ -17,7 +17,6 @@ func NewTestGit() *common_mock.GogitMock {
 	fs, _ := memfs.New().Chroot(".debug/config")
 	mem := memory.NewStorage()
 	url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
-
 	return &common_mock.GogitMock{
 		PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 			return git.Clone(mem, fs, &git.CloneOptions{URL: url})
@@ -46,11 +45,10 @@ func TestGit_CheckoutBranch(t *testing.T) {
 					Token:     "blabla",
 					RemoteURI: "https://github.com/git-fixtures/basic.git"},
 			},
-			branch:  "refs/heads/master",
-			wantErr: false,
+			branch: "refs/heads/master",
 		},
 		{
-			name: "checkout existing branch",
+			name: "checkout not existing branch",
 			gitContext: common_models.GitContext{
 				Project: "go",
 				Credentials: &common_models.GitCredentials{
@@ -58,8 +56,8 @@ func TestGit_CheckoutBranch(t *testing.T) {
 					Token:     "blabla",
 					RemoteURI: "https://github.com/git-fixtures/basic.git"},
 			},
-			branch:  "branch",
-			wantErr: false,
+			branch:  "refs/heads/dev",
+			wantErr: true,
 		},
 		{
 			name: "checkout existing origin branch",
@@ -70,8 +68,7 @@ func TestGit_CheckoutBranch(t *testing.T) {
 					Token:     "blabla",
 					RemoteURI: "https://github.com/git-fixtures/basic.git"},
 			},
-			branch:  "refs/remotes/origin/branch",
-			wantErr: false,
+			branch: "refs/remotes/origin/branch",
 		},
 	}
 	g := Git{
