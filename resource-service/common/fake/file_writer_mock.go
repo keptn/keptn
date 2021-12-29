@@ -19,6 +19,9 @@ import (
 // 			FileExistsFunc: func(path string) bool {
 // 				panic("mock out the FileExists method")
 // 			},
+// 			MakeDirFunc: func(path string) error {
+// 				panic("mock out the MakeDir method")
+// 			},
 // 			WriteBase64EncodedFileFunc: func(path string, content string) error {
 // 				panic("mock out the WriteBase64EncodedFile method")
 // 			},
@@ -38,6 +41,9 @@ type IFileWriterMock struct {
 	// FileExistsFunc mocks the FileExists method.
 	FileExistsFunc func(path string) bool
 
+	// MakeDirFunc mocks the MakeDir method.
+	MakeDirFunc func(path string) error
+
 	// WriteBase64EncodedFileFunc mocks the WriteBase64EncodedFile method.
 	WriteBase64EncodedFileFunc func(path string, content string) error
 
@@ -53,6 +59,11 @@ type IFileWriterMock struct {
 		}
 		// FileExists holds details about calls to the FileExists method.
 		FileExists []struct {
+			// Path is the path argument value.
+			Path string
+		}
+		// MakeDir holds details about calls to the MakeDir method.
+		MakeDir []struct {
 			// Path is the path argument value.
 			Path string
 		}
@@ -73,6 +84,7 @@ type IFileWriterMock struct {
 	}
 	lockDeleteFile             sync.RWMutex
 	lockFileExists             sync.RWMutex
+	lockMakeDir                sync.RWMutex
 	lockWriteBase64EncodedFile sync.RWMutex
 	lockWriteFile              sync.RWMutex
 }
@@ -136,6 +148,37 @@ func (mock *IFileWriterMock) FileExistsCalls() []struct {
 	mock.lockFileExists.RLock()
 	calls = mock.calls.FileExists
 	mock.lockFileExists.RUnlock()
+	return calls
+}
+
+// MakeDir calls MakeDirFunc.
+func (mock *IFileWriterMock) MakeDir(path string) error {
+	if mock.MakeDirFunc == nil {
+		panic("IFileWriterMock.MakeDirFunc: method is nil but IFileWriter.MakeDir was just called")
+	}
+	callInfo := struct {
+		Path string
+	}{
+		Path: path,
+	}
+	mock.lockMakeDir.Lock()
+	mock.calls.MakeDir = append(mock.calls.MakeDir, callInfo)
+	mock.lockMakeDir.Unlock()
+	return mock.MakeDirFunc(path)
+}
+
+// MakeDirCalls gets all the calls that were made to MakeDir.
+// Check the length with:
+//     len(mockedIFileWriter.MakeDirCalls())
+func (mock *IFileWriterMock) MakeDirCalls() []struct {
+	Path string
+} {
+	var calls []struct {
+		Path string
+	}
+	mock.lockMakeDir.RLock()
+	calls = mock.calls.MakeDir
+	mock.lockMakeDir.RUnlock()
 	return calls
 }
 

@@ -14,6 +14,7 @@ type IFileWriter interface {
 	WriteFile(path string, content []byte) error
 	DeleteFile(path string) error
 	FileExists(path string) bool
+	MakeDir(path string) error
 }
 
 type FileWriter struct{}
@@ -86,4 +87,8 @@ func (FileWriter) FileExists(path string) bool {
 		return false
 	}
 	return true
+}
+
+func (fw FileWriter) MakeDir(path string) error {
+	return os.MkdirAll(path, os.ModePerm)
 }

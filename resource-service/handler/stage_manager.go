@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/models"
 )
 
@@ -12,15 +14,47 @@ type IStageManager interface {
 }
 
 type StageManager struct {
+	git              common.IGit
+	credentialReader common.CredentialReader
 }
 
-func NewStageManager() *StageManager {
-	stageManager := &StageManager{}
+func NewStageManager(git common.IGit, credentialReader common.CredentialReader) *StageManager {
+	stageManager := &StageManager{
+		git:              git,
+		credentialReader: credentialReader,
+	}
 	return stageManager
 }
 
 func (s StageManager) CreateStage(params models.CreateStageParams) error {
-	panic("implement me")
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+
+	credentials, err := s.credentialReader.GetCredentials(params.ProjectName)
+	if err != nil {
+		return fmt.Errorf("could not read credentials for project %s: %w", params.ProjectName, err)
+	}
+
+	gitContext := common.GitContext{
+		Project:     params.ProjectName,
+		Credentials: credentials,
+	}
+
+	if !s.git.ProjectExists(gitContext) {
+		return common.ErrProjectNotFound
+	}
+
+	defaultBranch, err := s.git.GetDefaultBranch(gitContext)
+	if err != nil {
+		return fmt.Errorf("could not determine default branch of project %s: %w", params.ProjectName, err)
+	}
+
+	// check out the default branch to check interaction with upstream is working
+	if err := s.git.CreateBranch(gitContext, params.StageName, defaultBranch); err != nil {
+		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, params.ProjectName, err)
+	}
+
+	return nil
 }
 
 func (s StageManager) DeleteStage(params models.DeleteStageParams) error {

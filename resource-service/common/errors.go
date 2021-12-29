@@ -14,8 +14,8 @@ var ErrStageAlreadyExists = errors.New("stage already exists")
 
 // Service Specific errors
 
-var ErrServiceNotFound = errors.New("project not found")
-var ErrServiceAlreadyExists = errors.New("project already exists")
+var ErrServiceNotFound = errors.New("service not found")
+var ErrServiceAlreadyExists = errors.New("service already exists")
 
 // Resource specific errors
 
