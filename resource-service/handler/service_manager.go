@@ -54,7 +54,9 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 	}
 
 	metadataString, err := yaml.Marshal(newServiceMetadata)
-	err = s.fileWriter.WriteFile(servicePath+"/metadata.yaml", metadataString)
+	if err = s.fileWriter.WriteFile(servicePath+"/metadata.yaml", metadataString); err != nil {
+		return fmt.Errorf("could not create metadata file for service %s: %w", params.ServiceName, err)
+	}
 
 	if err := s.git.StageAndCommitAll(*gitContext, "Added service: "+params.Service.ServiceName); err != nil {
 		return fmt.Errorf("could not initialize service %s: %w", params.ServiceName, err)
