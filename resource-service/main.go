@@ -65,30 +65,15 @@ func main() {
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	projectManager := handler.NewProjectManager()
-	projectHandler := handler.NewProjectHandler(projectManager)
-	projectController := controller.NewProjectController(projectHandler)
-	projectController.Inject(apiV1)
-
 	stageResourceManager := handler.NewStageResourceManager()
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	stageManager := handler.NewStageManager()
-	stageHandler := handler.NewStageHandler(stageManager)
-	stageController := controller.NewStageController(stageHandler)
-	stageController.Inject(apiV1)
-
 	serviceResourceManager := handler.NewServiceResourceManager()
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
-
-	serviceManager := handler.NewServiceManager()
-	serviceHandler := handler.NewServiceHandler(serviceManager)
-	serviceController := controller.NewServiceController(serviceHandler)
-	serviceController.Inject(apiV1)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	srv := &http.Server{
