@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/models"
-	"net/http"
 )
 
 type IStageResourceHandler interface {
@@ -35,7 +36,7 @@ func NewStageResourceHandler(stageResourceManager IResourceManager) *StageResour
 // @Param	project				path	string	true	"The name of the project"
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
-// @Success 204 {string} "ok"
+// @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/resource [post]
@@ -121,7 +122,7 @@ func (ph *StageResourceHandler) GetStageResources(c *gin.Context) {
 // @Param	project				path	string	true	"The name of the project"
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
-// @Success 201 {string} "ok"
+// @Success 201 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/resource [put]
@@ -207,7 +208,7 @@ func (ph *StageResourceHandler) GetStageResource(c *gin.Context) {
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Param   resources     body    models.UpdateResourcePayload     true        "resource"
-// @Success 200 {string} "ok"
+// @Success 200 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/resource/{resourceURI} [put]
@@ -249,7 +250,7 @@ func (ph *StageResourceHandler) UpdateStageResource(c *gin.Context) {
 // @Param	project				path	string	true	"The name of the project"
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Success 200 {string} "ok"
+// @Success 200 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [delete]
