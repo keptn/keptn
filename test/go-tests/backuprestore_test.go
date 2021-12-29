@@ -104,8 +104,6 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
-	return
-
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
