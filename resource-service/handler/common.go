@@ -21,13 +21,13 @@ func OnAPIError(c *gin.Context, err error) {
 	} else if errors.Is(err, common.ErrServiceAlreadyExists) {
 		SetConflictErrorResponse(c, "Service already exists")
 	} else if errors.Is(err, common.ErrInvalidGitToken) {
-		SetBadRequestErrorResponse(c, "Invalid git token")
+		SetFailedDependencyErrorResponse(c, "Invalid git token")
 	} else if errors.Is(err, common.ErrRepositoryNotFound) {
 		SetBadRequestErrorResponse(c, "Upstream repository not found")
 	} else if errors.Is(err, common.ErrCredentialsNotFound) {
-		SetBadRequestErrorResponse(c, "Could not find credentials for upstream repository")
+		SetFailedDependencyErrorResponse(c, "Could not find credentials for upstream repository")
 	} else if errors.Is(err, common.ErrMalformedCredentials) {
-		SetBadRequestErrorResponse(c, "Could not retrieve credentials for upstream repository")
+		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
 	} else if errors.Is(err, common.ErrProjectNotFound) {
 		SetNotFoundErrorResponse(c, "Project not found")
 	} else if errors.Is(err, common.ErrStageNotFound) {

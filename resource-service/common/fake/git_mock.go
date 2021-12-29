@@ -23,7 +23,7 @@ import (
 // 			CreateBranchFunc: func(gitContext common.GitContext, branch string, sourceBranch string) error {
 // 				panic("mock out the CreateBranch method")
 // 			},
-// 			GetDefaultBranchFunc: func(gitContext common.GitContext)  {
+// 			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
 // 				panic("mock out the GetDefaultBranch method")
 // 			},
 // 			GetFileRevisionFunc: func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
@@ -31,6 +31,9 @@ import (
 // 			},
 // 			ProjectExistsFunc: func(gitContext common.GitContext) bool {
 // 				panic("mock out the ProjectExists method")
+// 			},
+// 			ProjectRepoExistsFunc: func(projectName string) bool {
+// 				panic("mock out the ProjectRepoExists method")
 // 			},
 // 			PullFunc: func(gitContext common.GitContext) error {
 // 				panic("mock out the Pull method")
@@ -58,13 +61,16 @@ type IGitMock struct {
 	CreateBranchFunc func(gitContext common.GitContext, branch string, sourceBranch string) error
 
 	// GetDefaultBranchFunc mocks the GetDefaultBranch method.
-	GetDefaultBranchFunc func(gitContext common.GitContext)
+	GetDefaultBranchFunc func(gitContext common.GitContext) (string, error)
 
 	// GetFileRevisionFunc mocks the GetFileRevision method.
 	GetFileRevisionFunc func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error)
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common.GitContext) bool
+
+	// ProjectRepoExistsFunc mocks the ProjectRepoExists method.
+	ProjectRepoExistsFunc func(projectName string) bool
 
 	// PullFunc mocks the Pull method.
 	PullFunc func(gitContext common.GitContext) error
@@ -119,6 +125,11 @@ type IGitMock struct {
 			// GitContext is the gitContext argument value.
 			GitContext common.GitContext
 		}
+		// ProjectRepoExists holds details about calls to the ProjectRepoExists method.
+		ProjectRepoExists []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+		}
 		// Pull holds details about calls to the Pull method.
 		Pull []struct {
 			// GitContext is the gitContext argument value.
@@ -143,6 +154,7 @@ type IGitMock struct {
 	lockGetDefaultBranch  sync.RWMutex
 	lockGetFileRevision   sync.RWMutex
 	lockProjectExists     sync.RWMutex
+	lockProjectRepoExists sync.RWMutex
 	lockPull              sync.RWMutex
 	lockPush              sync.RWMutex
 	lockStageAndCommitAll sync.RWMutex
@@ -254,7 +266,7 @@ func (mock *IGitMock) CreateBranchCalls() []struct {
 }
 
 // GetDefaultBranch calls GetDefaultBranchFunc.
-func (mock *IGitMock) GetDefaultBranch(gitContext common.GitContext) {
+func (mock *IGitMock) GetDefaultBranch(gitContext common.GitContext) (string, error) {
 	if mock.GetDefaultBranchFunc == nil {
 		panic("IGitMock.GetDefaultBranchFunc: method is nil but IGit.GetDefaultBranch was just called")
 	}
@@ -266,7 +278,7 @@ func (mock *IGitMock) GetDefaultBranch(gitContext common.GitContext) {
 	mock.lockGetDefaultBranch.Lock()
 	mock.calls.GetDefaultBranch = append(mock.calls.GetDefaultBranch, callInfo)
 	mock.lockGetDefaultBranch.Unlock()
-	mock.GetDefaultBranchFunc(gitContext)
+	return mock.GetDefaultBranchFunc(gitContext)
 }
 
 // GetDefaultBranchCalls gets all the calls that were made to GetDefaultBranch.
@@ -355,6 +367,37 @@ func (mock *IGitMock) ProjectExistsCalls() []struct {
 	mock.lockProjectExists.RLock()
 	calls = mock.calls.ProjectExists
 	mock.lockProjectExists.RUnlock()
+	return calls
+}
+
+// ProjectRepoExists calls ProjectRepoExistsFunc.
+func (mock *IGitMock) ProjectRepoExists(projectName string) bool {
+	if mock.ProjectRepoExistsFunc == nil {
+		panic("IGitMock.ProjectRepoExistsFunc: method is nil but IGit.ProjectRepoExists was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+	}{
+		ProjectName: projectName,
+	}
+	mock.lockProjectRepoExists.Lock()
+	mock.calls.ProjectRepoExists = append(mock.calls.ProjectRepoExists, callInfo)
+	mock.lockProjectRepoExists.Unlock()
+	return mock.ProjectRepoExistsFunc(projectName)
+}
+
+// ProjectRepoExistsCalls gets all the calls that were made to ProjectRepoExists.
+// Check the length with:
+//     len(mockedIGit.ProjectRepoExistsCalls())
+func (mock *IGitMock) ProjectRepoExistsCalls() []struct {
+	ProjectName string
+} {
+	var calls []struct {
+		ProjectName string
+	}
+	mock.lockProjectRepoExists.RLock()
+	calls = mock.calls.ProjectRepoExists
+	mock.lockProjectRepoExists.RUnlock()
 	return calls
 }
 

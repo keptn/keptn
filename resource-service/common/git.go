@@ -15,7 +15,10 @@ type GitContext struct {
 // IGit provides functions to interact with the git repository of a project
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
 type IGit interface {
+	// TODO: we may need better named methods for these two functions
 	ProjectExists(gitContext GitContext) bool
+	ProjectRepoExists(projectName string) bool
+
 	CloneRepo(gitContext GitContext) (bool, error)
 	StageAndCommitAll(gitContext GitContext, message string) error
 	Push(gitContext GitContext) error
@@ -23,5 +26,5 @@ type IGit interface {
 	CreateBranch(gitContext GitContext, branch string, sourceBranch string) error
 	CheckoutBranch(gitContext GitContext, branch string) error
 	GetFileRevision(gitContext GitContext, path string, revision string, file string) ([]byte, error)
-	GetDefaultBranch(gitContext GitContext)
+	GetDefaultBranch(gitContext GitContext) (string, error)
 }

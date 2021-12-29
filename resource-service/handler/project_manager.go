@@ -6,7 +6,6 @@ import (
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"os"
 	"time"
 )
 
@@ -49,42 +48,117 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 	}
 
 	// TODO move the check for the metadata file
-	if p.git.ProjectExists(gitContext) && p.fileWriter.FileExists(common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml") {
+	if p.git.ProjectExists(gitContext) && p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
 		return common.ErrProjectAlreadyExists
+	}
+
+	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
+	if !p.git.ProjectRepoExists(project.ProjectName) {
+		return common.ErrRepositoryNotFound
 	}
 
 	rollbackFunc := func() {
 		logger.Infof("Rollback: try to delete created directory for project %s", project.ProjectName)
-		if err := os.RemoveAll(projectDirectory); err != nil {
+		if err := p.fileWriter.DeleteFile(projectDirectory); err != nil {
 			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
 		}
-	}
-
-	_, err = p.git.CloneRepo(gitContext)
-	if err != nil {
-		rollbackFunc()
-		return fmt.Errorf("could not clone repository of project %s: %w", project.ProjectName, err)
 	}
 
 	newProjectMetadata := &common.ProjectMetadata{
 		ProjectName:               project.ProjectName,
 		CreationTimestamp:         time.Now().UTC().String(),
-		IsUsingDirectoryStructure: true,
+		IsUsingDirectoryStructure: false,
 	}
 
 	metadataString, err := yaml.Marshal(newProjectMetadata)
 
-	err = p.fileWriter.WriteFile(common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml", metadataString)
+	err = p.fileWriter.WriteFile(common.GetProjectMetadataFilePath(project.ProjectName), metadataString)
 	if err != nil {
+		rollbackFunc()
 		return fmt.Errorf("could not write metadata.yaml during creating project %s: %w", project, err)
+	}
+
+	// TODO the git user and email needs to be configured at this point
+	err = p.git.StageAndCommitAll(gitContext, "initialized project")
+	if err != nil {
+		rollbackFunc()
+		return fmt.Errorf("could not complete initial commit for project %s: %w", project.ProjectName, err)
 	}
 	return nil
 }
 
 func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error {
-	panic("implement me")
+	common.LockProject(project.ProjectName)
+	defer common.UnlockProject(project.ProjectName)
+
+	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
+	if err != nil {
+		return fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
+	}
+
+	gitContext := common.GitContext{
+		Project:     project.ProjectName,
+		Credentials: credentials,
+	}
+
+	if !p.git.ProjectExists(gitContext) || !p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
+		return common.ErrProjectNotFound
+	}
+
+	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
+	if err != nil {
+		return fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
+	}
+
+	// check out the default branch to check interaction with upstream is working
+	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
+		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
+	}
+
+	return nil
 }
 
 func (p ProjectManager) DeleteProject(projectName string) error {
-	panic("implement me")
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
+
+	credentials, err := p.credentialReader.GetCredentials(projectName)
+	if err != nil {
+		return fmt.Errorf("could not read credentials for project %s: %w", projectName, err)
+	}
+
+	gitContext := common.GitContext{
+		Project:     projectName,
+		Credentials: credentials,
+	}
+
+	if !p.git.ProjectExists(gitContext) || !p.fileWriter.FileExists(common.GetProjectMetadataFilePath(projectName)) {
+		return common.ErrProjectNotFound
+	}
+
+	logger.Debugf("Deleting project %s", projectName)
+
+	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
+	if err != nil {
+		return fmt.Errorf("could not determine default branch of project %s: %w", projectName, err)
+	}
+
+	// check out the default branch to check interaction with upstream is working
+	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
+		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, projectName, err)
+	}
+
+	if err := p.fileWriter.DeleteFile(common.GetProjectMetadataFilePath(projectName)); err != nil {
+		return fmt.Errorf("could not delete metadata file of project %s: %w", projectName, err)
+	}
+
+	if err := p.git.StageAndCommitAll(gitContext, "deleted project metadata"); err != nil {
+		return fmt.Errorf("could not commit changes: %w", err)
+	}
+
+	if err := p.fileWriter.DeleteFile(common.GetProjectConfigPath(projectName)); err != nil {
+		return fmt.Errorf("could not delete project %s: %w", projectName, err)
+	}
+
+	return nil
 }
