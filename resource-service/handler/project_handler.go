@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/models"
-	"net/http"
 )
 
 type IProjectHandler interface {
@@ -30,7 +31,7 @@ func NewProjectHandler(projectManager IProjectManager) *ProjectHandler {
 // @Accept  json
 // @Produce  json
 // @Param   project     body    models.CreateProjectParams     true        "Project"
-// @Success 204 {string} "ok"
+// @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
@@ -63,7 +64,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   project     body    models.UpdateProjectParams     true        "Project"
-// @Success 204 {string} "ok"
+// @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
@@ -96,7 +97,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project"
-// @Success 204 {string} "ok"
+// @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{projectName} [delete]

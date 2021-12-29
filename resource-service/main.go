@@ -8,14 +8,9 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
-	"github.com/keptn/keptn/shipyard-controller/controller"
-	"github.com/keptn/keptn/shipyard-controller/db"
-	_ "github.com/keptn/keptn/shipyard-controller/docs"
-	"github.com/keptn/keptn/shipyard-controller/handler"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -60,23 +55,38 @@ func main() {
 	engine := gin.Default()
 	/// setting up middlewere to handle graceful shutdown
 	wg := &sync.WaitGroup{}
-	engine.Use(handler.GracefulShutdownMiddleware(wg))
 
-	apiV1 := engine.Group("/v1")
-	apiHealth := engine.Group("")
+	// apiV1 := engine.Group("/v1")
 
-	logRepo := createLogRepo()
-	err := logRepo.SetupTTLIndex(getDurationFromEnvVar(envVarLogTTL, envVarLogsTTLDefault))
-	if err != nil {
-		log.WithError(err).Error("could not setup TTL index for log repo entries")
-	}
-	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
-	logController := controller.NewLogController(logHandler)
-	logController.Inject(apiV1)
+	// projectResourceManager := handler.NewProjectResourceManager()
+	// projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
+	// projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
+	// projectResourceController.Inject(apiV1)
 
-	healthHandler := handler.NewHealthHandler()
-	healthController := controller.NewHealthController(healthHandler)
-	healthController.Inject(apiHealth)
+	// projectManager := handler.NewProjectManager()
+	// projectHandler := handler.NewProjectHandler(projectManager)
+	// projectController := controller.NewProjectController(projectHandler)
+	// projectController.Inject(apiV1)
+
+	// stageResourceManager := handler.NewStageResourceManager()
+	// stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
+	// stageResourceController := controller.NewStageResourceController(stageResourceHandler)
+	// stageResourceController.Inject(apiV1)
+
+	// stageManager := handler.NewStageManager()
+	// stageHandler := handler.NewStageHandler(stageManager)
+	// stageController := controller.NewStageController(stageHandler)
+	// stageController.Inject(apiV1)
+
+	// serviceResourceManager := handler.NewServiceResourceManager()
+	// serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
+	// serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
+	// serviceResourceController.Inject(apiV1)
+
+	// serviceManager := handler.NewServiceManager()
+	// serviceHandler := handler.NewServiceHandler(serviceManager)
+	// serviceController := controller.NewServiceController(serviceHandler)
+	// serviceController.Inject(apiV1)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	srv := &http.Server{
@@ -112,29 +122,4 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 	}
 
 	log.Println("Server exiting")
-}
-
-func createLogRepo() *db.MongoDBLogRepo {
-	return db.NewMongoDBLogRepo(db.GetMongoDBConnectionInstance())
-}
-
-func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
-	durationString := os.Getenv(envVar)
-	var duration time.Duration
-	var err error
-	if durationString != "" {
-		duration, err = time.ParseDuration(durationString)
-		if err != nil {
-			log.Errorf("could not parse log %s env var %s: %s. Will use default value %s", envVar, duration, err.Error(), fallbackValue)
-		}
-	}
-
-	if duration.Seconds() == 0 {
-		duration, err = time.ParseDuration(fallbackValue)
-		if err != nil {
-			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), envVar)
-			return time.Duration(0)
-		}
-	}
-	return duration
 }

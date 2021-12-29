@@ -3,10 +3,11 @@ module github.com/keptn/keptn/resource-service
 go 1.16
 
 require (
+	github.com/cloudevents/sdk-go/v2 v2.6.1 // indirect
 	github.com/gin-gonic/gin v1.7.7
 	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6
-	github.com/keptn/keptn/shipyard-controller v0.0.0-20211229094643-05d8eb57b122
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
+	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect

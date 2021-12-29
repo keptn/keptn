@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/models"
-	"net/http"
 )
 
 type IProjectResourceHandler interface {
@@ -34,7 +35,7 @@ func NewProjectResourceHandler(projectResourceManager IResourceManager) *Project
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
-// @Success 204 {string} "ok"
+// @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource [post]
@@ -116,7 +117,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
-// @Success 201 {string} "ok"
+// @Success 201 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource [put]
@@ -198,7 +199,7 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 // @Param	project				path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Param   resources     body    models.UpdateResourcePayload     true        "resource"
-// @Success 200 {string} "ok"
+// @Success 200 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource/{resourceURI} [put]
@@ -238,7 +239,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Success 204 {string} "ok"
+// @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource/{resourceURI} [delete]

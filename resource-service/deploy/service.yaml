@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: keptn
-  replicas: 2
+  replicas: 1
   strategy:
     type: Recreate
   template:
@@ -27,7 +27,7 @@ spec:
         app.kubernetes.io/component: control-plane
         app.kubernetes.io/version: develop
     spec:
-      serviceAccountName: keptn-configuration-service
+      serviceAccountName: keptn-resource-service
       containers:
       - name: resource-service
         livenessProbe:

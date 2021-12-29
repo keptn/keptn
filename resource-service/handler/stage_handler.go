@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/models"
-	"net/http"
 )
 
 type IStageHandler interface {
@@ -65,4 +66,8 @@ func (sh *StageHandler) DeleteStage(c *gin.Context) {
 		return
 	}
 	c.String(http.StatusNoContent, "")
+}
+
+func (sh *StageHandler) UpdateStage(c *gin.Context) {
+	//TODO
 }
