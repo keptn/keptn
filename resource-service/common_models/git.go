@@ -1,7 +1,5 @@
 package common_models
 
-const masterBranch = "master"
-
 // GitCredentials contains git credentials info
 type GitCredentials struct {
 	User      string `json:"user,omitempty"`
