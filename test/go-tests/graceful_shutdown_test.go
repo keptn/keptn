@@ -68,7 +68,7 @@ spec:
 func Test_GracefulShutdown(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "tinypodtato"
-	serviceName := "helloserver"
+	serviceName := "helloservice"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	serviceHealthCheckEndpoint := "/metrics"
@@ -100,7 +100,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	// Deploy v0.1.0
 	///////////////////////////////////////
 
-	t.Logf("Trigger delivery of helloserver:v0.1.0")
+	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
@@ -119,21 +119,21 @@ func Test_GracefulShutdown(t *testing.T) {
 
 	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
-	t.Log("Verify Direct delivery of helloserver in stage dev")
+	t.Log("Verify Direct delivery of helloservice in stage dev")
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify network access to public URI of helloserver in stage dev")
+	t.Log("Verify network access to public URI of helloservice in stage dev")
 	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
 	require.Nil(t, err)
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	t.Log("Verify delivery of helloserver:v0.1.0 in stage staging")
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
 	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 
-	t.Log("Verify network access to public URI of helloserver in stage staging")
+	t.Log("Verify network access to public URI of helloservice in stage staging")
 	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
 	require.Nil(t, err)
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
