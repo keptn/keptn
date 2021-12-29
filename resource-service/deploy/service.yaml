@@ -27,21 +27,21 @@ spec:
         app.kubernetes.io/component: control-plane
         app.kubernetes.io/version: develop
     spec:
-      serviceAccountName: keptn-resource-service
+      serviceAccountName: keptn-configuration-service
       containers:
       - name: resource-service
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 5
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8080
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 5
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8080
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 5
         image: keptn/resource-service:latest
         env:
           - name: PREFIX_PATH
