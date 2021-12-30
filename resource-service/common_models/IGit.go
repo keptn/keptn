@@ -19,11 +19,12 @@ type GitContext struct {
 type IGit interface {
 	ProjectExists(gitContext GitContext) bool
 	CloneRepo(gitContext GitContext) (bool, error)
-	StageAndCommitAll(gitContext GitContext, message string) error
+	StageAndCommitAll(gitContext GitContext, message string) (string, error)
 	Push(gitContext GitContext) error
 	Pull(gitContext GitContext) error
 	CreateBranch(gitContext GitContext, branch string, sourceBranch string) error
 	CheckoutBranch(gitContext GitContext, branch string) error
 	GetFileRevision(gitContext GitContext, revision string, file string) ([]byte, error)
 	GetDefaultBranch(gitContext GitContext) (string, error)
+	GetCurrentRevision(gitContext GitContext) (string, error)
 }

@@ -14,7 +14,7 @@ import (
 )
 
 type Git struct {
-	//git Gogit
+	git Gogit
 }
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
@@ -24,7 +24,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		return true, nil
 	}
 
-	clone, err := git.PlainClone(projectPath, false,
+	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
 			URL: gitContext.Credentials.RemoteURI,
 			Auth: &http.BasicAuth{
@@ -38,7 +38,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "empty") {
 			// TODO empty remote leads to an error
-			init, err := git.PlainInit(projectPath, false)
+			init, err := g.git.PlainInit(projectPath, false)
 			if err != nil {
 				return false, err
 			}
@@ -55,7 +55,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	return true, nil
 }
 
-func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) error {
+func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 	panic("implement me")
 }
 
@@ -87,6 +87,9 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 func (g *Git) Pull(gitContext common_models.GitContext) error {
 	panic("implement me")
 }
+func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, error) {
+	panic("implement me")
+}
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 	// move head to sourceBranch
@@ -94,13 +97,18 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	if err != nil {
 		return err //errors.New("Could not create branch, source branch does not exist!")
 	}
-
 	b := plumbing.NewBranchReferenceName(branch)
-	//create new branch
-	return g.checkoutBranch(gitContext, &git.CheckoutOptions{
-		Branch: b,
-		Create: true,
-	})
+	newBranch := &config.Branch{
+		Name:   branch,
+		Remote: "origin",
+		Merge:  b,
+	}
+	r, _, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return err
+	}
+	err = r.CreateBranch(newBranch)
+	return err
 }
 
 func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string) error {
@@ -130,7 +138,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 
 func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 	path := GetProjectConfigPath(gitContext.Project)
-	r, err := git.PlainOpen(path)
+	r, err := g.git.PlainOpen(path)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -177,7 +185,7 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
-	_, err := git.PlainOpen(GetProjectConfigPath(project))
+	_, err := g.git.PlainOpen(GetProjectConfigPath(project))
 	if err == nil {
 		return true
 	}
@@ -187,7 +195,7 @@ func (g *Git) ProjectRepoExists(project string) bool {
 func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository, *git.Worktree, error) {
 	projectConfigPath := GetProjectConfigPath(gitContext.Project)
 	// check if we already have a repository
-	repo, err := git.PlainOpen(projectConfigPath)
+	repo, err := g.git.PlainOpen(projectConfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
