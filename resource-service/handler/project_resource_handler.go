@@ -35,7 +35,7 @@ func NewProjectResourceHandler(projectResourceManager IResourceManager) *Project
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
-// @Success 204 {string} string "ok"
+// @Success 201 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource [post]
@@ -57,13 +57,13 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ProjectResourceManager.CreateResources(*params)
+	result, err := ph.ProjectResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusCreated, result)
 }
 
 // GetProjectResources godoc
@@ -117,7 +117,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
-// @Success 201 {string} string "ok"
+// @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource [put]
@@ -139,13 +139,13 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ProjectResourceManager.UpdateResources(*params)
+	result, err := ph.ProjectResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusOK, result)
 }
 
 // GetProjectResource godoc
@@ -199,7 +199,7 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 // @Param	project				path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Param   resources     body    models.UpdateResourcePayload     true        "resource"
-// @Success 200 {string} string "ok"
+// @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource/{resourceURI} [put]
@@ -221,13 +221,13 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ProjectResourceManager.UpdateResource(*params)
+	result, err := ph.ProjectResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusOK, result)
 }
 
 // DeleteProjectResource godoc
@@ -239,7 +239,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Success 204 {string} string "ok"
+// @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/resource/{resourceURI} [delete]
@@ -254,11 +254,11 @@ func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ProjectResourceManager.DeleteResource(*params)
+	result, err := ph.ProjectResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusOK, result)
 }

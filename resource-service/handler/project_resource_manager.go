@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/errors"
@@ -8,41 +9,38 @@ import (
 	"net/url"
 )
 
-type ProjectResourceManager struct {
+type ResourceManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
 	fileSystem       common.IFileSystem
-	resourceEngine   *ResourceEngine
 }
 
-func NewProjectResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ProjectResourceManager {
-	resourceEngine := NewResourceEngine(git, fileWriter)
-	projectResourceManager := &ProjectResourceManager{
+func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ResourceManager {
+	projectResourceManager := &ResourceManager{
 		git:              git,
 		credentialReader: credentialReader,
 		fileSystem:       fileWriter,
-		resourceEngine:   resourceEngine,
 	}
 	return projectResourceManager
 }
 
-func (p ProjectResourceManager) CreateResources(params models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) CreateResources(params models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.resourceEngine.writeResources(gitContext, params.Resources, projectConfigPath)
+	return p.writeResources(gitContext, params.Resources, projectConfigPath)
 }
 
-func (p ProjectResourceManager) GetResources(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
+func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	_, projectConfigPath, err := p.establishProjectContext(params.Project)
+	_, projectConfigPath, err := p.establishProjectContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
@@ -55,23 +53,23 @@ func (p ProjectResourceManager) GetResources(params models.GetResourcesParams) (
 	return result, nil
 }
 
-func (p ProjectResourceManager) UpdateResources(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) UpdateResources(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.resourceEngine.writeResources(gitContext, params.Resources, projectConfigPath)
+	return p.writeResources(gitContext, params.Resources, projectConfigPath)
 }
 
-func (p ProjectResourceManager) GetResource(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.GetResourceResponse, error) {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
@@ -86,38 +84,38 @@ func (p ProjectResourceManager) GetResource(params models.GetResourceParams) (*m
 		return nil, errors.ErrResourceNotFound
 	}
 
-	return p.resourceEngine.readResource(gitContext, params, resourcePath)
+	return p.readResource(gitContext, params, resourcePath)
 }
 
-func (p ProjectResourceManager) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
 
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 
-	return p.resourceEngine.writeResource(gitContext, resourcePath, string(params.ResourceContent))
+	return p.writeResource(gitContext, resourcePath, string(params.ResourceContent))
 }
 
-func (p ProjectResourceManager) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
 
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 
-	return p.resourceEngine.deleteResource(gitContext, resourcePath)
+	return p.deleteResource(gitContext, resourcePath)
 }
 
-func (p ProjectResourceManager) establishProjectContext(project models.Project) (*common.GitContext, string, error) {
+func (p ResourceManager) establishProjectContext(project models.Project, stage *models.Stage, service *models.Service) (*common.GitContext, string, error) {
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
 		return nil, "", fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
@@ -132,16 +130,100 @@ func (p ProjectResourceManager) establishProjectContext(project models.Project) 
 		return nil, "", errors.ErrProjectNotFound
 	}
 
-	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
+	var branch string
+
+	if stage == nil {
+		branch, err = p.git.GetDefaultBranch(gitContext)
+		if err != nil {
+			return nil, "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
+		}
+	} else {
+		branch = stage.StageName
+	}
+
+	if err := p.git.CheckoutBranch(gitContext, branch); err != nil {
+		return nil, "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, project.ProjectName, err)
+	}
+
+	var configPath string
+	if service == nil {
+		configPath = common.GetProjectConfigPath(project.ProjectName)
+	} else {
+		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
+	}
+	return &gitContext, configPath, nil
+}
+
+func (p ResourceManager) readResource(gitContext *common.GitContext, params models.GetResourceParams, resourcePath string) (*models.GetResourceResponse, error) {
+	var fileContent []byte
+	var err error
+
+	if params.GitCommitID != "" {
+		fileContent, err = p.git.GetFileRevision(*gitContext, resourcePath, params.GitCommitID, params.ResourceURI)
+	} else {
+		fileContent, err = p.fileSystem.ReadFile(resourcePath)
+	}
 	if err != nil {
-		return nil, "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
+		return nil, err
 	}
 
-	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
-		return nil, "", fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
+	resourceContent := base64.StdEncoding.EncodeToString(fileContent)
+
+	currentRevision, err := p.git.GetCurrentRevision(*gitContext)
+	if err != nil {
+		return nil, err
 	}
 
-	projectConfigPath := common.GetProjectConfigPath(project.ProjectName)
+	return &models.GetResourceResponse{
+		Resource: models.Resource{
+			ResourceURI:     params.ResourceURI,
+			ResourceContent: models.ResourceContent(resourceContent),
+		},
+		Metadata: models.Version{
+			UpstreamURL: gitContext.Credentials.RemoteURI,
+			Version:     currentRevision,
+		},
+	}, nil
+}
 
-	return &gitContext, projectConfigPath, nil
+func (p ResourceManager) writeResource(gitContext *common.GitContext, resourceContent, resourcePath string) (*models.WriteResourceResponse, error) {
+	if err := p.fileSystem.WriteBase64EncodedFile(resourcePath, resourceContent); err != nil {
+		return nil, err
+	}
+
+	commitID, err := p.git.StageAndCommitAll(*gitContext, "Updated resource")
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.WriteResourceResponse{CommitID: commitID}, nil
+}
+
+func (p ResourceManager) writeResources(gitContext *common.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
+	for _, res := range resources {
+		filePath := directory + "/" + res.ResourceURI
+		if err := p.fileSystem.WriteBase64EncodedFile(filePath, string(res.ResourceContent)); err != nil {
+			return nil, err
+		}
+	}
+
+	commitID, err := p.git.StageAndCommitAll(*gitContext, "Added resources")
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.WriteResourceResponse{CommitID: commitID}, nil
+}
+
+func (p ResourceManager) deleteResource(gitContext *common.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {
+	if err := p.fileSystem.DeleteFile(resourcePath); err != nil {
+		return nil, err
+	}
+
+	commitID, err := p.git.StageAndCommitAll(*gitContext, "Deleted resource")
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.WriteResourceResponse{CommitID: commitID}, nil
 }

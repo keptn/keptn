@@ -60,17 +60,17 @@ func main() {
 
 	apiV1 := engine.Group("/v1")
 
-	projectResourceManager := handler.NewProjectResourceManager(nil, nil, nil)
+	projectResourceManager := handler.NewResourceManager(nil, nil, nil)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewStageResourceManager()
+	stageResourceManager := handler.NewResourceManager(nil, nil, nil)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewServiceResourceManager()
+	serviceResourceManager := handler.NewResourceManager(nil, nil, nil)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)

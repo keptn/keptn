@@ -45,7 +45,7 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 					},
 				},
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusCreated,
 		},
 		{
 			name: "resource content not base64 encoded",
@@ -361,7 +361,7 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 					},
 				},
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusOK,
 		},
 		{
 			name: "resource content not base64 encoded",
@@ -509,7 +509,7 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 				ResourceURI:           "resource.yaml",
 				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusOK,
 		},
 		{
 			name: "resource content not base64 encoded",
@@ -765,7 +765,7 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 				},
 				ResourceURI: "resource.yaml",
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusOK,
 		},
 		{
 			name: "project name empty",

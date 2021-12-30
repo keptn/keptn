@@ -37,7 +37,7 @@ func NewServiceResourceHandler(serviceResourceManager IResourceManager) *Service
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param	service				path	string	true	"The name of the service"
 // @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
-// @Success 204 {string} string "ok"
+// @Success 201 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service}/resource [post]
@@ -61,13 +61,13 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ServiceResourceManager.CreateResources(*params)
+	result, err := ph.ServiceResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusCreated, result)
 }
 
 // GetServiceResources godoc
@@ -127,7 +127,7 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param	service				path	string	true	"The name of the service"
 // @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
-// @Success 201 {string} string "ok"
+// @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service}/resource [put]
@@ -151,13 +151,13 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ServiceResourceManager.UpdateResources(*params)
+	result, err := ph.ServiceResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusOK, result)
 }
 
 // GetServiceResource godoc
@@ -217,7 +217,7 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 // @Param	service				path	string	true	"The name of the service"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Param   resources     body    models.UpdateResourcePayload     true        "resource"
-// @Success 200 {string} string "ok"
+// @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [put]
@@ -241,13 +241,13 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ServiceResourceManager.UpdateResource(*params)
+	result, err := ph.ServiceResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusOK, result)
 }
 
 // DeleteServiceResource godoc
@@ -261,7 +261,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 // @Param	stage				path	string	true	"The name of the stage"
 // @Param	service				path	string	true	"The name of the service"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Success 200 {string} string "ok"
+// @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [delete]
@@ -278,11 +278,11 @@ func (ph *ServiceResourceHandler) DeleteServiceResource(c *gin.Context) {
 		return
 	}
 
-	_, err := ph.ServiceResourceManager.DeleteResource(*params)
+	result, err := ph.ServiceResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
 	}
 
-	c.String(http.StatusNoContent, "")
+	c.JSON(http.StatusOK, result)
 }

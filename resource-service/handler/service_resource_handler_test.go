@@ -46,7 +46,7 @@ func TestServiceResourceHandler_CreateServiceResources(t *testing.T) {
 					},
 				},
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusCreated,
 		},
 		{
 			name: "resource content not base64 encoded",
@@ -414,7 +414,7 @@ func TestServiceResourceHandler_UpdateServiceResources(t *testing.T) {
 					},
 				},
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusOK,
 		},
 		{
 			name: "resource content not base64 encoded",
@@ -733,7 +733,7 @@ func TestServiceResourceHandler_UpdateServiceResource(t *testing.T) {
 				ResourceURI:           "resource.yaml",
 				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusOK,
 		},
 		{
 			name: "resource content not base64 encoded",
@@ -838,7 +838,7 @@ func TestServiceResourceHandler_DeleteServiceResource(t *testing.T) {
 				},
 				ResourceURI: "resource.yaml",
 			},
-			wantStatus: http.StatusNoContent,
+			wantStatus: http.StatusOK,
 		},
 		{
 			name: "project name empty",
