@@ -11,6 +11,20 @@ type Gogit interface {
 	PlainInit(path string, isBare bool) (*git.Repository, error)
 }
 
+type GogitReal struct{}
+
+func (t GogitReal) PlainOpen(path string) (*git.Repository, error) {
+	return git.PlainOpen(path)
+}
+
+func (t GogitReal) PlainClone(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+	return git.PlainClone(path, isBare, o)
+}
+
+func (t GogitReal) PlainInit(path string, isBare bool) (*git.Repository, error) {
+	return git.PlainInit(path, isBare)
+}
+
 /*//go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogitrepo_mock.go . Repository
 type Repository interface {
 	Remote(name string) (*git.Remote, error)

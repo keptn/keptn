@@ -37,8 +37,8 @@ func (s *BaseSuite) SetUpSuite(c *C) {
 
 func (s *BaseSuite) TearDownSuite(c *C) {
 	//s.Suite.TearDownSuite(c)
-	err := os.RemoveAll("./debug")
-	c.Assert(err, IsNil)
+	//err := os.RemoveAll("./debug")
+	//c.Assert(err, IsNil)
 }
 
 func (s *BaseSuite) SetUpTest(c *C) {
@@ -49,7 +49,8 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
 	//url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
-	s.url = "./debug/remote"
+	s.url = config2.ConfigDir + "/sockshop"
+
 	// make a local remote
 	_, err = git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
 	c.Assert(err, IsNil)
@@ -66,7 +67,112 @@ func (s *BaseSuite) NewGitContext() common_models.GitContext {
 		Credentials: &common_models.GitCredentials{
 			User:      "Me",
 			Token:     "blabla",
-			RemoteURI: s.url},
+			RemoteURI: s.url,
+		},
+	}
+}
+
+func (s *BaseSuite) TestGit_CloneRepo(c *C) {
+
+	tests := []struct {
+		name       string
+		gitContext common_models.GitContext
+		git        Gogit
+		want       bool
+		wantErr    bool
+	}{
+		{
+			name: "clone sockshop from remote",
+			git: &common_mock.GogitMock{
+				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+					return s.Repository, nil
+				},
+				PlainOpenFunc: func(path string) (*git.Repository, error) {
+					return nil, errors.New("not exists")
+				},
+			},
+			gitContext: s.NewGitContext(),
+			wantErr:    false,
+			want:       true,
+		},
+		{
+			name: "clone existing sockshop",
+			git: &common_mock.GogitMock{
+				PlainOpenFunc: func(path string) (*git.Repository, error) {
+					return s.Repository, nil
+				},
+			},
+			gitContext: s.NewGitContext(),
+			wantErr:    false,
+			want:       true,
+		},
+		{
+			name:       "empty context",
+			gitContext: common_models.GitContext{},
+			git:        GogitReal{},
+			wantErr:    true,
+			want:       false,
+		},
+		{ // TODO: do we worry here if url is not valid or while saving it?
+			// go git seems to try to parse this wrong url
+			name: "wrong url context",
+			gitContext: common_models.GitContext{
+				Project: "sockshop",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: "http//wrongurl"},
+			},
+			git: &common_mock.GogitMock{
+				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+					return nil, errors.New("auth error")
+				},
+				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
+					return nil, errors.New("not exists")
+				},
+				PlainOpenFunc: func(path string) (*git.Repository, error) {
+					return nil, errors.New("not exists")
+				},
+			},
+			wantErr: true,
+			want:    false,
+		},
+		{
+			name: "Wrong credential",
+			gitContext: common_models.GitContext{
+				Project: "sockshop",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			git: &common_mock.GogitMock{
+				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+					return nil, errors.New("auth error")
+				},
+				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
+					return nil, errors.New("not exists")
+				},
+				PlainOpenFunc: func(path string) (*git.Repository, error) {
+					return nil, errors.New("not exists")
+				},
+			},
+			wantErr: true,
+			want:    false,
+		},
+	}
+	for _, tt := range tests {
+		c.Log("Test ", tt.name)
+		g := Git{tt.git}
+		got, err := g.CloneRepo(tt.gitContext)
+		if (err != nil) != tt.wantErr {
+			c.Errorf("CloneRepo() error = %v, wantErr %v", err, tt.wantErr)
+
+		}
+		if got != tt.want {
+			c.Errorf("CloneRepo() got = %v, want %v", got, tt.want)
+		}
+
 	}
 }
 
@@ -111,7 +217,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 	}
 
 	expected := []byte("[core]\n\tbare = false\n[remote \"origin\"]\n\turl = " +
-		"./debug/remote\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"dev\"]\n" +
+		"./debug/config/sockshop\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"dev\"]\n" +
 		"\tremote = origin\n\tmerge = refs/heads/dev\n[branch \"master\"]\n" +
 		"\tremote = origin\n\tmerge = refs/heads/master\n")
 
@@ -135,6 +241,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 		c.Assert(err, IsNil)
 		c.Assert(string(expected), Equals, string(marshaled))
 	}
+
 }
 
 func (s *BaseSuite) TestGit_CheckoutBranch(c *C) {
@@ -191,9 +298,7 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 	}
 	for _, tt := range tests {
 
-		g := Git{
-			s.NewTestGit(),
-		}
+		g := Git{s.NewTestGit()}
 		id := s.commitAndPush(tt.file, tt.content, c)
 		got, err := g.GetFileRevision(tt.gitContext, id.String(), tt.file)
 		if (err != nil) != tt.wantErr {
@@ -203,6 +308,34 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 		b := []byte(fmt.Sprintf("%s", tt.content))
 		if !reflect.DeepEqual(got, b) {
 			c.Errorf("GetFileRevision() got = %v, want %v", got, b)
+		}
+
+	}
+}
+
+func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
+
+	tests := []struct {
+		name    string
+		project string
+		want    bool
+	}{
+		{
+			name:    "project exists",
+			project: "sockshop",
+			want:    true,
+		},
+		{
+			name:    "project does not exists",
+			project: "whatever",
+			want:    false,
+		},
+	}
+	for _, tt := range tests {
+
+		g := Git{GogitReal{}}
+		if got := g.ProjectRepoExists(tt.project); got != tt.want {
+			c.Errorf("ProjectRepoExists() = %v, want %v", got, tt.want)
 		}
 
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	"io"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -18,12 +19,17 @@ type Git struct {
 }
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
+	if (gitContext == common_models.GitContext{}) || (*gitContext.Credentials == common_models.GitCredentials{}) {
+		return false, errors.New("Could not clone repo: " + InvalidContextErrorMsg)
+	}
 	projectPath := GetProjectConfigPath(gitContext.Project)
 	if g.ProjectRepoExists(gitContext.Project) {
 		// if project exist we do not clone again
 		return true, nil
 	}
-
+	if _, err := os.Stat(projectPath); err != nil {
+		return false, errors.New("Could not clone repo: path does not exist")
+	}
 	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
 			URL: gitContext.Credentials.RemoteURI,
@@ -31,7 +37,6 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 				Username: gitContext.Credentials.User,
 				Password: gitContext.Credentials.Token,
 			},
-			Depth: 1,
 		},
 	)
 
@@ -185,9 +190,15 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
-	_, err := g.git.PlainOpen(GetProjectConfigPath(project))
+	path := GetProjectConfigPath(project)
+	_, err := os.Stat(path)
 	if err == nil {
-		return true
+		// path exists
+		_, err := g.git.PlainOpen(path)
+
+		if err == nil {
+			return true
+		}
 	}
 	return false
 }
