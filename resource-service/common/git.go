@@ -14,13 +14,7 @@ import (
 )
 
 type Git struct {
-	git Gogit
-}
-
-func NewGit(g Gogit) Git {
-	return Git{
-		git: g,
-	}
+	//git Gogit
 }
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
@@ -30,7 +24,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		return true, nil
 	}
 
-	clone, err := g.git.PlainClone(projectPath, false,
+	clone, err := git.PlainClone(projectPath, false,
 		&git.CloneOptions{
 			URL: gitContext.Credentials.RemoteURI,
 			Auth: &http.BasicAuth{
@@ -44,7 +38,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "empty") {
 			// TODO empty remote leads to an error
-			init, err := g.git.PlainInit(projectPath, false)
+			init, err := git.PlainInit(projectPath, false)
 			if err != nil {
 				return false, err
 			}
@@ -96,11 +90,15 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 	// move head to sourceBranch
-	g.CheckoutBranch(gitContext, sourceBranch)
+	err := g.CheckoutBranch(gitContext, sourceBranch)
+	if err != nil {
+		return err //errors.New("Could not create branch, source branch does not exist!")
+	}
 
+	b := plumbing.NewBranchReferenceName(branch)
 	//create new branch
 	return g.checkoutBranch(gitContext, &git.CheckoutOptions{
-		Branch: plumbing.ReferenceName(branch),
+		Branch: b,
 		Create: true,
 	})
 }
@@ -132,7 +130,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 
 func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 	path := GetProjectConfigPath(gitContext.Project)
-	r, err := g.git.PlainOpen(path)
+	r, err := git.PlainOpen(path)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -179,7 +177,7 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
-	_, err := g.git.PlainOpen(GetProjectConfigPath(project))
+	_, err := git.PlainOpen(GetProjectConfigPath(project))
 	if err == nil {
 		return true
 	}
@@ -189,7 +187,7 @@ func (g *Git) ProjectRepoExists(project string) bool {
 func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository, *git.Worktree, error) {
 	projectConfigPath := GetProjectConfigPath(gitContext.Project)
 	// check if we already have a repository
-	repo, err := g.git.PlainOpen(projectConfigPath)
+	repo, err := git.PlainOpen(projectConfigPath)
 	if err != nil {
 		return nil, nil, err
 	}

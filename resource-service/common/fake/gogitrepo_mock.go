@@ -3,6 +3,7 @@
 
 package common_mock
 
+/*
 import (
 	"context"
 	"github.com/go-git/go-git/v5"
@@ -1108,4 +1109,4 @@ func (mock *RepositoryMock) resolveToCommitHashCalls() []struct {
 	calls = mock.calls.resolveToCommitHash
 	mock.lockresolveToCommitHash.RUnlock()
 	return calls
-}
+}*/

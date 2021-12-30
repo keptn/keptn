@@ -1,12 +1,7 @@
 package common
 
 import (
-	"context"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/storer"
 )
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogit_mock.go . Gogit
@@ -16,7 +11,7 @@ type Gogit interface {
 	PlainInit(path string, isBare bool) (*git.Repository, error)
 }
 
-//go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogitrepo_mock.go . Repository
+/*//go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogitrepo_mock.go . Repository
 type Repository interface {
 	Remote(name string) (*git.Remote, error)
 	Remotes() ([]*git.Remote, error)
@@ -44,4 +39,4 @@ type Repository interface {
 	References() (storer.ReferenceIter, error)
 	Worktree() (*git.Worktree, error)
 	ResolveRevision(rev plumbing.Revision) (*plumbing.Hash, error)
-}
+}*/

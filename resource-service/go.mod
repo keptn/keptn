@@ -15,6 +15,10 @@ require (
 	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6 // indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+	gopkg.in/src-d/go-billy.v4 v4.3.2
+	gopkg.in/src-d/go-git-fixtures.v3 v3.5.0
+	gopkg.in/src-d/go-git.v4 v4.13.1
 	k8s.io/apimachinery v0.23.1
 	k8s.io/client-go v0.23.1
 )
