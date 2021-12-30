@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"encoding/base64"
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 )
 
@@ -14,13 +12,16 @@ type ProjectResourceManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
 	fileWriter       common.IFileSystem
+	resourceEngine   *ResourceEngine
 }
 
 func NewProjectResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ProjectResourceManager {
+	resourceEngine := NewResourceEngine(git, fileWriter)
 	projectResourceManager := &ProjectResourceManager{
 		git:              git,
 		credentialReader: credentialReader,
 		fileWriter:       fileWriter,
+		resourceEngine:   resourceEngine,
 	}
 	return projectResourceManager
 }
@@ -36,20 +37,7 @@ func (p ProjectResourceManager) CreateResources(params models.CreateResourcesPar
 
 	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
-	for _, res := range params.Resources {
-		filePath := projectConfigPath + "/" + res.ResourceURI
-		logger.Debug("Adding resource: " + filePath)
-		if err := p.fileWriter.WriteBase64EncodedFile(projectConfigPath+"/"+res.ResourceURI, string(res.ResourceContent)); err != nil {
-			return nil, err
-		}
-	}
-
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Added resources")
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return p.resourceEngine.writeResources(gitContext, params.Resources, projectConfigPath)
 }
 
 func (p ProjectResourceManager) GetResources(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
@@ -82,20 +70,7 @@ func (p ProjectResourceManager) UpdateResources(params models.UpdateResourcesPar
 
 	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
-	for _, res := range params.Resources {
-		filePath := projectConfigPath + "/" + res.ResourceURI
-		err := p.fileWriter.WriteBase64EncodedFile(filePath, string(res.ResourceContent))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Added resources")
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return p.resourceEngine.writeResources(gitContext, params.Resources, projectConfigPath)
 }
 
 func (p ProjectResourceManager) GetResource(params models.GetResourceParams) (*models.GetResourceResponse, error) {
@@ -119,28 +94,7 @@ func (p ProjectResourceManager) GetResource(params models.GetResourceParams) (*m
 		return nil, errors.ErrResourceNotFound
 	}
 
-	fileContent, err := p.fileWriter.ReadFile(resourcePath)
-	if err != nil {
-		return nil, err
-	}
-
-	resourceContent := base64.StdEncoding.EncodeToString(fileContent)
-
-	currentRevision, err := p.git.GetCurrentRevision(*gitContext)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.GetResourceResponse{
-		Resource: models.Resource{
-			ResourceURI:     params.ResourceURI,
-			ResourceContent: models.ResourceContent(resourceContent),
-		},
-		Metadata: models.Version{
-			UpstreamURL: gitContext.Credentials.RemoteURI,
-			Version:     currentRevision,
-		},
-	}, nil
+	return p.resourceEngine.readResource(gitContext, params, resourcePath)
 }
 
 func (p ProjectResourceManager) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
@@ -156,16 +110,7 @@ func (p ProjectResourceManager) UpdateResource(params models.UpdateResourceParam
 
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 
-	if err := p.fileWriter.WriteBase64EncodedFile(resourcePath, string(params.ResourceContent)); err != nil {
-		return nil, err
-	}
-
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Updated resource "+params.ResourceURI)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return p.resourceEngine.writeResource(gitContext, resourcePath, string(params.ResourceContent))
 }
 
 func (p ProjectResourceManager) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
@@ -181,16 +126,7 @@ func (p ProjectResourceManager) DeleteResource(params models.DeleteResourceParam
 
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 
-	if err := p.fileWriter.DeleteFile(resourcePath); err != nil {
-		return nil, err
-	}
-
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Deleted resource "+params.ResourceURI)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return p.resourceEngine.deleteResource(gitContext, resourcePath)
 }
 
 func (p ProjectResourceManager) establishProjectContext(project models.Project) (*common.GitContext, error) {
