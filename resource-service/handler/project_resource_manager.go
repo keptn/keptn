@@ -11,7 +11,7 @@ import (
 type ProjectResourceManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
-	fileWriter       common.IFileSystem
+	fileSystem       common.IFileSystem
 	resourceEngine   *ResourceEngine
 }
 
@@ -20,7 +20,7 @@ func NewProjectResourceManager(git common.IGit, credentialReader common.Credenti
 	projectResourceManager := &ProjectResourceManager{
 		git:              git,
 		credentialReader: credentialReader,
-		fileWriter:       fileWriter,
+		fileSystem:       fileWriter,
 		resourceEngine:   resourceEngine,
 	}
 	return projectResourceManager
@@ -30,12 +30,10 @@ func (p ProjectResourceManager) CreateResources(params models.CreateResourcesPar
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
 	if err != nil {
 		return nil, err
 	}
-
-	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
 	return p.resourceEngine.writeResources(gitContext, params.Resources, projectConfigPath)
 }
@@ -44,14 +42,12 @@ func (p ProjectResourceManager) GetResources(params models.GetResourcesParams) (
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	_, err := p.establishProjectContext(params.Project)
+	_, projectConfigPath, err := p.establishProjectContext(params.Project)
 	if err != nil {
 		return nil, err
 	}
 
-	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
-
-	result, err := common.GetPaginatedResources(projectConfigPath, params.PageSize, params.NextPageKey, p.fileWriter)
+	result, err := common.GetPaginatedResources(projectConfigPath, params.PageSize, params.NextPageKey, p.fileSystem)
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +59,10 @@ func (p ProjectResourceManager) UpdateResources(params models.UpdateResourcesPar
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
 	if err != nil {
 		return nil, err
 	}
-
-	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
 	return p.resourceEngine.writeResources(gitContext, params.Resources, projectConfigPath)
 }
@@ -77,12 +71,10 @@ func (p ProjectResourceManager) GetResource(params models.GetResourceParams) (*m
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
 	if err != nil {
 		return nil, err
 	}
-
-	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
 	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
 	if err != nil {
@@ -90,7 +82,7 @@ func (p ProjectResourceManager) GetResource(params models.GetResourceParams) (*m
 	}
 
 	resourcePath := projectConfigPath + "/" + unescapedResourceName
-	if !p.fileWriter.FileExists(resourcePath) {
+	if !p.fileSystem.FileExists(resourcePath) {
 		return nil, errors.ErrResourceNotFound
 	}
 
@@ -101,12 +93,10 @@ func (p ProjectResourceManager) UpdateResource(params models.UpdateResourceParam
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
 	if err != nil {
 		return nil, err
 	}
-
-	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 
@@ -117,22 +107,20 @@ func (p ProjectResourceManager) DeleteResource(params models.DeleteResourceParam
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := p.establishProjectContext(params.Project)
+	gitContext, projectConfigPath, err := p.establishProjectContext(params.Project)
 	if err != nil {
 		return nil, err
 	}
-
-	projectConfigPath := common.GetProjectConfigPath(params.ProjectName)
 
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 
 	return p.resourceEngine.deleteResource(gitContext, resourcePath)
 }
 
-func (p ProjectResourceManager) establishProjectContext(project models.Project) (*common.GitContext, error) {
+func (p ProjectResourceManager) establishProjectContext(project models.Project) (*common.GitContext, string, error) {
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return nil, fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
+		return nil, "", fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
 	}
 
 	gitContext := common.GitContext{
@@ -141,17 +129,19 @@ func (p ProjectResourceManager) establishProjectContext(project models.Project) 
 	}
 
 	if !p.git.ProjectExists(gitContext) {
-		return nil, errors.ErrProjectNotFound
+		return nil, "", errors.ErrProjectNotFound
 	}
 
 	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
 	if err != nil {
-		return nil, fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
+		return nil, "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
 	}
 
 	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
-		return nil, fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
+		return nil, "", fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
 	}
 
-	return &gitContext, nil
+	projectConfigPath := common.GetProjectConfigPath(project.ProjectName)
+
+	return &gitContext, projectConfigPath, nil
 }
