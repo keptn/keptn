@@ -167,23 +167,24 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 
 func (p ResourceManager) readResource(gitContext *common.GitContext, params models.GetResourceParams, resourcePath string) (*models.GetResourceResponse, error) {
 	var fileContent []byte
+	var revision string
 	var err error
 
 	if params.GitCommitID != "" {
 		fileContent, err = p.git.GetFileRevision(*gitContext, resourcePath, params.GitCommitID, params.ResourceURI)
+		revision = params.GitCommitID
 	} else {
 		fileContent, err = p.fileSystem.ReadFile(resourcePath)
+		if err != nil {
+			return nil, err
+		}
+		revision, err = p.git.GetCurrentRevision(*gitContext)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	resourceContent := base64.StdEncoding.EncodeToString(fileContent)
-
-	currentRevision, err := p.git.GetCurrentRevision(*gitContext)
-	if err != nil {
-		return nil, err
-	}
 
 	return &models.GetResourceResponse{
 		Resource: models.Resource{
@@ -192,22 +193,17 @@ func (p ResourceManager) readResource(gitContext *common.GitContext, params mode
 		},
 		Metadata: models.Version{
 			UpstreamURL: gitContext.Credentials.RemoteURI,
-			Version:     currentRevision,
+			Version:     revision,
 		},
 	}, nil
 }
 
-func (p ResourceManager) writeResource(gitContext *common.GitContext, resourceContent, resourcePath string) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) writeResource(gitContext *common.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
 	if err := p.fileSystem.WriteBase64EncodedFile(resourcePath, resourceContent); err != nil {
 		return nil, err
 	}
 
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Updated resource")
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return p.stageAndCommit(gitContext, "Updated resource")
 }
 
 func (p ResourceManager) writeResources(gitContext *common.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
@@ -218,7 +214,11 @@ func (p ResourceManager) writeResources(gitContext *common.GitContext, resources
 		}
 	}
 
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Added resources")
+	return p.stageAndCommit(gitContext, "Added resources")
+}
+
+func (p ResourceManager) stageAndCommit(gitContext *common.GitContext, message string) (*models.WriteResourceResponse, error) {
+	commitID, err := p.git.StageAndCommitAll(*gitContext, message)
 	if err != nil {
 		return nil, err
 	}
@@ -231,10 +231,5 @@ func (p ResourceManager) deleteResource(gitContext *common.GitContext, resourceP
 		return nil, err
 	}
 
-	commitID, err := p.git.StageAndCommitAll(*gitContext, "Deleted resource")
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return p.stageAndCommit(gitContext, "Deleted resources")
 }

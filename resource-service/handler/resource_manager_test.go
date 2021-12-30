@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
+	"github.com/keptn/keptn/resource-service/models"
+	"github.com/stretchr/testify/require"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -11,13 +15,726 @@ import (
 )
 
 type testResourceManagerFields struct {
-	git              common.IGit
-	credentialReader common.CredentialReader
-	fileSystem       common.IFileSystem
+	git              *common_mock.IGitMock
+	credentialReader *common_mock.CredentialReaderMock
+	fileSystem       *common_mock.IFileSystemMock
 }
 
-func TestResourceManager_CreateResources(t *testing.T) {
+func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
 
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetProjectConfigPath("my-project")+"/file2")
+}
+
+func TestResourceManager_CreateResources_StageResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		Stage: &models.Stage{
+			StageName: "my-stage",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetProjectConfigPath("my-project")+"/file2")
+}
+
+func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		Stage: &models.Stage{
+			StageName: "my-stage",
+		},
+		Service: &models.Service{
+			ServiceName: "my-service",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/file1")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetServiceConfigPath("my-project", "my-service")+"/file2")
+}
+
+func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+		return false
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+		return nil, errors2.ErrMalformedCredentials
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrMalformedCredentials)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.GetDefaultBranchFunc = func(gitContext common.GitContext) (string, error) {
+		return "", errors.New("oops")
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.CheckoutBranchFunc = func(gitContext common.GitContext, branch string) error {
+		return errors.New("oops")
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		UpdateResourcesPayload: models.UpdateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetProjectConfigPath("my-project")+"/file2")
+}
+
+func TestResourceManager_UpdateResources_ProjectResource_ProjectNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+		return false
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		UpdateResourcesPayload: models.UpdateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_UpdateResources_ProjectResource_WritingFileFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.WriteBase64EncodedFileFunc = func(path string, content string) error {
+		return errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		UpdateResourcesPayload: models.UpdateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+}
+
+func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		UpdateResourcesPayload: models.UpdateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file2", fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path)
+}
+
+func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResource(models.UpdateResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+		UpdateResourcePayload: models.UpdateResourcePayload{
+			ResourceContent: "c3RyaW5n",
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+}
+
+func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+		return false
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResource(models.UpdateResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+		UpdateResourcePayload: models.UpdateResourcePayload{
+			ResourceContent: "c3RyaW5n",
+		},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_UpdateResource_ProjectResource_WritingFileFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.WriteBase64EncodedFileFunc = func(path string, content string) error {
+		return errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResource(models.UpdateResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+		UpdateResourcePayload: models.UpdateResourcePayload{
+			ResourceContent: "c3RyaW5n",
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+}
+
+func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.UpdateResource(models.UpdateResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+		UpdateResourcePayload: models.UpdateResourcePayload{
+			ResourceContent: "c3RyaW5n",
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+}
+
+func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.DeleteFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+}
+
+func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+		return false
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+	})
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+	require.Empty(t, fields.fileSystem.DeleteFileCalls())
+}
+
+func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.DeleteFileFunc = func(path string) error {
+		return errors.New("oops")
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Len(t, fields.fileSystem.DeleteFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+}
+
+func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.DeleteFileFunc = func(path string) error {
+		return errors.New("oops")
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Len(t, fields.fileSystem.DeleteFileCalls(), 1)
+	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+}
+
+func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.GetResourceResponse{
+		Resource: models.Resource{
+			ResourceContent: "ZmlsZS1jb250ZW50",
+			ResourceURI:     "file1",
+		},
+		Metadata: models.Version{
+			UpstreamURL: "remote-url",
+			Version:     "my-revision",
+		},
+	}, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.GetFileRevisionCalls())
+}
+
+func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+		GetResourceQuery: models.GetResourceQuery{
+			GitCommitID: "my-commit-id",
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.GetResourceResponse{
+		Resource: models.Resource{
+			ResourceContent: "ZmlsZS1jb250ZW50",
+			ResourceURI:     "file1",
+		},
+		Metadata: models.Version{
+			UpstreamURL: "remote-url",
+			Version:     "my-commit-id",
+		},
+	}, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.GetFileRevisionCalls(), 1)
+	require.Equal(t, "my-commit-id", fields.git.GetFileRevisionCalls()[0].Revision)
 }
 
 type fakeFileInfo struct {
@@ -72,7 +789,7 @@ func getTestResourceManagerFields() testResourceManagerFields {
 				return "main", nil
 			},
 			GetFileRevisionFunc: func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
-				return []byte("my-content"), nil
+				return []byte("file-content"), nil
 			},
 			ProjectExistsFunc: func(gitContext common.GitContext) bool {
 				return true
