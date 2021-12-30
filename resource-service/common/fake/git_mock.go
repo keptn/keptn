@@ -23,6 +23,9 @@ import (
 // 			CreateBranchFunc: func(gitContext common.GitContext, branch string, sourceBranch string) error {
 // 				panic("mock out the CreateBranch method")
 // 			},
+// 			GetCurrentRevisionFunc: func(gitContext common.GitContext) (string, error) {
+// 				panic("mock out the GetCurrentRevision method")
+// 			},
 // 			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
 // 				panic("mock out the GetDefaultBranch method")
 // 			},
@@ -59,6 +62,9 @@ type IGitMock struct {
 
 	// CreateBranchFunc mocks the CreateBranch method.
 	CreateBranchFunc func(gitContext common.GitContext, branch string, sourceBranch string) error
+
+	// GetCurrentRevisionFunc mocks the GetCurrentRevision method.
+	GetCurrentRevisionFunc func(gitContext common.GitContext) (string, error)
 
 	// GetDefaultBranchFunc mocks the GetDefaultBranch method.
 	GetDefaultBranchFunc func(gitContext common.GitContext) (string, error)
@@ -104,6 +110,11 @@ type IGitMock struct {
 			// SourceBranch is the sourceBranch argument value.
 			SourceBranch string
 		}
+		// GetCurrentRevision holds details about calls to the GetCurrentRevision method.
+		GetCurrentRevision []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common.GitContext
+		}
 		// GetDefaultBranch holds details about calls to the GetDefaultBranch method.
 		GetDefaultBranch []struct {
 			// GitContext is the gitContext argument value.
@@ -148,16 +159,17 @@ type IGitMock struct {
 			Message string
 		}
 	}
-	lockCheckoutBranch    sync.RWMutex
-	lockCloneRepo         sync.RWMutex
-	lockCreateBranch      sync.RWMutex
-	lockGetDefaultBranch  sync.RWMutex
-	lockGetFileRevision   sync.RWMutex
-	lockProjectExists     sync.RWMutex
-	lockProjectRepoExists sync.RWMutex
-	lockPull              sync.RWMutex
-	lockPush              sync.RWMutex
-	lockStageAndCommitAll sync.RWMutex
+	lockCheckoutBranch     sync.RWMutex
+	lockCloneRepo          sync.RWMutex
+	lockCreateBranch       sync.RWMutex
+	lockGetCurrentRevision sync.RWMutex
+	lockGetDefaultBranch   sync.RWMutex
+	lockGetFileRevision    sync.RWMutex
+	lockProjectExists      sync.RWMutex
+	lockProjectRepoExists  sync.RWMutex
+	lockPull               sync.RWMutex
+	lockPush               sync.RWMutex
+	lockStageAndCommitAll  sync.RWMutex
 }
 
 // CheckoutBranch calls CheckoutBranchFunc.
@@ -262,6 +274,37 @@ func (mock *IGitMock) CreateBranchCalls() []struct {
 	mock.lockCreateBranch.RLock()
 	calls = mock.calls.CreateBranch
 	mock.lockCreateBranch.RUnlock()
+	return calls
+}
+
+// GetCurrentRevision calls GetCurrentRevisionFunc.
+func (mock *IGitMock) GetCurrentRevision(gitContext common.GitContext) (string, error) {
+	if mock.GetCurrentRevisionFunc == nil {
+		panic("IGitMock.GetCurrentRevisionFunc: method is nil but IGit.GetCurrentRevision was just called")
+	}
+	callInfo := struct {
+		GitContext common.GitContext
+	}{
+		GitContext: gitContext,
+	}
+	mock.lockGetCurrentRevision.Lock()
+	mock.calls.GetCurrentRevision = append(mock.calls.GetCurrentRevision, callInfo)
+	mock.lockGetCurrentRevision.Unlock()
+	return mock.GetCurrentRevisionFunc(gitContext)
+}
+
+// GetCurrentRevisionCalls gets all the calls that were made to GetCurrentRevision.
+// Check the length with:
+//     len(mockedIGit.GetCurrentRevisionCalls())
+func (mock *IGitMock) GetCurrentRevisionCalls() []struct {
+	GitContext common.GitContext
+} {
+	var calls []struct {
+		GitContext common.GitContext
+	}
+	mock.lockGetCurrentRevision.RLock()
+	calls = mock.calls.GetCurrentRevision
+	mock.lockGetCurrentRevision.RUnlock()
 	return calls
 }
 
