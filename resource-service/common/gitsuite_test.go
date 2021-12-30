@@ -47,11 +47,10 @@ func (s *BaseSuite) SetUpTest(c *C) {
 func (s *BaseSuite) buildBasicRepository(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
-	url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
+	//url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
 	s.url = "./debug/remote"
-
 	// make a local remote
-	_, err = git.PlainClone(s.url, true, &git.CloneOptions{URL: url})
+	_, err = git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
 	c.Assert(err, IsNil)
 
 	// make local git repo
