@@ -700,6 +700,7 @@ func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
 
 	require.Empty(t, fields.git.GetFileRevisionCalls())
+	require.Len(t, fields.fileSystem.ReadFileCalls(), 1)
 }
 
 func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testing.T) {
@@ -735,6 +736,57 @@ func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testi
 
 	require.Len(t, fields.git.GetFileRevisionCalls(), 1)
 	require.Equal(t, "my-commit-id", fields.git.GetFileRevisionCalls()[0].Revision)
+}
+
+func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+		return false
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "file1",
+		GetResourceQuery: models.GetResourceQuery{
+			GitCommitID: "my-commit-id",
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, result)
+
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Empty(t, fields.git.GetFileRevisionCalls())
+}
+
+func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		ResourceURI: "fi%le1",
+		GetResourceQuery: models.GetResourceQuery{
+			GitCommitID: "my-commit-id",
+		},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrResourceInvalidResourceURI)
+
+	require.Nil(t, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
 type fakeFileInfo struct {

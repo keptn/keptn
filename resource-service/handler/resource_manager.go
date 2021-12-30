@@ -91,9 +91,6 @@ func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.G
 	}
 
 	resourcePath := configPath + "/" + unescapedResourceName
-	if !p.fileSystem.FileExists(resourcePath) {
-		return nil, errors.ErrResourceNotFound
-	}
 
 	return p.readResource(gitContext, params, resourcePath)
 }
