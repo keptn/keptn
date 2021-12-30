@@ -4,15 +4,16 @@
 package common_mock
 
 import (
+	"path/filepath"
 	"sync"
 )
 
-// IFileWriterMock is a mock implementation of common.IFileWriter.
+// IFileSystemMock is a mock implementation of common.IFileSystem.
 //
-// 	func TestSomethingThatUsesIFileWriter(t *testing.T) {
+// 	func TestSomethingThatUsesIFileSystem(t *testing.T) {
 //
-// 		// make and configure a mocked common.IFileWriter
-// 		mockedIFileWriter := &IFileWriterMock{
+// 		// make and configure a mocked common.IFileSystem
+// 		mockedIFileSystem := &IFileSystemMock{
 // 			DeleteFileFunc: func(path string) error {
 // 				panic("mock out the DeleteFile method")
 // 			},
@@ -22,6 +23,12 @@ import (
 // 			MakeDirFunc: func(path string) error {
 // 				panic("mock out the MakeDir method")
 // 			},
+// 			ReadFileFunc: func(filename string) ([]byte, error) {
+// 				panic("mock out the ReadFile method")
+// 			},
+// 			WalkPathFunc: func(path string, walkFunc filepath.WalkFunc) error {
+// 				panic("mock out the WalkPath method")
+// 			},
 // 			WriteBase64EncodedFileFunc: func(path string, content string) error {
 // 				panic("mock out the WriteBase64EncodedFile method")
 // 			},
@@ -30,11 +37,11 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIFileWriter in code that requires common.IFileWriter
+// 		// use mockedIFileSystem in code that requires common.IFileSystem
 // 		// and then make assertions.
 //
 // 	}
-type IFileWriterMock struct {
+type IFileSystemMock struct {
 	// DeleteFileFunc mocks the DeleteFile method.
 	DeleteFileFunc func(path string) error
 
@@ -43,6 +50,12 @@ type IFileWriterMock struct {
 
 	// MakeDirFunc mocks the MakeDir method.
 	MakeDirFunc func(path string) error
+
+	// ReadFileFunc mocks the ReadFile method.
+	ReadFileFunc func(filename string) ([]byte, error)
+
+	// WalkPathFunc mocks the WalkPath method.
+	WalkPathFunc func(path string, walkFunc filepath.WalkFunc) error
 
 	// WriteBase64EncodedFileFunc mocks the WriteBase64EncodedFile method.
 	WriteBase64EncodedFileFunc func(path string, content string) error
@@ -67,6 +80,18 @@ type IFileWriterMock struct {
 			// Path is the path argument value.
 			Path string
 		}
+		// ReadFile holds details about calls to the ReadFile method.
+		ReadFile []struct {
+			// Filename is the filename argument value.
+			Filename string
+		}
+		// WalkPath holds details about calls to the WalkPath method.
+		WalkPath []struct {
+			// Path is the path argument value.
+			Path string
+			// WalkFunc is the walkFunc argument value.
+			WalkFunc filepath.WalkFunc
+		}
 		// WriteBase64EncodedFile holds details about calls to the WriteBase64EncodedFile method.
 		WriteBase64EncodedFile []struct {
 			// Path is the path argument value.
@@ -85,14 +110,16 @@ type IFileWriterMock struct {
 	lockDeleteFile             sync.RWMutex
 	lockFileExists             sync.RWMutex
 	lockMakeDir                sync.RWMutex
+	lockReadFile               sync.RWMutex
+	lockWalkPath               sync.RWMutex
 	lockWriteBase64EncodedFile sync.RWMutex
 	lockWriteFile              sync.RWMutex
 }
 
 // DeleteFile calls DeleteFileFunc.
-func (mock *IFileWriterMock) DeleteFile(path string) error {
+func (mock *IFileSystemMock) DeleteFile(path string) error {
 	if mock.DeleteFileFunc == nil {
-		panic("IFileWriterMock.DeleteFileFunc: method is nil but IFileWriter.DeleteFile was just called")
+		panic("IFileSystemMock.DeleteFileFunc: method is nil but IFileSystem.DeleteFile was just called")
 	}
 	callInfo := struct {
 		Path string
@@ -107,8 +134,8 @@ func (mock *IFileWriterMock) DeleteFile(path string) error {
 
 // DeleteFileCalls gets all the calls that were made to DeleteFile.
 // Check the length with:
-//     len(mockedIFileWriter.DeleteFileCalls())
-func (mock *IFileWriterMock) DeleteFileCalls() []struct {
+//     len(mockedIFileSystem.DeleteFileCalls())
+func (mock *IFileSystemMock) DeleteFileCalls() []struct {
 	Path string
 } {
 	var calls []struct {
@@ -121,9 +148,9 @@ func (mock *IFileWriterMock) DeleteFileCalls() []struct {
 }
 
 // FileExists calls FileExistsFunc.
-func (mock *IFileWriterMock) FileExists(path string) bool {
+func (mock *IFileSystemMock) FileExists(path string) bool {
 	if mock.FileExistsFunc == nil {
-		panic("IFileWriterMock.FileExistsFunc: method is nil but IFileWriter.FileExists was just called")
+		panic("IFileSystemMock.FileExistsFunc: method is nil but IFileSystem.FileExists was just called")
 	}
 	callInfo := struct {
 		Path string
@@ -138,8 +165,8 @@ func (mock *IFileWriterMock) FileExists(path string) bool {
 
 // FileExistsCalls gets all the calls that were made to FileExists.
 // Check the length with:
-//     len(mockedIFileWriter.FileExistsCalls())
-func (mock *IFileWriterMock) FileExistsCalls() []struct {
+//     len(mockedIFileSystem.FileExistsCalls())
+func (mock *IFileSystemMock) FileExistsCalls() []struct {
 	Path string
 } {
 	var calls []struct {
@@ -152,9 +179,9 @@ func (mock *IFileWriterMock) FileExistsCalls() []struct {
 }
 
 // MakeDir calls MakeDirFunc.
-func (mock *IFileWriterMock) MakeDir(path string) error {
+func (mock *IFileSystemMock) MakeDir(path string) error {
 	if mock.MakeDirFunc == nil {
-		panic("IFileWriterMock.MakeDirFunc: method is nil but IFileWriter.MakeDir was just called")
+		panic("IFileSystemMock.MakeDirFunc: method is nil but IFileSystem.MakeDir was just called")
 	}
 	callInfo := struct {
 		Path string
@@ -169,8 +196,8 @@ func (mock *IFileWriterMock) MakeDir(path string) error {
 
 // MakeDirCalls gets all the calls that were made to MakeDir.
 // Check the length with:
-//     len(mockedIFileWriter.MakeDirCalls())
-func (mock *IFileWriterMock) MakeDirCalls() []struct {
+//     len(mockedIFileSystem.MakeDirCalls())
+func (mock *IFileSystemMock) MakeDirCalls() []struct {
 	Path string
 } {
 	var calls []struct {
@@ -182,10 +209,76 @@ func (mock *IFileWriterMock) MakeDirCalls() []struct {
 	return calls
 }
 
+// ReadFile calls ReadFileFunc.
+func (mock *IFileSystemMock) ReadFile(filename string) ([]byte, error) {
+	if mock.ReadFileFunc == nil {
+		panic("IFileSystemMock.ReadFileFunc: method is nil but IFileSystem.ReadFile was just called")
+	}
+	callInfo := struct {
+		Filename string
+	}{
+		Filename: filename,
+	}
+	mock.lockReadFile.Lock()
+	mock.calls.ReadFile = append(mock.calls.ReadFile, callInfo)
+	mock.lockReadFile.Unlock()
+	return mock.ReadFileFunc(filename)
+}
+
+// ReadFileCalls gets all the calls that were made to ReadFile.
+// Check the length with:
+//     len(mockedIFileSystem.ReadFileCalls())
+func (mock *IFileSystemMock) ReadFileCalls() []struct {
+	Filename string
+} {
+	var calls []struct {
+		Filename string
+	}
+	mock.lockReadFile.RLock()
+	calls = mock.calls.ReadFile
+	mock.lockReadFile.RUnlock()
+	return calls
+}
+
+// WalkPath calls WalkPathFunc.
+func (mock *IFileSystemMock) WalkPath(path string, walkFunc filepath.WalkFunc) error {
+	if mock.WalkPathFunc == nil {
+		panic("IFileSystemMock.WalkPathFunc: method is nil but IFileSystem.WalkPath was just called")
+	}
+	callInfo := struct {
+		Path     string
+		WalkFunc filepath.WalkFunc
+	}{
+		Path:     path,
+		WalkFunc: walkFunc,
+	}
+	mock.lockWalkPath.Lock()
+	mock.calls.WalkPath = append(mock.calls.WalkPath, callInfo)
+	mock.lockWalkPath.Unlock()
+	return mock.WalkPathFunc(path, walkFunc)
+}
+
+// WalkPathCalls gets all the calls that were made to WalkPath.
+// Check the length with:
+//     len(mockedIFileSystem.WalkPathCalls())
+func (mock *IFileSystemMock) WalkPathCalls() []struct {
+	Path     string
+	WalkFunc filepath.WalkFunc
+} {
+	var calls []struct {
+		Path     string
+		WalkFunc filepath.WalkFunc
+	}
+	mock.lockWalkPath.RLock()
+	calls = mock.calls.WalkPath
+	mock.lockWalkPath.RUnlock()
+	return calls
+}
+
 // WriteBase64EncodedFile calls WriteBase64EncodedFileFunc.
-func (mock *IFileWriterMock) WriteBase64EncodedFile(path string, content string) error {
+func (mock *IFileSystemMock) WriteBase64EncodedFile(path string, content string) error {
 	if mock.WriteBase64EncodedFileFunc == nil {
-		panic("IFileWriterMock.WriteBase64EncodedFileFunc: method is nil but IFileWriter.WriteBase64EncodedFile was just called")
+		panic("IFileSystemMock.WriteBase64EncodedFileFunc: method is nil but IFileSystem.WriteBase64EncodedFile was just called")
 	}
 	callInfo := struct {
 		Path    string
@@ -202,8 +295,8 @@ func (mock *IFileWriterMock) WriteBase64EncodedFile(path string, content string)
 
 // WriteBase64EncodedFileCalls gets all the calls that were made to WriteBase64EncodedFile.
 // Check the length with:
-//     len(mockedIFileWriter.WriteBase64EncodedFileCalls())
-func (mock *IFileWriterMock) WriteBase64EncodedFileCalls() []struct {
+//     len(mockedIFileSystem.WriteBase64EncodedFileCalls())
+func (mock *IFileSystemMock) WriteBase64EncodedFileCalls() []struct {
 	Path    string
 	Content string
 } {
@@ -218,9 +311,9 @@ func (mock *IFileWriterMock) WriteBase64EncodedFileCalls() []struct {
 }
 
 // WriteFile calls WriteFileFunc.
-func (mock *IFileWriterMock) WriteFile(path string, content []byte) error {
+func (mock *IFileSystemMock) WriteFile(path string, content []byte) error {
 	if mock.WriteFileFunc == nil {
-		panic("IFileWriterMock.WriteFileFunc: method is nil but IFileWriter.WriteFile was just called")
+		panic("IFileSystemMock.WriteFileFunc: method is nil but IFileSystem.WriteFile was just called")
 	}
 	callInfo := struct {
 		Path    string
@@ -237,8 +330,8 @@ func (mock *IFileWriterMock) WriteFile(path string, content []byte) error {
 
 // WriteFileCalls gets all the calls that were made to WriteFile.
 // Check the length with:
-//     len(mockedIFileWriter.WriteFileCalls())
-func (mock *IFileWriterMock) WriteFileCalls() []struct {
+//     len(mockedIFileSystem.WriteFileCalls())
+func (mock *IFileSystemMock) WriteFileCalls() []struct {
 	Path    string
 	Content []byte
 } {

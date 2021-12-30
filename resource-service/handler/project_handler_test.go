@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -55,7 +55,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			name: "project already exists",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
-					return common.ErrProjectAlreadyExists
+					return errors2.ErrProjectAlreadyExists
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -81,7 +81,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			name: "upstream repo not found",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
-					return common.ErrRepositoryNotFound
+					return errors2.ErrRepositoryNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -94,7 +94,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			name: "invalid git token",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
-					return common.ErrInvalidGitToken
+					return errors2.ErrInvalidGitToken
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -107,7 +107,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			name: "credentials for project not available",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
-					return common.ErrCredentialsNotFound
+					return errors2.ErrCredentialsNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -120,7 +120,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			name: "credentials for project could not be decoded",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
-					return common.ErrMalformedCredentials
+					return errors2.ErrMalformedCredentials
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -201,7 +201,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
-					return common.ErrProjectNotFound
+					return errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -227,7 +227,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			name: "upstream repo not found",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
-					return common.ErrRepositoryNotFound
+					return errors2.ErrRepositoryNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -240,7 +240,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			name: "invalid git token",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
-					return common.ErrInvalidGitToken
+					return errors2.ErrInvalidGitToken
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -253,7 +253,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			name: "credentials for project not available",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
-					return common.ErrCredentialsNotFound
+					return errors2.ErrCredentialsNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -266,7 +266,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			name: "credentials for project could not be decoded",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
-					return common.ErrMalformedCredentials
+					return errors2.ErrMalformedCredentials
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
@@ -340,7 +340,7 @@ func TestProjectHandler_DeleteProject(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{DeleteProjectFunc: func(projectName string) error {
-					return common.ErrProjectNotFound
+					return errors2.ErrProjectNotFound
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project", nil),

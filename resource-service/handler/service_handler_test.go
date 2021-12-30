@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -81,7 +81,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrProjectNotFound
+					return errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
@@ -98,7 +98,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			name: "stage not found",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrStageNotFound
+					return errors2.ErrStageNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
@@ -115,7 +115,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			name: "service already exists",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrServiceAlreadyExists
+					return errors2.ErrServiceAlreadyExists
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
@@ -149,7 +149,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			name: "upstream repo not found",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{CreateServiceFunc: func(params models.CreateServiceParams) error {
-					return common.ErrRepositoryNotFound
+					return errors2.ErrRepositoryNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/service", bytes.NewBuffer([]byte(createServiceTestPayload))),
@@ -231,7 +231,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{DeleteServiceFunc: func(params models.DeleteServiceParams) error {
-					return common.ErrProjectNotFound
+					return errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/service/my-service", nil),
@@ -252,7 +252,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 			name: "stage not found",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{DeleteServiceFunc: func(params models.DeleteServiceParams) error {
-					return common.ErrStageNotFound
+					return errors2.ErrStageNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/service/my-service", nil),
@@ -273,7 +273,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 			name: "service not found",
 			fields: fields{
 				ServiceManager: &handler_mock.IServiceManagerMock{DeleteServiceFunc: func(params models.DeleteServiceParams) error {
-					return common.ErrServiceNotFound
+					return errors2.ErrServiceNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/service/my-service", nil),

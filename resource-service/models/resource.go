@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/base64"
-	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/errors"
 	"strings"
 )
 
@@ -11,7 +11,7 @@ type ResourceContent string
 func (rc ResourceContent) Validate() error {
 	_, err := base64.StdEncoding.DecodeString(string(rc))
 	if err != nil {
-		return common.ErrResourceNotBase64Encoded
+		return errors.ErrResourceNotBase64Encoded
 	}
 	return nil
 }
@@ -31,7 +31,7 @@ type Resource struct {
 
 func (r Resource) Validate() error {
 	if err := r.ResourceContent.Validate(); err != nil {
-		return common.ErrResourceNotBase64Encoded
+		return errors.ErrResourceNotBase64Encoded
 	}
 	if err := validateResourceURI(r.ResourceURI); err != nil {
 		return err
@@ -40,9 +40,9 @@ func (r Resource) Validate() error {
 }
 
 type GetResourcesQuery struct {
-	GitCommitID string  `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
-	NextPageKey string  `json:"nextPageKey,omitempty" form:"nextPageKey"`
-	PageSize    float64 `json:"pageSize,omitempty" form:"pageSize"`
+	GitCommitID string `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
+	NextPageKey string `json:"nextPageKey,omitempty" form:"nextPageKey"`
+	PageSize    int64  `json:"pageSize,omitempty" form:"pageSize"`
 }
 
 type GetResourcesParams struct {
@@ -268,7 +268,7 @@ type WriteResourceResponse struct {
 
 func validateResourceURI(uri string) error {
 	if strings.Contains(uri, "~") || strings.Contains(uri, "..") {
-		return common.ErrResourceInvalidResourceURI
+		return errors.ErrResourceInvalidResourceURI
 	}
 	return nil
 }

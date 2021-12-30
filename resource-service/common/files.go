@@ -2,24 +2,27 @@ package common
 
 import (
 	"encoding/base64"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// IFileWriter is an interface for writing files
-//go:generate moq -pkg common_mock -skip-ensure -out ./fake/file_writer_mock.go . IFileWriter
-type IFileWriter interface {
+// IFileSystem is an interface for writing files
+//go:generate moq -pkg common_mock -skip-ensure -out ./fake/file_writer_mock.go . IFileSystem
+type IFileSystem interface {
 	WriteBase64EncodedFile(path string, content string) error
 	WriteFile(path string, content []byte) error
+	ReadFile(filename string) ([]byte, error)
 	DeleteFile(path string) error
 	FileExists(path string) bool
 	MakeDir(path string) error
+	WalkPath(path string, walkFunc filepath.WalkFunc) error
 }
 
-type FileWriter struct{}
+type FileSystem struct{}
 
-func (fw FileWriter) WriteBase64EncodedFile(path string, content string) error {
+func (fw FileSystem) WriteBase64EncodedFile(path string, content string) error {
 	data, err := base64.StdEncoding.DecodeString(content)
 	if err != nil {
 		return err
@@ -27,7 +30,7 @@ func (fw FileWriter) WriteBase64EncodedFile(path string, content string) error {
 	return fw.WriteFile(path, data)
 }
 
-func (fw FileWriter) WriteFile(path string, content []byte) error {
+func (fw FileSystem) WriteFile(path string, content []byte) error {
 	pathArr := strings.Split(path, "/")
 	directory := ""
 	for _, pathItem := range pathArr[0 : len(pathArr)-1] {
@@ -72,7 +75,12 @@ func (fw FileWriter) WriteFile(path string, content []byte) error {
 	return err
 }
 
-func (FileWriter) DeleteFile(path string) error {
+func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
+	filename = filepath.Clean(filename)
+	return ioutil.ReadFile(filename)
+}
+
+func (FileSystem) DeleteFile(path string) error {
 	var err = os.Remove(path)
 	if err != nil {
 		return err
@@ -80,7 +88,7 @@ func (FileWriter) DeleteFile(path string) error {
 	return nil
 }
 
-func (FileWriter) FileExists(path string) bool {
+func (FileSystem) FileExists(path string) bool {
 	_, err := os.Stat(path)
 	// create file if not exists
 	if os.IsNotExist(err) {
@@ -89,6 +97,10 @@ func (FileWriter) FileExists(path string) bool {
 	return true
 }
 
-func (fw FileWriter) MakeDir(path string) error {
+func (fw FileSystem) MakeDir(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
+}
+
+func (fw FileSystem) WalkPath(path string, walkFunc filepath.WalkFunc) error {
+	return filepath.Walk(path, walkFunc)
 }

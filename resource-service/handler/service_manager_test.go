@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -14,7 +15,7 @@ import (
 type serviceManagerTestFields struct {
 	git              *common_mock.IGitMock
 	credentialReader *common_mock.CredentialReaderMock
-	fileWriter       *common_mock.IFileWriterMock
+	fileWriter       *common_mock.IFileSystemMock
 }
 
 func TestServiceManager_CreateService(t *testing.T) {
@@ -70,12 +71,12 @@ func TestServiceManager_CreateService_CannotReadCredentials(t *testing.T) {
 	fields := getTestServiceManagerFields()
 
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
-		return nil, common.ErrCredentialsNotFound
+		return nil, errors2.ErrCredentialsNotFound
 	}
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateService(params)
 
-	require.ErrorIs(t, err, common.ErrCredentialsNotFound)
+	require.ErrorIs(t, err, errors2.ErrCredentialsNotFound)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileWriter.WriteFileCalls())
@@ -110,7 +111,7 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateService(params)
 
-	require.ErrorIs(t, err, common.ErrProjectNotFound)
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -142,13 +143,13 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 	fields := getTestServiceManagerFields()
 
 	fields.git.CheckoutBranchFunc = func(gitContext common.GitContext, branch string) error {
-		return common.ErrStageNotFound
+		return errors2.ErrStageNotFound
 	}
 
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateService(params)
 
-	require.ErrorIs(t, err, common.ErrStageNotFound)
+	require.ErrorIs(t, err, errors2.ErrStageNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -189,7 +190,7 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateService(params)
 
-	require.ErrorIs(t, err, common.ErrServiceAlreadyExists)
+	require.ErrorIs(t, err, errors2.ErrServiceAlreadyExists)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -397,7 +398,7 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.DeleteService(params)
 
-	require.ErrorIs(t, err, common.ErrProjectNotFound)
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -431,7 +432,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.DeleteService(params)
 
-	require.ErrorIs(t, err, common.ErrServiceNotFound)
+	require.ErrorIs(t, err, errors2.ErrServiceNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -557,7 +558,7 @@ func getTestServiceManagerFields() serviceManagerTestFields {
 				}, nil
 			},
 		},
-		fileWriter: &common_mock.IFileWriterMock{
+		fileWriter: &common_mock.IFileSystemMock{
 			FileExistsFunc: func(path string) bool {
 				return false
 			},

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -73,7 +73,7 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
-					return nil, common.ErrProjectNotFound
+					return nil, errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -389,7 +389,7 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
-					return nil, common.ErrProjectNotFound
+					return nil, errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -411,7 +411,7 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 			name: "stage not found",
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
-					return nil, common.ErrStageNotFound
+					return nil, errors2.ErrStageNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -638,7 +638,7 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
-						return nil, common.ErrResourceNotFound
+						return nil, errors2.ErrResourceNotFound
 					},
 				},
 			},
@@ -663,7 +663,7 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
-						return nil, common.ErrProjectNotFound
+						return nil, errors2.ErrProjectNotFound
 					},
 				},
 			},
@@ -688,7 +688,7 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
-						return nil, common.ErrStageNotFound
+						return nil, errors2.ErrStageNotFound
 					},
 				},
 			},

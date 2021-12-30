@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 )
 
@@ -41,7 +42,7 @@ func (s StageManager) CreateStage(params models.CreateStageParams) error {
 	}
 
 	if !s.git.ProjectExists(gitContext) {
-		return common.ErrProjectNotFound
+		return errors.ErrProjectNotFound
 	}
 
 	defaultBranch, err := s.git.GetDefaultBranch(gitContext)

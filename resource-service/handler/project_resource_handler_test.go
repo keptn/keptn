@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -126,7 +126,7 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				ProjectResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
-					return nil, common.ErrProjectNotFound
+					return nil, errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -255,7 +255,7 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				ProjectResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
-					return nil, common.ErrProjectNotFound
+					return nil, errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -423,7 +423,7 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			fields: fields{
 				ProjectResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
-						return nil, common.ErrProjectNotFound
+						return nil, errors2.ErrProjectNotFound
 					},
 				},
 			},
@@ -560,7 +560,7 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 			fields: fields{
 				ProjectResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
-						return nil, common.ErrResourceNotFound
+						return nil, errors2.ErrResourceNotFound
 					},
 				},
 			},
@@ -582,7 +582,7 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 			fields: fields{
 				ProjectResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
-						return nil, common.ErrProjectNotFound
+						return nil, errors2.ErrProjectNotFound
 					},
 				},
 			},

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -14,7 +15,7 @@ import (
 type projectManagerTestFields struct {
 	git              *common_mock.IGitMock
 	credentialReader *common_mock.CredentialReaderMock
-	fileWriter       *common_mock.IFileWriterMock
+	fileWriter       *common_mock.IFileSystemMock
 }
 
 func TestProjectManager_CreateProject(t *testing.T) {
@@ -86,7 +87,7 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateProject(project)
 
-	require.Equal(t, common.ErrProjectAlreadyExists, err)
+	require.Equal(t, errors2.ErrProjectAlreadyExists, err)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
@@ -112,13 +113,13 @@ func TestProjectManager_CreateProject_CannotReadCredentials(t *testing.T) {
 	fields := getTestProjectManagerFields()
 
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
-		return nil, common.ErrMalformedCredentials
+		return nil, errors2.ErrMalformedCredentials
 	}
 
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateProject(project)
 
-	require.ErrorIs(t, err, common.ErrMalformedCredentials)
+	require.ErrorIs(t, err, errors2.ErrMalformedCredentials)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
@@ -156,7 +157,7 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateProject(project)
 
-	require.Equal(t, common.ErrRepositoryNotFound, err)
+	require.Equal(t, errors2.ErrRepositoryNotFound, err)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
@@ -309,13 +310,13 @@ func TestProjectManager_UpdateProject_CannotReadCredentials(t *testing.T) {
 	fields := getTestProjectManagerFields()
 
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
-		return nil, common.ErrMalformedCredentials
+		return nil, errors2.ErrMalformedCredentials
 	}
 
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.UpdateProject(project)
 
-	require.ErrorIs(t, err, common.ErrMalformedCredentials)
+	require.ErrorIs(t, err, errors2.ErrMalformedCredentials)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
@@ -349,7 +350,7 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.UpdateProject(project)
 
-	require.ErrorIs(t, err, common.ErrProjectNotFound)
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
@@ -502,13 +503,13 @@ func TestProjectManager_DeleteProject_CannotReadCredentials(t *testing.T) {
 	fields := getTestProjectManagerFields()
 
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
-		return nil, common.ErrMalformedCredentials
+		return nil, errors2.ErrMalformedCredentials
 	}
 
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.DeleteProject(project)
 
-	require.ErrorIs(t, err, common.ErrMalformedCredentials)
+	require.ErrorIs(t, err, errors2.ErrMalformedCredentials)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
@@ -541,7 +542,7 @@ func TestProjectManager_DeleteProject_ProjectDoesNotExist(t *testing.T) {
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.DeleteProject(project)
 
-	require.ErrorIs(t, err, common.ErrProjectNotFound)
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
@@ -824,7 +825,7 @@ func getTestProjectManagerFields() projectManagerTestFields {
 				}, nil
 			},
 		},
-		fileWriter: &common_mock.IFileWriterMock{
+		fileWriter: &common_mock.IFileSystemMock{
 			FileExistsFunc: func(path string) bool {
 				return false
 			},

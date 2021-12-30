@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -99,7 +100,7 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 	s := NewStageManager(fields.git, fields.credentialReader)
 	err := s.CreateStage(params)
 
-	require.ErrorIs(t, err, common.ErrProjectNotFound)
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -165,13 +166,13 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 	fields := getTestStageManagerFields()
 
 	fields.git.CreateBranchFunc = func(gitContext common.GitContext, branch string, sourceBranch string) error {
-		return common.ErrStageAlreadyExists
+		return errors2.ErrStageAlreadyExists
 	}
 
 	s := NewStageManager(fields.git, fields.credentialReader)
 	err := s.CreateStage(params)
 
-	require.ErrorIs(t, err, common.ErrStageAlreadyExists)
+	require.ErrorIs(t, err, errors2.ErrStageAlreadyExists)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)

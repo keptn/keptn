@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -69,7 +69,7 @@ func TestStageHandler_CreateStage(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				StageManager: &handler_mock.IStageManagerMock{CreateStageFunc: func(project models.CreateStageParams) error {
-					return common.ErrProjectNotFound
+					return errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
@@ -85,7 +85,7 @@ func TestStageHandler_CreateStage(t *testing.T) {
 			name: "stage already exists",
 			fields: fields{
 				StageManager: &handler_mock.IStageManagerMock{CreateStageFunc: func(project models.CreateStageParams) error {
-					return common.ErrStageAlreadyExists
+					return errors2.ErrStageAlreadyExists
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage", bytes.NewBuffer([]byte(createStageTestPayload))),
@@ -179,7 +179,7 @@ func TestStageHandler_DeleteStage(t *testing.T) {
 			name: "project not found",
 			fields: fields{
 				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
-					return common.ErrProjectNotFound
+					return errors2.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage", nil),
@@ -197,7 +197,7 @@ func TestStageHandler_DeleteStage(t *testing.T) {
 			name: "stage not found",
 			fields: fields{
 				StageManager: &handler_mock.IStageManagerMock{DeleteStageFunc: func(params models.DeleteStageParams) error {
-					return common.ErrStageNotFound
+					return errors2.ErrStageNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage", nil),

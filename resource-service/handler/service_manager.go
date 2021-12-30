@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"gopkg.in/yaml.v3"
 	"time"
@@ -18,10 +19,10 @@ type IServiceManager interface {
 type ServiceManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
-	fileWriter       common.IFileWriter
+	fileWriter       common.IFileSystem
 }
 
-func NewServiceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileWriter) *ServiceManager {
+func NewServiceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ServiceManager {
 	serviceManager := &ServiceManager{
 		git:              git,
 		credentialReader: credentialReader,
@@ -42,7 +43,7 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 	servicePath := common.GetServiceConfigPath(params.ProjectName, params.ServiceName)
 
 	if s.fileWriter.FileExists(servicePath) {
-		return common.ErrServiceAlreadyExists
+		return errors.ErrServiceAlreadyExists
 	}
 	if err := s.fileWriter.MakeDir(servicePath); err != nil {
 		return fmt.Errorf("could not create directory for service %s: %w", params.ServiceName, err)
@@ -77,7 +78,7 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 	servicePath := common.GetServiceConfigPath(params.ProjectName, params.ServiceName)
 
 	if !s.fileWriter.FileExists(servicePath) {
-		return common.ErrServiceNotFound
+		return errors.ErrServiceNotFound
 	}
 	if err := s.fileWriter.DeleteFile(servicePath); err != nil {
 		return err
@@ -102,7 +103,7 @@ func (s ServiceManager) establishServiceContext(project models.Project, stage mo
 	}
 
 	if !s.git.ProjectExists(gitContext) {
-		return nil, common.ErrProjectNotFound
+		return nil, errors.ErrProjectNotFound
 	}
 
 	if err := s.git.CheckoutBranch(gitContext, stage.StageName); err != nil {

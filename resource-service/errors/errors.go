@@ -1,4 +1,4 @@
-package common
+package errors
 
 import "errors"
 

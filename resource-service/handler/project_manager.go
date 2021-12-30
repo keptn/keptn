@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -20,10 +21,10 @@ type IProjectManager interface {
 type ProjectManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
-	fileWriter       common.IFileWriter
+	fileWriter       common.IFileSystem
 }
 
-func NewProjectManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileWriter) *ProjectManager {
+func NewProjectManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ProjectManager {
 	projectManager := &ProjectManager{
 		git:              git,
 		credentialReader: credentialReader,
@@ -49,12 +50,12 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	// TODO move the check for the metadata file
 	if p.git.ProjectExists(gitContext) && p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
-		return common.ErrProjectAlreadyExists
+		return errors.ErrProjectAlreadyExists
 	}
 
 	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
 	if !p.git.ProjectRepoExists(project.ProjectName) {
-		return common.ErrRepositoryNotFound
+		return errors.ErrRepositoryNotFound
 	}
 
 	rollbackFunc := func() {
@@ -102,7 +103,7 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 	}
 
 	if !p.git.ProjectExists(gitContext) || !p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
-		return common.ErrProjectNotFound
+		return errors.ErrProjectNotFound
 	}
 
 	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
@@ -133,7 +134,7 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 	}
 
 	if !p.git.ProjectExists(gitContext) || !p.fileWriter.FileExists(common.GetProjectMetadataFilePath(projectName)) {
-		return common.ErrProjectNotFound
+		return errors.ErrProjectNotFound
 	}
 
 	logger.Debugf("Deleting project %s", projectName)

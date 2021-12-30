@@ -3,7 +3,7 @@ package handler
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/http"
 )
@@ -14,27 +14,27 @@ const pathParamServiceName = "serviceName"
 const pathParamResourceURI = "resourceURI"
 
 func OnAPIError(c *gin.Context, err error) {
-	if errors.Is(err, common.ErrProjectAlreadyExists) {
+	if errors.Is(err, errors2.ErrProjectAlreadyExists) {
 		SetConflictErrorResponse(c, "Project already exists")
-	} else if errors.Is(err, common.ErrStageAlreadyExists) {
+	} else if errors.Is(err, errors2.ErrStageAlreadyExists) {
 		SetConflictErrorResponse(c, "Stage already exists")
-	} else if errors.Is(err, common.ErrServiceAlreadyExists) {
+	} else if errors.Is(err, errors2.ErrServiceAlreadyExists) {
 		SetConflictErrorResponse(c, "Service already exists")
-	} else if errors.Is(err, common.ErrInvalidGitToken) {
+	} else if errors.Is(err, errors2.ErrInvalidGitToken) {
 		SetFailedDependencyErrorResponse(c, "Invalid git token")
-	} else if errors.Is(err, common.ErrRepositoryNotFound) {
+	} else if errors.Is(err, errors2.ErrRepositoryNotFound) {
 		SetBadRequestErrorResponse(c, "Upstream repository not found")
-	} else if errors.Is(err, common.ErrCredentialsNotFound) {
+	} else if errors.Is(err, errors2.ErrCredentialsNotFound) {
 		SetFailedDependencyErrorResponse(c, "Could not find credentials for upstream repository")
-	} else if errors.Is(err, common.ErrMalformedCredentials) {
+	} else if errors.Is(err, errors2.ErrMalformedCredentials) {
 		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
-	} else if errors.Is(err, common.ErrProjectNotFound) {
+	} else if errors.Is(err, errors2.ErrProjectNotFound) {
 		SetNotFoundErrorResponse(c, "Project not found")
-	} else if errors.Is(err, common.ErrStageNotFound) {
+	} else if errors.Is(err, errors2.ErrStageNotFound) {
 		SetNotFoundErrorResponse(c, "Stage not found")
-	} else if errors.Is(err, common.ErrServiceNotFound) {
+	} else if errors.Is(err, errors2.ErrServiceNotFound) {
 		SetNotFoundErrorResponse(c, "Service not found")
-	} else if errors.Is(err, common.ErrResourceNotFound) {
+	} else if errors.Is(err, errors2.ErrResourceNotFound) {
 		SetNotFoundErrorResponse(c, "Resource not found")
 	} else {
 		SetInternalServerErrorResponse(c, "Internal server error")
