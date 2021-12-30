@@ -13,7 +13,6 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	config2 "github.com/keptn/keptn/resource-service/config"
 	. "gopkg.in/check.v1"
-	"gopkg.in/src-d/go-git-fixtures.v3"
 	"os"
 	"reflect"
 	"testing"
@@ -23,7 +22,7 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type BaseSuite struct {
-	Suite      fixtures.Suite
+	//Suite      fixtures.Suite
 	Repository *git.Repository
 	url        string
 }
@@ -32,12 +31,14 @@ var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpSuite(c *C) {
 	// init fixture repo
-	s.Suite.SetUpSuite(c)
+	//s.Suite.SetUpSuite(c)
 	s.buildBasicRepository(c)
 }
 
 func (s *BaseSuite) TearDownSuite(c *C) {
-	s.Suite.TearDownSuite(c)
+	//s.Suite.TearDownSuite(c)
+	err := os.RemoveAll("./debug")
+	c.Assert(err, IsNil)
 }
 
 func (s *BaseSuite) SetUpTest(c *C) {
