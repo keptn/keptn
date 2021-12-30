@@ -14,10 +14,10 @@ import (
 //
 // 		// make and configure a mocked handler.IResourceManager
 // 		mockedIResourceManager := &IResourceManagerMock{
-// 			CreateResourcesFunc: func(params models.CreateResourcesParams) error {
+// 			CreateResourcesFunc: func(params models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
 // 				panic("mock out the CreateResources method")
 // 			},
-// 			DeleteResourceFunc: func(params models.DeleteResourceParams) error {
+// 			DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
 // 				panic("mock out the DeleteResource method")
 // 			},
 // 			GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
@@ -26,10 +26,10 @@ import (
 // 			GetResourcesFunc: func(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
 // 				panic("mock out the GetResources method")
 // 			},
-// 			UpdateResourceFunc: func(params models.UpdateResourceParams) error {
+// 			UpdateResourceFunc: func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
 // 				panic("mock out the UpdateResource method")
 // 			},
-// 			UpdateResourcesFunc: func(params models.UpdateResourcesParams) error {
+// 			UpdateResourcesFunc: func(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
 // 				panic("mock out the UpdateResources method")
 // 			},
 // 		}
@@ -40,10 +40,10 @@ import (
 // 	}
 type IResourceManagerMock struct {
 	// CreateResourcesFunc mocks the CreateResources method.
-	CreateResourcesFunc func(params models.CreateResourcesParams) error
+	CreateResourcesFunc func(params models.CreateResourcesParams) (*models.WriteResourceResponse, error)
 
 	// DeleteResourceFunc mocks the DeleteResource method.
-	DeleteResourceFunc func(params models.DeleteResourceParams) error
+	DeleteResourceFunc func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error)
 
 	// GetResourceFunc mocks the GetResource method.
 	GetResourceFunc func(params models.GetResourceParams) (*models.GetResourceResponse, error)
@@ -52,10 +52,10 @@ type IResourceManagerMock struct {
 	GetResourcesFunc func(params models.GetResourcesParams) (*models.GetResourcesResponse, error)
 
 	// UpdateResourceFunc mocks the UpdateResource method.
-	UpdateResourceFunc func(params models.UpdateResourceParams) error
+	UpdateResourceFunc func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error)
 
 	// UpdateResourcesFunc mocks the UpdateResources method.
-	UpdateResourcesFunc func(params models.UpdateResourcesParams) error
+	UpdateResourcesFunc func(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -99,7 +99,7 @@ type IResourceManagerMock struct {
 }
 
 // CreateResources calls CreateResourcesFunc.
-func (mock *IResourceManagerMock) CreateResources(params models.CreateResourcesParams) error {
+func (mock *IResourceManagerMock) CreateResources(params models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
 	if mock.CreateResourcesFunc == nil {
 		panic("IResourceManagerMock.CreateResourcesFunc: method is nil but IResourceManager.CreateResources was just called")
 	}
@@ -130,7 +130,7 @@ func (mock *IResourceManagerMock) CreateResourcesCalls() []struct {
 }
 
 // DeleteResource calls DeleteResourceFunc.
-func (mock *IResourceManagerMock) DeleteResource(params models.DeleteResourceParams) error {
+func (mock *IResourceManagerMock) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
 	if mock.DeleteResourceFunc == nil {
 		panic("IResourceManagerMock.DeleteResourceFunc: method is nil but IResourceManager.DeleteResource was just called")
 	}
@@ -223,7 +223,7 @@ func (mock *IResourceManagerMock) GetResourcesCalls() []struct {
 }
 
 // UpdateResource calls UpdateResourceFunc.
-func (mock *IResourceManagerMock) UpdateResource(params models.UpdateResourceParams) error {
+func (mock *IResourceManagerMock) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
 	if mock.UpdateResourceFunc == nil {
 		panic("IResourceManagerMock.UpdateResourceFunc: method is nil but IResourceManager.UpdateResource was just called")
 	}
@@ -254,7 +254,7 @@ func (mock *IResourceManagerMock) UpdateResourceCalls() []struct {
 }
 
 // UpdateResources calls UpdateResourcesFunc.
-func (mock *IResourceManagerMock) UpdateResources(params models.UpdateResourcesParams) error {
+func (mock *IResourceManagerMock) UpdateResources(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
 	if mock.UpdateResourcesFunc == nil {
 		panic("IResourceManagerMock.UpdateResourcesFunc: method is nil but IResourceManager.UpdateResources was just called")
 	}

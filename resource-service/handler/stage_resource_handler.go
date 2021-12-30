@@ -59,7 +59,7 @@ func (ph *StageResourceHandler) CreateStageResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.CreateResources(*params)
+	_, err := ph.StageResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -145,7 +145,7 @@ func (ph *StageResourceHandler) UpdateStageResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.UpdateResources(*params)
+	_, err := ph.StageResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -231,7 +231,7 @@ func (ph *StageResourceHandler) UpdateStageResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.UpdateResource(*params)
+	_, err := ph.StageResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -266,7 +266,7 @@ func (ph *StageResourceHandler) DeleteStageResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.StageResourceManager.DeleteResource(*params)
+	_, err := ph.StageResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return

@@ -12,7 +12,7 @@ func NewServiceResourceManager() *ServiceResourceManager {
 	return serviceResourceManager
 }
 
-func (s ServiceResourceManager) CreateResources(params models.CreateResourcesParams) error {
+func (s ServiceResourceManager) CreateResources(params models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }
 
@@ -20,7 +20,7 @@ func (s ServiceResourceManager) GetResources(params models.GetResourcesParams) (
 	panic("implement me")
 }
 
-func (s ServiceResourceManager) UpdateResources(params models.UpdateResourcesParams) error {
+func (s ServiceResourceManager) UpdateResources(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }
 
@@ -28,10 +28,10 @@ func (s ServiceResourceManager) GetResource(params models.GetResourceParams) (*m
 	panic("implement me")
 }
 
-func (s ServiceResourceManager) UpdateResource(params models.UpdateResourceParams) error {
+func (s ServiceResourceManager) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }
 
-func (s ServiceResourceManager) DeleteResource(params models.DeleteResourceParams) error {
+func (s ServiceResourceManager) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }

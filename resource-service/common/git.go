@@ -20,7 +20,7 @@ type IGit interface {
 	ProjectRepoExists(projectName string) bool
 
 	CloneRepo(gitContext GitContext) (bool, error)
-	StageAndCommitAll(gitContext GitContext, message string) error
+	StageAndCommitAll(gitContext GitContext, message string) (string, error)
 	Push(gitContext GitContext) error
 	Pull(gitContext GitContext) error
 	CreateBranch(gitContext GitContext, branch string, sourceBranch string) error

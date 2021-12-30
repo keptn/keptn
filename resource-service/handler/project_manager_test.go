@@ -230,8 +230,8 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) error {
-		return errors.New("oops")
+	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
 	}
 
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
@@ -714,8 +714,8 @@ func TestProjectManager_DeleteProject_CannotCommit(t *testing.T) {
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) error {
-		return errors.New("oops")
+	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
 	}
 
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
@@ -805,8 +805,8 @@ func getTestProjectManagerFields() projectManagerTestFields {
 			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
 				return true, nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) error {
-				return nil
+			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+				return "", nil
 			},
 			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
 				return "main", nil

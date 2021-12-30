@@ -194,8 +194,8 @@ func getTestStageManagerFields() stageManagerTestFields {
 			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
 				return true, nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) error {
-				return nil
+			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+				return "", nil
 			},
 			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
 				return "main", nil

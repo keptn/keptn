@@ -58,7 +58,7 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 		return fmt.Errorf("could not create metadata file for service %s: %w", params.ServiceName, err)
 	}
 
-	if err := s.git.StageAndCommitAll(*gitContext, "Added service: "+params.Service.ServiceName); err != nil {
+	if _, err := s.git.StageAndCommitAll(*gitContext, "Added service: "+params.Service.ServiceName); err != nil {
 		return fmt.Errorf("could not initialize service %s: %w", params.ServiceName, err)
 	}
 
@@ -83,7 +83,7 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 		return err
 	}
 
-	if err := s.git.StageAndCommitAll(*gitContext, "Removed service: "+params.Service.ServiceName); err != nil {
+	if _, err := s.git.StageAndCommitAll(*gitContext, "Removed service: "+params.Service.ServiceName); err != nil {
 		return fmt.Errorf("could not remove service %s: %w", params.ServiceName, err)
 	}
 

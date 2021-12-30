@@ -12,7 +12,7 @@ func NewStageResourceManager() *StageResourceManager {
 	return stageResourceManager
 }
 
-func (s StageResourceManager) CreateResources(params models.CreateResourcesParams) error {
+func (s StageResourceManager) CreateResources(params models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }
 
@@ -20,7 +20,7 @@ func (s StageResourceManager) GetResources(params models.GetResourcesParams) (*m
 	panic("implement me")
 }
 
-func (s StageResourceManager) UpdateResources(params models.UpdateResourcesParams) error {
+func (s StageResourceManager) UpdateResources(params models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }
 
@@ -28,10 +28,10 @@ func (s StageResourceManager) GetResource(params models.GetResourceParams) (*mod
 	panic("implement me")
 }
 
-func (s StageResourceManager) UpdateResource(params models.UpdateResourceParams) error {
+func (s StageResourceManager) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }
 
-func (s StageResourceManager) DeleteResource(params models.DeleteResourceParams) error {
+func (s StageResourceManager) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
 	panic("implement me")
 }

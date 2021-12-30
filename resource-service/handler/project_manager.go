@@ -79,7 +79,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 	}
 
 	// TODO the git user and email needs to be configured at this point
-	err = p.git.StageAndCommitAll(gitContext, "initialized project")
+	_, err = p.git.StageAndCommitAll(gitContext, "initialized project")
 	if err != nil {
 		rollbackFunc()
 		return fmt.Errorf("could not complete initial commit for project %s: %w", project.ProjectName, err)
@@ -152,7 +152,7 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 		return fmt.Errorf("could not delete metadata file of project %s: %w", projectName, err)
 	}
 
-	if err := p.git.StageAndCommitAll(gitContext, "deleted project metadata"); err != nil {
+	if _, err := p.git.StageAndCommitAll(gitContext, "deleted project metadata"); err != nil {
 		return fmt.Errorf("could not commit changes: %w", err)
 	}
 

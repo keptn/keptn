@@ -306,8 +306,8 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 
 	fields := getTestServiceManagerFields()
 
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) error {
-		return errors.New("oops")
+	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
 	}
 
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
@@ -508,8 +508,8 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 		}
 		return false
 	}
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) error {
-		return errors.New("oops")
+	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
 	}
 
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
@@ -538,8 +538,8 @@ func getTestServiceManagerFields() serviceManagerTestFields {
 			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
 				return true, nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) error {
-				return nil
+			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+				return "", nil
 			},
 			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
 				return "main", nil

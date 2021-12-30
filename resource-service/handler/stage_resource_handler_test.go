@@ -28,8 +28,8 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 		{
 			name: "create resource successful",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
-					return nil
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return &models.WriteResourceResponse{CommitID: "my-commit-id"}, nil
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -50,8 +50,8 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 		{
 			name: "resource content not base64 encoded",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesWithoutBase64EncodingTestPayload))),
@@ -61,8 +61,8 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 		{
 			name: "resourceUri contains invalid string",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesInvalidResourceURITestPayload))),
@@ -72,8 +72,8 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 		{
 			name: "project not found",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
-					return common.ErrProjectNotFound
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, common.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -94,8 +94,8 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 		{
 			name: "internal error",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -116,8 +116,8 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 		{
 			name: "invalid payload",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte("invalid"))),
@@ -344,8 +344,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "update resource successful",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return nil
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return &models.WriteResourceResponse{CommitID: "my-commit-id"}, nil
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -366,8 +366,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "resource content not base64 encoded",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesWithoutBase64EncodingTestPayload))),
@@ -377,8 +377,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "resourceUri contains invalid string",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesInvalidResourceURITestPayload))),
@@ -388,8 +388,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "project not found",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return common.ErrProjectNotFound
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, common.ErrProjectNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -410,8 +410,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "stage not found",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return common.ErrStageNotFound
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, common.ErrStageNotFound
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -432,8 +432,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "internal error",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
@@ -454,8 +454,8 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 		{
 			name: "invalid payload",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourcesFunc: func(project models.UpdateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte("invalid"))),
@@ -498,8 +498,8 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 		{
 			name: "update resource successful",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) error {
-					return nil
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
+					return &models.WriteResourceResponse{CommitID: "my-commit-id"}, nil
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
@@ -514,8 +514,8 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 		{
 			name: "resource content not base64 encoded",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceWithoutBase64EncodingTestPayload))),
@@ -525,8 +525,8 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 		{
 			name: "resourceUri contains invalid string",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/..resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
@@ -536,8 +536,8 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 		{
 			name: "internal error",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
@@ -552,8 +552,8 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 		{
 			name: "invalid payload",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{UpdateResourceFunc: func(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/resource.yaml", bytes.NewBuffer([]byte("invalid"))),
@@ -751,8 +751,8 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 		{
 			name: "delete resource",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
-					return nil
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return &models.WriteResourceResponse{CommitID: "my-commit-id"}, nil
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/resource/resource.yaml", nil),
@@ -770,8 +770,8 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 		{
 			name: "project name empty",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodDelete, "/project/%20/stage/my-stage/resource/resource.yaml", nil),
@@ -781,8 +781,8 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 		{
 			name: "stage name empty",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/%20/resource/resource.yaml", nil),
@@ -792,8 +792,8 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 		{
 			name: "random error",
 			fields: fields{
-				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) error {
-					return errors.New("oops")
+				StageResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
 				}},
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/resource/resource.yaml", nil),

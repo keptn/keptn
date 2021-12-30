@@ -61,7 +61,7 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.ServiceResourceManager.CreateResources(*params)
+	_, err := ph.ServiceResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -151,7 +151,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.ServiceResourceManager.UpdateResources(*params)
+	_, err := ph.ServiceResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -241,7 +241,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.ServiceResourceManager.UpdateResource(*params)
+	_, err := ph.ServiceResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -278,7 +278,7 @@ func (ph *ServiceResourceHandler) DeleteServiceResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.ServiceResourceManager.DeleteResource(*params)
+	_, err := ph.ServiceResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return

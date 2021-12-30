@@ -41,7 +41,7 @@ import (
 // 			PushFunc: func(gitContext common.GitContext) error {
 // 				panic("mock out the Push method")
 // 			},
-// 			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) error {
+// 			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
 // 				panic("mock out the StageAndCommitAll method")
 // 			},
 // 		}
@@ -79,7 +79,7 @@ type IGitMock struct {
 	PushFunc func(gitContext common.GitContext) error
 
 	// StageAndCommitAllFunc mocks the StageAndCommitAll method.
-	StageAndCommitAllFunc func(gitContext common.GitContext, message string) error
+	StageAndCommitAllFunc func(gitContext common.GitContext, message string) (string, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -464,7 +464,7 @@ func (mock *IGitMock) PushCalls() []struct {
 }
 
 // StageAndCommitAll calls StageAndCommitAllFunc.
-func (mock *IGitMock) StageAndCommitAll(gitContext common.GitContext, message string) error {
+func (mock *IGitMock) StageAndCommitAll(gitContext common.GitContext, message string) (string, error) {
 	if mock.StageAndCommitAllFunc == nil {
 		panic("IGitMock.StageAndCommitAllFunc: method is nil but IGit.StageAndCommitAll was just called")
 	}

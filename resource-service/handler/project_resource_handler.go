@@ -57,7 +57,7 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.CreateResources(*params)
+	_, err := ph.ProjectResourceManager.CreateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -139,7 +139,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.UpdateResources(*params)
+	_, err := ph.ProjectResourceManager.UpdateResources(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -221,7 +221,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.UpdateResource(*params)
+	_, err := ph.ProjectResourceManager.UpdateResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return
@@ -254,7 +254,7 @@ func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 		return
 	}
 
-	err := ph.ProjectResourceManager.DeleteResource(*params)
+	_, err := ph.ProjectResourceManager.DeleteResource(*params)
 	if err != nil {
 		OnAPIError(c, err)
 		return

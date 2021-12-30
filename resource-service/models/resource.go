@@ -262,6 +262,10 @@ type GetResourceResponse struct {
 	Metadata Version
 }
 
+type WriteResourceResponse struct {
+	CommitID string `json:"commitID"`
+}
+
 func validateResourceURI(uri string) error {
 	if strings.Contains(uri, "~") || strings.Contains(uri, "..") {
 		return common.ErrResourceInvalidResourceURI

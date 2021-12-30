@@ -60,7 +60,7 @@ func main() {
 
 	apiV1 := engine.Group("/v1")
 
-	projectResourceManager := handler.NewProjectResourceManager()
+	projectResourceManager := handler.NewProjectResourceManager(nil, nil, nil)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
