@@ -5,17 +5,19 @@ import (
 	b64 "encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/retry"
+	configurationservicemodels "github.com/keptn/keptn/configuration-service/models"
 	"io/ioutil"
-	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/common/retry"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -712,4 +714,14 @@ func recreateGitUpstreamRepository(project string) error {
 	}
 
 	return nil
+}
+
+func checkResourceInResponse(resources configurationservicemodels.Resources, resourceName string) error {
+	for _, resource := range resources.Resources {
+		if *resource.ResourceURI == resourceName {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Resource %s not found in received response.", resourceName)
 }

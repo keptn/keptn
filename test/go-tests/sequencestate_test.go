@@ -25,7 +25,7 @@ spec:
       sequences:
         - name: "delivery"
           tasks:
-            - name: "deployment"
+            - name: "delivery"
               properties:
                 deploymentstrategy: "direct"
             - name: "evaluation"
@@ -37,7 +37,7 @@ spec:
           triggeredOn:
             - event: "dev.delivery.finished"
           tasks:
-            - name: "deployment"
+            - name: "delivery"
               properties:
                 deploymentstrategy: "blue_green_service"
             - name: "evaluation"`
@@ -56,7 +56,7 @@ func Test_SequenceState(t *testing.T) {
 
 	source := "golang-test"
 
-	uniform := []string{"helm-service", "lighthouse-service"}
+	uniform := []string{"lighthouse-service"}
 
 	// scale down the services that are usually involved in the sequence defined in the shipyard above.
 	// this way we can control the events sent during this sequence and check whether the state is updated appropriately
@@ -150,11 +150,8 @@ func Test_SequenceState(t *testing.T) {
 		if !IsEqual(t, "dev", stage.Name, "stage.Name") {
 			return false
 		}
-		if !IsEqual(t, "carts:test", stage.Image, "stage.Image") {
-			return false
-		}
 
-		if !IsEqual(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("delivery"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 
@@ -162,11 +159,11 @@ func Test_SequenceState(t *testing.T) {
 	}, 10*time.Second, 2*time.Second)
 
 	// get deployment.triggered event
-	deploymentTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	deliveryTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
 	require.Nil(t, err)
-	require.NotNil(t, deploymentTriggeredEvent)
+	require.NotNil(t, deliveryTriggeredEvent)
 
-	cloudEvent := keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
+	cloudEvent := keptnv2.ToCloudEvent(*deliveryTriggeredEvent)
 
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 
@@ -199,7 +196,7 @@ func Test_SequenceState(t *testing.T) {
 
 		stage := state.Stages[0]
 
-		if stage.LatestEvent.Type != keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName) {
+		if stage.LatestEvent.Type != keptnv2.GetStartedEventType("delivery") {
 			return false
 		}
 
@@ -288,19 +285,19 @@ func Test_SequenceState(t *testing.T) {
 
 		stagingStage := state.Stages[1]
 
-		if !IsEqual(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stagingStage.LatestEvent.Type, "stagingStage.LatestEvent.Type") {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("delivery"), stagingStage.LatestEvent.Type, "stagingStage.LatestEvent.Type") {
 			return false
 		}
 
 		return true
 	}, 10*time.Second, 2*time.Second)
 
-	deploymentTriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	deliveryTriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("delivery"))
 
 	require.Nil(t, err)
-	require.NotNil(t, deploymentTriggeredEvent)
+	require.NotNil(t, deliveryTriggeredEvent)
 
-	cloudEvent = keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
+	cloudEvent = keptnv2.ToCloudEvent(*deliveryTriggeredEvent)
 
 	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)

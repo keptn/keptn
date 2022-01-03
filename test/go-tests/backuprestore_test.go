@@ -73,7 +73,7 @@ func Test_BackupRestore(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "backup-restore"
 	serviceName := "helloservice"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
+	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
@@ -84,8 +84,12 @@ func Test_BackupRestore(t *testing.T) {
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("Onboarding service %s in project %s with chart %s", serviceName, keptnProjectName, serviceChartLocalDir)
-	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
+	t.Logf("Creating service %s in project %s", serviceName, keptnProjectName)
+	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, keptnProjectName)
+	require.Nil(t, err)
+
+	t.Logf("Adding resource for service %s in project %s", serviceName, keptnProjectName)
+	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", keptnProjectName, serviceName, serviceChartLocalDir, "helm/helloservice.tgz")
 	require.Nil(t, err)
 
 	t.Log("Adding jmeter config in prod")

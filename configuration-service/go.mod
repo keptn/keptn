@@ -8,11 +8,10 @@ require (
 	github.com/go-openapi/loads v0.21.0
 	github.com/go-openapi/runtime v0.21.0
 	github.com/go-openapi/spec v0.20.4
-	github.com/go-openapi/strfmt v0.21.0
+	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
-	github.com/google/martian v2.1.0+incompatible
-	github.com/jessevdk/go-flags v1.4.0
+	github.com/jessevdk/go-flags v1.5.0
 	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6 // indirect
 	// indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b

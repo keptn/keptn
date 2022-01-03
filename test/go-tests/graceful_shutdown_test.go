@@ -69,7 +69,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloserver")
+	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
@@ -80,8 +80,12 @@ func Test_GracefulShutdown(t *testing.T) {
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("Onboarding service %s in project %s with chart %s", serviceName, keptnProjectName, serviceChartLocalDir)
-	_, err = ExecuteCommandf("keptn onboard service %s --project %s --chart=%s", serviceName, keptnProjectName, serviceChartLocalDir)
+	t.Logf("Creating service %s in project %s", serviceName, keptnProjectName)
+	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, keptnProjectName)
+	require.Nil(t, err)
+
+	t.Logf("Adding resource for service %s in project %s", serviceName, keptnProjectName)
+	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", keptnProjectName, serviceName, serviceChartLocalDir, "helm/helloservice.tgz")
 	require.Nil(t, err)
 
 	t.Log("Adding jmeter config in staging")
@@ -103,15 +107,11 @@ func Test_GracefulShutdown(t *testing.T) {
 	err = waitAndKill(t, shipyardPod, 20)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 15s...")
-	time.Sleep(15 * time.Second)
-	t.Logf("Continue to work...")
-	err = WaitForPodOfDeployment("shipyard-controller")
-	require.Nil(t, err)
-
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
+	err = WaitForPodOfDeployment(shipyardPod)
+	require.Nil(t, err)
 
 	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
@@ -133,6 +133,9 @@ func Test_GracefulShutdown(t *testing.T) {
 	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
 	require.Nil(t, err)
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
+	if err != nil {
+		t.Log(GetDiagnostics(shipyardPod, ""))
+	}
 	require.Nil(t, err)
 
 }

@@ -107,6 +107,16 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
 
+resourceService:
+  enabled: false
+  replicas: 2
+  image:
+    repository: docker.io/keptn/resource-service
+    tag: ""
+  env:
+    GIT_KEPTN_USER: "keptn"
+    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
