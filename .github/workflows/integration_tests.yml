@@ -79,7 +79,6 @@ jobs:
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
-      TEST_OUTCOME: ${{ steps.test_aggregated.outcome }}
     steps:
 
       #######################################################################
@@ -624,7 +623,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
-      TEST_OUTCOME: ${{ needs.integration-test.outputs.TEST_OUTCOME }}
       TEST_REPORTS_PATH: "./test-reports/"
       FINAL_TEST_REPORTS_FOLDER: "./final-test-reports/"
       FINAL_TEST_REPORT_FILEPATH_JSON: "./final-test-reports/final-test-report.json"
@@ -779,15 +777,16 @@ jobs:
         id: formulate_bug_issue
         env:
           FINAL_TEST_REPORT_FILEPATH_MARKDOWN : ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
-          TEST_OUTCOME: ${{ env.TEST_OUTCOME }}
         run: |
           REPORT=$(cat "$FINAL_TEST_REPORT_FILEPATH_MARKDOWN")
-          REPORT=$(echo "${REPORT//pass/:white_check_mark: pass}")
-          REPORT=$(echo "${REPORT//fail/:x: fail}")
-          REPORT=$(echo "${REPORT//skip/:yellow_circle: skip}")
 
-          if [[ "$TEST_OUTCOME" == "failure" ]]; then
+          if [[ "$REPORT" == *"fail"* ]]; then
             echo "INTEGRATION TESTS FAILED! - Creating GH issue description now..."
+          
+            # adding emojis to test report
+            REPORT=$(echo "${REPORT//pass/:white_check_mark: pass}")
+            REPORT=$(echo "${REPORT//fail/:x: fail}")
+            REPORT=$(echo "${REPORT//skip/:yellow_circle: skip}")
 
             # create a markdown file that contains details about the error
             echo "---" > integration-tests-failed.md
