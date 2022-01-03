@@ -12,6 +12,8 @@ github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-202110012128
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209/go.mod h1:DmxtN+a7U9ktD8I0nTlI9CCrin/Tf7OdXxE3KBTjlOw=
 github.com/cloudevents/sdk-go/protocol/nats/v2 v2.6.1 h1:pwHjPZRVFn+G3ee14iPot92900Y7NrQZQ9xn41yz4Io=
 github.com/cloudevents/sdk-go/protocol/nats/v2 v2.6.1/go.mod h1:n6eZCYwrS18+CPYuauhjQUnc9+/5TrBKUx0cC5u4oOw=
+github.com/cloudevents/sdk-go/protocol/nats/v2 v2.7.0 h1:PJGjumCi9mP2HSVLkyQmrMVTQlQBdp/MidpFtp62JgM=
+github.com/cloudevents/sdk-go/protocol/nats/v2 v2.7.0/go.mod h1:70fIS6gzMmyYtVNWcOXTNMPTFbEMGg3d8Px9fmN8ghQ=
 github.com/cloudevents/sdk-go/v2 v2.5.0/go.mod h1:nlXhgFkf0uTopxmRXalyMwS2LG70cRGPrxzmjJgSG0U=
 github.com/cloudevents/sdk-go/v2 v2.6.1/go.mod h1:nlXhgFkf0uTopxmRXalyMwS2LG70cRGPrxzmjJgSG0U=
 github.com/cloudevents/sdk-go/v2 v2.7.0 h1:Pt+cOKWNG0tZZKRzuvfVsxcWArO0eq/UPKUxskyuSb8=
