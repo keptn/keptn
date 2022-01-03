@@ -73,6 +73,8 @@ func TestGracefulShutdown(t *testing.T) {
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
+	const imageTag = "v0.1.0"
+	const artifactImage = "ghcr.io/podtato-head/podtatoserver"
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
@@ -101,7 +103,7 @@ func TestGracefulShutdown(t *testing.T) {
 	///////////////////////////////////////
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, artifactImage, imageTag, "delivery")
 	require.Nil(t, err)
 
 	err = waitAndKill(t, shipyardPod, 20)
@@ -116,7 +118,7 @@ func TestGracefulShutdown(t *testing.T) {
 	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
 	t.Log("Verify Direct delivery of helloservice in stage dev")
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", artifactImage, imageTag)
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
@@ -126,7 +128,7 @@ func TestGracefulShutdown(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
-	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", artifactImage, imageTag)
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage staging")

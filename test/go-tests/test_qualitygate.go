@@ -54,6 +54,8 @@ total_score:
   warning: "75%"`
 
 const invalidSLOFileContent = "invalid"
+const keptnTriggerEvaluationCommand = "keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m"
+const checkEvaluationLogString = "checking if evaluation.finished event is available"
 
 func TestQualityGates(t *testing.T) {
 	projectName := "quality-gates"
@@ -76,17 +78,17 @@ func TestQualityGates(t *testing.T) {
 	require.Contains(t, output, "created successfully")
 
 	t.Log("triggering evaluation for wrong project")
-	cliResp, err := ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m", "wrong-project", "hardening", serviceName))
+	cliResp, err := ExecuteCommand(fmt.Sprintf(keptnTriggerEvaluationCommand, "wrong-project", "hardening", serviceName))
 	require.NotNil(t, err)
 	require.Contains(t, cliResp, "project not found")
 
 	t.Log("triggering evaluation for wrong stage")
-	cliResp, err = ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m", projectName, "wrong-stage", serviceName))
+	cliResp, err = ExecuteCommand(fmt.Sprintf(keptnTriggerEvaluationCommand, projectName, "wrong-stage", serviceName))
 	require.NotNil(t, err)
 	require.Contains(t, cliResp, "stage not found")
 
 	t.Log("triggering evaluation for wrong service")
-	cliResp, err = ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m", projectName, "hardening", "wrong-service"))
+	cliResp, err = ExecuteCommand(fmt.Sprintf(keptnTriggerEvaluationCommand, projectName, "hardening", "wrong-service"))
 	require.NotNil(t, err)
 	require.Contains(t, cliResp, "service not found")
 
@@ -98,7 +100,7 @@ func TestQualityGates(t *testing.T) {
 
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if evaluation.finished event is available")
+		t.Log(checkEvaluationLogString)
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
@@ -136,7 +138,7 @@ func TestQualityGates(t *testing.T) {
 
 	// wait for the evaluation.finished event to be available and evaluate it
 	require.Eventually(t, func() bool {
-		t.Log("checking if evaluation.finished event is available")
+		t.Log(checkEvaluationLogString)
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
@@ -319,7 +321,7 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 	// wait for the evaluation.finished event to be available and evaluate it
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if evaluation.finished event is available")
+		t.Log(checkEvaluationLogString)
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
@@ -331,7 +333,7 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 }
 
 func triggerEvaluation(projectName, stageName, serviceName string) (string, error) {
-	cliResp, err := ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m", projectName, stageName, serviceName))
+	cliResp, err := ExecuteCommand(fmt.Sprintf(keptnTriggerEvaluationCommand, projectName, stageName, serviceName))
 
 	if err != nil {
 		return "", err

@@ -10,6 +10,7 @@ import (
 )
 
 func TestLogIngestion(t *testing.T) {
+	const urlFormatString = "/controlPlane/v1/log?integrationId=%s"
 	myLogID := uuid.New().String()
 	myErrorLogs := models.CreateLogsRequest{Logs: []models.LogEntry{
 		{
@@ -32,7 +33,7 @@ func TestLogIngestion(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// retrieve the error logs
-	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
+	resp, err = ApiGETRequest(fmt.Sprintf(urlFormatString, myLogID), 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
@@ -56,13 +57,13 @@ func TestLogIngestion(t *testing.T) {
 	require.Equal(t, int64(3), getLogsResponse.TotalCount)
 
 	// delete the logs
-	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
+	resp, err = ApiDELETERequest(fmt.Sprintf(urlFormatString, myLogID), 3)
 
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// retrieve the error logs again -should not be there anymore
-	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
+	resp, err = ApiGETRequest(fmt.Sprintf(urlFormatString, myLogID), 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
