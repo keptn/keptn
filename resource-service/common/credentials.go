@@ -57,13 +57,7 @@ func GetKeptnNamespace() string {
 
 func getK8sClient() (*kubernetes.Clientset, error) {
 	var clientSet *kubernetes.Clientset
-	var useInClusterConfig bool
-	if os.Getenv("env") == "production" {
-		useInClusterConfig = true
-	} else {
-		useInClusterConfig = false
-	}
-	clientSet, err := utils.GetClientset(useInClusterConfig)
+	clientSet, err := utils.GetClientset(true)
 	if err != nil {
 		return nil, err
 	}
