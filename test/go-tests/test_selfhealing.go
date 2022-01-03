@@ -47,6 +47,7 @@ spec:
 
 const defaultUnleashServiceVersion = "master"
 const unleashServiceEnvVar = "UNLEASH_SERVICE_VERSION"
+const shipyardControllerName = "shipyard-controller"
 
 type RemediationTriggered struct {
 	keptnv2.EventData
@@ -73,11 +74,11 @@ func TestSelfHealing(t *testing.T) {
 	t.Log("triggering a remediation with no remediation.yaml")
 	remediationFinishedEvent := performRemediation(t, projectName, serviceName)
 
-	require.Equal(t, "shipyard-controller", *remediationFinishedEvent.Source)
+	require.Equal(t, shipyardControllerName, *remediationFinishedEvent.Source)
 	finishedEventData := &keptnv2.EventData{}
 	err = keptnv2.Decode(remediationFinishedEvent.Data, finishedEventData)
 	require.Nil(t, err)
-	require.Equal(t, "shipyard-controller", *remediationFinishedEvent.Source)
+	require.Equal(t, shipyardControllerName, *remediationFinishedEvent.Source)
 	require.Equal(t, keptnv2.StatusErrored, finishedEventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, finishedEventData.Result)
 
@@ -105,7 +106,7 @@ func TestSelfHealing(t *testing.T) {
 	finishedEventData = &keptnv2.EventData{}
 	err = keptnv2.Decode(remediationFinishedEvent.Data, finishedEventData)
 	require.Nil(t, err)
-	require.Equal(t, "shipyard-controller", *remediationFinishedEvent.Source)
+	require.Equal(t, shipyardControllerName, *remediationFinishedEvent.Source)
 	require.Equal(t, keptnv2.StatusErrored, finishedEventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, finishedEventData.Result)
 
