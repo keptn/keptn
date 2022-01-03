@@ -179,7 +179,7 @@ spec:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-func Test_Webhook(t *testing.T) {
+func TestWebhook(t *testing.T) {
 	projectName := "webhooks"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -351,7 +351,7 @@ func Test_Webhook(t *testing.T) {
 	})
 }
 
-func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
+func TestWebhook_OverlappingSubscriptions(t *testing.T) {
 	projectName := "webhooks-subscription-overlap"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -444,7 +444,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 
 }
 
-func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
+func TestWebhookWithDisabledFinishedEvents(t *testing.T) {
 	projectName := "webhooks-no-finish"
 	serviceName := "myservice"
 	stageName := "dev"

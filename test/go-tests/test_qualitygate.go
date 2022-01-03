@@ -55,7 +55,7 @@ total_score:
 
 const invalidSLOFileContent = "invalid"
 
-func Test_QualityGates(t *testing.T) {
+func TestQualityGates(t *testing.T) {
 	projectName := "quality-gates"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)

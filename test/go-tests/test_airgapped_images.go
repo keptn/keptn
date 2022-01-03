@@ -10,7 +10,7 @@ import (
 
 const airgappedRegistryUrlEnvVarName = "AIRGAPPED_REGISTRY_URL"
 
-func Test_AirgappedImagesAreSetCorrectly(t *testing.T) {
+func TestAirgappedImagesAreSetCorrectly(t *testing.T) {
 	airgappedRegistryUrl := osutils.GetOSEnv(airgappedRegistryUrlEnvVarName)
 	require.NotEmpty(t, airgappedRegistryUrl)
 

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ResourceServiceBasic(t *testing.T) {
+func TestResourceServiceBasic(t *testing.T) {
 	projectName := "resource-service-test-project"
 	nonExistingProjectName := "non_existing_project"
 	nonExistingStageName := "non_existing_stage"

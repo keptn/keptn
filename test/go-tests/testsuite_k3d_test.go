@@ -6,8 +6,8 @@ import (
 
 func Test_K3D(t *testing.T) {
 	// Common Tests
-	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
+	t.Run("TestResourceServiceBasic", TestResourceServiceBasic)
 
 	// Platform-specific Tests
-	t.Run("Test_AirgappedImagesAreSetCorrectly", Test_AirgappedImagesAreSetCorrectly)
+	t.Run("TestAirgappedImagesAreSetCorrectly", TestAirgappedImagesAreSetCorrectly)
 }

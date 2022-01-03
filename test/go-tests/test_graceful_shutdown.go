@@ -65,7 +65,7 @@ spec:
             - name: "release"
 `
 
-func Test_GracefulShutdown(t *testing.T) {
+func TestGracefulShutdown(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"

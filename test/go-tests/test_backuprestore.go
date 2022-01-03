@@ -69,7 +69,7 @@ spec:
             - name: "release"
 `
 
-func Test_BackupRestore(t *testing.T) {
+func TestBackupRestore(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "backup-restore"
 	serviceName := "helloservice"

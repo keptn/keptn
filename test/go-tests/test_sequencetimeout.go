@@ -46,7 +46,7 @@ spec:
               triggeredAfter: "1m"
               name: unknown`
 
-func Test_SequenceTimeout(t *testing.T) {
+func TestSequenceTimeout(t *testing.T) {
 	projectName := "sequence-timeout"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceTimeoutShipyard)
@@ -109,7 +109,7 @@ func Test_SequenceTimeout(t *testing.T) {
 	t.Log("received the expected state!")
 }
 
-func Test_SequenceTimeoutDelayedTask(t *testing.T) {
+func TestSequenceTimeoutDelayedTask(t *testing.T) {
 	projectName := "sequence-timeout-delay"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceTimeoutWithTriggeredAfterShipyard)

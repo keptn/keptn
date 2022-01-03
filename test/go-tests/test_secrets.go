@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
+func TestManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
 	k8s, err := keptnkubeutils.GetClientset(false)
 	require.Nil(t, err)
 	var ns = GetKeptnNameSpaceFromEnv()

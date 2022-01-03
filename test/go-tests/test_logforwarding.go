@@ -28,7 +28,7 @@ spec:
               properties: 
                 timeframe: "invalid"`
 
-func Test_LogForwarding(t *testing.T) {
+func TestLogForwarding(t *testing.T) {
 	projectName := "log-forwarding"
 	serviceName := "my-service"
 	stageName := "dev"

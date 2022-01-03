@@ -120,7 +120,7 @@ spec:
             - name: "release"
 `
 
-func Test_ContinuousDelivery(t *testing.T) {
+func TestContinuousDelivery(t *testing.T) {
 
 	repoLocalDir := "../assets/podtato-head"
 	keptnProjectName := "podtato-head"

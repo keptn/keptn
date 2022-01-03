@@ -53,7 +53,7 @@ type RemediationTriggered struct {
 	Problem keptnv2.ProblemDetails `json:"problem"`
 }
 
-func Test_SelfHealing(t *testing.T) {
+func TestSelfHealing(t *testing.T) {
 	projectName := "self-healing"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(selfHealingShipyard)
