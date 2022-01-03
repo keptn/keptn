@@ -2,12 +2,15 @@ package common
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common_models"
+	logger "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
@@ -19,17 +22,61 @@ type Git struct {
 	git Gogit
 }
 
+func NewGit() Git {
+	return Git{
+		git: GogitReal{},
+	}
+}
+
+func ConfigureGitUser(gitContext common_models.GitContext) error {
+	g := NewGit()
+	return g.ConfigureGitUser(gitContext)
+}
+
+func (g *Git) ConfigureGitUser(gitContext common_models.GitContext) error {
+
+	r, _, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return err
+	}
+	config, err := r.Config()
+	config.User.Name = getGitKeptnUser()
+	config.User.Email = getGitKeptnEmail()
+	if err != nil {
+		return fmt.Errorf("could not set git user: %w", err)
+	}
+	r.SetConfig(config)
+	return nil
+
+}
+
+func getGitKeptnUser() string {
+	if keptnUser := os.Getenv(gitKeptnUserEnvVar); keptnUser != "" {
+		return keptnUser
+	}
+	return gitKeptnUserDefault
+}
+
+func getGitKeptnEmail() string {
+	if keptnEmail := os.Getenv(gitKeptnEmailEnvVar); keptnEmail != "" {
+		return keptnEmail
+	}
+	return gitKeptnEmailDefault
+}
+
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if (gitContext == common_models.GitContext{}) || (*gitContext.Credentials == common_models.GitCredentials{}) {
 		return false, errors.New("Could not clone repo: " + InvalidContextErrorMsg)
 	}
+
 	projectPath := GetProjectConfigPath(gitContext.Project)
 	if g.ProjectRepoExists(gitContext.Project) {
 		// if project exist we do not clone again
 		return true, nil
 	}
-	if _, err := os.Stat(projectPath); err != nil {
-		return false, errors.New("Could not clone repo: path does not exist")
+	err := ensureDirectoryExists(projectPath)
+	if err != nil {
+		return false, err
 	}
 	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
@@ -54,6 +101,11 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		}
 	}
 
+	err = g.ConfigureGitUser(gitContext)
+	if err != nil {
+		return false, err
+	}
+
 	_, err = clone.Head()
 	if err != nil {
 		return false, err
@@ -61,10 +113,13 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	return true, nil
 }
 
-func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
+func (g Git) commitAll(gitContext common_models.GitContext, message string) (string, error) {
 	_, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return "", err
+	}
+	if message == "" {
+		message = "commit changes"
 	}
 	id, err := w.Commit(message,
 		&git.CommitOptions{
@@ -75,12 +130,31 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 				When:  time.Now(),
 			},
 		})
+	return id.String(), err
+}
+
+func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
+
+	id, err := g.commitAll(gitContext, message)
+	err = retry.Retry(func() error {
+		err = g.Pull(gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not pull")
+			return err
+		}
+
+		err = g.Push(gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not push")
+			return err
+		}
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 	if err != nil {
+		//TODO : fall back on cli
 		return "", err
 	}
-	err = g.Push(gitContext)
-
-	return id.String(), err
+	return id, err
 }
 
 func (g Git) Push(gitContext common_models.GitContext) error {
@@ -100,21 +174,25 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 			Password: gitContext.Credentials.Token,
 		},
 	})
-	//TODO: fall back on cli?
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (g *Git) Pull(gitContext common_models.GitContext) error {
-	_, w, err := g.getWorkTree(gitContext)
-	if err != nil {
+	if g.ProjectExists(gitContext) {
+		_, w, err := g.getWorkTree(gitContext)
+		if err != nil {
+			return err
+		}
+		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+		if errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return nil
+		}
 		return err
 	}
-	err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-	return err
+	return errors.New(ProjectDoesNotExistErrorMsg)
 }
 func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, error) {
 	r, _, err := g.getWorkTree(gitContext)
@@ -208,6 +286,9 @@ func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, err
 		return "", err
 	}
 	def := config.Init.DefaultBranch
+	if def == "" {
+		def = "master"
+	}
 	return def, err
 }
 
@@ -216,11 +297,9 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 		return true
 	}
 	// if not, try to clone
-	_, err := g.CloneRepo(gitContext)
-	if err != nil {
-		return false
-	}
-	return true
+	//_, err := os.Stat(path)
+	clone, _ := g.CloneRepo(gitContext)
+	return clone
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
@@ -228,8 +307,7 @@ func (g *Git) ProjectRepoExists(project string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
 		// path exists
-		_, err := g.git.PlainOpen(path)
-
+		_, err = g.git.PlainOpen(path)
 		if err == nil {
 			return true
 		}
@@ -304,4 +382,14 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	default:
 		return nil, object.ErrUnsupportedObject
 	}
+}
+
+func ensureDirectoryExists(path string) error {
+	if _, err := os.Stat(path); err != nil {
+
+		if err := os.MkdirAll(path, 0700); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -8,31 +8,6 @@ import (
 	"testing"
 )
 
-func TestGit_GetDefaultBranch(t *testing.T) {
-
-	tests := []struct {
-		name       string
-		gitContext common_models.GitContext
-		want       string
-		wantErr    bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := Git{}
-			got, err := g.GetDefaultBranch(tt.gitContext)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDefaultBranch() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GetDefaultBranch() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGit_ProjectExists(t *testing.T) {
 
 	tests := []struct {
@@ -47,27 +22,6 @@ func TestGit_ProjectExists(t *testing.T) {
 			g := &Git{}
 			if got := g.ProjectExists(tt.gitContext); got != tt.want {
 				t.Errorf("ProjectExists() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGit_Pull(t *testing.T) {
-	type args struct {
-		gitContext common_models.GitContext
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := Git{}
-			if err := g.Pull(tt.args.gitContext); (err != nil) != tt.wantErr {
-				t.Errorf("Pull() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

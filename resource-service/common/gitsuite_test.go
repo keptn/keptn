@@ -3,12 +3,10 @@ package common
 import (
 	"errors"
 	"fmt"
-	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/go-git/go-git/v5/storage/memory"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	config2 "github.com/keptn/keptn/resource-service/config"
@@ -49,15 +47,16 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
 	//url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
-	s.url = config2.ConfigDir + "/sockshop"
+	s.url = config2.ConfigDir + "/remote"
 
 	// make a local remote
 	_, err = git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
 	c.Assert(err, IsNil)
 
 	// make local git repo
-	fs, err := memfs.New().Chroot(config2.ConfigDir + "/sockshop")
-	s.Repository, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{URL: s.url})
+	//fs, err := memfs.New().Chroot(config2.ConfigDir + "/sockshop")
+	//s.Repository, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{URL: s.url})
+	s.Repository, err = git.PlainClone(config2.ConfigDir+"/sockshop", false, &git.CloneOptions{URL: s.url})
 	c.Assert(err, IsNil)
 }
 
@@ -77,10 +76,11 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := Git{s.NewTestGit()}
+		g := Git{GogitReal{}}
 		conf, err := s.Repository.Config()
 		c.Assert(err, IsNil)
 		conf.Init.DefaultBranch = tt.want
+		s.Repository.SetConfig(conf)
 		got, err := g.GetDefaultBranch(tt.gitContext)
 		if (err != nil) != tt.wantErr {
 			c.Errorf("GetDefaultBranch() error = %v, wantErr %v", err, tt.wantErr)
@@ -88,6 +88,78 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 		}
 		if got != tt.want {
 			c.Errorf("GetDefaultBranch() got = %v, want %v", got, tt.want)
+		}
+
+	}
+}
+
+func (s *BaseSuite) TestGit_Pull(c *C) {
+
+	tests := []struct {
+		name       string
+		gitContext common_models.GitContext
+		expected   string
+		wantErr    bool
+		err        error
+	}{
+		{
+			name:       "retrieve already uptodate sockshop",
+			gitContext: s.NewGitContext(),
+			wantErr:    false,
+			expected: "[core]\n" + "\tbare = false\n" +
+				"[remote \"origin\"]\n" +
+				"\turl = ./debug/config/remote\n" +
+				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
+				"[branch \"master\"]\n" +
+				"\tremote = origin\n" +
+				"\tmerge = refs/heads/master\n",
+		},
+		{
+			name: "retrieve from unexisting project",
+			gitContext: common_models.GitContext{
+				Project: "mine",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: s.url},
+			},
+			wantErr: false,
+			expected: "[core]\n" +
+				"\tbare = false\n" +
+				"[remote \"origin\"]\n" +
+				"\turl = ./debug/config/remote\n" +
+				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
+				"[branch \"master\"]\n" +
+				"\tremote = origin\n" +
+				"\tmerge = refs/heads/master\n" +
+				"[user]\n" +
+				"\tname = keptn\n" +
+				"\temail = keptn@keptn.sh\n",
+		},
+		{
+			name: "retrieve from unexisting url",
+			gitContext: common_models.GitContext{
+				Project: "mine",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: "jibberish"},
+			},
+
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		c.Logf("Test %s", tt.name)
+		g := Git{GogitReal{}}
+		if err := g.Pull(tt.gitContext); (err != nil) != tt.wantErr {
+			c.Errorf("Pull() error = %v, wantErr %v", err, tt.wantErr)
+		}
+		if !tt.wantErr {
+			b, err := os.ReadFile(GetProjectConfigPath(tt.gitContext.Project + "/.git/config"))
+			c.Assert(err, IsNil)
+			c.Assert(string(b), Equals, tt.expected)
 		}
 
 	}
@@ -129,11 +201,8 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		{
 			name: "clone sockshop from remote",
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
-					return s.Repository, nil
-				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
-					return nil, errors.New("not exists")
+					return s.Repository, nil
 				},
 			},
 			gitContext: s.NewGitContext(),
@@ -185,7 +254,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		{
 			name: "Wrong credential",
 			gitContext: common_models.GitContext{
-				Project: "sockshop",
+				Project: "so",
 				Credentials: &common_models.GitCredentials{
 					User:      "ssss",
 					Token:     "bjh",
@@ -262,9 +331,9 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 	}
 
 	expected := []byte("[core]\n\tbare = false\n[remote \"origin\"]\n\turl = " +
-		"./debug/config/sockshop\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"dev\"]\n" +
-		"\tremote = origin\n\tmerge = refs/heads/dev\n[branch \"master\"]\n" +
-		"\tremote = origin\n\tmerge = refs/heads/master\n")
+		"./debug/config/remote\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"master\"]\n" +
+		"\tremote = origin\n\tmerge = refs/heads/master\n[branch \"dev\"]\n" +
+		"\tremote = origin\n\tmerge = refs/heads/dev\n")
 
 	for _, tt := range tests {
 		c.Logf("Test: %s", tt.name)
@@ -377,13 +446,69 @@ func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 		},
 	}
 	for _, tt := range tests {
-
+		if tt.want {
+			os.Mkdir(GetProjectConfigPath(tt.project), os.ModePerm)
+			git.PlainInit(GetProjectConfigPath(tt.project), false)
+		}
 		g := Git{GogitReal{}}
 		if got := g.ProjectRepoExists(tt.project); got != tt.want {
 			c.Errorf("ProjectRepoExists() = %v, want %v", got, tt.want)
 		}
 
 	}
+}
+
+func Test_getGitKeptnUser(t *testing.T) {
+	tests := []struct {
+		name        string
+		envVarValue string
+		want        string
+	}{
+		{
+			name:        "default value",
+			envVarValue: "",
+			want:        gitKeptnUserDefault,
+		},
+		{
+			name:        "env var value",
+			envVarValue: "my-user",
+			want:        "my-user",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = os.Setenv(gitKeptnUserEnvVar, tt.envVarValue)
+			if got := getGitKeptnUser(); got != tt.want {
+				t.Errorf("getGitKeptnUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (s *BaseSuite) Test_getGitKeptnEmail(c *C) {
+	tests := []struct {
+		name        string
+		envVarValue string
+		want        string
+	}{
+		{
+			name:        "default value",
+			envVarValue: "",
+			want:        gitKeptnEmailDefault,
+		},
+		{
+			name:        "env var value",
+			envVarValue: "my-user@keptn.sh",
+			want:        "my-user@keptn.sh",
+		},
+	}
+	for _, tt := range tests {
+		_ = os.Setenv(gitKeptnEmailEnvVar, tt.envVarValue)
+		if got := getGitKeptnEmail(); got != tt.want {
+			c.Errorf("getGitKeptnEmail() = %v, want %v", got, tt.want)
+		}
+	}
+
 }
 
 func (s *BaseSuite) NewGitContext() common_models.GitContext {
