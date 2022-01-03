@@ -22,30 +22,15 @@ type Git struct {
 	git Gogit
 }
 
-func NewGit() Git {
-	return Git{
-		git: GogitReal{},
-	}
-}
+func configureGitUser(repository *git.Repository) error {
 
-func ConfigureGitUser(gitContext common_models.GitContext) error {
-	g := NewGit()
-	return g.ConfigureGitUser(gitContext)
-}
-
-func (g *Git) ConfigureGitUser(gitContext common_models.GitContext) error {
-
-	r, _, err := g.getWorkTree(gitContext)
-	if err != nil {
-		return err
-	}
-	config, err := r.Config()
+	config, err := repository.Config()
 	config.User.Name = getGitKeptnUser()
 	config.User.Email = getGitKeptnEmail()
 	if err != nil {
 		return fmt.Errorf("could not set git user: %w", err)
 	}
-	r.SetConfig(config)
+	repository.SetConfig(config)
 	return nil
 
 }
@@ -91,17 +76,16 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "empty") {
 			// TODO empty remote leads to an error
-			init, err := g.git.PlainInit(projectPath, false)
+			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
 				return false, err
 			}
-			clone = init
 		} else {
 			return false, err
 		}
 	}
 
-	err = g.ConfigureGitUser(gitContext)
+	err = configureGitUser(clone)
 	if err != nil {
 		return false, err
 	}
@@ -111,6 +95,29 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
+	init, err := g.git.PlainInit(projectPath, false)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = init.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{gitContext.Credentials.RemoteURI},
+	})
+	os.MkdirAll(projectPath+"/.git", 0700)
+	w, err := init.Worktree()
+	if err != nil {
+		return nil, err
+	}
+	w.Add("/.git")
+	_, err = g.commitAll(gitContext, "init repo")
+	if err != nil {
+		return nil, err
+	}
+	return init, nil
 }
 
 func (g Git) commitAll(gitContext common_models.GitContext, message string) (string, error) {
@@ -136,6 +143,9 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 
 	id, err := g.commitAll(gitContext, message)
+	if err != nil {
+		return "", err
+	}
 	err = retry.Retry(func() error {
 		err = g.Pull(gitContext)
 		if err != nil {
@@ -174,7 +184,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 			Password: gitContext.Credentials.Token,
 		},
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}
 	return nil

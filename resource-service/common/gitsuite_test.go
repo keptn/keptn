@@ -3,10 +3,14 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/go-git/go-billy/v5/memfs"
+	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/storage/memory"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	config2 "github.com/keptn/keptn/resource-service/config"
@@ -20,7 +24,6 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type BaseSuite struct {
-	//Suite      fixtures.Suite
 	Repository *git.Repository
 	url        string
 }
@@ -28,13 +31,10 @@ type BaseSuite struct {
 var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpSuite(c *C) {
-	// init fixture repo
-	//s.Suite.SetUpSuite(c)
 	s.buildBasicRepository(c)
 }
 
 func (s *BaseSuite) TearDownSuite(c *C) {
-	//s.Suite.TearDownSuite(c)
 	//err := os.RemoveAll("./debug")
 	//c.Assert(err, IsNil)
 }
@@ -46,7 +46,6 @@ func (s *BaseSuite) SetUpTest(c *C) {
 func (s *BaseSuite) buildBasicRepository(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
-	//url := fixtures.ByURL("https://github.com/git-fixtures/basic.git").One().DotGit().Root()
 	s.url = config2.ConfigDir + "/remote"
 
 	// make a local remote
@@ -58,6 +57,134 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	//s.Repository, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{URL: s.url})
 	s.Repository, err = git.PlainClone(config2.ConfigDir+"/sockshop", false, &git.CloneOptions{URL: s.url})
 	c.Assert(err, IsNil)
+}
+
+func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
+
+	tests := []struct {
+		name       string
+		gitContext common_models.GitContext
+		message    string
+		wantErr    bool
+		doCommit   bool
+	}{
+
+		{
+			name:       "commit  new file",
+			gitContext: s.NewGitContext(),
+			message:    "my commit",
+			wantErr:    false,
+			doCommit:   true,
+		},
+		{
+			name:       " commit no new content",
+			gitContext: s.NewGitContext(),
+			message:    "my commit",
+			wantErr:    false,
+			doCommit:   false,
+		},
+	}
+	for _, tt := range tests {
+		c.Log("Test " + tt.name)
+		g := Git{GogitReal{}}
+		r := s.Repository
+
+		//get current commit
+		h, err := r.Head()
+		c.Assert(err, IsNil)
+		originalId := h.Hash().String()
+
+		if tt.doCommit {
+			w, err := r.Worktree()
+			c.Assert(err, IsNil)
+			write("foo/file.txt", "anycontent", c, w)
+		}
+		id, err := g.StageAndCommitAll(tt.gitContext, tt.message)
+		if (err != nil) != tt.wantErr {
+			c.Errorf("StageAndCommitAll() error = %v, wantErr %v", err, tt.wantErr)
+		}
+		if tt.doCommit {
+			c.Assert(id, Not(Equals), "")
+			s.checkCommit(c, r, id)
+			// make sure there is a new commit
+			c.Assert(originalId, Not(Equals), id)
+			b, err := g.GetFileRevision(tt.gitContext, id, "foo/file.txt")
+			c.Assert(err, IsNil)
+			c.Assert("anycontent", Equals, string(b))
+		}
+
+	}
+}
+
+func (s *BaseSuite) checkCommit(c *C, r *git.Repository, id string) {
+	head, err := r.Head()
+	c.Assert(err, IsNil)
+	// check local changes
+	c.Assert(head.Hash().String(), Equals, id)
+	//check remote changes
+	newRepo, err := git.Clone(memory.NewStorage(), memfs.New(), &git.CloneOptions{URL: s.url})
+	c.Assert(err, IsNil)
+	nrh, err := newRepo.Head()
+	c.Assert(err, IsNil)
+	c.Assert(nrh.Hash().String(), Equals, id)
+}
+
+func (s *BaseSuite) TestGit_Push(c *C) {
+
+	tests := []struct {
+		name       string
+		gitContext common_models.GitContext
+		wantErr    bool
+		err        error
+		push       bool
+	}{
+		{
+			name:       "push, no new changes",
+			gitContext: s.NewGitContext(),
+			wantErr:    false,
+			push:       false,
+		},
+		{
+			name:       "push, new changes",
+			gitContext: s.NewGitContext(),
+			wantErr:    false,
+			push:       true,
+		},
+		{
+			name: "push, invalid credentials",
+			gitContext: common_models.GitContext{
+				Project: "sockshop",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+			},
+			wantErr: true,
+			err:     transport.ErrAuthenticationRequired,
+			push:    false,
+		},
+	}
+	for _, tt := range tests {
+		r := s.Repository
+		var h plumbing.Hash
+		if tt.push {
+			w, err := r.Worktree()
+			c.Assert(err, IsNil)
+			h = commit("fo/file.txt", "a content", c, w)
+		}
+		g := Git{GogitReal{}}
+		err := g.Push(tt.gitContext)
+		if (err != nil) != tt.wantErr {
+			c.Errorf("Push() error = %v, wantErr %v", err, tt.wantErr)
+		}
+		if tt.wantErr {
+			c.Assert(err, Equals, tt.err)
+		}
+		if tt.push {
+			s.checkCommit(c, r, h.String())
+		}
+
+	}
 }
 
 func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
@@ -87,7 +214,7 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 			return
 		}
 		if got != tt.want {
-			c.Errorf("GetDefaultBranch() got = %v, want %v", got, tt.want)
+			c.Errorf("GetDefaultBranch() got = %v, exists %v", got, tt.want)
 		}
 
 	}
@@ -184,7 +311,7 @@ func (s *BaseSuite) Test_resolve(c *C) {
 			return
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			c.Errorf("resolve() got = %v, want %v", got, tt.want)
+			c.Errorf("resolve() got = %v, exists %v", got, tt.want)
 		}
 	}
 }
@@ -284,7 +411,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 
 		}
 		if got != tt.want {
-			c.Errorf("CloneRepo() got = %v, want %v", got, tt.want)
+			c.Errorf("CloneRepo() got = %v, exists %v", got, tt.want)
 		}
 
 	}
@@ -421,7 +548,7 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 		}
 		b := []byte(fmt.Sprintf("%s", tt.content))
 		if !reflect.DeepEqual(got, b) {
-			c.Errorf("GetFileRevision() got = %v, want %v", got, b)
+			c.Errorf("GetFileRevision() got = %v, exists %v", got, b)
 		}
 
 	}
@@ -452,13 +579,61 @@ func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 		}
 		g := Git{GogitReal{}}
 		if got := g.ProjectRepoExists(tt.project); got != tt.want {
-			c.Errorf("ProjectRepoExists() = %v, want %v", got, tt.want)
+			c.Errorf("ProjectRepoExists() = %v, exists %v", got, tt.want)
 		}
 
 	}
 }
 
-func Test_getGitKeptnUser(t *testing.T) {
+func (s *BaseSuite) TestGit_ProjectExists(c *C) {
+
+	tests := []struct {
+		name       string
+		gitContext common_models.GitContext
+		exists     bool
+		git        Gogit
+	}{
+		{
+			name:       "project exists",
+			gitContext: s.NewGitContext(),
+			exists:     true,
+			git:        GogitReal{},
+		},
+		{
+			name: "project does not exists",
+			gitContext: common_models.GitContext{
+				Project: "nonexisting",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: "an url that doesnot exists"},
+			},
+			exists: false,
+			git:    GogitReal{},
+		},
+		{
+			name: "project exists, but remote is empty",
+			gitContext: common_models.GitContext{
+				Project: "podtato",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: buildEmptyRemote("/podtato")},
+			},
+			exists: true,
+			git:    GogitReal{},
+		},
+	}
+	for _, tt := range tests {
+		c.Log(tt.name)
+		g := &Git{tt.git}
+		if got := g.ProjectExists(tt.gitContext); got != tt.exists {
+			c.Errorf("ProjectExists() = %v, exists %v", got, tt.exists)
+		}
+	}
+}
+
+func (s *BaseSuite) Test_getGitKeptnUser(c *C) {
 	tests := []struct {
 		name        string
 		envVarValue string
@@ -476,12 +651,11 @@ func Test_getGitKeptnUser(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_ = os.Setenv(gitKeptnUserEnvVar, tt.envVarValue)
-			if got := getGitKeptnUser(); got != tt.want {
-				t.Errorf("getGitKeptnUser() = %v, want %v", got, tt.want)
-			}
-		})
+
+		_ = os.Setenv(gitKeptnUserEnvVar, tt.envVarValue)
+		if got := getGitKeptnUser(); got != tt.want {
+			c.Errorf("getGitKeptnUser() = %v, exists %v", got, tt.want)
+		}
 	}
 }
 
@@ -505,7 +679,7 @@ func (s *BaseSuite) Test_getGitKeptnEmail(c *C) {
 	for _, tt := range tests {
 		_ = os.Setenv(gitKeptnEmailEnvVar, tt.envVarValue)
 		if got := getGitKeptnEmail(); got != tt.want {
-			c.Errorf("getGitKeptnEmail() = %v, want %v", got, tt.want)
+			c.Errorf("getGitKeptnEmail() = %v, exists %v", got, tt.want)
 		}
 	}
 
@@ -538,10 +712,14 @@ func (s *BaseSuite) NewTestGit() *common_mock.GogitMock {
 func (s *BaseSuite) commitAndPush(file string, content string, c *C) plumbing.Hash {
 	r := s.Repository
 	w, err := r.Worktree()
-	f, err := w.Filesystem.Create(file)
 	c.Assert(err, IsNil)
-	f.Write([]byte(fmt.Sprintf("%s", content)))
-	f.Close()
+	id := commit(file, content, c, w)
+	push(r, c)
+	return id
+}
+
+func commit(file string, content string, c *C, w *git.Worktree) plumbing.Hash {
+	err := write(file, content, c, w)
 
 	_, err = w.Add(file)
 	c.Assert(err, IsNil)
@@ -557,14 +735,30 @@ func (s *BaseSuite) commitAndPush(file string, content string, c *C) plumbing.Ha
 		})
 
 	c.Assert(err, IsNil)
+	return id
+}
+
+func write(file string, content string, c *C, w *git.Worktree) error {
+	f, err := w.Filesystem.Create(file)
+	c.Assert(err, IsNil)
+	f.Write([]byte(fmt.Sprintf("%s", content)))
+	f.Close()
+	w.Add(file)
+	return err
+}
+
+func push(r *git.Repository, c *C) {
 	//push to repo
-	err = r.Push(&git.PushOptions{
+	err := r.Push(&git.PushOptions{
 		//Force: true,
 		Auth: &http.BasicAuth{
 			Username: "whatever",
 			Password: "whatever",
 		}})
 	c.Assert(err, IsNil)
+}
 
-	return id
+func buildEmptyRemote(p string) string {
+	url := fixtures.ByURL("https://github.com/git-fixtures/empty.git").One().DotGit().Root()
+	return url
 }
