@@ -35,8 +35,8 @@ func (s *BaseSuite) SetUpSuite(c *C) {
 }
 
 func (s *BaseSuite) TearDownSuite(c *C) {
-	//err := os.RemoveAll("./debug")
-	//c.Assert(err, IsNil)
+	err := os.RemoveAll("./debug")
+	c.Assert(err, IsNil)
 }
 
 func (s *BaseSuite) SetUpTest(c *C) {
@@ -53,8 +53,6 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	c.Assert(err, IsNil)
 
 	// make local git repo
-	//fs, err := memfs.New().Chroot(config2.ConfigDir + "/sockshop")
-	//s.Repository, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{URL: s.url})
 	s.Repository, err = git.PlainClone(config2.ConfigDir+"/sockshop", false, &git.CloneOptions{URL: s.url})
 	c.Assert(err, IsNil)
 }
@@ -379,30 +377,6 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 	}
 }
 
-func (s *BaseSuite) Test_resolve(c *C) {
-
-	tests := []struct {
-		name    string
-		obj     object.Object
-		path    string
-		want    *object.Blob
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-
-		got, err := resolve(tt.obj, tt.path)
-		if (err != nil) != tt.wantErr {
-			c.Errorf("resolve() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
-		if !reflect.DeepEqual(got, tt.want) {
-			c.Errorf("resolve() got = %v, exists %v", got, tt.want)
-		}
-	}
-}
-
 func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 
 	tests := []struct {
@@ -615,6 +589,7 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 		file       string
 		content    string
 		wantErr    bool
+		id         string
 	}{
 		{
 			name:       "get from commitID",
@@ -622,22 +597,54 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 			file:       "foo/example.go",
 			content:    "ciao",
 			wantErr:    false,
+			id:         "",
+		},
+		{
+			name:       "not existing commitID",
+			gitContext: s.NewGitContext(),
+			file:       "foo/example.go",
+			content:    "ciao",
+			wantErr:    true,
+			id:         "ciaoWrongId",
+		},
+		{
+			name:       "good id but not existing file",
+			gitContext: s.NewGitContext(),
+			file:       "exam.go",
+			content:    "ciao",
+			wantErr:    true,
+			id:         "6ecf0ef2c2dffb796033e5a02219af86ec6584e5",
+		},
+		{
+			name:       "invalid revision",
+			gitContext: s.NewGitContext(),
+			file:       "exam.go",
+			content:    "ciao",
+			wantErr:    true,
+			id:         "6ecf0@ef2c2dffb796033e5a0@2219af86ec6584e5",
 		},
 	}
 	for _, tt := range tests {
-
+		c.Log("Test : " + tt.name)
+		var id string
 		g := Git{s.NewTestGit()}
-		id := s.commitAndPush(tt.file, tt.content, c)
-		got, err := g.GetFileRevision(tt.gitContext, id.String(), tt.file)
+		if tt.id == "" {
+			h := s.commitAndPush(tt.file, tt.content, c)
+			id = h.String()
+		} else {
+			id = tt.id
+		}
+		got, err := g.GetFileRevision(tt.gitContext, id, tt.file)
 		if (err != nil) != tt.wantErr {
 			c.Errorf("GetFileRevision() error = %v, wantErr %v", err, tt.wantErr)
 			return
 		}
-		b := []byte(fmt.Sprintf("%s", tt.content))
-		if !reflect.DeepEqual(got, b) {
-			c.Errorf("GetFileRevision() got = %v, exists %v", got, b)
+		if !tt.wantErr {
+			b := []byte(fmt.Sprintf("%s", tt.content))
+			if !reflect.DeepEqual(got, b) {
+				c.Errorf("GetFileRevision() got = %v, exists %v", got, b)
+			}
 		}
-
 	}
 }
 
@@ -705,7 +712,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 				Credentials: &common_models.GitCredentials{
 					User:      "ssss",
 					Token:     "bjh",
-					RemoteURI: buildEmptyRemote("/podtato")},
+					RemoteURI: buildEmptyRemote()},
 			},
 			exists: true,
 			git:    GogitReal{},
@@ -830,7 +837,7 @@ func write(file string, content string, c *C, w *git.Worktree) error {
 	c.Assert(err, IsNil)
 	f.Write([]byte(fmt.Sprintf("%s", content)))
 	f.Close()
-	w.Add(file)
+	_, err = w.Add(file)
 	return err
 }
 
@@ -845,7 +852,7 @@ func push(r *git.Repository, c *C) {
 	c.Assert(err, IsNil)
 }
 
-func buildEmptyRemote(p string) string {
+func buildEmptyRemote() string {
 	url := fixtures.ByURL("https://github.com/git-fixtures/empty.git").One().DotGit().Root()
 	return url
 }
