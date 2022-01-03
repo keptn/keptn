@@ -77,7 +77,10 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := Git{GogitReal{}}
+		g := Git{s.NewTestGit()}
+		conf, err := s.Repository.Config()
+		c.Assert(err, IsNil)
+		conf.Init.DefaultBranch = tt.want
 		got, err := g.GetDefaultBranch(tt.gitContext)
 		if (err != nil) != tt.wantErr {
 			c.Errorf("GetDefaultBranch() error = %v, wantErr %v", err, tt.wantErr)

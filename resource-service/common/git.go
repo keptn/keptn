@@ -203,15 +203,12 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 
 func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, error) {
 	r, _, err := g.getWorkTree(gitContext)
-	remotes, err := r.Remotes()
+	config, err := r.Config()
 	if err != nil {
 		return "", err
 	}
-	for _, r := range remotes {
-		r.String()
-	}
-
-	return "master", err
+	def := config.Init.DefaultBranch
+	return def, err
 }
 
 func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
