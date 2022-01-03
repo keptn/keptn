@@ -109,10 +109,20 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 }
 
 func (g *Git) Pull(gitContext common_models.GitContext) error {
-	panic("implement me")
+	_, w, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return err
+	}
+	err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+	return err
 }
 func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, error) {
-	panic("implement me")
+	r, _, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return "", err
+	}
+	ref, err := r.Head()
+	return ref.String(), err
 }
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
@@ -192,8 +202,16 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 }
 
 func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, error) {
-	//checkoutBranch(gitContext, &git.CheckoutOptions{Branch: masterBranch})
-	return "", nil
+	r, _, err := g.getWorkTree(gitContext)
+	remotes, err := r.Remotes()
+	if err != nil {
+		return "", err
+	}
+	for _, r := range remotes {
+		r.String()
+	}
+
+	return "master", err
 }
 
 func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {

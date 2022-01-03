@@ -61,6 +61,35 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
+
+	tests := []struct {
+		name       string
+		gitContext common_models.GitContext
+		want       string
+		wantErr    bool
+	}{
+		{
+			name:       "simple master",
+			gitContext: s.NewGitContext(),
+			want:       "master",
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		g := Git{GogitReal{}}
+		got, err := g.GetDefaultBranch(tt.gitContext)
+		if (err != nil) != tt.wantErr {
+			c.Errorf("GetDefaultBranch() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
+		if got != tt.want {
+			c.Errorf("GetDefaultBranch() got = %v, want %v", got, tt.want)
+		}
+
+	}
+}
+
 func (s *BaseSuite) Test_resolve(c *C) {
 
 	tests := []struct {
