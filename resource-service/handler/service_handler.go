@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/http"
 )
@@ -29,7 +30,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 
 	createService := &models.CreateServicePayload{}
 	if err := c.ShouldBindJSON(createService); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 

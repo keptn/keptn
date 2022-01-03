@@ -140,6 +140,92 @@ func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetServiceConfigPath("my-project", "my-service")+"/file2")
 }
 
+func TestResourceManager_CreateResources_ServiceResource_HelmChart(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		Stage: &models.Stage{
+			StageName: "my-stage",
+		},
+		Service: &models.Service{
+			ServiceName: "my-service",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "helm/service.tgz",
+				},
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+
+	require.Len(t, fields.fileSystem.WriteHelmChartCalls(), 1)
+	require.Equal(t, fields.fileSystem.WriteHelmChartCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+}
+
+func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.WriteHelmChartFunc = func(path string) error {
+		return errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		Stage: &models.Stage{
+			StageName: "my-stage",
+		},
+		Service: &models.Service{
+			ServiceName: "my-service",
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "helm/service.tgz",
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 0)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+
+	require.Len(t, fields.fileSystem.WriteHelmChartCalls(), 1)
+	require.Equal(t, fields.fileSystem.WriteHelmChartCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+}
+
 func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
@@ -893,6 +979,9 @@ func getTestResourceManagerFields() testResourceManagerFields {
 				return nil
 			},
 			WriteFileFunc: func(path string, content []byte) error {
+				return nil
+			},
+			WriteHelmChartFunc: func(path string) error {
 				return nil
 			},
 		},

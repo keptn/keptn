@@ -44,7 +44,7 @@ func (p ResourceManager) CreateResources(params models.CreateResourcesParams) (*
 		return nil, err
 	}
 
-	return p.writeResources(gitContext, params.Resources, configPath)
+	return p.writeAndCommitResources(gitContext, params.Resources, configPath)
 }
 
 func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models.GetResourcesResponse, error) {
@@ -73,7 +73,7 @@ func (p ResourceManager) UpdateResources(params models.UpdateResourcesParams) (*
 		return nil, err
 	}
 
-	return p.writeResources(gitContext, params.Resources, configPath)
+	return p.writeAndCommitResources(gitContext, params.Resources, configPath)
 }
 
 func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.GetResourceResponse, error) {
@@ -106,7 +106,7 @@ func (p ResourceManager) UpdateResource(params models.UpdateResourceParams) (*mo
 
 	resourcePath := configPath + "/" + params.ResourceURI
 
-	return p.writeResource(gitContext, resourcePath, string(params.ResourceContent))
+	return p.writeAndCommitResource(gitContext, resourcePath, string(params.ResourceContent))
 }
 
 func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
@@ -126,7 +126,7 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 func (p ResourceManager) establishContext(project models.Project, stage *models.Stage, service *models.Service) (*common.GitContext, string, error) {
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return nil, "", fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
+		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common.GitContext{
@@ -195,23 +195,35 @@ func (p ResourceManager) readResource(gitContext *common.GitContext, params mode
 	}, nil
 }
 
-func (p ResourceManager) writeResource(gitContext *common.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
-	if err := p.fileSystem.WriteBase64EncodedFile(resourcePath, resourceContent); err != nil {
+func (p ResourceManager) writeAndCommitResource(gitContext *common.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
+	if err := p.storeResource(resourcePath, resourceContent); err != nil {
 		return nil, err
 	}
 
 	return p.stageAndCommit(gitContext, "Updated resource")
 }
 
-func (p ResourceManager) writeResources(gitContext *common.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) writeAndCommitResources(gitContext *common.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
 	for _, res := range resources {
 		filePath := directory + "/" + res.ResourceURI
-		if err := p.fileSystem.WriteBase64EncodedFile(filePath, string(res.ResourceContent)); err != nil {
+		if err := p.storeResource(filePath, string(res.ResourceContent)); err != nil {
 			return nil, err
 		}
 	}
 
 	return p.stageAndCommit(gitContext, "Added resources")
+}
+
+func (p ResourceManager) storeResource(resourcePath, resourceContent string) error {
+	if err := p.fileSystem.WriteBase64EncodedFile(resourcePath, resourceContent); err != nil {
+		return err
+	}
+	if common.IsHelmChartPath(resourcePath) {
+		if err := p.fileSystem.WriteHelmChart(resourcePath); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p ResourceManager) stageAndCommit(gitContext *common.GitContext, message string) (*models.WriteResourceResponse, error) {

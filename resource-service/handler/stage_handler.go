@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/keptn/keptn/resource-service/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +31,7 @@ func (ph *StageHandler) CreateStage(c *gin.Context) {
 
 	createStage := &models.CreateStagePayload{}
 	if err := c.ShouldBindJSON(createStage); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 

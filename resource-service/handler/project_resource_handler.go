@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/keptn/keptn/resource-service/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -46,7 +47,7 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 
 	createResources := &models.CreateResourcesPayload{}
 	if err := c.ShouldBindJSON(createResources); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 
@@ -88,7 +89,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 
 	getResources := &models.GetResourcesQuery{PageSize: 20}
 	if err := c.ShouldBindQuery(getResources); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 
@@ -128,7 +129,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 
 	updateResources := &models.UpdateResourcesPayload{}
 	if err := c.ShouldBindJSON(updateResources); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 
@@ -169,7 +170,7 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 	}
 	getResources := &models.GetResourceQuery{}
 	if err := c.ShouldBindQuery(getResources); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 
@@ -210,7 +211,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 	}
 	updateResource := &models.UpdateResourcePayload{}
 	if err := c.ShouldBindJSON(updateResource); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 

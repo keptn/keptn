@@ -35,6 +35,9 @@ import (
 // 			WriteFileFunc: func(path string, content []byte) error {
 // 				panic("mock out the WriteFile method")
 // 			},
+// 			WriteHelmChartFunc: func(path string) error {
+// 				panic("mock out the WriteHelmChart method")
+// 			},
 // 		}
 //
 // 		// use mockedIFileSystem in code that requires common.IFileSystem
@@ -62,6 +65,9 @@ type IFileSystemMock struct {
 
 	// WriteFileFunc mocks the WriteFile method.
 	WriteFileFunc func(path string, content []byte) error
+
+	// WriteHelmChartFunc mocks the WriteHelmChart method.
+	WriteHelmChartFunc func(path string) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -106,6 +112,11 @@ type IFileSystemMock struct {
 			// Content is the content argument value.
 			Content []byte
 		}
+		// WriteHelmChart holds details about calls to the WriteHelmChart method.
+		WriteHelmChart []struct {
+			// Path is the path argument value.
+			Path string
+		}
 	}
 	lockDeleteFile             sync.RWMutex
 	lockFileExists             sync.RWMutex
@@ -114,6 +125,7 @@ type IFileSystemMock struct {
 	lockWalkPath               sync.RWMutex
 	lockWriteBase64EncodedFile sync.RWMutex
 	lockWriteFile              sync.RWMutex
+	lockWriteHelmChart         sync.RWMutex
 }
 
 // DeleteFile calls DeleteFileFunc.
@@ -342,5 +354,36 @@ func (mock *IFileSystemMock) WriteFileCalls() []struct {
 	mock.lockWriteFile.RLock()
 	calls = mock.calls.WriteFile
 	mock.lockWriteFile.RUnlock()
+	return calls
+}
+
+// WriteHelmChart calls WriteHelmChartFunc.
+func (mock *IFileSystemMock) WriteHelmChart(path string) error {
+	if mock.WriteHelmChartFunc == nil {
+		panic("IFileSystemMock.WriteHelmChartFunc: method is nil but IFileSystem.WriteHelmChart was just called")
+	}
+	callInfo := struct {
+		Path string
+	}{
+		Path: path,
+	}
+	mock.lockWriteHelmChart.Lock()
+	mock.calls.WriteHelmChart = append(mock.calls.WriteHelmChart, callInfo)
+	mock.lockWriteHelmChart.Unlock()
+	return mock.WriteHelmChartFunc(path)
+}
+
+// WriteHelmChartCalls gets all the calls that were made to WriteHelmChart.
+// Check the length with:
+//     len(mockedIFileSystem.WriteHelmChartCalls())
+func (mock *IFileSystemMock) WriteHelmChartCalls() []struct {
+	Path string
+} {
+	var calls []struct {
+		Path string
+	}
+	mock.lockWriteHelmChart.RLock()
+	calls = mock.calls.WriteHelmChart
+	mock.lockWriteHelmChart.RUnlock()
 	return calls
 }

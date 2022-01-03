@@ -94,7 +94,7 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 func (s ServiceManager) establishServiceContext(project models.Project, stage models.Stage) (*common.GitContext, error) {
 	credentials, err := s.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return nil, fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
+		return nil, fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common.GitContext{

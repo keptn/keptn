@@ -33,3 +33,9 @@ var ErrRepositoryNotFound = errors.New("upstream repository not found")
 
 var ErrCredentialsNotFound = errors.New("could not find upstream repository credentials")
 var ErrMalformedCredentials = errors.New("could not decode upstream repository credentials")
+
+// Error messages
+
+const ErrMsgCouldNotRetrieveCredentials = "could not read credentials for project %s: %w"
+
+const ErrMsgInvalidRequestFormat = "Invalid request format"

@@ -33,7 +33,7 @@ func (s StageManager) CreateStage(params models.CreateStageParams) error {
 
 	credentials, err := s.credentialReader.GetCredentials(params.ProjectName)
 	if err != nil {
-		return fmt.Errorf("could not read credentials for project %s: %w", params.ProjectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, params.ProjectName, err)
 	}
 
 	gitContext := common.GitContext{

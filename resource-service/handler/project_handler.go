@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/keptn/keptn/resource-service/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,7 @@ func NewProjectHandler(projectManager IProjectManager) *ProjectHandler {
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	params := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 
@@ -71,7 +72,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, "Invalid request format")
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
 		return
 	}
 

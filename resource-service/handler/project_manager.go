@@ -40,7 +40,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common.GitContext{
@@ -94,7 +94,7 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return fmt.Errorf("could not read credentials for project %s: %w", project.ProjectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common.GitContext{
@@ -125,7 +125,7 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 
 	credentials, err := p.credentialReader.GetCredentials(projectName)
 	if err != nil {
-		return fmt.Errorf("could not read credentials for project %s: %w", projectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, projectName, err)
 	}
 
 	gitContext := common.GitContext{
