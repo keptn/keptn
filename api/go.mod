@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/benbjohnson/clock v1.3.0
-	github.com/cloudevents/sdk-go/v2 v2.6.1
+	github.com/cloudevents/sdk-go/v2 v2.7.0
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/loads v0.21.0
 	github.com/go-openapi/runtime v0.21.0
