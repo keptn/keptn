@@ -29,7 +29,6 @@ spec:
                 timeframe: "invalid"`
 
 func Test_LogForwarding(t *testing.T) {
-	t.FailNow()
 	projectName := "log-forwarding"
 	serviceName := "my-service"
 	stageName := "dev"
