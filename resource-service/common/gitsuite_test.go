@@ -61,14 +61,27 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func (s *BaseSuite) NewGitContext() common_models.GitContext {
-	return common_models.GitContext{
-		Project: "sockshop",
-		Credentials: &common_models.GitCredentials{
-			User:      "Me",
-			Token:     "blabla",
-			RemoteURI: s.url,
-		},
+func (s *BaseSuite) Test_resolve(c *C) {
+
+	tests := []struct {
+		name    string
+		obj     object.Object
+		path    string
+		want    *object.Blob
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+
+		got, err := resolve(tt.obj, tt.path)
+		if (err != nil) != tt.wantErr {
+			c.Errorf("resolve() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
+		if !reflect.DeepEqual(got, tt.want) {
+			c.Errorf("resolve() got = %v, want %v", got, tt.want)
+		}
 	}
 }
 
@@ -338,6 +351,17 @@ func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 			c.Errorf("ProjectRepoExists() = %v, want %v", got, tt.want)
 		}
 
+	}
+}
+
+func (s *BaseSuite) NewGitContext() common_models.GitContext {
+	return common_models.GitContext{
+		Project: "sockshop",
+		Credentials: &common_models.GitCredentials{
+			User:      "Me",
+			Token:     "blabla",
+			RemoteURI: s.url,
+		},
 	}
 }
 

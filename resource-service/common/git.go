@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 )
 
 type Git struct {
@@ -61,7 +62,25 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
-	panic("implement me")
+	_, w, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return "", err
+	}
+	id, err := w.Commit(message,
+		&git.CommitOptions{
+			All: true,
+			Author: &object.Signature{
+				Name:  gitKeptnUserDefault,
+				Email: gitKeptnEmailDefault,
+				When:  time.Now(),
+			},
+		})
+	if err != nil {
+		return "", err
+	}
+	err = g.Push(gitContext)
+
+	return id.String(), err
 }
 
 func (g Git) Push(gitContext common_models.GitContext) error {
@@ -81,7 +100,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 			Password: gitContext.Credentials.Token,
 		},
 	})
-
+	//TODO: fall back on cli?
 	if err != nil {
 		return err
 	}

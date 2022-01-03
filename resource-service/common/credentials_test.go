@@ -2,7 +2,6 @@ package common
 
 import (
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/keptn/keptn/resource-service/common_models"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
@@ -213,33 +212,6 @@ func Test_getK8sClient(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getK8sClient() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_resolve(t *testing.T) {
-	type args struct {
-		obj  object.Object
-		path string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *object.Blob
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolve(tt.args.obj, tt.args.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("resolve() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resolve() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

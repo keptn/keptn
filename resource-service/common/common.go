@@ -15,6 +15,9 @@ const ServiceDoesNotExistErrorMsg = "Service does not exist"
 const InvalidContextErrorMsg = "git context is invalid"
 const InvalidCredentialsErrorMsg = "git credentials are invalid"
 
+const gitKeptnUserDefault = "keptn"
+const gitKeptnEmailDefault = "keptn@keptn.sh"
+
 func GetProjectConfigPath(project string) string {
 	return fmt.Sprintf("%s/%s", config.ConfigDir, project)
 }
