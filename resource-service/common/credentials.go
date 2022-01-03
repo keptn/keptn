@@ -3,8 +3,8 @@ package common
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	utils "github.com/keptn/kubernetes-utils/pkg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,43 +12,37 @@ import (
 	"os"
 )
 
-var ErrCouldNotReadCredentials = errors.New("could not get git credentials from client")
-var ErrDecodeCredentialsError = errors.New("could not decode credentials")
-var ErrNoCredentialsFound = errors.New("no credentials found")
-
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/credential_reader_mock.go . CredentialReader
 type CredentialReader interface {
 	GetCredentials(project string) (*GitCredentials, error)
 }
 
-type K8sCredentialReader struct{}
+type K8sCredentialReader struct {
+	k8sClient kubernetes.Interface
+}
 
-func (K8sCredentialReader) GetCredentials(project string) (*GitCredentials, error) {
-	clientSet, err := getK8sClient()
-	if err != nil {
-		return nil, ErrCouldNotReadCredentials
-	}
+func NewK8sCredentialReader(k8sClient kubernetes.Interface) *K8sCredentialReader {
+	return &K8sCredentialReader{k8sClient: k8sClient}
+}
 
+func (kr K8sCredentialReader) GetCredentials(project string) (*GitCredentials, error) {
 	secretName := fmt.Sprintf("git-credentials-%s", project)
 
-	secret, err := clientSet.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
+	secret, err := kr.k8sClient.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
-		return nil, ErrNoCredentialsFound
+		return nil, errors2.ErrCredentialsNotFound
 	}
 	if err != nil {
-		return nil, ErrCouldNotReadCredentials
+		return nil, errors2.ErrMalformedCredentials
 	}
 
 	// secret found -> unmarshal it
-	var credentials GitCredentials
-	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
+	credentials := &GitCredentials{}
+	err = json.Unmarshal(secret.Data["git-credentials"], credentials)
 	if err != nil {
-		return nil, ErrDecodeCredentialsError
+		return nil, errors2.ErrMalformedCredentials
 	}
-	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
-		return &credentials, nil
-	}
-	return nil, nil
+	return credentials, nil
 }
 
 func GetKeptnNamespace() string {

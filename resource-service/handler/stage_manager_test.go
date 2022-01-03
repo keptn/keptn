@@ -62,12 +62,12 @@ func TestStageManager_CreateStage_NoCredentialsFound(t *testing.T) {
 	fields := getTestStageManagerFields()
 
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
-		return nil, common.ErrNoCredentialsFound
+		return nil, errors2.ErrCredentialsNotFound
 	}
 	s := NewStageManager(fields.git, fields.credentialReader)
 	err := s.CreateStage(params)
 
-	require.ErrorIs(t, err, common.ErrNoCredentialsFound)
+	require.ErrorIs(t, err, errors2.ErrCredentialsNotFound)
 
 	require.Empty(t, fields.git.CreateBranchCalls())
 }
