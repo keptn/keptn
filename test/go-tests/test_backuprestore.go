@@ -77,6 +77,8 @@ func TestBackupRestore(t *testing.T) {
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
+	const artifactTag = "v0.1.0"
+	const artifactImage = "ghcr.io/podtato-head/podtatoserver"
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
@@ -101,15 +103,16 @@ func TestBackupRestore(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Trigger delivery before backup of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, artifactImage, artifactTag, "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
-	t.Logf("Continue to work...")
+	const logString = "Continue to work..."
+	t.Logf(logString)
 
 	t.Logf("Verify Direct delivery before backup of %s in stage dev", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", artifactImage, artifactTag)
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
@@ -119,7 +122,7 @@ func TestBackupRestore(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Verify Direct delivery before backup of %s in stage prod", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", artifactImage, artifactTag)
 	require.Nil(t, err)
 
 	sequenceStates, _, err := GetState(keptnProjectName)
@@ -189,7 +192,7 @@ func TestBackupRestore(t *testing.T) {
 
 	t.Logf("Sleeping for 15s...")
 	time.Sleep(15 * time.Second)
-	t.Logf("Continue to work...")
+	t.Logf(logString)
 
 	//restore Configuration Service data
 
@@ -209,18 +212,18 @@ func TestBackupRestore(t *testing.T) {
 
 	t.Logf("Sleeping for 15s...")
 	time.Sleep(15 * time.Second)
-	t.Logf("Continue to work...")
+	t.Logf(logString)
 
 	t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, artifactImage, artifactTag, "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
-	t.Logf("Continue to work...")
+	t.Logf(logString)
 
 	t.Logf("Verify Direct delivery after restore of %s in stage dev", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", artifactImage, artifactTag)
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
@@ -230,7 +233,7 @@ func TestBackupRestore(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Verify Direct delivery after restore of %s in stage prod", serviceName)
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, keptnProjectName, "prod", artifactImage, artifactTag)
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod")
