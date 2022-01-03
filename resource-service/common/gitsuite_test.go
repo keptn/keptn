@@ -59,6 +59,93 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
+
+	tests := []struct {
+		name       string
+		git        Gogit
+		gitContext common_models.GitContext
+		doCommit   bool
+		branch     string
+		want       string
+		wantErr    bool
+	}{
+		{
+			name:       "return master commit",
+			git:        GogitReal{},
+			gitContext: s.NewGitContext(),
+			branch:     "master",
+			want:       "6ecf0ef2c2dffb796033e5a02219af86ec6584e5",
+			wantErr:    false,
+			doCommit:   false,
+		},
+		{
+			name:       "return branch commit",
+			git:        GogitReal{},
+			gitContext: s.NewGitContext(),
+			branch:     "dev",
+			want:       "",
+			wantErr:    false,
+			doCommit:   true,
+		},
+		{
+			name: "return error",
+			git:  GogitReal{},
+			gitContext: common_models.GitContext{
+				Project: "nope",
+				Credentials: &common_models.GitCredentials{
+					User:      "ssss",
+					Token:     "bjh",
+					RemoteURI: "an url that doesnot exists"},
+			},
+			branch:   "master",
+			want:     "",
+			wantErr:  true,
+			doCommit: false,
+		},
+	}
+
+	for _, tt := range tests {
+		c.Log("Test : " + tt.name)
+		g := &Git{
+			git: tt.git,
+		}
+		var id plumbing.Hash
+		var err error
+
+		if !tt.wantErr {
+			err = checkout(c, g, tt.gitContext, tt.branch)
+
+			if tt.doCommit {
+				w, err := s.Repository.Worktree()
+				c.Assert(err, IsNil)
+				id = commit("something.txt", "something", c, w)
+			}
+		}
+		currId, err := g.GetCurrentRevision(tt.gitContext)
+		if (err != nil) != tt.wantErr {
+			c.Error(err, tt.wantErr)
+			return
+		}
+		if tt.doCommit {
+			c.Assert(currId, Equals, id.String())
+		} else {
+			if currId != tt.want {
+				c.Error(currId, tt.want)
+			}
+		}
+	}
+}
+
+func checkout(c *C, g *Git, gitContext common_models.GitContext, branch string) error {
+	err := g.CheckoutBranch(gitContext, branch)
+	if err != nil {
+		err = g.CreateBranch(gitContext, branch, "master")
+		c.Assert(err, IsNil)
+	}
+	return err
+}
+
 func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 
 	tests := []struct {

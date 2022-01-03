@@ -210,7 +210,8 @@ func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, e
 		return "", err
 	}
 	ref, err := r.Head()
-	return ref.String(), err
+	hash := ref.Hash()
+	return hash.String(), err
 }
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
