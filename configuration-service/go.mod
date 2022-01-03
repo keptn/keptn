@@ -23,5 +23,5 @@ require (
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.22.3
-	k8s.io/client-go v0.22.3
+	k8s.io/client-go v1.5.2
 )

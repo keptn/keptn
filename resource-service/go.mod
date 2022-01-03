@@ -13,5 +13,5 @@ require (
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	k8s.io/apimachinery v0.23.1
-	k8s.io/client-go v0.23.1
+	k8s.io/client-go v1.5.2
 )
