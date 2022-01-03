@@ -875,6 +875,71 @@ func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *test
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
+func TestResourceManager_GetResources(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResources(models.GetResourcesParams{
+		Project: models.Project{
+			ProjectName: "my-project",
+		},
+		GetResourcesQuery: models.GetResourcesQuery{
+			PageSize: 10,
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.GetResourcesResponse{
+		NextPageKey: "0",
+		PageSize:    0,
+		Resources: []models.GetResourceResponse{
+			{
+				Resource: models.Resource{
+					ResourceContent: "",
+					ResourceURI:     "/file1",
+				},
+				Metadata: models.Version{
+					Branch:      "",
+					UpstreamURL: "",
+					Version:     "",
+				},
+			},
+			{
+				Resource: models.Resource{
+					ResourceContent: "",
+					ResourceURI:     "/file2",
+				},
+				Metadata: models.Version{
+					Branch:      "",
+					UpstreamURL: "",
+					Version:     "",
+				},
+			},
+			{
+				Resource: models.Resource{
+					ResourceContent: "",
+					ResourceURI:     "/file3",
+				},
+				Metadata: models.Version{
+					Branch:      "",
+					UpstreamURL: "",
+					Version:     "",
+				},
+			},
+		},
+		TotalCount: 3,
+	}, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.git.GetFileRevisionCalls())
+
+	require.Len(t, fields.fileSystem.WalkPathCalls(), 1)
+}
+
 type fakeFileInfo struct {
 	name  string
 	isDir bool

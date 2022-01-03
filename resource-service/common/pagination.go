@@ -48,7 +48,7 @@ func Paginate(totalCount int, pageSize int64, nextPageKeyString string) *Paginat
 	return result
 }
 
-// GetPaginatedResources returns a paginates resources set
+// GetPaginatedResources returns a paginated resources set
 func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, writer IFileSystem) (*models.GetResourcesResponse, error) {
 	var result = &models.GetResourcesResponse{
 		PageSize:    0,
