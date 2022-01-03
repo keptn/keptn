@@ -11,6 +11,9 @@
   "cloneSubmodules": true,
   "stabilityDays": 7,
   "timezone": "Europe/Vienna",
+  "ignoreDeps": [
+    "github.com/keptn/keptn/go-sdk"
+  ],
   "packageRules": [
     {
       "matchManagers": ["npm"],
