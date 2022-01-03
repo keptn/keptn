@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/runtime v0.21.0 // indirect
-	github.com/go-openapi/strfmt v0.21.0
+	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
 	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6 // indirect
