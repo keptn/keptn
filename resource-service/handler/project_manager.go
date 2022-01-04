@@ -49,7 +49,6 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		Credentials: credentials,
 	}
 
-	// TODO move the check for the metadata file
 	if p.git.ProjectExists(gitContext) && p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
 		return errors.ErrProjectAlreadyExists
 	}
@@ -80,7 +79,6 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		return fmt.Errorf("could not write metadata.yaml during creating project %s: %w", project, err)
 	}
 
-	// TODO the git user and email needs to be configured at this point
 	_, err = p.git.StageAndCommitAll(gitContext, "initialized project")
 	if err != nil {
 		rollbackFunc()

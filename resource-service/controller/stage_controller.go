@@ -15,6 +15,5 @@ func NewStageController(stageHandler handler.IStageHandler) Controller {
 
 func (controller StageController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.POST("/project/:projectName/stage", controller.StageHandler.CreateStage)
-	apiGroup.PUT("/project/:projectName/stage/:stageName", controller.StageHandler.UpdateStage)
 	apiGroup.DELETE("/project/:projectName/stage/:stageName", controller.StageHandler.DeleteStage)
 }

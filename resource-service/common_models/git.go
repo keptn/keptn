@@ -10,6 +10,6 @@ type GitCredentials struct {
 }
 
 type GitContext struct {
-	Project     string //TODO would it make sense to store branch ? no
+	Project     string
 	Credentials *GitCredentials
 }

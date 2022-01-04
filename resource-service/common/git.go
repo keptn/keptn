@@ -23,7 +23,6 @@ import (
 // IGit provides functions to interact with the git repository of a project
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
 type IGit interface {
-	// TODO: we may need better named methods for these two functions
 	ProjectExists(gitContext common_models.GitContext) bool
 	ProjectRepoExists(projectName string) bool
 
@@ -95,7 +94,6 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "empty") {
-			// TODO empty remote leads to an error
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, " init", gitContext.Project, err)

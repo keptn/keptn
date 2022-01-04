@@ -68,7 +68,3 @@ func (sh *StageHandler) DeleteStage(c *gin.Context) {
 	}
 	c.String(http.StatusNoContent, "")
 }
-
-func (sh *StageHandler) UpdateStage(c *gin.Context) {
-	//TODO
-}
