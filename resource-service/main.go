@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/keptn/keptn/resource-service/common"
 	"io/ioutil"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,9 +35,7 @@ import (
 
 // @BasePath /v1
 
-const envVarLogTTL = "LOG_TTL"
 const envVarLogLevel = "LOG_LEVEL"
-const envVarLogsTTLDefault = "120h" // 5 days
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -60,17 +61,25 @@ func main() {
 
 	apiV1 := engine.Group("/v1")
 
-	projectResourceManager := handler.NewResourceManager(nil, nil, nil)
+	kubeAPI, err := createKubeAPI()
+	if err != nil {
+		log.Fatalf("could not create kubernetes client: %s", err.Error())
+	}
+
+	credentialReader := common.NewK8sCredentialReader(kubeAPI)
+	fileWriter := common.NewFileSystem(common.ConfigDir)
+
+	projectResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(nil, nil, nil)
+	stageResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(nil, nil, nil)
+	serviceResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
@@ -109,4 +118,19 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 	}
 
 	log.Println("Server exiting")
+}
+
+func createKubeAPI() (*kubernetes.Clientset, error) {
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kubeAPI, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return kubeAPI, nil
 }
