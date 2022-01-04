@@ -82,7 +82,7 @@ jobs:
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
       GO_VERSION: ^1.16
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
-      FINAL_PLATFORM_TEST_REPORT_FOLDER: test-reports
+      FINAL_TEST_REPORT_FOLDER: test-reports
       FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
       TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
@@ -477,11 +477,11 @@ jobs:
       - name: Prepare test run
         id: prepare_test_run
         run: |
-          go install gotest.tools/gotestsum@latest
+          go install gotest.tools/gotestsum@v1.7.0
           cd test/go-tests
           go get ./...
           mkdir "${{ env.TEST_REPORT_FOLDER }}"
-          mkdir "${{ env.FINAL_PLATFORM_TEST_REPORT_FOLDER }}"
+          mkdir "${{ env.FINAL_TEST_REPORT_FOLDER }}"
 
       - name: "------- TESTS START -------"
         run: echo "------- TESTS START -------"
@@ -604,6 +604,8 @@ jobs:
               test_outcome="pass"
             elif [[ "$test_outcome" == "failure" ]]; then
               test_outcome="fail"
+            else
+              test_outcome="something went terribly wrong..."
             fi
             log_line=$(jq -j -c -n --arg test_name "$test_name" --arg test_outcome "$test_outcome" "$report_template")
             echo "$log_line" >> "${{ env.FINAL_TEST_REPORT_PATH }}"
@@ -643,7 +645,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v2.4.1
         with:
-          node-version: 14
+          node-version: 16
       - run: npm install ndjson-parse@1.0.4
 
       - name: Download test reports
