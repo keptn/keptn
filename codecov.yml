@@ -30,6 +30,7 @@ flags:
   bridge2:
     paths:
       - bridge
+      - bridge/server
     carryforward: true
   cli:
     paths:
