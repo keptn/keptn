@@ -8,12 +8,12 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	config2 "github.com/keptn/keptn/resource-service/config"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
 	. "gopkg.in/check.v1"
 	"os"
 	"reflect"
@@ -66,7 +66,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 		doCommit   bool
 		branch     string
 		want       string
-		wantErr    bool
+		err        *kerrors.ResourceServiceError
 	}{
 		{
 			name:       "return master commit",
@@ -74,7 +74,6 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 			gitContext: s.NewGitContext(),
 			branch:     "master",
 			want:       "6ecf0ef2c2dffb796033e5a02219af86ec6584e5",
-			wantErr:    false,
 			doCommit:   false,
 		},
 		{
@@ -83,7 +82,6 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 			gitContext: s.NewGitContext(),
 			branch:     "dev",
 			want:       "",
-			wantErr:    false,
 			doCommit:   true,
 		},
 		{
@@ -98,7 +96,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 			},
 			branch:   "master",
 			want:     "",
-			wantErr:  true,
+			err:      kerrors.ErrRepositoryNotExists,
 			doCommit: false,
 		},
 	}
@@ -111,7 +109,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 		var id plumbing.Hash
 		var err error
 
-		if !tt.wantErr {
+		if tt.err == nil {
 			err = checkout(c, g, tt.gitContext, tt.branch)
 
 			if tt.doCommit {
@@ -121,9 +119,9 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 			}
 		}
 		currId, err := g.GetCurrentRevision(tt.gitContext)
-		if (err != nil) != tt.wantErr {
-			c.Error(err, tt.wantErr)
-			return
+
+		if err != nil && !tt.err.Is(errors.Unwrap(err)) {
+			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
 		}
 		if tt.doCommit {
 			c.Assert(currId, Equals, id.String())
@@ -210,20 +208,17 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 	tests := []struct {
 		name       string
 		gitContext common_models.GitContext
-		wantErr    bool
-		err        error
+		err        *kerrors.ResourceServiceError
 		push       bool
 	}{
 		{
 			name:       "push, no new changes",
 			gitContext: s.NewGitContext(),
-			wantErr:    false,
 			push:       false,
 		},
 		{
 			name:       "push, new changes",
 			gitContext: s.NewGitContext(),
-			wantErr:    false,
 			push:       true,
 		},
 		{
@@ -235,9 +230,8 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 					Token:     "bjh",
 					RemoteURI: "https://github.com/git-fixtures/basic.git"},
 			},
-			wantErr: true,
-			err:     transport.ErrAuthenticationRequired,
-			push:    false,
+			err:  kerrors.ErrAuthenticationRequired,
+			push: false,
 		},
 	}
 	for _, tt := range tests {
@@ -250,13 +244,8 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 		}
 		g := Git{GogitReal{}}
 		err := g.Push(tt.gitContext)
-		if (err != nil) != tt.wantErr {
-			c.Errorf("Push() error = %v, wantErr %v", err, tt.wantErr)
-		}
-		if tt.wantErr {
-			if !errors.As(tt.err, &err) {
-				c.Fatalf("Expected %v but got %v", tt.err, err)
-			}
+		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
+			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
 		}
 		if tt.push {
 			s.checkCommit(c, r, h.String())
@@ -304,13 +293,11 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 		name       string
 		gitContext common_models.GitContext
 		expected   string
-		wantErr    bool
 		err        error
 	}{
 		{
 			name:       "retrieve already uptodate sockshop",
 			gitContext: s.NewGitContext(),
-			wantErr:    false,
 			expected: "[core]\n" + "\tbare = false\n" +
 				"[remote \"origin\"]\n" +
 				"\turl = ./debug/config/remote\n" +
@@ -328,7 +315,6 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 					Token:     "bjh",
 					RemoteURI: s.url},
 			},
-			wantErr: false,
 			expected: "[core]\n" +
 				"\tbare = false\n" +
 				"[remote \"origin\"]\n" +
@@ -350,18 +336,18 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 					Token:     "bjh",
 					RemoteURI: "jibberish"},
 			},
-
-			wantErr: true,
+			err: kerrors.ErrRepositoryNotFound,
 		},
 	}
 
 	for _, tt := range tests {
 		c.Logf("Test %s", tt.name)
 		g := Git{GogitReal{}}
-		if err := g.Pull(tt.gitContext); (err != nil) != tt.wantErr {
-			c.Errorf("Pull() error = %v, wantErr %v", err, tt.wantErr)
+		err := g.Pull(tt.gitContext)
+		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
+			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
 		}
-		if !tt.wantErr {
+		if err == nil {
 			b, err := os.ReadFile(GetProjectConfigPath(tt.gitContext.Project + "/.git/config"))
 			c.Assert(err, IsNil)
 			c.Assert(string(b), Equals, tt.expected)
@@ -478,7 +464,6 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 		gitContext   common_models.GitContext
 		branch       string
 		sourceBranch string
-		wantErr      bool
 		error        error
 	}{
 		{
@@ -486,7 +471,6 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			gitContext:   s.NewGitContext(),
 			branch:       "dev",
 			sourceBranch: "master",
-			wantErr:      false,
 			error:        nil,
 		},
 		{
@@ -494,7 +478,6 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			gitContext:   s.NewGitContext(),
 			branch:       "dev",
 			sourceBranch: "master",
-			wantErr:      true,
 			error:        git.ErrBranchExists,
 		},
 		{
@@ -502,8 +485,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			gitContext:   s.NewGitContext(),
 			branch:       "dev",
 			sourceBranch: "refs/heads/branch",
-			wantErr:      true,
-			error:        errors.New("reference not found"),
+			error:        kerrors.ErrReferenceNotFound,
 		},
 	}
 	r := s.Repository
@@ -521,24 +503,19 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 
 		err := g.CreateBranch(tt.gitContext, tt.branch, tt.sourceBranch)
 
-		if (err != nil) && tt.wantErr {
-			if !errors.As(tt.error, &err) {
-				c.Fatalf("Expected %v but got %v", tt.error, err)
-			}
-			continue
-		}
-		if err != nil {
-			c.Errorf("CreateBranch() error = %v, wantErr %v", err, tt.wantErr)
+		if err != nil && !errors.Is(tt.error, errors.Unwrap(err)) {
+			c.Fatalf("Wanted %v but gotten %v", tt.error, errors.Unwrap(err))
 		}
 
-		// check git config files
-		cfg, err := r.Config()
-		c.Assert(err, IsNil)
-		marshaled, err := cfg.Marshal()
-		c.Assert(err, IsNil)
-		c.Assert(string(expected), Equals, string(marshaled))
+		if err == nil {
+			// check git config files
+			cfg, err := r.Config()
+			c.Assert(err, IsNil)
+			marshaled, err := cfg.Marshal()
+			c.Assert(err, IsNil)
+			c.Assert(string(expected), Equals, string(marshaled))
+		}
 	}
-
 }
 
 func (s *BaseSuite) TestGit_CheckoutBranch(c *C) {

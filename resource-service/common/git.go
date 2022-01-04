@@ -234,7 +234,7 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	// move head to sourceBranch
 	err := g.CheckoutBranch(gitContext, sourceBranch)
 	if err != nil {
-		return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, sourceBranch, err)
+		return err
 	}
 	b := plumbing.NewBranchReferenceName(branch)
 	newBranch := &config.Branch{
