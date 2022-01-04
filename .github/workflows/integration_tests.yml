@@ -670,29 +670,31 @@ jobs:
             
             const fileList = fs.readdirSync(TEST_REPORTS_PATH);
             fileList.forEach(fileName => {1
-                console.log(`Reading file: ${fileName}`);
-                const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
-                const platformTestReportRaw = ndJsonParser(platformReportFile);
-                
-                platformTestReportRaw.forEach(platformTestResult => {
-                    if(platformTestResult.test.includes("/")) {
-                        jsonReportData.push(platformTestResult);
-                    }
-                });
+              console.log(`Reading file: ${fileName}`);
+              const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
+              const platformTestReportRaw = ndJsonParser(platformReportFile);
+              
+              // Only pick the test results that have a format like this: Test_GKE/Test_name
+              // There are some other results in there for the whole package for example, that we don't want
+              platformTestReportRaw.forEach(platformTestResult => {
+                if(platformTestResult.test.includes("/")) {
+                  jsonReportData.push(platformTestResult);
+                }
+              });
             });
             
             const testResultMap = {};
             
             jsonReportData.forEach(testResult => {
-                const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
-                
-                // If this is a new testcase the result list needs to be created first
-                if (!(trimmedTestResult.test in testResultMap)) {
-                    testResultMap[trimmedTestResult.test] = [];
-                }
-                
-                // Add to result list
-                testResultMap[trimmedTestResult.test].push(trimmedTestResult)
+              const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
+              
+              // If this is a new testcase the result list needs to be created first
+              if (!(trimmedTestResult.test in testResultMap)) {
+                testResultMap[trimmedTestResult.test] = [];
+              }
+              
+              // Add to result list
+              testResultMap[trimmedTestResult.test].push(trimmedTestResult)
             });
             
             const finalTestReport = [];
@@ -700,31 +702,31 @@ jobs:
             
             // Create properly formatted final test report
             Object.entries(testResultMap).forEach(([test, testResults]) => {
-                const finalResult = {};
-                finalResult.test = test;
-                testResults.forEach(result => {
-                    const {test, ...results} = result;
-                    Object.assign(finalResult, results);
-                    
-                    const currentPlatform = Object.keys(results)[0];
-                    if(!allPlatforms.includes(currentPlatform)) {
-                        allPlatforms.push(currentPlatform);
-                    }
-                });
-                finalTestReport.push(finalResult);
+              const finalResult = {};
+              finalResult.test = test;
+              testResults.forEach(result => {
+                const {test, ...results} = result;
+                Object.assign(finalResult, results);
+                
+                const currentPlatform = Object.keys(results)[0];
+                if(!allPlatforms.includes(currentPlatform)) {
+                  allPlatforms.push(currentPlatform);
+                }
+              });
+              finalTestReport.push(finalResult);
             });
             
             // Fill in platforms where a test was not executed
             finalTestReport.forEach(testResult => {
-                allPlatforms.forEach(platform => {
-                    if(!(platform in testResult)) {
-                        testResult[platform] = "skip";
-                    }
-                });
+              allPlatforms.forEach(platform => {
+                if(!(platform in testResult)) {
+                  testResult[platform] = "skip";
+                }
+              });
             });
             
             if(!fs.existsSync(FINAL_TEST_REPORTS_FOLDER)) {
-                fs.mkdirSync(FINAL_TEST_REPORTS_FOLDER);
+              fs.mkdirSync(FINAL_TEST_REPORTS_FOLDER);
             }
             fs.writeFileSync(FINAL_TEST_REPORT_FILEPATH_JSON, JSON.stringify(finalTestReport));
 
