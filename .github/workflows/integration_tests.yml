@@ -496,7 +496,7 @@ jobs:
 
       - name: Integration Tests
         id: test_aggregated
-        timeout-minutes: 30
+        timeout-minutes: 45
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
