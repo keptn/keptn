@@ -12,7 +12,7 @@ func New(s string) *ResourceServiceError {
 	return &ResourceServiceError{s}
 }
 func (e *ResourceServiceError) Is(target error) bool {
-	return (reflect.DeepEqual(e.s, target.Error()) || target.Error() == "")
+	return reflect.DeepEqual(e.s, target.Error()) || target.Error() == ""
 }
 
 func (e *ResourceServiceError) Error() string {

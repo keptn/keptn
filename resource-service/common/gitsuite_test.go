@@ -12,7 +12,6 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
-	config2 "github.com/keptn/keptn/resource-service/config"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	. "gopkg.in/check.v1"
 	"os"
@@ -31,11 +30,19 @@ type BaseSuite struct {
 var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpSuite(c *C) {
+	_ = os.Setenv("CONFIG_DIR", "../test/tmp")
 	s.buildBasicRepository(c)
 }
 
 func (s *BaseSuite) TearDownSuite(c *C) {
+	_ = os.Unsetenv("CONFIG_DIR")
 	err := os.RemoveAll("./debug")
+	c.Assert(err, IsNil)
+
+	err = os.RemoveAll("../test/tmp/remote")
+	c.Assert(err, IsNil)
+
+	err = os.RemoveAll("../test/tmp/sockshop")
 	c.Assert(err, IsNil)
 }
 
@@ -46,14 +53,20 @@ func (s *BaseSuite) SetUpTest(c *C) {
 func (s *BaseSuite) buildBasicRepository(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
-	s.url = config2.ConfigDir + "/remote"
+
+	err = os.RemoveAll("../test/tmp/remote")
+	c.Assert(err, IsNil)
+
+	err = os.RemoveAll("../test/tmp/sockshop")
+	c.Assert(err, IsNil)
+	s.url = "../test/tmp" + "/remote"
 
 	// make a local remote
 	_, err = git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
 	c.Assert(err, IsNil)
 
 	// make local git repo
-	s.Repository, err = git.PlainClone(config2.ConfigDir+"/sockshop", false, &git.CloneOptions{URL: s.url})
+	s.Repository, err = git.PlainClone("../test/tmp"+"/sockshop", false, &git.CloneOptions{URL: s.url})
 	c.Assert(err, IsNil)
 }
 
@@ -300,7 +313,7 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 			gitContext: s.NewGitContext(),
 			expected: "[core]\n" + "\tbare = false\n" +
 				"[remote \"origin\"]\n" +
-				"\turl = ./debug/config/remote\n" +
+				"\turl = ../test/tmp/remote\n" +
 				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
 				"[branch \"master\"]\n" +
 				"\tremote = origin\n" +
@@ -318,7 +331,7 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 			expected: "[core]\n" +
 				"\tbare = false\n" +
 				"[remote \"origin\"]\n" +
-				"\turl = ./debug/config/remote\n" +
+				"\turl = ../test/tmp/remote\n" +
 				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
 				"[branch \"master\"]\n" +
 				"\tremote = origin\n" +
@@ -494,7 +507,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 	}
 
 	expected := []byte("[core]\n\tbare = false\n[remote \"origin\"]\n\turl = " +
-		"./debug/config/remote\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"master\"]\n" +
+		"../test/tmp/remote\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"master\"]\n" +
 		"\tremote = origin\n\tmerge = refs/heads/master\n[branch \"dev\"]\n" +
 		"\tremote = origin\n\tmerge = refs/heads/dev\n")
 

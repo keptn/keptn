@@ -20,6 +20,23 @@ import (
 	"time"
 )
 
+// IGit provides functions to interact with the git repository of a project
+//go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
+type IGit interface {
+	ProjectExists(gitContext common_models.GitContext) bool
+	ProjectRepoExists(projectName string) bool
+
+	CloneRepo(gitContext common_models.GitContext) (bool, error)
+	StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error)
+	Push(gitContext common_models.GitContext) error
+	Pull(gitContext common_models.GitContext) error
+	CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error
+	CheckoutBranch(gitContext common_models.GitContext, branch string) error
+	GetFileRevision(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error)
+	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
+	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
+}
+
 type Git struct {
 	git Gogit
 }
@@ -77,7 +94,6 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "empty") {
-			// TODO empty remote leads to an error
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, " init", gitContext.Project, err)

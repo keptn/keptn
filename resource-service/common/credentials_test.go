@@ -1,79 +1,89 @@
 package common
 
 import (
-	"github.com/go-git/go-git/v5"
+	"fmt"
 	"github.com/keptn/keptn/resource-service/common_models"
-	"k8s.io/client-go/kubernetes"
-	"reflect"
+	"github.com/keptn/keptn/resource-service/errors"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
+	"os"
 	"testing"
 )
 
-func TestK8sCredentialReader_GetCredentials(t *testing.T) {
-	type args struct {
-		project string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *common_models.GitCredentials
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			k8 := K8sCredentialReader{}
-			got, err := k8.GetCredentials(tt.args.project)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCredentials() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetCredentials() got = %v, exists %v", got, tt.want)
-			}
-		})
-	}
+func TestK8sCredentialReader_ReadSecret(t *testing.T) {
+	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
+		getK8sSecret(),
+	))
+
+	secret, err := secretReader.GetCredentials("my-project")
+
+	require.Nil(t, err)
+	require.Equal(t, &common_models.GitCredentials{
+		User:      "user",
+		Token:     "token",
+		RemoteURI: "uri",
+	}, secret)
 }
 
-func Test_ensureRemoteMatchesCredentials(t *testing.T) {
-	type args struct {
-		repo       *git.Repository
-		gitContext common_models.GitContext
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := ensureRemoteMatchesCredentials(tt.args.repo, tt.args.gitContext); (err != nil) != tt.wantErr {
-				t.Errorf("ensureRemoteMatchesCredentials() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+func TestK8sCredentialReader_ReadSecretNotFound(t *testing.T) {
+	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset())
+
+	secret, err := secretReader.GetCredentials("my-other-project")
+
+	require.ErrorIs(t, err, errors.ErrCredentialsNotFound)
+	require.Nil(t, secret)
 }
 
-func Test_getK8sClient(t *testing.T) {
-	tests := []struct {
-		name    string
-		want    *kubernetes.Clientset
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := getK8sClient()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getK8sClient() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getK8sClient() got = %v, exists %v", got, tt.want)
-			}
-		})
+func TestK8sCredentialReader_ReadSecretWrongFormat(t *testing.T) {
+	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "git-credentials-my-project",
+				Namespace: "keptn",
+			},
+			Data: map[string][]byte{
+				"git-credentials": []byte(`invalid`)},
+			Type: corev1.SecretTypeOpaque,
+		},
+	))
+
+	secret, err := secretReader.GetCredentials("my-project")
+
+	require.ErrorIs(t, err, errors.ErrMalformedCredentials)
+	require.Nil(t, secret)
+}
+
+func TestK8sCredentialReader_ReadSecretError(t *testing.T) {
+	_ = os.Setenv("POD_NAMESPACE", "keptn")
+
+	fakeClient := fake.NewSimpleClientset()
+
+	fakeClient.PrependReactor("get", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, fmt.Errorf("oops")
+	})
+	secretReader := NewK8sCredentialReader(fakeClient)
+
+	secret, err := secretReader.GetCredentials("my-project")
+
+	require.NotNil(t, err)
+	require.Nil(t, secret)
+}
+
+func getK8sSecret() *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "git-credentials-my-project",
+			Namespace: "keptn",
+		},
+		Data: map[string][]byte{
+			"git-credentials": []byte(`{"user":"user","token":"token","remoteURI":"uri"}`)},
+		Type: corev1.SecretTypeOpaque,
 	}
 }
