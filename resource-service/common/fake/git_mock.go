@@ -4,111 +4,120 @@
 package common_mock
 
 import (
-	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"sync"
 )
 
-// IGitMock is a mock implementation of common.IGit.
+// IGitMock is a mock implementation of common_models.IGit.
 //
 // 	func TestSomethingThatUsesIGit(t *testing.T) {
 //
-// 		// make and configure a mocked common.IGit
+// 		// make and configure a mocked common_models.IGit
 // 		mockedIGit := &IGitMock{
-// 			CheckoutBranchFunc: func(gitContext common.GitContext, branch string) error {
+// 			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 // 				panic("mock out the CheckoutBranch method")
 // 			},
-// 			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
+// 			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
 // 				panic("mock out the CloneRepo method")
 // 			},
-// 			CreateBranchFunc: func(gitContext common.GitContext, branch string, sourceBranch string) error {
+// 			CreateBranchFunc: func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 // 				panic("mock out the CreateBranch method")
 // 			},
-// 			GetDefaultBranchFunc: func(gitContext common.GitContext)  {
+// 			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) {
+// 				panic("mock out the GetCurrentRevision method")
+// 			},
+// 			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 // 				panic("mock out the GetDefaultBranch method")
 // 			},
-// 			GetFileRevisionFunc: func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
+// 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 // 				panic("mock out the GetFileRevision method")
 // 			},
-// 			ProjectExistsFunc: func(gitContext common.GitContext) bool {
+// 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 // 				panic("mock out the ProjectExists method")
 // 			},
-// 			PullFunc: func(gitContext common.GitContext) error {
+// 			PullFunc: func(gitContext common_models.GitContext) error {
 // 				panic("mock out the Pull method")
 // 			},
-// 			PushFunc: func(gitContext common.GitContext) error {
+// 			PushFunc: func(gitContext common_models.GitContext) error {
 // 				panic("mock out the Push method")
 // 			},
-// 			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) error {
+// 			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 // 				panic("mock out the StageAndCommitAll method")
 // 			},
 // 		}
 //
-// 		// use mockedIGit in code that requires common.IGit
+// 		// use mockedIGit in code that requires common_models.IGit
 // 		// and then make assertions.
 //
 // 	}
 type IGitMock struct {
 	// CheckoutBranchFunc mocks the CheckoutBranch method.
-	CheckoutBranchFunc func(gitContext common.GitContext, branch string) error
+	CheckoutBranchFunc func(gitContext common_models.GitContext, branch string) error
 
 	// CloneRepoFunc mocks the CloneRepo method.
-	CloneRepoFunc func(gitContext common.GitContext) (bool, error)
+	CloneRepoFunc func(gitContext common_models.GitContext) (bool, error)
 
 	// CreateBranchFunc mocks the CreateBranch method.
-	CreateBranchFunc func(gitContext common.GitContext, branch string, sourceBranch string) error
+	CreateBranchFunc func(gitContext common_models.GitContext, branch string, sourceBranch string) error
+
+	// GetCurrentRevisionFunc mocks the GetCurrentRevision method.
+	GetCurrentRevisionFunc func(gitContext common_models.GitContext) (string, error)
 
 	// GetDefaultBranchFunc mocks the GetDefaultBranch method.
-	GetDefaultBranchFunc func(gitContext common.GitContext)
+	GetDefaultBranchFunc func(gitContext common_models.GitContext) (string, error)
 
 	// GetFileRevisionFunc mocks the GetFileRevision method.
-	GetFileRevisionFunc func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error)
+	GetFileRevisionFunc func(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 
 	// ProjectExistsFunc mocks the ProjectExists method.
-	ProjectExistsFunc func(gitContext common.GitContext) bool
+	ProjectExistsFunc func(gitContext common_models.GitContext) bool
 
 	// PullFunc mocks the Pull method.
-	PullFunc func(gitContext common.GitContext) error
+	PullFunc func(gitContext common_models.GitContext) error
 
 	// PushFunc mocks the Push method.
-	PushFunc func(gitContext common.GitContext) error
+	PushFunc func(gitContext common_models.GitContext) error
 
 	// StageAndCommitAllFunc mocks the StageAndCommitAll method.
-	StageAndCommitAllFunc func(gitContext common.GitContext, message string) error
+	StageAndCommitAllFunc func(gitContext common_models.GitContext, message string) (string, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CheckoutBranch holds details about calls to the CheckoutBranch method.
 		CheckoutBranch []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 			// Branch is the branch argument value.
 			Branch string
 		}
 		// CloneRepo holds details about calls to the CloneRepo method.
 		CloneRepo []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 		}
 		// CreateBranch holds details about calls to the CreateBranch method.
 		CreateBranch []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 			// Branch is the branch argument value.
 			Branch string
 			// SourceBranch is the sourceBranch argument value.
 			SourceBranch string
 		}
+		// GetCurrentRevision holds details about calls to the GetCurrentRevision method.
+		GetCurrentRevision []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
+		}
 		// GetDefaultBranch holds details about calls to the GetDefaultBranch method.
 		GetDefaultBranch []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 		}
 		// GetFileRevision holds details about calls to the GetFileRevision method.
 		GetFileRevision []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
-			// Path is the path argument value.
-			Path string
+			GitContext common_models.GitContext
 			// Revision is the revision argument value.
 			Revision string
 			// File is the file argument value.
@@ -117,44 +126,45 @@ type IGitMock struct {
 		// ProjectExists holds details about calls to the ProjectExists method.
 		ProjectExists []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 		}
 		// Pull holds details about calls to the Pull method.
 		Pull []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 		}
 		// Push holds details about calls to the Push method.
 		Push []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 		}
 		// StageAndCommitAll holds details about calls to the StageAndCommitAll method.
 		StageAndCommitAll []struct {
 			// GitContext is the gitContext argument value.
-			GitContext common.GitContext
+			GitContext common_models.GitContext
 			// Message is the message argument value.
 			Message string
 		}
 	}
-	lockCheckoutBranch    sync.RWMutex
-	lockCloneRepo         sync.RWMutex
-	lockCreateBranch      sync.RWMutex
-	lockGetDefaultBranch  sync.RWMutex
-	lockGetFileRevision   sync.RWMutex
-	lockProjectExists     sync.RWMutex
-	lockPull              sync.RWMutex
-	lockPush              sync.RWMutex
-	lockStageAndCommitAll sync.RWMutex
+	lockCheckoutBranch     sync.RWMutex
+	lockCloneRepo          sync.RWMutex
+	lockCreateBranch       sync.RWMutex
+	lockGetCurrentRevision sync.RWMutex
+	lockGetDefaultBranch   sync.RWMutex
+	lockGetFileRevision    sync.RWMutex
+	lockProjectExists      sync.RWMutex
+	lockPull               sync.RWMutex
+	lockPush               sync.RWMutex
+	lockStageAndCommitAll  sync.RWMutex
 }
 
 // CheckoutBranch calls CheckoutBranchFunc.
-func (mock *IGitMock) CheckoutBranch(gitContext common.GitContext, branch string) error {
+func (mock *IGitMock) CheckoutBranch(gitContext common_models.GitContext, branch string) error {
 	if mock.CheckoutBranchFunc == nil {
 		panic("IGitMock.CheckoutBranchFunc: method is nil but IGit.CheckoutBranch was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 		Branch     string
 	}{
 		GitContext: gitContext,
@@ -170,11 +180,11 @@ func (mock *IGitMock) CheckoutBranch(gitContext common.GitContext, branch string
 // Check the length with:
 //     len(mockedIGit.CheckoutBranchCalls())
 func (mock *IGitMock) CheckoutBranchCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 	Branch     string
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 		Branch     string
 	}
 	mock.lockCheckoutBranch.RLock()
@@ -184,12 +194,12 @@ func (mock *IGitMock) CheckoutBranchCalls() []struct {
 }
 
 // CloneRepo calls CloneRepoFunc.
-func (mock *IGitMock) CloneRepo(gitContext common.GitContext) (bool, error) {
+func (mock *IGitMock) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if mock.CloneRepoFunc == nil {
 		panic("IGitMock.CloneRepoFunc: method is nil but IGit.CloneRepo was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}{
 		GitContext: gitContext,
 	}
@@ -203,10 +213,10 @@ func (mock *IGitMock) CloneRepo(gitContext common.GitContext) (bool, error) {
 // Check the length with:
 //     len(mockedIGit.CloneRepoCalls())
 func (mock *IGitMock) CloneRepoCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}
 	mock.lockCloneRepo.RLock()
 	calls = mock.calls.CloneRepo
@@ -215,12 +225,12 @@ func (mock *IGitMock) CloneRepoCalls() []struct {
 }
 
 // CreateBranch calls CreateBranchFunc.
-func (mock *IGitMock) CreateBranch(gitContext common.GitContext, branch string, sourceBranch string) error {
+func (mock *IGitMock) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 	if mock.CreateBranchFunc == nil {
 		panic("IGitMock.CreateBranchFunc: method is nil but IGit.CreateBranch was just called")
 	}
 	callInfo := struct {
-		GitContext   common.GitContext
+		GitContext   common_models.GitContext
 		Branch       string
 		SourceBranch string
 	}{
@@ -238,12 +248,12 @@ func (mock *IGitMock) CreateBranch(gitContext common.GitContext, branch string, 
 // Check the length with:
 //     len(mockedIGit.CreateBranchCalls())
 func (mock *IGitMock) CreateBranchCalls() []struct {
-	GitContext   common.GitContext
+	GitContext   common_models.GitContext
 	Branch       string
 	SourceBranch string
 } {
 	var calls []struct {
-		GitContext   common.GitContext
+		GitContext   common_models.GitContext
 		Branch       string
 		SourceBranch string
 	}
@@ -253,30 +263,61 @@ func (mock *IGitMock) CreateBranchCalls() []struct {
 	return calls
 }
 
+// GetCurrentRevision calls GetCurrentRevisionFunc.
+func (mock *IGitMock) GetCurrentRevision(gitContext common_models.GitContext) (string, error) {
+	if mock.GetCurrentRevisionFunc == nil {
+		panic("IGitMock.GetCurrentRevisionFunc: method is nil but IGit.GetCurrentRevision was just called")
+	}
+	callInfo := struct {
+		GitContext common_models.GitContext
+	}{
+		GitContext: gitContext,
+	}
+	mock.lockGetCurrentRevision.Lock()
+	mock.calls.GetCurrentRevision = append(mock.calls.GetCurrentRevision, callInfo)
+	mock.lockGetCurrentRevision.Unlock()
+	return mock.GetCurrentRevisionFunc(gitContext)
+}
+
+// GetCurrentRevisionCalls gets all the calls that were made to GetCurrentRevision.
+// Check the length with:
+//     len(mockedIGit.GetCurrentRevisionCalls())
+func (mock *IGitMock) GetCurrentRevisionCalls() []struct {
+	GitContext common_models.GitContext
+} {
+	var calls []struct {
+		GitContext common_models.GitContext
+	}
+	mock.lockGetCurrentRevision.RLock()
+	calls = mock.calls.GetCurrentRevision
+	mock.lockGetCurrentRevision.RUnlock()
+	return calls
+}
+
 // GetDefaultBranch calls GetDefaultBranchFunc.
-func (mock *IGitMock) GetDefaultBranch(gitContext common.GitContext) {
+func (mock *IGitMock) GetDefaultBranch(gitContext common_models.GitContext) (string, error) {
 	if mock.GetDefaultBranchFunc == nil {
 		panic("IGitMock.GetDefaultBranchFunc: method is nil but IGit.GetDefaultBranch was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}{
 		GitContext: gitContext,
 	}
 	mock.lockGetDefaultBranch.Lock()
 	mock.calls.GetDefaultBranch = append(mock.calls.GetDefaultBranch, callInfo)
 	mock.lockGetDefaultBranch.Unlock()
-	mock.GetDefaultBranchFunc(gitContext)
+	return mock.GetDefaultBranchFunc(gitContext)
 }
 
 // GetDefaultBranchCalls gets all the calls that were made to GetDefaultBranch.
 // Check the length with:
 //     len(mockedIGit.GetDefaultBranchCalls())
 func (mock *IGitMock) GetDefaultBranchCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}
 	mock.lockGetDefaultBranch.RLock()
 	calls = mock.calls.GetDefaultBranch
@@ -285,39 +326,35 @@ func (mock *IGitMock) GetDefaultBranchCalls() []struct {
 }
 
 // GetFileRevision calls GetFileRevisionFunc.
-func (mock *IGitMock) GetFileRevision(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
+func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 	if mock.GetFileRevisionFunc == nil {
 		panic("IGitMock.GetFileRevisionFunc: method is nil but IGit.GetFileRevision was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
-		Path       string
+		GitContext common_models.GitContext
 		Revision   string
 		File       string
 	}{
 		GitContext: gitContext,
-		Path:       path,
 		Revision:   revision,
 		File:       file,
 	}
 	mock.lockGetFileRevision.Lock()
 	mock.calls.GetFileRevision = append(mock.calls.GetFileRevision, callInfo)
 	mock.lockGetFileRevision.Unlock()
-	return mock.GetFileRevisionFunc(gitContext, path, revision, file)
+	return mock.GetFileRevisionFunc(gitContext, revision, file)
 }
 
 // GetFileRevisionCalls gets all the calls that were made to GetFileRevision.
 // Check the length with:
 //     len(mockedIGit.GetFileRevisionCalls())
 func (mock *IGitMock) GetFileRevisionCalls() []struct {
-	GitContext common.GitContext
-	Path       string
+	GitContext common_models.GitContext
 	Revision   string
 	File       string
 } {
 	var calls []struct {
-		GitContext common.GitContext
-		Path       string
+		GitContext common_models.GitContext
 		Revision   string
 		File       string
 	}
@@ -328,12 +365,12 @@ func (mock *IGitMock) GetFileRevisionCalls() []struct {
 }
 
 // ProjectExists calls ProjectExistsFunc.
-func (mock *IGitMock) ProjectExists(gitContext common.GitContext) bool {
+func (mock *IGitMock) ProjectExists(gitContext common_models.GitContext) bool {
 	if mock.ProjectExistsFunc == nil {
 		panic("IGitMock.ProjectExistsFunc: method is nil but IGit.ProjectExists was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}{
 		GitContext: gitContext,
 	}
@@ -347,10 +384,10 @@ func (mock *IGitMock) ProjectExists(gitContext common.GitContext) bool {
 // Check the length with:
 //     len(mockedIGit.ProjectExistsCalls())
 func (mock *IGitMock) ProjectExistsCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}
 	mock.lockProjectExists.RLock()
 	calls = mock.calls.ProjectExists
@@ -359,12 +396,12 @@ func (mock *IGitMock) ProjectExistsCalls() []struct {
 }
 
 // Pull calls PullFunc.
-func (mock *IGitMock) Pull(gitContext common.GitContext) error {
+func (mock *IGitMock) Pull(gitContext common_models.GitContext) error {
 	if mock.PullFunc == nil {
 		panic("IGitMock.PullFunc: method is nil but IGit.Pull was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}{
 		GitContext: gitContext,
 	}
@@ -378,10 +415,10 @@ func (mock *IGitMock) Pull(gitContext common.GitContext) error {
 // Check the length with:
 //     len(mockedIGit.PullCalls())
 func (mock *IGitMock) PullCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}
 	mock.lockPull.RLock()
 	calls = mock.calls.Pull
@@ -390,12 +427,12 @@ func (mock *IGitMock) PullCalls() []struct {
 }
 
 // Push calls PushFunc.
-func (mock *IGitMock) Push(gitContext common.GitContext) error {
+func (mock *IGitMock) Push(gitContext common_models.GitContext) error {
 	if mock.PushFunc == nil {
 		panic("IGitMock.PushFunc: method is nil but IGit.Push was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}{
 		GitContext: gitContext,
 	}
@@ -409,10 +446,10 @@ func (mock *IGitMock) Push(gitContext common.GitContext) error {
 // Check the length with:
 //     len(mockedIGit.PushCalls())
 func (mock *IGitMock) PushCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 	}
 	mock.lockPush.RLock()
 	calls = mock.calls.Push
@@ -421,12 +458,12 @@ func (mock *IGitMock) PushCalls() []struct {
 }
 
 // StageAndCommitAll calls StageAndCommitAllFunc.
-func (mock *IGitMock) StageAndCommitAll(gitContext common.GitContext, message string) error {
+func (mock *IGitMock) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 	if mock.StageAndCommitAllFunc == nil {
 		panic("IGitMock.StageAndCommitAllFunc: method is nil but IGit.StageAndCommitAll was just called")
 	}
 	callInfo := struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 		Message    string
 	}{
 		GitContext: gitContext,
@@ -442,11 +479,11 @@ func (mock *IGitMock) StageAndCommitAll(gitContext common.GitContext, message st
 // Check the length with:
 //     len(mockedIGit.StageAndCommitAllCalls())
 func (mock *IGitMock) StageAndCommitAllCalls() []struct {
-	GitContext common.GitContext
+	GitContext common_models.GitContext
 	Message    string
 } {
 	var calls []struct {
-		GitContext common.GitContext
+		GitContext common_models.GitContext
 		Message    string
 	}
 	mock.lockStageAndCommitAll.RLock()
