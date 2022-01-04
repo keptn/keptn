@@ -78,26 +78,25 @@ spec:
             - name: "task1"
             - name: "task2"
             - name: "task3"`
+const expectedStateLog = "received the expected state!"
+const serviceName = "my-service"
 
 func TestSequenceQueue(t *testing.T) {
 	projectName := "sequence-queue"
-	serviceName := "my-service"
 
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard)
 	require.Nil(t, err)
 	defer os.Remove(sequenceStateShipyardFilePath)
 
-	source := "golang-test"
-
-	t.Logf("creating project %s", projectName)
+	t.Logf(creatingProjectLog, projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	t.Logf(creatingServiceLog, serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
+	require.Contains(t, output, expectedLogMessage)
 
 	// ------------------------------------
 	// Scenario 1: make sure sequences are queued correctly
@@ -107,13 +106,13 @@ func TestSequenceQueue(t *testing.T) {
 
 	// wait for the sequence state to be available
 	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})
-	t.Log("received the expected state!")
+	t.Log(expectedStateLog)
 
 	// trigger a second sequence - this one should stay in 'triggered' state until the previous sequence is finished
 	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceTriggeredState})
-	t.Log("received the expected state!")
+	t.Log(expectedStateLog)
 
 	// check if mytask.triggered has been sent for first sequence - this one should be available
 	triggeredEventOfFirstSequence, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
@@ -145,7 +144,7 @@ func TestSequenceQueue(t *testing.T) {
 	// now that all tasks for the first sequence have been executed, the second sequence should eventually have the status 'started'
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
 	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
-	t.Log("received the expected state!")
+	t.Log(expectedStateLog)
 
 	// check if mytask.triggered has been sent for second sequence - now it should be available
 	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
@@ -170,7 +169,7 @@ func TestSequenceQueue(t *testing.T) {
 	// trigger the first task sequence - this should time out
 	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
 	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.TimedOut})
-	t.Log("received the expected state!")
+	t.Log(expectedStateLog)
 
 	// now trigger the second sequence - this should start and a .triggered event for mytask should be sent
 	secondContext = triggerSequence(t, projectName, serviceName, "staging", "delivery")
@@ -265,7 +264,6 @@ func TestSequenceQueue(t *testing.T) {
 
 func TestSequenceQueue_TriggerMultiple(t *testing.T) {
 	projectName := "sequence-queue2"
-	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
 
@@ -280,10 +278,10 @@ func TestSequenceQueue_TriggerMultiple(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
+	require.Contains(t, output, expectedLogMessage)
 
 	sequenceContexts := []string{}
 	for i := 0; i < numSequences; i++ {
@@ -338,7 +336,6 @@ func TestSequenceQueue_TriggerMultiple(t *testing.T) {
 
 func TestSequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 	projectName := "sequence-queue3"
-
 	stageName := "dev"
 	sequencename := "mysequence"
 
@@ -355,9 +352,9 @@ func TestSequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 
 	for i := 0; i < numServices; i++ {
 		serviceName := fmt.Sprintf("service-%d", i)
-		output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+		output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 		require.Nil(t, err)
-		require.Contains(t, output, "created successfully")
+		require.Contains(t, output, expectedLogMessage)
 	}
 
 	triggerSequence := func(serviceName string, wg *sync.WaitGroup) {
@@ -419,7 +416,6 @@ func verifyNumberOfOpenTriggeredEvents(t *testing.T, projectName string, numberO
 func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup, allowedStates []string) {
 	defer wg.Done()
 	context := triggerSequence(t, projectName, serviceName, stageName, "evaluation")
-	source := "golang-test"
 
 	var taskTriggeredEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
@@ -452,7 +448,7 @@ func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, 
 }
 
 func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {
-	source := "golang-test"
+	source := source
 	eventType := keptnv2.GetTriggeredEventType(stageName + "." + sequenceName)
 	t.Log("starting task sequence")
 	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
