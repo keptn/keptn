@@ -144,6 +144,7 @@ import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-
 import { DtRadioModule } from '@dynatrace/barista-components/radio';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
+import { PendingChangesGuard } from './_guards/pending-changes.guard';
 
 registerLocaleData(localeEn, 'en');
 
@@ -291,6 +292,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   providers: [
     EventService,
     AppInitService,
+    PendingChangesGuard,
     {
       provide: APP_BASE_HREF,
       useValue: environment.baseUrl,
