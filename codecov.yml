@@ -27,44 +27,41 @@ ignore:
   - "**/*.sh"         # ignore shell scripts
 
 comment:
-  layout: "diff, files"
-  show_carryforward_flags: true # see https://docs.codecov.io/docs/carryforward-flags
+  layout: "diff, files, flags"
 
 github_checks:
   annotations: false
 
 flags:
-  microservices:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   api:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
-  bridge:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
+  bridge2:
+    carryforward: true
   cli:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   configuration-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   resource-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   distributor:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   approval-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   helm-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   jmeter-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   lighthouse-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   mongodb-datastore:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   openshift-route-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   remediation-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   shipyard-controller:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   statistics-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
   webhook-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    carryforward: true
