@@ -32,7 +32,6 @@ spec:
 
 func TestSequenceLoopIntegrationTest(t *testing.T) {
 	projectName := "sequence-loop"
-	serviceName := "my-service"
 	stageName := "dev"
 	sequenceName := "delivery"
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceTriggerShipyard)
