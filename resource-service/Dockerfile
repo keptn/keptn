@@ -59,7 +59,7 @@ ARG version=develop
 ARG SKAFFOLD_GO_GCFLAGS
 
 # generate swagger docs
-RUN GOOS=linux swag init --parseDependency
+RUN GOOS=linux swag init
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
