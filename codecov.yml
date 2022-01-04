@@ -5,16 +5,6 @@ coverage:
         # basic
         target: auto
         threshold: 2% # allow cov to drop by 2% (just in case)
-      microservices:
-        # basic
-        target: auto
-        threshold: 2% # allow cov to drop by 2% (just in case)
-      bridge:
-        target: auto
-        threshold: 2% # allow cov to drop by 2% (just in case)
-      cli:
-        target: auto
-        threshold: 2% # allow cov to drop by 2% (just in case)
     patch:
       default:
         threshold: 1% # allow patch
@@ -96,4 +86,8 @@ flags:
   webhook-service:
     paths:
       - webhook-service/*
+    carryforward: true
+  secret-service:
+    paths:
+      - secret-service/*
     carryforward: true
