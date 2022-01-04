@@ -69,7 +69,6 @@ func TestSequenceTimeout(t *testing.T) {
 	require.Nil(t, err)
 
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
-	source := source
 
 	// trigger the task sequence
 	t.Log("starting task sequence")
