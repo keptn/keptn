@@ -197,6 +197,32 @@ func configUser(remote *git.Repository) {
 	co.User.Email = "keptn@keptn.sh"
 	remote.SetConfig(co)
 }
+func (s *BaseSuite) TestGit_ComponentTest(c *C) {
+	g := Git{GogitReal{}}
+
+	// make two local repo pointing at our remote
+	repo1, err := git.PlainClone(config2.ConfigDir+"/repo1", false, &git.CloneOptions{URL: s.url})
+	c.Assert(err, IsNil)
+	repo2, err := git.PlainClone(config2.ConfigDir+"/repo2", false, &git.CloneOptions{URL: s.url})
+	c.Assert(err, IsNil)
+
+	//add changes to repo1
+	w1, err := repo1.Worktree()
+	c.Assert(err, IsNil)
+	commit("hello/try.txt", "my very important stuff", c, w1)
+
+	push(repo1,c)
+
+	//add conflicting changes to repo2
+	w2, err := repo2.Worktree()
+	c.Assert(err, IsNil)
+	write("hello/try.txt", "my stuff is different", c, w2)
+
+	g.StageAndCommitAll(, "my conflicting change")
+}
+
+
+
 
 func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 
