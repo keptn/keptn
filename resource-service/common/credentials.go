@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/keptn/keptn/resource-service/common_models"
+	utils "github.com/keptn/kubernetes-utils/pkg"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,7 +15,7 @@ import (
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/credential_reader_mock.go . CredentialReader
 type CredentialReader interface {
-	GetCredentials(project string) (*GitCredentials, error)
+	GetCredentials(project string) (*common_models.GitCredentials, error)
 }
 
 type K8sCredentialReader struct {

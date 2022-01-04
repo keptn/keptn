@@ -19,4 +19,6 @@ require (
 	k8s.io/api v0.22.3 // indirect
 	k8s.io/apimachinery v0.22.3
 	k8s.io/client-go v0.22.3
+	github.com/go-git/go-billy/v5 v5.3.1
+    github.com/go-git/go-git/v5 v5.4.2
 )
