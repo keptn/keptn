@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -14,6 +15,7 @@ const pathParamServiceName = "serviceName"
 const pathParamResourceURI = "resourceURI"
 
 func OnAPIError(c *gin.Context, err error) {
+	logger.Infof("Could not complete request %s %s: %v", c.Request.Method, c.Request.RequestURI, err)
 	if errors.Is(err, errors2.ErrProjectAlreadyExists) {
 		SetConflictErrorResponse(c, "Project already exists")
 	} else if errors.Is(err, errors2.ErrStageAlreadyExists) {
@@ -37,6 +39,7 @@ func OnAPIError(c *gin.Context, err error) {
 	} else if errors.Is(err, errors2.ErrResourceNotFound) {
 		SetNotFoundErrorResponse(c, "Resource not found")
 	} else {
+		logger.Errorf("Encountered unknown error: %v", err)
 		SetInternalServerErrorResponse(c, "Internal server error")
 	}
 }

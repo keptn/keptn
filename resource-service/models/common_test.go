@@ -35,7 +35,7 @@ func Test_validateEntityName(t *testing.T) {
 		{
 			name: "invalid name",
 			args: args{
-				s: " ",
+				s: "",
 			},
 			wantErr: true,
 		},

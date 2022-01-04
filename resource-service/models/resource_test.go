@@ -381,3 +381,219 @@ func TestUpdateResourceParams_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteResourceParams_Validate(t *testing.T) {
+	type fields struct {
+		ResourceContext ResourceContext
+		ResourceURI     string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my-project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+				ResourceURI: "my-resource.txt",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+				ResourceURI: "my-resource.txt",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my-project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+				ResourceURI: "../my-resource.txt",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := DeleteResourceParams{
+				ResourceContext: tt.fields.ResourceContext,
+				ResourceURI:     tt.fields.ResourceURI,
+			}
+			if err := p.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetResourceParams_Validate(t *testing.T) {
+	type fields struct {
+		ResourceContext  ResourceContext
+		ResourceURI      string
+		GetResourceQuery GetResourceQuery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my-project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+				ResourceURI: "my-resource.txt",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+				ResourceURI: "my-resource.txt",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my-project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+				ResourceURI: "../my-resource.txt",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := GetResourceParams{
+				ResourceContext:  tt.fields.ResourceContext,
+				ResourceURI:      tt.fields.ResourceURI,
+				GetResourceQuery: tt.fields.GetResourceQuery,
+			}
+			if err := p.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetResourcesParams_Validate(t *testing.T) {
+	type fields struct {
+		ResourceContext   ResourceContext
+		GetResourcesQuery GetResourcesQuery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my-project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				ResourceContext: ResourceContext{
+					Project: Project{ProjectName: "my project"},
+					Stage:   &Stage{StageName: "my-stage"},
+					Service: &Service{ServiceName: "my-service"},
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := GetResourcesParams{
+				ResourceContext:   tt.fields.ResourceContext,
+				GetResourcesQuery: tt.fields.GetResourcesQuery,
+			}
+			if err := p.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestResource_Validate(t *testing.T) {
+	type fields struct {
+		ResourceContent ResourceContent
+		ResourceURI     string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			fields: fields{
+				ResourceContent: "aGVsbG8K",
+				ResourceURI:     "resource.txt",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid uri",
+			fields: fields{
+				ResourceContent: "aGVsbG8K",
+				ResourceURI:     "../resource.txt",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid content",
+			fields: fields{
+				ResourceContent: "123",
+				ResourceURI:     "resource.txt",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := Resource{
+				ResourceContent: tt.fields.ResourceContent,
+				ResourceURI:     tt.fields.ResourceURI,
+			}
+			if err := r.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
