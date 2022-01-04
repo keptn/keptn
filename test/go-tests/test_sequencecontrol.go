@@ -56,7 +56,7 @@ spec:
           tasks:
             - name: "task2"`
 
-func TestSequenceControl_Abort(t *testing.T) {
+func Test_SequenceControl_Abort(t *testing.T) {
 	projectName := "sequence-abort"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -123,7 +123,7 @@ func TestSequenceControl_Abort(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
+func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	projectName := "sequence-abort2"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -181,7 +181,7 @@ func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
 }
 
-func TestSequenceControl_PauseAndResume(t *testing.T) {
+func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	projectName := "sequence-pause-and-resume"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -299,7 +299,7 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 	}, 20*time.Second, 2*time.Second)
 }
 
-func TestSequenceControl_PauseAndResume_2(t *testing.T) {
+func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 	projectName := "sequence-pause-and-resume"
 	serviceName := "myservice"
 	stageName := "dev"

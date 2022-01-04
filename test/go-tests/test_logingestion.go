@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestLogIngestion(t *testing.T) {
+func Test_LogIngestion(t *testing.T) {
 	myLogID := uuid.New().String()
 	myErrorLogs := models.CreateLogsRequest{Logs: []models.LogEntry{
 		{

@@ -53,7 +53,7 @@ spec:
                 pass: "manual"
                 warning: "manual"`
 
-func TestDeliveryAssistant(t *testing.T) {
+func Test_DeliveryAssistant(t *testing.T) {
 	projectName := "delivery-assistant"
 	serviceName := "my-service"
 

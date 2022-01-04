@@ -79,7 +79,7 @@ spec:
             - name: "task2"
             - name: "task3"`
 
-func TestSequenceQueue(t *testing.T) {
+func Test_SequenceQueue(t *testing.T) {
 	projectName := "sequence-queue"
 	serviceName := "my-service"
 
@@ -263,7 +263,7 @@ func TestSequenceQueue(t *testing.T) {
 	wg.Wait()
 }
 
-func TestSequenceQueue_TriggerMultiple(t *testing.T) {
+func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	projectName := "sequence-queue2"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -336,7 +336,7 @@ func TestSequenceQueue_TriggerMultiple(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestSequenceQueue_TriggerAndDeleteProject(t *testing.T) {
+func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 	projectName := "sequence-queue3"
 
 	stageName := "dev"

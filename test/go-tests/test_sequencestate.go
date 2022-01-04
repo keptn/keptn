@@ -42,7 +42,7 @@ spec:
                 deploymentstrategy: "blue_green_service"
             - name: "evaluation"`
 
-func TestSequenceState(t *testing.T) {
+func Test_SequenceState(t *testing.T) {
 	projectName := "state"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
@@ -339,7 +339,7 @@ func TestSequenceState(t *testing.T) {
 	}, 10*time.Second, 2*time.Second)
 }
 
-func TestSequenceState_CannotRetrieveShipyard(t *testing.T) {
+func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 	projectName := "state-no-shipyard"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
@@ -380,7 +380,7 @@ func TestSequenceState_CannotRetrieveShipyard(t *testing.T) {
 	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
 }
 
-func TestSequenceState_InvalidShipyard(t *testing.T) {
+func Test_SequenceState_InvalidShipyard(t *testing.T) {
 	projectName := "state-invalid-shipyard"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
@@ -432,7 +432,7 @@ func TestSequenceState_InvalidShipyard(t *testing.T) {
 	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
 }
 
-func TestSequenceState_SequenceNotFound(t *testing.T) {
+func Test_SequenceState_SequenceNotFound(t *testing.T) {
 	projectName := "state-shipyard-unknown-sequence"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
@@ -469,7 +469,7 @@ func TestSequenceState_SequenceNotFound(t *testing.T) {
 	}, 20*time.Second, 3*time.Second)
 }
 
-func TestSequenceState_RetrieveMultipleSequence(t *testing.T) {
+func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
 	projectName := "state-retrieve-multiple"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)

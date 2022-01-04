@@ -35,7 +35,7 @@ const customEndpoints = `deploymentURIsLocal:
 deploymentURIsPublic:
   - "${PUBLIC_URL}"`
 
-func TestCustomUserManagedEndpointsTest(t *testing.T) {
+func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	projectName := "user-managed"
 	serviceName := "nginx"
 	stageName := "dev"

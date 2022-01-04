@@ -109,9 +109,9 @@ spec:
 
 const echoServiceName = "echo-service"
 
-// TestUniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
+// Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
-func TestUniformRegistration_TestAPI(t *testing.T) {
+func Test_UniformRegistration_TestAPI(t *testing.T) {
 	uniformIntegration := &keptnmodels.Integration{
 		Name: "my-uniform-service",
 		MetaData: keptnmodels.MetaData{
@@ -322,7 +322,7 @@ func TestUniformRegistration_TestAPI(t *testing.T) {
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
-func TestUniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
+func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
 	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
 	require.Nil(t, err)
@@ -354,7 +354,7 @@ func TestUniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
-func TestUniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
+func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
 	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
 	require.Nil(t, err)
@@ -387,7 +387,7 @@ func TestUniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testi
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
-func TestUniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
+func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
 	// install echo integration
 	// make sure the echo-service uses the same distributor as Keptn core
 	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")

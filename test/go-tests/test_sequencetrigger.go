@@ -30,7 +30,7 @@ spec:
             - name: "mytask"
             - name: "othertask"`
 
-func TestSequenceLoopIntegrationTest(t *testing.T) {
+func Test_SequenceLoopIntegrationTest(t *testing.T) {
 	projectName := "sequence-loop"
 	serviceName := "my-service"
 	stageName := "dev"
