@@ -194,7 +194,25 @@ func TestWebhook(t *testing.T) {
 		}
 	}()
 
-	err = testSetup(t, projectName, err, shipyardFilePath, serviceName)
+	t.Logf("creating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	// create a secret that should be referenced in the webhook
+	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
+		"name":  "my-webhook-k8s-secret",
+		"scope": "keptn-webhook-service",
+		"data": map[string]string{
+			"my-key": "my-value",
+		},
+	}, 3)
+	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
 	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
@@ -441,7 +459,25 @@ func TestWebhookWithDisabledFinishedEvents(t *testing.T) {
 		}
 	}()
 
-	err = testSetup(t, projectName, err, shipyardFilePath, serviceName)
+	t.Logf("creating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	// create a secret that should be referenced in the webhook
+	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
+		"name":  "my-webhook-k8s-secret",
+		"scope": "keptn-webhook-service",
+		"data": map[string]string{
+			"my-key": "my-value",
+		},
+	}, 3)
+	require.Nil(t, err)
 
 	// create subscriptions for the webhook-service
 	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask"}
@@ -581,27 +617,4 @@ func TestWebhookWithDisabledFinishedEvents(t *testing.T) {
 		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
 		require.NotEmpty(t, string(keptnv2.ResultFailed), decodedEvent["message"])
 	}
-}
-
-func testSetup(t *testing.T, projectName string, err error, shipyardFilePath string, serviceName string) error {
-	t.Logf(creatingProjectLog, projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
-	require.Nil(t, err)
-
-	t.Logf(creatingServiceLog, serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
-
-	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
-
-	// create a secret that should be referenced in the webhook
-	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
-		"name":  "my-webhook-k8s-secret",
-		"scope": "keptn-webhook-service",
-		"data": map[string]string{
-			"my-key": "my-value",
-		},
-	}, 3)
-	require.Nil(t, err)
-	return err
 }
