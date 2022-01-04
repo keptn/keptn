@@ -200,7 +200,31 @@ func TestWebhook(t *testing.T) {
 	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
-	webhookFilePath := createSubscriptions(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs, err)
+	for _, taskType := range taskTypes {
+		eventType := keptnv2.GetTriggeredEventType(taskType)
+		if strings.HasSuffix(taskType, "-finished") {
+			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
+		}
+		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
+			Event: eventType,
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{projectName},
+			},
+		})
+		require.Nil(t, err)
+
+		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
+		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
+	}
+
+	require.Nil(t, err)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// now, let's add an webhook.yaml file to our service
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(webhookFilePath)
 		if err != nil {
@@ -307,35 +331,6 @@ func TestWebhook(t *testing.T) {
 		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
 		require.Nil(t, decodedEvent["failedtask"])
 	})
-}
-
-func createSubscriptions(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string, err error) string {
-	for _, taskType := range taskTypes {
-		eventType := keptnv2.GetTriggeredEventType(taskType)
-		if strings.HasSuffix(taskType, "-finished") {
-			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
-		}
-		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
-			Event: eventType,
-			Filter: models.EventSubscriptionFilter{
-				Projects: []string{projectName},
-			},
-		})
-		require.Nil(t, err)
-
-		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
-		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
-	}
-
-	require.Nil(t, err)
-
-	// wait some time to make sure the webhook service has pulled the updated subscription
-	<-time.After(20 * time.Second) // sorry :(
-
-	// now, let's add an webhook.yaml file to our service
-	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
-	require.Nil(t, err)
-	return webhookFilePath
 }
 
 func TestWebhook_OverlappingSubscriptions(t *testing.T) {
@@ -452,8 +447,27 @@ func TestWebhookWithDisabledFinishedEvents(t *testing.T) {
 	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask"}
 
 	webhookYamlWithSubscriptionIDs := webhookWithDisabledFinishedEventsYaml
-	webhookFilePath := createSubscriptions(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs, err)
+	for _, taskType := range taskTypes {
+		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
+			Event: keptnv2.GetTriggeredEventType(taskType),
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{projectName},
+			},
+		})
+		require.Nil(t, err)
 
+		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
+		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
+	}
+
+	require.Nil(t, err)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// now, let's add an webhook.yaml file to our service
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(webhookFilePath)
 		if err != nil {
