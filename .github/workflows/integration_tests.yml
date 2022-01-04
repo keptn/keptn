@@ -496,7 +496,7 @@ jobs:
 
       - name: Integration Tests
         id: test_aggregated
-        timeout-minutes: 45
+        timeout-minutes: 60
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
@@ -516,7 +516,7 @@ jobs:
             TESTSUITE="Test_K3D"
           fi
           
-          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 45m
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 60m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
