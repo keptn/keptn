@@ -249,31 +249,19 @@ func TestWebhook(t *testing.T) {
 	sequencename = "othersequence"
 	taskType := "othertask"
 
-	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, taskType, func(t *testing.T, decodedEvent map[string]interface{}) {
-		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
-		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-		require.Nil(t, decodedEvent[taskType])
-	})
+	triggerSequenceAndDefaultVerifyTaskFinishedEvent(triggerSequenceAndVerifyTaskFinishedEvent, sequencename, taskType)
 
 	// Now, trigger another sequence that tries to execute a webhook with a call to the kubernetes API - this one should fail as well
 	sequencename = "unallowedsequence"
 	taskType = "unallowedtask"
 
-	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, taskType, func(t *testing.T, decodedEvent map[string]interface{}) {
-		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
-		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-		require.Nil(t, decodedEvent[taskType])
-	})
+	triggerSequenceAndDefaultVerifyTaskFinishedEvent(triggerSequenceAndVerifyTaskFinishedEvent, sequencename, taskType)
 
 	// Now, trigger another sequence that tries to execute a webhook with a call to the localhost - this one should fail as well
 	sequencename = "loopbacksequence"
 	taskType = "loopback"
 
-	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, taskType, func(t *testing.T, decodedEvent map[string]interface{}) {
-		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
-		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-		require.Nil(t, decodedEvent[taskType])
-	})
+	triggerSequenceAndDefaultVerifyTaskFinishedEvent(triggerSequenceAndVerifyTaskFinishedEvent, sequencename, taskType)
 
 	// Now, trigger another sequence that tries to execute a webhook with a call to the 127.0.0.1 - this one should fail as well
 	sequencename = "loopbacksequence2"
@@ -299,16 +287,16 @@ func TestWebhook(t *testing.T) {
 	sequencename = "sequencewithunknowntask"
 	taskType = "unknowntask"
 
-	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, taskType, func(t *testing.T, decodedEvent map[string]interface{}) {
-		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
-		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-		require.Nil(t, decodedEvent[taskType])
-	})
+	triggerSequenceAndDefaultVerifyTaskFinishedEvent(triggerSequenceAndVerifyTaskFinishedEvent, sequencename, taskType)
 
 	// Now, trigger another sequence that contains a task which results in a HTTP error status
 	sequencename = "failedsequence"
 	taskType = "failedtask"
 
+	triggerSequenceAndDefaultVerifyTaskFinishedEvent(triggerSequenceAndVerifyTaskFinishedEvent, sequencename, taskType)
+}
+
+func triggerSequenceAndDefaultVerifyTaskFinishedEvent(triggerSequenceAndVerifyTaskFinishedEvent func(sequencename string, taskFinishedType string, verify func(t *testing.T, decodedEvent map[string]interface{})), sequencename string, taskType string) {
 	triggerSequenceAndVerifyTaskFinishedEvent(sequencename, taskType, func(t *testing.T, decodedEvent map[string]interface{}) {
 		// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
 		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
