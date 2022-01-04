@@ -17,7 +17,7 @@ type EnvConfig struct {
 	HTTPPollingInterval  string `envconfig:"HTTP_POLLING_INTERVAL" default:"10"`
 	EventForwardingPath  string `envconfig:"EVENT_FORWARDING_PATH" default:"/event"`
 	VerifySSL            bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
-	PubSubURL            string `envconfig:"PUBSUB_URL" default:"nats://keptn-nats-cluster"`
+	PubSubURL            string `envconfig:"PUBSUB_URL" default:"nats://keptn-nats"`
 	PubSubTopic          string `envconfig:"PUBSUB_TOPIC" default:""`
 	PubSubRecipient      string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
 	PubSubRecipientPort  string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`

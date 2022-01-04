@@ -71,7 +71,7 @@ spec:
             - containerPort: 8080
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT

@@ -252,6 +252,12 @@ func main() {
 		}
 	}()
 
+	connectionHandler := handler.NewNatsConnectionHandler("nats://keptn-nats", shipyardController.HandleIncomingEvent, context.TODO())
+
+	if err := connectionHandler.QueueSubscribeToTopics([]string{"sh.keptn.>"}, "shipyard-controller"); err != nil {
+		log.Errorf("Could not subscripe to nats: %v", err)
+	}
+
 	GracefulShutdown(wg, srv)
 
 }
