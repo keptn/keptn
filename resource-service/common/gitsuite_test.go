@@ -254,7 +254,9 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			c.Errorf("Push() error = %v, wantErr %v", err, tt.wantErr)
 		}
 		if tt.wantErr {
-			c.Assert(err, Equals, tt.err)
+			if !errors.As(tt.err, &err) {
+				c.Fatalf("Expected %v but got %v", tt.err, err)
+			}
 		}
 		if tt.push {
 			s.checkCommit(c, r, h.String())
@@ -493,7 +495,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			branch:       "dev",
 			sourceBranch: "master",
 			wantErr:      true,
-			error:        errors.New("branch already exists"),
+			error:        git.ErrBranchExists,
 		},
 		{
 			name:         "illegal add to non existing branch",
@@ -520,7 +522,9 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 		err := g.CreateBranch(tt.gitContext, tt.branch, tt.sourceBranch)
 
 		if (err != nil) && tt.wantErr {
-			c.Assert(err.Error(), Equals, tt.error.Error())
+			if !errors.As(tt.error, &err) {
+				c.Fatalf("Expected %v but got %v", tt.error, err)
+			}
 			continue
 		}
 		if err != nil {
