@@ -44,34 +44,34 @@ func OnAPIError(c *gin.Context, err error) {
 func SetFailedDependencyErrorResponse(c *gin.Context, msg string) {
 	c.JSON(http.StatusFailedDependency, models.Error{
 		Code:    http.StatusFailedDependency,
-		Message: &msg,
+		Message: msg,
 	})
 }
 
 func SetNotFoundErrorResponse(c *gin.Context, msg string) {
 	c.JSON(http.StatusNotFound, models.Error{
 		Code:    http.StatusNotFound,
-		Message: &msg,
+		Message: msg,
 	})
 }
 
 func SetInternalServerErrorResponse(c *gin.Context, msg string) {
 	c.JSON(http.StatusInternalServerError, models.Error{
 		Code:    http.StatusInternalServerError,
-		Message: &msg,
+		Message: msg,
 	})
 }
 
 func SetBadRequestErrorResponse(c *gin.Context, msg string) {
 	c.JSON(http.StatusBadRequest, models.Error{
 		Code:    http.StatusBadRequest,
-		Message: &msg,
+		Message: msg,
 	})
 }
 
 func SetConflictErrorResponse(c *gin.Context, msg string) {
 	c.JSON(http.StatusConflict, models.Error{
 		Code:    http.StatusConflict,
-		Message: &msg,
+		Message: msg,
 	})
 }

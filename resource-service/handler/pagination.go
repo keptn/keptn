@@ -1,6 +1,7 @@
-package common
+package handler
 
 import (
+	"github.com/keptn/keptn/resource-service/common"
 	"math"
 	"os"
 	"strconv"
@@ -49,7 +50,7 @@ func Paginate(totalCount int, pageSize int64, nextPageKeyString string) *Paginat
 }
 
 // GetPaginatedResources returns a paginated resources set
-func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, writer IFileSystem) (*models.GetResourcesResponse, error) {
+func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, writer common.IFileSystem) (*models.GetResourcesResponse, error) {
 	var result = &models.GetResourcesResponse{
 		PageSize:    0,
 		NextPageKey: "0",

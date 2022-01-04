@@ -9,12 +9,9 @@ type Error struct {
 
 	// Error message
 	// Required: true
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (m *Error) Error() string {
-	if m.Message == nil {
-		return ""
-	}
-	return *m.Message
+	return m.Message
 }

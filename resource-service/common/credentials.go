@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
-	utils "github.com/keptn/kubernetes-utils/pkg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -33,7 +32,7 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*GitCredentials, e
 		return nil, errors2.ErrCredentialsNotFound
 	}
 	if err != nil {
-		return nil, errors2.ErrMalformedCredentials
+		return nil, err
 	}
 
 	// secret found -> unmarshal it
@@ -47,13 +46,4 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*GitCredentials, e
 
 func GetKeptnNamespace() string {
 	return os.Getenv("POD_NAMESPACE")
-}
-
-func getK8sClient() (*kubernetes.Clientset, error) {
-	var clientSet *kubernetes.Clientset
-	clientSet, err := utils.GetClientset(true)
-	if err != nil {
-		return nil, err
-	}
-	return clientSet, nil
 }

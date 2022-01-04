@@ -56,7 +56,7 @@ func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models
 		return nil, err
 	}
 
-	result, err := common.GetPaginatedResources(configPath, params.PageSize, params.NextPageKey, p.fileSystem)
+	result, err := GetPaginatedResources(configPath, params.PageSize, params.NextPageKey, p.fileSystem)
 	if err != nil {
 		return nil, err
 	}
