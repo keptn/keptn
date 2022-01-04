@@ -34,8 +34,10 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				CreateResourcesPayload: models.CreateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -78,8 +80,10 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				CreateResourcesPayload: models.CreateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -100,8 +104,10 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				CreateResourcesPayload: models.CreateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -169,11 +175,9 @@ func TestStageResourceHandler_GetStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -195,11 +199,9 @@ func TestStageResourceHandler_GetStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -220,11 +222,9 @@ func TestStageResourceHandler_GetStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					PageSize: 20,
@@ -258,11 +258,9 @@ func TestStageResourceHandler_GetStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -350,8 +348,10 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -394,8 +394,10 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -416,8 +418,10 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -438,8 +442,10 @@ func TestStageResourceHandler_UpdateStageResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
-				Stage:   &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -504,8 +510,10 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
 			wantParams: &models.UpdateResourceParams{
-				Project:               models.Project{ProjectName: "my-project"},
-				Stage:                 &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				ResourceURI:           "resource.yaml",
 				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
 			},
@@ -542,8 +550,10 @@ func TestStageResourceHandler_UpdateStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/stage/my-stage/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
 			wantParams: &models.UpdateResourceParams{
-				Project:               models.Project{ProjectName: "my-project"},
-				Stage:                 &models.Stage{StageName: "my-stage"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
 				ResourceURI:           "resource.yaml",
 				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
 			},
@@ -605,11 +615,9 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -644,11 +652,9 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -669,11 +675,9 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -694,11 +698,9 @@ func TestStageResourceHandler_GetStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -757,11 +759,9 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/resource/resource.yaml", nil),
 			wantParams: &models.DeleteResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				ResourceURI: "resource.yaml",
 			},
@@ -798,11 +798,9 @@ func TestStageResourceHandler_DeleteStageResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/stage/my-stage/resource/resource.yaml", nil),
 			wantParams: &models.DeleteResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
-				},
-				Stage: &models.Stage{
-					StageName: "my-stage",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
 				},
 				ResourceURI: "resource.yaml",
 			},

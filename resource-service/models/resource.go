@@ -39,6 +39,29 @@ func (r Resource) Validate() error {
 	return nil
 }
 
+type ResourceContext struct {
+	Project
+	Stage   *Stage
+	Service *Service
+}
+
+func (rc ResourceContext) Validate() error {
+	if err := rc.Project.Validate(); err != nil {
+		return err
+	}
+	if rc.Stage != nil {
+		if err := rc.Stage.Validate(); err != nil {
+			return err
+		}
+	}
+	if rc.Service != nil {
+		if err := rc.Service.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type GetResourcesQuery struct {
 	GitCommitID string `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
 	NextPageKey string `json:"nextPageKey,omitempty" form:"nextPageKey"`
@@ -46,25 +69,13 @@ type GetResourcesQuery struct {
 }
 
 type GetResourcesParams struct {
-	Project
-	Stage   *Stage
-	Service *Service
+	ResourceContext
 	GetResourcesQuery
 }
 
 func (p GetResourcesParams) Validate() error {
-	if err := p.Project.Validate(); err != nil {
+	if err := p.ResourceContext.Validate(); err != nil {
 		return err
-	}
-	if p.Stage != nil {
-		if err := p.Stage.Validate(); err != nil {
-			return err
-		}
-	}
-	if p.Service != nil {
-		if err := p.Service.Validate(); err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -74,26 +85,14 @@ type GetResourceQuery struct {
 }
 
 type GetResourceParams struct {
-	Project
-	Stage       *Stage
-	Service     *Service
+	ResourceContext
 	ResourceURI string
 	GetResourceQuery
 }
 
 func (p GetResourceParams) Validate() error {
-	if err := p.Project.Validate(); err != nil {
+	if err := p.ResourceContext.Validate(); err != nil {
 		return err
-	}
-	if p.Stage != nil {
-		if err := p.Stage.Validate(); err != nil {
-			return err
-		}
-	}
-	if p.Service != nil {
-		if err := p.Service.Validate(); err != nil {
-			return err
-		}
 	}
 	if err := validateResourceURI(p.ResourceURI); err != nil {
 		return err
@@ -102,25 +101,13 @@ func (p GetResourceParams) Validate() error {
 }
 
 type DeleteResourceParams struct {
-	Project
-	Stage       *Stage
-	Service     *Service
+	ResourceContext
 	ResourceURI string
 }
 
 func (p DeleteResourceParams) Validate() error {
-	if err := p.Project.Validate(); err != nil {
+	if err := p.ResourceContext.Validate(); err != nil {
 		return err
-	}
-	if p.Stage != nil {
-		if err := p.Stage.Validate(); err != nil {
-			return err
-		}
-	}
-	if p.Service != nil {
-		if err := p.Service.Validate(); err != nil {
-			return err
-		}
 	}
 	if err := validateResourceURI(p.ResourceURI); err != nil {
 		return err
@@ -129,9 +116,7 @@ func (p DeleteResourceParams) Validate() error {
 }
 
 type CreateResourceParams struct {
-	Project
-	Stage   *Stage
-	Service *Service
+	ResourceContext
 	Resource
 }
 
@@ -140,26 +125,14 @@ type UpdateResourcePayload struct {
 }
 
 type UpdateResourceParams struct {
-	Project
-	Stage       *Stage
-	Service     *Service
+	ResourceContext
 	ResourceURI string
 	UpdateResourcePayload
 }
 
 func (p UpdateResourceParams) Validate() error {
-	if err := p.Project.Validate(); err != nil {
+	if err := p.ResourceContext.Validate(); err != nil {
 		return err
-	}
-	if p.Stage != nil {
-		if err := p.Stage.Validate(); err != nil {
-			return err
-		}
-	}
-	if p.Service != nil {
-		if err := p.Service.Validate(); err != nil {
-			return err
-		}
 	}
 	if err := validateResourceURI(p.ResourceURI); err != nil {
 		return err
@@ -175,25 +148,13 @@ type CreateResourcesPayload struct {
 }
 
 type CreateResourcesParams struct {
-	Project
-	Stage   *Stage
-	Service *Service
+	ResourceContext
 	CreateResourcesPayload
 }
 
 func (p CreateResourcesParams) Validate() error {
-	if err := p.Project.Validate(); err != nil {
+	if err := p.ResourceContext.Validate(); err != nil {
 		return err
-	}
-	if p.Stage != nil {
-		if err := p.Stage.Validate(); err != nil {
-			return err
-		}
-	}
-	if p.Service != nil {
-		if err := p.Service.Validate(); err != nil {
-			return err
-		}
 	}
 	for _, res := range p.Resources {
 		if err := res.Validate(); err != nil {
@@ -208,26 +169,15 @@ type UpdateResourcesPayload struct {
 }
 
 type UpdateResourcesParams struct {
-	Project
-	Stage   *Stage
-	Service *Service
+	ResourceContext
 	UpdateResourcesPayload
 }
 
 func (p UpdateResourcesParams) Validate() error {
-	if err := p.Project.Validate(); err != nil {
+	if err := p.ResourceContext.Validate(); err != nil {
 		return err
 	}
-	if p.Stage != nil {
-		if err := p.Stage.Validate(); err != nil {
-			return err
-		}
-	}
-	if p.Service != nil {
-		if err := p.Service.Validate(); err != nil {
-			return err
-		}
-	}
+
 	for _, res := range p.Resources {
 		if err := res.Validate(); err != nil {
 			return err

@@ -26,8 +26,8 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -63,11 +63,9 @@ func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
-		},
-		Stage: &models.Stage{
-			StageName: "my-stage",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -103,14 +101,10 @@ func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
-		},
-		Stage: &models.Stage{
-			StageName: "my-stage",
-		},
-		Service: &models.Service{
-			ServiceName: "my-service",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
+			Service: &models.Service{ServiceName: "my-service"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -146,14 +140,10 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChart(t *testing.T)
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
-		},
-		Stage: &models.Stage{
-			StageName: "my-stage",
-		},
-		Service: &models.Service{
-			ServiceName: "my-service",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
+			Service: &models.Service{ServiceName: "my-service"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -191,14 +181,10 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
-		},
-		Stage: &models.Stage{
-			StageName: "my-stage",
-		},
-		Service: &models.Service{
-			ServiceName: "my-service",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
+			Service: &models.Service{ServiceName: "my-service"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -235,8 +221,8 @@ func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *test
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -272,8 +258,8 @@ func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -309,8 +295,8 @@ func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -346,8 +332,8 @@ func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t 
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		CreateResourcesPayload: models.CreateResourcesPayload{
 			Resources: []models.Resource{
@@ -380,8 +366,8 @@ func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		UpdateResourcesPayload: models.UpdateResourcesPayload{
 			Resources: []models.Resource{
@@ -421,8 +407,8 @@ func TestResourceManager_UpdateResources_ProjectResource_ProjectNotFound(t *test
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		UpdateResourcesPayload: models.UpdateResourcesPayload{
 			Resources: []models.Resource{
@@ -459,8 +445,8 @@ func TestResourceManager_UpdateResources_ProjectResource_WritingFileFails(t *tes
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		UpdateResourcesPayload: models.UpdateResourcesPayload{
 			Resources: []models.Resource{
@@ -499,8 +485,8 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		UpdateResourcesPayload: models.UpdateResourcesPayload{
 			Resources: []models.Resource{
@@ -536,8 +522,8 @@ func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 		UpdateResourcePayload: models.UpdateResourcePayload{
@@ -568,8 +554,8 @@ func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testi
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 		UpdateResourcePayload: models.UpdateResourcePayload{
@@ -598,8 +584,8 @@ func TestResourceManager_UpdateResource_ProjectResource_WritingFileFails(t *test
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 		UpdateResourcePayload: models.UpdateResourcePayload{
@@ -630,8 +616,8 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 		UpdateResourcePayload: models.UpdateResourcePayload{
@@ -658,8 +644,8 @@ func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 	})
@@ -686,8 +672,8 @@ func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testi
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 	})
@@ -710,8 +696,8 @@ func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 	})
@@ -738,8 +724,8 @@ func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 	})
@@ -763,8 +749,8 @@ func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	result, err := rm.GetResource(models.GetResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 	})
@@ -795,8 +781,8 @@ func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testi
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	result, err := rm.GetResource(models.GetResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 		GetResourceQuery: models.GetResourceQuery{
@@ -833,8 +819,8 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	result, err := rm.GetResource(models.GetResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "file1",
 		GetResourceQuery: models.GetResourceQuery{
@@ -856,8 +842,8 @@ func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *test
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	result, err := rm.GetResource(models.GetResourceParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		ResourceURI: "fi%le1",
 		GetResourceQuery: models.GetResourceQuery{
@@ -881,8 +867,8 @@ func TestResourceManager_GetResources(t *testing.T) {
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 
 	result, err := rm.GetResources(models.GetResourcesParams{
-		Project: models.Project{
-			ProjectName: "my-project",
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
 		},
 		GetResourcesQuery: models.GetResourcesQuery{
 			PageSize: 10,

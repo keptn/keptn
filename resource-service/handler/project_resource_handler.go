@@ -42,7 +42,9 @@ func NewProjectResourceHandler(projectResourceManager IResourceManager) *Project
 // @Router /project/{project}/resource [post]
 func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
 	}
 
 	createResources := &models.CreateResourcesPayload{}
@@ -84,7 +86,9 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 // @Router /project/{project}/resource [get]
 func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
 	}
 
 	getResources := &models.GetResourcesQuery{PageSize: 20}
@@ -124,7 +128,9 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 // @Router /project/{project}/resource [put]
 func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
 	}
 
 	updateResources := &models.UpdateResourcesPayload{}
@@ -165,7 +171,9 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 // @Router /project/{project}/resource/{resourceURI} [get]
 func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 	params := &models.GetResourceParams{
-		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
 		ResourceURI: c.Param(pathParamResourceURI),
 	}
 	getResources := &models.GetResourceQuery{}
@@ -206,7 +214,9 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 // @Router /project/{project}/resource/{resourceURI} [put]
 func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
-		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
 		ResourceURI: c.Param(pathParamResourceURI),
 	}
 	updateResource := &models.UpdateResourcePayload{}
@@ -246,7 +256,9 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 // @Router /project/{project}/resource/{resourceURI} [delete]
 func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
-		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
 		ResourceURI: c.Param(pathParamResourceURI),
 	}
 

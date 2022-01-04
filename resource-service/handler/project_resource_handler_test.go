@@ -88,7 +88,9 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				CreateResourcesPayload: models.CreateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -131,7 +133,9 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				CreateResourcesPayload: models.CreateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -152,7 +156,9 @@ func TestProjectResourceHandler_CreateProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.CreateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				CreateResourcesPayload: models.CreateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -217,7 +223,9 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -260,7 +268,9 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -281,7 +291,9 @@ func TestProjectResourceHandler_UpdateProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
 			wantParams: &models.UpdateResourcesParams{
-				Project: models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				UpdateResourcesPayload: models.UpdateResourcesPayload{
 					Resources: []models.Resource{
 						{
@@ -349,8 +361,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -372,8 +384,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -394,8 +406,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					PageSize: 20,
@@ -429,8 +441,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -452,8 +464,8 @@ func TestProjectResourceHandler_GetProjectResources(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource?gitCommitID=commit-id&pageSize=3&nextPageKey=2", nil),
 			wantParams: &models.GetResourcesParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				GetResourcesQuery: models.GetResourcesQuery{
 					GitCommitID: "commit-id",
@@ -530,8 +542,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -566,8 +578,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -588,8 +600,8 @@ func TestProjectResourceHandler_GetProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodGet, "/project/my-project/resource/my-resource.yaml?gitCommitID=commit-id", nil),
 			wantParams: &models.GetResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
@@ -648,7 +660,9 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
 			wantParams: &models.UpdateResourceParams{
-				Project:               models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				ResourceURI:           "resource.yaml",
 				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
 			},
@@ -685,7 +699,9 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodPut, "/project/my-project/resource/resource.yaml", bytes.NewBuffer([]byte(updateResourceTestPayload))),
 			wantParams: &models.UpdateResourceParams{
-				Project:               models.Project{ProjectName: "my-project"},
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
 				ResourceURI:           "resource.yaml",
 				UpdateResourcePayload: models.UpdateResourcePayload{ResourceContent: "c3RyaW5n"},
 			},
@@ -744,8 +760,8 @@ func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/resource/resource.yaml", nil),
 			wantParams: &models.DeleteResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				ResourceURI: "resource.yaml",
 			},
@@ -771,8 +787,8 @@ func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
 			},
 			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/resource/resource.yaml", nil),
 			wantParams: &models.DeleteResourceParams{
-				Project: models.Project{
-					ProjectName: "my-project",
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
 				},
 				ResourceURI: "resource.yaml",
 			},

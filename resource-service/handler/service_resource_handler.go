@@ -44,9 +44,11 @@ func NewServiceResourceHandler(serviceResourceManager IResourceManager) *Service
 // @Router /project/{project}/stage/{stage}/service/{service}/resource [post]
 func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
-		Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
-		Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+			Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
+			Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		},
 	}
 
 	createResources := &models.CreateResourcesPayload{}
@@ -90,9 +92,11 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 // @Router /project/{project}/stage/{stage}/service/{service}/resource [get]
 func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
-		Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
-		Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+			Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
+			Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		},
 	}
 
 	getResources := &models.GetResourcesQuery{PageSize: 20}
@@ -134,9 +138,11 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 // @Router /project/{project}/stage/{stage}/service/{service}/resource [put]
 func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
-		Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
-		Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+			Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
+			Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		},
 	}
 
 	updateResources := &models.UpdateResourcesPayload{}
@@ -179,9 +185,11 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 // @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [get]
 func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 	params := &models.GetResourceParams{
-		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
-		Stage:       &models.Stage{StageName: c.Param(pathParamStageName)},
-		Service:     &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+			Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
+			Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		},
 		ResourceURI: c.Param(pathParamResourceURI),
 	}
 	getResources := &models.GetResourceQuery{}
@@ -224,9 +232,11 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 // @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [put]
 func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
-		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
-		Stage:       &models.Stage{StageName: c.Param(pathParamStageName)},
-		Service:     &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+			Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
+			Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		},
 		ResourceURI: c.Param(pathParamResourceURI),
 	}
 	updateResource := &models.UpdateResourcePayload{}
@@ -268,9 +278,11 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 // @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [delete]
 func (ph *ServiceResourceHandler) DeleteServiceResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
-		Project:     models.Project{ProjectName: c.Param(pathParamProjectName)},
-		Stage:       &models.Stage{StageName: c.Param(pathParamStageName)},
-		Service:     &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+			Stage:   &models.Stage{StageName: c.Param(pathParamStageName)},
+			Service: &models.Service{ServiceName: c.Param(pathParamServiceName)},
+		},
 		ResourceURI: c.Param(pathParamResourceURI),
 	}
 

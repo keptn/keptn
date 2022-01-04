@@ -143,9 +143,11 @@ func TestUpdateResourcesParams_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := UpdateResourcesParams{
-				Project:                tt.fields.Project,
-				Stage:                  tt.fields.Stage,
-				Service:                tt.fields.Service,
+				ResourceContext: ResourceContext{
+					Project: tt.fields.Project,
+					Stage:   tt.fields.Stage,
+					Service: tt.fields.Service,
+				},
 				UpdateResourcesPayload: tt.fields.UpdateResourcesPayload,
 			}
 			if err := p.Validate(); (err != nil) != tt.wantErr {
@@ -256,9 +258,11 @@ func TestCreateResourcesParams_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := CreateResourcesParams{
-				Project:                tt.fields.Project,
-				Stage:                  tt.fields.Stage,
-				Service:                tt.fields.Service,
+				ResourceContext: ResourceContext{
+					Project: tt.fields.Project,
+					Stage:   tt.fields.Stage,
+					Service: tt.fields.Service,
+				},
 				CreateResourcesPayload: tt.fields.CreateResourcesPayload,
 			}
 			if err := p.Validate(); (err != nil) != tt.wantErr {
@@ -294,13 +298,80 @@ func TestUpdateResourceParams_Validate(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "invalid",
+			fields: fields{
+				Project:     Project{ProjectName: "my project"},
+				Stage:       &Stage{StageName: "my-stage"},
+				Service:     &Service{ServiceName: "my-service"},
+				ResourceURI: "my-resource.txt",
+				UpdateResourcePayload: UpdateResourcePayload{
+					ResourceContent: "aGVsbG8K",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				Project:     Project{ProjectName: "my-project"},
+				Stage:       &Stage{StageName: "my stage"},
+				Service:     &Service{ServiceName: "my-service"},
+				ResourceURI: "my-resource.txt",
+				UpdateResourcePayload: UpdateResourcePayload{
+					ResourceContent: "aGVsbG8K",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				Project:     Project{ProjectName: "my-project"},
+				Stage:       &Stage{StageName: "my-stage"},
+				Service:     &Service{ServiceName: "my service"},
+				ResourceURI: "my-resource.txt",
+				UpdateResourcePayload: UpdateResourcePayload{
+					ResourceContent: "aGVsbG8K",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				Project:     Project{ProjectName: "my-project"},
+				Stage:       &Stage{StageName: "my-stage"},
+				Service:     &Service{ServiceName: "my-service"},
+				ResourceURI: "../my-resource.txt",
+				UpdateResourcePayload: UpdateResourcePayload{
+					ResourceContent: "aGVsbG8K",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid",
+			fields: fields{
+				Project:     Project{ProjectName: "my-project"},
+				Stage:       &Stage{StageName: "my-stage"},
+				Service:     &Service{ServiceName: "my-service"},
+				ResourceURI: "my-resource.txt",
+				UpdateResourcePayload: UpdateResourcePayload{
+					ResourceContent: "test123",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := UpdateResourceParams{
-				Project:               tt.fields.Project,
-				Stage:                 tt.fields.Stage,
-				Service:               tt.fields.Service,
+				ResourceContext: ResourceContext{
+					Project: tt.fields.Project,
+					Stage:   tt.fields.Stage,
+					Service: tt.fields.Service,
+				},
 				ResourceURI:           tt.fields.ResourceURI,
 				UpdateResourcePayload: tt.fields.UpdateResourcePayload,
 			}
