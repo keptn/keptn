@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, HostListener } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import {
   GitData,
@@ -16,6 +16,7 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
+import { ComponentCanDeactivate } from '../../_guards/pending-changes.guard';
 
 @Component({
   selector: 'ktb-project-settings',
@@ -23,7 +24,7 @@ import { NotificationType, TemplateRenderedNotifications } from '../../_models/n
   styleUrls: ['./ktb-project-settings.component.scss'],
   providers: [NotificationsService],
 })
-export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
+export class KtbProjectSettingsComponent implements OnInit, OnDestroy, ComponentCanDeactivate {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('deleteProjectDialog')
@@ -39,6 +40,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
+  public isProjectFormTouched = false;
   public shipyardFile?: File;
   public gitData: GitData = {
     gitFormValid: true,
@@ -153,10 +155,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     } else {
       this.unsavedDialogState = null;
     }
+    this.isProjectFormTouched = true;
   }
 
   public updateShipyardFile(shipyardFile: File | undefined): void {
     this.shipyardFile = shipyardFile;
+    this.isProjectFormTouched = true;
   }
 
   public setGitUpstream(): void {
@@ -254,5 +258,20 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public saveAll(): void {
     this.setGitUpstream();
     this.unsavedDialogState = null;
+  }
+
+  public isProjectFormInvalid(): boolean {
+    return (
+      !this.shipyardFile ||
+      this.projectNameForm.invalid ||
+      !this.gitData.gitFormValid ||
+      this.isCreatingProjectInProgress
+    );
+  }
+
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload')
+  canDeactivate(): Observable<boolean> | boolean {
+    return !this.isProjectFormTouched;
   }
 }

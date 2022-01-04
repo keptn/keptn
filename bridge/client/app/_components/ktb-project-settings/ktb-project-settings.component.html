@@ -46,11 +46,7 @@
         ></ktb-project-settings-shipyard>
       </div>
       <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
-        <button
-          [disabled]="!shipyardFile || projectNameForm.invalid || !gitData.gitFormValid || isCreatingProjectInProgress"
-          (click)="createProject()"
-          dt-button
-        >
+        <button [disabled]="isProjectFormInvalid()" (click)="createProject()" dt-button>
           <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
           Create project
         </button>
