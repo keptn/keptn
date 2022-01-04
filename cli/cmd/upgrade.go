@@ -31,6 +31,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/version"
 
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/helm"
 	"github.com/keptn/keptn/cli/pkg/platform"
 
@@ -189,6 +190,10 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 		}
 	}
 
+	if err = addWarningNonExistingProjectUpstream(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -235,6 +240,30 @@ func getLatestKeptnRelease() (*release.Release, error) {
 
 	return nil, fmt.Errorf("Found %d releases, but none of them is currently deployed", len(releases))
 
+}
+
+func addWarningNonExistingProjectUpstream() error {
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
+	if err != nil {
+		return errors.New(authErrorMsg)
+	}
+
+	projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
+	projects, err := projectsHandler.GetAllProjects()
+	if err != nil {
+		return fmt.Errorf("failed to get all projects from namespace %s", namespace)
+	}
+
+	for _, project := range projects {
+		if project.GitRemoteURI == "" || project.GitToken == "" || project.GitUser == "" {
+			fmt.Printf("WARNING:  the project %s has no Git upstream configured. Please consider setting a Git upstream repository using:\n\n", project.ProjectName)
+			fmt.Printf("\tkeptn update project %s --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL\n\n", project.ProjectName)
+		}
+	}
+
+	return nil
 }
 
 func init() {

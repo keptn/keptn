@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/base64"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -273,7 +274,5 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 	logger.Debugf("Successfully deleted resource: %s", unescapedResourceName)
 
-	metadata := common.GetResourceMetadata(params.ProjectName)
-
-	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent().WithPayload(metadata)
+	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent()
 }

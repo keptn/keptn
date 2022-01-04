@@ -35,6 +35,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
@@ -44,6 +45,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
@@ -53,6 +55,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
@@ -63,6 +66,7 @@ jobs:
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             BACKUP_RESTORE: "false"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.19"
@@ -73,6 +77,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
             BACKUP_RESTORE: "true"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.21"
@@ -83,6 +88,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
             BACKUP_RESTORE: "true"
+            RESOURCE_SERVICE: "true"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
@@ -95,6 +101,7 @@ jobs:
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       BACKUP_RESTORE: ${{ matrix.BACKUP_RESTORE }}
+      RESOURCE_SERVICE: ${{ matrix.RESOURCE_SERVICE }}
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
@@ -356,6 +363,23 @@ jobs:
           echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
           test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
 
+      - name: Install Gitea
+        id: install_gitea
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        run: |
+          helm repo add gitea-charts https://dl.gitea.io/charts/
+          helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
+          GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
+          GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
+          sleep 30 # TODO
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
+          sleep 30 # TODO
+          curl -vkL --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+          GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
+          kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN}
+          rm gitea-token.txt
+
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: oc expose svc/api-gateway-nginx -n ${KEPTN_NAMESPACE} --hostname=api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io
@@ -446,6 +470,27 @@ jobs:
       - name: Verify that Keptn CLI is authenticated using keptn status
         timeout-minutes: 1
         run: keptn status
+
+      - name: Install Remote Execution Plane
+        id: install_remote_execution_plane
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
+          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+
+          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+
+          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+
+          helm test jmeter-service -n keptn-jmeter-service
+          helm test helm-service -n keptn-helm-service
 
       - name: Update go-test dependencies
         id: update_go_test_dependencies
@@ -539,6 +584,15 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run Test_BackupRestore -v
 
+      - name: Test Resource Service
+        id: test_resource_service
+        if: env.RESOURCE_SERVICE == 'true'
+        timeout-minutes: 7
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run Test_ResourceServiceBasic -v
+
       - name: Test User Managed Delivery
         id: test_user_managed_delivery
         if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
@@ -547,27 +601,6 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
-
-      - name: Install Remote Execution Plane
-        id: install_remote_execution_plane
-        if: env.REMOTE_EXECUTION_PLANE == 'true'
-        timeout-minutes: 5
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
-        run: |
-          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
-          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-
-          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-
-          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-
-          helm test jmeter-service -n keptn-jmeter-service
-          helm test helm-service -n keptn-helm-service
 
       - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
@@ -721,7 +754,7 @@ jobs:
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
           # please check with headings in print_test_report task roughly 50 lines below
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_backup_restore.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} | ${{ steps.test_graceful_shutdown.outcome }} | ${{ steps.test_uniform_registration.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_backup_restore.outcome }} | ${{ steps.test_resource_service.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} | ${{ steps.test_graceful_shutdown.outcome }} | ${{ steps.test_uniform_registration.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -766,8 +799,8 @@ jobs:
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
           # please check with output in write_test_report task roughly 50 lines above
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  Self Healing  |  Del-Assist  |  Backup-Restore  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration | Graceful Shutdown | Uniform Registration   |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | -------------- | ------------ | ---------------- | ----------------- |----------- | ------------------------ | -------------- | ------------------- | ----------------- | ---------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  Self Healing  |  Del-Assist  |  Backup-Restore  |  Resource Service  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration | Graceful Shutdown | Uniform Registration   |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | -------------- | ------------ | ---------------- | ------------------ | ----------------- |----------- | ------------------------ | -------------- | ------------------- | ----------------- | ---------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
