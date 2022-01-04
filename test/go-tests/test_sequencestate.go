@@ -54,8 +54,6 @@ func TestSequenceState(t *testing.T) {
 		}
 	}()
 
-	source := "golang-test"
-
 	uniform := []string{"lighthouse-service"}
 
 	// scale down the services that are usually involved in the sequence defined in the shipyard above.
@@ -84,6 +82,7 @@ func TestSequenceState(t *testing.T) {
 
 	// send a delivery.triggered event
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
+	source := source
 
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",

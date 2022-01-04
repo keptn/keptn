@@ -55,29 +55,35 @@ spec:
             - event: "dev.mysequence.finished"
           tasks:
             - name: "task2"`
+const source = "golang-test"
+const creatingProjectLog = "creating project %s"
+const creatingServiceLog = "creating service %s"
+const keptnCreateServiceCmd = "keptn create service %s --project=%s"
+const expectedLogMessage = "created successfully"
+const triggerSequenceLog = "triggering sequence %s in stage %s"
+const sequenceControlEndpoint = "/controlPlane/v1/sequence/%s/%s/control"
 
 func TestSequenceControl_Abort(t *testing.T) {
 	projectName := "sequence-abort"
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
-	source := "golang-test"
 
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	t.Logf("creating project %s", projectName)
+	t.Logf(creatingProjectLog, projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	t.Logf(creatingServiceLog, serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
+	require.Contains(t, output, expectedLogMessage)
 
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	t.Logf(triggerSequenceLog, sequencename, stageName)
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
@@ -97,7 +103,7 @@ func TestSequenceControl_Abort(t *testing.T) {
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err := ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.AbortSequence,
 		Stage: "",
 	}, 3)
@@ -128,23 +134,22 @@ func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
-	source := "golang-test"
 
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	t.Logf("creating project %s", projectName)
+	t.Logf(creatingProjectLog, projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	t.Logf(creatingServiceLog, serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
+	require.Contains(t, output, expectedLogMessage)
 
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	t.Logf(triggerSequenceLog, sequencename, stageName)
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
@@ -171,7 +176,7 @@ func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
 
 	// abort the queued sequence
 	t.Log("aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, secondContextID), scmodels.SequenceControlCommand{
+	resp, err := ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, secondContextID), scmodels.SequenceControlCommand{
 		State: scmodels.AbortSequence,
 		Stage: "",
 	}, 3)
@@ -186,23 +191,22 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
-	source := "golang-test"
 
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	t.Logf("creating project %s", projectName)
+	t.Logf(creatingProjectLog, projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	t.Logf(creatingServiceLog, serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
+	require.Contains(t, output, expectedLogMessage)
 
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	t.Logf(triggerSequenceLog, sequencename, stageName)
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
@@ -221,7 +225,7 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("pausing sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err := ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.PauseSequence,
 		Stage: "",
 	}, 3)
@@ -242,7 +246,7 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 	require.Nil(t, task2TriggeredEvent)
 
 	t.Log("resuming sequence")
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err = ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.ResumeSequence,
 		Stage: "",
 	}, 3)
@@ -264,7 +268,7 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Logf("pausing sequence in stage %s", stageName)
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err = ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.PauseSequence,
 		Stage: stageName,
 	}, 3)
@@ -285,7 +289,7 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 	require.Nil(t, task3TriggeredEvent)
 
 	t.Logf("resuming sequence in stage %s", stageName)
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err = ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.ResumeSequence,
 		Stage: stageName,
 	}, 3)
@@ -304,23 +308,22 @@ func TestSequenceControl_PauseAndResume_2(t *testing.T) {
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
-	source := "golang-test"
 
 	shipyardFilePath, err := CreateTmpShipyardFile(shipyardWithMultipleStages)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	t.Logf("creating project %s", projectName)
+	t.Logf(creatingProjectLog, projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	t.Logf(creatingServiceLog, serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
+	require.Contains(t, output, expectedLogMessage)
 
-	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	t.Logf(triggerSequenceLog, sequencename, stageName)
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
@@ -340,7 +343,7 @@ func TestSequenceControl_PauseAndResume_2(t *testing.T) {
 	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("pause sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err := ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.PauseSequence,
 		Stage: "",
 	}, 3)
@@ -354,7 +357,7 @@ func TestSequenceControl_PauseAndResume_2(t *testing.T) {
 
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
 
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+	resp, err = ApiPOSTRequest(fmt.Sprintf(sequenceControlEndpoint, projectName, keptnContextID), scmodels.SequenceControlCommand{
 		State: scmodels.ResumeSequence,
 		Stage: "",
 	}, 3)
