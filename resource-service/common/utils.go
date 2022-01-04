@@ -3,7 +3,7 @@ package common
 import "fmt"
 
 func GetProjectConfigPath(project string) string {
-	return fmt.Sprintf("%s/%s", ConfigDir, project)
+	return fmt.Sprintf("%s/%s", GetConfigDir(), project)
 }
 
 func GetProjectMetadataFilePath(project string) string {

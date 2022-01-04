@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"gopkg.in/yaml.v3"
@@ -91,13 +92,13 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 	return nil
 }
 
-func (s ServiceManager) establishServiceContext(project models.Project, stage models.Stage) (*common.GitContext, error) {
+func (s ServiceManager) establishServiceContext(project models.Project, stage models.Stage) (*common_models.GitContext, error) {
 	credentials, err := s.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
 		return nil, fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
-	gitContext := common.GitContext{
+	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
 	}

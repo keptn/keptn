@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -23,9 +24,9 @@ func TestProjectManager_CreateProject(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -67,9 +68,9 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -112,7 +113,7 @@ func TestProjectManager_CreateProject_CannotReadCredentials(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrMalformedCredentials
 	}
 
@@ -136,9 +137,9 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -147,7 +148,7 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 	fields.git.ProjectRepoExistsFunc = func(projectName string) bool {
@@ -178,9 +179,9 @@ func TestProjectManager_CreateProject_WritingFileFails(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -220,9 +221,9 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -231,7 +232,7 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -262,9 +263,9 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -273,7 +274,7 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
@@ -309,7 +310,7 @@ func TestProjectManager_UpdateProject_CannotReadCredentials(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrMalformedCredentials
 	}
 
@@ -332,9 +333,9 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -343,7 +344,7 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -368,9 +369,9 @@ func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -379,13 +380,13 @@ func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
-	fields.git.GetDefaultBranchFunc = func(gitContext common.GitContext) (string, error) {
+	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -410,9 +411,9 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 		Project: models.Project{ProjectName: "my-project"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -421,13 +422,13 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
-	fields.git.CheckoutBranchFunc = func(gitContext common.GitContext, branch string) error {
+	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
 		return errors.New("oops")
 	}
 
@@ -453,9 +454,9 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 func TestProjectManager_DeleteProject(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -464,7 +465,7 @@ func TestProjectManager_DeleteProject(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
@@ -502,7 +503,7 @@ func TestProjectManager_DeleteProject_CannotReadCredentials(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrMalformedCredentials
 	}
 
@@ -524,9 +525,9 @@ func TestProjectManager_DeleteProject_CannotReadCredentials(t *testing.T) {
 func TestProjectManager_DeleteProject_ProjectDoesNotExist(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -535,7 +536,7 @@ func TestProjectManager_DeleteProject_ProjectDoesNotExist(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -559,9 +560,9 @@ func TestProjectManager_DeleteProject_ProjectDoesNotExist(t *testing.T) {
 func TestProjectManager_DeleteProject_CannotGetDefaultBranch(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -570,13 +571,13 @@ func TestProjectManager_DeleteProject_CannotGetDefaultBranch(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
-	fields.git.GetDefaultBranchFunc = func(gitContext common.GitContext) (string, error) {
+	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -602,9 +603,9 @@ func TestProjectManager_DeleteProject_CannotGetDefaultBranch(t *testing.T) {
 func TestProjectManager_DeleteProject_CannotCheckoutDefaultBranch(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -613,13 +614,13 @@ func TestProjectManager_DeleteProject_CannotCheckoutDefaultBranch(t *testing.T) 
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
-	fields.git.CheckoutBranchFunc = func(gitContext common.GitContext, branch string) error {
+	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
 		return errors.New("oops")
 	}
 
@@ -648,9 +649,9 @@ func TestProjectManager_DeleteProject_CannotCheckoutDefaultBranch(t *testing.T) 
 func TestProjectManager_DeleteProject_CannotDeleteFile(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -659,7 +660,7 @@ func TestProjectManager_DeleteProject_CannotDeleteFile(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
@@ -698,9 +699,9 @@ func TestProjectManager_DeleteProject_CannotDeleteFile(t *testing.T) {
 func TestProjectManager_DeleteProject_CannotCommit(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -709,13 +710,13 @@ func TestProjectManager_DeleteProject_CannotCommit(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -746,9 +747,9 @@ func TestProjectManager_DeleteProject_CannotCommit(t *testing.T) {
 func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: project,
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -757,7 +758,7 @@ func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 
 	fields := getTestProjectManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
@@ -797,28 +798,28 @@ func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 func getTestProjectManagerFields() projectManagerTestFields {
 	return projectManagerTestFields{
 		git: &common_mock.IGitMock{
-			ProjectExistsFunc: func(gitContext common.GitContext) bool {
+			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 				return true
 			},
 			ProjectRepoExistsFunc: func(projectName string) bool {
 				return true
 			},
-			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
+			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
 				return true, nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 				return "", nil
 			},
-			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
+			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 				return "main", nil
 			},
-			CheckoutBranchFunc: func(gitContext common.GitContext, branch string) error {
+			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 				return nil
 			},
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
-			GetCredentialsFunc: func(project string) (*common.GitCredentials, error) {
-				return &common.GitCredentials{
+			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
+				return &common_models.GitCredentials{
 					User:      "my-user",
 					Token:     "my-token",
 					RemoteURI: "my-remote-uri",

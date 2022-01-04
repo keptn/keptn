@@ -2,8 +2,8 @@ package handler
 
 import (
 	"errors"
-	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -25,9 +25,9 @@ func TestStageManager_CreateStage(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -61,7 +61,7 @@ func TestStageManager_CreateStage_NoCredentialsFound(t *testing.T) {
 
 	fields := getTestStageManagerFields()
 
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrCredentialsNotFound
 	}
 	s := NewStageManager(fields.git, fields.credentialReader)
@@ -82,9 +82,9 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -93,7 +93,7 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 
 	fields := getTestStageManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -118,9 +118,9 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -129,7 +129,7 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 
 	fields := getTestStageManagerFields()
 
-	fields.git.GetDefaultBranchFunc = func(gitContext common.GitContext) (string, error) {
+	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -154,9 +154,9 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -165,7 +165,7 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 
 	fields := getTestStageManagerFields()
 
-	fields.git.CreateBranchFunc = func(gitContext common.GitContext, branch string, sourceBranch string) error {
+	fields.git.CreateBranchFunc = func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 		return errors2.ErrStageAlreadyExists
 	}
 
@@ -186,31 +186,31 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 func getTestStageManagerFields() stageManagerTestFields {
 	return stageManagerTestFields{
 		git: &common_mock.IGitMock{
-			ProjectExistsFunc: func(gitContext common.GitContext) bool {
+			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 				return true
 			},
 			ProjectRepoExistsFunc: func(projectName string) bool {
 				return true
 			},
-			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
+			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
 				return true, nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 				return "", nil
 			},
-			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
+			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 				return "main", nil
 			},
-			CheckoutBranchFunc: func(gitContext common.GitContext, branch string) error {
+			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 				return nil
 			},
-			CreateBranchFunc: func(gitContext common.GitContext, branch string, sourceBranch string) error {
+			CreateBranchFunc: func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 				return nil
 			},
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
-			GetCredentialsFunc: func(project string) (*common.GitCredentials, error) {
-				return &common.GitCredentials{
+			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
+				return &common_models.GitCredentials{
 					User:      "my-user",
 					Token:     "my-token",
 					RemoteURI: "my-remote-uri",

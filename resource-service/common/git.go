@@ -24,18 +24,18 @@ import (
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
 type IGit interface {
 	// TODO: we may need better named methods for these two functions
-	ProjectExists(gitContext GitContext) bool
+	ProjectExists(gitContext common_models.GitContext) bool
 	ProjectRepoExists(projectName string) bool
 
-	CloneRepo(gitContext GitContext) (bool, error)
-	StageAndCommitAll(gitContext GitContext, message string) (string, error)
-	Push(gitContext GitContext) error
-	Pull(gitContext GitContext) error
-	CreateBranch(gitContext GitContext, branch string, sourceBranch string) error
-	CheckoutBranch(gitContext GitContext, branch string) error
-	GetFileRevision(gitContext GitContext, path string, revision string, file string) ([]byte, error)
-	GetCurrentRevision(gitContext GitContext) (string, error)
-	GetDefaultBranch(gitContext GitContext) (string, error)
+	CloneRepo(gitContext common_models.GitContext) (bool, error)
+	StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error)
+	Push(gitContext common_models.GitContext) error
+	Pull(gitContext common_models.GitContext) error
+	CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error
+	CheckoutBranch(gitContext common_models.GitContext, branch string) error
+	GetFileRevision(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error)
+	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
+	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
 }
 
 type Git struct {

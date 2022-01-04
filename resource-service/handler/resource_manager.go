@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/url"
@@ -123,13 +124,13 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 	return p.deleteResource(gitContext, resourcePath)
 }
 
-func (p ResourceManager) establishContext(project models.Project, stage *models.Stage, service *models.Service) (*common.GitContext, string, error) {
+func (p ResourceManager) establishContext(project models.Project, stage *models.Stage, service *models.Service) (*common_models.GitContext, string, error) {
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
 		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
-	gitContext := common.GitContext{
+	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
 	}
@@ -162,7 +163,7 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 	return &gitContext, configPath, nil
 }
 
-func (p ResourceManager) readResource(gitContext *common.GitContext, params models.GetResourceParams, resourcePath string) (*models.GetResourceResponse, error) {
+func (p ResourceManager) readResource(gitContext *common_models.GitContext, params models.GetResourceParams, resourcePath string) (*models.GetResourceResponse, error) {
 	var fileContent []byte
 	var revision string
 	var err error
@@ -195,7 +196,7 @@ func (p ResourceManager) readResource(gitContext *common.GitContext, params mode
 	}, nil
 }
 
-func (p ResourceManager) writeAndCommitResource(gitContext *common.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
 	if err := p.storeResource(resourcePath, resourceContent); err != nil {
 		return nil, err
 	}
@@ -203,7 +204,7 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common.GitContext, r
 	return p.stageAndCommit(gitContext, "Updated resource")
 }
 
-func (p ResourceManager) writeAndCommitResources(gitContext *common.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
 	for _, res := range resources {
 		filePath := directory + "/" + res.ResourceURI
 		if err := p.storeResource(filePath, string(res.ResourceContent)); err != nil {
@@ -226,7 +227,7 @@ func (p ResourceManager) storeResource(resourcePath, resourceContent string) err
 	return nil
 }
 
-func (p ResourceManager) stageAndCommit(gitContext *common.GitContext, message string) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) stageAndCommit(gitContext *common_models.GitContext, message string) (*models.WriteResourceResponse, error) {
 	commitID, err := p.git.StageAndCommitAll(*gitContext, message)
 	if err != nil {
 		return nil, err
@@ -235,7 +236,7 @@ func (p ResourceManager) stageAndCommit(gitContext *common.GitContext, message s
 	return &models.WriteResourceResponse{CommitID: commitID}, nil
 }
 
-func (p ResourceManager) deleteResource(gitContext *common.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {
+func (p ResourceManager) deleteResource(gitContext *common_models.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {
 	if err := p.fileSystem.DeleteFile(resourcePath); err != nil {
 		return nil, err
 	}

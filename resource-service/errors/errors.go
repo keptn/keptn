@@ -12,7 +12,7 @@ func New(s string) *ResourceServiceError {
 	return &ResourceServiceError{s}
 }
 func (e *ResourceServiceError) Is(target error) bool {
-	return (reflect.DeepEqual(e.s, target.Error()) || target.Error() == "")
+	return reflect.DeepEqual(e.s, target.Error()) || target.Error() == ""
 }
 
 func (e *ResourceServiceError) Error() string {
@@ -88,8 +88,6 @@ var ErrMalformedCredentials = New("could not decode upstream repository credenti
 // Error messages
 
 const ErrMsgCouldNotRetrieveCredentials = "could not read credentials for project %s: %w"
-
-const ErrMsgInvalidRequestFormat = "Invalid request format"
 const ErrMsgInvalidRequestFormat = "Invalid request format"
 const ErrMsgCouldNotSetUser = "could not set git user: %w"
 const ErrMsgCouldNotCreatePath = "could not create path %s: %w"

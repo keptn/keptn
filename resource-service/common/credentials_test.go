@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -22,7 +23,7 @@ func TestK8sCredentialReader_ReadSecret(t *testing.T) {
 	secret, err := secretReader.GetCredentials("my-project")
 
 	require.Nil(t, err)
-	require.Equal(t, &GitCredentials{
+	require.Equal(t, &common_models.GitCredentials{
 		User:      "user",
 		Token:     "token",
 		RemoteURI: "uri",

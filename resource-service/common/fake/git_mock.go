@@ -8,11 +8,11 @@ import (
 	"sync"
 )
 
-// IGitMock is a mock implementation of common_models.IGit.
+// IGitMock is a mock implementation of common.IGit.
 //
 // 	func TestSomethingThatUsesIGit(t *testing.T) {
 //
-// 		// make and configure a mocked common_models.IGit
+// 		// make and configure a mocked common.IGit
 // 		mockedIGit := &IGitMock{
 // 			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 // 				panic("mock out the CheckoutBranch method")
@@ -29,11 +29,14 @@ import (
 // 			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 // 				panic("mock out the GetDefaultBranch method")
 // 			},
-// 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
+// 			GetFileRevisionFunc: func(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error) {
 // 				panic("mock out the GetFileRevision method")
 // 			},
 // 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 // 				panic("mock out the ProjectExists method")
+// 			},
+// 			ProjectRepoExistsFunc: func(projectName string) bool {
+// 				panic("mock out the ProjectRepoExists method")
 // 			},
 // 			PullFunc: func(gitContext common_models.GitContext) error {
 // 				panic("mock out the Pull method")
@@ -46,7 +49,7 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIGit in code that requires common_models.IGit
+// 		// use mockedIGit in code that requires common.IGit
 // 		// and then make assertions.
 //
 // 	}
@@ -67,10 +70,13 @@ type IGitMock struct {
 	GetDefaultBranchFunc func(gitContext common_models.GitContext) (string, error)
 
 	// GetFileRevisionFunc mocks the GetFileRevision method.
-	GetFileRevisionFunc func(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
+	GetFileRevisionFunc func(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error)
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common_models.GitContext) bool
+
+	// ProjectRepoExistsFunc mocks the ProjectRepoExists method.
+	ProjectRepoExistsFunc func(projectName string) bool
 
 	// PullFunc mocks the Pull method.
 	PullFunc func(gitContext common_models.GitContext) error
@@ -118,6 +124,8 @@ type IGitMock struct {
 		GetFileRevision []struct {
 			// GitContext is the gitContext argument value.
 			GitContext common_models.GitContext
+			// Path is the path argument value.
+			Path string
 			// Revision is the revision argument value.
 			Revision string
 			// File is the file argument value.
@@ -127,6 +135,11 @@ type IGitMock struct {
 		ProjectExists []struct {
 			// GitContext is the gitContext argument value.
 			GitContext common_models.GitContext
+		}
+		// ProjectRepoExists holds details about calls to the ProjectRepoExists method.
+		ProjectRepoExists []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
 		}
 		// Pull holds details about calls to the Pull method.
 		Pull []struct {
@@ -153,6 +166,7 @@ type IGitMock struct {
 	lockGetDefaultBranch   sync.RWMutex
 	lockGetFileRevision    sync.RWMutex
 	lockProjectExists      sync.RWMutex
+	lockProjectRepoExists  sync.RWMutex
 	lockPull               sync.RWMutex
 	lockPush               sync.RWMutex
 	lockStageAndCommitAll  sync.RWMutex
@@ -326,23 +340,25 @@ func (mock *IGitMock) GetDefaultBranchCalls() []struct {
 }
 
 // GetFileRevision calls GetFileRevisionFunc.
-func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
+func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error) {
 	if mock.GetFileRevisionFunc == nil {
 		panic("IGitMock.GetFileRevisionFunc: method is nil but IGit.GetFileRevision was just called")
 	}
 	callInfo := struct {
 		GitContext common_models.GitContext
+		Path       string
 		Revision   string
 		File       string
 	}{
 		GitContext: gitContext,
+		Path:       path,
 		Revision:   revision,
 		File:       file,
 	}
 	mock.lockGetFileRevision.Lock()
 	mock.calls.GetFileRevision = append(mock.calls.GetFileRevision, callInfo)
 	mock.lockGetFileRevision.Unlock()
-	return mock.GetFileRevisionFunc(gitContext, revision, file)
+	return mock.GetFileRevisionFunc(gitContext, path, revision, file)
 }
 
 // GetFileRevisionCalls gets all the calls that were made to GetFileRevision.
@@ -350,11 +366,13 @@ func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, revis
 //     len(mockedIGit.GetFileRevisionCalls())
 func (mock *IGitMock) GetFileRevisionCalls() []struct {
 	GitContext common_models.GitContext
+	Path       string
 	Revision   string
 	File       string
 } {
 	var calls []struct {
 		GitContext common_models.GitContext
+		Path       string
 		Revision   string
 		File       string
 	}
@@ -392,6 +410,37 @@ func (mock *IGitMock) ProjectExistsCalls() []struct {
 	mock.lockProjectExists.RLock()
 	calls = mock.calls.ProjectExists
 	mock.lockProjectExists.RUnlock()
+	return calls
+}
+
+// ProjectRepoExists calls ProjectRepoExistsFunc.
+func (mock *IGitMock) ProjectRepoExists(projectName string) bool {
+	if mock.ProjectRepoExistsFunc == nil {
+		panic("IGitMock.ProjectRepoExistsFunc: method is nil but IGit.ProjectRepoExists was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+	}{
+		ProjectName: projectName,
+	}
+	mock.lockProjectRepoExists.Lock()
+	mock.calls.ProjectRepoExists = append(mock.calls.ProjectRepoExists, callInfo)
+	mock.lockProjectRepoExists.Unlock()
+	return mock.ProjectRepoExistsFunc(projectName)
+}
+
+// ProjectRepoExistsCalls gets all the calls that were made to ProjectRepoExists.
+// Check the length with:
+//     len(mockedIGit.ProjectRepoExistsCalls())
+func (mock *IGitMock) ProjectRepoExistsCalls() []struct {
+	ProjectName string
+} {
+	var calls []struct {
+		ProjectName string
+	}
+	mock.lockProjectRepoExists.RLock()
+	calls = mock.calls.ProjectRepoExists
+	mock.lockProjectRepoExists.RUnlock()
 	return calls
 }
 

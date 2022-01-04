@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 )
@@ -36,7 +37,7 @@ func (s StageManager) CreateStage(params models.CreateStageParams) error {
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, params.ProjectName, err)
 	}
 
-	gitContext := common.GitContext{
+	gitContext := common_models.GitContext{
 		Project:     params.ProjectName,
 		Credentials: credentials,
 	}

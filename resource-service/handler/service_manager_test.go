@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -29,9 +30,9 @@ func TestServiceManager_CreateService(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -70,7 +71,7 @@ func TestServiceManager_CreateService_CannotReadCredentials(t *testing.T) {
 
 	fields := getTestServiceManagerFields()
 
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrCredentialsNotFound
 	}
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter)
@@ -93,9 +94,9 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -104,7 +105,7 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 
 	fields := getTestServiceManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -131,9 +132,9 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -142,7 +143,7 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 
 	fields := getTestServiceManagerFields()
 
-	fields.git.CheckoutBranchFunc = func(gitContext common.GitContext, branch string) error {
+	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
 		return errors2.ErrStageNotFound
 	}
 
@@ -172,9 +173,9 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -213,9 +214,9 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -254,9 +255,9 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -296,9 +297,9 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 		},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -307,7 +308,7 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 
 	fields := getTestServiceManagerFields()
 
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -333,9 +334,9 @@ func TestServiceManager_DeleteService(t *testing.T) {
 		Service: models.Service{ServiceName: "my-service"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -373,9 +374,9 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 		Service: models.Service{ServiceName: "my-service"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -391,7 +392,7 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 		return false
 	}
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -414,9 +415,9 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 		Service: models.Service{ServiceName: "my-service"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -450,9 +451,9 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 		Service: models.Service{ServiceName: "my-service"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -492,9 +493,9 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 		Service: models.Service{ServiceName: "my-service"},
 	}
 
-	expectedGitContext := common.GitContext{
+	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
-		Credentials: &common.GitCredentials{
+		Credentials: &common_models.GitCredentials{
 			User:      "my-user",
 			Token:     "my-token",
 			RemoteURI: "my-remote-uri",
@@ -509,7 +510,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 		}
 		return false
 	}
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -530,28 +531,28 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 func getTestServiceManagerFields() serviceManagerTestFields {
 	return serviceManagerTestFields{
 		git: &common_mock.IGitMock{
-			ProjectExistsFunc: func(gitContext common.GitContext) bool {
+			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 				return true
 			},
 			ProjectRepoExistsFunc: func(projectName string) bool {
 				return true
 			},
-			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
+			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
 				return true, nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 				return "", nil
 			},
-			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
+			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 				return "main", nil
 			},
-			CheckoutBranchFunc: func(gitContext common.GitContext, branch string) error {
+			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 				return nil
 			},
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
-			GetCredentialsFunc: func(project string) (*common.GitCredentials, error) {
-				return &common.GitCredentials{
+			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
+				return &common_models.GitCredentials{
 					User:      "my-user",
 					Token:     "my-token",
 					RemoteURI: "my-remote-uri",

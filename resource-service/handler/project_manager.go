@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
@@ -43,7 +44,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
-	gitContext := common.GitContext{
+	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
 	}
@@ -97,7 +98,7 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
-	gitContext := common.GitContext{
+	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
 	}
@@ -128,7 +129,7 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, projectName, err)
 	}
 
-	gitContext := common.GitContext{
+	gitContext := common_models.GitContext{
 		Project:     projectName,
 		Credentials: credentials,
 	}

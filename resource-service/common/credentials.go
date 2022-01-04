@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common_models"
-	utils "github.com/keptn/kubernetes-utils/pkg"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +25,7 @@ func NewK8sCredentialReader(k8sClient kubernetes.Interface) *K8sCredentialReader
 	return &K8sCredentialReader{k8sClient: k8sClient}
 }
 
-func (kr K8sCredentialReader) GetCredentials(project string) (*GitCredentials, error) {
+func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	secretName := fmt.Sprintf("git-credentials-%s", project)
 
 	secret, err := kr.k8sClient.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
@@ -38,7 +37,7 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*GitCredentials, e
 	}
 
 	// secret found -> unmarshal it
-	credentials := &GitCredentials{}
+	credentials := &common_models.GitCredentials{}
 	err = json.Unmarshal(secret.Data["git-credentials"], credentials)
 	if err != nil {
 		return nil, errors2.ErrMalformedCredentials

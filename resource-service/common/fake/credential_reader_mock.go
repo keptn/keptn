@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked common.CredentialReader
 // 		mockedCredentialReader := &CredentialReaderMock{
-// 			GetCredentialsFunc: func(project string) (*common.GitCredentials, error) {
+// 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 // 				panic("mock out the GetCredentials method")
 // 			},
 // 		}

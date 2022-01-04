@@ -67,7 +67,7 @@ func main() {
 	}
 
 	credentialReader := common.NewK8sCredentialReader(kubeAPI)
-	fileWriter := common.NewFileSystem(common.ConfigDir)
+	fileWriter := common.NewFileSystem(common.GetConfigDir())
 
 	projectResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)

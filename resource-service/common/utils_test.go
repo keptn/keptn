@@ -16,7 +16,7 @@ func TestGetProjectConfigPath(t *testing.T) {
 			args: args{
 				project: "my-project",
 			},
-			want: ConfigDir + "/my-project",
+			want: defaultConfigDir + "/my-project",
 		},
 	}
 	for _, tt := range tests {
@@ -42,7 +42,7 @@ func TestGetProjectMetadataFilePath(t *testing.T) {
 			args: args{
 				project: "my-project",
 			},
-			want: ConfigDir + "/my-project/metadata.yaml",
+			want: defaultConfigDir + "/my-project/metadata.yaml",
 		},
 	}
 	for _, tt := range tests {
@@ -70,7 +70,7 @@ func TestGetServiceConfigPath(t *testing.T) {
 				project: "my-project",
 				service: "my-service",
 			},
-			want: ConfigDir + "/my-project/my-service",
+			want: defaultConfigDir + "/my-project/my-service",
 		},
 	}
 	for _, tt := range tests {

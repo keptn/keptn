@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
@@ -215,7 +216,7 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *
 func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
@@ -252,7 +253,7 @@ func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *test
 func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common.GitCredentials, error) {
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrMalformedCredentials
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
@@ -289,7 +290,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t
 func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.GetDefaultBranchFunc = func(gitContext common.GitContext) (string, error) {
+	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
 		return "", errors.New("oops")
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
@@ -326,7 +327,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(
 func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.CheckoutBranchFunc = func(gitContext common.GitContext, branch string) error {
+	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
 		return errors.New("oops")
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
@@ -400,7 +401,7 @@ func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
 func TestResourceManager_UpdateResources_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -478,7 +479,7 @@ func TestResourceManager_UpdateResources_ProjectResource_WritingFileFails(t *tes
 func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -547,7 +548,7 @@ func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 
@@ -609,7 +610,7 @@ func TestResourceManager_UpdateResource_ProjectResource_WritingFileFails(t *test
 func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.StageAndCommitAllFunc = func(gitContext common.GitContext, message string) (string, error) {
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
 
@@ -666,7 +667,7 @@ func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
 func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
@@ -813,7 +814,7 @@ func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testi
 func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.ProjectExistsFunc = func(gitContext common.GitContext) bool {
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
@@ -962,43 +963,43 @@ func (fakeFileInfo) Sys() interface{} {
 func getTestResourceManagerFields() testResourceManagerFields {
 	return testResourceManagerFields{
 		git: &common_mock.IGitMock{
-			CheckoutBranchFunc: func(gitContext common.GitContext, branch string) error {
+			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 				return nil
 			},
-			CloneRepoFunc: func(gitContext common.GitContext) (bool, error) {
+			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
 				return true, nil
 			},
-			CreateBranchFunc: func(gitContext common.GitContext, branch string, sourceBranch string) error {
+			CreateBranchFunc: func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 				return nil
 			},
-			GetCurrentRevisionFunc: func(gitContext common.GitContext) (string, error) {
+			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) {
 				return "my-revision", nil
 			},
-			GetDefaultBranchFunc: func(gitContext common.GitContext) (string, error) {
+			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 				return "main", nil
 			},
-			GetFileRevisionFunc: func(gitContext common.GitContext, path string, revision string, file string) ([]byte, error) {
+			GetFileRevisionFunc: func(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error) {
 				return []byte("file-content"), nil
 			},
-			ProjectExistsFunc: func(gitContext common.GitContext) bool {
+			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 				return true
 			},
 			ProjectRepoExistsFunc: func(projectName string) bool {
 				return true
 			},
-			PullFunc: func(gitContext common.GitContext) error {
+			PullFunc: func(gitContext common_models.GitContext) error {
 				return nil
 			},
-			PushFunc: func(gitContext common.GitContext) error {
+			PushFunc: func(gitContext common_models.GitContext) error {
 				return nil
 			},
-			StageAndCommitAllFunc: func(gitContext common.GitContext, message string) (string, error) {
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 				return "my-revision", nil
 			},
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
-			GetCredentialsFunc: func(project string) (*common.GitCredentials, error) {
-				return &common.GitCredentials{
+			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
+				return &common_models.GitCredentials{
 					User:      "user",
 					Token:     "token",
 					RemoteURI: "remote-url",
