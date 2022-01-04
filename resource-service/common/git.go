@@ -32,13 +32,17 @@ type IGit interface {
 	Pull(gitContext common_models.GitContext) error
 	CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error
 	CheckoutBranch(gitContext common_models.GitContext, branch string) error
-	GetFileRevision(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error)
+	GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
 	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
 }
 
 type Git struct {
 	git Gogit
+}
+
+func NewGit(git Gogit) *Git {
+	return &Git{git: git}
 }
 
 func configureGitUser(repository *git.Repository) error {

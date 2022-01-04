@@ -69,17 +69,18 @@ func main() {
 	credentialReader := common.NewK8sCredentialReader(kubeAPI)
 	fileWriter := common.NewFileSystem(common.GetConfigDir())
 
-	projectResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
+	git := common.NewGit(&common.GogitReal{})
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
