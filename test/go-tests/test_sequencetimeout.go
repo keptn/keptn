@@ -48,19 +48,22 @@ spec:
 
 func TestSequenceTimeout(t *testing.T) {
 	projectName := "sequence-timeout"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceTimeoutShipyard)
 	require.Nil(t, err)
 	defer os.Remove(sequenceStateShipyardFilePath)
 
-	t.Logf(creatingProjectLog, projectName)
+	source := "golang-test"
+
+	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf(creatingServiceLog, serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, expectedLogMessage)
+	require.Contains(t, output, "created successfully")
 
 	err = setShipyardControllerTaskTimeout(t, "10s")
 	defer func() {
@@ -108,19 +111,20 @@ func TestSequenceTimeout(t *testing.T) {
 
 func TestSequenceTimeoutDelayedTask(t *testing.T) {
 	projectName := "sequence-timeout-delay"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceTimeoutWithTriggeredAfterShipyard)
 	require.Nil(t, err)
 	defer os.Remove(sequenceStateShipyardFilePath)
 
-	t.Logf(creatingProjectLog, projectName)
+	t.Logf("creating project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf(creatingServiceLog, serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
-	require.Contains(t, output, expectedLogMessage)
+	require.Contains(t, output, "created successfully")
 
 	err = setShipyardControllerTaskTimeout(t, "10s")
 	defer func() {
