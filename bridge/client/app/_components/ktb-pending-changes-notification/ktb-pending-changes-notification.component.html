@@ -1,0 +1,9 @@
+<dt-confirmation-dialog [state]="dialogState" aria-label="Dialog for notifying about unsaved data">
+  <dt-confirmation-dialog-state name="unsaved">
+    <p [textContent]="message"></p>
+    <dt-confirmation-dialog-actions>
+      <button dt-button variant="secondary" (click)="reset()">Discard changes</button>
+      <button dt-button [disabled]="isFormInvalid()" (click)="save()">Save changes</button>
+    </dt-confirmation-dialog-actions>
+  </dt-confirmation-dialog-state>
+</dt-confirmation-dialog>

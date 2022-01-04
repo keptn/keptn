@@ -16,7 +16,7 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
-import { ComponentCanDeactivate } from '../../_guards/pending-changes.guard';
+import { KtbPendingChangesNotificationComponent } from '../ktb-pending-changes-notification/ktb-pending-changes-notification.component';
 
 @Component({
   selector: 'ktb-project-settings',
@@ -24,7 +24,7 @@ import { ComponentCanDeactivate } from '../../_guards/pending-changes.guard';
   styleUrls: ['./ktb-project-settings.component.scss'],
   providers: [NotificationsService],
 })
-export class KtbProjectSettingsComponent implements OnInit, OnDestroy, ComponentCanDeactivate {
+export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('deleteProjectDialog')
@@ -33,7 +33,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
   @ViewChild(KtbProjectSettingsGitComponent)
   private gitSettingsSection?: KtbProjectSettingsGitComponent;
 
-  public unsavedDialogState: string | null = null;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
   public isProjectLoading: boolean | undefined;
@@ -49,6 +48,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
   });
+
+  @ViewChild('pendingChangesNotification') pendingChangesNotification: KtbPendingChangesNotificationComponent;
 
   constructor(
     private route: ActivatedRoute,
@@ -118,8 +119,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
 
   private loadProject(projectName: string): void {
     this.dataService.loadPlainProject(projectName).subscribe((project) => {
-      this.unsavedDialogState = null;
-
       this.gitData = {
         remoteURI: project.gitRemoteURI,
         gitUser: project.gitUser,
@@ -130,7 +129,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
   }
 
   private showCreateNotificationAndRedirect(): void {
-    this.unsavedDialogState = null;
     this.notificationsService.addNotification(
       NotificationType.SUCCESS,
       TemplateRenderedNotifications.CREATE_PROJECT,
@@ -150,11 +148,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
     this.gitData.gitUser = gitData.gitUser;
     this.gitData.gitToken = gitData.gitToken;
     this.gitData.gitFormValid = gitData.gitFormValid;
-    if (gitData.gitFormValid) {
-      this.unsavedDialogState = 'unsaved';
-    } else {
-      this.unsavedDialogState = null;
-    }
     this.isProjectFormTouched = true;
   }
 
@@ -166,7 +159,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
   public setGitUpstream(): void {
     if (this.projectName && this.gitData.remoteURI && this.gitData.gitUser && this.gitData.gitToken) {
       this.isGitUpstreamInProgress = true;
-      this.unsavedDialogState = null;
+      this.isProjectFormTouched = false;
+      this.pendingChangesNotification.hideNotification();
       this.dataService
         .setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
@@ -252,15 +246,21 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
 
   public reset(): void {
     this.gitSettingsSection?.reset();
-    this.unsavedDialogState = null;
+    this.isProjectFormTouched = false;
+    this.pendingChangesNotification.hideNotification();
   }
 
   public saveAll(): void {
     this.setGitUpstream();
-    this.unsavedDialogState = null;
+    this.isProjectFormTouched = false;
+    this.pendingChangesNotification.hideNotification();
   }
 
   public isProjectFormInvalid(): boolean {
+    return this.isCreateMode ? this.isProjectCreateFormInvalid() : this.isProjectSettingsFormInvalid();
+  }
+
+  public isProjectCreateFormInvalid(): boolean {
     return (
       !this.shipyardFile ||
       this.projectNameForm.invalid ||
@@ -269,9 +269,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
     );
   }
 
-  // @HostListener allows us to also guard against browser refresh, close, etc.
-  @HostListener('window:beforeunload')
-  canDeactivate(): Observable<boolean> | boolean {
+  public isProjectSettingsFormInvalid(): boolean {
+    return !this.gitData.gitFormValid || this.isGitUpstreamInProgress;
+  }
+
+  canDeactivate(): boolean {
     return !this.isProjectFormTouched;
   }
 }

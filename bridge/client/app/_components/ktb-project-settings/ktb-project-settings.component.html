@@ -46,7 +46,7 @@
         ></ktb-project-settings-shipyard>
       </div>
       <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
-        <button [disabled]="isProjectFormInvalid()" (click)="createProject()" dt-button>
+        <button [disabled]="isProjectCreateFormInvalid()" (click)="createProject()" dt-button>
           <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
           Create project
         </button>
@@ -56,22 +56,18 @@
       </div>
     </div>
 
-    <div [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
+    <div
+      [ngClass]="['settings-section', pendingChangesNotification.dialogState ? 'notification-open' : '']"
+      *ngIf="!isCreateMode"
+    >
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>
 </div>
 
-<dt-confirmation-dialog
-  [state]="unsavedDialogState"
-  aria-label="Dialog for notifying about unsaved data"
-  *ngIf="!isCreateMode"
->
-  <dt-confirmation-dialog-state name="unsaved">
-    You have pending changes. Make sure to save your data before you continue.
-    <dt-confirmation-dialog-actions>
-      <button dt-button variant="secondary" (click)="reset()">Discard changes</button>
-      <button dt-button (click)="saveAll()">Save changes</button>
-    </dt-confirmation-dialog-actions>
-  </dt-confirmation-dialog-state>
-</dt-confirmation-dialog>
+<ktb-pending-changes-notification
+  [onReset]="reset"
+  [onSave]="saveAll"
+  [isFormInvalid]="isProjectFormInvalid"
+  [canDeactivate]="canDeactivate"
+></ktb-pending-changes-notification>
