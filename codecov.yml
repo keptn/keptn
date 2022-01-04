@@ -25,69 +25,69 @@ github_checks:
 flags:
   api:
     paths:
-      - api/**/*
+      - api
     carryforward: true
   bridge2:
     paths:
-      - bridge/**/*
+      - bridge
     carryforward: true
   cli:
     paths:
-      - cli/**/*
+      - cli
     carryforward: true
   configuration-service:
     paths:
-      - configuration-service/**/*
+      - configuration-service
     carryforward: true
   resource-service:
     paths:
-      - resource-service/**/*
+      - resource-service
     carryforward: true
   distributor:
     paths:
-      - distributor/**/*
+      - distributor
     carryforward: true
   approval-service:
     paths:
-      - approval-service/**/*
+      - approval-service
     carryforward: true
   helm-service:
     paths:
-      - helm-service/**/*
+      - helm-service
     carryforward: true
   jmeter-service:
     paths:
-      - jmeter-service/**/*
+      - jmeter-service
     carryforward: true
   lighthouse-service:
     paths:
-      - lighthouse-service/**/*
+      - lighthouse-service
     carryforward: true
   mongodb-datastore:
     paths:
-      - mongodb-datastore/**/*
+      - mongodb-datastore
     carryforward: true
   openshift-route-service:
     paths:
-      - /platform-support/openshift-route-service/**/*
+      - /platform-support/openshift-route-service
     carryforward: true
   remediation-service:
     paths:
-      - remediation-service/**/*
+      - remediation-service
     carryforward: true
   shipyard-controller:
     paths:
-      - shipyard-controller/**/*
+      - shipyard-controller
     carryforward: true
   statistics-service:
     paths:
-      - statistics-service/**/*
+      - statistics-service
     carryforward: true
   webhook-service:
     paths:
-      - webhook-service/**/*
+      - webhook-service
     carryforward: true
   secret-service:
     paths:
-      - secret-service/**/*
+      - secret-service
     carryforward: true
