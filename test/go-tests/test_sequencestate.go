@@ -41,16 +41,16 @@ spec:
               properties:
                 deploymentstrategy: "blue_green_service"
             - name: "evaluation"`
-const couldNotDeleteFileLog = "Could not delete file: %s: %v"
 
 func TestSequenceState(t *testing.T) {
 	projectName := "state"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(sequenceStateShipyardFilePath)
 		if err != nil {
-			t.Logf(couldNotDeleteFileLog, sequenceStateShipyardFilePath, err)
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
 		}
 	}()
 
@@ -73,7 +73,7 @@ func TestSequenceState(t *testing.T) {
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
@@ -340,19 +340,20 @@ func TestSequenceState(t *testing.T) {
 
 func TestSequenceState_CannotRetrieveShipyard(t *testing.T) {
 	projectName := "state-no-shipyard"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(sequenceStateShipyardFilePath)
 		if err != nil {
-			t.Logf(couldNotDeleteFileLog, sequenceStateShipyardFilePath, err)
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
 		}
 	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	_, err = ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
@@ -380,19 +381,20 @@ func TestSequenceState_CannotRetrieveShipyard(t *testing.T) {
 
 func TestSequenceState_InvalidShipyard(t *testing.T) {
 	projectName := "state-invalid-shipyard"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(sequenceStateShipyardFilePath)
 		if err != nil {
-			t.Logf(couldNotDeleteFileLog, sequenceStateShipyardFilePath, err)
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
 		}
 	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	_, err = ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
@@ -404,7 +406,7 @@ func TestSequenceState_InvalidShipyard(t *testing.T) {
 	defer func() {
 		err := os.Remove(invalidShipyardFile)
 		if err != nil {
-			t.Logf(couldNotDeleteFileLog, invalidShipyardFile, err)
+			t.Logf("Could not delete file: %s: %v", invalidShipyardFile, err)
 		}
 	}()
 
@@ -431,19 +433,20 @@ func TestSequenceState_InvalidShipyard(t *testing.T) {
 
 func TestSequenceState_SequenceNotFound(t *testing.T) {
 	projectName := "state-shipyard-unknown-sequence"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(sequenceStateShipyardFilePath)
 		if err != nil {
-			t.Logf(couldNotDeleteFileLog, sequenceStateShipyardFilePath, err)
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
 		}
 	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	_, err = ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
@@ -467,19 +470,20 @@ func TestSequenceState_SequenceNotFound(t *testing.T) {
 
 func TestSequenceState_RetrieveMultipleSequence(t *testing.T) {
 	projectName := "state-retrieve-multiple"
+	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(sequenceStateShipyardFilePath)
 		if err != nil {
-			t.Logf(couldNotDeleteFileLog, sequenceStateShipyardFilePath, err)
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
 		}
 	}()
 
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
-	_, err = ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 

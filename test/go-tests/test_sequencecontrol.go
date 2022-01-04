@@ -65,6 +65,7 @@ const sequenceControlEndpoint = "/controlPlane/v1/sequence/%s/%s/control"
 
 func TestSequenceControl_Abort(t *testing.T) {
 	projectName := "sequence-abort"
+	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
 
@@ -130,6 +131,7 @@ func TestSequenceControl_Abort(t *testing.T) {
 
 func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
 	projectName := "sequence-abort2"
+	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
 
@@ -139,7 +141,19 @@ func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
 
 	t.Logf(creatingProjectLog, projectName)
 	err = CreateProject(projectName, shipyardFilePath, true)
-	keptnContextID := someMethod(t, err, projectName, sequencename, stageName)
+	require.Nil(t, err)
+
+	t.Logf(creatingServiceLog, serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, expectedLogMessage)
+
+	t.Logf(triggerSequenceLog, sequencename, stageName)
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// verify state
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
 	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
 	require.Nil(t, err)
@@ -172,25 +186,9 @@ func TestSequenceControl_AbortQueuedSequence(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
 }
 
-func someMethod(t *testing.T, err error, projectName string, sequencename string, stageName string) string {
-	require.Nil(t, err)
-
-	t.Logf(creatingServiceLog, serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf(keptnCreateServiceCmd, serviceName, projectName))
-
-	require.Nil(t, err)
-	require.Contains(t, output, expectedLogMessage)
-
-	t.Logf(triggerSequenceLog, sequencename, stageName)
-	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
-
-	// verify state
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
-	return keptnContextID
-}
-
 func TestSequenceControl_PauseAndResume(t *testing.T) {
 	projectName := "sequence-pause-and-resume"
+	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
 
@@ -307,6 +305,7 @@ func TestSequenceControl_PauseAndResume(t *testing.T) {
 
 func TestSequenceControl_PauseAndResume_2(t *testing.T) {
 	projectName := "sequence-pause-and-resume"
+	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
 
