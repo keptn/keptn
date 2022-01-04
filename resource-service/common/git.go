@@ -10,6 +10,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common_models"
+	utils "github.com/keptn/kubernetes-utils/pkg"
 	logger "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -161,8 +162,13 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 		return nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 	if err != nil {
-		//TODO : fall back on cli
-		return "", err
+		//TODO : test me
+		id, err = utils.ExecuteCommandInDirectory(
+			"git", []string{"push", "--set-upstream",
+				gitContext.Credentials.RemoteURI},
+			GetProjectConfigPath(gitContext.Project),
+		)
+		return id, err
 	}
 	return id, err
 }

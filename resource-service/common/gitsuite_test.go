@@ -135,15 +135,6 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 	}
 }
 
-func checkout(c *C, g *Git, gitContext common_models.GitContext, branch string) error {
-	err := g.CheckoutBranch(gitContext, branch)
-	if err != nil {
-		err = g.CreateBranch(gitContext, branch, "master")
-		c.Assert(err, IsNil)
-	}
-	return err
-}
-
 func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 
 	tests := []struct {
@@ -855,4 +846,13 @@ func push(r *git.Repository, c *C) {
 func buildEmptyRemote() string {
 	url := fixtures.ByURL("https://github.com/git-fixtures/empty.git").One().DotGit().Root()
 	return url
+}
+
+func checkout(c *C, g *Git, gitContext common_models.GitContext, branch string) error {
+	err := g.CheckoutBranch(gitContext, branch)
+	if err != nil {
+		err = g.CreateBranch(gitContext, branch, "master")
+		c.Assert(err, IsNil)
+	}
+	return err
 }
