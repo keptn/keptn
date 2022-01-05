@@ -96,7 +96,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		if strings.Contains(err.Error(), "empty") {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
-				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, " init", gitContext.Project, err)
+				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, err)
 			}
 		} else {
 			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
@@ -183,16 +183,35 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 		return nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 	if err != nil {
-		//TODO : test me & fix me
-		id, err = utils.ExecuteCommandInDirectory(
-			"git", []string{"push", "--set-upstream",
-				gitContext.Credentials.RemoteURI},
-			GetProjectConfigPath(gitContext.Project),
-		)
+		// if push or pull fails try to use git cli
+		_, err := fallback(GetProjectConfigPath(gitContext.Project), id)
 		if err != nil {
 			return id, fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 		}
 	}
+	return id, nil
+}
+
+func fallback(path string, id string) (string, error) {
+
+	// first pull from remote current branch preferring remote changes
+	id, err := utils.ExecuteCommandInDirectory(
+		"git", []string{"pull", "origin", "HEAD", "-X", "theirs"},
+		path,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	// then push local changes
+	id, err = utils.ExecuteCommandInDirectory(
+		"git", []string{"push", "origin", "HEAD"},
+		path,
+	)
+	if err != nil {
+		return "", err
+	}
+
 	return id, nil
 }
 
@@ -225,7 +244,7 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		if err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return nil
 		}
