@@ -16,7 +16,9 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
-import { KtbPendingChangesNotificationComponent } from '../ktb-pending-changes-notification/ktb-pending-changes-notification.component';
+import { ComponentCanDeactivate } from '../../_guards/pending-changes.guard';
+
+type DialogState = null | 'unsaved';
 
 @Component({
   selector: 'ktb-project-settings',
@@ -24,7 +26,7 @@ import { KtbPendingChangesNotificationComponent } from '../ktb-pending-changes-n
   styleUrls: ['./ktb-project-settings.component.scss'],
   providers: [NotificationsService],
 })
-export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
+export class KtbProjectSettingsComponent implements OnInit, OnDestroy, ComponentCanDeactivate {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('deleteProjectDialog')
@@ -49,7 +51,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     projectName: this.projectNameControl,
   });
 
-  @ViewChild('pendingChangesNotification') pendingChangesNotification: KtbPendingChangesNotificationComponent;
+  public message = 'You have pending changes. Make sure to save your data before you continue.';
+  public dialogState: DialogState = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -160,7 +163,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     if (this.projectName && this.gitData.remoteURI && this.gitData.gitUser && this.gitData.gitToken) {
       this.isGitUpstreamInProgress = true;
       this.isProjectFormTouched = false;
-      this.pendingChangesNotification.hideNotification();
+      this.hideNotification();
       this.dataService
         .setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
@@ -247,13 +250,13 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public reset(): void {
     this.gitSettingsSection?.reset();
     this.isProjectFormTouched = false;
-    this.pendingChangesNotification.hideNotification();
+    this.hideNotification();
   }
 
   public saveAll(): void {
     this.setGitUpstream();
     this.isProjectFormTouched = false;
-    this.pendingChangesNotification.hideNotification();
+    this.hideNotification();
   }
 
   public isProjectFormInvalid(): boolean {
@@ -275,5 +278,18 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
 
   canDeactivate(): boolean {
     return !this.isProjectFormTouched;
+  }
+
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload', ['$event'])
+  showNotification($event: any): void {
+    if (!this.canDeactivate()) {
+      this.dialogState = 'unsaved';
+      $event.returnValue = this.message;
+    }
+  }
+
+  hideNotification(): void {
+    this.dialogState = null;
   }
 }

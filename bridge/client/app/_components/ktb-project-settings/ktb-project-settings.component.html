@@ -9,7 +9,7 @@
             type="text"
             formControlName="projectName"
             id="projectNameInput"
-            (input)="unsavedDialogState = 'unsaved'"
+            (input)="isProjectFormTouched = true"
             required
             dtInput
             placeholder="e.g. sockshop"
@@ -56,18 +56,18 @@
       </div>
     </div>
 
-    <div
-      [ngClass]="['settings-section', pendingChangesNotification.dialogState ? 'notification-open' : '']"
-      *ngIf="!isCreateMode"
-    >
+    <div [ngClass]="['settings-section', dialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>
 </div>
 
-<ktb-pending-changes-notification
-  [onReset]="reset"
-  [onSave]="saveAll"
-  [isFormInvalid]="isProjectFormInvalid"
-  [canDeactivate]="canDeactivate"
-></ktb-pending-changes-notification>
+<dt-confirmation-dialog [state]="dialogState" aria-label="Dialog for notifying about unsaved data">
+  <dt-confirmation-dialog-state name="unsaved">
+    <p [textContent]="message"></p>
+    <dt-confirmation-dialog-actions>
+      <button dt-button variant="secondary" (click)="reset()">Discard changes</button>
+      <button dt-button [disabled]="isProjectFormInvalid()" (click)="saveAll()">Save changes</button>
+    </dt-confirmation-dialog-actions>
+  </dt-confirmation-dialog-state>
+</dt-confirmation-dialog>
