@@ -71,6 +71,8 @@ func cleanupSuite(c *C) {
 	err = os.RemoveAll("../test/tmp/sockshop")
 	c.Assert(err, IsNil)
 
+	err = os.RemoveAll("../test/tmp/shared")
+	c.Assert(err, IsNil)
 	err = os.RemoveAll("../test/tmp/repo1")
 	c.Assert(err, IsNil)
 	err = os.RemoveAll("../test/tmp/repo2")
@@ -84,12 +86,14 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	url := "../test/tmp" + "/shared"
 	url, err = filepath.Abs(url)
 	c.Assert(err, IsNil)
+
 	//setup remote as bare
 
 	_, err = g.git.PlainInit(url, true)
 	c.Assert(err, IsNil)
 
 	// make two local repo pointing at our remote
+
 	repo1, err := git.PlainInit("../test/tmp/repo1", false)
 	c.Assert(err, IsNil)
 	repo2, err := git.PlainInit("../test/tmp/repo2", false)
@@ -106,7 +110,8 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 		URLs: []string{url},
 	})
 
-	// push some first change to repo
+	// push some first change to remote
+
 	c.Assert(err, IsNil)
 	w2, err := repo2.Worktree()
 	c.Assert(err, IsNil)
@@ -166,13 +171,14 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	err = w2.Pull(&git.PullOptions{})
 	c.Assert(kerrors.NoErrAlreadyUpToDate.Is(err), Equals, true)
 
+	// because we keep their changes ours are not the final ones
 	b, err = g.GetFileRevision(repo2context, id, "try.txt")
 	c.Assert(err, IsNil)
-	c.Assert(content2, Equals, string(b))
+	c.Assert(content1, Equals, string(b))
 
 	//verify current revision
-	//curr, err := g.GetCurrentRevision(repo2context)
-	//c.Assert(curr, Equals, id)
+	curr, err := g.GetCurrentRevision(repo2context)
+	c.Assert(curr, Equals, id)
 }
 
 func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {

@@ -25,7 +25,6 @@ import (
 type IGit interface {
 	ProjectExists(gitContext common_models.GitContext) bool
 	ProjectRepoExists(projectName string) bool
-
 	CloneRepo(gitContext common_models.GitContext) (bool, error)
 	StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error)
 	Push(gitContext common_models.GitContext) error
@@ -164,7 +163,7 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 
-	id, err := g.commitAll(gitContext, message)
+	_, err := g.commitAll(gitContext, message)
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
@@ -184,35 +183,38 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 	if err != nil {
 		// if push or pull fails try to use git cli
-		_, err := fallback(GetProjectConfigPath(gitContext.Project), id)
+		err := fallback(GetProjectConfigPath(gitContext.Project))
 		if err != nil {
-			return id, fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
+			return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 		}
+	}
+	id, updated, err := g.getCurrentRemoteRevision(gitContext)
+	if err != nil {
+		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
+	}
+	if !updated {
+		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
 	}
 	return id, nil
 }
 
-func fallback(path string, id string) (string, error) {
+func fallback(path string) error {
 
 	// first pull from remote current branch preferring remote changes
-	id, err := utils.ExecuteCommandInDirectory(
+	_, err := utils.ExecuteCommandInDirectory(
 		"git", []string{"pull", "origin", "HEAD", "-X", "theirs"},
 		path,
 	)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	// then push local changes
-	id, err = utils.ExecuteCommandInDirectory(
+	_, err = utils.ExecuteCommandInDirectory(
 		"git", []string{"push", "origin", "HEAD"},
 		path,
 	)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
+	return err
 }
 
 func (g Git) Push(gitContext common_models.GitContext) error {
@@ -263,6 +265,47 @@ func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, e
 	}
 	hash := ref.Hash()
 	return hash.String(), nil
+}
+
+// returns what is the curren commit id of remote and if the remote is uptodate with the local branch
+func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (string, bool, error) {
+	repo, _, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+	}
+
+	headRef, err := repo.Head()
+	if err != nil {
+		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+	}
+
+	// get hash
+	branch := headRef.Name().Short()
+	revision := plumbing.Revision("origin/" + branch)
+	revHash, err := repo.ResolveRevision(revision)
+
+	if err != nil {
+		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+	}
+
+	// ... retrieving the commit objects
+	revCommit, err := repo.CommitObject(*revHash)
+	if err != nil {
+		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+	}
+
+	headCommit, err := repo.CommitObject(headRef.Hash())
+	if err != nil {
+		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+	}
+
+	//check if latest repo commit is in remote
+	isAncestor, err := headCommit.IsAncestor(revCommit)
+
+	if err != nil {
+		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+	}
+	return revHash.String(), isAncestor, nil
 }
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
