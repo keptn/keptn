@@ -6,7 +6,7 @@
     ":semanticCommitTypeAll(build)",
     ":semanticCommitScope(deps)",
     "group:monorepos",
-    "autoMergePatch"
+    ":automergePatch"
   ],
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,
