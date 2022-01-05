@@ -47,6 +47,8 @@ func TestStageManager_CreateStage(t *testing.T) {
 	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext, expectedGitContext)
 	require.Equal(t, fields.git.CreateBranchCalls()[0].SourceBranch, "main")
 	require.Equal(t, fields.git.CreateBranchCalls()[0].Branch, "my-stage")
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 }
 
 func TestStageManager_CreateStage_NoCredentialsFound(t *testing.T) {
@@ -173,6 +175,45 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 	err := s.CreateStage(params)
 
 	require.ErrorIs(t, err, errors2.ErrStageAlreadyExists)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CreateBranchCalls(), 1)
+	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CreateBranchCalls()[0].SourceBranch, "main")
+	require.Equal(t, fields.git.CreateBranchCalls()[0].Branch, "my-stage")
+}
+
+func TestStageManager_CreateStage_CannotPushBranch(t *testing.T) {
+	params := models.CreateStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		CreateStagePayload: models.CreateStagePayload{
+			Stage: models.Stage{
+				StageName: "my-stage",
+			},
+		},
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestStageManagerFields()
+
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
+	}
+
+	s := NewStageManager(fields.git, fields.credentialReader)
+	err := s.CreateStage(params)
+
+	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)

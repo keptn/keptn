@@ -141,12 +141,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Creating a new resource for non-existing project %s", nonExistingProjectName)
 	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+nonExistingProjectName+"/resource", createResourceRequest, 3)
 	require.Nil(t, err)
-	require.Equal(t, 400, resp.Response().StatusCode)
+	require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource with invalid payload for project %s", projectName)
 	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/resource", invalidResourceRequest, 3)
 	require.Nil(t, err)
-	require.Equal(t, 400, resp.Response().StatusCode)
+	require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
 		t.Logf("Creating a new stage %s in project %s", stageReq.StageName, projectName)

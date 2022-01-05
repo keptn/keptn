@@ -51,9 +51,14 @@ func (s StageManager) CreateStage(params models.CreateStageParams) error {
 		return fmt.Errorf("could not determine default branch of project %s: %w", params.ProjectName, err)
 	}
 
-	// check out the default branch to check interaction with upstream is working
+	// create new branch from default branch
 	if err := s.git.CreateBranch(gitContext, params.StageName, defaultBranch); err != nil {
-		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, params.ProjectName, err)
+		return fmt.Errorf("could not check out new branch %s of project %s: %w", params.StageName, params.ProjectName, err)
+	}
+
+	_, err = s.git.StageAndCommitAll(gitContext, "created stage")
+	if err != nil {
+		return fmt.Errorf("could not push new branch %s of project %s: %w", params.StageName, params.ProjectName, err)
 	}
 
 	return nil

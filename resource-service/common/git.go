@@ -272,14 +272,26 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 		Remote: "origin",
 		Merge:  b,
 	}
-	r, _, err := g.getWorkTree(gitContext)
+	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
+
+	// First try to check out branch
+	err = w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
+
+	if err != nil {
+		// got an error  - try to create it
+		if err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b}); err != nil {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
+		}
+	}
+
 	err = r.CreateBranch(newBranch)
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
+
 	return nil
 }
 

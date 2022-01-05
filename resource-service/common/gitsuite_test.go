@@ -522,6 +522,10 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 		}
 
 		if err == nil {
+			_, err := g.StageAndCommitAll(tt.gitContext, "")
+			if err != nil {
+				c.Fatalf("unexpected error %v", err)
+			}
 			// check git config files
 			cfg, err := r.Config()
 			c.Assert(err, IsNil)
