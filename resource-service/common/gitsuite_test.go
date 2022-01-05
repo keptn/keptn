@@ -6,6 +6,7 @@ import (
 	"github.com/go-git/go-billy/v5/memfs"
 	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -15,7 +16,9 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	. "gopkg.in/check.v1"
 	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -31,19 +34,13 @@ var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpSuite(c *C) {
 	_ = os.Setenv("CONFIG_DIR", "../test/tmp")
+	cleanupSuite(c)
 	s.buildBasicRepository(c)
 }
 
 func (s *BaseSuite) TearDownSuite(c *C) {
 	_ = os.Unsetenv("CONFIG_DIR")
-	err := os.RemoveAll("./debug")
-	c.Assert(err, IsNil)
-
-	err = os.RemoveAll("../test/tmp/remote")
-	c.Assert(err, IsNil)
-
-	err = os.RemoveAll("../test/tmp/sockshop")
-	c.Assert(err, IsNil)
+	//cleanupSuite(c)
 }
 
 func (s *BaseSuite) SetUpTest(c *C) {
@@ -51,6 +48,21 @@ func (s *BaseSuite) SetUpTest(c *C) {
 }
 
 func (s *BaseSuite) buildBasicRepository(c *C) {
+
+	s.url = "../test/tmp" + "/remote"
+
+	//initBare(c,s.url)
+
+	// make a local remote
+	_, err := git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
+	c.Assert(err, IsNil)
+
+	// make local git repo
+	s.Repository, err = git.PlainClone("../test/tmp"+"/sockshop", false, &git.CloneOptions{URL: s.url})
+	c.Assert(err, IsNil)
+}
+
+func cleanupSuite(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
 
@@ -59,15 +71,123 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 
 	err = os.RemoveAll("../test/tmp/sockshop")
 	c.Assert(err, IsNil)
-	s.url = "../test/tmp" + "/remote"
 
-	// make a local remote
-	_, err = git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
+	err = os.RemoveAll("../test/tmp/shared")
+	c.Assert(err, IsNil)
+	err = os.RemoveAll("../test/tmp/repo1")
+	c.Assert(err, IsNil)
+	err = os.RemoveAll("../test/tmp/repo2")
+	c.Assert(err, IsNil)
+}
+func (s *BaseSuite) TestGit_ComponentTest(c *C) {
+
+	g := Git{GogitReal{}}
+
+	url := "../test/tmp" + "/shared"
+	url, err := filepath.Abs(url)
 	c.Assert(err, IsNil)
 
-	// make local git repo
-	s.Repository, err = git.PlainClone("../test/tmp"+"/sockshop", false, &git.CloneOptions{URL: s.url})
+	//setup remote as bare
+
+	remote, err := g.git.PlainInit(url, true)
 	c.Assert(err, IsNil)
+	configUser(remote)
+	// make two local repo pointing at our remote
+
+	repo1, err := git.PlainInit("../test/tmp/repo1", false)
+	c.Assert(err, IsNil)
+	configUser(repo1)
+	repo2, err := git.PlainInit("../test/tmp/repo2", false)
+	c.Assert(err, IsNil)
+	configUser(repo2)
+
+	_, err = repo1.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{url},
+	})
+	c.Assert(err, IsNil)
+
+	_, err = repo2.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{url},
+	})
+
+	// push some first change to remote
+
+	c.Assert(err, IsNil)
+	w2, err := repo2.Worktree()
+	c.Assert(err, IsNil)
+	write("f.txt", "init repo", c, w2)
+	commit("f.txt", c, w2)
+	push(repo2, c)
+
+	//add changes to repo1
+	w1, err := repo1.Worktree()
+	c.Assert(err, IsNil)
+	//make sure repo1 is uptodate
+	err = w1.Pull(&git.PullOptions{Force: true})
+	c.Assert(err, IsNil)
+
+	//add changes to repo1
+	content1 := "my very important stuff"
+	write("try.txt", content1, c, w1)
+	h := commit("try.txt", c, w1)
+	id := h.String()
+	push(repo1, c)
+
+	// check changes to repo
+	repo1context := common_models.GitContext{Project: "repo1",
+		Credentials: &common_models.GitCredentials{
+			User:      "u2",
+			Token:     "mytoken",
+			RemoteURI: url,
+		}}
+	b, err := g.GetFileRevision(repo1context, id, "try.txt")
+	c.Assert(err, IsNil)
+	c.Assert(content1, Equals, string(b))
+
+	// check remote already up to date
+	err = w1.Pull(&git.PullOptions{})
+	c.Assert(kerrors.NoErrAlreadyUpToDate.Is(err), Equals, true)
+
+	//add conflicting changes to repo2
+	content2 := "my stuff is complete"
+	write("try.txt", content2, c, w2)
+	// also adding  file from filesystem works
+	//f, err := os.Create("../test/tmp/repo2/try.txt")
+	//f.Write([]byte(fmt.Sprintf("my stuff is more important")))
+	//f.Close()
+	repo2context := common_models.GitContext{Project: "repo2",
+		Credentials: &common_models.GitCredentials{
+			User:      "u2",
+			Token:     "mytoken",
+			RemoteURI: url,
+		}}
+
+	// check new changes are forced
+	id, err = g.StageAndCommitAll(repo2context, "my conflicting change")
+	c.Assert(err, IsNil)
+	c.Logf("my commit id %s", id)
+
+	// check remote already up to date
+	err = w2.Pull(&git.PullOptions{})
+	c.Assert(kerrors.NoErrAlreadyUpToDate.Is(err), Equals, true)
+
+	// because we keep their changes ours are not the final ones
+	b, err = g.GetFileRevision(repo2context, id, "try.txt")
+	c.Assert(err, IsNil)
+	c.Assert(content1, Equals, string(b))
+
+	//verify current revision
+	curr, err := g.GetCurrentRevision(repo2context)
+	c.Assert(curr, Equals, id)
+}
+
+func configUser(remote *git.Repository) {
+	co, _ := remote.Config()
+	co.User.Name = "keptn"
+	co.User.Email = "keptn@keptn.sh"
+	remote.SetConfig(co)
 }
 
 func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
@@ -128,7 +248,9 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 			if tt.doCommit {
 				w, err := s.Repository.Worktree()
 				c.Assert(err, IsNil)
-				id = commit("something.txt", "something", c, w)
+				err = write("something.txt", "something", c, w)
+				c.Assert(err, IsNil)
+				id = commit("something.txt", c, w)
 			}
 		}
 		currId, err := g.GetCurrentRevision(tt.gitContext)
@@ -155,7 +277,6 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 		wantErr    bool
 		doCommit   bool
 	}{
-
 		{
 			name:       "commit  new file",
 			gitContext: s.NewGitContext(),
@@ -253,7 +374,9 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 		if tt.push {
 			w, err := r.Worktree()
 			c.Assert(err, IsNil)
-			h = commit("fo/file.txt", "a content", c, w)
+			err = write("fo/file.txt", "a content", c, w)
+			c.Assert(err, IsNil)
+			h = commit("fo/file.txt", c, w)
 		}
 		g := Git{GogitReal{}}
 		err := g.Push(tt.gitContext)
@@ -305,19 +428,19 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 	tests := []struct {
 		name       string
 		gitContext common_models.GitContext
-		expected   string
+		expected   []string
 		err        error
 	}{
 		{
 			name:       "retrieve already uptodate sockshop",
 			gitContext: s.NewGitContext(),
-			expected: "[core]\n" + "\tbare = false\n" +
+			expected: []string{"[core]\n" + "\tbare = false\n" +
 				"[remote \"origin\"]\n" +
 				"\turl = ../test/tmp/remote\n" +
 				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
 				"[branch \"master\"]\n" +
 				"\tremote = origin\n" +
-				"\tmerge = refs/heads/master\n",
+				"\tmerge = refs/heads/master\n"},
 		},
 		{
 			name: "retrieve from unexisting project",
@@ -328,17 +451,16 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 					Token:     "bjh",
 					RemoteURI: s.url},
 			},
-			expected: "[core]\n" +
-				"\tbare = false\n" +
-				"[remote \"origin\"]\n" +
-				"\turl = ../test/tmp/remote\n" +
-				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
+			expected: []string{"[core]\n" +
+				"\tbare = false\n",
 				"[branch \"master\"]\n" +
-				"\tremote = origin\n" +
-				"\tmerge = refs/heads/master\n" +
+					"\tremote = origin\n" +
+					"\tmerge = refs/heads/master\n",
 				"[user]\n" +
-				"\tname = keptn\n" +
-				"\temail = keptn@keptn.sh\n",
+					"\tname = keptn\n" +
+					"\temail = keptn@keptn.sh\n", "[remote \"origin\"]\n" +
+					"\turl = ../test/tmp/remote\n" +
+					"\tfetch = +refs/heads/*:refs/remotes/origin/*\n"},
 		},
 		{
 			name: "retrieve from unexisting url",
@@ -363,7 +485,9 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 		if err == nil {
 			b, err := os.ReadFile(GetProjectConfigPath(tt.gitContext.Project + "/.git/config"))
 			c.Assert(err, IsNil)
-			c.Assert(string(b), Equals, tt.expected)
+			for _, s := range tt.expected {
+				c.Assert(strings.Contains(string(b), s), Equals, true)
+			}
 		}
 
 	}
@@ -792,15 +916,15 @@ func (s *BaseSuite) commitAndPush(file string, content string, c *C) plumbing.Ha
 	r := s.Repository
 	w, err := r.Worktree()
 	c.Assert(err, IsNil)
-	id := commit(file, content, c, w)
+	err = write(file, content, c, w)
+	c.Assert(err, IsNil)
+	id := commit(file, c, w)
 	push(r, c)
 	return id
 }
 
-func commit(file string, content string, c *C, w *git.Worktree) plumbing.Hash {
-	err := write(file, content, c, w)
-
-	_, err = w.Add(file)
+func commit(file string, c *C, w *git.Worktree) plumbing.Hash {
+	_, err := w.Add(file)
 	c.Assert(err, IsNil)
 
 	id, err := w.Commit("added a file",
