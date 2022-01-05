@@ -26,6 +26,7 @@ import (
 type IGit interface {
 	ProjectExists(gitContext common_models.GitContext) bool
 	ProjectRepoExists(projectName string) bool
+
 	CloneRepo(gitContext common_models.GitContext) (bool, error)
 	StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error)
 	Push(gitContext common_models.GitContext) error
@@ -172,7 +173,7 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 
-	_, err := g.commitAll(gitContext, message)
+	id, err := g.commitAll(gitContext, message)
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
@@ -204,6 +205,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	if !updated {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
 	}
+
 	return id, nil
 }
 
