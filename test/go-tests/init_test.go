@@ -14,6 +14,13 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 	code := m.Run()
+
+	events, err := GetOOMEvents()
+	if code == 0 && (len(events.Items) != 0 || err != nil) {
+		println("There were some Out of Memory Errors!")
+		os.Exit(-1)
+	}
+
 	os.Exit(code)
 }
 
