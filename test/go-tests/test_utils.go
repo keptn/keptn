@@ -5,7 +5,6 @@ import (
 	b64 "encoding/base64"
 	"errors"
 	"fmt"
-	configurationservicemodels "github.com/keptn/keptn/configuration-service/models"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -716,7 +715,7 @@ func recreateGitUpstreamRepository(project string) error {
 	return nil
 }
 
-func checkResourceInResponse(resources configurationservicemodels.Resources, resourceName string) error {
+func checkResourceInResponse(resources models.Resources, resourceName string) error {
 	for _, resource := range resources.Resources {
 		if *resource.ResourceURI == resourceName {
 			return nil
