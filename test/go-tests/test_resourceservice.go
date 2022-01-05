@@ -256,7 +256,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Creating an existing new service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service", serviceReq, 3)
 			require.Nil(t, err)
-			require.Equal(t, 400, resp.Response().StatusCode)
+			// configuration-service returns 400
+			// resource-service returns 409
+			require.Contains(t, []int{400, 409}, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource for non-existing service %s in stage %s for project %s", nonExistingServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", createResourceRequest, 3)
