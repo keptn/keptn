@@ -289,6 +289,13 @@ jobs:
           fail_ci_if_error: false
           flags: ${{ matrix.config.artifact }}
 
+      - name: Report test coverage for bridge-server
+        if: matrix.config.should-push-image == 'false' && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'bridge-server-test'
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: false
+          flags: bridge-server
+
       - name: Upload Test Screenshots
         if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
         uses: actions/upload-artifact@v2

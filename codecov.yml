@@ -29,7 +29,10 @@ flags:
     carryforward: true
   bridge2:
     paths:
-      - bridge
+      - bridge/
+    carryforward: true
+  bridge-server:
+    paths:
       - bridge/server
     carryforward: true
   cli:
