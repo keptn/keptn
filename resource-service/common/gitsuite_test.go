@@ -268,7 +268,6 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 		wantErr    bool
 		doCommit   bool
 	}{
-
 		{
 			name:       "commit  new file",
 			gitContext: s.NewGitContext(),
@@ -445,15 +444,14 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 			},
 			expected: "[core]\n" +
 				"\tbare = false\n" +
-				"[remote \"origin\"]\n" +
-				"\turl = ../test/tmp/remote\n" +
-				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
 				"[branch \"master\"]\n" +
 				"\tremote = origin\n" +
 				"\tmerge = refs/heads/master\n" +
 				"[user]\n" +
 				"\tname = keptn\n" +
-				"\temail = keptn@keptn.sh\n",
+				"\temail = keptn@keptn.sh\n" + "[remote \"origin\"]\n" +
+				"\turl = ../test/tmp/remote\n" +
+				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n",
 		},
 		{
 			name: "retrieve from unexisting url",
