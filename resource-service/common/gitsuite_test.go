@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -81,23 +82,24 @@ func cleanupSuite(c *C) {
 func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
 	g := Git{GogitReal{}}
-	err := os.RemoveAll("../test/tmp/shared")
-	//c.Assert(err, IsNil)
+
 	url := "../test/tmp" + "/shared"
-	url, err = filepath.Abs(url)
+	url, err := filepath.Abs(url)
 	c.Assert(err, IsNil)
 
 	//setup remote as bare
 
-	_, err = g.git.PlainInit(url, true)
+	remote, err := g.git.PlainInit(url, true)
 	c.Assert(err, IsNil)
-
+	configUser(remote)
 	// make two local repo pointing at our remote
 
 	repo1, err := git.PlainInit("../test/tmp/repo1", false)
 	c.Assert(err, IsNil)
+	configUser(repo1)
 	repo2, err := git.PlainInit("../test/tmp/repo2", false)
 	c.Assert(err, IsNil)
+	configUser(repo2)
 
 	_, err = repo1.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
@@ -179,6 +181,13 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	//verify current revision
 	curr, err := g.GetCurrentRevision(repo2context)
 	c.Assert(curr, Equals, id)
+}
+
+func configUser(remote *git.Repository) {
+	co, _ := remote.Config()
+	co.User.Name = "keptn"
+	co.User.Email = "keptn@keptn.sh"
+	remote.SetConfig(co)
 }
 
 func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
@@ -419,19 +428,19 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 	tests := []struct {
 		name       string
 		gitContext common_models.GitContext
-		expected   string
+		expected   []string
 		err        error
 	}{
 		{
 			name:       "retrieve already uptodate sockshop",
 			gitContext: s.NewGitContext(),
-			expected: "[core]\n" + "\tbare = false\n" +
+			expected: []string{"[core]\n" + "\tbare = false\n" +
 				"[remote \"origin\"]\n" +
 				"\turl = ../test/tmp/remote\n" +
 				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n" +
 				"[branch \"master\"]\n" +
 				"\tremote = origin\n" +
-				"\tmerge = refs/heads/master\n",
+				"\tmerge = refs/heads/master\n"},
 		},
 		{
 			name: "retrieve from unexisting project",
@@ -442,16 +451,16 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 					Token:     "bjh",
 					RemoteURI: s.url},
 			},
-			expected: "[core]\n" +
-				"\tbare = false\n" +
+			expected: []string{"[core]\n" +
+				"\tbare = false\n",
 				"[branch \"master\"]\n" +
-				"\tremote = origin\n" +
-				"\tmerge = refs/heads/master\n" +
+					"\tremote = origin\n" +
+					"\tmerge = refs/heads/master\n",
 				"[user]\n" +
-				"\tname = keptn\n" +
-				"\temail = keptn@keptn.sh\n" + "[remote \"origin\"]\n" +
-				"\turl = ../test/tmp/remote\n" +
-				"\tfetch = +refs/heads/*:refs/remotes/origin/*\n",
+					"\tname = keptn\n" +
+					"\temail = keptn@keptn.sh\n", "[remote \"origin\"]\n" +
+					"\turl = ../test/tmp/remote\n" +
+					"\tfetch = +refs/heads/*:refs/remotes/origin/*\n"},
 		},
 		{
 			name: "retrieve from unexisting url",
@@ -476,7 +485,9 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 		if err == nil {
 			b, err := os.ReadFile(GetProjectConfigPath(tt.gitContext.Project + "/.git/config"))
 			c.Assert(err, IsNil)
-			c.Assert(string(b), Equals, tt.expected)
+			for _, s := range tt.expected {
+				c.Assert(strings.Contains(string(b), s), Equals, true)
+			}
 		}
 
 	}
