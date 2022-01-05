@@ -79,9 +79,10 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		err := recreateGitUpstreamRepository(projectName)
+		err = recreateGitUpstreamRepository(projectName)
 		if err != nil {
-			return err
+			// retry if repo creation failed (gitea might not be available)
+			continue
 		}
 
 		user := getGiteaUser()
@@ -124,12 +125,12 @@ func TriggerSequence(projectName, serviceName, stageName, sequenceName string, e
 		return "", err
 	}
 
-	context := &models.EventContext{}
-	err = resp.ToJSON(context)
+	eventContext := &models.EventContext{}
+	err = resp.ToJSON(eventContext)
 	if err != nil {
 		return "", err
 	}
-	return *context.KeptnContext, nil
+	return *eventContext.KeptnContext, nil
 }
 
 func GetIntegrationWithName(name string) (models.Integration, error) {
@@ -704,7 +705,7 @@ func recreateGitUpstreamRepository(project string) error {
 
 		jobStatus = get
 		return nil
-	})
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(5*time.Second))
 	if err != nil {
 		return err
 	}
