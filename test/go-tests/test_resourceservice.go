@@ -263,7 +263,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Creating a new resource for non-existing service %s in stage %s for project %s", nonExistingServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", createResourceRequest, 3)
 			require.Nil(t, err)
-			require.Equal(t, 400, resp.Response().StatusCode)
+			// configuration-service returns 400
+			// resource-service returns 404
+			require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource with invalid payload for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", invalidResourceRequest, 3)
@@ -284,7 +286,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Updating existing resource of project %s", projectName)
 	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 	require.Nil(t, err)
-	require.Equal(t, 201, resp.Response().StatusCode)
+	// configuration-service returns 201
+	// resource-service returns 200
+	require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
 
 	t.Logf("Checking resource for project %s", projectName)
 	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
@@ -301,7 +305,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Updating existing list of resources of project %s", projectName)
 	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/resource", updateResourceListRequest, 3)
 	require.Nil(t, err)
-	require.Equal(t, 201, resp.Response().StatusCode)
+	// configuration-service returns 201
+	// resource-service returns 200
+	require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
 
 	t.Logf("Checking all resources for project %s", projectName)
 	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource", 3)
@@ -335,7 +341,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Updating existing resource for stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 		require.Nil(t, err)
-		require.Equal(t, 201, resp.Response().StatusCode)
+		// configuration-service returns 201
+		// resource-service returns 200
+		require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
 
 		t.Logf("Checking resource for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
@@ -352,7 +360,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Updating existing list of resources for stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", updateResourceListRequest, 3)
 		require.Nil(t, err)
-		require.Equal(t, 201, resp.Response().StatusCode)
+		// configuration-service returns 201
+		// resource-service returns 200
+		require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
 
 		t.Logf("Checking all resources for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
@@ -388,7 +398,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Updating existing resource for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 			require.Nil(t, err)
-			require.Equal(t, 201, resp.Response().StatusCode)
+			// configuration-service returns 201
+			// resource-service returns 200
+			require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
@@ -405,7 +417,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Updating existing list of resources for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", updateResourceListRequest, 3)
 			require.Nil(t, err)
-			require.Equal(t, 201, resp.Response().StatusCode)
+			// configuration-service returns 201
+			// resource-service returns 200
+			require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
 
 			t.Logf("Checking all resources for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", 3)
