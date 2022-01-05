@@ -88,28 +88,29 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			endPointErr)
 	}
 
+	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
+	if errObj != nil {
+		return fmt.Errorf("Error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
+	}
+
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
 	if deliveryInputData.Stage == nil || *deliveryInputData.Stage == "" {
 		// retrieve the project information to determine the first stage
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
-		if errObj != nil {
-			return fmt.Errorf("Error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
-		}
 		if len(project.Stages) > 0 {
 			deliveryInputData.Stage = &project.Stages[0].StageName
 		} else {
 			return fmt.Errorf("Could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
 		}
+	}
 
-		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		projectServices, err := servicesHandler.GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
-		if err != nil {
-			return fmt.Errorf("Error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
-		}
-		if !ServiceInSlice(*deliveryInputData.Service, projectServices) {
-			return fmt.Errorf("Could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
-		}
+	servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	projectServices, err := servicesHandler.GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
+	if err != nil {
+		return fmt.Errorf("Error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
+	}
+	if !ServiceInSlice(*deliveryInputData.Service, projectServices) {
+		return fmt.Errorf("Could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
 	}
 
 	jsonStr, err := internal.JSONPathToJSONObj(*deliveryInputData.Values)

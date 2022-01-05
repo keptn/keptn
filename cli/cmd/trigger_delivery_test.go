@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -14,9 +12,64 @@ import (
 	"testing"
 	"time"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
+
+const getProjectMockResponse = `{
+	"creationDate": "1638796448951137480",
+	"projectName": "%s",
+	"shipyard": "",
+	"shipyardVersion": "spec.keptn.sh/0.2.0",
+	"stages": [
+	  {
+		"services": [
+		  {
+			"creationDate": "1638796449959720167",
+			"deployedImage": "podtatoserver:v0.1.2",
+			"openRemediations": null,
+			"serviceName": "helloservice"
+		  }
+		],
+		"stageName": "hardening"
+	  },
+	  {
+		"services": [
+		  {
+			"creationDate": "1638796450461024832",
+			"deployedImage": "podtatoserver:v0.1.2",
+			"openRemediations": null,
+			"serviceName": "helloservice"
+		  }
+		],
+		"stageName": "production",
+		"parentStages": [
+		  "hardening"
+		]
+	  }
+	]
+}`
+
+const getProjectMockResponseNotFound = `{
+	"code": 404,
+	"message": "Project not found: %s"
+}`
+
+const getSvcMockResponse = `{
+	"nextPageKey": "0",
+	"services": [
+	  {
+		"creationDate": "1638796449959720167",
+		"deployedImage": "ghcr.io/podtato-head/podtatoserver:v0.1.2",
+		"openRemediations": null,
+		"serviceName": "helloservice"
+	  }
+	],
+	"totalCount": 1
+}`
 
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
@@ -207,6 +260,55 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 	}
 }
 
+// TestTriggerDeliveryNonExistingProject tests the trigger delivery
+// with non-existing project.
+func TestTriggerDeliveryNonExistingProject(t *testing.T) {
+
+	const nonExistingProject = "myproj"
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+	mocking = true
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(400)
+			res := fmt.Sprintf(getProjectMockResponseNotFound, nonExistingProject)
+			w.Write([]byte(res))
+		}),
+	)
+	defer ts.Close()
+	os.Setenv("MOCK_SERVER", ts.URL)
+
+	tests := []struct {
+		project string
+		wantErr bool
+	}{
+		{
+			project: nonExistingProject,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			cmd := fmt.Sprintf("trigger delivery --project=%s --service=mysvc --image=%s --tag=%s --mock",
+				tt.project,
+				"docker.io/keptnexamples/carts",
+				"0.9.1")
+			_, err := executeActionCommandC(cmd)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("wanted error: %t, got: %v", tt.wantErr, err)
+			}
+			msg := fmt.Sprintf("%v", err)
+			if !strings.Contains(msg, "Project not found") {
+				t.Errorf("wanted project not found")
+			}
+		})
+	}
+}
+
 // TestTriggerDeliveryNonExistingService tests the trigger delivery
 // with non-existing service.
 func TestTriggerDeliveryNonExistingService(t *testing.T) {
@@ -214,15 +316,23 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 	projectName := "sockshop"
-
-	shipyardFilePath := "./shipyard.yaml"
-	defer testShipyard(t, shipyardFilePath, "")()
-
-	cmd := fmt.Sprintf("create project %s --shipyard=%s --mock", projectName, shipyardFilePath)
-	_, err := executeActionCommandC(cmd)
-	if err != nil {
-		t.Errorf(unexpectedErrMsg, err)
-	}
+	mocking = true
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			if strings.Contains(r.RequestURI, "service") {
+				w.Write([]byte(getSvcMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, "/controlPlane/v1/project/") {
+				res := fmt.Sprintf(getProjectMockResponse, projectName)
+				w.Write([]byte(res))
+				return
+			}
+		}),
+	)
+	defer ts.Close()
+	os.Setenv("MOCK_SERVER", ts.URL)
 
 	tests := []struct {
 		service string
@@ -233,15 +343,18 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			service: "",
-			wantErr: true,
+			service: "helloservice",
+			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --sequence=%s "+
-				"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e --mock", projectName, tt.service, "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
+			cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --image=%s --tag=%s --values=a.b.c=d --mock",
+				projectName,
+				tt.service,
+				"docker.io/keptnexamples/carts",
+				"0.9.1")
 			_, err := executeActionCommandC(cmd)
 
 			if (err != nil) != tt.wantErr {
