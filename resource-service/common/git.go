@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -154,6 +155,10 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 	if message == "" {
 		message = "commit changes"
 	}
+	err = w.AddWithOptions(&git.AddOptions{All: true})
+	if err != nil {
+		return "", err
+	}
 	id, err := w.Commit(message,
 		&git.CommitOptions{
 			All: true,
@@ -230,10 +235,15 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
 		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			return nil
+		if err != nil {
+			if errors.Is(err, git.NoErrAlreadyUpToDate) {
+				return nil
+			} else if errors.Is(err, transport.ErrEmptyRemoteRepository) {
+				return nil
+			}
+			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
+		return nil
 	}
 	return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
 }

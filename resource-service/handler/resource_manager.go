@@ -172,6 +172,9 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {
+		if err := p.git.Pull(*gitContext); err != nil {
+			return nil, err
+		}
 		fileContent, err = p.fileSystem.ReadFile(resourcePath)
 		if err != nil {
 			return nil, err

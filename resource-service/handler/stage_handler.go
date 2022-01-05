@@ -10,7 +10,6 @@ import (
 
 type IStageHandler interface {
 	CreateStage(context *gin.Context)
-	UpdateStage(context *gin.Context)
 	DeleteStage(context *gin.Context)
 }
 

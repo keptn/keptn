@@ -1,11 +1,19 @@
 package go_tests
 
 import (
+	"context"
+	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
 )
+
+const configurationServiceBasePath = "/configuration-service/v1/project"
 
 func Test_ResourceServiceBasic(t *testing.T) {
 	projectName := "resource-service-test-project"
@@ -76,17 +84,25 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	///////////////////////////////////////
 
 	t.Logf("Creating a new project %s", projectName)
-	resp, err := ApiPOSTRequest("/configuration-service/v1/project", createProjectRequest, 3)
+
+	t.Logf("Deleting project from previous test run %s", projectName)
+	_, err := ApiDELETERequest(configurationServiceBasePath+"/"+projectName, 3)
+	require.Nil(t, err)
+
+	_, _, err = createConfigServiceUpstreamRepo(projectName)
+	require.Nil(t, err)
+
+	resp, err := ApiPOSTRequest(configurationServiceBasePath, createProjectRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 204, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource for project %s", projectName)
-	resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/resource", createResourceRequest, 3)
+	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/resource", createResourceRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 201, resp.Response().StatusCode)
 
 	t.Logf("Checking resource for project %s", projectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -98,7 +114,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	require.Equal(t, resourceContent, resource.ResourceContent)
 
 	t.Logf("Checking all resources for project %s", projectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/resource", 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource", 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -110,38 +126,41 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	require.Nil(t, checkResourceInResponse(resources, resourceUriPath))
 
 	t.Logf("Checking all resources for non-existing project %s", nonExistingProjectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+nonExistingProjectName+"/resource", 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+nonExistingProjectName+"/resource", 3)
 	require.Nil(t, err)
 	require.Equal(t, 404, resp.Response().StatusCode)
 
 	t.Logf("Creating an existing new project %s", projectName)
-	resp, err = ApiPOSTRequest("/configuration-service/v1/project", createProjectRequest, 3)
+	resp, err = ApiPOSTRequest(configurationServiceBasePath, createProjectRequest, 3)
 	require.Nil(t, err)
-	require.Equal(t, 400, resp.Response().StatusCode)
+
+	// configuration-service returns 400
+	// resource-service returns 409
+	require.Contains(t, []int{400, 409}, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource for non-existing project %s", nonExistingProjectName)
-	resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+nonExistingProjectName+"/resource", createResourceRequest, 3)
+	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+nonExistingProjectName+"/resource", createResourceRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 400, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource with invalid payload for project %s", projectName)
-	resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/resource", invalidResourceRequest, 3)
+	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/resource", invalidResourceRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 400, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
 		t.Logf("Creating a new stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage", stageReq, 3)
+		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage", stageReq, 3)
 		require.Nil(t, err)
 		require.Equal(t, 204, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource", createResourceRequest, 3)
+		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", createResourceRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 201, resp.Response().StatusCode)
 
 		t.Logf("Checking resource for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
 		require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -153,7 +172,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		require.Equal(t, resourceContent, resource.ResourceContent)
 
 		t.Logf("Checking all resources for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
 		require.Nil(t, err)
 		require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -165,22 +184,22 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		require.Nil(t, checkResourceInResponse(resources, resourceUriPath))
 
 		t.Logf("Checking all resources for non-existing stage %s for project %s", nonExistingStageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+nonExistingStageName+"/resource", 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+nonExistingStageName+"/resource", 3)
 		require.Nil(t, err)
 		require.Equal(t, 404, resp.Response().StatusCode)
 
 		t.Logf("Creating an existing new stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage", stageReq, 3)
+		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage", stageReq, 3)
 		require.Nil(t, err)
 		require.Equal(t, 400, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource for non-existing stage %s for project %s", nonExistingStageName, projectName)
-		resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+nonExistingStageName+"/resource", createResourceRequest, 3)
+		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+nonExistingStageName+"/resource", createResourceRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 400, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource with invalid payload for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource", invalidResourceRequest, 3)
+		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", invalidResourceRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 400, resp.Response().StatusCode)
 	}
@@ -188,17 +207,17 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	for _, stageReq := range createStageRequests {
 		for _, serviceReq := range createServiceRequests {
 			t.Logf("Creating a new service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service", serviceReq, 3)
+			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service", serviceReq, 3)
 			require.Nil(t, err)
 			require.Equal(t, 204, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", createResourceRequest, 3)
+			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", createResourceRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 201, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
 			require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -210,7 +229,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			require.Equal(t, resourceContent, resource.ResourceContent)
 
 			t.Logf("Checking all resources for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", 3)
 			require.Nil(t, err)
 			require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -222,22 +241,22 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			require.Nil(t, checkResourceInResponse(resources, resourceUriPath))
 
 			t.Logf("Checking all resources for non-existing service %s in stage %s for project %s", nonExistingServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", 3)
 			require.Nil(t, err)
 			require.Equal(t, 404, resp.Response().StatusCode)
 
 			t.Logf("Creating an existing new service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service", serviceReq, 3)
+			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service", serviceReq, 3)
 			require.Nil(t, err)
 			require.Equal(t, 400, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource for non-existing service %s in stage %s for project %s", nonExistingServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", createResourceRequest, 3)
+			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", createResourceRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 400, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource with invalid payload for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPOSTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", invalidResourceRequest, 3)
+			resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", invalidResourceRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 400, resp.Response().StatusCode)
 		}
@@ -248,17 +267,17 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	///////////////////////////////////////
 
 	t.Logf("Updating project %s", projectName)
-	resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName, updateProjectRequest, 3)
+	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName, updateProjectRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 204, resp.Response().StatusCode)
 
 	t.Logf("Updating existing resource of project %s", projectName)
-	resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, updateResourceRequest, 3)
+	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 201, resp.Response().StatusCode)
 
 	t.Logf("Checking resource for project %s", projectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -270,12 +289,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	require.Equal(t, newResourceContent, resource.ResourceContent)
 
 	t.Logf("Updating existing list of resources of project %s", projectName)
-	resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/resource", updateResourceListRequest, 3)
+	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/resource", updateResourceListRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 201, resp.Response().StatusCode)
 
 	t.Logf("Checking all resources for project %s", projectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/resource", 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource", 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -288,28 +307,28 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	require.Nil(t, checkResourceInResponse(resources, newResourceUriPath))
 
 	t.Logf("Updating existing resource with invalid payload of project %s", projectName)
-	resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, invalidResourceRequest, 3)
+	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, invalidResourceRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 400, resp.Response().StatusCode)
 
 	t.Logf("Updating existing list of resources with invalid payload of project %s", projectName)
-	resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/resource", invalidResourceRequest, 3)
+	resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/resource", invalidResourceRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 400, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
 		t.Logf("Updating stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName, stageReq, 3)
+		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName, stageReq, 3)
 		require.Nil(t, err)
 		require.Equal(t, 501, resp.Response().StatusCode) // should be 204 in resource-service
 
 		t.Logf("Updating existing resource for stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, updateResourceRequest, 3)
+		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 201, resp.Response().StatusCode)
 
 		t.Logf("Checking resource for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
 		require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -321,12 +340,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		require.Equal(t, newResourceContent, resource.ResourceContent)
 
 		t.Logf("Updating existing list of resources for stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource", updateResourceListRequest, 3)
+		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", updateResourceListRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 201, resp.Response().StatusCode)
 
 		t.Logf("Checking all resources for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
 		require.Nil(t, err)
 		require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -339,12 +358,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		require.Nil(t, checkResourceInResponse(resources, newResourceUriPath))
 
 		t.Logf("Updating existing resource with invalid payload for stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, invalidResourceRequest, 3)
+		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, invalidResourceRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 400, resp.Response().StatusCode)
 
 		t.Logf("Updating existing list of resources with invalid payload for stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource", invalidResourceRequest, 3)
+		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", invalidResourceRequest, 3)
 		require.Nil(t, err)
 		require.Equal(t, 400, resp.Response().StatusCode)
 	}
@@ -352,17 +371,17 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	for _, stageReq := range createStageRequests {
 		for _, serviceReq := range createServiceRequests {
 			t.Logf("Updating service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, serviceReq, 3)
+			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, serviceReq, 3)
 			require.Nil(t, err)
 			require.Equal(t, 501, resp.Response().StatusCode) // should be 204 in resource-service
 
 			t.Logf("Updating existing resource for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, updateResourceRequest, 3)
+			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 201, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
 			require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -374,12 +393,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			require.Equal(t, newResourceContent, resource.ResourceContent)
 
 			t.Logf("Updating existing list of resources for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", updateResourceListRequest, 3)
+			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", updateResourceListRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 201, resp.Response().StatusCode)
 
 			t.Logf("Checking all resources for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", 3)
 			require.Nil(t, err)
 			require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -392,12 +411,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			require.Nil(t, checkResourceInResponse(resources, newResourceUriPath))
 
 			t.Logf("Updating existing resource with invalid payload for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, invalidResourceRequest, 3)
+			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, invalidResourceRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 400, resp.Response().StatusCode)
 
 			t.Logf("Updating existing list of resources with invalid payload for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPUTRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", invalidResourceRequest, 3)
+			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", invalidResourceRequest, 3)
 			require.Nil(t, err)
 			require.Equal(t, 400, resp.Response().StatusCode)
 		}
@@ -410,32 +429,32 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	for _, stageReq := range createStageRequests {
 		for _, serviceReq := range createServiceRequests {
 			t.Logf("Deleting the resource from service %s from stage %s from project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
+			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
 			require.Equal(t, 204, resp.Response().StatusCode)
 
 			t.Logf("Checking non-existing resource for service %s for stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
 			require.Equal(t, 404, resp.Response().StatusCode)
 
 			t.Logf("Deleting non-existing resource from service %s from stage %s from project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
+			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
 			require.Equal(t, 500, resp.Response().StatusCode) //needs other code in restore-service
 
 			t.Logf("Deleting service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, 3)
+			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, 3)
 			require.Nil(t, err)
 			require.Equal(t, 204, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for non-existing service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
+			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
 			require.Equal(t, 404, resp.Response().StatusCode)
 
 			t.Logf("Deleting non-existing service %s in stage %s in project %s", nonExistingServiceName, stageReq.StageName, projectName)
-			resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName, 3)
+			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName, 3)
 			require.Nil(t, err)
 			require.Equal(t, 400, resp.Response().StatusCode)
 		}
@@ -443,65 +462,112 @@ func Test_ResourceServiceBasic(t *testing.T) {
 
 	for _, stageReq := range createStageRequests {
 		t.Logf("Deleting the resource from stage %s from project %s", stageReq.StageName, projectName)
-		resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
+		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
 		require.Equal(t, 204, resp.Response().StatusCode)
 
 		t.Logf("Checking non-existing resource for stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
 		require.Equal(t, 404, resp.Response().StatusCode)
 
 		t.Logf("Deleting non-existing resource from stage %s from project %s", stageReq.StageName, projectName)
-		resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
+		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
 		require.Equal(t, 500, resp.Response().StatusCode) //needs other code in restore-service
 
 		t.Logf("Deleting stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName, 3)
+		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName, 3)
 		require.Nil(t, err)
 		require.Equal(t, 501, resp.Response().StatusCode) //will be 204 for restore-service
 
 		t.Logf("Checking resource for non-existing stage %s for project %s", stageReq.StageName, projectName)
-		resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
+		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
 		require.Equal(t, 404, resp.Response().StatusCode)
 
 		//delete non-existing project
 		t.Logf("Deleting non-existing stage %s in project %s", nonExistingStageName, projectName)
-		resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/stage/"+nonExistingStageName, 3)
+		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+nonExistingStageName, 3)
 		require.Nil(t, err)
 		require.Equal(t, 501, resp.Response().StatusCode) //will be 400 for restore-service
 	}
 
 	t.Logf("Deleting the resource from project %s", projectName)
-	resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, 3)
+	resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
 	require.Equal(t, 204, resp.Response().StatusCode)
 
 	t.Logf("Checking non-existing resource for project %s", projectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
 	require.Equal(t, 404, resp.Response().StatusCode)
 
 	t.Logf("Deleting non-existing resource from project %s", projectName)
-	resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, 3)
+	resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
 	require.Equal(t, 500, resp.Response().StatusCode) //needs other code in restore-service
 
 	t.Logf("Deleting the project %s", projectName)
-	resp, err = ApiDELETERequest("/configuration-service/v1/project/"+projectName, 3)
+	resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName, 3)
 	require.Nil(t, err)
 	require.Equal(t, 204, resp.Response().StatusCode)
 
 	t.Logf("Checking resource for non-existing project %s", projectName)
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/resource"+resourceUriPath, 3)
+	resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
 	require.Equal(t, 404, resp.Response().StatusCode)
 
 	t.Logf("Deleting non-existing project %s", nonExistingProjectName)
-	resp, err = ApiDELETERequest("/configuration-service/v1/project/"+nonExistingProjectName, 3)
+	resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+nonExistingProjectName, 3)
 	require.Nil(t, err)
 	require.Equal(t, 204, resp.Response().StatusCode)
+}
 
+func createConfigServiceUpstreamRepo(projectName string) (string, string, error) {
+	retry.Retry(func() error {
+		err := RecreateGitUpstreamRepository(projectName)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	user := GetGiteaUser()
+	token, err := GetGiteaToken()
+	if err != nil {
+		return "", "", err
+	}
+
+	client, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return "", "", err
+	}
+
+	secretName := "git-credentials-" + projectName
+
+	get, err := client.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), secretName, v1.GetOptions{})
+	if err == nil && get != nil {
+		if err := client.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Delete(context.TODO(), secretName, v1.DeleteOptions{}); err != nil {
+			return "", "", err
+		}
+	}
+
+	secretData := fmt.Sprintf(`{"user":"%s","token":"%s","remoteURI":"http://gitea-http:3000/%s/%s"}`, user, token, user, projectName)
+
+	_, err = client.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Create(context.TODO(), &corev1.Secret{
+		TypeMeta: v1.TypeMeta{},
+		ObjectMeta: v1.ObjectMeta{
+			Name:      secretName,
+			Namespace: GetKeptnNameSpaceFromEnv(),
+		},
+		Data: map[string][]byte{
+			"git-credentials": []byte(secretData),
+		},
+		Type: corev1.SecretTypeOpaque,
+	}, v1.CreateOptions{})
+	if err != nil {
+		return "", "", err
+	}
+	return user, token, nil
 }

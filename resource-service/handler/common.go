@@ -27,7 +27,7 @@ func OnAPIError(c *gin.Context, err error) {
 	} else if errors.Is(err, errors2.ErrRepositoryNotFound) {
 		SetBadRequestErrorResponse(c, "Upstream repository not found")
 	} else if errors.Is(err, errors2.ErrCredentialsNotFound) {
-		SetFailedDependencyErrorResponse(c, "Could not find credentials for upstream repository")
+		SetNotFoundErrorResponse(c, "Could not find credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrMalformedCredentials) {
 		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrProjectNotFound) {

@@ -39,11 +39,12 @@ func (s *BaseSuite) TearDownSuite(c *C) {
 	err := os.RemoveAll("./debug")
 	c.Assert(err, IsNil)
 
-	err = os.RemoveAll("../test/tmp/remote")
-	c.Assert(err, IsNil)
+	deleteDirs := []string{"remote", "sockshop", "mine", "nonexisting", "podtato", "so"}
 
-	err = os.RemoveAll("../test/tmp/sockshop")
-	c.Assert(err, IsNil)
+	for _, dir := range deleteDirs {
+		err = os.RemoveAll("../test/tmp/" + dir)
+		c.Assert(err, IsNil)
+	}
 }
 
 func (s *BaseSuite) SetUpTest(c *C) {

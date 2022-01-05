@@ -29,7 +29,7 @@ import (
 // 			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 // 				panic("mock out the GetDefaultBranch method")
 // 			},
-// 			GetFileRevisionFunc: func(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error) {
+// 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 // 				panic("mock out the GetFileRevision method")
 // 			},
 // 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
@@ -70,7 +70,7 @@ type IGitMock struct {
 	GetDefaultBranchFunc func(gitContext common_models.GitContext) (string, error)
 
 	// GetFileRevisionFunc mocks the GetFileRevision method.
-	GetFileRevisionFunc func(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error)
+	GetFileRevisionFunc func(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common_models.GitContext) bool
@@ -124,8 +124,6 @@ type IGitMock struct {
 		GetFileRevision []struct {
 			// GitContext is the gitContext argument value.
 			GitContext common_models.GitContext
-			// Path is the path argument value.
-			Path string
 			// Revision is the revision argument value.
 			Revision string
 			// File is the file argument value.
@@ -340,25 +338,23 @@ func (mock *IGitMock) GetDefaultBranchCalls() []struct {
 }
 
 // GetFileRevision calls GetFileRevisionFunc.
-func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error) {
+func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 	if mock.GetFileRevisionFunc == nil {
 		panic("IGitMock.GetFileRevisionFunc: method is nil but IGit.GetFileRevision was just called")
 	}
 	callInfo := struct {
 		GitContext common_models.GitContext
-		Path       string
 		Revision   string
 		File       string
 	}{
 		GitContext: gitContext,
-		Path:       path,
 		Revision:   revision,
 		File:       file,
 	}
 	mock.lockGetFileRevision.Lock()
 	mock.calls.GetFileRevision = append(mock.calls.GetFileRevision, callInfo)
 	mock.lockGetFileRevision.Unlock()
-	return mock.GetFileRevisionFunc(gitContext, path, revision, file)
+	return mock.GetFileRevisionFunc(gitContext, revision, file)
 }
 
 // GetFileRevisionCalls gets all the calls that were made to GetFileRevision.
@@ -366,13 +362,11 @@ func (mock *IGitMock) GetFileRevision(gitContext common_models.GitContext, path 
 //     len(mockedIGit.GetFileRevisionCalls())
 func (mock *IGitMock) GetFileRevisionCalls() []struct {
 	GitContext common_models.GitContext
-	Path       string
 	Revision   string
 	File       string
 } {
 	var calls []struct {
 		GitContext common_models.GitContext
-		Path       string
 		Revision   string
 		File       string
 	}

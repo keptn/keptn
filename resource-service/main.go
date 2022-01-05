@@ -56,7 +56,7 @@ func main() {
 	}
 
 	engine := gin.Default()
-	/// setting up middlewere to handle graceful shutdown
+	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 
 	apiV1 := engine.Group("/v1")
@@ -70,6 +70,22 @@ func main() {
 	fileWriter := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
+
+	projectManager := handler.NewProjectManager(git, credentialReader, fileWriter)
+	projectHandler := handler.NewProjectHandler(projectManager)
+	projectController := controller.NewProjectController(projectHandler)
+	projectController.Inject(apiV1)
+
+	stageManager := handler.NewStageManager(git, credentialReader)
+	stageHandler := handler.NewStageHandler(stageManager)
+	stageController := controller.NewStageController(stageHandler)
+	stageController.Inject(apiV1)
+
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileWriter)
+	serviceHandler := handler.NewServiceHandler(serviceManager)
+	serviceController := controller.NewServiceController(serviceHandler)
+	serviceController.Inject(apiV1)
+
 	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
