@@ -5,7 +5,8 @@
     "schedule:nonOfficeHours",
     ":semanticCommitTypeAll(build)",
     ":semanticCommitScope(deps)",
-    "group:monorepos"
+    "group:monorepos",
+    ":automergePatch"
   ],
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,

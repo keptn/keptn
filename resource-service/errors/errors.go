@@ -79,6 +79,10 @@ var ErrIsBareRepository = New("worktree not available in a bare repository")
 var ErrUnableToResolveCommit = New("unable to resolve commit")
 var ErrPackedObjectsNotSupported = New("packed objects not supported")
 var ErrReferenceNotFound = New("reference not found")
+var NoErrAlreadyUpToDate = New("already up-to-date")
+var ErrDeleteRefNotSupported = New("server does not support delete-refs")
+var ErrForceNeeded = New("some refs were not updated")
+var ErrExactSHA1NotSupported = New("server does not support exact SHA1 refspec")
 
 // Credential specific errors
 
