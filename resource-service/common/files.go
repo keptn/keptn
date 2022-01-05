@@ -114,7 +114,6 @@ func (FileSystem) DeleteFile(path string) error {
 
 func (FileSystem) FileExists(path string) bool {
 	_, err := os.Stat(path)
-	// create file if not exists
 	if os.IsNotExist(err) {
 		return false
 	}

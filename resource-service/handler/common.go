@@ -18,7 +18,7 @@ func OnAPIError(c *gin.Context, err error) {
 	logger.Infof("Could not complete request %s %s: %v", c.Request.Method, c.Request.RequestURI, err)
 	if errors.Is(err, errors2.ErrProjectAlreadyExists) {
 		SetConflictErrorResponse(c, "Project already exists")
-	} else if errors.Is(err, errors2.ErrStageAlreadyExists) {
+	} else if errors.Is(err, errors2.ErrStageAlreadyExists) || errors.Is(err, errors2.ErrBranchExists) {
 		SetConflictErrorResponse(c, "Stage already exists")
 	} else if errors.Is(err, errors2.ErrServiceAlreadyExists) {
 		SetConflictErrorResponse(c, "Service already exists")
@@ -32,7 +32,7 @@ func OnAPIError(c *gin.Context, err error) {
 		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrProjectNotFound) {
 		SetNotFoundErrorResponse(c, "Project not found")
-	} else if errors.Is(err, errors2.ErrStageNotFound) {
+	} else if errors.Is(err, errors2.ErrStageNotFound) || errors.Is(err, errors2.ErrReferenceNotFound) {
 		SetNotFoundErrorResponse(c, "Stage not found")
 	} else if errors.Is(err, errors2.ErrServiceNotFound) {
 		SetNotFoundErrorResponse(c, "Service not found")

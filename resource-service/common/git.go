@@ -341,6 +341,9 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 
 	// First try to check out branch
 	err = w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
+	if err == nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, kerrors.ErrBranchExists)
+	}
 
 	if err != nil {
 		// got an error  - try to create it
@@ -370,6 +373,9 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 		Branch: b,
 	})
 	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, kerrors.ErrReferenceNotFound)
+		}
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, err)
 	}
 	return nil

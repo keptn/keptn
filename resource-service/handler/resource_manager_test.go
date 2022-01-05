@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -864,6 +865,38 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 	require.Nil(t, result)
 
 	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Empty(t, fields.git.GetFileRevisionCalls())
+}
+
+func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		if strings.Contains(path, "/my-service") {
+			return false
+		}
+		return true
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
+			Service: &models.Service{ServiceName: "my-service"},
+		},
+		ResourceURI: "file1",
+		GetResourceQuery: models.GetResourceQuery{
+			GitCommitID: "my-commit-id",
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 

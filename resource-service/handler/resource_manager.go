@@ -159,6 +159,9 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		configPath = common.GetProjectConfigPath(project.ProjectName)
 	} else {
 		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
+		if !p.fileSystem.FileExists(configPath) {
+			return nil, "", errors.ErrServiceNotFound
+		}
 	}
 	return &gitContext, configPath, nil
 }

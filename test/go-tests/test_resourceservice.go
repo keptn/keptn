@@ -141,11 +141,15 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Creating a new resource for non-existing project %s", nonExistingProjectName)
 	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+nonExistingProjectName+"/resource", createResourceRequest, 3)
 	require.Nil(t, err)
+	// configuration-service returns 400
+	// resource-service returns 404
 	require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource with invalid payload for project %s", projectName)
 	resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/resource", invalidResourceRequest, 3)
 	require.Nil(t, err)
+	// configuration-service returns 400
+	// resource-service returns 404
 	require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
@@ -191,12 +195,16 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Creating an existing new stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage", stageReq, 3)
 		require.Nil(t, err)
-		require.Equal(t, 400, resp.Response().StatusCode)
+		// configuration-service returns 400
+		// resource-service returns 409
+		require.Contains(t, []int{400, 409}, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource for non-existing stage %s for project %s", nonExistingStageName, projectName)
 		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+nonExistingStageName+"/resource", createResourceRequest, 3)
 		require.Nil(t, err)
-		require.Equal(t, 400, resp.Response().StatusCode)
+		// configuration-service returns 400
+		// resource-service returns 404
+		require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource with invalid payload for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", invalidResourceRequest, 3)
