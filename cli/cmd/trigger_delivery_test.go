@@ -31,24 +31,10 @@ const getProjectMockResponse = `{
 			"creationDate": "1638796449959720167",
 			"deployedImage": "podtatoserver:v0.1.2",
 			"openRemediations": null,
-			"serviceName": "helloservice"
+			"serviceName": "%s"
 		  }
 		],
-		"stageName": "hardening"
-	  },
-	  {
-		"services": [
-		  {
-			"creationDate": "1638796450461024832",
-			"deployedImage": "podtatoserver:v0.1.2",
-			"openRemediations": null,
-			"serviceName": "helloservice"
-		  }
-		],
-		"stageName": "production",
-		"parentStages": [
-		  "hardening"
-		]
+		"stageName": "%s"
 	  }
 	]
 }`
@@ -65,7 +51,7 @@ const getSvcMockResponse = `{
 		"creationDate": "1638796449959720167",
 		"deployedImage": "ghcr.io/podtato-head/podtatoserver:v0.1.2",
 		"openRemediations": null,
-		"serviceName": "helloservice"
+		"serviceName": "%s"
 	  }
 	],
 	"totalCount": 1
@@ -112,8 +98,15 @@ func TestTriggerDelivery(t *testing.T) {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
 				return
+			} else if strings.Contains(r.RequestURI, "service") {
+				res := fmt.Sprintf(getSvcMockResponse, "carts")
+				w.Write([]byte(res))
+				return
+			} else if strings.Contains(r.RequestURI, "/controlPlane/v1/project/") {
+				res := fmt.Sprintf(getProjectMockResponse, "sockshop", "carts", "dev")
+				w.Write([]byte(res))
+				return
 			}
-			return
 		}),
 	)
 	defer ts.Close()
@@ -149,18 +142,6 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
-			if strings.Contains(r.RequestURI, "v1/project") {
-				project := &apimodels.Project{
-					ProjectName: "sockshop",
-					Stages: []*apimodels.Stage{
-						{
-							StageName: "dev",
-						},
-					},
-				}
-				marshal, _ := json.Marshal(project)
-				w.Write(marshal)
-			}
 			if strings.Contains(r.RequestURI, "v1/event") {
 				defer r.Body.Close()
 				bytes, err := ioutil.ReadAll(r.Body)
@@ -181,8 +162,15 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
 				return
+			} else if strings.Contains(r.RequestURI, "service") {
+				res := fmt.Sprintf(getSvcMockResponse, "carts")
+				w.Write([]byte(res))
+				return
+			} else if strings.Contains(r.RequestURI, "/controlPlane/v1/project/") {
+				res := fmt.Sprintf(getProjectMockResponse, "sockshop", "carts", "dev")
+				w.Write([]byte(res))
+				return
 			}
-			return
 		}),
 	)
 	defer ts.Close()
@@ -321,11 +309,16 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
-			if strings.Contains(r.RequestURI, "service") {
-				w.Write([]byte(getSvcMockResponse))
+			if strings.Contains(r.RequestURI, "/v1/metadata") {
+				defer r.Body.Close()
+				w.Write([]byte(metadataMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, "service") {
+				res := fmt.Sprintf(getSvcMockResponse, "helloservice")
+				w.Write([]byte(res))
 				return
 			} else if strings.Contains(r.RequestURI, "/controlPlane/v1/project/") {
-				res := fmt.Sprintf(getProjectMockResponse, projectName)
+				res := fmt.Sprintf(getProjectMockResponse, projectName, "carts", "dev")
 				w.Write([]byte(res))
 				return
 			}
