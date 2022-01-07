@@ -59,6 +59,7 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 
 	// make local git repo
 	s.Repository, err = git.PlainClone("../test/tmp"+"/sockshop", false, &git.CloneOptions{URL: s.url})
+	configUser(s.Repository)
 	c.Assert(err, IsNil)
 }
 
@@ -193,8 +194,8 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
 func configUser(remote *git.Repository) {
 	co, _ := remote.Config()
-	co.User.Name = "keptn"
-	co.User.Email = "keptn@keptn.sh"
+	co.User.Name = "mykeptn"
+	co.User.Email = "mykeptn@keptn.sh"
 	remote.SetConfig(co)
 }
 func (s *BaseSuite) TestGit_ComponentTest(c *C) {
@@ -920,6 +921,49 @@ func (s *BaseSuite) Test_getGitKeptnEmail(c *C) {
 		}
 	}
 
+}
+
+func (s *BaseSuite) Test_configureGitUser(c *C) {
+	type User struct {
+		Name  string
+		Email string
+	}
+
+	tests := []struct {
+		name string
+		url  string
+		err  error
+		user User
+	}{
+
+		{
+			name: "no user repo",
+			url:  "https://github.com/git-fixtures/base.git",
+			err:  nil,
+		},
+		{
+			name: "preexisting user sockshop repo",
+			url:  s.url,
+			err:  nil,
+			user: User{Name: "ciccio", Email: "bello@yahoo.com"},
+		},
+	}
+	for _, tt := range tests {
+		newRepo, err := git.Clone(memory.NewStorage(), memfs.New(), &git.CloneOptions{URL: tt.url})
+		config, err := newRepo.Config()
+		c.Assert(err, IsNil)
+		config.User = tt.user
+		newRepo.SetConfig(config)
+
+		c.Assert(err, IsNil)
+		if err := configureGitUser(newRepo); err != tt.err {
+			c.Errorf("configureGitUser() error = %v, wantErr %v", err, tt.err)
+		}
+		user := config.User
+		c.Assert(tt.user, Not(DeepEquals), user)
+		c.Assert(config.User.Email, Equals, getGitKeptnEmail())
+		c.Assert(config.User.Name, Equals, getGitKeptnUser())
+	}
 }
 
 func (s *BaseSuite) NewGitContext() common_models.GitContext {

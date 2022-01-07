@@ -429,6 +429,12 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 
 	var re (io.Reader)
 	re, err = blob.Reader()
+
+	if err != nil {
+		return []byte{},
+			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
+	}
+
 	return ioutil.ReadAll(re)
 }
 
