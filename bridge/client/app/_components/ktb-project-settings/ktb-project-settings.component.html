@@ -56,13 +56,17 @@
       </div>
     </div>
 
-    <div [ngClass]="['settings-section', dialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
+    <div [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>
 </div>
 
-<dt-confirmation-dialog [state]="dialogState" aria-label="Dialog for notifying about unsaved data">
+<dt-confirmation-dialog
+  id="unsavedDataDialog"
+  [state]="unsavedDialogState"
+  aria-label="Dialog for notifying about unsaved data"
+>
   <dt-confirmation-dialog-state name="unsaved">
     <p [textContent]="message"></p>
     <dt-confirmation-dialog-actions>

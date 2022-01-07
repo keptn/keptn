@@ -52,7 +52,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
   });
 
   public message = 'You have pending changes. Make sure to save your data before you continue.';
-  public dialogState: DialogState = null;
+  public unsavedDialogState: DialogState = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -284,12 +284,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, Component
   @HostListener('window:beforeunload', ['$event'])
   showNotification($event: any): void {
     if (!this.canDeactivate()) {
-      this.dialogState = 'unsaved';
+      this.unsavedDialogState = 'unsaved';
       $event.returnValue = this.message;
     }
   }
 
   hideNotification(): void {
-    this.dialogState = null;
+    this.unsavedDialogState = null;
   }
 }
