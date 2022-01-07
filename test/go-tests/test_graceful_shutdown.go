@@ -104,8 +104,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
-	err = waitAndKill(t, shipyardPod, 20)
-	require.Nil(t, err)
+	waitAndKill(t, shipyardPod, 30)
 
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
@@ -117,33 +116,39 @@ func Test_GracefulShutdown(t *testing.T) {
 
 	t.Log("Verify Direct delivery of helloservice in stage dev")
 	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	require.Nil(t, err)
+	logError(err, t, shipyardPod)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
 	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
-	require.Nil(t, err)
+	logError(err, t, shipyardPod)
+
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
-	require.Nil(t, err)
+	logError(err, t, shipyardPod)
 
 	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
 	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	require.Nil(t, err)
+	logError(err, t, shipyardPod)
 
 	t.Log("Verify network access to public URI of helloservice in stage staging")
 	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
-	require.Nil(t, err)
+	logError(err, t, shipyardPod)
+
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
-	if err != nil {
-		t.Log(GetDiagnostics(shipyardPod, ""))
-	}
-	require.Nil(t, err)
+	logError(err, t, shipyardPod)
 
 }
 
-func waitAndKill(t *testing.T, keptnServiceName string, waitFor int) error {
+func waitAndKill(t *testing.T, keptnServiceName string, waitFor int) {
 	t.Logf("Sleeping %d seconds...\n", waitFor)
 	time.Sleep(time.Duration(waitFor) * time.Second)
 	t.Logf("Killing %s Pod", keptnServiceName)
 	err := RestartPod(keptnServiceName)
-	return err
+	logError(err, t, keptnServiceName)
+}
+
+func logError(err error, t *testing.T, service string) {
+	if err != nil {
+		t.Log(GetDiagnostics(service, ""))
+	}
+	require.Nil(t, err)
 }
