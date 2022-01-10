@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const TESTPATH = "../test/tmpRepos"
+const TESTPATH = "../test/tmpRepo"
 
 func Test(t *testing.T) { TestingT(t) }
 
