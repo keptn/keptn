@@ -17,7 +17,10 @@ func TestMain(m *testing.M) {
 
 	events, err := GetOOMEvents()
 	if code == 0 && (len(events.Items) != 0 || err != nil) {
-		println("There were some out of memory Errors!")
+		println("There were some out of memory Errors! The error messages will be printed below:")
+		for _, oomEvent := range events.Items {
+			println(oomEvent.Message)
+		}
 		os.Exit(-1)
 	}
 

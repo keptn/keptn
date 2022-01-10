@@ -163,8 +163,9 @@ func WaitForPodOfDeployment(deploymentName string) error {
 }
 
 type K8SEvent struct {
-	Reason string `json:"reason"`
-	Type   string `json:"type"`
+	Reason  string `json:"reason"`
+	Type    string `json:"type"`
+	Message string `json:"message"`
 }
 
 type K8SEventArray struct {
