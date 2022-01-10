@@ -25,7 +25,7 @@ class MockComponent implements PendingChangesComponent {
     return this.returnValue;
   }
 
-  showNotification($event: any): void {
+  showNotification($event?: BeforeUnloadEvent): void {
     this.notificationState = 'unsaved';
   }
 
