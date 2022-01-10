@@ -199,7 +199,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.showNotification({});
+    component.showNotification();
     fixture.detectChanges();
 
     // then
@@ -218,7 +218,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // given
-    component.showNotification({});
+    component.showNotification();
     fixture.detectChanges();
 
     // when
