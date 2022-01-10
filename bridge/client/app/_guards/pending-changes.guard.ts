@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface PendingChangesComponent {
   canDeactivate: () => boolean | Observable<boolean>;
-  showNotification: ($event: any) => void;
+  showNotification: ($event: BeforeUnloadEvent) => void;
 }
 
 @Injectable({

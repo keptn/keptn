@@ -289,7 +289,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
-  showNotification($event: any): void {
+  showNotification($event: BeforeUnloadEvent): void {
     if (this.canDeactivate() !== true) {
       this.unsavedDialogState = 'unsaved';
       $event.returnValue = this.message;
