@@ -52,44 +52,46 @@ export class DataService {
   private readonly MAX_TRACE_PAGE_SIZE = 50;
   private readonly MAX_PAGE_SIZE = 100;
 
-  constructor(apiUrl: string, apiToken: string) {
+  constructor(apiUrl: string, apiToken: string | undefined) {
     this.apiService = new ApiService(apiUrl, apiToken);
   }
 
-  public async getProjects(): Promise<Project[]> {
-    const response = await this.apiService.getProjects();
+  public async getProjects(accessToken: string | undefined): Promise<Project[]> {
+    const response = await this.apiService.getProjects(accessToken);
     return response.data.projects.map((project) => Project.fromJSON(project));
   }
 
-  private async getPlainProject(projectName: string): Promise<Project> {
-    const response = await this.apiService.getProject(projectName);
+  private async getPlainProject(accessToken: string | undefined, projectName: string): Promise<Project> {
+    const response = await this.apiService.getProject(accessToken, projectName);
     return Project.fromJSON(response.data);
   }
 
   public async getProject(
+    accessToken: string | undefined,
     projectName: string,
     includeRemediation: boolean,
     includeApproval: boolean
   ): Promise<Project> {
-    const project = await this.getPlainProject(projectName);
+    const project = await this.getPlainProject(accessToken, projectName);
     let openApprovals: Approval[] = [];
     let openRemediations: Remediation[] = [];
     const allServices = Stage.getAllServices(project.stages);
     const latestDeployments = await this.getLatestDeploymentFinishedForServices(
+      accessToken,
       projectName,
       allServices,
       ResultTypes.PASSED
     );
-    const latestEvaluations = await this.getLatestEvaluationResultsForServices(projectName, allServices);
+    const latestEvaluations = await this.getLatestEvaluationResultsForServices(accessToken, projectName, allServices);
     // for sequence adjustment: const latestSequences = await this.getLatestSequenceForServices(projectName, allServices);
     const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
 
     if (includeRemediation) {
-      openRemediations = await this.getOpenRemediations(projectName, true, true);
+      openRemediations = await this.getOpenRemediations(accessToken, projectName, true, true);
     }
 
     if (includeApproval) {
-      openApprovals = await this.getApprovals(projectName, true);
+      openApprovals = await this.getApprovals(accessToken, projectName, true);
     }
 
     for (const stage of project.stages) {
@@ -107,6 +109,7 @@ export class DataService {
         const latestEvent = service.getLatestEvent();
         if (latestEvent) {
           const latestSequence = await this.setServiceDetails(
+            accessToken,
             service,
             stage.stageName,
             latestEvent.keptnContext,
@@ -124,7 +127,11 @@ export class DataService {
     return project;
   }
 
-  private async getLatestSequenceForServices(projectName: string, services: Service[]): Promise<Sequence[]> {
+  private async getLatestSequenceForServices(
+    accessToken: string | undefined,
+    projectName: string,
+    services: Service[]
+  ): Promise<Sequence[]> {
     let sequences: Sequence[] = [];
 
     for (let i = 0; i < services.length; i += this.MAX_PAGE_SIZE) {
@@ -140,6 +147,7 @@ export class DataService {
       }
       if (keptnContexts.length) {
         const response = await this.apiService.getSequences(
+          accessToken,
           projectName,
           this.MAX_PAGE_SIZE,
           undefined,
@@ -155,11 +163,13 @@ export class DataService {
   }
 
   private async getLatestDeploymentFinishedForServices(
+    accessToken: string | undefined,
     projectName: string,
     services: Service[],
     resultType?: ResultTypes
   ): Promise<Trace[]> {
     return this.getLatestTracesOfMultipleServices(
+      accessToken,
       projectName,
       services,
       EventTypes.DEPLOYMENT_FINISHED,
@@ -169,8 +179,13 @@ export class DataService {
     );
   }
 
-  private async getLatestEvaluationResultsForServices(projectName: string, services: Service[]): Promise<Trace[]> {
+  private async getLatestEvaluationResultsForServices(
+    accessToken: string | undefined,
+    projectName: string,
+    services: Service[]
+  ): Promise<Trace[]> {
     return this.getLatestTracesOfMultipleServices(
+      accessToken,
       projectName,
       services,
       EventTypes.EVALUATION_FINISHED,
@@ -189,6 +204,7 @@ export class DataService {
    * This will result in API-Calls:
    *  best case: O(1)
    *  worst case: O(N) (exceptional case for deployment.finished is fail)
+   * @param accessToken
    * @param projectName
    * @param services
    * @param eventType
@@ -198,6 +214,7 @@ export class DataService {
    * @private
    */
   private async getLatestTracesOfMultipleServices(
+    accessToken: string | undefined,
     projectName: string,
     services: Service[],
     eventType: EventTypes,
@@ -218,9 +235,14 @@ export class DataService {
         }
       }
       if (eventIds.length) {
-        const response = await this.apiService.getTracesOfMultipleServices(projectName, eventType, eventIds.join(','));
+        const response = await this.apiService.getTracesOfMultipleServices(
+          accessToken,
+          projectName,
+          eventType,
+          eventIds.join(',')
+        );
         if (resultType || source) {
-          await this.checkAndSetEventsWithResult(response.data.events, resultType, source);
+          await this.checkAndSetEventsWithResult(accessToken, response.data.events, resultType, source);
         }
         traces = [...traces, ...response.data.events];
       }
@@ -229,6 +251,7 @@ export class DataService {
   }
 
   private async checkAndSetEventsWithResult(
+    accessToken: string | undefined,
     traces: Trace[],
     resultType?: ResultTypes,
     source?: KeptnService
@@ -237,6 +260,7 @@ export class DataService {
       const trace = traces[i];
       if ((resultType && trace.data.result !== resultType) || (source && trace.source !== source)) {
         const response = await this.apiService.getTracesWithResultAndSource(
+          accessToken,
           trace.type as EventTypes,
           1,
           trace.data.project as string,
@@ -253,6 +277,7 @@ export class DataService {
   }
 
   private async setServiceDetails(
+    accessToken: string | undefined,
     service: Service,
     stageName: string,
     keptnContext: string,
@@ -263,7 +288,7 @@ export class DataService {
   ): Promise<Sequence | undefined> {
     let latestSequence;
     try {
-      latestSequence = cachedSequence ?? (await this.getSequence(projectName, stageName, keptnContext));
+      latestSequence = cachedSequence ?? (await this.getSequence(accessToken, projectName, stageName, keptnContext));
     } catch (error) {
       console.error(error);
       return;
@@ -301,11 +326,13 @@ export class DataService {
   }
 
   public async getSequence(
+    accessToken: string | undefined,
     projectName: string,
     stageName?: string,
     keptnContext?: string
   ): Promise<Sequence | undefined> {
     const response = await this.apiService.getSequences(
+      accessToken,
       projectName,
       1,
       undefined,
@@ -322,11 +349,13 @@ export class DataService {
   }
 
   public async getSequences(
+    accessToken: string | undefined,
     projectName: string,
     sequenceName: string,
     sequenceState?: SequenceState
   ): Promise<Sequence[]> {
     const response = await this.apiService.getSequences(
+      accessToken,
       projectName,
       this.MAX_SEQUENCE_PAGE_SIZE,
       sequenceName,
@@ -337,12 +366,18 @@ export class DataService {
   }
 
   public async getOpenRemediations(
+    accessToken: string | undefined,
     projectName: string,
     includeProblemTitle: boolean,
     includeActions: boolean,
     serviceName?: string
   ): Promise<Remediation[]> {
-    const sequences = await this.getSequences(projectName, SequenceTypes.REMEDIATION, SequenceState.STARTED);
+    const sequences = await this.getSequences(
+      accessToken,
+      projectName,
+      SequenceTypes.REMEDIATION,
+      SequenceState.STARTED
+    );
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
       const stageName = sequence.stages[0]?.name;
@@ -352,6 +387,7 @@ export class DataService {
         const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
 
         await this.setRemediationDetails(
+          accessToken,
           remediation,
           includeProblemTitle,
           includeActions,
@@ -367,6 +403,7 @@ export class DataService {
   }
 
   private async setRemediationDetails(
+    accessToken: string | undefined,
     remediation: Remediation,
     includeProblemTitle: boolean,
     includeActions: boolean,
@@ -377,6 +414,7 @@ export class DataService {
   ): Promise<void> {
     if (includeProblemTitle) {
       const response = await this.apiService.getTraces(
+        accessToken,
         includeActions ? undefined : `${EventTypes.PREFIX}${stageName}.remediation.triggered`,
         this.MAX_TRACE_PAGE_SIZE,
         projectName,
@@ -420,6 +458,7 @@ export class DataService {
   }
 
   private async getTrace(
+    accessToken: string | undefined,
     keptnContext?: string,
     projectName?: string,
     stageName?: string,
@@ -428,6 +467,7 @@ export class DataService {
     eventSource?: KeptnService
   ): Promise<Trace | undefined> {
     const response = await this.apiService.getTraces(
+      accessToken,
       eventType,
       1,
       projectName,
@@ -440,6 +480,7 @@ export class DataService {
   }
 
   public async getApprovals(
+    accessToken: string | undefined,
     projectName: string,
     includeEvaluationTrace: boolean,
     stageName?: string,
@@ -448,6 +489,7 @@ export class DataService {
     let tracesTriggered: Trace[];
     try {
       const response = await this.apiService.getOpenTriggeredEvents(
+        accessToken,
         projectName,
         EventTypes.APPROVAL_TRIGGERED,
         stageName,
@@ -464,6 +506,7 @@ export class DataService {
       let evaluationTrace: Trace | undefined;
       if (includeEvaluationTrace) {
         evaluationTrace = await this.getTrace(
+          accessToken,
           trace.shkeptncontext,
           projectName,
           stageName,
@@ -480,13 +523,17 @@ export class DataService {
     return approvals;
   }
 
-  public async hasUnreadUniformRegistrationLogs(uniformDates: { [key: string]: string }): Promise<boolean> {
-    const response = await this.apiService.getUniformRegistrations();
-    const registrations = await this.getValidRegistrations(response.data);
+  public async hasUnreadUniformRegistrationLogs(
+    accessToken: string | undefined,
+    uniformDates: { [key: string]: string }
+  ): Promise<boolean> {
+    const response = await this.apiService.getUniformRegistrations(accessToken);
+    const registrations = this.getValidRegistrations(response.data);
     let status = false;
     for (let i = 0; i < registrations.length && !status; ++i) {
       const registration = registrations[i];
       const logResponse = await this.apiService.getUniformRegistrationLogs(
+        accessToken,
         registration.id,
         uniformDates[registration.id],
         1
@@ -498,11 +545,15 @@ export class DataService {
     return status;
   }
 
-  public async getUniformRegistrations(uniformDates: { [key: string]: string }): Promise<UniformRegistration[]> {
-    const response = await this.apiService.getUniformRegistrations();
-    const registrations = await this.getValidRegistrations(response.data);
+  public async getUniformRegistrations(
+    accessToken: string | undefined,
+    uniformDates: { [key: string]: string }
+  ): Promise<UniformRegistration[]> {
+    const response = await this.apiService.getUniformRegistrations(accessToken);
+    const registrations = this.getValidRegistrations(response.data);
     for (const registration of registrations) {
       const logResponse = await this.apiService.getUniformRegistrationLogs(
+        accessToken,
         registration.id,
         uniformDates[registration.id]
       );
@@ -511,7 +562,7 @@ export class DataService {
     return registrations;
   }
 
-  private async getValidRegistrations(registrations: UniformRegistration[]): Promise<UniformRegistration[]> {
+  private getValidRegistrations(registrations: UniformRegistration[]): UniformRegistration[] {
     const currentDate = new Date().getTime();
     const validRegistrations: UniformRegistration[] = [];
     for (const registration of registrations) {
@@ -523,8 +574,11 @@ export class DataService {
     return validRegistrations;
   }
 
-  public async getIsUniformRegistrationInfo(integrationId: string): Promise<UniformRegistrationInfo> {
-    const response = await this.apiService.getUniformRegistrations(integrationId);
+  public async getIsUniformRegistrationInfo(
+    accessToken: string | undefined,
+    integrationId: string
+  ): Promise<UniformRegistrationInfo> {
+    const response = await this.apiService.getUniformRegistrations(accessToken, integrationId);
     const uniformRegistration = UniformRegistration.fromJSON(response.data.shift());
 
     return {
@@ -533,8 +587,8 @@ export class DataService {
     };
   }
 
-  public async getTasks(projectName: string): Promise<string[]> {
-    const shipyard = await this.getShipyard(projectName);
+  public async getTasks(accessToken: string | undefined, projectName: string): Promise<string[]> {
+    const shipyard = await this.getShipyard(accessToken, projectName);
     const tasks: string[] = ['evaluation'];
     for (const stage of shipyard.spec.stages) {
       if (stage.sequences) {
@@ -550,8 +604,8 @@ export class DataService {
     return tasks;
   }
 
-  public async getServiceNames(projectName: string): Promise<string[]> {
-    const resp = await this.apiService.getStages(projectName);
+  public async getServiceNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
+    const resp = await this.apiService.getStages(accessToken, projectName);
     const stages = resp.data.stages;
     const services: { [serviceName: string]: boolean | undefined } = {};
 
@@ -565,6 +619,7 @@ export class DataService {
   }
 
   public async getRoots(
+    accessToken: string | undefined,
     projectName: string | undefined,
     pageSize: string | undefined,
     serviceName: string | undefined,
@@ -573,6 +628,7 @@ export class DataService {
     keptnContext?: string | undefined
   ): Promise<EventResult> {
     const response = await this.apiService.getRoots(
+      accessToken,
       projectName,
       pageSize,
       serviceName,
@@ -584,6 +640,7 @@ export class DataService {
   }
 
   public async getTracesByContext(
+    accessToken: string | undefined,
     keptnContext: string | undefined,
     projectName?: string | undefined,
     fromTime?: string | undefined
@@ -597,6 +654,7 @@ export class DataService {
     let nextPage = 0;
     do {
       const response = await this.apiService.getTracesByContext(
+        accessToken,
         keptnContext,
         projectName,
         fromTime,
@@ -615,6 +673,7 @@ export class DataService {
   }
 
   public async getTraces(
+    accessToken: string | undefined,
     keptnContext?: string,
     projectName?: string,
     stageName?: string,
@@ -623,6 +682,7 @@ export class DataService {
     pageSize?: number
   ): Promise<EventResult> {
     const response = await this.apiService.getTraces(
+      accessToken,
       eventType,
       pageSize,
       projectName,
@@ -633,8 +693,12 @@ export class DataService {
     return response.data;
   }
 
-  public async getResourceFileTreesForService(projectName: string, serviceName: string): Promise<FileTree[]> {
-    const projectRes = await this.apiService.getProject(projectName);
+  public async getResourceFileTreesForService(
+    accessToken: string | undefined,
+    projectName: string,
+    serviceName: string
+  ): Promise<FileTree[]> {
+    const projectRes = await this.apiService.getProject(accessToken, projectName);
     const stages = projectRes.data.stages;
 
     const fileTrees: FileTree[] = [];
@@ -649,6 +713,7 @@ export class DataService {
 
       do {
         const resourceRes = await this.apiService.getServiceResources(
+          accessToken,
           projectName,
           stage.stageName,
           serviceName,
@@ -665,41 +730,44 @@ export class DataService {
     return fileTrees;
   }
 
-  private async getShipyard(projectName: string): Promise<Shipyard> {
-    const response = await this.apiService.getShipyard(projectName);
+  private async getShipyard(accessToken: string | undefined, projectName: string): Promise<Shipyard> {
+    const response = await this.apiService.getShipyard(accessToken, projectName);
     const shipyard = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
     return Yaml.parse(shipyard);
   }
 
   public async createSubscription(
+    accessToken: string | undefined,
     integrationId: string,
     subscription: UniformSubscription,
     webhookConfig?: WebhookConfig
   ): Promise<void> {
-    const response = await this.apiService.createSubscription(integrationId, subscription);
+    const response = await this.apiService.createSubscription(accessToken, integrationId, subscription);
     if (webhookConfig) {
-      await this.saveWebhookConfig(webhookConfig, response.data.id);
+      await this.saveWebhookConfig(accessToken, webhookConfig, response.data.id);
     }
   }
 
   public async updateSubscription(
+    accessToken: string | undefined,
     integrationId: string,
     subscriptionId: string,
     subscription: UniformSubscription,
     webhookConfig?: WebhookConfig
   ): Promise<void> {
-    await this.apiService.updateSubscription(integrationId, subscriptionId, subscription);
+    await this.apiService.updateSubscription(accessToken, integrationId, subscriptionId, subscription);
     if (webhookConfig) {
-      await this.saveWebhookConfig(webhookConfig, subscriptionId);
+      await this.saveWebhookConfig(accessToken, webhookConfig, subscriptionId);
     }
   }
 
   private async getWebhookConfigYaml(
+    accessToken: string | undefined,
     projectName: string,
     stageName?: string,
     serviceName?: string
   ): Promise<WebhookConfigYaml> {
-    const response = await this.apiService.getWebhookConfig(projectName, stageName, serviceName);
+    const response = await this.apiService.getWebhookConfig(accessToken, projectName, stageName, serviceName);
 
     try {
       const webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
@@ -726,12 +794,18 @@ export class DataService {
   }
 
   public async getWebhookConfig(
+    accessToken: string | undefined,
     subscriptionId: string,
     projectName: string,
     stageName?: string,
     serviceName?: string
   ): Promise<WebhookConfig> {
-    const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stageName, serviceName);
+    const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(
+      accessToken,
+      projectName,
+      stageName,
+      serviceName
+    );
 
     const webhookConfig = webhookConfigYaml.parsedRequest(subscriptionId);
     if (!webhookConfig) {
@@ -741,21 +815,26 @@ export class DataService {
     return webhookConfig;
   }
 
-  public async saveWebhookConfig(webhookConfig: WebhookConfig, subscriptionId: string): Promise<boolean> {
-    const currentFilters = await this.getWebhookConfigFilter(webhookConfig.filter);
+  public async saveWebhookConfig(
+    accessToken: string | undefined,
+    webhookConfig: WebhookConfig,
+    subscriptionId: string
+  ): Promise<boolean> {
+    const currentFilters = await this.getWebhookConfigFilter(accessToken, webhookConfig.filter);
 
     if (webhookConfig.prevConfiguration) {
-      const previousFilter = await this.getWebhookConfigFilter(webhookConfig.prevConfiguration.filter);
-      await this.removePreviousWebhooks(previousFilter, subscriptionId);
+      const previousFilter = await this.getWebhookConfigFilter(accessToken, webhookConfig.prevConfiguration.filter);
+      await this.removePreviousWebhooks(accessToken, previousFilter, subscriptionId);
     }
 
-    const secrets = await this.parseAndReplaceWebhookSecret(webhookConfig);
+    const secrets = await this.parseAndReplaceWebhookSecret(accessToken, webhookConfig);
     const curl = this.generateWebhookConfigCurl(webhookConfig);
 
     for (const project of currentFilters.projects) {
       for (const stage of currentFilters.stages) {
         for (const service of currentFilters.services) {
           const previousWebhookConfig: WebhookConfigYaml = await this.getOrCreateWebhookConfigYaml(
+            accessToken,
             project,
             stage,
             service
@@ -767,7 +846,7 @@ export class DataService {
             secrets,
             webhookConfig.sendFinished
           );
-          await this.apiService.saveWebhookConfig(previousWebhookConfig.toYAML(), project, stage, service);
+          await this.apiService.saveWebhookConfig(accessToken, previousWebhookConfig.toYAML(), project, stage, service);
         }
       }
     }
@@ -775,8 +854,11 @@ export class DataService {
     return true;
   }
 
-  private async parseAndReplaceWebhookSecret(webhookConfig: WebhookConfig): Promise<WebhookSecret[]> {
-    const webhookScopeSecrets = await this.getSecretsForScope(SecretScope.WEBHOOK);
+  private async parseAndReplaceWebhookSecret(
+    accessToken: string | undefined,
+    webhookConfig: WebhookConfig
+  ): Promise<WebhookSecret[]> {
+    const webhookScopeSecrets = await this.getSecretsForScope(accessToken, SecretScope.WEBHOOK);
     const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
 
     const secrets: WebhookSecret[] = [];
@@ -836,6 +918,7 @@ export class DataService {
     return flatScopeSecrets;
   }
   private async getOrCreateWebhookConfigYaml(
+    accessToken: string | undefined,
     project: string,
     stage?: string,
     service?: string
@@ -843,7 +926,7 @@ export class DataService {
     let previousWebhookConfig: WebhookConfigYaml;
     try {
       // fetch existing one
-      previousWebhookConfig = await this.getWebhookConfigYaml(project, stage, service);
+      previousWebhookConfig = await this.getWebhookConfigYaml(accessToken, project, stage, service);
     } catch (e: unknown) {
       if (!axios.isAxiosError(e) || e.response?.status !== 404) {
         throw e;
@@ -855,21 +938,28 @@ export class DataService {
     return previousWebhookConfig;
   }
 
-  private async removePreviousWebhooks(previousConfig: WebhookConfigFilter, subscriptionId: string): Promise<void> {
+  private async removePreviousWebhooks(
+    accessToken: string | undefined,
+    previousConfig: WebhookConfigFilter,
+    subscriptionId: string
+  ): Promise<void> {
     for (const project of previousConfig.projects) {
       for (const stage of previousConfig.stages) {
         for (const service of previousConfig.services) {
-          await this.removeWebhook(subscriptionId, project, stage, service);
+          await this.removeWebhook(accessToken, subscriptionId, project, stage, service);
         }
       }
     }
   }
 
-  private async getWebhookConfigFilter(webhookConfig: UniformSubscriptionFilter): Promise<WebhookConfigFilter> {
+  private async getWebhookConfigFilter(
+    accessToken: string | undefined,
+    webhookConfig: UniformSubscriptionFilter
+  ): Promise<WebhookConfigFilter> {
     return {
       projects: webhookConfig.projects?.length
         ? webhookConfig.projects
-        : (await this.getProjects()).map((project) => project.projectName),
+        : (await this.getProjects(accessToken)).map((project) => project.projectName),
       stages: webhookConfig.stages?.length ? webhookConfig.stages : [undefined],
       services: webhookConfig.services?.length ? webhookConfig.services : [undefined],
     };
@@ -897,17 +987,19 @@ export class DataService {
   }
 
   public async deleteSubscription(
+    accessToken: string | undefined,
     integrationId: string,
     subscriptionId: string,
     deleteWebhook: boolean
   ): Promise<void> {
     if (deleteWebhook) {
-      const response = await this.apiService.getUniformSubscription(integrationId, subscriptionId);
+      const response = await this.apiService.getUniformSubscription(accessToken, integrationId, subscriptionId);
       const subscription = response.data;
       const projectName = subscription.filter.projects?.[0];
 
       if (projectName) {
         await this.removeWebhooks(
+          accessToken,
           subscriptionId,
           projectName,
           subscription.filter.stages?.length ? subscription.filter.stages : [undefined],
@@ -915,16 +1007,17 @@ export class DataService {
         );
       }
     }
-    await this.apiService.deleteUniformSubscription(integrationId, subscriptionId);
+    await this.apiService.deleteUniformSubscription(accessToken, integrationId, subscriptionId);
   }
 
-  public async getSecretsForScope(scope: string): Promise<Secret[]> {
-    const response = await this.apiService.getSecrets();
+  public async getSecretsForScope(accessToken: string | undefined, scope: string): Promise<Secret[]> {
+    const response = await this.apiService.getSecrets(accessToken);
     const secrets = response.data.Secrets.map((secret) => Secret.fromJSON(secret));
     return secrets.filter((secret) => secret.scope === scope);
   }
 
   private async removeWebhooks(
+    accessToken: string | undefined,
     subscriptionId: string,
     projectName: string,
     stages: string[] | [undefined],
@@ -932,24 +1025,30 @@ export class DataService {
   ): Promise<void> {
     for (const stage of stages) {
       for (const service of services) {
-        await this.removeWebhook(subscriptionId, projectName, stage, service);
+        await this.removeWebhook(accessToken, subscriptionId, projectName, stage, service);
       }
     }
   }
 
   private async removeWebhook(
+    accessToken: string | undefined,
     subscriptionId: string,
     projectName: string,
     stage?: string,
     service?: string
   ): Promise<void> {
     try {
-      const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(projectName, stage, service);
+      const webhookConfig: WebhookConfigYaml = await this.getWebhookConfigYaml(
+        accessToken,
+        projectName,
+        stage,
+        service
+      );
       if (webhookConfig.removeWebhook(subscriptionId)) {
         if (webhookConfig.hasWebhooks()) {
-          await this.apiService.saveWebhookConfig(webhookConfig.toYAML(), projectName, stage, service);
+          await this.apiService.saveWebhookConfig(accessToken, webhookConfig.toYAML(), projectName, stage, service);
         } else {
-          await this.apiService.deleteWebhookConfig(projectName, stage, service);
+          await this.apiService.deleteWebhookConfig(accessToken, projectName, stage, service);
         }
       }
     } catch (e: unknown) {
@@ -1012,10 +1111,10 @@ export class DataService {
     return tree;
   }
 
-  public async getServiceStates(projectName: string): Promise<ServiceState[]> {
-    const projectResponse = await this.apiService.getProject(projectName);
+  public async getServiceStates(accessToken: string | undefined, projectName: string): Promise<ServiceState[]> {
+    const projectResponse = await this.apiService.getProject(accessToken, projectName);
     const project = Project.fromJSON(projectResponse.data);
-    const openRemediations = await this.getOpenRemediations(projectName, false, false);
+    const openRemediations = await this.getOpenRemediations(accessToken, projectName, false, false);
     const serviceStates: ServiceState[] = [];
     for (const stage of project.stages) {
       for (const service of stage.services) {
@@ -1087,12 +1186,14 @@ export class DataService {
   }
 
   public async getServiceDeployment(
+    accessToken: string | undefined,
     projectName: string,
     keptnContext: string,
     fromTimeString?: string
   ): Promise<Deployment | undefined> {
     const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
     const sequenceResponse = await this.apiService.getSequences(
+      accessToken,
       projectName,
       1,
       undefined,
@@ -1106,8 +1207,8 @@ export class DataService {
     if (iSequence) {
       const sequence = Sequence.fromJSON(iSequence);
       let openRemediations: Remediation[] | undefined;
-      const project = await this.getPlainProject(projectName);
-      const traceResponse = await this.apiService.getTracesByContext(keptnContext, projectName);
+      const project = await this.getPlainProject(accessToken, projectName);
+      const traceResponse = await this.apiService.getTracesByContext(accessToken, keptnContext, projectName);
       const traces = Trace.traceMapper(traceResponse.data.events);
       deployment = {
         state: sequence.state,
@@ -1142,6 +1243,7 @@ export class DataService {
             undefined
           );
           stageRemediationInformation = await this.getStageRemediationInformation(
+            accessToken,
             projectName,
             stage.name,
             sequence.service,
@@ -1162,7 +1264,8 @@ export class DataService {
           hasEvaluation: !!evaluationTrace,
           latestEvaluation:
             evaluationTrace ??
-            (await this.apiService.getEvaluationResults(projectName, sequence.service, stage.name, 1)).data.events[0],
+            (await this.apiService.getEvaluationResults(accessToken, projectName, sequence.service, stage.name, 1)).data
+              .events[0],
         });
       }
     }
@@ -1211,13 +1314,14 @@ export class DataService {
   }
 
   private async getStageRemediationInformation(
+    accessToken: string | undefined,
     projectName: string,
     stageName: string,
     serviceName: string,
     openRemediations?: Remediation[]
   ): Promise<StageRemediationInformation> {
     if (!openRemediations) {
-      openRemediations = await this.getOpenRemediations(projectName, true, false, serviceName);
+      openRemediations = await this.getOpenRemediations(accessToken, projectName, true, false, serviceName);
     }
     let remediationConfig: string | undefined;
     const openRemediationsForStage = openRemediations
@@ -1231,6 +1335,7 @@ export class DataService {
       });
     if (openRemediationsForStage.length) {
       const resourceResponse = await this.apiService.getServiceResource(
+        accessToken,
         projectName,
         stageName,
         serviceName,
@@ -1246,12 +1351,13 @@ export class DataService {
   }
 
   public async getServiceRemediationInformation(
+    accessToken: string | undefined,
     projectName: string,
     serviceName: string,
     includeConfig: boolean
   ): Promise<ServiceRemediationInformation> {
     const serviceRemediationInformation: ServiceRemediationInformation = { stages: [] };
-    const openRemediations = await this.getOpenRemediations(projectName, true, false, serviceName);
+    const openRemediations = await this.getOpenRemediations(accessToken, projectName, true, false, serviceName);
     const stageRemediations = openRemediations.reduce((stagesAcc: { [key: string]: Sequence[] }, remediation) => {
       const stageName = remediation.stages[0].name;
       if (!stagesAcc[stageName]) {
@@ -1264,6 +1370,7 @@ export class DataService {
       let config: string | undefined;
       if (includeConfig) {
         const configResponse = await this.apiService.getServiceResource(
+          accessToken,
           projectName,
           stage,
           serviceName,
@@ -1277,6 +1384,7 @@ export class DataService {
   }
 
   public async intersectEvents(
+    accessToken: string | undefined,
     event: string,
     eventSuffix: EventState | '>',
     projectName: string,
@@ -1284,6 +1392,7 @@ export class DataService {
     services: string[]
   ): Promise<Record<string, unknown>> {
     const objects = (await this.getMultipleLatestTracesOfMultipleServices(
+      accessToken,
       event,
       eventSuffix,
       projectName,
@@ -1361,6 +1470,7 @@ export class DataService {
   }
 
   private async getMultipleLatestTracesOfMultipleServices(
+    accessToken: string | undefined,
     event: string,
     eventSuffix: EventState | '>',
     projectName: string,
@@ -1369,7 +1479,7 @@ export class DataService {
   ): Promise<Trace[]> {
     const suffixes =
       eventSuffix === '>' ? [EventState.TRIGGERED, EventState.STARTED, EventState.FINISHED] : [eventSuffix];
-    const project = await this.getPlainProject(projectName);
+    const project = await this.getPlainProject(accessToken, projectName);
     const filteredStages = stages.length ? stages : project.stages.map((s) => s.stageName);
     const filteredServices = services.length ? services : project.stages[0].services.map((s) => s.serviceName);
     const eventIds = this.getLatestServiceEventIds(project, filteredStages, filteredServices, event, suffixes);
@@ -1380,6 +1490,7 @@ export class DataService {
       for (let i = 0; i < array.length; i += this.MAX_PAGE_SIZE) {
         const chunkIds = array.slice(i, i + this.MAX_PAGE_SIZE);
         const response = await this.apiService.getTracesOfMultipleServices(
+          accessToken,
           projectName,
           `${event}.${suffix}` as EventTypes,
           chunkIds.join(',')

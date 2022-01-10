@@ -117,7 +117,11 @@ async function init(): Promise<Express> {
   const authType: string = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
 
   // everything starting with /api is routed to the api implementation
-  app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags }));
+  const token = serverFeatureFlags.OAUTH_ENABLED ? undefined : apiToken;
+  app.use(
+    '/api',
+    apiRouter({ apiUrl, apiToken: token, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags })
+  );
 
   // fallback: go to index.html
   app.use((req, res) => {
