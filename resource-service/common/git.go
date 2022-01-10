@@ -563,11 +563,3 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 		return nil, object.ErrUnsupportedObject
 	}
 }
-
-func ensureDirectoryExists(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		err := os.MkdirAll(path, 0700)
-		return err
-	}
-	return nil
-}

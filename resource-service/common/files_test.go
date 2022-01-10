@@ -12,6 +12,8 @@ const testTgzContent = "H4sIAOu80mEAA+2Vz0rDQBCHc84zeNgnSGf2b/ZQsFjFkxTRg+BltasG
 
 func TestFileSystem_WriteAndReadFile(t *testing.T) {
 	// create a tmp directory in test/tmp
+	err := ensureDirectoryExists("../test/tmp")
+	require.Nil(t, err)
 	dir, err := ioutil.TempDir("../test/tmp/", "project-")
 	require.Nil(t, err)
 	defer func(name string) {
