@@ -292,7 +292,9 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   showNotification($event?: BeforeUnloadEvent): void {
     if (this.canDeactivate() !== true) {
       this.unsavedDialogState = 'unsaved';
-      $event?.returnValue = this.message;
+      if ($event) {
+        $event.returnValue = this.message;
+      }
     }
   }
 
