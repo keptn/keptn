@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -31,13 +32,17 @@ type IGit interface {
 	Pull(gitContext common_models.GitContext) error
 	CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error
 	CheckoutBranch(gitContext common_models.GitContext, branch string) error
-	GetFileRevision(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error)
+	GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
 	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
 }
 
 type Git struct {
 	git Gogit
+}
+
+func NewGit(git Gogit) *Git {
+	return &Git{git: git}
 }
 
 func configureGitUser(repository *git.Repository) error {
@@ -149,6 +154,10 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 	if message == "" {
 		message = "commit changes"
 	}
+	err = w.AddWithOptions(&git.AddOptions{All: true})
+	if err != nil {
+		return "", err
+	}
 	id, err := w.Commit(message,
 		&git.CommitOptions{
 			All: true,
@@ -247,10 +256,15 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
 		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
-		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			return nil
+		if err != nil {
+			if errors.Is(err, git.NoErrAlreadyUpToDate) {
+				return nil
+			} else if errors.Is(err, transport.ErrEmptyRemoteRepository) {
+				return nil
+			}
+			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
+		return nil
 	}
 	return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
 }
@@ -320,14 +334,29 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 		Remote: "origin",
 		Merge:  b,
 	}
-	r, _, err := g.getWorkTree(gitContext)
+	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
+
+	// First try to check out branch
+	err = w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
+	if err == nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, kerrors.ErrBranchExists)
+	}
+
+	if err != nil {
+		// got an error  - try to create it
+		if err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b}); err != nil {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
+		}
+	}
+
 	err = r.CreateBranch(newBranch)
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
+
 	return nil
 }
 
@@ -344,6 +373,9 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 		Branch: b,
 	})
 	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, kerrors.ErrReferenceNotFound)
+		}
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, err)
 	}
 	return nil

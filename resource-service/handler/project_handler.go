@@ -97,7 +97,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     path    string     true        "Project"
+// @Param   projectName     path    string     true        "Project"
 // @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"

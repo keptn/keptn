@@ -56,7 +56,7 @@ func main() {
 	}
 
 	engine := gin.Default()
-	/// setting up middlewere to handle graceful shutdown
+	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 
 	apiV1 := engine.Group("/v1")
@@ -69,17 +69,34 @@ func main() {
 	credentialReader := common.NewK8sCredentialReader(kubeAPI)
 	fileWriter := common.NewFileSystem(common.GetConfigDir())
 
-	projectResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
+	git := common.NewGit(&common.GogitReal{})
+
+	projectManager := handler.NewProjectManager(git, credentialReader, fileWriter)
+	projectHandler := handler.NewProjectHandler(projectManager)
+	projectController := controller.NewProjectController(projectHandler)
+	projectController.Inject(apiV1)
+
+	stageManager := handler.NewStageManager(git, credentialReader)
+	stageHandler := handler.NewStageHandler(stageManager)
+	stageController := controller.NewStageController(stageHandler)
+	stageController.Inject(apiV1)
+
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileWriter)
+	serviceHandler := handler.NewServiceHandler(serviceManager)
+	serviceController := controller.NewServiceController(serviceHandler)
+	serviceController.Inject(apiV1)
+
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(nil, credentialReader, fileWriter)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)

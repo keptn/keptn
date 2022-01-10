@@ -159,6 +159,9 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		configPath = common.GetProjectConfigPath(project.ProjectName)
 	} else {
 		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
+		if !p.fileSystem.FileExists(configPath) {
+			return nil, "", errors.ErrServiceNotFound
+		}
 	}
 	return &gitContext, configPath, nil
 }
@@ -169,9 +172,12 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	var err error
 
 	if params.GitCommitID != "" {
-		fileContent, err = p.git.GetFileRevision(*gitContext, resourcePath, params.GitCommitID, params.ResourceURI)
+		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {
+		if err := p.git.Pull(*gitContext); err != nil {
+			return nil, err
+		}
 		fileContent, err = p.fileSystem.ReadFile(resourcePath)
 		if err != nil {
 			return nil, err

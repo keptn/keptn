@@ -105,7 +105,7 @@ func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 }
 
 func (FileSystem) DeleteFile(path string) error {
-	var err = os.Remove(path)
+	var err = os.RemoveAll(path)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,6 @@ func (FileSystem) DeleteFile(path string) error {
 
 func (FileSystem) FileExists(path string) bool {
 	_, err := os.Stat(path)
-	// create file if not exists
 	if os.IsNotExist(err) {
 		return false
 	}

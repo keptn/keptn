@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -772,6 +773,8 @@ func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
 	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
 
+	require.Len(t, fields.git.PullCalls(), 1)
+
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 	require.Len(t, fields.fileSystem.ReadFileCalls(), 1)
 }
@@ -811,6 +814,34 @@ func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testi
 	require.Equal(t, "my-commit-id", fields.git.GetFileRevisionCalls()[0].Revision)
 }
 
+func TestResourceManager_GetResource_ProjectResource_PullFails(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.PullFunc = func(gitContext common_models.GitContext) error {
+		return errors.New("oops")
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		ResourceURI: "file1",
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.PullCalls(), 1)
+
+	require.Empty(t, fields.git.GetFileRevisionCalls())
+	require.Empty(t, fields.fileSystem.ReadFileCalls())
+}
+
 func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
@@ -834,6 +865,38 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 	require.Nil(t, result)
 
 	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Empty(t, fields.git.GetFileRevisionCalls())
+}
+
+func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		if strings.Contains(path, "/my-service") {
+			return false
+		}
+		return true
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
+			Service: &models.Service{ServiceName: "my-service"},
+		},
+		ResourceURI: "file1",
+		GetResourceQuery: models.GetResourceQuery{
+			GitCommitID: "my-commit-id",
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, result)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
@@ -978,7 +1041,7 @@ func getTestResourceManagerFields() testResourceManagerFields {
 			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
 				return "main", nil
 			},
-			GetFileRevisionFunc: func(gitContext common_models.GitContext, path string, revision string, file string) ([]byte, error) {
+			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 				return []byte("file-content"), nil
 			},
 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {

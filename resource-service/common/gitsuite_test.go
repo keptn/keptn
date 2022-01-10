@@ -40,7 +40,7 @@ func (s *BaseSuite) SetUpSuite(c *C) {
 
 func (s *BaseSuite) TearDownSuite(c *C) {
 	_ = os.Unsetenv("CONFIG_DIR")
-	//cleanupSuite(c)
+	cleanupSuite(c)
 }
 
 func (s *BaseSuite) SetUpTest(c *C) {
@@ -77,6 +77,14 @@ func cleanupSuite(c *C) {
 	err = os.RemoveAll("../test/tmp/repo1")
 	c.Assert(err, IsNil)
 	err = os.RemoveAll("../test/tmp/repo2")
+	c.Assert(err, IsNil)
+	err = os.RemoveAll("../test/tmp/mine")
+	c.Assert(err, IsNil)
+	err = os.RemoveAll("../test/tmp/nonexisting")
+	c.Assert(err, IsNil)
+	err = os.RemoveAll("../test/tmp/podtato")
+	c.Assert(err, IsNil)
+	err = os.RemoveAll("../test/tmp/so")
 	c.Assert(err, IsNil)
 }
 func (s *BaseSuite) TestGit_ComponentTest(c *C) {
@@ -615,7 +623,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			gitContext:   s.NewGitContext(),
 			branch:       "dev",
 			sourceBranch: "master",
-			error:        git.ErrBranchExists,
+			error:        kerrors.ErrBranchExists,
 		},
 		{
 			name:         "illegal add to non existing branch",

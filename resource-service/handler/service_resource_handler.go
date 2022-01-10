@@ -34,9 +34,9 @@ func NewServiceResourceHandler(serviceResourceManager IResourceManager) *Service
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	stage				path	string	true	"The name of the stage"
-// @Param	service				path	string	true	"The name of the service"
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	stageName					path	string	true	"The name of the stage"
+// @Param	serviceName					path	string	true	"The name of the service"
 // @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
 // @Success 201 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
@@ -80,9 +80,9 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	stage				path	string	true	"The name of the stage"
-// @Param	service				path	string	true	"The name of the service"
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	stageName					path	string	true	"The name of the stage"
+// @Param	serviceName					path	string	true	"The name of the service"
 // @Param commitID              query string false "The commit ID to be checked out"
 // @Param pageSize              query int false "The number of items to return"
 // @Param nextPageKey              query string false "Pointer to the next set of items"
@@ -128,9 +128,9 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	stage				path	string	true	"The name of the stage"
-// @Param	service				path	string	true	"The name of the service"
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	stageName					path	string	true	"The name of the stage"
+// @Param	serviceName					path	string	true	"The name of the service"
 // @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
@@ -174,9 +174,9 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	stage				path	string	true	"The name of the stage"
-// @Param	service				path	string	true	"The name of the service"
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	stageName					path	string	true	"The name of the stage"
+// @Param	serviceName					path	string	true	"The name of the service"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Param commitID              query string false "The commit ID to be checked out"
 // @Success 200 {object} models.GetResourceResponse
@@ -221,9 +221,9 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	stage				path	string	true	"The name of the stage"
-// @Param	service				path	string	true	"The name of the service"
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	stageName					path	string	true	"The name of the stage"
+// @Param	serviceName					path	string	true	"The name of the service"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Param   resources     body    models.UpdateResourcePayload     true        "resource"
 // @Success 200 {string} models.WriteResourceResponse
@@ -268,9 +268,9 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	stage				path	string	true	"The name of the stage"
-// @Param	service				path	string	true	"The name of the service"
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	stageName					path	string	true	"The name of the stage"
+// @Param	serviceName					path	string	true	"The name of the service"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"

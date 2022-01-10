@@ -78,14 +78,14 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		err = recreateGitUpstreamRepository(projectName)
+		err = RecreateGitUpstreamRepository(projectName)
 		if err != nil {
 			// retry if repo creation failed (gitea might not be available)
 			continue
 		}
 
-		user := getGiteaUser()
-		token, err := getGiteaToken()
+		user := GetGiteaUser()
+		token, err := GetGiteaToken()
 		if err != nil {
 			return err
 		}
@@ -581,9 +581,9 @@ func removeQuotes(str string) string {
 	return str
 }
 
-// getGiteaToken checks whether the GITEA_TOKEN environment variable is set. If yes, it will return the value for that var. If not, it will try to
+// GetGiteaToken checks whether the GITEA_TOKEN environment variable is set. If yes, it will return the value for that var. If not, it will try to
 // fetch the token from the secret 'gitea-access' in the keptn namespace
-func getGiteaToken() (string, error) {
+func GetGiteaToken() (string, error) {
 	// if the token is set as an env var, return that
 	if tokenFromEnv := os.Getenv("GITEA_TOKEN"); tokenFromEnv != "" {
 		return tokenFromEnv, nil
@@ -606,7 +606,7 @@ func getGiteaToken() (string, error) {
 	return token, nil
 }
 
-func getGiteaUser() string {
+func GetGiteaUser() string {
 	if os.Getenv("GITEA_ADMIN_USER") != "" {
 		return os.Getenv("GITEA_ADMIN_USER")
 	}
@@ -614,7 +614,7 @@ func getGiteaUser() string {
 }
 
 // recreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
-func recreateGitUpstreamRepository(project string) error {
+func RecreateGitUpstreamRepository(project string) error {
 	jobName := "recreate-upstream-repo"
 	clientset, err := keptnkubeutils.GetClientset(false)
 
@@ -627,11 +627,11 @@ func recreateGitUpstreamRepository(project string) error {
 		}
 	}
 
-	token, err := getGiteaToken()
+	token, err := GetGiteaToken()
 	if err != nil {
 		return err
 	}
-	user := getGiteaUser()
+	user := GetGiteaUser()
 
 	deleteCmd := fmt.Sprintf(`curl -X DELETE "http://gitea-http:3000/api/v1/repos/%s/%s?access_token=%s"`, user, project, token)
 	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\", \"default_branch\": \"main\"}"`, token, project)
