@@ -3,6 +3,7 @@ package go_tests
 import (
 	"github.com/stretchr/testify/require"
 	"path"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -66,7 +67,9 @@ spec:
 `
 
 func Test_GracefulShutdown(t *testing.T) {
-	repoLocalDir := "../assets/podtato-head"
+	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
+	require.Nil(t, err)
+
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
