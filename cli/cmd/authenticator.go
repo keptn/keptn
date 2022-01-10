@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"net"
 	"net/url"
@@ -70,7 +70,10 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		endpoint.Path = "/api"
 	}
 
-	authHandler := apiutils.NewAuthenticatedAuthHandler(endpoint.String(), apiToken, "x-token", nil, endpoint.Scheme)
+	api, err := internal.GetApiSet(endpoint.String(), apiToken, "x-token", endpoint.Scheme)
+	if err != nil {
+		return err
+	}
 
 	if !LookupHostname(endpoint.Hostname(), net.LookupHost, time.Sleep) {
 		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
@@ -84,7 +87,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	authenticated := false
 	// try to authenticate (and retry it)
 	for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
-		_, err := authHandler.Authenticate()
+		_, err := api.AuthV1().Authenticate()
 		if err != nil {
 			errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
 			logging.PrintLog(errMsg, logging.QuietLevel)

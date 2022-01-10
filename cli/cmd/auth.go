@@ -3,8 +3,10 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	auth2 "github.com/keptn/keptn/cli/internal/auth"
 	"net/url"
 	"os"
 	"strconv"
@@ -24,6 +26,8 @@ type authCmdParams struct {
 	acceptContext        bool
 	secure               *bool
 	skipNamespaceListing *bool
+	sso                  *bool
+	ssoCached            *bool
 }
 
 type smartKeptnAuthParams struct {
@@ -66,6 +70,35 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		return verifyAuthParams(authParams, smartKeptnAuth)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		oauthConfig, err := auth2.GetOauthConfig(auth2.StaticOauthDiscovery{})
+		if err != nil {
+			return err
+		}
+
+		oauth := auth2.NewOauthAuthenticator(oauthConfig, auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
+
+		if *authParams.sso {
+			err := oauth.Auth()
+			if err != nil {
+				return err
+			}
+		}
+
+		if *authParams.ssoCached {
+			client, err := oauth.GetOauthClient(context.TODO())
+			if err != nil {
+				fmt.Println(err.Error())
+				return err
+			}
+
+			_, err = client.Get("http://0.0.0.0:8000")
+			if err != nil {
+				fmt.Println(err.Error())
+				return err
+			}
+		}
+
+		time.Sleep(5 * time.Second)
 
 		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
 		authenticator := NewAuthenticator(namespace, credentialManager)
@@ -94,6 +127,8 @@ func init() {
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
+	authParams.sso = authCmd.Flags().Bool("sso", false, "Use single sign on")
+	authParams.ssoCached = authCmd.Flags().Bool("ssoc", false, "use cached oauthclient")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
@@ -112,18 +147,20 @@ func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthPa
 		return nil
 	}
 
-	if !mocking {
-		if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
-			namespace, err = smartKeptnCLIAuth()
-			if err != nil {
-				return err
-			}
-		}
+	if *authParams.sso {
+		return nil
+	}
 
-		err = smartFetchKeptnAuthParameters(authParams, smartKeptnAuth)
+	if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
+		namespace, err = smartKeptnCLIAuth()
 		if err != nil {
-			return fmt.Errorf(err.Error()+parametersRequiredMessage, getReleaseDocsURL(), namespace, namespace)
+			return err
 		}
+	}
+
+	err = smartFetchKeptnAuthParameters(authParams, smartKeptnAuth)
+	if err != nil {
+		return fmt.Errorf(err.Error()+parametersRequiredMessage, getReleaseDocsURL(), namespace, namespace)
 	}
 	return nil
 }

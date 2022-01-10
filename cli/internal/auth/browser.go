@@ -10,6 +10,10 @@ type URLOpener interface {
 	Open(url string) error
 }
 
+func NewBrowser() *Browser {
+	return &Browser{}
+}
+
 type Browser struct {
 }
 

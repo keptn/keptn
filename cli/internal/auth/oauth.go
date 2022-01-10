@@ -21,6 +21,15 @@ type OauthAuthenticator struct {
 	browser    URLOpener
 }
 
+func NewOauthAuthenticatorStatic() (*OauthAuthenticator, error) {
+	oauthConfig, err := GetOauthConfig(StaticOauthDiscovery{})
+	if err != nil {
+		return nil, err
+	}
+	oauth := NewOauthAuthenticator(oauthConfig, LocalFileTokenStore{}, Browser{})
+	return oauth, nil
+}
+
 func NewOauthAuthenticator(config *oauth2.Config, tokenStore TokenStore, browser URLOpener) *OauthAuthenticator {
 	return &OauthAuthenticator{
 		config:     config,

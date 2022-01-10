@@ -10,6 +10,7 @@ import (
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
@@ -87,8 +88,11 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 				endPointErr)
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		eventByte, err := json.Marshal(sdkEvent)
@@ -103,7 +107,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		}
 
 		if !mocking {
-			eventContext, err := apiHandler.SendEvent(apiEvent)
+			eventContext, err := api.APIV1().SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Sending configure-monitoring event was unsuccessful. %s", *err.Message)
@@ -113,7 +117,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			fetchEventRetryTime := 3 * time.Second
 			// if eventContext is available, try to fetch the correlating configure-monitoring.finished event
 			if eventContext != nil {
-				events, err := eventHandler.GetEventsWithRetry(&apiutils.EventFilter{
+				events, err := api.EventsV1().GetEventsWithRetry(&apiutils.EventFilter{
 					KeptnContext: *eventContext.KeptnContext,
 					EventType:    keptnv2.GetFinishedEventType("configure-monitoring"),
 				}, maxFetchEventRetries, fetchEventRetryTime)

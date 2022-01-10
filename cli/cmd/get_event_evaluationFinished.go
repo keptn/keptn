@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -56,11 +57,15 @@ var getEvaluationFinishedCmd = &cobra.Command{
 				endPointErr)
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			evaluationDoneEvts, err := eventHandler.GetEvents(&apiutils.EventFilter{
+			evaluationDoneEvts, err := api.EventsV1().GetEvents(&apiutils.EventFilter{
 				KeptnContext: *evaluationDone.KeptnContext,
 				EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 			})

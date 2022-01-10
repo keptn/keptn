@@ -3,11 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -78,11 +78,15 @@ For more information about updating projects or upstream repositories, please go
 			project.GitRemoteURL = *updateProjectParams.RemoteURL
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			_, err := apiHandler.UpdateProject(project)
+			_, err := api.APIV1().UpdateProject(project)
 			if err != nil {
 				return fmt.Errorf("Update project was unsuccessful. %s", *err.Message)
 			}

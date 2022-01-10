@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 	"net/url"
 	"os"
 
@@ -71,15 +72,17 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 			endPointErr)
 	}
 
-	scHandler := apiutils.NewAuthenticatedShipyardControllerHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return err
+	}
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
-		return getAllApprovalEventsInStage(approvalTriggered, scHandler, eventHandler)
+		return getAllApprovalEventsInStage(approvalTriggered, api.ShipyardControlHandlerV1(), api.EventsV1())
 	}
-	return getAllApprovalEventsInService(approvalTriggered, scHandler, eventHandler)
+	return getAllApprovalEventsInService(approvalTriggered, api.ShipyardControlHandlerV1(), api.EventsV1())
 }
 
 func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {

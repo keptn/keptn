@@ -2,11 +2,21 @@ package auth
 
 import (
 	"encoding/json"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 )
 
+const TokenFileName = "tokens.json"
+
+func NewLocalFileTokenStore() *LocalFileTokenStore {
+	location := getDefaultLocation()
+	return &LocalFileTokenStore{location: location}
+}
+
 type LocalFileTokenStore struct {
+	location string
 }
 
 type TokenStore interface {
@@ -15,7 +25,7 @@ type TokenStore interface {
 }
 
 func (t LocalFileTokenStore) GetToken() (*oauth2.Token, error) {
-	tokenFile, err := ioutil.ReadFile("tokens.json")
+	tokenFile, err := ioutil.ReadFile(t.location)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +43,23 @@ func (t LocalFileTokenStore) StoreToken(token *oauth2.Token) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile("tokens.json", tokenMarshalled, 0600)
+	err = ioutil.WriteFile(t.location, tokenMarshalled, 0600)
 	if err != nil {
 		return err
 	}
-	// persist token
-	return nil // or error
+	return nil
+}
+
+func (t *LocalFileTokenStore) Location() (bool, string) {
+	return fileutils.FileExists(t.location), t.location
+}
+
+func getDefaultLocation() string {
+	configPath, err := keptnutils.GetKeptnDirectory()
+	if err != nil {
+		return TokenFileName
+	}
+	return configPath + TokenFileName
 }
 
 type TokenStoreMock struct {
