@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -184,7 +185,7 @@ func GetOOMEvents() (K8SEventArray, error) {
 		Items: []K8SEvent{},
 	}
 	for _, event := range eventArray.Items {
-		if event.Reason == "OOMKilling" || event.Reason == "SystemOOM" {
+		if strings.Contains(event.Reason, "OOM") {
 			oomEvents.Items = append(oomEvents.Items, event)
 		}
 	}
