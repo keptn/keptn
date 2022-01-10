@@ -390,11 +390,6 @@ func Test_ResourceServiceBasic(t *testing.T) {
 
 	for _, stageReq := range createStageRequests {
 		for _, serviceReq := range createServiceRequests {
-			t.Logf("Updating service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
-			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, serviceReq, 3)
-			require.Nil(t, err)
-			require.Equal(t, 501, resp.Response().StatusCode) // should be 204 in resource-service
-
 			t.Logf("Updating existing resource for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 			require.Nil(t, err)
@@ -455,7 +450,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting the resource from service %s from stage %s from project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
-			require.Equal(t, 204, resp.Response().StatusCode)
+			// configuration-service returns 204
+			// resource-service returns 200
+			require.Contains(t, []int{204, 200}, resp.Response().StatusCode)
 
 			t.Logf("Checking non-existing resource for service %s for stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
@@ -470,7 +467,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, 3)
 			require.Nil(t, err)
-			require.Equal(t, 204, resp.Response().StatusCode)
+			// configuration-service returns 204
+			// resource-service returns 200
+			require.Contains(t, []int{204, 200}, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for non-existing service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)

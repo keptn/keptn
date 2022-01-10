@@ -9,10 +9,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
-	utils "github.com/keptn/kubernetes-utils/pkg"
 	logger "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -148,15 +146,14 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 }
 
 func (g Git) commitAll(gitContext common_models.GitContext, message string) (string, error) {
-	r, w, err := g.getWorkTree(gitContext)
+	_, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return "", err
 	}
 	if message == "" {
 		message = "commit changes"
 	}
-	remote, _ := r.Remote("origin")
-	fmt.Println(remote.Config().URLs[0])
+
 	err = w.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
 		return "", err
@@ -179,27 +176,24 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
-	err = retry.Retry(func() error {
-		err = g.Pull(gitContext)
+	rollbackFunc := func() {
+		err := g.resetHard(gitContext)
 		if err != nil {
-			logger.WithError(err).Warn("could not pull")
-			return err
-		}
-
-		err = g.Push(gitContext)
-		if err != nil {
-			logger.WithError(err).Warn("could not push")
-			return err
-		}
-		return nil
-	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
-	if err != nil {
-		// if push or pull fails try to use git cli
-		err := fallback(gitContext)
-		if err != nil {
-			return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
+			logger.WithError(err).Warn("could not reset")
 		}
 	}
+	err = g.Pull(gitContext)
+	if err != nil {
+		rollbackFunc()
+		return "", err
+	}
+
+	err = g.Push(gitContext)
+	if err != nil {
+		rollbackFunc()
+		return "", err
+	}
+
 	id, updated, err := g.getCurrentRemoteRevision(gitContext)
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
@@ -208,28 +202,6 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
 	}
 	return id, nil
-}
-
-func fallback(gitContext common_models.GitContext) error {
-
-	path := GetProjectConfigPath(gitContext.Project)
-
-	repoURI := getRepoURI(gitContext.Credentials.RemoteURI, gitContext.Credentials.User, gitContext.Credentials.Token)
-	// first pull from remote current branch preferring remote changes
-	_, err := utils.ExecuteCommandInDirectory(
-		"git", []string{"pull", "-X", "theirs", repoURI},
-		path,
-	)
-	if err != nil {
-		return err
-	}
-
-	// then push local changes
-	_, err = utils.ExecuteCommandInDirectory(
-		"git", []string{"push", repoURI},
-		path,
-	)
-	return err
 }
 
 func (g Git) Push(gitContext common_models.GitContext) error {
@@ -250,6 +222,9 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		},
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		if errors.Is(err, git.ErrForceNeeded) {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, kerrors.ErrForceNeeded)
+		}
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
 	}
 	return nil
@@ -271,10 +246,14 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			if errors.Is(err, plumbing.ErrReferenceNotFound) {
 				// reference not there yet
 				err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
+			}
+			if err != nil {
 				if errors.Is(err, git.NoErrAlreadyUpToDate) {
 					return nil
 				} else if errors.Is(err, transport.ErrEmptyRemoteRepository) {
 					return nil
+				} else if errors.Is(err, git.ErrNonFastForwardUpdate) {
+					return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrNonFastForwardUpdate)
 				}
 				return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 			}
@@ -501,6 +480,21 @@ func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository,
 		return nil, nil, err
 	}
 	return repo, worktree, nil
+}
+
+func (g Git) resetHard(gitContext common_models.GitContext) error {
+	r, w, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "reset", gitContext.Project, err)
+	}
+	revision, err := r.ResolveRevision("HEAD~1")
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "reset", gitContext.Project, err)
+	}
+	return w.Reset(&git.ResetOptions{
+		Commit: *revision,
+		Mode:   git.HardReset,
+	})
 }
 
 func ensureRemoteMatchesCredentials(repo *git.Repository, gitContext common_models.GitContext) error {

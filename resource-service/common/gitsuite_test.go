@@ -174,21 +174,19 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
 	// check new changes are forced
 	id, err = g.StageAndCommitAll(repo2context, "my conflicting change")
-	c.Assert(err, IsNil)
-	c.Logf("my commit id %s", id)
+	c.Assert(errors.Is(err, kerrors.ErrNonFastForwardUpdate), Equals, true)
+	c.Assert(id, Equals, "")
 
-	// check remote already up to date
-	err = w2.Pull(&git.PullOptions{})
-	c.Assert(kerrors.NoErrAlreadyUpToDate.Is(err), Equals, true)
-
-	// because we keep their changes ours are not the final ones
-	b, err = g.GetFileRevision(repo2context, id, "try.txt")
-	c.Assert(err, IsNil)
-	c.Assert(content1, Equals, string(b))
+	err = g.Pull(repo2context)
 
 	//verify current revision
 	curr, err := g.GetCurrentRevision(repo2context)
-	c.Assert(curr, Equals, id)
+	c.Assert(err, IsNil)
+
+	// because we keep their changes ours are not the final ones
+	b, err = g.GetFileRevision(repo2context, curr, "try.txt")
+	c.Assert(err, IsNil)
+	c.Assert(content1, Equals, string(b))
 }
 
 func configUser(remote *git.Repository) {
