@@ -14,7 +14,6 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -242,21 +241,17 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
 		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, ReferenceName: head.Name()})
+		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
+			// reference not there yet
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
+		}
 		if err != nil {
-			if errors.Is(err, plumbing.ErrReferenceNotFound) {
-				// reference not there yet
-				err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
+			if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
+				return nil
+			} else if errors.Is(err, git.ErrNonFastForwardUpdate) {
+				return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrNonFastForwardUpdate)
 			}
-			if err != nil {
-				if errors.Is(err, git.NoErrAlreadyUpToDate) {
-					return nil
-				} else if errors.Is(err, transport.ErrEmptyRemoteRepository) {
-					return nil
-				} else if errors.Is(err, git.ErrNonFastForwardUpdate) {
-					return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrNonFastForwardUpdate)
-				}
-				return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
-			}
+			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
 		return nil
 	}
@@ -551,22 +546,4 @@ func ensureDirectoryExists(path string) error {
 		return err
 	}
 	return nil
-}
-
-func getRepoURI(uri string, user string, token string) string {
-	if strings.Contains(user, "@") {
-		// username contains an @, probably an e-mail; need to encode it
-		// see https://stackoverflow.com/a/29356143
-		user = url.QueryEscape(user)
-	}
-	token = url.QueryEscape(token)
-	if strings.Contains(uri, user+"@") {
-		uri = strings.Replace(uri, "://"+user+"@", "://"+user+":"+token+"@", 1)
-	}
-
-	if !strings.Contains(uri, user+":"+token+"@") {
-		uri = strings.Replace(uri, "://", "://"+user+":"+token+"@", 1)
-	}
-
-	return uri
 }
