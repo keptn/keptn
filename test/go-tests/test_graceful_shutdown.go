@@ -2,7 +2,6 @@ package go_tests
 
 import (
 	"github.com/stretchr/testify/require"
-	"path"
 	"path/filepath"
 	"testing"
 	"time"
@@ -72,8 +71,8 @@ func Test_GracefulShutdown(t *testing.T) {
 
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
-	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
+	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz" //path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
+	serviceJmeterDir := repoLocalDir + "/jmeter"                           //path.Join(repoLocalDir, "jmeter")
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
 

@@ -1,7 +1,6 @@
 package go_tests
 
 import (
-	"path"
 	"path/filepath"
 	"testing"
 	"time"
@@ -127,8 +126,8 @@ func Test_ContinuousDelivery(t *testing.T) {
 	require.Nil(t, err)
 	keptnProjectName := "podtato-head"
 	serviceName := "helloservice"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
-	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
+	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz"
+	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 
 	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
