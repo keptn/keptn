@@ -2,7 +2,6 @@ package go_tests
 
 import (
 	"github.com/stretchr/testify/require"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -67,12 +66,9 @@ spec:
 `
 
 func Test_GracefulShutdown(t *testing.T) {
-	dir, err := os.Getwd()
+	repoLocalDir, err := filepath.Abs("../")
 	require.Nil(t, err)
-	t.Log("Current path is : ", dir)
-	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
-	require.Nil(t, err)
-	t.Log("However repo local dir is : ", repoLocalDir)
+	t.Log("Current local dir is : ", repoLocalDir)
 
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"

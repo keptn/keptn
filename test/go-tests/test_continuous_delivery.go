@@ -122,7 +122,7 @@ spec:
 
 func Test_ContinuousDelivery(t *testing.T) {
 
-	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
+	repoLocalDir, err := filepath.Abs("../")
 	require.Nil(t, err)
 	keptnProjectName := "podtato-head"
 	serviceName := "helloservice"
