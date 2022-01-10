@@ -345,6 +345,7 @@ const sequencesResponses = {
     states: [
       {
         name: 'remediation',
+        problemTitle: 'Failure rate increase',
         service: 'carts',
         project: 'sockshop',
         time: '2021-11-04T04:51:21.557Z',
