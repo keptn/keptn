@@ -181,6 +181,9 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 		if err := p.git.Pull(*gitContext); err != nil {
 			return nil, err
 		}
+		if !p.fileSystem.FileExists(resourcePath) {
+			return nil, kerrors.ErrResourceNotFound
+		}
 		fileContent, err = p.fileSystem.ReadFile(resourcePath)
 		if err != nil {
 			return nil, err
