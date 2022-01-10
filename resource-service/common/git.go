@@ -143,6 +143,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		return nil, err
 	}
 
+	os.MkdirAll(projectPath+"/.git", 0700)
 	w, err := init.Worktree()
 	if err != nil {
 		return nil, err
@@ -402,7 +403,7 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
 	if g.ProjectExists(gitContext) {
-		r, w, err := g.getWorkTree(gitContext)
+		_, w, err := g.getWorkTree(gitContext)
 		if err != nil {
 			return err
 		}
