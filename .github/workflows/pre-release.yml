@@ -6,7 +6,7 @@ on:
         description: 'Can be one of [major,minor,patch]. CAUTION: This will enforce a new pre-release with the specified semantic version type bumped.'
         required: false
 env:
-  NODE_VERSION: 14
+  NODE_VERSION: 16
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
@@ -280,6 +280,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          path: keptn
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Checkout helm-charts repo
+        uses: actions/checkout@v2
+        with:
+          repository: keptn/helm-charts
+          path: helm-charts
+          ref: gh-pages
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Set up Node.js
@@ -292,8 +301,8 @@ jobs:
           KEPTN_BOT_NAME: ${{ env.KEPTN_BOT_NAME }}
           KEPTN_BOT_EMAIL: ${{ env.KEPTN_BOT_EMAIL }}
         run: |
-          git config user.name "$KEPTN_BOT_NAME"
-          git config user.email "$KEPTN_BOT_EMAIL"
+          git config --global user.name "$KEPTN_BOT_NAME"
+          git config --global user.email "$KEPTN_BOT_EMAIL"
 
       - name: Download Pre-Release Artifacts
         uses: actions/download-artifact@v2
@@ -301,6 +310,7 @@ jobs:
           path: ./dist
 
       - name: Prepare GitHub Pre-Release Notes
+        working-directory: keptn
         env:
           SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
         run: |
@@ -330,6 +340,7 @@ jobs:
 
       - name: Create pre-release package
         id: create-release-package
+        working-directory: keptn
         env:
           SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
@@ -363,6 +374,7 @@ jobs:
           enforce_admins: true
 
       - name: Create GitHub Pre-Release
+        working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
@@ -370,28 +382,30 @@ jobs:
           gh release create "$RELEASE_TAG" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" --title "$RELEASE_TAG"
 
       - name: Upload Release Assets
+        working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          gh release upload "$RELEASE_TAG" ./dist/keptn-installer/*.tgz
-          gh release upload "$RELEASE_TAG" ./dist/keptn-cli/*.tar.gz
+          gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
+          gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
 
-      - name: Upload Helm Charts to Google Cloud
-        id: upload_helm_charts
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.7.2
+
+      - name: Upload helm charts
         env:
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
-          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-          CLOUDSDK_REGION: "us-east1"
+          ARTIFACTS: "./dist/keptn-installer/*.tgz"
+          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          echo "Installing GCloud CLI"
-          export OS_TYPE="linux"
-          mkdir ~/downloads
-          ./test/utils/download_and_install_gcloud.sh
-          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-          gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+          mv "$ARTIFACTS" ./helm-charts/packages
+          cd ./helm-charts
+          helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
+          git add --all
+          git commit --signoff -m "Keptn Release $RELEASE_TAG"
+          git push
 
       - name: Attach docker image digests to release
         env:

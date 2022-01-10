@@ -88,8 +88,13 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if *upgradeParams.PatchNamespace {
 		return nil
 	}
+	var chartRepoURL string
 
-	chartRepoURL := getKeptnHelmChartRepoURL(upgradeParams.ChartRepoURL)
+	if !isStringFlagSet(upgradeParams.ChartRepoURL) {
+		chartRepoURL = getKeptnHelmChartRepoURL()
+	} else {
+		chartRepoURL = *upgradeParams.ChartRepoURL
+	}
 
 	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {

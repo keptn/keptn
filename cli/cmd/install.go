@@ -227,8 +227,14 @@ func fetchCharts(helmHelper helm.IHelper, keptnChartRepoURL string) (*chart.Char
 func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
+	var keptnChartRepoURL string
 
-	keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
+	if !isStringFlagSet(installParams.ChartRepoURL) {
+		keptnChartRepoURL = getKeptnHelmChartRepoURL()
+	} else {
+		keptnChartRepoURL = *installParams.ChartRepoURL
+	}
+
 	var err error
 	if keptnChart, err = fetchCharts(i.helmHelper, keptnChartRepoURL); err != nil {
 		return err

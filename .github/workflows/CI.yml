@@ -168,14 +168,6 @@ jobs:
         # see https://github.com/keptn/gh-action-extract-branch-name for details
         uses: keptn/gh-action-extract-branch-name@main
 
-      - name: 'Get Previous tag'
-        id: get_previous_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1.1"
-      - name: 'Get next patch version'
-        id: get_next_semver_tag
-        uses: "WyriHaximus/github-action-next-semvers@v1.1"
-        with:
-          version: ${{ steps.get_previous_tag.outputs.tag }}
       - name: Get the version
         id: get_version
         env:
@@ -184,9 +176,15 @@ jobs:
         shell: bash
         run: |
           # determine version
-          GIT_LAST_TAG=${{ steps.get_previous_tag.outputs.tag }}
-          GIT_NEXT_TAG=${{ steps.get_next_semver_tag.outputs.patch }}
-          echo "GIT_LAST_TAG=${GIT_LAST_TAG}, GIT_NEXT_TAG=${GIT_NEXT_TAG}"
+          npx standard-version@^9.3.1 \
+            --skip.commit \
+            --skip.tag \
+            --skip.changelog
+
+          GIT_NEXT_TAG=$(cat VERSION.txt)
+          git checkout HEAD -- VERSION.txt
+          
+          echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
           if [[ "$BRANCH" == "master" ]]; then
             # master branch = latest
@@ -356,6 +354,52 @@ jobs:
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
       keptn-spec-version: ${{ needs.prepare_ci_run.outputs.KEPTN_SPEC_VERSION }}
       datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+
+  helm_charts_upload:
+    name: Publish helm charts to dev repo
+    needs: [prepare_ci_run, helm_charts_build]
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout helm-charts repo
+      uses: actions/checkout@v2
+      with:
+        repository: keptn/helm-charts-dev
+        path: helm-charts-dev
+        ref: gh-pages
+        token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+    - name: Configure Git
+      working-directory: helm-charts-dev
+      env:
+        KEPTN_BOT_NAME: "Keptn Bot"
+        KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+      run: |
+        git config user.name "$KEPTN_BOT_NAME"
+        git config user.email "$KEPTN_BOT_EMAIL"
+
+    - name: Install Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: v3.7.2
+
+    - name: Download Helm Chart artifacts
+      id: download_helm_chart
+      uses: actions/download-artifact@v2
+      with:
+        name: keptn-installer
+        path: dist/keptn-installer
+
+    - name: Upload helm charts to dev repo
+      env:
+        RELEASE_TAG: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      run: |
+        mv ./dist/keptn-installer/*.tgz ./helm-charts-dev/packages
+        cd ./helm-charts-dev
+        helm repo index ./ --url https://charts-dev.keptn.sh/ --merge ./index.yaml
+        git add --all
+        git commit --signoff -m "Keptn Dev Version $RELEASE_TAG"
+        git push
 
   ############################################################################
   # Build Docker Images                                                      #
