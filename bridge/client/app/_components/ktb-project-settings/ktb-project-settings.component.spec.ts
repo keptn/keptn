@@ -12,7 +12,6 @@ import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
-  const UNSAVED_DIALOG_STATE = 'unsaved';
   let dataService: DataService;
   let routeParamsSubject: BehaviorSubject<{ projectName: string } | Record<string, never>>;
 
