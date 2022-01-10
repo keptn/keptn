@@ -179,6 +179,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
             );
 
             this.projectFormTouchedSubject.next(true);
+            this.isProjectFormUntouched = true;
           },
           (err) => {
             this.isGitUpstreamInProgress = false;
@@ -249,14 +250,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     );
   }
 
-  public reject(): void {
-    this.projectFormTouchedSubject.next(false);
-    this.hideNotification();
-  }
-
   public reset(): void {
     this.gitSettingsSection?.reset();
     this.projectFormTouchedSubject.next(true);
+    this.isProjectFormUntouched = true;
     this.hideNotification();
   }
 
