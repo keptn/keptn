@@ -52,6 +52,6 @@ describe('Changing git credentials', () => {
       .inputGitUrl(GIT_URL)
       .inputGitUsername(GIT_USER)
       .inputGitToken(GIT_TOKEN)
-      .clickSaveChanges();
+      .clickSaveGitUpstream();
   });
 });

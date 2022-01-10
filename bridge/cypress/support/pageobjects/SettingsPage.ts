@@ -19,6 +19,11 @@ class SettingsPage {
     return this;
   }
 
+  clickSaveGitUpstream(): this {
+    cy.get('.dt-button-primary > span.dt-button-label').contains('Set Git upstream').click();
+    return this;
+  }
+
   clickSaveChanges(): this {
     cy.get('.dt-button-primary > span.dt-button-label').contains('Save changes').click();
     return this;
