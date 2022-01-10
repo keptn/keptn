@@ -53,8 +53,6 @@ func (s *BaseSuite) buildBasicRepository(c *C) {
 
 	s.url = TESTPATH + "/remote"
 
-	//initBare(c,s.url)
-
 	// make a local remote
 	_, err := git.PlainClone(s.url, true, &git.CloneOptions{URL: "https://github.com/git-fixtures/basic.git"})
 	c.Assert(err, IsNil)
@@ -72,7 +70,7 @@ func cleanupSuite(c *C) {
 }
 func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
-	g := Git{GogitReal{}}
+	g := NewGit(GogitReal{})
 
 	// make empty local remote
 	url := TESTPATH + "/shared"
@@ -80,11 +78,10 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	c.Assert(err, IsNil)
 
 	//setup remote as bare
-
 	_, err = git.PlainInit(emptyUrl, true)
 	c.Assert(err, IsNil)
-	// make two local repo pointing at our remote
 
+	// make two local repo pointing at our remote
 	repo1, err := git.PlainInit(TESTPATH+"/repo1", false)
 	c.Assert(err, IsNil)
 	err = configureGitUser(repo1)
@@ -107,7 +104,6 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	})
 
 	// push some first change to remote
-
 	c.Assert(err, IsNil)
 	w2, err := repo2.Worktree()
 	c.Assert(err, IsNil)
@@ -226,9 +222,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 
 	for _, tt := range tests {
 		c.Log("Test : " + tt.name)
-		g := &Git{
-			git: tt.git,
-		}
+		g := NewGit(tt.git)
 		var id plumbing.Hash
 		var err error
 
@@ -328,7 +322,7 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 	}
 	for _, tt := range tests {
 		c.Log("Test " + tt.name)
-		g := Git{GogitReal{}}
+		g := NewGit(GogitReal{})
 		r := s.Repository
 
 		//get current commit
@@ -422,7 +416,7 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			c.Assert(err, IsNil)
 			h = commit("fo/file.txt", c, w)
 		}
-		g := Git{GogitReal{}}
+		g := NewGit(GogitReal{})
 		err := g.Push(tt.gitContext)
 		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
 			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
@@ -450,7 +444,7 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := Git{GogitReal{}}
+		g := NewGit(GogitReal{})
 		conf, err := s.Repository.Config()
 		c.Assert(err, IsNil)
 		conf.Init.DefaultBranch = tt.want
@@ -522,7 +516,7 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 
 	for _, tt := range tests {
 		c.Logf("Test %s", tt.name)
-		g := Git{GogitReal{}}
+		g := NewGit(GogitReal{})
 		err := g.Pull(tt.gitContext)
 		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
 			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
@@ -658,7 +652,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 	}
 	for _, tt := range tests {
 		c.Log("Test ", tt.name)
-		g := Git{tt.git}
+		g := NewGit(tt.git)
 		got, err := g.CloneRepo(tt.gitContext)
 		if (err != nil) != tt.wantErr {
 			c.Errorf("CloneRepo() error = %v, wantErr %v", err, tt.wantErr)
@@ -703,9 +697,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 		},
 	}
 	r := s.Repository
-	g := Git{
-		s.NewTestGit(),
-	}
+	g := NewGit(s.NewTestGit())
 
 	expected := []byte("[core]\n\tbare = false\n[remote \"origin\"]\n\turl = " +
 		TESTPATH + "/remote\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n[branch \"master\"]\n" +
@@ -758,7 +750,7 @@ func (s *BaseSuite) TestGit_CheckoutBranch(c *C) {
 			wantErr:    true,
 		},
 	}
-	g := Git{s.NewTestGit()}
+	g := NewGit(s.NewTestGit())
 	for _, tt := range tests {
 		c.Log("Test: ", tt.name)
 		if err := g.CheckoutBranch(tt.gitContext, tt.branch); (err != nil) != tt.wantErr {
@@ -814,7 +806,7 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 	for _, tt := range tests {
 		c.Log("Test : " + tt.name)
 		var id string
-		g := Git{s.NewTestGit()}
+		g := NewGit(s.NewTestGit())
 		if tt.id == "" {
 			h := s.commitAndPush(tt.file, tt.content, c)
 			id = h.String()
@@ -854,13 +846,7 @@ func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		if tt.want {
-			err := os.Mkdir(GetProjectConfigPath(tt.project), os.ModePerm)
-			c.Assert(err, IsNil)
-			_, err = git.PlainInit(GetProjectConfigPath(tt.project), false)
-			c.Assert(err, IsNil)
-		}
-		g := Git{GogitReal{}}
+		g := NewGit(GogitReal{})
 		if got := g.ProjectRepoExists(tt.project); got != tt.want {
 			c.Errorf("ProjectRepoExists() = %v, exists %v", got, tt.want)
 		}
@@ -909,7 +895,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 	}
 	for _, tt := range tests {
 		c.Log(tt.name)
-		g := &Git{tt.git}
+		g := NewGit(tt.git)
 		if got := g.ProjectExists(tt.gitContext); got != tt.exists {
 			c.Errorf("ProjectExists() = %v, exists %v", got, tt.exists)
 		}

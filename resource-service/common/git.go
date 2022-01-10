@@ -98,7 +98,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	)
 
 	if err != nil {
-		if strings.Contains(err.Error(), "empty") {
+		if kerrors.ErrEmptyRemoteRepository.Is(err) {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, err)
@@ -133,14 +133,34 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 	if err != nil {
 		return nil, err
 	}
+	f, err := os.Create(projectPath + "/metadata.yaml")
+	if err != nil {
+		return nil, err
+	}
+	_, err = f.Write([]byte{})
+	if err != nil {
+		return nil, err
+	}
+	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
 
-	os.MkdirAll(projectPath+"/.git", 0700)
 	w, err := init.Worktree()
 	if err != nil {
 		return nil, err
 	}
-	w.Add("/.git")
-	_, err = g.commitAll(gitContext, "init repo")
+
+	w.Add(projectPath + "/metadata.yaml")
+	_, err = w.Commit("init git empty repo",
+		&git.CommitOptions{
+			All: true,
+			Author: &object.Signature{
+				Name:  gitKeptnUserDefault,
+				Email: gitKeptnEmailDefault,
+				When:  time.Now(),
+			},
+		})
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +250,7 @@ func fallback(path string) error {
 
 func (g Git) Push(gitContext common_models.GitContext) error {
 	var err error
-	if gitContext.Credentials == nil {
+	if *gitContext.Credentials == (common_models.GitCredentials{}) {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, kerrors.ErrCredentialsNotFound)
 	}
 	repo, _, err := g.getWorkTree(gitContext)
