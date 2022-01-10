@@ -3,6 +3,7 @@ package go_tests
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	v1 "k8s.io/api/core/v1"
@@ -10,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -158,4 +160,39 @@ func WaitForDeploymentInNamespace(deploymentName, namespace string) error {
 
 func WaitForPodOfDeployment(deploymentName string) error {
 	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+}
+
+type K8SEvent struct {
+	Reason  string `json:"reason"`
+	Type    string `json:"type"`
+	Message string `json:"message"`
+}
+
+type K8SEventArray struct {
+	Items []K8SEvent `json:"items"`
+}
+
+func GetOOMEvents() (K8SEventArray, error) {
+	events, err := keptnkubeutils.ExecuteCommand(kubectlExecutable, []string{"get", "events", "-n=default", "-o=json"})
+
+	if err != nil {
+		return K8SEventArray{}, err
+	}
+
+	eventArray := K8SEventArray{}
+	err = json.Unmarshal([]byte(events), &eventArray)
+
+	oomEvents := K8SEventArray{
+		Items: []K8SEvent{},
+	}
+	for _, event := range eventArray.Items {
+		if strings.Contains(event.Reason, "OOM") {
+			oomEvents.Items = append(oomEvents.Items, event)
+		}
+	}
+
+	if err != nil {
+		return K8SEventArray{}, err
+	}
+	return oomEvents, err
 }
