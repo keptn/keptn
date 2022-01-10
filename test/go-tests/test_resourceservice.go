@@ -175,6 +175,11 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		require.Equal(t, resourceUri, *resource.ResourceURI)
 		require.Equal(t, resourceContent, resource.ResourceContent)
 
+		// TODO remove
+		resp, err = ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/resource", createResourceRequest, 3)
+		require.Nil(t, err)
+		require.Equal(t, 201, resp.Response().StatusCode)
+
 		t.Logf("Checking all resources for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
 		require.Nil(t, err)
@@ -333,11 +338,6 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	require.Equal(t, 400, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
-		t.Logf("Updating stage %s in project %s", stageReq.StageName, projectName)
-		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName, stageReq, 3)
-		require.Nil(t, err)
-		require.Equal(t, 501, resp.Response().StatusCode) // should be 204 in resource-service
-
 		t.Logf("Updating existing resource for stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = ApiPUTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 		require.Nil(t, err)

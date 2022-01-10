@@ -16,6 +16,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -147,13 +148,15 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 }
 
 func (g Git) commitAll(gitContext common_models.GitContext, message string) (string, error) {
-	_, w, err := g.getWorkTree(gitContext)
+	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return "", err
 	}
 	if message == "" {
 		message = "commit changes"
 	}
+	remote, _ := r.Remote("origin")
+	fmt.Println(remote.Config().URLs[0])
 	err = w.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
 		return "", err
@@ -192,7 +195,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
 	if err != nil {
 		// if push or pull fails try to use git cli
-		err := fallback(GetProjectConfigPath(gitContext.Project))
+		err := fallback(gitContext)
 		if err != nil {
 			return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 		}
@@ -207,11 +210,14 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	return id, nil
 }
 
-func fallback(path string) error {
+func fallback(gitContext common_models.GitContext) error {
 
+	path := GetProjectConfigPath(gitContext.Project)
+
+	repoURI := getRepoURI(gitContext.Credentials.RemoteURI, gitContext.Credentials.User, gitContext.Credentials.Token)
 	// first pull from remote current branch preferring remote changes
 	_, err := utils.ExecuteCommandInDirectory(
-		"git", []string{"pull", "origin", "HEAD", "-X", "theirs"},
+		"git", []string{"pull", "-X", "theirs", repoURI},
 		path,
 	)
 	if err != nil {
@@ -220,7 +226,7 @@ func fallback(path string) error {
 
 	// then push local changes
 	_, err = utils.ExecuteCommandInDirectory(
-		"git", []string{"push", "origin", "HEAD"},
+		"git", []string{"push", repoURI},
 		path,
 	)
 	return err
@@ -251,18 +257,27 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 
 func (g *Git) Pull(gitContext common_models.GitContext) error {
 	if g.ProjectExists(gitContext) {
-		_, w, err := g.getWorkTree(gitContext)
+		r, w, err := g.getWorkTree(gitContext)
 		if err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
+
+		head, err := r.Head()
 		if err != nil {
-			if errors.Is(err, git.NoErrAlreadyUpToDate) {
-				return nil
-			} else if errors.Is(err, transport.ErrEmptyRemoteRepository) {
-				return nil
-			}
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
+		}
+		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, ReferenceName: head.Name()})
+		if err != nil {
+			if errors.Is(err, plumbing.ErrReferenceNotFound) {
+				// reference not there yet
+				err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
+				if errors.Is(err, git.NoErrAlreadyUpToDate) {
+					return nil
+				} else if errors.Is(err, transport.ErrEmptyRemoteRepository) {
+					return nil
+				}
+				return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
+			}
 		}
 		return nil
 	}
@@ -542,4 +557,22 @@ func ensureDirectoryExists(path string) error {
 		return err
 	}
 	return nil
+}
+
+func getRepoURI(uri string, user string, token string) string {
+	if strings.Contains(user, "@") {
+		// username contains an @, probably an e-mail; need to encode it
+		// see https://stackoverflow.com/a/29356143
+		user = url.QueryEscape(user)
+	}
+	token = url.QueryEscape(token)
+	if strings.Contains(uri, user+"@") {
+		uri = strings.Replace(uri, "://"+user+"@", "://"+user+":"+token+"@", 1)
+	}
+
+	if !strings.Contains(uri, user+":"+token+"@") {
+		uri = strings.Replace(uri, "://", "://"+user+":"+token+"@", 1)
+	}
+
+	return uri
 }
