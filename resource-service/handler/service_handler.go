@@ -2,35 +2,69 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/errors"
+	"github.com/keptn/keptn/resource-service/models"
+	"net/http"
 )
 
 type IServiceHandler interface {
 	CreateService(context *gin.Context)
-	UpdateService(context *gin.Context)
 	DeleteService(context *gin.Context)
 }
 
 type ServiceHandler struct {
 	ServiceManager IServiceManager
-	EventSender    common.EventSender
 }
 
-func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender) *ServiceHandler {
+func NewServiceHandler(serviceManager IServiceManager) *ServiceHandler {
 	return &ServiceHandler{
 		ServiceManager: serviceManager,
-		EventSender:    eventSender,
 	}
 }
 
-func (ph *ServiceHandler) CreateService(c *gin.Context) {
+func (sh *ServiceHandler) CreateService(c *gin.Context) {
+	params := &models.CreateServiceParams{
+		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		Stage:   models.Stage{StageName: c.Param(pathParamStageName)},
+	}
 
+	createService := &models.CreateServicePayload{}
+	if err := c.ShouldBindJSON(createService); err != nil {
+		SetBadRequestErrorResponse(c, errors.ErrMsgInvalidRequestFormat)
+		return
+	}
+
+	params.CreateServicePayload = *createService
+
+	if err := params.Validate(); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
+	err := sh.ServiceManager.CreateService(*params)
+	if err != nil {
+		OnAPIError(c, err)
+		return
+	}
+
+	c.String(http.StatusNoContent, "")
 }
 
-func (ph *ServiceHandler) UpdateService(c *gin.Context) {
+func (sh *ServiceHandler) DeleteService(c *gin.Context) {
+	params := &models.DeleteServiceParams{
+		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		Stage:   models.Stage{StageName: c.Param(pathParamStageName)},
+		Service: models.Service{ServiceName: c.Param(pathParamServiceName)},
+	}
 
-}
+	if err := params.Validate(); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
 
-func (ph *ServiceHandler) DeleteService(c *gin.Context) {
-
+	if err := sh.ServiceManager.DeleteService(*params); err != nil {
+		OnAPIError(c, err)
+		return
+	}
+	c.String(http.StatusNoContent, "")
 }

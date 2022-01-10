@@ -5,16 +5,6 @@ coverage:
         # basic
         target: auto
         threshold: 2% # allow cov to drop by 2% (just in case)
-      microservices:
-        # basic
-        target: auto
-        threshold: 2% # allow cov to drop by 2% (just in case)
-      bridge:
-        target: auto
-        threshold: 2% # allow cov to drop by 2% (just in case)
-      cli:
-        target: auto
-        threshold: 2% # allow cov to drop by 2% (just in case)
     patch:
       default:
         threshold: 1% # allow patch
@@ -27,42 +17,81 @@ ignore:
   - "**/*.sh"         # ignore shell scripts
 
 comment:
-  layout: "diff, files"
-  show_carryforward_flags: true # see https://docs.codecov.io/docs/carryforward-flags
+  layout: "diff, files, flags"
 
 github_checks:
   annotations: false
 
 flags:
-  microservices:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   api:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
-  bridge:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - api/
+    carryforward: true
+  bridge2:
+    paths:
+      - bridge/
+    carryforward: true
+  bridge-server:
+    paths:
+      - bridge/server/
+    carryforward: true
   cli:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - cli/
+    carryforward: true
   configuration-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - configuration-service/
+    carryforward: true
   resource-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - resource-service/
+    carryforward: true
   distributor:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - distributor/
+    carryforward: true
   approval-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - approval-service/
+    carryforward: true
   helm-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - helm-service/
+    carryforward: true
   jmeter-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - jmeter-service/
+    carryforward: true
   lighthouse-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - lighthouse-service/
+    carryforward: true
   mongodb-datastore:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - mongodb-datastore/
+    carryforward: true
+  openshift-route-service:
+    paths:
+      - /platform-support/openshift-route-service
+    carryforward: true
   remediation-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - remediation-service/
+    carryforward: true
   shipyard-controller:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - shipyard-controller/
+    carryforward: true
   statistics-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - statistics-service/
+    carryforward: true
   webhook-service:
-    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+    paths:
+      - webhook-service/
+    carryforward: true
+  secret-service:
+    paths:
+      - secret-service/
+    carryforward: true

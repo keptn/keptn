@@ -29,6 +29,7 @@ env:
   SHIPYARD_CONTROLLER_ARTIFACT_PREFIX: "SHIPYARD_CONTROLLER"
   SECRET_SVC_ARTIFACT_PREFIX: "SECRET_SVC"
   CONFIGURATION_SVC_ARTIFACT_PREFIX: "CONFIGURATION_SVC"
+  RESOURCE_SVC_ARTIFACT_PREFIX: "RESOURCE_SVC"
   REMEDIATION_SVC_ARTIFACT_PREFIX: "REMEDIATION_SVC"
   LIGHTHOUSE_SVC_ARTIFACT_PREFIX: "LIGHTHOUSE_SVC"
   MONGODB_DS_ARTIFACT_PREFIX: "MONGODB_DS"
@@ -85,6 +86,10 @@ env:
   CONFIGURATION_SVC_ARTIFACT: "configuration-service"
   CONFIGURATION_SVC_FOLDER: "configuration-service/"
   CONFIGURATION_SVC_DOCKER_TEST_TARGET: "builder-test"
+
+  RESOURCE_SVC_ARTIFACT: "resource-service"
+  RESOURCE_SVC_FOLDER: "resource-service/"
+  RESOURCE_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   REMEDIATION_SVC_ARTIFACT: "remediation-service"
   REMEDIATION_SVC_FOLDER: "remediation-service/"
@@ -273,13 +278,18 @@ jobs:
           docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
 
       - name: Report test coverage for ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+        if: matrix.config.should-push-image == 'true'
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: false
-          verbose: true
-          move_coverage_to_trash: true
           flags: ${{ matrix.config.artifact }}
+
+      - name: Report test coverage for bridge-server
+        if: matrix.config.should-push-image == 'false' && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'bridge-server-test'
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: false
+          flags: bridge-server
 
       - name: Upload Test Screenshots
         if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
@@ -318,8 +328,6 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
-          verbose: true
-          move_coverage_to_trash: true
           flags: cli
 
   ############################################################################
@@ -354,7 +362,7 @@ jobs:
   ############################################################################
   docker_build:
     name: Docker Build
-    needs: [prepare_ci_run, unit-tests-microservices]
+    needs: [prepare_ci_run]
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
