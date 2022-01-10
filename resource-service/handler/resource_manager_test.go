@@ -844,6 +844,33 @@ func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testi
 	require.Empty(t, fields.fileSystem.DeleteFileCalls())
 }
 
+func TestResourceManager_DeleteResource_ProjectResource_ResourceNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		if strings.Contains(path, "file1") {
+			return false
+		}
+		return true
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		ResourceURI: "file1",
+	})
+
+	require.ErrorIs(t, err, errors2.ErrResourceNotFound)
+
+	require.Nil(t, revision)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+	require.Empty(t, fields.fileSystem.DeleteFileCalls())
+}
+
 func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T) {
 	fields := getTestResourceManagerFields()
 

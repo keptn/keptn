@@ -462,7 +462,9 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting non-existing resource from service %s from stage %s from project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
-			require.Equal(t, 500, resp.Response().StatusCode) //needs other code in restore-service
+			// configuration-service returns 500
+			// resource-service returns 404
+			require.Contains(t, []int{500, 404}, resp.Response().StatusCode) //needs other code in resource-service
 
 			t.Logf("Deleting service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, 3)
@@ -497,12 +499,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Deleting non-existing resource from stage %s from project %s", stageReq.StageName, projectName)
 		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
-		require.Equal(t, 500, resp.Response().StatusCode) //needs other code in restore-service
+		require.Equal(t, 500, resp.Response().StatusCode) //needs other code in resource-service
 
 		t.Logf("Deleting stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName, 3)
 		require.Nil(t, err)
-		require.Equal(t, 501, resp.Response().StatusCode) //will be 204 for restore-service
+		require.Equal(t, 501, resp.Response().StatusCode) //will be 204 for resource-service
 
 		t.Logf("Checking resource for non-existing stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = ApiGETRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
@@ -513,7 +515,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Deleting non-existing stage %s in project %s", nonExistingStageName, projectName)
 		resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/stage/"+nonExistingStageName, 3)
 		require.Nil(t, err)
-		require.Equal(t, 501, resp.Response().StatusCode) //will be 400 for restore-service
+		require.Equal(t, 501, resp.Response().StatusCode) //will be 400 for resource-service
 	}
 
 	t.Logf("Deleting the resource from project %s", projectName)
@@ -529,7 +531,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Deleting non-existing resource from project %s", projectName)
 	resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
-	require.Equal(t, 500, resp.Response().StatusCode) //needs other code in restore-service
+	require.Equal(t, 500, resp.Response().StatusCode) //needs other code in resource-service
 
 	t.Logf("Deleting the project %s", projectName)
 	resp, err = ApiDELETERequest(configurationServiceBasePath+"/"+projectName, 3)

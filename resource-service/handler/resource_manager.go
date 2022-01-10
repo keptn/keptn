@@ -297,6 +297,9 @@ func (p ResourceManager) stageAndCommit(gitContext *common_models.GitContext, me
 }
 
 func (p ResourceManager) deleteResource(gitContext *common_models.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {
+	if !p.fileSystem.FileExists(resourcePath) {
+		return nil, kerrors.ErrResourceNotFound
+	}
 	if err := p.fileSystem.DeleteFile(resourcePath); err != nil {
 		return nil, err
 	}
