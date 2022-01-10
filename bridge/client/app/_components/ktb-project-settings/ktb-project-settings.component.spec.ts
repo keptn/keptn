@@ -191,7 +191,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(component.canDeactivate()).toEqual(false);
+    expect(component.canDeactivate()).not.toEqual(true);
   });
 
   it('should show a dialog when showNotification is called', () => {
