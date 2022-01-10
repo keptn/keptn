@@ -15,10 +15,12 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	. "gopkg.in/check.v1"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -581,8 +583,32 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 					Token:     "blabla",
 					RemoteURI: emptyUrl},
 			},
+
 			wantErr: false,
 			want:    true,
+		},
+		{
+			name: "invalid project name",
+			git: &common_mock.GogitMock{
+				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+					return nil, kerrors.ErrEmptyRemoteRepository
+				},
+				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
+					return git.PlainInit(path, isBare)
+				},
+				PlainOpenFunc: func(path string) (*git.Repository, error) {
+					return nil, nil
+				},
+			},
+			gitContext: common_models.GitContext{
+				Project: "~*_;:&^$@",
+				Credentials: &common_models.GitCredentials{
+					User:      "Me",
+					Token:     "blabla",
+					RemoteURI: emptyUrl},
+			},
+			wantErr: true,
+			want:    false,
 		},
 		{
 			name: "clone existing sockshop",
@@ -667,7 +693,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 
 func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 
-	tests := []struct {
+	var tests = []struct {
 		name         string
 		gitContext   common_models.GitContext
 		branch       string
@@ -694,6 +720,15 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			branch:       "dev",
 			sourceBranch: "refs/heads/branch",
 			error:        kerrors.ErrReferenceNotFound,
+		},
+		{
+			name:         "illegal name ",
+			gitContext:   s.NewGitContext(),
+			branch:       "",
+			sourceBranch: "refs/heads/dev",
+			error: kerrors.New((&fs.PathError{
+				Op: "open", Path: "..\\test\\tmpRepo\\sockshop\\.git\\refs\\heads", Err: syscall.EISDIR,
+			}).Error()),
 		},
 	}
 	r := s.Repository
