@@ -10,16 +10,23 @@ import (
 	"os"
 )
 
+// TokenGetter handles the retrieval of oauth access tokens
 type TokenGetter interface {
 	Handle() (*oauth2.Token, error)
 }
 
+// CLosingRedirectHandler is an implementation of TokenHandler
+// It opens a local http server with the hard-coded path "/oauth/redirect"
+// which serves as a callback to transfer the access tokens retrieved during the Oauth flow
 type ClosingRedirectHandler struct {
 	server       *http.Server
 	codeVerifier []byte
 	oauthConfig  *oauth2.Config
 }
 
+// Handle openc a server at port 3000 and performs the exchange of the authorization code into an access token when the
+// user was redirect to the local server
+// It returns the obtained oauth2 token or an error
 func (r *ClosingRedirectHandler) Handle() (*oauth2.Token, error) {
 	server := &http.Server{}
 	var tokenExchangeErr error

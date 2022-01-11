@@ -11,25 +11,20 @@ import (
 
 const loginSuccessHTML = `<p><strong>Login successful!</strong></p>`
 
+// Authenticator is responsible for authenticate the user using SSO/Oauth2
 type Authenticator interface {
-	Authorize(discovery OauthLocationGetter, tokenStore TokenStore, redirectURL string) error
+	// Auth is triggering the authentication
+	Auth(discovery OauthLocationGetter, tokenStore TokenStore, redirectURL string) error
 }
 
+// OauthAuthenticator is an implementation of Authenticator which implements the Oauth2 Authorization Code Flow
 type OauthAuthenticator struct {
 	config     *oauth2.Config
 	tokenStore TokenStore
 	browser    URLOpener
 }
 
-func NewOauthAuthenticatorStatic() (*OauthAuthenticator, error) {
-	oauthConfig, err := GetOauthConfig(StaticOauthDiscovery{})
-	if err != nil {
-		return nil, err
-	}
-	oauth := NewOauthAuthenticator(oauthConfig, LocalFileTokenStore{}, Browser{})
-	return oauth, nil
-}
-
+// NewOauthAuthenticator is creating a new OauthAuthenticator
 func NewOauthAuthenticator(config *oauth2.Config, tokenStore TokenStore, browser URLOpener) *OauthAuthenticator {
 	return &OauthAuthenticator{
 		config:     config,
@@ -38,6 +33,7 @@ func NewOauthAuthenticator(config *oauth2.Config, tokenStore TokenStore, browser
 	}
 }
 
+// Auth tries to start the Oauth2 Authorization Code Flow
 func (a *OauthAuthenticator) Auth() error {
 	codeVerifier, err := GenerateCodeVerifier()
 	if err != nil {
@@ -70,6 +66,8 @@ func (a *OauthAuthenticator) Auth() error {
 	return nil
 }
 
+// GetOauthClient will eventually return an already ready to use http client which is configuered to use
+// the correct access token
 func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, error) {
 	nrts := &NotifyRefreshTokenSource{
 		config:     a.config,
@@ -78,6 +76,8 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 	return oauth2.NewClient(ctx, nrts), nil
 }
 
+// GetOauthConfig uses a given OauthLocationGetter to determine the parameters
+// for the Oauth flow
 func GetOauthConfig(discovery OauthLocationGetter) (*oauth2.Config, error) {
 	result, err := discovery.Discover()
 	if err != nil {

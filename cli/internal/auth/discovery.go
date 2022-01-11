@@ -1,19 +1,28 @@
 package auth
 
+// OauthLocationGetter is used to get the location parameters
+// used in an oauth flow
+type OauthLocationGetter interface {
+	// Discover is responsible for determining the parameters used for an oauth flow
+	// and returns them as a OauthDiscoveryResult
+	Discover() (*OauthDiscoveryResult, error)
+}
+
+// NewOauthDiscovery creates a new OauthDiscovery
 func NewOauthDiscovery(discoveryURL string) *OauthDiscovery {
 	return &OauthDiscovery{
 		discoveryURL,
 	}
 }
 
+// OauthDiscovery is an implementation of OauthLocationGetter which calls
+// a known URL to get the parameters
 type OauthDiscovery struct {
 	discoveryURL string
 }
 
-type OauthLocationGetter interface {
-	Discover() (*OauthDiscoveryResult, error)
-}
-
+// OauthDiscoveryResult is the result of a OauthLocation discovery call
+// and contains all the parameters usable for a following oauth flow
 type OauthDiscoveryResult struct {
 	Issuer                 string   `json:"issuer"`
 	AuthorizationEndpoint  string   `json:"authorization_endpoint"`
@@ -28,12 +37,16 @@ type OauthDiscoveryResult struct {
 
 func (d OauthDiscovery) Discover() (*OauthDiscoveryResult, error) {
 	panic("not yet implemented")
-	return nil, nil
 }
 
+// StaticOauthDiscovery has a static/hard-coded set of oauth parameters
+// and does not actually do a discovery call to get the parameters but just returns
+// the hard-coded values as OauthDiscoveryResult
 type StaticOauthDiscovery struct {
 }
 
+// Discover tries to determine the parameters used for an oauth flow
+// and returns them as a OauthDiscoveryResult
 func (d StaticOauthDiscovery) Discover() (*OauthDiscoveryResult, error) {
 	return &OauthDiscoveryResult{
 		Issuer:                 "https://sso-dev.dynatracelabs.com:443",
@@ -48,10 +61,13 @@ func (d StaticOauthDiscovery) Discover() (*OauthDiscoveryResult, error) {
 	}, nil
 }
 
+// OauthDiscoveryMock is an implementation of OauthLocationGetter usable
+// as a mock implementation in tests
 type OauthDiscoveryMock struct {
 	discoverFn func() (*OauthDiscoveryResult, error)
 }
 
+// Discover calls the mocked function of the OauthDiscoveryMock
 func (o *OauthDiscoveryMock) Discover() (*OauthDiscoveryResult, error) {
 	if o != nil && o.discoverFn != nil {
 		return o.discoverFn()
