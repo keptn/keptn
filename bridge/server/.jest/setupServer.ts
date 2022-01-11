@@ -12,7 +12,7 @@ const setupServer = async (token = process.env.API_TOKEN): Promise<Express> => {
       rejectUnauthorized: false,
     }),
     headers: {
-      ...token && { 'x-token': token },
+      ...(token && { 'x-token': token }),
       'Content-Type': 'application/json',
     },
   });
