@@ -38,9 +38,11 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.Git
 
 	// secret found -> unmarshal it
 	credentials := &common_models.GitCredentials{}
-	err = json.Unmarshal(secret.Data["git-credentials"], credentials)
-	if err != nil {
+	if err := json.Unmarshal(secret.Data["git-credentials"], credentials); err != nil {
 		return nil, errors2.ErrMalformedCredentials
+	}
+	if err := credentials.Validate(); err != nil {
+		return nil, err
 	}
 	return credentials, nil
 }
