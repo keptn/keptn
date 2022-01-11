@@ -72,8 +72,8 @@ func Test_GracefulShutdown(t *testing.T) {
 
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"
-	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz" //path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
-	serviceJmeterDir := repoLocalDir + "/jmeter"                           //path.Join(repoLocalDir, "jmeter")
+	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz"
+	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
 
@@ -107,7 +107,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
-	waitAndKill(t, shipyardPod, 30)
+	waitAndKill(t, shipyardPod, 35)
 
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
