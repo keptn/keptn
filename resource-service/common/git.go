@@ -261,10 +261,19 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		if err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, ReferenceName: head.Name()})
+		auth := &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		}
+		err = w.Pull(&git.PullOptions{
+			RemoteName:    "origin",
+			Force:         true,
+			ReferenceName: head.Name(),
+			Auth:          auth,
+		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth})
 		}
 		if err != nil {
 			if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
@@ -393,8 +402,18 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
 	if g.ProjectExists(gitContext) {
-		_, w, err := g.getWorkTree(gitContext)
+		r, w, err := g.getWorkTree(gitContext)
 		if err != nil {
+			return err
+		}
+		if err := r.Fetch(&git.FetchOptions{
+			RemoteName: "origin",
+			RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+			Auth: &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			},
+		}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return err
 		}
 		return w.Checkout(options)
