@@ -60,6 +60,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	apiV1 := engine.Group("/v1")
+	apiHealth := engine.Group("")
 
 	kubeAPI, err := createKubeAPI()
 	if err != nil {
@@ -100,6 +101,10 @@ func main() {
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
+
+	healthHandler := handler.NewHealthHandler()
+	healthController := controller.NewHealthController(healthHandler)
+	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	srv := &http.Server{
