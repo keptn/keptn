@@ -74,7 +74,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
 
-	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
+	t.Logf("Creating a new project %s", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
 	require.Nil(t, err)
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
