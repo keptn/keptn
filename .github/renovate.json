@@ -5,12 +5,19 @@
     "schedule:nonOfficeHours",
     ":semanticCommitTypeAll(build)",
     ":semanticCommitScope(deps)",
-    "group:monorepos"
+    "group:monorepos",
+    ":automergePatch"
   ],
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,
   "stabilityDays": 7,
   "timezone": "Europe/Vienna",
+  "ignoreDeps": [
+    "github.com/keptn/keptn/go-sdk"
+  ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "packageRules": [
     {
       "matchManagers": ["npm"],

@@ -87,7 +87,7 @@ export class DataService {
     const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
 
     if (includeRemediation) {
-      openRemediations = await this.getOpenRemediations(accessToken, projectName, true, true);
+      openRemediations = await this.getOpenRemediations(accessToken, projectName, true);
     }
 
     if (includeApproval) {
@@ -368,7 +368,6 @@ export class DataService {
   public async getOpenRemediations(
     accessToken: string | undefined,
     projectName: string,
-    includeProblemTitle: boolean,
     includeActions: boolean,
     serviceName?: string
   ): Promise<Remediation[]> {
@@ -386,49 +385,42 @@ export class DataService {
         const stage = { ...sequence.stages[0], actions: [] };
         const remediation: Remediation = Remediation.fromJSON({ ...sequence, stages: [stage] });
 
-        await this.setRemediationDetails(
-          accessToken,
-          remediation,
-          includeProblemTitle,
-          includeActions,
-          projectName,
-          stageName,
-          sequence.service,
-          sequence.shkeptncontext
-        );
+        if (includeActions) {
+          await this.loadRemediationActions(
+            accessToken,
+            remediation,
+            projectName,
+            stageName,
+            sequence.service,
+            sequence.shkeptncontext
+          );
+        }
         remediations.push(remediation);
       }
     }
     return remediations;
   }
 
-  private async setRemediationDetails(
+  private async loadRemediationActions(
     accessToken: string | undefined,
     remediation: Remediation,
-    includeProblemTitle: boolean,
-    includeActions: boolean,
     projectName: string,
     stageName: string,
     serviceName: string,
     keptnContext: string
   ): Promise<void> {
-    if (includeProblemTitle) {
-      const response = await this.apiService.getTraces(
-        accessToken,
-        includeActions ? undefined : `${EventTypes.PREFIX}${stageName}.remediation.triggered`,
-        this.MAX_TRACE_PAGE_SIZE,
-        projectName,
-        stageName,
-        serviceName,
-        keptnContext
-      );
-      const traces = response.data.events;
-      remediation.problemTitle = traces[traces.length - 1]?.data.problem?.ProblemTitle;
-      if (includeActions) {
-        const actions = this.getRemediationActions(Trace.traceMapper(traces));
-        remediation.stages[0].actions.push(...actions);
-      }
-    }
+    const response = await this.apiService.getTraces(
+      accessToken,
+      undefined,
+      this.MAX_TRACE_PAGE_SIZE,
+      projectName,
+      stageName,
+      serviceName,
+      keptnContext
+    );
+    const traces = response.data.events;
+    const actions = this.getRemediationActions(Trace.traceMapper(traces));
+    remediation.stages[0].actions.push(...actions);
   }
 
   private getRemediationActions(traces: Trace[]): IRemediationAction[] {
@@ -1114,7 +1106,7 @@ export class DataService {
   public async getServiceStates(accessToken: string | undefined, projectName: string): Promise<ServiceState[]> {
     const projectResponse = await this.apiService.getProject(accessToken, projectName);
     const project = Project.fromJSON(projectResponse.data);
-    const openRemediations = await this.getOpenRemediations(accessToken, projectName, false, false);
+    const openRemediations = await this.getOpenRemediations(accessToken, projectName, false);
     const serviceStates: ServiceState[] = [];
     for (const stage of project.stages) {
       for (const service of stage.services) {
@@ -1321,7 +1313,7 @@ export class DataService {
     openRemediations?: Remediation[]
   ): Promise<StageRemediationInformation> {
     if (!openRemediations) {
-      openRemediations = await this.getOpenRemediations(accessToken, projectName, true, false, serviceName);
+      openRemediations = await this.getOpenRemediations(accessToken, projectName, false, serviceName);
     }
     let remediationConfig: string | undefined;
     const openRemediationsForStage = openRemediations
@@ -1357,7 +1349,7 @@ export class DataService {
     includeConfig: boolean
   ): Promise<ServiceRemediationInformation> {
     const serviceRemediationInformation: ServiceRemediationInformation = { stages: [] };
-    const openRemediations = await this.getOpenRemediations(accessToken, projectName, true, false, serviceName);
+    const openRemediations = await this.getOpenRemediations(accessToken, projectName, false, serviceName);
     const stageRemediations = openRemediations.reduce((stagesAcc: { [key: string]: Sequence[] }, remediation) => {
       const stageName = remediation.stages[0].name;
       if (!stagesAcc[stageName]) {

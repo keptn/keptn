@@ -1,4 +1,4 @@
-title helm-service: handle service.deleted event
+title helm-service: handle service.delete.finished
 
 shipyard-controller->helm-service: RETRIEVED service.deleted
 

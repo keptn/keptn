@@ -269,7 +269,7 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 
 	startedEvents, err := sc.eventRepo.GetStartedEventsForTriggeredID(*eventScope)
 	if err != nil {
-		return fmt.Errorf("error while retrieving matching '.started' eent for event %s with triggered ID %s: %w", eventScope.WrappedEvent.ID, eventScope.TriggeredID, err)
+		return fmt.Errorf("error while retrieving matching '.started' event for event %s with triggered ID %s: %w", eventScope.WrappedEvent.ID, eventScope.TriggeredID, err)
 	}
 	if len(startedEvents) == 0 {
 		return fmt.Errorf("no matching '.started' event found for event %s with triggered ID %s", eventScope.WrappedEvent.ID, eventScope.TriggeredID)

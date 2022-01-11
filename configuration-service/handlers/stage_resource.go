@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/base64"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
 
@@ -240,9 +241,7 @@ func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params
 		logger.WithError(err).Errorf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName)
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
-	logger.Debugf("Successfully updated resource: %s" + unescapedResourceName)
+	logger.Debugf("Successfully deleted resource: %s" + unescapedResourceName)
 
-	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = params.StageName
-	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(metadata)
+	return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURINoContent()
 }

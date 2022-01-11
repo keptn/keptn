@@ -150,3 +150,27 @@ func TestValidateShipyardStages(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateGitRemoteURL(t *testing.T) {
+	type args struct {
+		shipyard *keptnv2.Shipyard
+	}
+	tests := []struct {
+		url     string
+		wantErr bool
+	}{
+		{"http://someURL.com", false},
+		{"https://someTlsURL.com", false},
+		{"any.url", true},
+		{"ftp://any.url", true},
+		{"really common string", true},
+		{"ssh://someSshUrl.com", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.url, func(t *testing.T) {
+			if err := ValidateGitRemoteURL(tt.url); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateGitRemoteURL() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

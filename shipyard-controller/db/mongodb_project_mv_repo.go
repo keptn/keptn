@@ -328,8 +328,7 @@ func (mv *MongoDBProjectMVRepo) DeleteStage(project string, stage string) error 
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
-		fmt.Sprintf("Could not delete stage %s from project %s : %s\n", stage, project, err.Error())
-		return err
+		return fmt.Errorf("could not delete stage %s from project %s: %w", stage, project, err)
 	}
 
 	stageIndex := -1
@@ -564,6 +563,13 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 	}
 
 	return mv.projectRepo.UpdateProject(existingProject)
+}
+
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskTriggered(event models.Event) {
+	err := mv.UpdateEventOfService(event)
+	if err != nil {
+		log.WithError(err).Errorf("Could not update lastEvent property for task.started event")
+	}
 }
 
 func (mv *MongoDBProjectMVRepo) OnSequenceTaskStarted(event models.Event) {

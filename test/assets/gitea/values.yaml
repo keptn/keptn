@@ -1,0 +1,24 @@
+service:
+  http:
+    type: ClusterIP
+    port: 3000
+    clusterIP:
+  ssh:
+    type: ClusterIP
+    port: 22
+    clusterIP:
+
+cache:
+  builtIn:
+    enabled: true
+
+gitea:
+  config:
+    cache:
+      HOST: gitea-memcached:11211
+    database:
+      DB_TYPE: postgresql
+      HOST: gitea-postgresql:5432
+      NAME: gitea
+      USER: gitea
+      PASSWD: gitea

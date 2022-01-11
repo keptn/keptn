@@ -249,7 +249,9 @@ var getActionTriggeredEventData = keptnv2.GetActionTriggeredEventData{
 		ProblemTitle: "Response time degradation",
 		RootCause:    "Problem root cause",
 	},
-	ActionIndex: 0,
+	GetAction: keptnv2.GetActionData{
+		ActionIndex: 0,
+	},
 }
 
 var getActionStartedEventData = keptnv2.GetActionStartedEventData{
@@ -264,7 +266,9 @@ var getActionFinishedEventData = keptnv2.GetActionFinishedEventData{
 		Description: "Toggles a feature flag",
 		Value:       map[string]string{"EnableItemCache": "on"},
 	},
-	ActionIndex: 1,
+	GetAction: keptnv2.GetActionData{
+		ActionIndex: 1,
+	},
 }
 
 var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{

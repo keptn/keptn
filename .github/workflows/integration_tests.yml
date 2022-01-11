@@ -10,12 +10,8 @@ on:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
-      examples_branch:
-        description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
-        required: true
-        default: 'master'
 env:
-  META_KEPTN_VERSION: 0.10.0
+  META_KEPTN_VERSION: 0.11.4
   META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
@@ -32,27 +28,21 @@ jobs:
             PLATFORM: "openshift"
             PLATFORM_VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
-            RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            BACKUP_RESTORE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            BACKUP_RESTORE: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            BACKUP_RESTORE: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
@@ -60,29 +50,23 @@ jobs:
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_AIRGAPPED_TEST: "true"
-            RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            BACKUP_RESTORE: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.19"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
-            BACKUP_RESTORE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.21"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
-            BACKUP_RESTORE: "true"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
@@ -93,17 +77,22 @@ jobs:
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
+      AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
-      BACKUP_RESTORE: ${{ matrix.BACKUP_RESTORE }}
-      RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
-      KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
       GO_VERSION: ^1.16
+      TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
+      FINAL_TEST_REPORT_FOLDER: test-reports
+      FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
+      TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
     steps:
 
+      #######################################################################
+      # SETUP
+      #######################################################################
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
@@ -246,7 +235,7 @@ jobs:
 
           # create registry and cluster
           k3d registry create container-registry.localhost --port 12345
-          k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use k3d-container-registry.localhost:12345
+          k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use "$AIRGAPPED_REGISTRY_URL"
           kubectl config use-context k3d-mykeptn
 
       - name: Install and start GKE cluster
@@ -288,7 +277,7 @@ jobs:
           KEPTN_TAG: ${{ env.VERSION }}
         run: |
           # pull images and push it to the local k3d registry
-          installer/airgapped/pull_and_retag_images.sh "k3d-container-registry.localhost:12345/"
+          installer/airgapped/pull_and_retag_images.sh "$AIRGAPPED_REGISTRY_URL/"
 
       - name: Prevent egress traffic for airgapped system
         # this only prevents pods / containers from accessing services outside of the Kubernetes cluster, it does not
@@ -339,7 +328,7 @@ jobs:
           echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
-            installer/airgapped/install_keptn.sh "k3d-container-registry.localhost:12345/" "http://0.0.0.0:8000/$HELM_CHART_NAME" "http://0.0.0.0:8000/$HELM_SERVICE_HELM_CHART_NAME" "http://0.0.0.0:8000/$JMETER_SERVICE_HELM_CHART_NAME"
+            installer/airgapped/install_keptn.sh "$AIRGAPPED_REGISTRY_URL/" "http://0.0.0.0:8000/$HELM_CHART_NAME" "http://0.0.0.0:8000/$HELM_SERVICE_HELM_CHART_NAME" "http://0.0.0.0:8000/$JMETER_SERVICE_HELM_CHART_NAME"
           else
             # Install Keptn via CLI
             keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
@@ -355,6 +344,23 @@ jobs:
         run: |
           echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
           test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
+
+      - name: Install Gitea
+        id: install_gitea
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        run: |
+          helm repo add gitea-charts https://dl.gitea.io/charts/
+          helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
+          GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
+          GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
+          sleep 30 # TODO
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
+          sleep 30 # TODO
+          curl -vkL --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+          GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
+          kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN}
+          rm gitea-token.txt
 
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
@@ -447,107 +453,6 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
-      - name: Update go-test dependencies
-        id: update_go_test_dependencies
-        continue-on-error: true
-        run: cd test/go-tests && go get ./...
-
-      - name: Test Airgapped Images
-        id: test_airgapped_images
-        if: env.RUN_AIRGAPPED_TEST == 'true'
-        timeout-minutes: 2
-        continue-on-error: true
-        run: test/test_airgapped_images.sh "k3d-container-registry.localhost:12345"
-
-      - name: Test Log Ingestion
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_log_ingestion
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run LogIngestion -v
-
-      - name: Test Log Forwarding
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_log_forwarding
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run LogForwarding -v
-
-      - name: Test Sequence States
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_states
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceState -v
-
-      - name: Test Sequence Loop
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_loop
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
-
-      - name: Test Quality Gates Standalone
-        id: test_quality_gates
-        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run Test_QualityGates -v
-
-      - name: Test Self Healing
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_self_healing
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          UNLEASH_SERVICE_VERSION: "release-0.3.2"
-        run: cd test/go-tests && go test -run Test_SelfHealing -v
-
-      - name: Test Delivery Assistant
-        id: test_delivery_assistant
-        # Delivery Assistant only works when we install keptn with continuous delivery use-case
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-        timeout-minutes: 7
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
-
-      - name: Test Backup and Restore
-        id: test_backup_restore
-        if: env.BACKUP_RESTORE == 'true'
-        timeout-minutes: 7
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run Test_BackupRestore -v
-
-      - name: Test User Managed Delivery
-        id: test_user_managed_delivery
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
-
       - name: Install Remote Execution Plane
         id: install_remote_execution_plane
         if: env.REMOTE_EXECUTION_PLANE == 'true'
@@ -569,104 +474,62 @@ jobs:
           helm test jmeter-service -n keptn-jmeter-service
           helm test helm-service -n keptn-helm-service
 
-      - name: Test Continuous Delivery with parallel stages (with sockshop)
-        id: test_continuous_delivery
-        if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
-        timeout-minutes: 45
-        continue-on-error: true
+      - name: Prepare test run
+        id: prepare_test_run
+        run: |
+          go install gotest.tools/gotestsum@v1.7.0
+          cd test/go-tests
+          go get ./...
+          mkdir "${{ env.TEST_REPORT_FOLDER }}"
+          mkdir "${{ env.FINAL_TEST_REPORT_FOLDER }}"
+
+      - name: "------- TESTS START -------"
+        run: echo "------- TESTS START -------"
+
+      #######################################################################
+      # TESTS
+      #######################################################################
+
+      #######################################################################
+      # COMMON TESTS
+      ##############
+
+      - name: Integration Tests
+        id: test_aggregated
+        timeout-minutes: 60
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run ContinuousDelivery -v
+          UNLEASH_SERVICE_VERSION: "release-0.3.2"
+          GOTESTSUM_FORMAT: "testname"
+          GOTESTSUM_JSONFILE: ${{ env.TEST_REPORT_FOLDER }}/tests-${{ env.TEST_REPORT_FILENAME_SUFFIX }}
+        run: |
+          cd test/go-tests
+          
+          # Decide on platform testsuite to run
+          if [[ "$CLOUD_PROVIDER" == "minishift-on-GHA" ]]; then
+            TESTSUITE="Test_Openshift"
+          elif [[ "$CLOUD_PROVIDER" == "k3s-on-GHA" ]]; then
+            TESTSUITE="Test_K3S"
+          elif [[ "$CLOUD_PROVIDER" == "GKE" ]]; then
+            TESTSUITE="Test_GKE"
+          elif [[ "$CLOUD_PROVIDER" == "k3d-on-GHA" ]]; then
+            TESTSUITE="Test_K3D"
+          fi
+          
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 60m
 
-      - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
-        id: test_continuous_delivery_remote_exec
-        if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
-        timeout-minutes: 45
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run ContinuousDelivery -v
+      - name: "------- TESTS END -------"
+        run: echo "------- TESTS END -------"
 
-      - name: Test Manage Secrets
-        id: test_manage_secrets
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run:  cd test/go-tests && go test -run ManageSecrets -v
+      #######################################################################
+      # TEARDOWN
+      #######################################################################
 
-      - name: Test Webhook Integration
-        id: test_webhook_integration
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run Test_Webhook -v
-
-      #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
-      #        id: test_continuous_delivery
-      #        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
-      #        continue-on-error: true
-      #        env:
-      #          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #        run: |
-      #          test/test_self_healing_scaling.sh
-
-      # for debugging etc... it makes sense to have the support archive attached as an artifact
-
-      - name: Test Sequence Timeout
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_timeout
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceTimeout -v
-
-      - name: Test Sequence Control
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_control
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceControl -v
-
-      - name: Test Sequence Queue
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_queue
-        timeout-minutes: 15
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceQueue -v -timeout 15m
-
-      - name: Test Graceful Shutdown
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-        id: test_graceful_shutdown
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run GracefulShutdown -v
-
-      - name: Test Uniform Registration
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true' && env.PLATFORM != 'openshift'
-        id: test_uniform_registration
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run UniformRegistration -v
+      - name: Filter and aggregate test reports
+        if: always()
+        run: |
+          cd test/go-tests
+          ./../utils/combine_and_filter_go_test_json_report.sh "${{ env.TEST_REPORT_FOLDER }}" "${{ env.FINAL_TEST_REPORT_PATH }}" "${{ matrix.CLOUD_PROVIDER }}-${{ matrix.PLATFORM_VERSION }}"
 
       - name: keptn generate support-archive
         if: always()
@@ -690,7 +553,7 @@ jobs:
           kubectl delete namespace keptn-jmeter-service
 
       - name: Uninstall Istio
-        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
+        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishift, so no need to uninstall it
         timeout-minutes: 5
         run: test/utils/uninstall_istio.sh
 
@@ -716,20 +579,46 @@ jobs:
       - name: Write test report
         id: write_test_report
         if: always()
-        env:
-          TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.txt
         run: |
-          echo "write test report to $TEST_REPORT_FILENAME"
-          # please check with headings in print_test_report task roughly 50 lines below
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_control.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_backup_restore.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_webhook_integration.outcome }} | ${{ steps.test_graceful_shutdown.outcome }} | ${{ steps.test_uniform_registration.outcome }} |" > $TEST_REPORT_FILENAME
-          cat $TEST_REPORT_FILENAME
+          cd test/go-tests
+          echo "write test report to ${{ env.FINAL_TEST_REPORT_PATH }}"
+          report_template='{"test":$test_name, "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}":$test_outcome}'
 
-      - name: Upload test report as an artifact
+          test_names=(
+            "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Install"
+            "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Auth"
+          )
+
+          test_outcomes=(
+            "${{ steps.keptn_install.outcome }}"
+            "${{ steps.authenticate_keptn_cli.outcome }}"
+          )
+
+          for ((i=0; i<${#test_names[@]}; i++)); do
+            test_name="${test_names[$i]}"
+            test_outcome="${test_outcomes[$i]}"
+          
+            if [[ "$test_outcome" == "" ]]; then
+              test_outcome="skip"
+            elif [[ "$test_outcome" == "success" ]]; then
+              test_outcome="pass"
+            elif [[ "$test_outcome" == "failure" ]]; then
+              test_outcome="fail"
+            else
+              test_outcome="something went terribly wrong..."
+            fi
+            log_line=$(jq -j -c -n --arg test_name "$test_name" --arg test_outcome "$test_outcome" "$report_template")
+            echo "$log_line" >> "${{ env.FINAL_TEST_REPORT_PATH }}"
+          done
+
+          cat "${{ env.FINAL_TEST_REPORT_PATH }}"
+
+      - name: Upload JSON test report as artifact
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: test-report
-          path: test-*.txt
+          name: test-report-json
+          path: test/go-tests/${{ env.FINAL_TEST_REPORT_PATH }}
 
       - name: Upload support archive as an artifact
         if: always()
@@ -738,56 +627,134 @@ jobs:
           name: support-archive
           path: support-archive/*.zip
 
-  #######################################################################
-  # This job publishes a draft release based on the previous steps      #
-  #######################################################################
-  publish-draft-release:
-    name: Publish Draft release
+  publish-final-test-report:
+    name: Finalize tests and create reports
     needs: integration-test
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
+      TEST_REPORTS_PATH: "./test-reports/"
+      FINAL_TEST_REPORTS_FOLDER: "./final-test-reports/"
+      FINAL_TEST_REPORT_FILEPATH_JSON: "./final-test-reports/final-test-report.json"
+      FINAL_TEST_REPORT_FILEPATH_MARKDOWN: "./final-test-reports/final-test-report.md"
     steps:
       - name: Check out code
         uses: actions/checkout@v2.4.0
 
-      - name: Debug - Output Branch
-        run: echo $BRANCH
+      - name: Set up Node
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 16
+      - run: npm install ndjson-parse@1.0.4
 
       - name: Download test reports
         uses: actions/download-artifact@v2
         with:
-          name: test-report
+          name: test-report-json
+          path: ${{ env.TEST_REPORTS_PATH }}
 
-      - name: Print Test Report
-        id: print_test_report
+      - name: Build multi-platform test report
+        uses: actions/github-script@v5.1.0
+        env:
+          TEST_REPORTS_PATH: ${{ env.TEST_REPORTS_PATH }}
+          FINAL_TEST_REPORTS_FOLDER: ${{ env.FINAL_TEST_REPORTS_FOLDER }}
+          FINAL_TEST_REPORT_FILEPATH_JSON: ${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}
+        with:
+          script: |
+            ndJsonParser = require('ndjson-parse');
+            fs = require('fs');
+            
+            const {TEST_REPORTS_PATH, FINAL_TEST_REPORT_FILEPATH_JSON, FINAL_TEST_REPORTS_FOLDER} = process.env
+            const jsonReportData = [];
+            
+            const fileList = fs.readdirSync(TEST_REPORTS_PATH);
+            fileList.forEach(fileName => {1
+              console.log(`Reading file: ${fileName}`);
+              const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
+              const platformTestReportRaw = ndJsonParser(platformReportFile);
+              
+              // Only pick the test results that have a format like this: Test_GKE/Test_name
+              // There are some other results in there for the whole package for example, that we don't want
+              platformTestReportRaw.forEach(platformTestResult => {
+                if(platformTestResult.test.includes("/")) {
+                  jsonReportData.push(platformTestResult);
+                }
+              });
+            });
+            
+            const testResultMap = {};
+            
+            jsonReportData.forEach(testResult => {
+              const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
+              
+              // If this is a new testcase the result list needs to be created first
+              if (!(trimmedTestResult.test in testResultMap)) {
+                testResultMap[trimmedTestResult.test] = [];
+              }
+              
+              // Add to result list
+              testResultMap[trimmedTestResult.test].push(trimmedTestResult)
+            });
+            
+            const finalTestReport = [];
+            const allPlatforms = [];
+            
+            // Create properly formatted final test report
+            Object.entries(testResultMap).forEach(([test, testResults]) => {
+              const finalResult = {};
+              finalResult.test = test;
+              testResults.forEach(result => {
+                const {test, ...results} = result;
+                Object.assign(finalResult, results);
+                
+                const currentPlatform = Object.keys(results)[0];
+                if(!allPlatforms.includes(currentPlatform)) {
+                  allPlatforms.push(currentPlatform);
+                }
+              });
+              finalTestReport.push(finalResult);
+            });
+            
+            // Fill in platforms where a test was not executed
+            finalTestReport.forEach(testResult => {
+              allPlatforms.forEach(platform => {
+                if(!(platform in testResult)) {
+                  testResult[platform] = "skip";
+                }
+              });
+            });
+            
+            if(!fs.existsSync(FINAL_TEST_REPORTS_FOLDER)) {
+              fs.mkdirSync(FINAL_TEST_REPORTS_FOLDER);
+            }
+            fs.writeFileSync(FINAL_TEST_REPORT_FILEPATH_JSON, JSON.stringify(finalTestReport));
+
+      - name: Generate Markdown Test Report
         run: |
-          echo "Integration Tests have finished." > final-test-report.txt
-          echo "" >> final-test-report.txt
-          # please check with output in write_test_report task roughly 50 lines above
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Timeout   | Sequence Control   | Sequence Queue   | Sequence Loop |  QG Standalone  |  Self Healing  |  Del-Assist  |  Backup-Restore  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Webhook integration | Graceful Shutdown | Uniform Registration   |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------- | ---------------- | ----------------- | ------------------ | ---------------- | ------------------ | ------------- | --------------- | -------------- | ------------ | ---------------- | ----------------- |----------- | ------------------------ | -------------- | ------------------- | ----------------- | ---------------------- |" >> final-test-report.txt
-          cat test-report*.txt >> final-test-report.txt
+          npx tablemark-cli@v2.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
 
-          # print test report
-          REPORT=$(cat final-test-report.txt)
-          echo $REPORT
-
-      - name: Upload final test report as an artifact
+      - name: Upload final JSON test report as an artifact
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: test-report
-          path: final-test-report.txt
+          name: final-test-report-json
+          path: ${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}
+
+      - name: Upload final Markdown test report as an artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: final-test-report-markdown
+          path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
 
       - name: Summarize Resource Usage
         id: print_resource_usage
         run: |
-          echo "**Resource Limits**" > final-resource-limits.txt
-          ls -la test-resource-limits*.txt
+          echo "" > final-resource-limits.txt
+          echo "**Resource Limits**" >> final-resource-limits.txt
+          ls -la test-resource-limits*.txt || true
           cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
-          # Todo: some calculations should be done...
 
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.16.0
@@ -796,8 +763,9 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
           run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
+          name: build-config
           # directory where to extract artifacts to
-          path: ./dist
+          path: ./dist/build-config
 
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
@@ -820,11 +788,18 @@ jobs:
 
       - name: Formulate bug issue on errors
         id: formulate_bug_issue
+        env:
+          FINAL_TEST_REPORT_FILEPATH_MARKDOWN : ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
         run: |
-          REPORT=$(cat final-test-report.txt)
+          REPORT=$(cat "$FINAL_TEST_REPORT_FILEPATH_MARKDOWN")
 
-          if [[ "$REPORT" == *"failure"* ]]; then
+          if [[ "$REPORT" == *"fail"* ]]; then
             echo "INTEGRATION TESTS FAILED! - Creating GH issue description now..."
+          
+            # adding emojis to test report
+            REPORT=$(echo "${REPORT//pass/:white_check_mark: pass}")
+            REPORT=$(echo "${REPORT//fail/:x: fail}")
+            REPORT=$(echo "${REPORT//skip/:yellow_circle: skip}")
 
             # create a markdown file that contains details about the error
             echo "---" > integration-tests-failed.md
@@ -846,8 +821,8 @@ jobs:
             echo "* Commit: $GIT_SHA" >> integration-tests-failed.md
             echo "" >> integration-tests-failed.md
 
-            # print report but make failures bold
-            echo "${REPORT//failure/:x: **failure**}" >> integration-tests-failed.md
+            # print report
+            echo "$REPORT" >> integration-tests-failed.md
 
             echo "" >> integration-tests-failed.md
             echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> integration-tests-failed.md
@@ -864,162 +839,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           filename: integration-tests-failed.md
-
-      - name: Find PR number for current build
-        id: find_pr_for_build
-        if: always()
-        uses: jwalton/gh-find-current-pr@v1.2.1
-
-      - name: Create PR comment if tests failed
-        # Only run if not on master branch and we have a PR number
-        # Also, only run in original repo and not on forks since the github token secret is not accessible in that case
-        if: always() && github.event.inputs.branch != 'master' && steps.find_pr_for_build.outputs.number && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: marocchino/sticky-pull-request-comment@v2.2.0
-        with:
-          path: integration-tests-failed.md
-          recreate: true
-          number: ${{ steps.find_pr_for_build.outputs.number }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-      # Part of this job is to check if a releasenotes file exists and to use it as the release message
-      - name: Try getting release notes
-        id: get_releasenotes
-        run: |
-          filename="releasenotes/releasenotes_V${VERSION}.md"
-          if [[ -f "$filename" ]]; then
-            echo "Found releasenotes in $filename"
-          else
-            echo "::warning Could not find release notes $filename, using releasenotes_develop"
-            filename="releasenotes/releasenotes_develop.md"
-          fi
-
-          echo "##[set-output name=RELEASENOTES_FILENAME;]$(echo ${filename})"
-
-      # Create release message by concatenating releasenotes with the test/build report
-      - name: Create a Release message
-        env:
-          RELEASENOTES_FILENAME: ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
-          RESOURCE_LIMITS_FILENAME: "final-resource-limits.txt"
-        run: |
-          # print release notes
-          cat $RELEASENOTES_FILENAME > release-notes.txt
-          # print CI information
-          echo ""  >> release-notes.txt
-          echo "<details><summary>CI Information</summary>"  >> release-notes.txt
-          echo "<p>" >> release-notes.txt
-          echo "" >> release-notes.txt
-          echo "* **BUILD ${VERSION} ON ${BRANCH}**" >> release-notes.txt
-          echo "* **DATETIME**: $DATETIME" >> release-notes.txt
-          echo "* **GIT_SHA**: $GIT_SHA" >> release-notes.txt
-          echo "* **ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
-          echo "" >> release-notes.txt
-          echo "**Integration Tests**" >> release-notes.txt
-          cat final-test-report.txt >> release-notes.txt
-          echo "" >> release-notes.txt
-          echo "</p>" >> release-notes.txt
-          echo "</details>" >> release-notes.txt
-          echo "" >> release-notes.txt
-          # print final-resource-limits.txt
-          echo "<details><summary>Kubernetes Resource Data</summary>" >> release-notes.txt
-          echo "<p>" >> release-notes.txt
-          echo ""  >> release-notes.txt
-          cat $RESOURCE_LIMITS_FILENAME >> release-notes.txt
-          echo "</p>" >> release-notes.txt
-          echo "</details>" >> release-notes.txt
-
-      - name: Abort if (published) release already exists
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            let tag = "${{ env.VERSION }}";
-            console.log(`Trying to fetch release by tag '${tag}'...`);
-
-            try {
-              release = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: tag
-              });
-              console.log("::error Release already exists... Aborting!");
-              core.setFailed("Release already exists... Aborting!");
-
-              return 1; // failure
-            } catch (error) {
-              // release not found -> okay
-              console.log("No release found -> okay");
-              return 0;
-            }
-
-      - name: Delete draft release if it already exists
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            let tag = "${{ env.VERSION }}";
-            console.log(`Trying to fetch DRAFT release by tag '${tag}'...`);
-
-            try {
-              // get all releases (including drafts)
-              let releases = await github.rest.repos.listReleases({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              // find a draft release
-              let release = releases.data.find(release => release.tag_name === tag);
-              if (release) {
-                // found a release with specified tag; check if it is a draft release
-                if (release.draft) {
-                  // found a draft release
-                  console.log(`🥳 Found a draft release with id ${release.id}, deleting it`);
-                  console.log(`Release Tag Name: ${release.tag_name}`);
-                  console.log(`Release Draft: ${release.draft}`);
-                  console.log(`Release URL: ${release.html_url}`);
-
-                  console.log(`::error::Draft release found, please delete it manually!`);
-
-                  return 1;
-                  // ToDo: Commented out as there seems to be a problem with deleting releases
-
-                  /*github.rest.repos.deleteRelease({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    release_id: release.id
-                  });*/
-
-                  console.log("Deleted! -> okay");
-                } else {
-                  console.log("::error Release with tag found, but it's not a draft release");
-                  core.setFailed("Release with tag found, but it's not a draft release");
-                }
-              } else {
-                console.log("No draft release found -> okay");
-              }
-
-              return 0;
-            } catch (error) {
-              // error happened
-              console.log("An error happened while trying to fetch all releases:");
-              console.log(error);
-              throw error;
-            }
-
-      - name: Draft Release with Releasenotes
-        id: create_draft_release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
-          draft: true       # we only want to publish draft releases here - a human should review it and push the button eventually
-          prerelease: true  # mark as pre-release for now, a human can always change it to a non-prerelease afterwards
-          body_path: release-notes.txt
-          files: |
-            dist/keptn-cli/keptn-*.tar.gz
-            dist/keptn-installer/*.tgz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   #######################################################################
   # This job deploys Keptn with Keptn                                   #
