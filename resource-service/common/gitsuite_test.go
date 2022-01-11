@@ -407,6 +407,15 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			err:  kerrors.ErrCredentialsNotFound,
 			push: false,
 		},
+		{
+			name: "push, empty credentials",
+			gitContext: common_models.GitContext{
+				Project:     "sockshop",
+				Credentials: nil,
+			},
+			err:  kerrors.ErrCredentialsNotFound,
+			push: false,
+		},
 	}
 	for _, tt := range tests {
 		r := s.Repository
@@ -601,7 +610,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 				},
 			},
 			gitContext: common_models.GitContext{
-				Project: "~*_;:&^$@",
+				Project: "/~*_;:&/^$@",
 				Credentials: &common_models.GitCredentials{
 					User:      "Me",
 					Token:     "blabla",
@@ -691,6 +700,21 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 	}
 }
 
+func (s *BaseSuite) TestGit_Panic(c *C) {
+
+	gitContext := common_models.GitContext{
+		Project: "mer",
+		Credentials: &common_models.GitCredentials{
+			User:      "Me",
+			Token:     "blabla",
+			RemoteURI: "htp//wrongurl"},
+	}
+	g := NewGit(GogitReal{})
+	got, err := g.CloneRepo(gitContext)
+	c.Assert(err, IsNil)
+	c.Assert(got, IsNil)
+}
+
 func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 
 	var tests = []struct {
@@ -727,7 +751,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			branch:       "",
 			sourceBranch: "refs/heads/dev",
 			error: kerrors.New((&fs.PathError{
-				Op: "open", Path: "..\\test\\tmpRepo\\sockshop\\.git\\refs\\heads", Err: syscall.EISDIR,
+				Op: "open", Path: "../test/tmpRepo/sockshop/.git/refs/heads", Err: syscall.EISDIR,
 			}).Error()),
 		},
 	}

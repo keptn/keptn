@@ -26,7 +26,6 @@ import (
 type IGit interface {
 	ProjectExists(gitContext common_models.GitContext) bool
 	ProjectRepoExists(projectName string) bool
-
 	CloneRepo(gitContext common_models.GitContext) (bool, error)
 	StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error)
 	Push(gitContext common_models.GitContext) error
