@@ -25,7 +25,7 @@ import (
 	"time"
 )
 
-const TESTPATH = "../test/tmpRepo"
+const TESTPATH = "../test/tmp"
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -701,7 +701,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			branch:       "",
 			sourceBranch: "refs/heads/dev",
 			error: kerrors.New((&fs.PathError{
-				Op: "open", Path: filepath.Clean("../test/tmpRepo/sockshop/.git/refs/heads"), Err: syscall.EISDIR,
+				Op: "open", Path: filepath.Clean("../test/tmp/sockshop/.git/refs/heads"), Err: syscall.EISDIR,
 			}).Error()),
 		},
 	}

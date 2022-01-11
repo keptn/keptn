@@ -19,7 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// @title Control Plane API
+// @title Resource Service API
 // @version develop
 // @description This is the API documentation of the Resource Service.
 

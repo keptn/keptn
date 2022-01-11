@@ -839,6 +839,9 @@ func getTestProjectManagerFields() projectManagerTestFields {
 			DeleteFileFunc: func(path string) error {
 				return nil
 			},
+			ReadFileFunc: func(filename string) ([]byte, error) {
+				return []byte("content"), nil
+			},
 		},
 	}
 }
