@@ -249,7 +249,7 @@ func fallback(path string) error {
 
 func (g Git) Push(gitContext common_models.GitContext) error {
 	var err error
-	if *gitContext.Credentials == (common_models.GitCredentials{}) {
+	if gitContext.Credentials == nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, kerrors.ErrCredentialsNotFound)
 	}
 	repo, _, err := g.getWorkTree(gitContext)

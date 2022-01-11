@@ -402,15 +402,6 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			name: "push, empty credentials",
 			gitContext: common_models.GitContext{
 				Project:     "sockshop",
-				Credentials: &common_models.GitCredentials{},
-			},
-			err:  kerrors.ErrCredentialsNotFound,
-			push: false,
-		},
-		{
-			name: "push, empty credentials",
-			gitContext: common_models.GitContext{
-				Project:     "sockshop",
 				Credentials: nil,
 			},
 			err:  kerrors.ErrCredentialsNotFound,
@@ -712,7 +703,7 @@ func (s *BaseSuite) TestGit_CreateBranch(c *C) {
 			branch:       "",
 			sourceBranch: "refs/heads/dev",
 			error: kerrors.New((&fs.PathError{
-				Op: "open", Path: "../test/tmpRepo/sockshop/.git/refs/heads", Err: syscall.EISDIR,
+				Op: "open", Path: filepath.Clean("../test/tmpRepo/sockshop/.git/refs/heads"), Err: syscall.EISDIR,
 			}).Error()),
 		},
 	}
