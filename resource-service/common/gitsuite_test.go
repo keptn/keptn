@@ -597,29 +597,6 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 			want:    true,
 		},
 		{
-			name: "invalid project name",
-			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
-					return nil, kerrors.ErrEmptyRemoteRepository
-				},
-				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
-					return git.PlainInit(path, isBare)
-				},
-				PlainOpenFunc: func(path string) (*git.Repository, error) {
-					return nil, nil
-				},
-			},
-			gitContext: common_models.GitContext{
-				Project: "/~*_;:&/^$@",
-				Credentials: &common_models.GitCredentials{
-					User:      "Me",
-					Token:     "blabla",
-					RemoteURI: emptyUrl},
-			},
-			wantErr: true,
-			want:    false,
-		},
-		{
 			name: "clone existing sockshop",
 			git: &common_mock.GogitMock{
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
@@ -637,8 +614,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 			wantErr:    true,
 			want:       false,
 		},
-		{ // TODO: do we worry here if url is not valid or while saving it?
-			// go git seems to try to parse this wrong url
+		{
 			name: "wrong url context",
 			gitContext: common_models.GitContext{
 				Project: "sockshop",
@@ -698,21 +674,6 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		}
 
 	}
-}
-
-func (s *BaseSuite) TestGit_Panic(c *C) {
-
-	gitContext := common_models.GitContext{
-		Project: "mer",
-		Credentials: &common_models.GitCredentials{
-			User:      "Me",
-			Token:     "blabla",
-			RemoteURI: "htp//wrongurl"},
-	}
-	g := NewGit(GogitReal{})
-	got, err := g.CloneRepo(gitContext)
-	c.Assert(err, IsNil)
-	c.Assert(got, IsNil)
 }
 
 func (s *BaseSuite) TestGit_CreateBranch(c *C) {
