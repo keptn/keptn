@@ -21,8 +21,3 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: latest
-
-dependencies:
-  - name: openshift
-    version: 0.1.0
-    condition: openshift.enabled

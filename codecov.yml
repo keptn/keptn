@@ -71,10 +71,6 @@ flags:
     paths:
       - mongodb-datastore/
     carryforward: true
-  openshift-route-service:
-    paths:
-      - /platform-support/openshift-route-service
-    carryforward: true
   remediation-service:
     paths:
       - remediation-service/

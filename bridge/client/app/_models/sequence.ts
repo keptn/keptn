@@ -139,6 +139,10 @@ export class Sequence extends sq {
   }
 
   public isWaiting(): boolean {
+    if (this.isRemediation()) {
+      return false;
+    }
+
     const lastStageName = this.getLastStage();
     if (lastStageName && this.state === SequenceState.STARTED) {
       const lastStage = this.getStage(lastStageName);
