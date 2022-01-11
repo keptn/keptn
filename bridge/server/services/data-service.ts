@@ -353,7 +353,7 @@ export class DataService {
   ): Promise<Sequence | undefined> {
     const response = await this.apiService.getSequences(accessToken, projectName, {
       pageSize: '1',
-      keptnContext,
+      ...(keptnContext && { keptnContext }),
     });
     let sequence = response.data.states[0];
     if (sequence) {
@@ -371,7 +371,7 @@ export class DataService {
     const response = await this.apiService.getSequences(accessToken, projectName, {
       pageSize: this.MAX_SEQUENCE_PAGE_SIZE.toString(),
       name: sequenceName,
-      state: sequenceState,
+      ...(sequenceState && { state: sequenceState }),
     });
 
     return response.data.states.map((sequence) => Sequence.fromJSON(sequence));
@@ -471,11 +471,11 @@ export class DataService {
     const response = await this.apiService.getTraces(accessToken, {
       type: eventType,
       pageSize: '1',
-      project: projectName,
-      stage: stageName,
-      service: serviceName,
-      keptnContext,
-      source: eventSource,
+      ...(projectName && { project: projectName }),
+      ...(stageName && { stage: stageName }),
+      ...(serviceName && { service: serviceName }),
+      ...(keptnContext && { keptnContext }),
+      ...(eventSource && { source: eventSource }),
     });
     return response.data.events.shift();
   }

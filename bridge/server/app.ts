@@ -27,7 +27,7 @@ const requestTimeLimit = +(process.env.REQUEST_TIME_LIMIT || 60) * 60 * 1000; //
 const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x requests within {requestTimeLimit}
 const cleanBucketsInterval = +(process.env.CLEAN_BUCKET_INTERVAL || 60) * 60 * 1000; // clean buckets every x minutes
 const throttleBucket: { [ip: string]: number[] } = {};
-const rootFolder = join(__dirname, '../../../');
+const rootFolder = join(__dirname, process.env.NODE_ENV === 'test' ? '../' : '../../../');
 const serverFolder = join(rootFolder, 'server');
 const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
 
@@ -49,10 +49,11 @@ async function init(): Promise<Express> {
   }
   if (!apiToken) {
     console.log('API_TOKEN was not provided. Fetching from kubectl.');
-    apiToken = Buffer.from(
-      execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(),
-      'base64'
-    ).toString();
+    apiToken =
+      Buffer.from(
+        execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(),
+        'base64'
+      ).toString() || undefined;
   }
 
   if (!cliDownloadLink) {
@@ -117,11 +118,7 @@ async function init(): Promise<Express> {
   const authType: string = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
 
   // everything starting with /api is routed to the api implementation
-  const token = serverFeatureFlags.OAUTH_ENABLED ? undefined : apiToken;
-  app.use(
-    '/api',
-    apiRouter({ apiUrl, apiToken: token, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags })
-  );
+  app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags }));
 
   // fallback: go to index.html
   app.use((req, res) => {

@@ -47,7 +47,7 @@ describe('Test setting header authorization', () => {
         ).bind(apiService);
 
         const response = await method(accessToken, '', '', '', '', '', '');
-        expect(response.config.headers?.authorization).toBe(responseAuthorization);
+        expect(response.config.headers?.Authorization).toBe(responseAuthorization);
       }
     }
   }

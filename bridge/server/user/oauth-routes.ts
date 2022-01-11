@@ -82,13 +82,10 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       console.log(`Error while handling the redirect. Cause : ${err.message}`);
 
       if (err.response?.statusCode === 403) {
-        const response = {
+        return res.render('error', {
           title: 'Permission denied',
-          message: '',
-        };
-        response.message =
-          (err.response.body as Record<string, string>).message ?? 'User is not allowed access the instance.';
-        return res.render('error', response);
+          message: (err.response.body as Record<string, string>).message ?? 'User is not allowed access the instance.',
+        });
       } else {
         return res.render('error', {
           title: 'Internal error',

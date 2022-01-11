@@ -108,7 +108,7 @@ const apiRouter = (params: {
       const { event, eventSuffix, projectName, stages, services } = req.body;
       if (event && eventSuffix && projectName) {
         const result = await dataService.intersectEvents(
-          req.session.tokenSet?.access_token,
+          req.session?.tokenSet?.access_token,
           event,
           eventSuffix,
           projectName,
@@ -128,7 +128,7 @@ const apiRouter = (params: {
     try {
       const projectName = req.params.projectName;
       const project = await dataService.getProject(
-        req.session.tokenSet?.access_token,
+        req.session?.tokenSet?.access_token,
         projectName,
         req.query.remediation === 'true',
         req.query.approval === 'true'
@@ -142,7 +142,7 @@ const apiRouter = (params: {
   router.get('/project/:projectName/serviceStates', async (req, res, next) => {
     try {
       const serviceStates = await dataService.getServiceStates(
-        req.session.tokenSet?.access_token,
+        req.session?.tokenSet?.access_token,
         req.params.projectName
       );
       return res.json(serviceStates);
@@ -154,7 +154,7 @@ const apiRouter = (params: {
   router.get('/project/:projectName/deployment/:keptnContext', async (req, res, next) => {
     try {
       const deployment = await dataService.getServiceDeployment(
-        req.session.tokenSet?.access_token,
+        req.session?.tokenSet?.access_token,
         req.params.projectName,
         req.params.keptnContext,
         req.query.fromTime?.toString()
@@ -168,7 +168,7 @@ const apiRouter = (params: {
   router.get('/project/:projectName/tasks', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectName = req.params.projectName;
-      const tasks = await dataService.getTasks(req.session.tokenSet?.access_token, projectName);
+      const tasks = await dataService.getTasks(req.session?.tokenSet?.access_token, projectName);
       return res.json(tasks);
     } catch (error) {
       return next(error);
@@ -177,7 +177,7 @@ const apiRouter = (params: {
 
   router.get('/project/:projectName/services', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const services = await dataService.getServiceNames(req.session.tokenSet?.access_token, req.params.projectName);
+      const services = await dataService.getServiceNames(req.session?.tokenSet?.access_token, req.params.projectName);
       return res.json(services);
     } catch (error) {
       return next(error);
@@ -188,7 +188,7 @@ const apiRouter = (params: {
     try {
       const uniformDates: { [key: string]: string } = req.body;
       const uniformRegistrations = await dataService.getUniformRegistrations(
-        req.session.tokenSet?.access_token,
+        req.session?.tokenSet?.access_token,
         uniformDates
       );
       return res.json(uniformRegistrations);
@@ -204,7 +204,7 @@ const apiRouter = (params: {
         const projectName = req.query.projectName?.toString();
         if (projectName) {
           const webhookConfig = await dataService.getWebhookConfig(
-            req.session.tokenSet?.access_token,
+            req.session?.tokenSet?.access_token,
             req.params.subscriptionId,
             projectName,
             req.query.stageName?.toString(),
@@ -229,7 +229,7 @@ const apiRouter = (params: {
         const deleteWebhook = req.query.isWebhookService === 'true';
         if (integrationId && subscriptionId) {
           await dataService.deleteSubscription(
-            req.session.tokenSet?.access_token,
+            req.session?.tokenSet?.access_token,
             integrationId,
             subscriptionId,
             deleteWebhook
@@ -250,7 +250,7 @@ const apiRouter = (params: {
         const subscription = req.body.subscription;
         if (integrationId && subscription) {
           await dataService.createSubscription(
-            req.session.tokenSet?.access_token,
+            req.session?.tokenSet?.access_token,
             integrationId,
             subscription,
             req.body.webhookConfig
@@ -271,7 +271,7 @@ const apiRouter = (params: {
         const subscriptionId = req.params.subscriptionId;
         if (integrationId && subscriptionId) {
           await dataService.updateSubscription(
-            req.session.tokenSet?.access_token,
+            req.session?.tokenSet?.access_token,
             integrationId,
             subscriptionId,
             req.body.subscription,
@@ -288,7 +288,7 @@ const apiRouter = (params: {
   router.get('/uniform/registration/:integrationId/info', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const info = await dataService.getIsUniformRegistrationInfo(
-        req.session.tokenSet?.access_token,
+        req.session?.tokenSet?.access_token,
         req.params.integrationId
       );
       return res.json(info);
@@ -302,7 +302,7 @@ const apiRouter = (params: {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const serviceResources = await dataService.getResourceFileTreesForService(
-          req.session.tokenSet?.access_token,
+          req.session?.tokenSet?.access_token,
           req.params.projectName,
           req.params.serviceName
         );
@@ -318,7 +318,7 @@ const apiRouter = (params: {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const serviceRemediationInformation = await dataService.getServiceRemediationInformation(
-          req.session.tokenSet?.access_token,
+          req.session?.tokenSet?.access_token,
           req.params.projectName,
           req.params.serviceName,
           req.query.config?.toString() === 'true'
@@ -335,7 +335,7 @@ const apiRouter = (params: {
     try {
       const uniformDates: { [key: string]: string } = req.body;
       const status = await dataService.hasUnreadUniformRegistrationLogs(
-        req.session.tokenSet?.access_token,
+        req.session?.tokenSet?.access_token,
         uniformDates
       );
       res.json(status);
@@ -348,7 +348,7 @@ const apiRouter = (params: {
     try {
       if (req.query.root === 'true') {
         const response = await dataService.getRoots(
-          req.session.tokenSet?.access_token,
+          req.session?.tokenSet?.access_token,
           req.query.project?.toString(),
           req.query.pageSize?.toString(),
           req.query.serviceName?.toString(),
@@ -359,7 +359,7 @@ const apiRouter = (params: {
         return res.json(response);
       } else if (req.query.keptnContext && !req.query.pageSize) {
         const response = await dataService.getTracesByContext(
-          req.session.tokenSet?.access_token,
+          req.session?.tokenSet?.access_token,
           req.query.keptnContext.toString(),
           req.query.project?.toString(),
           req.query.fromTime?.toString()
@@ -367,7 +367,7 @@ const apiRouter = (params: {
         return res.json(response);
       } else {
         const response = await dataService.getTraces(
-          req.session.tokenSet?.access_token,
+          req.session?.tokenSet?.access_token,
           req.query.keptnContext?.toString(),
           req.query.project?.toString(),
           req.query.stage?.toString(),
@@ -384,7 +384,7 @@ const apiRouter = (params: {
 
   router.get('/secrets/scope/:scope', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await dataService.getSecretsForScope(req.session.tokenSet?.access_token, req.params.scope);
+      const response = await dataService.getSecretsForScope(req.session?.tokenSet?.access_token, req.params.scope);
       return res.json(response);
     } catch (error) {
       return next(error);
@@ -395,7 +395,7 @@ const apiRouter = (params: {
     try {
       const auth: { [key: string]: string } = apiToken
         ? { 'x-token': apiToken }
-        : { Authorization: `Bearer ${req.session.tokenSet?.access_token}` };
+        : { Authorization: `Bearer ${req.session?.tokenSet?.access_token}` };
       const result = await axios({
         method: req.method as Method,
         url: `${apiUrl}${req.url}`,
