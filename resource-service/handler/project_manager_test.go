@@ -364,6 +364,84 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	require.Empty(t, fields.fileWriter.FileExistsCalls())
 }
 
+func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		return nil, errors.New("oops")
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Empty(t, fields.git.GetDefaultBranchCalls())
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+}
+
+func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		return []byte(""), nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Empty(t, fields.git.GetDefaultBranchCalls())
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+}
+
 func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 	project := models.UpdateProjectParams{
 		Project: models.Project{ProjectName: "my-project"},

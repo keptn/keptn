@@ -60,6 +60,26 @@ func TestK8sCredentialReader_ReadSecretWrongFormat(t *testing.T) {
 	require.Nil(t, secret)
 }
 
+func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
+	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "git-credentials-my-project",
+				Namespace: "keptn",
+			},
+			Data: map[string][]byte{
+				"git-credentials": []byte(`{"user":"user","token":"","remoteURI":"uri"}`)},
+			Type: corev1.SecretTypeOpaque,
+		},
+	))
+
+	secret, err := secretReader.GetCredentials("my-project")
+
+	require.ErrorIs(t, err, errors.ErrCredentialsTokenMustNotBeEmpty)
+	require.Nil(t, secret)
+}
+
 func TestK8sCredentialReader_ReadSecretError(t *testing.T) {
 	_ = os.Setenv("POD_NAMESPACE", "keptn")
 
