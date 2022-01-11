@@ -16,18 +16,17 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"strings"
 	"testing"
-
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 )
 
 func TestVersionCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
-	mocking = true
+	//mocking = true
 
 	cmd := fmt.Sprintf("version")
 	Version = "0.6.1"

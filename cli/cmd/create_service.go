@@ -61,7 +61,7 @@ var crServiceCmd = &cobra.Command{
 				endPointErr)
 		}
 
-		api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 		if err != nil {
 			return err
 		}

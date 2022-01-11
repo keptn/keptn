@@ -104,7 +104,7 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 		return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
 	}
 
-	api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 		}
 
 		if *triggerEvaluationData.Watch {
-			api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+			api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 			if err != nil {
 				return err
 			}

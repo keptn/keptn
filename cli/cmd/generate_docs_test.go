@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"os"
 	"testing"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/stretchr/testify/assert"
 )

@@ -17,7 +17,7 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 	defer serverCLoser()
 
 	discovery := &OauthDiscoveryMock{
-		discoverFn: func() (*OauthDiscoveryResult, error) {
+		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
 			return &OauthDiscoveryResult{
 				AuthorizationEndpoint: server.URL + "/auth",
 				TokenEndpoint:         server.URL + "/token",
@@ -47,7 +47,7 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 
 func TestOauthAuthenticator_Auth1(t *testing.T) {
 	discovery := &OauthDiscoveryMock{
-		discoverFn: func() (*OauthDiscoveryResult, error) {
+		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
 			return &OauthDiscoveryResult{}, nil
 		},
 	}

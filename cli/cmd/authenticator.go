@@ -70,7 +70,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		endpoint.Path = "/api"
 	}
 
-	api, err := internal.GetApiSet(endpoint.String(), apiToken, "x-token", endpoint.Scheme)
+	api, err := internal.APIProvider(endpoint.String(), apiToken, "x-token", endpoint.Scheme)
 	if err != nil {
 		return err
 	}

@@ -77,7 +77,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			},
 		}
 
-		api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 		if err != nil {
 			return err
 		}
@@ -108,7 +108,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			if addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages {
 				// Upload to all stages
 				// get stages
-				api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+				api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 				if err != nil {
 					return err
 				}

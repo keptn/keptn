@@ -181,7 +181,7 @@ func getKeptnServerVersion() (string, error) {
 	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
-	api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 	if err != nil {
 		return "", err
 	}

@@ -148,7 +148,7 @@ func (r *redirector) revertStdErr() string {
 }
 
 func Test_runVersionCheck(t *testing.T) {
-	mocking = true
+	//mocking = true
 	var returnedMetadataStatus int
 	var returnedMetadata keptnapimodels.Metadata
 

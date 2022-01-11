@@ -3,9 +3,9 @@ package cmd
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	auth2 "github.com/keptn/keptn/cli/internal/auth"
 	"net/url"
 	"os"
@@ -27,7 +27,7 @@ type authCmdParams struct {
 	secure               *bool
 	skipNamespaceListing *bool
 	sso                  *bool
-	ssoCached            *bool
+	ssoLogout            *bool
 }
 
 type smartKeptnAuthParams struct {
@@ -70,36 +70,31 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		return verifyAuthParams(authParams, smartKeptnAuth)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		oauthConfig, err := auth2.GetOauthConfig(auth2.StaticOauthDiscovery{})
-		if err != nil {
-			return err
+
+		// sign out
+		if *authParams.ssoLogout {
+			store := auth2.NewLocalFileTokenStore()
+			err := store.DeleteToken()
+			if err != nil {
+				return err
+			}
+			return nil
 		}
 
-		oauth := auth2.NewOauthAuthenticator(oauthConfig, auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
-
+		// sign in
 		if *authParams.sso {
-			err := oauth.Auth()
+			oauthConfig, err := auth2.GetOauthConfig(internal.PublicDiscovery)
+			if err != nil {
+				return err
+			}
+			oauth := auth2.NewOauthAuthenticator(oauthConfig, auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
+			err = oauth.Auth()
 			if err != nil {
 				return err
 			}
 		}
 
-		if *authParams.ssoCached {
-			client, err := oauth.GetOauthClient(context.TODO())
-			if err != nil {
-				fmt.Println(err.Error())
-				return err
-			}
-
-			_, err = client.Get("http://0.0.0.0:8000")
-			if err != nil {
-				fmt.Println(err.Error())
-				return err
-			}
-		}
-
-		time.Sleep(5 * time.Second)
-
+		// usual x-token credential stuff
 		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
 		authenticator := NewAuthenticator(namespace, credentialManager)
 
@@ -128,7 +123,7 @@ func init() {
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
 	authParams.sso = authCmd.Flags().Bool("sso", false, "Use single sign on")
-	authParams.ssoCached = authCmd.Flags().Bool("ssoc", false, "use cached oauthclient")
+	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable signgle sign on access")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")

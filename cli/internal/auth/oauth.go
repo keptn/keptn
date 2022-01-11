@@ -79,7 +79,7 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 // GetOauthConfig uses a given OauthLocationGetter to determine the parameters
 // for the Oauth flow
 func GetOauthConfig(discovery OauthLocationGetter) (*oauth2.Config, error) {
-	result, err := discovery.Discover()
+	result, err := discovery.Discover(context.TODO())
 	if err != nil {
 		return nil, err
 	}

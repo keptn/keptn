@@ -41,7 +41,7 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 
 		logging.PrintLog("Starting to delete service", logging.InfoLevel)
 
-		api, err := internal.GetApiSet(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
 		if err != nil {
 			return err
 		}

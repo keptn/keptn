@@ -60,7 +60,7 @@ const eventsResponse = `{
 
 func Test_getApprovalTriggeredEvents(t *testing.T) {
 
-	mocking = true
+	//mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")

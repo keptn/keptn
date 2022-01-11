@@ -6,6 +6,7 @@ import (
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"golang.org/x/oauth2"
 	"io/ioutil"
+	"os"
 )
 
 // TokenStore is used to store and read an oauth token
@@ -14,6 +15,8 @@ type TokenStore interface {
 	GetToken() (*oauth2.Token, error)
 	// StoreToken stores (or overwrites) the token in the token store
 	StoreToken(token *oauth2.Token) error
+	// DeleteToken deletes the token from the token store
+	DeleteToken() error
 }
 
 // TokenFileName is the name of the file containing the oauth token data
@@ -60,6 +63,16 @@ func (t LocalFileTokenStore) StoreToken(token *oauth2.Token) error {
 	return nil
 }
 
+// DeleteToken deletes the oauth token from the token store
+func (t LocalFileTokenStore) DeleteToken() error {
+	if fileutils.FileExists(t.location) {
+		if err := os.Remove(t.location); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Location checks whether a oauth token is available and eventually returns its location on disk
 func (t *LocalFileTokenStore) Location() (bool, string) {
 	return fileutils.FileExists(t.location), t.location
@@ -92,5 +105,8 @@ func (t *TokenStoreMock) StoreToken(token *oauth2.Token) error {
 		return t.storeTokenFn(token)
 	}
 	t.storedToken = token
+	return nil
+}
+func (t *TokenStoreMock) DeleteToken() error {
 	return nil
 }

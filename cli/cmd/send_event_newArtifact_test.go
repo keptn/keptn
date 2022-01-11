@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +15,6 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -69,7 +69,7 @@ func TestNewArtifact(t *testing.T) {
 	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
-	mocking = true
+	//mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
