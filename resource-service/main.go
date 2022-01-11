@@ -56,6 +56,8 @@ func main() {
 	}
 
 	engine := gin.Default()
+	engine.UnescapePathValues = false // To be compatible with current configuration-service
+	engine.UseRawPath = true
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 
