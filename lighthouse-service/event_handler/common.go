@@ -54,6 +54,7 @@ var ErrConfigService = errors.New("could not checkout the SLO")
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
 type ResourceHandler interface {
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
+	SetOpts(options utils.GetOptions)
 }
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/service_handler_mock.go . ServiceHandler
@@ -262,4 +263,13 @@ func getInClusterKubeClient() (kubernetes.Interface, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
+}
+
+func configureFileRetrieverOptions(event cloudevents.Event) utils.GetOptions {
+	options := utils.GetOptions{}
+	eventScope := &keptnapimodels.KeptnContextExtendedCE{}
+	if err := keptnv2.Decode(event, eventScope); err == nil {
+		options.CommitID = eventScope.Gitcommitid
+	}
+	return options
 }

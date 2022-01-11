@@ -77,6 +77,10 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 
+	// setup SLOFileRetriver options
+	opts := configureFileRetrieverOptions(eh.Event)
+	eh.SLOFileRetriever.ResourceHandler.SetOpts(opts)
+
 	// collect objectives from SLO file
 	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err == nil && objectives != nil {

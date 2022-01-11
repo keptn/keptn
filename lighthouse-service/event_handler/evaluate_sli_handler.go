@@ -17,11 +17,10 @@ import (
 	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"gopkg.in/yaml.v3"
-
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"gopkg.in/yaml.v3"
 )
 
 type datastoreResult struct {
@@ -62,6 +61,7 @@ func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
+
 	val := ctx.Value(GracefulShutdownKey)
 	if val != nil {
 		if wg, ok := val.(*sync.WaitGroup); ok {
@@ -127,6 +127,10 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evalResult)
 	}
+
+	//setup resource handler options
+	opts := configureFileRetrieverOptions(eh.Event)
+	eh.SLOFileRetriever.ResourceHandler.SetOpts(opts)
 
 	// compare the results based on the evaluation strategy
 	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
