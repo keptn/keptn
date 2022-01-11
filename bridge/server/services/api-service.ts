@@ -1,7 +1,6 @@
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Project } from '../models/project';
-import { ResultTypes } from '../../shared/models/result-types';
 import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
 import { UniformRegistration } from '../models/uniform-registration';
@@ -12,8 +11,8 @@ import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
-import { SequenceState } from '../../shared/models/sequence';
 import { IStage } from '../../shared/interfaces/stage';
+import { SequenceOptions, TraceOptions } from './data-service';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -50,49 +49,20 @@ export class ApiService {
   public getSequences(
     accessToken: string | undefined,
     projectName: string,
-    pageSize: number,
-    sequenceName?: string,
-    state?: SequenceState,
-    fromTime?: string,
-    beforeTime?: string,
-    keptnContext?: string
+    sequenceOptions: SequenceOptions
   ): Promise<AxiosResponse<SequenceResult>> {
-    const params: { [key: string]: string } = {
-      pageSize: pageSize.toString(),
-      ...(sequenceName && { name: sequenceName }),
-      ...(state && { state }),
-      ...(fromTime && { fromTime }),
-      ...(beforeTime && { beforeTime }),
-      ...(keptnContext && { keptnContext }),
-    };
-
     return this.axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, {
-      params,
+      params: sequenceOptions,
       ...this.getAuthHeaders(accessToken),
     });
   }
 
   public getTraces(
     accessToken: string | undefined,
-    eventType?: string,
-    pageSize?: number,
-    projectName?: string,
-    stageName?: string,
-    serviceName?: string,
-    keptnContext?: string,
-    eventSource?: KeptnService
+    traceOptions: Partial<TraceOptions>
   ): Promise<AxiosResponse<EventResult>> {
-    const params = {
-      ...(projectName && { project: projectName }),
-      ...(serviceName && { service: serviceName }),
-      ...(stageName && { stage: stageName }),
-      ...(eventType && { type: eventType }),
-      ...(pageSize && { pageSize: pageSize.toString() }),
-      ...(keptnContext && { keptnContext }),
-      ...(eventSource && { source: eventSource }),
-    };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {
-      params,
+      params: traceOptions,
       ...this.getAuthHeaders(accessToken),
     });
   }
@@ -143,22 +113,16 @@ export class ApiService {
 
   public getTracesWithResultAndSource(
     accessToken: string | undefined,
-    eventType: EventTypes,
-    pageSize: number,
-    projectName: string,
-    stageName: string,
-    serviceName: string,
-    resultType?: ResultTypes,
-    source?: KeptnService
+    traceOptions: TraceOptions
   ): Promise<AxiosResponse<EventResult>> {
-    const resultString = resultType ? ` AND data.result:${resultType}` : '';
-    const sourceString = source ? ` AND data.source:${source}` : '';
+    const resultString = traceOptions.result ? ` AND data.result:${traceOptions.result}` : '';
+    const sourceString = traceOptions.source ? ` AND data.source:${traceOptions.source}` : '';
     const params = {
-      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}${sourceString}${resultString}`,
+      filter: `data.project:${traceOptions.project} AND data.service:${traceOptions.service} AND data.stage:${traceOptions.stage}${sourceString}${resultString}`,
       excludeInvalidated: 'true',
-      limit: pageSize.toString(),
+      limit: traceOptions.pageSize,
     };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${traceOptions.type}`, {
       params,
       ...this.getAuthHeaders(accessToken),
     });

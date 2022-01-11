@@ -45,6 +45,31 @@ type StageOpenInformation = {
   openRemediations: Remediation[];
   evaluations: Trace[];
 };
+export interface SequenceOptions {
+  pageSize: string;
+  name?: string;
+  state?: SequenceState;
+  fromTime?: string;
+  beforeTime?: string;
+  keptnContext?: string;
+}
+
+export interface TraceOptions {
+  pageSize: string;
+  project: string;
+  service: string;
+  stage: string;
+  type?: EventTypes;
+  keptnContext?: string;
+  result?: ResultTypes;
+  source?: KeptnService;
+}
+
+interface ServiceDetailsOptions {
+  stageName: string;
+  keptnContext: string;
+  projectName: string;
+}
 
 export class DataService {
   private apiService: ApiService;
@@ -111,9 +136,11 @@ export class DataService {
           const latestSequence = await this.setServiceDetails(
             accessToken,
             service,
-            stage.stageName,
-            latestEvent.keptnContext,
-            projectName,
+            {
+              stageName: stage.stageName,
+              keptnContext: latestEvent.keptnContext,
+              projectName,
+            },
             stageInformation,
             stageDeployments,
             cachedSequences[latestEvent.keptnContext]
@@ -146,16 +173,10 @@ export class DataService {
         }
       }
       if (keptnContexts.length) {
-        const response = await this.apiService.getSequences(
-          accessToken,
-          projectName,
-          this.MAX_PAGE_SIZE,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          keptnContexts.join(',')
-        );
+        const response = await this.apiService.getSequences(accessToken, projectName, {
+          pageSize: this.MAX_PAGE_SIZE.toString(),
+          keptnContext: keptnContexts.join(','),
+        });
         sequences = [...sequences, ...response.data.states];
       }
     }
@@ -259,16 +280,15 @@ export class DataService {
     for (let i = 0; i < traces.length; ++i) {
       const trace = traces[i];
       if ((resultType && trace.data.result !== resultType) || (source && trace.source !== source)) {
-        const response = await this.apiService.getTracesWithResultAndSource(
-          accessToken,
-          trace.type as EventTypes,
-          1,
-          trace.data.project as string,
-          trace.data.stage as string,
-          trace.data.service as string,
-          resultType,
-          source
-        );
+        const response = await this.apiService.getTracesWithResultAndSource(accessToken, {
+          type: trace.type as EventTypes,
+          pageSize: '1',
+          project: trace.data.project as string,
+          stage: trace.data.stage as string,
+          service: trace.data.service as string,
+          ...(resultType && { result: resultType }),
+          ...(source && { source }),
+        });
         if (response.data.events.length) {
           traces[i] = response.data.events[0];
         }
@@ -279,25 +299,25 @@ export class DataService {
   private async setServiceDetails(
     accessToken: string | undefined,
     service: Service,
-    stageName: string,
-    keptnContext: string,
-    projectName: string,
+    options: ServiceDetailsOptions,
     stageInformation: StageOpenInformation,
     stageDeployments: Trace[],
     cachedSequence: Sequence | undefined
   ): Promise<Sequence | undefined> {
     let latestSequence;
     try {
-      latestSequence = cachedSequence ?? (await this.getSequence(accessToken, projectName, stageName, keptnContext));
+      latestSequence =
+        cachedSequence ??
+        (await this.getSequence(accessToken, options.projectName, options.stageName, options.keptnContext));
     } catch (error) {
       console.error(error);
       return;
     }
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
-    service.latestSequence?.reduceToStage(stageName);
+    service.latestSequence?.reduceToStage(options.stageName);
 
     if (!cachedSequence && service.latestSequence) {
-      const stage = service.latestSequence.stages.find((seq) => seq.name === stageName);
+      const stage = service.latestSequence.stages.find((seq) => seq.name === options.stageName);
       if (stage) {
         stage.latestEvaluationTrace = stageInformation.evaluations.find(
           (t) => t.data.service === service.latestSequence?.service
@@ -316,7 +336,7 @@ export class DataService {
       (remediation) => remediation.service === service.serviceName
     );
     for (const remediation of serviceRemediations) {
-      remediation.reduceToStage(stageName);
+      remediation.reduceToStage(options.stageName);
     }
     service.openRemediations = serviceRemediations;
     service.openApprovals = stageInformation.openApprovals.filter(
@@ -331,16 +351,10 @@ export class DataService {
     stageName?: string,
     keptnContext?: string
   ): Promise<Sequence | undefined> {
-    const response = await this.apiService.getSequences(
-      accessToken,
-      projectName,
-      1,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      keptnContext
-    );
+    const response = await this.apiService.getSequences(accessToken, projectName, {
+      pageSize: '1',
+      keptnContext,
+    });
     let sequence = response.data.states[0];
     if (sequence) {
       sequence = Sequence.fromJSON(sequence);
@@ -354,13 +368,11 @@ export class DataService {
     sequenceName: string,
     sequenceState?: SequenceState
   ): Promise<Sequence[]> {
-    const response = await this.apiService.getSequences(
-      accessToken,
-      projectName,
-      this.MAX_SEQUENCE_PAGE_SIZE,
-      sequenceName,
-      sequenceState
-    );
+    const response = await this.apiService.getSequences(accessToken, projectName, {
+      pageSize: this.MAX_SEQUENCE_PAGE_SIZE.toString(),
+      name: sequenceName,
+      state: sequenceState,
+    });
 
     return response.data.states.map((sequence) => Sequence.fromJSON(sequence));
   }
@@ -409,15 +421,13 @@ export class DataService {
     serviceName: string,
     keptnContext: string
   ): Promise<void> {
-    const response = await this.apiService.getTraces(
-      accessToken,
-      undefined,
-      this.MAX_TRACE_PAGE_SIZE,
-      projectName,
-      stageName,
-      serviceName,
-      keptnContext
-    );
+    const response = await this.apiService.getTraces(accessToken, {
+      pageSize: this.MAX_TRACE_PAGE_SIZE.toString(),
+      project: projectName,
+      stage: stageName,
+      service: serviceName,
+      keptnContext,
+    });
     const traces = response.data.events;
     const actions = this.getRemediationActions(Trace.traceMapper(traces));
     remediation.stages[0].actions.push(...actions);
@@ -458,16 +468,15 @@ export class DataService {
     eventType?: EventTypes,
     eventSource?: KeptnService
   ): Promise<Trace | undefined> {
-    const response = await this.apiService.getTraces(
-      accessToken,
-      eventType,
-      1,
-      projectName,
-      stageName,
-      serviceName,
+    const response = await this.apiService.getTraces(accessToken, {
+      type: eventType,
+      pageSize: '1',
+      project: projectName,
+      stage: stageName,
+      service: serviceName,
       keptnContext,
-      eventSource
-    );
+      source: eventSource,
+    });
     return response.data.events.shift();
   }
 
@@ -670,18 +679,17 @@ export class DataService {
     projectName?: string,
     stageName?: string,
     serviceName?: string,
-    eventType?: string,
+    eventType?: EventTypes,
     pageSize?: number
   ): Promise<EventResult> {
-    const response = await this.apiService.getTraces(
-      accessToken,
-      eventType,
-      pageSize,
-      projectName,
-      stageName,
-      serviceName,
-      keptnContext
-    );
+    const response = await this.apiService.getTraces(accessToken, {
+      type: eventType,
+      ...(pageSize !== undefined && { pageSize: pageSize.toString() }),
+      ...(projectName && { project: projectName }),
+      ...(stageName && { stage: stageName }),
+      ...(serviceName && { service: serviceName }),
+      ...(keptnContext && { keptnContext }),
+    });
     return response.data;
   }
 
@@ -1184,16 +1192,10 @@ export class DataService {
     fromTimeString?: string
   ): Promise<Deployment | undefined> {
     const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
-    const sequenceResponse = await this.apiService.getSequences(
-      accessToken,
-      projectName,
-      1,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      keptnContext
-    );
+    const sequenceResponse = await this.apiService.getSequences(accessToken, projectName, {
+      pageSize: '1',
+      keptnContext,
+    });
     let deployment: Deployment | undefined;
     const iSequence = sequenceResponse.data.states[0];
     if (iSequence) {

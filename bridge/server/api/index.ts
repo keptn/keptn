@@ -6,6 +6,7 @@ import { DataService } from '../services/data-service';
 import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
 import { EnvironmentUtils } from '../utils/environment.utils';
 import { ClientFeatureFlags } from '../feature-flags';
+import { EventTypes } from '../../shared/interfaces/event-types';
 
 const router = Router();
 
@@ -371,7 +372,7 @@ const apiRouter = (params: {
           req.query.project?.toString(),
           req.query.stage?.toString(),
           req.query.service?.toString(),
-          req.query.type?.toString(),
+          req.query.type?.toString() as EventTypes | undefined,
           req.query.pageSize ? parseInt(req.query.pageSize.toString(), 10) : undefined
         );
         return res.json(response);
