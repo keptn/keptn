@@ -137,40 +137,6 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
 
-	credentials, err := p.credentialReader.GetCredentials(projectName)
-	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, projectName, err)
-	}
-
-	gitContext := common_models.GitContext{
-		Project:     projectName,
-		Credentials: credentials,
-	}
-
-	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(projectName) {
-		return errors.ErrProjectNotFound
-	}
-
-	logger.Debugf("Deleting project %s", projectName)
-
-	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
-	if err != nil {
-		return fmt.Errorf("could not determine default branch of project %s: %w", projectName, err)
-	}
-
-	// check out the default branch to check interaction with upstream is working
-	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
-		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, projectName, err)
-	}
-
-	if err := p.fileSystem.DeleteFile(common.GetProjectMetadataFilePath(projectName)); err != nil {
-		return fmt.Errorf("could not delete metadata file of project %s: %w", projectName, err)
-	}
-
-	if _, err := p.git.StageAndCommitAll(gitContext, "deleted project metadata"); err != nil {
-		return fmt.Errorf("could not commit changes: %w", err)
-	}
-
 	if err := p.fileSystem.DeleteFile(common.GetProjectConfigPath(projectName)); err != nil {
 		return fmt.Errorf("could not delete project %s: %w", projectName, err)
 	}
