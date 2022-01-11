@@ -97,7 +97,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	)
 
 	if err != nil {
-		if strings.Contains(err.Error(), "empty") {
+		if kerrors.ErrEmptyRemoteRepository.Is(err) {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, err)
@@ -132,14 +132,34 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 	if err != nil {
 		return nil, err
 	}
+	f, err := os.Create(projectPath + "/metadata.yaml")
+	if err != nil {
+		return nil, err
+	}
+	_, err = f.Write([]byte{})
+	if err != nil {
+		return nil, err
+	}
+	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
 
-	os.MkdirAll(projectPath+"/.git", 0700)
 	w, err := init.Worktree()
 	if err != nil {
 		return nil, err
 	}
-	w.Add("/.git")
-	_, err = g.commitAll(gitContext, "init repo")
+
+	w.Add(projectPath + "/metadata.yaml")
+	_, err = w.Commit("init git empty repo",
+		&git.CommitOptions{
+			All: true,
+			Author: &object.Signature{
+				Name:  gitKeptnUserDefault,
+				Email: gitKeptnEmailDefault,
+				When:  time.Now(),
+			},
+		})
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +192,7 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 
-	_, err := g.commitAll(gitContext, message)
+	id, err := g.commitAll(gitContext, message)
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
@@ -204,6 +224,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	if !updated {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
 	}
+
 	return id, nil
 }
 
@@ -427,6 +448,12 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 
 	var re (io.Reader)
 	re, err = blob.Reader()
+
+	if err != nil {
+		return []byte{},
+			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
+	}
+
 	return ioutil.ReadAll(re)
 }
 
@@ -534,12 +561,4 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	default:
 		return nil, object.ErrUnsupportedObject
 	}
-}
-
-func ensureDirectoryExists(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		err := os.MkdirAll(path, 0700)
-		return err
-	}
-	return nil
 }
