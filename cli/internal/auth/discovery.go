@@ -8,18 +8,6 @@ import (
 	"time"
 )
 
-//var StaticDiscoveryValues = &OauthDiscoveryResult{
-//	Issuer:                 "https://sso-dev.dynatracelabs.com:443",
-//	AuthorizationEndpoint:  "https://sso-dev.dynatracelabs.com:443/oauth2/authorize",
-//	TokenEndpoint:          "https://sso-dev.dynatracelabs.com:443/sso/oauth2/token",
-//	UserinfoEndpoint:       "https://sso-dev.dynatracelabs.com:443/sso/oauth2/userinfo",
-//	EndSessionEndpoint:     "https://sso-dev.dynatracelabs.com:443/oauth2/end_session",
-//	ResponseTypesSupported: []string{"code"},
-//	GrantTypesSupported:    []string{"authorization_code", "refresh_token", "password", "client_credentials", "urn:ietf:params:oauth:grant-type:token-exchange"},
-//	JwksURI:                "https://sso-dev.dynatracelabs.com:443/.well-known/jwks.json",
-//	IntrospectionEndpoint:  "https://sso-dev.dynatracelabs.com:443/sso/oauth2/tokeninfo",
-//}
-
 // OauthLocationGetter is used to get the location parameters
 // used in an oauth flow
 type OauthLocationGetter interface {

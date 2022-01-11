@@ -7,6 +7,7 @@ import (
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"os"
+	"sync"
 )
 
 // TokenStore is used to store and read an oauth token
@@ -88,12 +89,15 @@ func getDefaultLocation() string {
 
 // TokenStoreMock is an implementation of TokenStore usable as a mock in tests
 type TokenStoreMock struct {
+	sync.Mutex
 	storedToken  *oauth2.Token
 	getTokenFn   func() (*oauth2.Token, error)
 	storeTokenFn func(*oauth2.Token) error
 }
 
 func (t *TokenStoreMock) GetToken() (*oauth2.Token, error) {
+	t.Lock()
+	defer t.Unlock()
 	if t != nil && t.getTokenFn != nil {
 		return t.getTokenFn()
 	}
@@ -101,6 +105,8 @@ func (t *TokenStoreMock) GetToken() (*oauth2.Token, error) {
 }
 
 func (t *TokenStoreMock) StoreToken(token *oauth2.Token) error {
+	t.Lock()
+	defer t.Unlock()
 	if t != nil && t.storeTokenFn != nil {
 		return t.storeTokenFn(token)
 	}
@@ -108,5 +114,7 @@ func (t *TokenStoreMock) StoreToken(token *oauth2.Token) error {
 	return nil
 }
 func (t *TokenStoreMock) DeleteToken() error {
+	t.Lock()
+	defer t.Unlock()
 	return nil
 }

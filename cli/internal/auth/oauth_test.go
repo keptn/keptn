@@ -41,7 +41,8 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 	}, 5*time.Second, 1*time.Second, "")
 
 	assert.Eventuallyf(t, func() bool {
-		return tokenStore.storedToken != nil && (tokenStore.storedToken.AccessToken == "mocked-token")
+		token, _ := tokenStore.GetToken()
+		return token != nil && token.AccessToken == "mocked-token"
 	}, 5*time.Second, 1*time.Second, "")
 }
 
