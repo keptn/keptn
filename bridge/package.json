@@ -65,7 +65,7 @@
     "lodash-es": "4.17.21",
     "marked": "3.0.8",
     "moment": "2.29.1",
-    "ngx-moment": "5.0.0",
+    "ngx-moment": "6.0.2",
     "normalize.css": "8.0.1",
     "rxjs": "6.6.7",
     "semver": "7.3.5",

@@ -8957,12 +8957,12 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-ngx-moment@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ngx-moment/-/ngx-moment-5.0.0.tgz#6500432a2fcda75fb236a632850e599db23c8177"
-  integrity sha512-LPpGPo4ccdh8RWnDbJdLTLGGGcwbRYMbn/j4PXM24754J7MZ0tgnBM+ncaVbwefUSSEMme8yMkNIxFiVxgOOvQ==
+ngx-moment@6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/ngx-moment/-/ngx-moment-6.0.2.tgz#7acba9830746e9c2862d261150f2c8adb20eb4f6"
+  integrity sha512-HUvDyoJPZKLA3tc+GMQqDpVyCVT2SPfEiV7/CGj2Dwwsn//JhhQ8eTr+RzKqBzLysrXkCwlzulVVJaJ5A0FJEA==
   dependencies:
-    tslib "^2.0.0"
+    tslib "^2.3.0"
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -12055,7 +12055,7 @@ tslib@2.1.0, tslib@~2.1.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.1.0.tgz#da60860f1c2ecaa5703ab7d39bc05b6bf988b97a"
   integrity sha512-hcVC3wYEziELGGmEEXue7D75zbwIIVUMWAVbHItGPx0ziyXxrOMQx4rQEVEV45Ut/1IotuEvwqPopzIOkDMf0A==
 
-tslib@2.3.1, tslib@^2.0.0, tslib@^2.3.1:
+tslib@2.3.1, tslib@^2.0.0, tslib@^2.3.0, tslib@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
   integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
