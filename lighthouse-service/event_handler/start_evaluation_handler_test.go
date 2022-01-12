@@ -126,13 +126,13 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	}
 	tests := []struct {
 		name                string
+		metadata            *keptnapi.Version
 		fields              fields
 		sloAvailable        bool
 		sloFileContent      string
 		serviceNotAvailable bool
 		wantEventType       []string
 		wantErr             bool
-		metadata            *keptnapi.Version
 		ProjectSLIProvider  struct {
 			val string
 			err error
@@ -143,7 +143,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		}
 	}{
 		{
-			name: "No SLO file available -  send get-sli event",
+			name:     "No SLO file available -  send get-sli event",
+			metadata: &keptnapi.Version{},
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
@@ -173,7 +174,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			}{},
 		},
 		{
-			name: "Service not available - return evaluation.finished event",
+			name:     "Service not available - return evaluation.finished event",
+			metadata: &keptnapi.Version{},
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
@@ -198,7 +200,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			}{},
 		},
 		{
-			name: "No SLI provider configured for project - use default",
+			name:     "No SLI provider configured for project - use default",
+			metadata: &keptnapi.Version{},
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
@@ -225,7 +228,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			},
 		},
 		{
-			name: "Retrieve SLO by commitID",
+			name:     "Retrieve SLO by commitID",
+			metadata: &keptnapi.Version{Version: "myID"},
 			fields: fields{
 				Event: getStartEventWithCommitId("myID"),
 				SLOFileRetriever: SLOFileRetriever{
@@ -237,7 +241,6 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			sloFileContent: "spec_version: '0.1.0'\nfilter:\n  handler: \"ItemsController.addToCart\"\ncomparison:\n  compare_with: \"single_result\"\n  include_result_with_score: \"pass\"\n  number_of_comparison_results: 1\n  aggregate_function: avg\nobjectives:\n  - sli: request_latency_p95\n    warning:     \n      - criteria: \n          - \"<=800\"",
 			wantEventType:  []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName)},
 			wantErr:        false,
-			metadata:       &keptnapi.Version{Version: "myID"},
 			ProjectSLIProvider: struct {
 				val string
 				err error
