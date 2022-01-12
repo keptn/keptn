@@ -16,8 +16,8 @@ var APIProvider = getAPISet
 func getAPISet(baseURL string, authToken string, authHeader string, scheme string) (*apiutils.APISet, error) {
 	var client *http.Client
 	var err error
-	tokenStore := auth2.NewLocalFileTokenStore()
-	if tokenInitialized, _ := tokenStore.Location(); tokenInitialized {
+	tokenStore := auth2.NewLocalFileOauthStore()
+	if storeCreated := tokenStore.Created(); storeCreated {
 		oauth := auth2.NewOauthAuthenticator(PublicDiscovery, tokenStore, auth2.NewBrowser())
 		client, err = oauth.GetOauthClient(context.Background())
 		if err != nil {

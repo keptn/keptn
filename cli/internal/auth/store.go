@@ -22,8 +22,8 @@ type OauthInfo struct {
 	Token *oauth2.Token
 }
 
-// TokenStore is used to store and read oauth related information
-type TokenStore interface {
+// OauthStore is used to store and read oauth related information
+type OauthStore interface {
 	StoreOauthInfo(*OauthInfo) error
 	GetOauthInfo() (*OauthInfo, error)
 	StoreTokenInfo(*oauth2.Token) error
@@ -40,26 +40,26 @@ const TokenFileName = "tokens.json"
 const DiscoveryResultFileName = "discovery.json"
 const ClientValuesFileName = "client.json"
 
-// NewLocalFileTokenStore creates a new LocalFileTokenStore
-// The token store is persisted in the local keptn configuration directory ( ~/.keptn)
-func NewLocalFileTokenStore() *LocalFileTokenStore {
-	return &LocalFileTokenStore{
+// NewLocalFileOauthStore creates a new LocalFileOauthStore which sotres its data inside the local Keptn
+// configuration directory (~/.keptn)
+func NewLocalFileOauthStore() *LocalFileOauthStore {
+	return &LocalFileOauthStore{
 		location:             getDefaultTokenLocation(),
 		discoveryLocation:    getDefaultDiscoveryResultLocation(),
 		clientValuesLocation: getDefaultClientValuesLocation(),
 	}
 }
 
-// LocalFileTokenStore is a simple token store implementation which stores its data as a
+// LocalFileOauthStore is a local file based implementation of OauthStore which stores its data as a
 // JSON formatted file(s) on the local file system
-type LocalFileTokenStore struct {
+type LocalFileOauthStore struct {
 	location             string
 	discoveryLocation    string
 	clientValuesLocation string
 }
 
 // StoreOauthInfo persists all oauth related information in the store
-func (t LocalFileTokenStore) StoreOauthInfo(i *OauthInfo) error {
+func (t LocalFileOauthStore) StoreOauthInfo(i *OauthInfo) error {
 	if err := t.StoreClientInfo(i.ClientValues); err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (t LocalFileTokenStore) StoreOauthInfo(i *OauthInfo) error {
 }
 
 // GetOauthInfo retrieves all oauth related information from the store
-func (t LocalFileTokenStore) GetOauthInfo() (*OauthInfo, error) {
+func (t LocalFileOauthStore) GetOauthInfo() (*OauthInfo, error) {
 	clientValues, err := t.GetClientInfo()
 	if err != nil {
 		return nil, err
@@ -91,8 +91,8 @@ func (t LocalFileTokenStore) GetOauthInfo() (*OauthInfo, error) {
 	}, nil
 }
 
-// GetToken gets the oauth token from the token store
-func (t LocalFileTokenStore) GetTokenInfo() (*oauth2.Token, error) {
+// GetTokenInfo retrieves the oauth token
+func (t LocalFileOauthStore) GetTokenInfo() (*oauth2.Token, error) {
 	tokenFile, err := ioutil.ReadFile(t.location)
 	if err != nil {
 		return nil, err
@@ -106,32 +106,32 @@ func (t LocalFileTokenStore) GetTokenInfo() (*oauth2.Token, error) {
 	return token, nil
 }
 
-// StoreToken stores (overwrites) an oauth token in the token store
-func (t LocalFileTokenStore) StoreTokenInfo(token *oauth2.Token) error {
+// StoreTokenInfo stores (overwrites) an oauth token
+func (t LocalFileOauthStore) StoreTokenInfo(token *oauth2.Token) error {
 	tokenAsJSON, err := json.Marshal(token)
 	if err != nil {
-		return fmt.Errorf("unable to store token in local token store: %w", err)
+		return fmt.Errorf("unable to store token: %w", err)
 	}
 	if err := ioutil.WriteFile(t.location, tokenAsJSON, 0600); err != nil {
-		return fmt.Errorf("unable to store token in local token store: %w", err)
+		return fmt.Errorf("unable to store token: %w", err)
 	}
 	return nil
 }
 
-// StoreDiscovery stores (overwrites) the token discovery information
-func (t LocalFileTokenStore) StoreDiscoveryInfo(discoveryResult *OauthDiscoveryResult) error {
+// StoreDiscoveryInfo stores (overwrites) the token discovery information
+func (t LocalFileOauthStore) StoreDiscoveryInfo(discoveryResult *OauthDiscoveryResult) error {
 	discoveryResultAsJSON, err := json.Marshal(discoveryResult)
 	if err != nil {
-		return fmt.Errorf("unable to store discovery information in local token store: %w", err)
+		return fmt.Errorf("unable to store discovery information: %w", err)
 	}
 	if err := ioutil.WriteFile(t.discoveryLocation, discoveryResultAsJSON, 0600); err != nil {
-		return fmt.Errorf("unable to store discovery information in local token store: %w", err)
+		return fmt.Errorf("unable to store discovery information: %w", err)
 	}
 	return nil
 }
 
-// getDiscovery gets the oauth token discovery information from the token store
-func (t LocalFileTokenStore) GetDiscoveryInfo() (*OauthDiscoveryResult, error) {
+// GetDiscoveryInfo retrieves the oauth token discovery information
+func (t LocalFileOauthStore) GetDiscoveryInfo() (*OauthDiscoveryResult, error) {
 	if !fileutils.FileExists(t.discoveryLocation) {
 		return nil, nil
 	}
@@ -147,18 +147,20 @@ func (t LocalFileTokenStore) GetDiscoveryInfo() (*OauthDiscoveryResult, error) {
 	return d, nil
 }
 
-func (t LocalFileTokenStore) StoreClientInfo(clientValues *OauthClientValues) error {
+// StoreClientInfo stores client information
+func (t LocalFileOauthStore) StoreClientInfo(clientValues *OauthClientValues) error {
 	clientValuesAsJSON, err := json.Marshal(clientValues)
 	if err != nil {
-		return fmt.Errorf("unable to store client values in local token store: %w", err)
+		return fmt.Errorf("unable to store client values: %w", err)
 	}
 	if err := ioutil.WriteFile(t.clientValuesLocation, clientValuesAsJSON, 0600); err != nil {
-		return fmt.Errorf("unable to store client values in local token store: %w", err)
+		return fmt.Errorf("unable to store client values: %w", err)
 	}
 	return nil
 }
 
-func (t LocalFileTokenStore) GetClientInfo() (*OauthClientValues, error) {
+// GetClientInfo retrieves client information
+func (t LocalFileOauthStore) GetClientInfo() (*OauthClientValues, error) {
 	if !fileutils.FileExists(t.clientValuesLocation) {
 		return nil, fmt.Errorf("unable to find local client values")
 	}
@@ -175,28 +177,28 @@ func (t LocalFileTokenStore) GetClientInfo() (*OauthClientValues, error) {
 }
 
 // Wipe wipes all persistent OAuth information from the store
-func (t LocalFileTokenStore) Wipe() error {
+func (t LocalFileOauthStore) Wipe() error {
 	if fileutils.FileExists(t.location) {
 		if err := os.Remove(t.location); err != nil {
-			return fmt.Errorf("unable to delete token from local token store: %w", err)
+			return fmt.Errorf("unable to delete token: %w", err)
 		}
 	}
 	if fileutils.FileExists(t.discoveryLocation) {
 		if err := os.Remove(t.discoveryLocation); err != nil {
-			return fmt.Errorf("unable to delete token discovery from local token store: %w", err)
+			return fmt.Errorf("unable to delete token discovery: %w", err)
 		}
 	}
 	if fileutils.FileExists(t.clientValuesLocation) {
 		if err := os.Remove(t.clientValuesLocation); err != nil {
-			return fmt.Errorf("unable to delete client values from local token store: %w", err)
+			return fmt.Errorf("unable to delete client values: %w", err)
 		}
 	}
 	return nil
 }
 
-// Location checks whether a oauth token is available and eventually returns its location on disk
-func (t *LocalFileTokenStore) Location() (bool, string) {
-	return fileutils.FileExists(t.location), t.location
+// Created checks whether a LocalFileOauthStore was created or not
+func (t *LocalFileOauthStore) Created() bool {
+	return fileutils.FileExists(t.location) && fileutils.FileExists(t.discoveryLocation) && fileutils.FileExists(t.clientValuesLocation)
 }
 
 func getDefaultTokenLocation() string {
@@ -223,7 +225,7 @@ func getDefaultClientValuesLocation() string {
 	return configPath + ClientValuesFileName
 }
 
-// TokenStoreMock is an implementation of TokenStore usable as a mock in tests
+// TokenStoreMock is an implementation of OauthStore usable as a mock in tests
 type TokenStoreMock struct {
 	sync.Mutex
 	storedOauthInfo       *OauthInfo

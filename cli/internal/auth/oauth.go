@@ -18,18 +18,18 @@ const (
 // Authenticator is responsible for authenticate the user using SSO/Oauth2
 type Authenticator interface {
 	// Auth is triggering the authentication
-	Auth(discovery OauthLocationGetter, tokenStore TokenStore, redirectURL string) error
+	Auth(discovery OauthLocationGetter, tokenStore OauthStore, redirectURL string) error
 }
 
 // OauthAuthenticator is an implementation of Authenticator which implements the Oauth2 Authorization Code Flow
 type OauthAuthenticator struct {
 	discovery  OauthLocationGetter
-	tokenStore TokenStore
+	tokenStore OauthStore
 	browser    URLOpener
 }
 
 // NewOauthAuthenticator is creating a new OauthAuthenticator
-func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore TokenStore, browser URLOpener) *OauthAuthenticator {
+func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore, browser URLOpener) *OauthAuthenticator {
 	return &OauthAuthenticator{
 		discovery:  discovery,
 		tokenStore: tokenStore,

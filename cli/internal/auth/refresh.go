@@ -11,7 +11,7 @@ type TokenNotifyFunc func(*oauth2.Token) error
 // NotifyRefreshTokenSource is an implementation of TokenSource and is used to refresh the access token
 // using a refresh token from the local token store
 type NotifyRefreshTokenSource struct {
-	tokenStore TokenStore
+	tokenStore OauthStore
 	mu         sync.Mutex
 	config     *oauth2.Config
 }

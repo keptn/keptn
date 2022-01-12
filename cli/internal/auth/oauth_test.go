@@ -55,7 +55,7 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 
 	type fields struct {
 		discovery  OauthLocationGetter
-		tokenStore TokenStore
+		tokenStore OauthStore
 		browser    URLOpener
 	}
 	tests := []struct {
@@ -107,7 +107,7 @@ func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 
 	type fields struct {
 		discovery  OauthLocationGetter
-		tokenStore TokenStore
+		tokenStore OauthStore
 		browser    URLOpener
 	}
 	type args struct {

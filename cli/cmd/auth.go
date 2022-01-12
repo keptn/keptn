@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	auth2 "github.com/keptn/keptn/cli/internal/auth"
@@ -74,7 +73,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 
 		// sign out
 		if *authParams.ssoLogout {
-			store := auth2.NewLocalFileTokenStore()
+			store := auth2.NewLocalFileOauthStore()
 			err := store.Wipe()
 			if err != nil {
 				return err
@@ -90,7 +89,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			if *authParams.ssoClientID == "" {
 				return fmt.Errorf("Unable to login usin SSO: No client ID provided")
 			}
-			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
+			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileOauthStore(), auth2.NewBrowser())
 			err := oauth.Auth(*authParams.ssoDiscovery, *authParams.ssoClientID)
 			if err != nil {
 				return err
@@ -206,20 +205,6 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	}
 
 	return nil
-}
-
-// try to authenticate towards the given endpoint with the provided apiToken
-func authenticate(endPoint string, apiToken string) error {
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"auth",
-		fmt.Sprintf("--endpoint=%s", endPoint),
-		fmt.Sprintf("--api-token=%s", apiToken),
-	}
-	rootCmd.SetArgs(args)
-	return rootCmd.Execute()
 }
 
 func smartKeptnCLIAuth() (string, error) {
