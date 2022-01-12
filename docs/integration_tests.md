@@ -2,10 +2,25 @@
 
 ## Structure of Integration Tests
 
-### Adding new Integration Test
-Adding a new Integration Tests consists of two steps:
-1. Writing an Integration Test (please inspire yourself with other Integrations Tests) and place it to /test/go-tests folder. Please note that the naming convention is important (for example test_myNewTest.go).
-2. Add the test to one or more Testsuites (files with `testsuite_` prefix).
+The Integration Tests and their resources are located under `/test` directory in this repository. For running the Integration Tests, there are two main directories, we will focus on:
+* `/test/assets` -> directory containing resources and scripts, which are used during the run of the Integration Tests
+* `/test/go-tests` -> Integration Tests and testsuites
+
+Integration Tests are organized into four main testsuites (testsuite files have `testsuite_` prefixes), where every testsuite consists of tests which are ran on a specific Kubernetes platform:
+* GKE
+* K3D
+* K3S
+* Minishift
+
+These testsuites are ran in parrallel during pipeline execution on Github.
+
+Each testsuite consists of one or more tests, which are actually a Go functions executed in a testing context. These functions (tests) are stored in files with `test_` prefixes. Also, each test can be part of one or more testsuites.
+
+### Adding a new Integration Test
+
+Adding a new Integration Test consists of two steps:
+1. Write an Integration Test (please take other Integrations Tests as reference/inspirations) and put it into the `/test/go-tests` directory. Please note that the naming convention is important (e.g. test_myNewTest.go).
+2. Add the test to one or more testsuites (files with `testsuite_` prefix).
 
 ## Running Integration Tests
 
@@ -15,29 +30,32 @@ There are two possibilities to run Integration Tests on Keptn project:
 
 ## Run Integration Tests remotely on Github
 
-The possibility to run Integration Tests remotely is privileged to users, who are part of the Keptn project. There are two possibilities how to run Integration Tests:
-* Running Integration Tests with default context for a specific branch (code changes ouside of /test folder)
-* Running Integration Tests with a context from a specific branch (code changes inside of /test folder)
+The possibility to run Integration Tests remotely is restricted to users, who are part of the Keptn project. There are two possibilities how to run Integration Tests:
+* Running Integration Tests with default context for a specific branch (code changes ouside of `/test` directory)
+* Running Integration Tests with a context from a specific branch (code changes inside of `/test` directory)
 
-These two options can be also combined and currently only executions of all Integration Tests for all Testsuites is supported. The execution of the Tests is fairly easy:
+These two options can be also combined and currently only executions of all Integration Tests for all testsuites is supported. The execution of the Tests is fairly easy:
 1. Navigate to the `Actions` tab in `keptn/keptn` repository (https://github.com/keptn/keptn)
 2. Choose `Integration Tests` from the left side menu
-3. Click on `Run Workflow`, where a dialog window will appear. Here you need to choose the context (`Use Workflow from`) of the tests you wish to use (`master` is default). You should use this `master` context unless you have not made any changes in the Integration Tests. Secondly you choose a branch, from which the CI build artifacts (docker images) should be used from. Here you mostly use the branch of the code you are currently working on and want to run Integration Tests for your code changes.
+3. Click on `Run Workflow`, where a dialog window will appear. 
+   Here, you need to choose the context (`Use Workflow from`) of the tests you wish to use (`master` is default). 
+   You should use this `master` context unless you have not made any changes in the Integration Tests pipeline. 
+   Secondly you choose a branch, from which the CI build artifacts (docker images) should be used from. 
+   Here, you mostly use the branch of the code you are currently working on and want to run Integration Tests for your code changes. Please be aware, that you need to wait for the docker images to be buit before you can execute the Integartion Tests.
 
 ## Run Integration Tests locally
 
 ### Prepare your local environment to run integration tests
 
-When running integration tests locally, we recommend using either K3d or Minishift. Please use the set-up steps below to set up your local enviroment before installing 
-Keptn and running the Integration Tests.
+When running integration tests locally, we recommend using either [K3d](https://k3d.io/) or [Minishift](https://github.com/minishift/minishift). Please use the setup steps below to set up your local environment before installing Keptn and running the Integration Tests.
 
-#### Set-up steps for K3d (recommended on Linux)
+#### **Setup steps for K3d (recommended on Linux)**
 
 Starting and setting up K3d is easy:
 
-1. Download and install K3d (**Note**: please be aware you need to have Docker installed, more info here: https://k3d.io/v5.2.2/):
+1. Download and install K3d (version 5.2.2 is recommended) (**Note**: please be aware you need to have Docker installed, more info here: https://k3d.io/):
     ```console
-    curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+    curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v5.2.2 bash
     ```
 2. Create Kubernetes cluster:
     ```console
@@ -45,13 +63,16 @@ Starting and setting up K3d is easy:
     ```  
 3. Verify that everything has worked using `kubectl get nodes`
 
-#### Set-up steps for Minishift
+#### **Setup steps for Minishift (not recommended)**
 
 In case you plan to use Minishift, the following steps are necessary to get Keptn running on Minishift (1.34.3):
 
 1. Download and install Minishift 1.34.3 (from [https://github.com/minishift/minishift/releases](https://github.com/minishift/minishift/releases))
    for your operating system
-2. Setup Minishift profile, cpu and memory limits:
+   * extract the archive `tar -zxvf minishift-1.34.3-linux-amd64.tgz && cd minishift-1.34.3-linux-amd64`
+   * export the minishift path `export PATH=$PATH:$HOME/your_path/minishift-1.34.3-linux-amd64`
+
+1. Setup Minishift profile, cpu and memory limits:
    ```console
    # make sure you have a profile is set correctly
    minishift profile set keptn-dev
@@ -65,11 +86,12 @@ In case you plan to use Minishift, the following steps are necessary to get Kept
    minishift addons enable anyuid
    ```
    
-3. Start Minishift:
+2. Start Minishift:
    ```console
    minishift start
    ```
-4. Enable admission WebHooks on your OpenShift master node:
+   **Note**: Please make sure you have your Virtualization Environment properly set up before executing `minishift start`: https://docs.okd.io/3.11/minishift/getting-started/setting-up-virtualization-environment.html
+3. Enable admission WebHooks on your OpenShift master node:
    ```console
    minishift openshift config set --target=kube --patch '{
        "admissionConfig": {
@@ -92,7 +114,7 @@ In case you plan to use Minishift, the following steps are necessary to get Kept
        }
    }'
    ```
-5. Login via `oc` cli (you might need to try a couple of times):
+4. Login via `oc` cli (you might need to try a couple of times):
    ```console
    oc login -u admin -p admin
    ```
@@ -101,13 +123,13 @@ In case you plan to use Minishift, the following steps are necessary to get Kept
    Error from server (InternalError): Internal error occurred: unexpected response: 400
    ```
    and retry again.
-6. Set policies/permissions:
+5. Set policies/permissions:
    ```console
    oc adm policy --as system:admin add-cluster-role-to-user cluster-admin admin
    oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:default:default
    oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
    ```
-7. Note down the Minishift server URL printed by `oc status` (e.g., `https://192.168.99.101:8443`)
+6. Note down the Minishift server URL printed by `oc status` (e.g., `https://192.168.99.101:8443`)
 
 ### Run the full installation of Integration Tests locally
 
@@ -123,16 +145,12 @@ Pre-requisites:
 * working internet connection
 
 1. Setup your Kubernetes cluster (see above)
-2. Verify `kubectl` is configured to the right cluster:
-   ```console
-   kubectl get nodes
-   ```
-3. Install `keptn` CLI:
+2. Install `keptn` CLI:
    ```console
    curl -sL https://get.keptn.sh | KEPTN_VERSION=0.12.0 bash
    ```
    **Note**: Please use the newest available Keptn version. Available versions can be found here: https://github.com/keptn/keptn/tags
-4. Install Keptn
+3. Install Keptn
    * K3d
        ```console
        keptn install --use-case=continuous-delivery
@@ -142,32 +160,32 @@ Pre-requisites:
       keptn install --use-case=continuous-delivery --platform=openshift --verbose
       ```
    **Note**: If you want to upgrade to the latest developer version, please use `helm upgrade` with `--reuse-values` option after installation.
-5. Expose Keptn
+4. Expose Keptn
    ```console
    curl -SL https://raw.githubusercontent.com/keptn/examples/master/quickstart/expose-keptn.sh | bash
    ```
-6. Open a new terminal and type:
+5. Open a new terminal and type:
    ```console
    kubectl -n keptn port-forward service/api-gateway-nginx 8080:80
    ```
    After executing, return back to the original terminal.
-7. Authenticate Keptn:
+6. Authenticate Keptn:
    ```console
    keptn auth --endpoint=http://127.0.0.1:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
    ```
-8. Verify the installation has worked
+7. Verify the installation has worked
    ```console
    keptn status
    ```
-9. Verify which images have been deployed
+8. Verify which images have been deployed
    ```console
    kubectl -n keptn get deployments
    ```
-10. Run tests (e.g., UniformRegistration):
+9.  Run tests (e.g., UniformRegistration):
    ```console
    cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./...
    ```
-   **Note**: If you want to run a single test, (for example BackupTestore_Test), please add `_test` suffix to the test file name, so it becomes executable. Otherwise, you will be able to run only the `testsuite_*_test.go` files. For running a single test use:
+   **Note**: If you want to run a single test, (e.g. BackupTestore_Test), please add `_test` suffix to the test file name, so it becomes executable. Otherwise, you will be able to run only the `testsuite_*_test.go` files. For running a single test use:
    ```console
    cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./... -v -run <NameOfTheTest>
    ```
