@@ -104,6 +104,9 @@ func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 	filename = filepath.Clean(filename)
 	if IsHelmChartPath(filename) {
 		chartDir := strings.Replace(filename, ".tgz", "", -1)
+		if !fw.FileExists(chartDir) {
+			return nil, errors2.ErrResourceNotFound
+		}
 		defer func() {
 			if err := fw.DeleteFile(filename); err != nil {
 				logger.Errorf("Could not delete temporary helm chart archive: %v", err)
