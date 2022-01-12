@@ -24,21 +24,15 @@
       "service": "carts-db",
       "stage": "staging",
       "image": "docker.io/mongo:v4.2.2"
-    },{
+    },
+    {
       "service": "carts-db",
       "stage": "production",
       "image": "docker.io/mongo:v4.2.2"
     }
   ],
   "filter": {
-    "stages": [
-      "dev",
-      "staging",
-      "production"
-    ],
-    "services": [
-      "carts",
-      "carts-db"
-    ]
+    "stages": ["dev", "staging", "production"],
+    "services": ["carts", "carts-db"]
   }
 }
