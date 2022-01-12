@@ -71,9 +71,9 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	var returnSlo bool
 	var sloFileContent string
 	var returnServiceNotFound bool
+	metadata := &keptnapi.Version{}
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			if r.Method == http.MethodPost && strings.Contains(r.RequestURI, "/events") {
 				defer r.Body.Close()
 				body, err := ioutil.ReadAll(r.Body)
@@ -93,12 +93,16 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				if returnSlo {
 					encodedSLOContent := base64.StdEncoding.EncodeToString([]byte(sloFileContent))
 					resourceURI := "slo.yaml"
-					sloResource := &keptnapi.Resource{ResourceURI: &resourceURI, ResourceContent: encodedSLOContent}
+					if strings.Contains(r.RequestURI, "?commitID=") {
+						token := strings.Split(r.RequestURI, "?commitID=")
+						metadata.Version = token[1]
+					}
+					sloResource := &keptnapi.Resource{Metadata: metadata, ResourceURI: &resourceURI, ResourceContent: encodedSLOContent}
 					marshal, _ := json.Marshal(sloResource)
 					w.WriteHeader(http.StatusOK)
 					w.Write(marshal)
 				} else if returnServiceNotFound {
-					errObj := &keptnapi.Error{Code: 404, Message: stringp("Service not found")}
+					errObj := &keptnapi.Error{Code: 404, Message: strutils.Stringp("Service not found")}
 					marshal, _ := json.Marshal(errObj)
 					w.WriteHeader(404)
 					w.Write(marshal)
@@ -128,6 +132,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		serviceNotAvailable bool
 		wantEventType       []string
 		wantErr             bool
+		metadata            *keptnapi.Version
 		ProjectSLIProvider  struct {
 			val string
 			err error
@@ -142,9 +147,14 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapi.Resource, error) {
-						return nil, nil
-					}},
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapi.Resource, error) {
+							return nil, nil
+						},
+						SetOptsFunc: func(options api.GetOptions) {
+
+						},
+					},
 				},
 			},
 			sloAvailable:  false,
@@ -215,6 +225,35 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			},
 		},
 		{
+			name: "Retrieve SLO by commitID",
+			fields: fields{
+				Event: getStartEventWithCommitId("myID"),
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+				},
+			},
+			sloAvailable:   true,
+			sloFileContent: "spec_version: '0.1.0'\nfilter:\n  handler: \"ItemsController.addToCart\"\ncomparison:\n  compare_with: \"single_result\"\n  include_result_with_score: \"pass\"\n  number_of_comparison_results: 1\n  aggregate_function: avg\nobjectives:\n  - sli: request_latency_p95\n    warning:     \n      - criteria: \n          - \"<=800\"",
+			wantEventType:  []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName)},
+			wantErr:        false,
+			metadata:       &keptnapi.Version{Version: "myID"},
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: " ",
+				err: errors.New(""),
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "default-sli-provider",
+				err: nil,
+			},
+		},
+		{
 			name: "Error during SLO file parsing - send finished event with error",
 			fields: fields{
 				Event: getStartEvaluationEvent(),
@@ -266,13 +305,16 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			if err := eh.HandleEvent(ctx); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
 			receivedEvents := []string{}
 			receivedExpected := 0
 			for {
 				select {
 				case msg := <-ch:
 					t.Logf("Received event type: %v", msg)
+					if msg == keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName) {
+						require.Equal(t, tt.metadata, metadata)
+						metadata = &keptnapi.Version{}
+					}
 					receivedEvents = append(receivedEvents, msg)
 
 					// check if all expected events have been received
@@ -284,6 +326,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 								break
 							}
 						}
+
 						if found {
 							receivedExpected = receivedExpected + 1
 							break
@@ -311,8 +354,11 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 					t.Errorf("Expected messages did not make it to the receiver")
 					t.Errorf("HandleEvent() sent event type = %v, wantEventType %v", receivedEvents, tt.wantEventType)
 					return
+
 				}
+
 			}
+
 		})
 	}
 }
@@ -347,10 +393,6 @@ func getStartEvaluationEvent() cloudevents.Event {
   }`),
 		DataBase64: false,
 	}
-}
-
-func stringp(s string) *string {
-	return &s
 }
 
 func Test_getEvaluationTimestamps(t *testing.T) {

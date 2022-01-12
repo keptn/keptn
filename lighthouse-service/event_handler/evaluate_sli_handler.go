@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/cloudevents/sdk-go/v2/types"
 	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
@@ -52,7 +53,10 @@ type EvaluateSLIHandler struct {
 func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 	e := &keptnv2.GetSLIFinishedEventData{}
 	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+	var commitID string
+	extensions := eh.Event.Context.GetExtensions()
+	shkeptncontext, _ = types.ToString(extensions["shkeptncontext"])
+	commitID, _ = types.ToString(extensions["gitcommitid"])
 
 	err := eh.Event.DataAs(e)
 
@@ -62,21 +66,18 @@ func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 
-	options := configureFileRetrieverOptions(eh.Event)
-	eh.SLOFileRetriever.ResourceHandler.SetOpts(options)
-
 	val := ctx.Value(GracefulShutdownKey)
 	if val != nil {
 		if wg, ok := val.(*sync.WaitGroup); ok {
 			wg.Add(1)
 		}
 	}
-	go eh.processGetSliFinishedEvent(ctx, shkeptncontext, e)
+	go eh.processGetSliFinishedEvent(ctx, shkeptncontext, commitID, e)
 
 	return nil
 }
 
-func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
+func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, shkeptncontext string, commitID string, e *keptnv2.GetSLIFinishedEventData) error {
 
 	defer func() {
 		val := ctx.Value(GracefulShutdownKey)
@@ -132,6 +133,9 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	}
 
 	// compare the results based on the evaluation strategy
+	eh.SLOFileRetriever.ResourceHandler.SetOpts(keptnapi.GetOptions{
+		CommitID: commitID,
+	})
 	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
@@ -250,6 +251,9 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
 	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)])
 	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
+
+	performResourceServiceTest(t, projectName, serviceName)
+
 }
 
 func performEvaluationSequence(t *testing.T, projectName string, serviceName string) (string, *models.KeptnContextExtendedCE) {
@@ -279,6 +283,118 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 	cloudEvent := keptnv2.ToCloudEvent(*getSLITriggeredEvent)
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
+
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// send finished event with result=fail
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.GetSLIFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status: keptnv2.StatusSucceeded,
+			Result: keptnv2.ResultPass,
+		},
+		GetSLI: keptnv2.GetSLIFinished{
+			Start: getSLIPayload.GetSLI.Start,
+			End:   getSLIPayload.GetSLI.End,
+			IndicatorValues: []*keptnv2.SLIResult{
+				{
+					Metric:  "response_time_p95",
+					Value:   200,
+					Success: true,
+					Message: "",
+				},
+				{
+					Metric:  "throughput",
+					Value:   200,
+					Success: true,
+					Message: "",
+				},
+				{
+					Metric:  "error_rate",
+					Value:   0,
+					Success: true,
+					Message: "",
+				},
+			},
+		},
+	}, source)
+	require.Nil(t, err)
+
+	// wait for the evaluation.finished event to be available and evaluate it
+	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if evaluation.finished event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		evaluationFinishedEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+	return keptnContext, evaluationFinishedEvent
+}
+
+func performResourceServiceTest(t *testing.T, projectName string, serviceName string) (string, *models.KeptnContextExtendedCE) {
+
+	t.Log("Storing new slo file")
+	resp, err := ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
+		Resources: []*models.Resource{
+			{
+				ResourceContent: qualityGatesSLOFileContent,
+				ResourceURI:     strutils.Stringp("slo.yaml"),
+			},
+		},
+	}, 3)
+	require.Nil(t, err)
+	require.Equal(t, 201, resp.Response().StatusCode)
+
+	t.Logf("Received response %s", resp.String())
+
+	response := struct {
+		CommitID string `json:"commitID"`
+	}{}
+	resp.ToJSON(&response)
+	t.Log("Commit id for SLO will be : ", response.CommitID)
+
+	keptnContext := "my-context"
+	source := "golang-test"
+
+	TriggeredEvent := models.KeptnContextExtendedCE{}
+	TriggeredEvent.Shkeptncontext = keptnContext
+	TriggeredEvent.Source = strutils.Stringp("fakeshipyard")
+	TriggeredEvent.Data = &keptnv2.EvaluationTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Service: serviceName,
+			Stage:   "hardening",
+		},
+	}
+	cloudEvent := keptnv2.ToCloudEvent(TriggeredEvent)
+	cloudEvent.SetExtension("gitcommitid", response.CommitID)
+
+	t.Log("sent evaluation.triggered")
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+
+	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if get-sli.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getSLITriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+	t.Log("got SLI triggered event : \n", getSLITriggeredEvent)
+	require.Equal(t, getSLITriggeredEvent.Gitcommitid, response.CommitID)
+
+	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
+	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
+	require.Nil(t, err)
+	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
+	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
+	require.NotEmpty(t, getSLIPayload.GetSLI.End)
 
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)

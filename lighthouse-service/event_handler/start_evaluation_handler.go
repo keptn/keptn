@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	logger "github.com/sirupsen/logrus"
 	"net/url"
@@ -23,7 +24,10 @@ type StartEvaluationHandler struct {
 
 func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	var keptnContext string
+	var commitID string
+
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
+	_ = eh.Event.ExtensionAs("gitcommitid", &commitID)
 
 	e := &keptnv2.EvaluationTriggeredEventData{}
 	// setup SLOFileRetriver options
@@ -33,9 +37,6 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 		logger.Error("Could not parse event payload: " + err.Error())
 		return err
 	}
-
-	opts := configureFileRetrieverOptions(eh.Event)
-	eh.SLOFileRetriever.ResourceHandler.SetOpts(opts)
 
 	startedEvent := keptnv2.EvaluationStartedEventData{
 		EventData: e.EventData,
@@ -60,13 +61,13 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 			wg.Add(1)
 		}
 	}
-	go eh.sendGetSliCloudEvent(ctx, keptnContext, e, evaluationStartTimestamp, evaluationEndTimestamp)
+	go eh.sendGetSliCloudEvent(ctx, keptnContext, commitID, e, evaluationStartTimestamp, evaluationEndTimestamp)
 
 	return nil
 }
 
 // fetch SLO and send the internal get-sli event
-func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
+func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, commitID string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
 
 	defer func() {
 		logger.Info("Terminating Evaluate-SLI handler")
@@ -83,6 +84,9 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	var filters = []*keptnv2.SLIFilter{}
 
 	// collect objectives from SLO file
+	eh.SLOFileRetriever.ResourceHandler.SetOpts(keptnapi.GetOptions{
+		CommitID: commitID,
+	})
 	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err == nil && objectives != nil {
 		logger.Info("SLO file found")
@@ -150,7 +154,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	}
 	// send a new event to trigger the SLI retrieval
 	logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
+	err = eh.sendInternalGetSLIEvent(keptnContext, commitID, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
 	return nil
 }
 
@@ -197,7 +201,7 @@ func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, s
 	return "", "", errors.New("evaluation.triggered event does not contain evaluation timeframe")
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, commitID string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
 	source, _ := url.Parse("lighthouse-service")
 
 	getSLITriggeredEventData := keptnv2.GetSLITriggeredEventData{
@@ -225,6 +229,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetExtension("gitcommitid", commitID)
 	event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
 
 	logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
