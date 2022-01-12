@@ -1,0 +1,25 @@
+:root {
+  --dt-theme-main-default-color: #006bb8;
+  --dt-theme-main-hover-color: #0058A8;
+  --dt-theme-main-active-color: #004EA0;
+  --dt-theme-main-background-color: #e1f7f9;
+  --dt-warning-default-color: #c9a000;
+  --dt-warning-hover-color: #ab8300;
+  --dt-warning-active-color: #8e6500;
+  --dt-error-default-color: #dc172a;
+  --dt-error-hover-color: #c41425;
+  --dt-error-active-color: #ab0c17;
+  --dt-recovered-default-color: #3f962a;
+  --dt-recovered-hover-color: #1f7e1e;
+  --dt-recovered-active-color: #006613;
+  --dt-neutral-default-color: #6d6d6d;
+  --dt-neutral-hover-color: #454646;
+  --dt-neutral-active-color: #353535;
+  --dt-cta-default-color: #5ead35;
+  --dt-cta-hover-color: #3f962a;
+  --dt-cta-active-color: #1f7e1e;
+  --dt-critical-default-color: #ab0c17;
+  --dt-critical-hover-color: #93060e;
+  --dt-critical-active-color: #7a0004;
+  --dt-critical-background-color: #f9acaf;
+}
