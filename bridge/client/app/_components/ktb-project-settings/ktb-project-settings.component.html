@@ -70,7 +70,8 @@
   <dt-confirmation-dialog-state name="unsaved">
     <p [textContent]="message"></p>
     <dt-confirmation-dialog-actions>
-      <button dt-button variant="secondary" (click)="reset()">Discard changes</button>
+      <button dt-button variant="secondary" (click)="reject()">Stay</button>
+      <button dt-button variant="secondary" (click)="reset()">Discard changes and leave page</button>
       <button dt-button [disabled]="isProjectFormInvalid()" (click)="saveAll()">Save changes</button>
     </dt-confirmation-dialog-actions>
   </dt-confirmation-dialog-state>
