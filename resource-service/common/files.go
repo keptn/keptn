@@ -108,6 +108,7 @@ func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 		if !fw.FileExists(chartDir) {
 			return nil, errors2.ErrResourceNotFound
 		}
+		// also check if the directory is empty
 		isEmpty, err := IsEmpty(chartDir)
 		if err != nil {
 			return nil, fmt.Errorf("could not check directory content: %w", err)
