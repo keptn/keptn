@@ -74,7 +74,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		// sign out
 		if *authParams.ssoLogout {
 			store := auth2.NewLocalFileTokenStore()
-			err := store.DeleteToken()
+			err := store.Reset()
 			if err != nil {
 				return err
 			}
@@ -83,12 +83,8 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 
 		// sign in
 		if *authParams.sso {
-			oauthConfig, err := auth2.GetOauthConfig(internal.PublicDiscovery)
-			if err != nil {
-				return err
-			}
-			oauth := auth2.NewOauthAuthenticator(oauthConfig, auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
-			err = oauth.Auth()
+			oauth := auth2.NewOauthAuthenticator(internal.PublicDiscovery, auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
+			err := oauth.Auth()
 			if err != nil {
 				return err
 			}

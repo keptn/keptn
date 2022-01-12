@@ -5,14 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/oauth2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
 
-func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
+func TestOauthAuthenticator_Auth_StoresTokenAndDiscoveryInfoLocally(t *testing.T) {
 	server, serverCLoser := setupMockOAuthServer()
 	defer serverCLoser()
 
@@ -25,12 +24,11 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 		},
 	}
 
-	config, _ := GetOauthConfig(discovery)
 	tokenStore := &TokenStoreMock{}
 	browser := &BrowserMock{
 		openFn: func(string) error { return nil },
 	}
-	authenticator := NewOauthAuthenticator(config, tokenStore, browser)
+	authenticator := NewOauthAuthenticator(discovery, tokenStore, browser)
 	go func() {
 		err := authenticator.Auth()
 		assert.Nil(t, err)
@@ -42,21 +40,20 @@ func TestOauthAuthenticator_Auth_StoresTokenInTokenStore(t *testing.T) {
 
 	assert.Eventuallyf(t, func() bool {
 		token, _ := tokenStore.GetToken()
-		return token != nil && token.AccessToken == "mocked-token"
+		tokenDiscovery, _ := tokenStore.GetTokenDiscovery()
+		return token != nil && token.AccessToken == "mocked-token" && tokenDiscovery != nil
 	}, 5*time.Second, 1*time.Second, "")
 }
 
-func TestOauthAuthenticator_Auth1(t *testing.T) {
+func TestOauthAuthenticator_Auth(t *testing.T) {
 	discovery := &OauthDiscoveryMock{
 		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
 			return &OauthDiscoveryResult{}, nil
 		},
 	}
 
-	config, _ := GetOauthConfig(discovery)
-
 	type fields struct {
-		config     *oauth2.Config
+		discovery  OauthLocationGetter
 		tokenStore TokenStore
 		browser    URLOpener
 	}
@@ -66,9 +63,14 @@ func TestOauthAuthenticator_Auth1(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{"open browser fails", fields{
-			config: config,
+			discovery: discovery,
 			browser: &BrowserMock{
 				openFn: func(string) error { return errors.New("NOPE") },
+			},
+			tokenStore: &TokenStoreMock{
+				getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					return &OauthDiscoveryResult{}, nil
+				},
 			},
 		}, assert.Error,
 		},
@@ -76,18 +78,24 @@ func TestOauthAuthenticator_Auth1(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &OauthAuthenticator{
-				config:     tt.fields.config,
+				discovery:  tt.fields.discovery,
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
-			tt.wantErr(t, a.Auth(), fmt.Sprintf("Auth()"))
+			tt.wantErr(t, a.Auth(), "Auth()")
 		})
 	}
 }
 
 func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
+	discovery := &OauthDiscoveryMock{
+		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
+			return &OauthDiscoveryResult{}, nil
+		},
+	}
+
 	type fields struct {
-		config     *oauth2.Config
+		discovery  OauthLocationGetter
 		tokenStore TokenStore
 		browser    URLOpener
 	}
@@ -101,12 +109,12 @@ func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 		wantClient assert.ValueAssertionFunc
 		wantErr    assert.ErrorAssertionFunc
 	}{
-		{"", fields{config: &oauth2.Config{}}, args{context.TODO()}, assert.NotNil, assert.NoError},
+		{"", fields{discovery: discovery}, args{context.TODO()}, assert.NotNil, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &OauthAuthenticator{
-				config:     tt.fields.config,
+				discovery:  tt.fields.discovery,
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
