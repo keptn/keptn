@@ -5,10 +5,9 @@ import (
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	auth2 "github.com/keptn/keptn/cli/internal/auth"
 	"net/http"
-	"time"
 )
 
-var PublicDiscovery = auth2.NewOauthDiscovery(&http.Client{}, "https://sso-dev.dynatracelabs.com/.well-known/openid-configuration", 10*time.Second)
+var PublicDiscovery = auth2.NewOauthDiscovery(&http.Client{})
 
 // APIProvider is used to get a handle to the Keptn API clients
 var APIProvider = getAPISet

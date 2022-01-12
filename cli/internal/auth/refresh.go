@@ -22,7 +22,7 @@ type NotifyRefreshTokenSource struct {
 func (s *NotifyRefreshTokenSource) Token() (*oauth2.Token, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	t, err := s.tokenStore.GetToken()
+	t, err := s.tokenStore.GetTokenInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -34,5 +34,5 @@ func (s *NotifyRefreshTokenSource) Token() (*oauth2.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return t, s.tokenStore.StoreToken(t)
+	return t, s.tokenStore.StoreTokenInfo(t)
 }

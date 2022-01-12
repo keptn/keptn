@@ -24,7 +24,7 @@ type ClosingRedirectHandler struct {
 	oauthConfig  *oauth2.Config
 }
 
-// Handle openc a server at port 3000 and performs the exchange of the authorization code into an access token when the
+// Handle opens a server at port 3000 and performs the exchange of the authorization code into an access token when the
 // user was redirect to the local server
 // It returns the obtained oauth2 token or an error
 func (r *ClosingRedirectHandler) Handle() (*oauth2.Token, error) {

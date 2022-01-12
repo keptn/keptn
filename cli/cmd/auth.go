@@ -5,17 +5,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	auth2 "github.com/keptn/keptn/cli/internal/auth"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +27,8 @@ type authCmdParams struct {
 	skipNamespaceListing *bool
 	sso                  *bool
 	ssoLogout            *bool
+	ssoDiscovery         *string
+	ssoClientID          *string
 }
 
 type smartKeptnAuthParams struct {
@@ -74,7 +75,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		// sign out
 		if *authParams.ssoLogout {
 			store := auth2.NewLocalFileTokenStore()
-			err := store.Reset()
+			err := store.Wipe()
 			if err != nil {
 				return err
 			}
@@ -83,8 +84,14 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 
 		// sign in
 		if *authParams.sso {
-			oauth := auth2.NewOauthAuthenticator(internal.PublicDiscovery, auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
-			err := oauth.Auth()
+			if *authParams.ssoDiscovery == "" {
+				return fmt.Errorf("Unable to login using SSO: No OAuth Discovery URL provided")
+			}
+			if *authParams.ssoClientID == "" {
+				return fmt.Errorf("Unable to login usin SSO: No client ID provided")
+			}
+			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileTokenStore(), auth2.NewBrowser())
+			err := oauth.Auth(*authParams.ssoDiscovery, *authParams.ssoClientID)
 			if err != nil {
 				return err
 			}
@@ -119,7 +126,9 @@ func init() {
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
 	authParams.sso = authCmd.Flags().Bool("sso", false, "Use single sign on")
-	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable signgle sign on access")
+	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable single sign on access")
+	authParams.ssoDiscovery = authCmd.Flags().String("sso-discovery", "", "Well known discovery URL used for SSO")
+	authParams.ssoClientID = authCmd.Flags().String("sso-client-id", "", "Oauth Client ID used for SSO")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")

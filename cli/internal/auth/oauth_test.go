@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +17,7 @@ func TestOauthAuthenticator_Auth_StoresTokenAndDiscoveryInfoLocally(t *testing.T
 	defer serverCLoser()
 
 	discovery := &OauthDiscoveryMock{
-		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
+		discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
 			return &OauthDiscoveryResult{
 				AuthorizationEndpoint: server.URL + "/auth",
 				TokenEndpoint:         server.URL + "/token",
@@ -30,7 +31,7 @@ func TestOauthAuthenticator_Auth_StoresTokenAndDiscoveryInfoLocally(t *testing.T
 	}
 	authenticator := NewOauthAuthenticator(discovery, tokenStore, browser)
 	go func() {
-		err := authenticator.Auth()
+		err := authenticator.Auth("http://well-known-discovery-url.com", "clientID")
 		assert.Nil(t, err)
 	}()
 	assert.Eventuallyf(t, func() bool {
@@ -39,15 +40,15 @@ func TestOauthAuthenticator_Auth_StoresTokenAndDiscoveryInfoLocally(t *testing.T
 	}, 5*time.Second, 1*time.Second, "")
 
 	assert.Eventuallyf(t, func() bool {
-		token, _ := tokenStore.GetToken()
-		tokenDiscovery, _ := tokenStore.GetTokenDiscovery()
+		token, _ := tokenStore.GetTokenInfo()
+		tokenDiscovery, _ := tokenStore.GetDiscoveryInfo()
 		return token != nil && token.AccessToken == "mocked-token" && tokenDiscovery != nil
 	}, 5*time.Second, 1*time.Second, "")
 }
 
 func TestOauthAuthenticator_Auth(t *testing.T) {
 	discovery := &OauthDiscoveryMock{
-		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
+		discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
 			return &OauthDiscoveryResult{}, nil
 		},
 	}
@@ -62,17 +63,27 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"open browser fails", fields{
-			discovery: discovery,
-			browser: &BrowserMock{
-				openFn: func(string) error { return errors.New("NOPE") },
-			},
-			tokenStore: &TokenStoreMock{
-				getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
-					return &OauthDiscoveryResult{}, nil
+		{"Auth() - discovery fails",
+			fields{
+				discovery: &OauthDiscoveryMock{
+					discoverFn: func(context.Context, string) (*OauthDiscoveryResult, error) {
+						return nil, fmt.Errorf("disocvery failed ")
+					},
 				},
-			},
-		}, assert.Error,
+			}, assert.Error,
+		},
+		{"Auth() - open browser fails",
+			fields{
+				discovery: discovery,
+				browser: &BrowserMock{
+					openFn: func(string) error { return errors.New("NOPE") },
+				},
+				tokenStore: &TokenStoreMock{
+					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
+			}, assert.Error,
 		},
 	}
 	for _, tt := range tests {
@@ -82,14 +93,14 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
-			tt.wantErr(t, a.Auth(), "Auth()")
+			tt.wantErr(t, a.Auth("http://well-known-discovery-url.com", "clientID"), "Auth()")
 		})
 	}
 }
 
 func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 	discovery := &OauthDiscoveryMock{
-		discoverFn: func(ctx context.Context) (*OauthDiscoveryResult, error) {
+		discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
 			return &OauthDiscoveryResult{}, nil
 		},
 	}
@@ -109,7 +120,38 @@ func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 		wantClient assert.ValueAssertionFunc
 		wantErr    assert.ErrorAssertionFunc
 	}{
-		{"", fields{discovery: discovery}, args{context.TODO()}, assert.NotNil, assert.NoError},
+		{"GetOauthClient - no persisted oauth info",
+			fields{
+				discovery: discovery,
+				tokenStore: &TokenStoreMock{
+					getOauthInfoFn: func() (*OauthInfo, error) {
+						return nil, fmt.Errorf("not found")
+					},
+				},
+			},
+			args{
+				context.TODO(),
+			},
+			assert.Nil,
+			assert.Error},
+		{"GetOauthClient - success",
+			fields{
+				discovery: discovery,
+				tokenStore: &TokenStoreMock{
+					getOauthInfoFn: func() (*OauthInfo, error) {
+						return &OauthInfo{
+							DiscoveryInfo: &OauthDiscoveryResult{},
+							ClientValues:  &OauthClientValues{},
+							Token:         &oauth2.Token{},
+						}, nil
+					},
+				},
+			},
+			args{
+				context.TODO(),
+			},
+			assert.NotNil,
+			assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

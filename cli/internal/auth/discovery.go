@@ -13,15 +13,13 @@ import (
 type OauthLocationGetter interface {
 	// Discover is responsible for determining the parameters used for an oauth flow
 	// and returns them as a OauthDiscoveryResult
-	Discover(ctx context.Context) (*OauthDiscoveryResult, error)
+	Discover(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error)
 }
 
 // NewOauthDiscovery creates a new OauthDiscovery
-func NewOauthDiscovery(client HTTPClient, discoveryURL string, timeout time.Duration) *OauthDiscovery {
+func NewOauthDiscovery(client HTTPClient) *OauthDiscovery {
 	return &OauthDiscovery{
-		c:            client,
-		discoveryURL: discoveryURL,
-		timeout:      timeout,
+		c: client,
 	}
 }
 
@@ -42,15 +40,13 @@ type OauthDiscoveryResult struct {
 // OauthDiscovery is an implementation of OauthLocationGetter which calls
 // a known URL to get the parameters
 type OauthDiscovery struct {
-	c            HTTPClient
-	discoveryURL string
-	timeout      time.Duration
+	c HTTPClient
 }
 
-func (d OauthDiscovery) Discover(ctx context.Context) (*OauthDiscoveryResult, error) {
-	ctx, cancel := context.WithTimeout(ctx, d.timeout)
+func (d OauthDiscovery) Discover(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.discoveryURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, discoveryURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -77,20 +73,20 @@ type StaticOauthDiscovery struct {
 
 // Discover tries to determine the parameters used for an oauth flow
 // and returns them as a OauthDiscoveryResult
-func (d StaticOauthDiscovery) Discover(ctx context.Context) (*OauthDiscoveryResult, error) {
+func (d StaticOauthDiscovery) Discover(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
 	return d.DiscoveryValues, nil
 }
 
 // OauthDiscoveryMock is an implementation of OauthLocationGetter usable
 // as a mock implementation in tests
 type OauthDiscoveryMock struct {
-	discoverFn func(context.Context) (*OauthDiscoveryResult, error)
+	discoverFn func(context.Context, string) (*OauthDiscoveryResult, error)
 }
 
 // Discover calls the mocked function of the OauthDiscoveryMock
-func (o *OauthDiscoveryMock) Discover(ctx context.Context) (*OauthDiscoveryResult, error) {
+func (o *OauthDiscoveryMock) Discover(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
 	if o != nil && o.discoverFn != nil {
-		return o.discoverFn(ctx)
+		return o.discoverFn(ctx, discoveryURL)
 	}
 	return &OauthDiscoveryResult{}, nil
 }

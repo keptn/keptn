@@ -9,7 +9,11 @@ import (
 	"strings"
 )
 
-const loginSuccessHTML = `<p><strong>Login successful!</strong></p>`
+const (
+	loginSuccessHTML = `<p><strong>Login successful!</strong></p>`
+	redirectURL      = "http://localhost:3000/oauth/redirect"
+	openIDScope      = "openid"
+)
 
 // Authenticator is responsible for authenticate the user using SSO/Oauth2
 type Authenticator interface {
@@ -34,28 +38,20 @@ func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore TokenStore,
 }
 
 // Auth tries to start the Oauth2 Authorization Code Flow
-func (a *OauthAuthenticator) Auth() error {
-	discoveryInfo, err := a.tokenStore.GetTokenDiscovery()
+func (a *OauthAuthenticator) Auth(discoveryURL, clientID string) error {
+	discoveryInfo, err := a.discovery.Discover(context.TODO(), discoveryURL)
 	if err != nil {
 		return err
 	}
-	if discoveryInfo == nil {
-		if discoveryInfo, err = a.discovery.Discover(context.TODO()); err != nil {
-			return err
-		}
-		if err := a.tokenStore.StoreTokenDiscovery(discoveryInfo); err != nil {
-			return err
-		}
-	}
 
 	config := &oauth2.Config{
-		ClientID: "dt0s03.cloudautomation-keptn-local",
-		Scopes:   []string{"openid"},
+		ClientID: clientID,
+		Scopes:   []string{openIDScope},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: "http://localhost:3000/oauth/redirect",
+		RedirectURL: redirectURL,
 	}
 
 	codeVerifier, err := GenerateCodeVerifier()
@@ -66,45 +62,44 @@ func (a *OauthAuthenticator) Auth() error {
 	codeChallenge := strings.TrimRight(base64.URLEncoding.EncodeToString(sum[:]), "=")
 
 	authURL := config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", codeChallenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"))
-	err = a.browser.Open(authURL)
-	if err != nil {
+	if err := a.browser.Open(authURL); err != nil {
 		return err
 	}
 
-	redirectHandler := ClosingRedirectHandler{
-		codeVerifier: codeVerifier,
-		oauthConfig:  config,
-	}
+	redirectHandler := ClosingRedirectHandler{codeVerifier: codeVerifier, oauthConfig: config}
 
 	token, err := redirectHandler.Handle()
 	if err != nil {
 		return err
 	}
 
-	err = a.tokenStore.StoreToken(token)
-	if err != nil {
-		return err
+	oauthInfo := &OauthInfo{
+		DiscoveryInfo: discoveryInfo,
+		ClientValues: &OauthClientValues{
+			OauthDiscoveryURL: discoveryURL,
+			OauthClientID:     clientID,
+		},
+		Token: token,
 	}
-
-	return nil
+	return a.tokenStore.StoreOauthInfo(oauthInfo)
 }
 
-// GetOauthClient will eventually return an already ready to use http client which is configuered to use
-// the correct access token
+// GetOauthClient will eventually return an already ready to use http client which is configured to use
+// a OAUth Access Token
 func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, error) {
-	result, err := a.discovery.Discover(ctx)
+	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
 		return nil, err
 	}
 
 	config := &oauth2.Config{
-		ClientID: "dt0s03.cloudautomation-keptn-local",
-		Scopes:   []string{"openid"},
+		ClientID: oauthInfo.ClientValues.OauthClientID,
+		Scopes:   []string{openIDScope},
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  result.AuthorizationEndpoint,
-			TokenURL: result.TokenEndpoint,
+			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
+			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: "http://localhost:3000/oauth/redirect",
+		RedirectURL: redirectURL,
 	}
 	nrts := &NotifyRefreshTokenSource{
 		config:     config,
@@ -113,22 +108,8 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 	return oauth2.NewClient(ctx, nrts), nil
 }
 
-//// GetOauthConfig uses a given OauthLocationGetter to determine the parameters
-//// for the Oauth flow
-//func GetOauthConfig(discovery OauthLocationGetter) (*oauth2.Config, *OauthDiscoveryResult, error) {
-//	result, err := discovery.Discover(context.TODO())
-//	if err != nil {
-//		return nil, nil, err
-//	}
-//	oauthConfig := &oauth2.Config{
-//		ClientID: "dt0s03.cloudautomation-keptn-local",
-//		Scopes:   []string{"openid"},
-//		Endpoint: oauth2.Endpoint{
-//			AuthURL:  result.AuthorizationEndpoint,
-//			TokenURL: result.TokenEndpoint,
-//		},
-//		RedirectURL: "http://localhost:3000/oauth/redirect",
-//	}
-//
-//	return oauthConfig, result, nil
-//}
+// OauthClientValues are values set by the user when performing SSO
+type OauthClientValues struct {
+	OauthDiscoveryURL string `json:"oauth_discovery_url"`
+	OauthClientID     string `json:"oauth_client_id"`
+}
