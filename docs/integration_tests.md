@@ -2,19 +2,19 @@
 
 ## Structure of Integration Tests
 
-The Integration Tests and their resources are located under `/test` directory in this repository. For running the Integration Tests, there are two main directories, we will focus on:
+The Integration Tests and their resources are located under the `/test` directory in this repository. For running the Integration Tests, there are two main directories, we will focus on:
 * `/test/assets` -> directory containing resources and scripts, which are used during the run of the Integration Tests
 * `/test/go-tests` -> Integration Tests and testsuites
 
-Integration Tests are organized into four main testsuites (testsuite files have `testsuite_` prefixes), where every testsuite consists of tests which are ran on a specific Kubernetes platform:
+Integration Tests are organized into four main testsuites (testsuite files have `testsuite_` prefixes), where every testsuite consists of tests that are run on a specific Kubernetes platform:
 * GKE
 * K3D
 * K3S
 * Minishift
 
-These testsuites are ran in parrallel during pipeline execution on Github.
+These testsuites are run in parallel during pipeline execution on Github.
 
-Each testsuite consists of one or more tests, which are actually a Go functions executed in a testing context. These functions (tests) are stored in files with `test_` prefixes. Also, each test can be part of one or more testsuites.
+Each testsuite consists of one or more tests, which are actually Go functions executed in a testing context. These functions (tests) are stored in files with `test_` prefixes. Also, each test can be part of one or more testsuites.
 
 ### Adding a new Integration Test
 
@@ -24,24 +24,24 @@ Adding a new Integration Test consists of two steps:
 
 ## Running Integration Tests
 
-There are two possibilities to run Integration Tests on Keptn project:
+There are two possibilities to run Integration Tests:
 * running Integration Tests remotely on Github
 * running Integration Tests locally
 
 ## Run Integration Tests remotely on Github
 
 The possibility to run Integration Tests remotely is restricted to users, who are part of the Keptn project. There are two possibilities how to run Integration Tests:
-* Running Integration Tests with default context for a specific branch (code changes ouside of `/test` directory)
-* Running Integration Tests with a context from a specific branch (code changes inside of `/test` directory)
+* Running Integration Tests with the default context for a specific branch (code changes outside of the `/test` directory)
+* Running Integration Tests with a context from a specific branch (code changes inside of the `/test` directory)
 
-These two options can be also combined and currently only executions of all Integration Tests for all testsuites is supported. The execution of the Tests is fairly easy:
-1. Navigate to the `Actions` tab in `keptn/keptn` repository (https://github.com/keptn/keptn)
+These two options can be also combined and currently, only executions of all Integration Tests for all testsuites are supported. The execution of the Tests is fairly easy:
+1. Navigate to the `Actions` tab in the `keptn/keptn` repository (https://github.com/keptn/keptn)
 2. Choose `Integration Tests` from the left side menu
 3. Click on `Run Workflow`, where a dialog window will appear. 
-   Here, you need to choose the context (`Use Workflow from`) of the tests you wish to use (`master` is default). 
+   Here, you need to choose the context (`Use Workflow from`) of the tests you wish to use (`master` is the default). 
    You should use this `master` context unless you have not made any changes in the Integration Tests pipeline. 
-   Secondly you choose a branch, from which the CI build artifacts (docker images) should be used from. 
-   Here, you mostly use the branch of the code you are currently working on and want to run Integration Tests for your code changes. Please be aware, that you need to wait for the docker images to be buit before you can execute the Integartion Tests.
+   Secondly, you choose a branch, from which the CI build artifacts (docker images) should be used. 
+   Here, you mostly use the branch of the code you are currently working on and want to run Integration Tests for your code changes. Please be aware, that you need to wait for the docker images to be built before you can execute the Integartion Tests.
 
 ## Run Integration Tests locally
 
@@ -65,7 +65,7 @@ Starting and setting up K3d is easy:
 
 #### **Setup steps for Minishift (not recommended)**
 
-In case you plan to use Minishift, the following steps are necessary to get Keptn running on Minishift (1.34.3):
+In the case you plan to use Minishift, the following steps are necessary to get Keptn running on Minishift (1.34.3):
 
 1. Download and install Minishift 1.34.3 (from [https://github.com/minishift/minishift/releases](https://github.com/minishift/minishift/releases))
    for your operating system
@@ -147,7 +147,7 @@ Pre-requisites:
 1. Setup your Kubernetes cluster (see above)
 2. Install `keptn` CLI:
    ```console
-   curl -sL https://get.keptn.sh | KEPTN_VERSION=0.12.0 bash
+   curl -sL https://get.keptn.sh | bash
    ```
    **Note**: Please use the newest available Keptn version. Available versions can be found here: https://github.com/keptn/keptn/tags
 3. Install Keptn
@@ -185,7 +185,7 @@ Pre-requisites:
    ```console
    cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./...
    ```
-   **Note**: If you want to run a single test, (e.g. BackupTestore_Test), please add `_test` suffix to the test file name, so it becomes executable. Otherwise, you will be able to run only the `testsuite_*_test.go` files. For running a single test use:
+   **Note**: If you want to run a single test, (e.g. BackupTestore_Test), please add `_test` suffix to the test file name, so it becomes executable. Otherwise, you cano run only `testsuite_*_test.go` files. For running a single test use:
    ```console
    cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./... -v -run <NameOfTheTest>
    ```
