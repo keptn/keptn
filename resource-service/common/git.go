@@ -413,6 +413,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 				Username: gitContext.Credentials.User,
 				Password: gitContext.Credentials.Token,
 			},
+			Force: true,
 		}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return err
 		}

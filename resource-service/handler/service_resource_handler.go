@@ -41,7 +41,7 @@ func NewServiceResourceHandler(serviceResourceManager IResourceManager) *Service
 // @Success 201 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/resource [post]
+// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [post]
 func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -89,7 +89,7 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 // @Success 200 {object} models.GetResourcesResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/resource [get]
+// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [get]
 func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -135,7 +135,7 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/resource [put]
+// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [put]
 func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -182,7 +182,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 // @Success 200 {object} models.GetResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [get]
+// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [get]
 func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 	params := &models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -229,7 +229,7 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [put]
+// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [put]
 func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -275,7 +275,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/resource/{resourceURI} [delete]
+// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [delete]
 func (ph *ServiceResourceHandler) DeleteServiceResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
