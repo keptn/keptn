@@ -26,11 +26,16 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
 
 	e := &keptnv2.EvaluationTriggeredEventData{}
+	// setup SLOFileRetriver options
+
 	err := eh.Event.DataAs(e)
 	if err != nil {
 		logger.Error("Could not parse event payload: " + err.Error())
 		return err
 	}
+
+	opts := configureFileRetrieverOptions(eh.Event)
+	eh.SLOFileRetriever.ResourceHandler.SetOpts(opts)
 
 	startedEvent := keptnv2.EvaluationStartedEventData{
 		EventData: e.EventData,
@@ -76,10 +81,6 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
-
-	// setup SLOFileRetriver options
-	opts := configureFileRetrieverOptions(eh.Event)
-	eh.SLOFileRetriever.ResourceHandler.SetOpts(opts)
 
 	// collect objectives from SLO file
 	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)

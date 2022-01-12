@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"github.com/stretchr/testify/require"
@@ -323,7 +324,7 @@ func getStartEvaluationEvent() cloudevents.Event {
 			Source:          types.URIRef{},
 			ID:              "",
 			Time:            nil,
-			DataContentType: stringp("application/json"),
+			DataContentType: strutils.Stringp("application/json"),
 			Extensions: map[string]interface{}{
 				"shkeptncontext": "my-context",
 			},

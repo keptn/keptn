@@ -51,16 +51,19 @@ type EvaluateSLIHandler struct {
 
 func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 	e := &keptnv2.GetSLIFinishedEventData{}
-
 	var shkeptncontext string
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-	err := eh.Event.DataAs(&e)
+
+	err := eh.Event.DataAs(e)
 
 	if err != nil {
 		msg := "Could not parse event payload: " + err.Error()
 		logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
+
+	options := configureFileRetrieverOptions(eh.Event)
+	eh.SLOFileRetriever.ResourceHandler.SetOpts(options)
 
 	val := ctx.Value(GracefulShutdownKey)
 	if val != nil {
@@ -127,10 +130,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evalResult)
 	}
-
-	//setup resource handler options
-	opts := configureFileRetrieverOptions(eh.Event)
-	eh.SLOFileRetriever.ResourceHandler.SetOpts(opts)
 
 	// compare the results based on the evaluation strategy
 	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)

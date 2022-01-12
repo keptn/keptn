@@ -1,11 +1,19 @@
 package event_handler
 
 import (
-	"testing"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
-	"github.com/stretchr/testify/assert"
-
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
+	fake "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
+	"github.com/stretchr/testify/assert"
+	"reflect"
+	"testing"
 )
 
 type getSLOTestObject struct {
@@ -387,6 +395,123 @@ total_score:
 			objectives, err := parseSLO([]byte(test.SLOFileContent))
 			assert.EqualValues(t, test.ExpectedSLO, objectives)
 			assert.EqualValues(t, test.ExpectedError, err)
+		})
+	}
+}
+
+func Test_configureFileRetrieverOptions(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		event cloudevents.Event
+		want  api.GetOptions
+	}{
+		{
+			name:  "valid event",
+			event: getSEvaluationEvent(),
+			want: api.GetOptions{
+				CommitID: "1234",
+			},
+		},
+		{
+			name:  "invalid event",
+			event: cloudevents.NewEvent("23345"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := configureFileRetrieverOptions(tt.event); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("configureFileRetrieverOptions() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func getEvent() keptnv2.EvaluationTriggeredEventData {
+
+	keptnEvent := keptnapi.KeptnContextExtendedCE{
+		Contenttype:        cloudevents.ApplicationJSON,
+		ID:                 "my-event-id",
+		Shkeptncontext:     "keptnContext",
+		Shkeptnspecversion: "keptnSpecVersion",
+		Source:             strutils.Stringp("shipyard"),
+		Specversion:        "v1",
+		Triggeredid:        "triggeredID",
+		Gitcommitid:        "gitCommitID",
+		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+	}
+
+	eventScope := keptnv2.EvaluationTriggeredEventData{}
+	keptnv2.Decode(keptnEvent, eventScope)
+	return eventScope
+}
+
+func getSEvaluationEvent() cloudevents.Event {
+	return cloudevents.Event{
+		Context: &cloudevents.EventContextV1{
+			Type:            keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
+			Source:          types.URIRef{},
+			ID:              "",
+			Time:            nil,
+			DataContentType: strutils.Stringp("application/json"),
+			Extensions: map[string]interface{}{
+				"shkeptncontext": "my-context",
+				"gitcommitid":    "1234",
+			},
+		},
+		DataEncoded: []byte(`{
+    "project": "sockshop",
+    "stage": "staging",
+    "service": "carts",
+    "testStrategy": "",
+    "deploymentStrategy": "direct",
+	"evaluation": {
+		"timeframe": "5m"
+    },
+    "labels": {
+      "testid": "12345",
+      "buildnr": "build17",
+      "runby": "JohnDoe"
+    },
+    "result": "pass"
+  }`),
+		DataBase64: false,
+	}
+}
+
+func TestSLOFileRetriever_GetSLOs(t *testing.T) {
+
+	ResourceHandler := &fake.ResourceHandlerMock{
+		GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (keptnapi.Resource, error) {
+			return keptnapi.Resource{}, nil
+		},
+		SetOptsFunc: func(options api.GetOptions) {
+
+		},
+	}
+	tests := []struct {
+		name    string
+		project string
+		stage   string
+		service string
+		want    *keptn.ServiceLevelObjectives
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sr := &SLOFileRetriever{
+				ResourceHandler: ResourceHandler,
+			}
+			got, err := sr.GetSLOs(tt.project, tt.stage, tt.service)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSLOs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSLOs() got = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
