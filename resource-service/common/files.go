@@ -8,6 +8,7 @@ import (
 	archive "github.com/mholt/archiver/v3"
 	"github.com/otiai10/copy"
 	logger "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -107,6 +108,13 @@ func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 		if !fw.FileExists(chartDir) {
 			return nil, errors2.ErrResourceNotFound
 		}
+		isEmpty, err := IsEmpty(chartDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not check directory content: %w", err)
+		}
+		if isEmpty {
+			return nil, errors2.ErrResourceNotFound
+		}
 		defer func() {
 			if err := fw.DeleteFile(filename); err != nil {
 				logger.Errorf("Could not delete temporary helm chart archive: %v", err)
@@ -204,4 +212,23 @@ func IsHelmChartPath(resourcePath string) bool {
 		return resourcePathSlice[sliceLen-2] == "helm" && strings.HasSuffix(resourcePathSlice[sliceLen-1], ".tgz")
 	}
 	return false
+}
+
+func IsEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			logger.Errorf("Could not close file handle: %v", err)
+		}
+	}(f)
+
+	_, err = f.Readdirnames(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err
 }
