@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	archive "github.com/mholt/archiver/v3"
 	"github.com/otiai10/copy"
 	logger "github.com/sirupsen/logrus"
@@ -101,6 +102,20 @@ func (fw FileSystem) WriteHelmChart(path string) error {
 
 func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 	filename = filepath.Clean(filename)
+	if IsHelmChartPath(filename) {
+		chartDir := strings.Replace(filename, ".tgz", "", -1)
+		defer func() {
+			if err := fw.DeleteFile(filename); err != nil {
+				logger.Errorf("Could not delete temporary helm chart archive: %v", err)
+			}
+		}()
+		if err := archive.Archive([]string{chartDir}, filename); err != nil {
+			return nil, err
+		}
+	}
+	if !fw.FileExists(filename) {
+		return nil, errors2.ErrResourceNotFound
+	}
 	return ioutil.ReadFile(filename)
 }
 

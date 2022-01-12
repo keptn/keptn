@@ -1085,11 +1085,8 @@ func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.
 func TestResourceManager_GetResource_ProjectResource_ResourceNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.fileSystem.FileExistsFunc = func(path string) bool {
-		if strings.HasSuffix(path, "/my-service") {
-			return true
-		}
-		return false
+	fields.fileSystem.ReadFileFunc = func(filename string) ([]byte, error) {
+		return nil, errors2.ErrResourceNotFound
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
 

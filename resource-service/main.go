@@ -70,11 +70,11 @@ func main() {
 	}
 
 	credentialReader := common.NewK8sCredentialReader(kubeAPI)
-	fileWriter := common.NewFileSystem(common.GetConfigDir())
+	fileSystem := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
 
-	projectManager := handler.NewProjectManager(git, credentialReader, fileWriter)
+	projectManager := handler.NewProjectManager(git, credentialReader, fileSystem)
 	projectHandler := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectHandler)
 	projectController.Inject(apiV1)
@@ -84,22 +84,22 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	serviceManager := handler.NewServiceManager(git, credentialReader, fileWriter)
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem)
 	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)

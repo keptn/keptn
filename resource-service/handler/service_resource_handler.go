@@ -83,7 +83,7 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 // @Param	projectName					path	string	true	"The name of the project"
 // @Param	stageName					path	string	true	"The name of the stage"
 // @Param	serviceName					path	string	true	"The name of the service"
-// @Param commitID              query string false "The commit ID to be checked out"
+// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Param pageSize              query int false "The number of items to return"
 // @Param nextPageKey              query string false "Pointer to the next set of items"
 // @Success 200 {object} models.GetResourcesResponse
@@ -178,7 +178,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 // @Param	stageName					path	string	true	"The name of the stage"
 // @Param	serviceName					path	string	true	"The name of the service"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param commitID              query string false "The commit ID to be checked out"
+// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Success 200 {object} models.GetResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"

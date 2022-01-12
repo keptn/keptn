@@ -77,7 +77,7 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param	projectName			path	string	true	"The name of the project"
-// @Param commitID              query string false "The commit ID to be checked out"
+// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Param pageSize              query int false "The number of items to return"
 // @Param nextPageKey              query string false "Pointer to the next set of items"
 // @Success 200 {object} models.GetResourcesResponse
@@ -164,7 +164,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 // @Produce  json
 // @Param	projectName					path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param commitID              query string false "The commit ID to be checked out"
+// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Success 200 {object} models.GetResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
