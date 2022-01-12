@@ -212,6 +212,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
               this.projectName = projectName;
               this.dataService.loadProjects().subscribe(() => {
                 this.isCreatingProjectInProgress = false;
+                this.isProjectFormUntouched = true;
 
                 this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
                   queryParams: { created: true },
@@ -250,10 +251,14 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     );
   }
 
+  public reject(): void {
+    this.projectFormTouchedSubject.next(false);
+    this.hideNotification();
+  }
+
   public reset(): void {
     this.gitSettingsSection?.reset();
     this.projectFormTouchedSubject.next(true);
-    this.isProjectFormUntouched = true;
     this.hideNotification();
   }
 
