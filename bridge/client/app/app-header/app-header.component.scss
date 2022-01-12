@@ -3,11 +3,11 @@
 
 dt-top-bar-navigation {
   color: #fff;
-  background-color: $primary-color;
+  background-color: var(--dt-theme-main-default-color);
   height: auto;
 
   .dt-top-bar-action {
-    background-color: $primary-color;
+    background-color: var(--dt-theme-main-default-color);
   }
 
   .brand {
@@ -40,7 +40,7 @@ dt-top-bar-navigation {
     word-break: break-all;
   }
   a:hover {
-    color: lighten($primary-color, 55%);
+    color: var(--dt-theme-main-hover-color);
   }
 
   .dt-icon.error {

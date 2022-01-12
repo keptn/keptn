@@ -22,4 +22,56 @@
   --dt-critical-hover-color: #93060e;
   --dt-critical-active-color: #7a0004;
   --dt-critical-background-color: #f9acaf;
+
+  --dt-switch-bar-checked-before-background-color: var(--dt-theme-main-default-color);
+  --dt-switch-bar-checked-active-before-background: var(--dt-theme-main-active-color);
+}
+
+.dt-button {
+  --dt-button-default-color: var(--dt-theme-main-default-color);
+  --dt-button-hover-color: var(--dt-theme-main-hover-color);
+  --dt-button-active-color: var(--dt-theme-main-active-color);
+}
+
+.dt-radio-button {
+  --dt-radio-default-color: var(--dt-theme-main-default-color);
+  --dt-radio-hover-color: var(--dt-theme-main-hover-color);
+  --dt-radio-active-color: var(--dt-theme-main-active-color);
+  --dt-radio-disabled-color: #ccc;
+}
+
+.dt-filter-field-tag-value {
+  color: var(--dt-theme-main-default-color) !important;
+}
+
+.dt-select-arrow svg {
+  fill: var(--dt-theme-main-default-color) !important;
+}
+
+.dt-checkbox-container {
+  border: 2px solid var(--dt-theme-main-default-color) !important;
+}
+
+.dt-checkbox-icon svg {
+  stroke: var(--dt-theme-main-default-color) !important;
+}
+
+:hover .dt-checkbox-icon svg {
+  stroke: var(--dt-theme-main-hover-color) !important;
+}
+
+:active .dt-checkbox-icon svg {
+  stroke: var(--dt-theme-main-active-color) !important;
+}
+
+.dt-button.dt-button-nested .dt-loading-spinner-svg {
+  stroke: var(--dt-neutral-active-color) !important;
+}
+
+.dt-quick-filter-close, .dt-quick-filter-open {
+  color: var(--dt-theme-main-default-color) !important;
+}
+
+.dt-overlay-container {
+  border: 1px solid var(--dt-theme-main-default-color) !important;
 }
