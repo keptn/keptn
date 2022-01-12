@@ -300,6 +300,13 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       if ($event) {
         $event.returnValue = this.message;
       }
+
+      // @ts-ignore
+      document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
+      setTimeout(() => {
+        // @ts-ignore
+        document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.remove('shake');
+      }, 500);
     }
   }
 
