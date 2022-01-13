@@ -1,6 +1,11 @@
 <div class="user">
   <p>User: {{ user }}</p>
   <div>
-    <button (click)="logout()" dt-button>Logout</button>
+    <form (ngSubmit)="logout($event)" method="POST" [action]="formData.end_session_endpoint">
+      <input type="hidden" name="state" [value]="formData.state" />
+      <input type="hidden" name="post_logout_redirect_uri" [value]="formData.post_logout_redirect_uri" />
+      <input type="hidden" name="id_token_hint" [value]="formData.id_token_hint" />
+      <button type="submit" dt-button>Logout</button>
+    </form>
   </div>
 </div>
