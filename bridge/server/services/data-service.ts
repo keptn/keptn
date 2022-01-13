@@ -1302,16 +1302,6 @@ export class DataService {
       deployments.push({ stage: { name: stg.stageName, services: svcs } });
     }
 
-    // for (const stg of stages) {
-    //   for (const svc of stg.services) {
-    //     let image = '';
-    //     if (svc.deployedImage) {
-    //       image = svc.deployedImage.split('/').pop() ?? '';
-    //     }
-    //     deployments.push({ service: svc.serviceName, stage: stg.stageName, image });
-    //   }
-    // }
-
     return {
       deployments,
       filter: {
