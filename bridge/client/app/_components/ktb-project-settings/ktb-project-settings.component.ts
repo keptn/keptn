@@ -74,6 +74,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       if (params.projectName) {
         this.isProjectLoading = true;
         this.isCreateMode = false;
+        this.isProjectFormTouched = false;
         this.projectName = params.projectName;
 
         this.projectDeletionData = {
