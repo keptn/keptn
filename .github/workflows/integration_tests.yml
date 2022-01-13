@@ -585,7 +585,6 @@ jobs:
 
           test_outcomes=(
             "${{ steps.keptn_install.outcome }}"
-            "${{ steps.determine_keptn_endpoint.outcome }}"
           )
 
           for ((i=0; i<${#test_names[@]}; i++)); do
