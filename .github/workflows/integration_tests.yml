@@ -422,8 +422,8 @@ jobs:
           verify_deployment_in_namespace "mongo" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
 
-      - name: Authenticate Keptn CLI with API
-        id: authenticate_keptn_cli
+      - name: Determine Keptn Endpoint
+        id: determine_keptn_endpoint
         timeout-minutes: 5
         run: |
           source test/utils.sh
@@ -446,19 +446,12 @@ jobs:
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
 
-          auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
-          verify_test_step $? "Could not authenticate at Keptn API"
-
-      - name: Verify that Keptn CLI is authenticated using keptn status
-        timeout-minutes: 1
-        run: keptn status
-
       - name: Install Remote Execution Plane
         id: install_remote_execution_plane
         if: env.REMOTE_EXECUTION_PLANE == 'true'
         timeout-minutes: 5
         env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
         run: |
@@ -498,7 +491,8 @@ jobs:
         id: test_aggregated
         timeout-minutes: 60
         env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
+          DO_AUTH: "true"
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
           GOTESTSUM_FORMAT: "testname"
           GOTESTSUM_JSONFILE: ${{ env.TEST_REPORT_FOLDER }}/tests-${{ env.TEST_REPORT_FILENAME_SUFFIX }}
@@ -591,7 +585,6 @@ jobs:
 
           test_outcomes=(
             "${{ steps.keptn_install.outcome }}"
-            "${{ steps.authenticate_keptn_cli.outcome }}"
           )
 
           for ((i=0; i<${#test_names[@]}; i++)); do
