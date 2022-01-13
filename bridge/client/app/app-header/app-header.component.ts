@@ -1,7 +1,7 @@
 import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
+import { NavigationEnd, Router, ResolveEnd } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Observable, of, Subject } from 'rxjs';
 import { filter, switchMap, takeUntil } from 'rxjs/operators';
@@ -13,6 +13,7 @@ import { environment } from '../../environments/environment';
 import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
+import { DtSelectChange } from '@dynatrace/barista-components/select/src/select';
 
 @Component({
   selector: 'ktb-header',
@@ -46,7 +47,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
-      if (event instanceof RoutesRecognized) {
+      if (event instanceof ResolveEnd) {
         const pieces = event.url.split('/');
         if (pieces[1] === 'evaluation') {
           this.project$ = this.dataService.projectName.pipe(
@@ -213,6 +214,16 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   setAppFavicon(path: string): void {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
+  }
+
+  changeProject($event: DtSelectChange<string | undefined>): void {
+    this.project$ = of(undefined);
+    setTimeout(() => {
+      const urlPieces = this.router.url.split('/');
+      if (urlPieces[1] === 'project') {
+        this.project$ = this.dataService.getProject(urlPieces[2]);
+      }
+    });
   }
 
   ngOnDestroy(): void {

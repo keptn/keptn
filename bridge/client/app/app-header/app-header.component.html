@@ -12,6 +12,7 @@
         id="projectSelect"
         placeholder="Choose project"
         aria-label="Choose project"
+        (selectionChange)="changeProject($event)"
         [value]="(project$ | async)?.projectName"
       >
         <dt-option
