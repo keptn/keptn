@@ -238,6 +238,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.dataService.deleteProject(projectName).subscribe(
       () => {
         this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
+        this.isProjectFormTouched = false;
         this.router.navigate(['/', 'dashboard']);
       },
       (err) => {
@@ -263,7 +264,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public saveAll(): void {
-    this.setGitUpstream();
+    if (this.isCreateMode) {
+      this.createProject();
+    } else {
+      this.setGitUpstream();
+    }
     this.hideNotification();
   }
 
