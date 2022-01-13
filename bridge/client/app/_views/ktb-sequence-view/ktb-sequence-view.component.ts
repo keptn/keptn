@@ -1,4 +1,4 @@
-import { Component, HostBinding, Inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, HostBinding, Inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
@@ -85,6 +85,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     public dateUtil: DateUtil,
     private router: Router,
     private location: Location,
+    private changeDetectorRef_: ChangeDetectorRef,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
     if (this.initialDelayMillis === 0) {
@@ -125,6 +126,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       .subscribe((project) => {
         this.dataService.loadSequences(project);
         this.updateFilterSequence(project.sequences);
+        this.changeDetectorRef_.detectChanges();
       });
 
     AppUtils.createTimer(0, this._tracesTimerInterval)
@@ -176,6 +178,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.refreshFilterDataSource();
         // Set unfinished sequences so that the state updates can be loaded
         this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
+        // Needed for the updates to work properly
+        this.changeDetectorRef_.detectChanges();
       }
     });
   }
@@ -224,10 +228,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   private updateLatestDeployedImage(): void {
-    const latestDeployment = this.latestDeployments.find(
-      (depl) => depl.stage === this.selectedStage && depl.service === this.currentSequence?.service
-    );
-    this.currentLatestDeployedImage = latestDeployment ? latestDeployment.image : '';
+    const deployedStage = this.latestDeployments.find((depl) => depl.stage.name === this.selectedStage);
+    const deployedService = deployedStage?.stage.services.find((svc) => svc.name === this.currentSequence?.service);
+    this.currentLatestDeployedImage = deployedService?.image ?? '';
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -265,19 +268,15 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   updateFilterDataSource(metadata: ISequencesMetadata): void {
     let filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Service');
     if (filterItem) {
-      filterItem.autocomplete = metadata.filter.services.map((s) =>
-        Object.assign(
-          {},
-          {
-            name: s,
-            value: s,
-          }
-        )
-      );
+      filterItem.autocomplete = metadata.filter.services.map((s) => {
+        return { name: s, value: s };
+      });
     }
     filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Stage');
     if (filterItem) {
-      filterItem.autocomplete = metadata.filter.stages.map((s) => Object.assign({}, { name: s, value: s }));
+      filterItem.autocomplete = metadata.filter.stages.map((s) => {
+        return { name: s, value: s };
+      });
     }
     this.refreshFilterDataSource();
 
@@ -334,6 +333,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       this.location.go(routeUrl.toString());
 
       this.selectedStage = stageName;
+      this.updateLatestDeployedImage();
     }
   }
 

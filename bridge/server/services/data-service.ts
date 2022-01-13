@@ -1286,25 +1286,37 @@ export class DataService {
   public async getSequencesMetadata(projectName: string): Promise<ISequencesMetadata> {
     const res = await this.apiService.getStages(projectName);
     const stages = res.data.stages;
-    const stageNames = stages.map((stage) => stage.stageName);
-    const services = this.reduceServiceNames(stages);
+    const stageNames: string[] = [];
+    const serviceSet: Set<string> = new Set();
     const deployments: SequenceMetadataDeployment[] = [];
 
     for (const stg of stages) {
-      for (const svc of stg.services) {
-        let image = '';
-        if (svc.deployedImage) {
-          image = svc.deployedImage.split('/').pop() ?? '';
-        }
-        deployments.push({ service: svc.serviceName, stage: stg.stageName, image });
-      }
+      // stage names are used for filters
+      stageNames.push(stg.stageName);
+      const svcs = stg.services.map((svc) => {
+        // service names are used for filters
+        serviceSet.add(svc.serviceName);
+        const image = svc.deployedImage?.split('/').pop() ?? '';
+        return { name: svc.serviceName, image };
+      });
+      deployments.push({ stage: { name: stg.stageName, services: svcs } });
     }
+
+    // for (const stg of stages) {
+    //   for (const svc of stg.services) {
+    //     let image = '';
+    //     if (svc.deployedImage) {
+    //       image = svc.deployedImage.split('/').pop() ?? '';
+    //     }
+    //     deployments.push({ service: svc.serviceName, stage: stg.stageName, image });
+    //   }
+    // }
 
     return {
       deployments,
       filter: {
         stages: stageNames,
-        services,
+        services: Array.from(serviceSet),
       },
     };
   }

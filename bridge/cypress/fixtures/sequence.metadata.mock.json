@@ -1,38 +1,60 @@
 {
   "deployments": [
     {
-      "service": "carts",
-      "stage": "dev",
-      "image": "docker.io/keptnexamples/carts:v0.13.1"
+      "stage": {
+        "name": "dev",
+        "services": [
+          {
+            "name": "carts",
+            "image": "docker.io/keptnexamples/carts:v0.13.1"
+          },
+          {
+            "name": "carts-db",
+            "image": "docker.io/mongo:v4.2.2"
+          }
+        ]
+      }
     },
     {
-      "service": "carts",
-      "stage": "staging",
-      "image": "docker.io/keptnexamples/carts:v0.13.1"
+      "stage": {
+        "name": "staging",
+        "services": [
+          {
+            "name": "carts",
+            "image": "docker.io/keptnexamples/carts:v0.13.1"
+          },
+          {
+            "name": "carts-db",
+            "image": "docker.io/mongo:v4.2.2"
+          }
+        ]
+      }
     },
     {
-      "service": "carts",
-      "stage": "production",
-      "image": "docker.io/keptnexamples/carts:v0.13.1"
-    },
-    {
-      "service": "carts-db",
-      "stage": "dev",
-      "image": "docker.io/mongo:v4.2.2"
-    },
-    {
-      "service": "carts-db",
-      "stage": "staging",
-      "image": "docker.io/mongo:v4.2.2"
-    },
-    {
-      "service": "carts-db",
-      "stage": "production",
-      "image": "docker.io/mongo:v4.2.2"
+      "stage": {
+        "name": "production",
+        "services": [
+          {
+            "name": "carts",
+            "image": "docker.io/keptnexamples/carts:v0.13.1"
+          },
+          {
+            "name": "carts-db",
+            "image": "docker.io/mongo:v4.2.2"
+          }
+        ]
+      }
     }
   ],
   "filter": {
-    "stages": ["dev", "staging", "production"],
-    "services": ["carts", "carts-db"]
+    "stages": [
+      "dev",
+      "staging",
+      "production"
+    ],
+    "services": [
+      "carts",
+      "carts-db"
+    ]
   }
 }

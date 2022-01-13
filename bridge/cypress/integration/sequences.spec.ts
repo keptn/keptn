@@ -20,27 +20,15 @@ describe('Sequences', () => {
     );
   });
 
-  it('should show loading indicator when sequences are not loaded', () => {
-    let sendResponse;
-    const trigger = new Promise((resolve) => {
-      sendResponse = resolve;
-    });
-
-    cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', (request) => {
-      // eslint-disable-next-line promise/always-return
-      return trigger.then(() => {
-        request.reply({ fixture: 'sequences.sockshop' });
-      });
+  it('should show a loading indicator when sequences are not loaded', () => {
+    cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
+      delay: 2000,
+      fixture: 'sequences.sockshop',
     });
 
     cy.visit('/project/sockshop/sequence');
 
     cy.byTestId('keptn-loadingSequences').should('exist');
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    sendResponse();
-    cy.byTestId('keptn-loadingSequences').should('not.exist');
   });
 
   it('should show an empty state if no sequences are loaded', () => {
@@ -54,7 +42,7 @@ describe('Sequences', () => {
     cy.byTestId('keptn-noSequences').should('exist');
   });
 
-  it('should a list of sequences if everything is loaded', () => {
+  it('should show a list of sequences if everything is loaded', () => {
     cy.visit('/project/sockshop/sequence');
 
     cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', 4);

@@ -6,4 +6,9 @@ export interface ISequencesMetadata {
   };
 }
 
-export type SequenceMetadataDeployment = { service: string; stage: string; image: string };
+export type SequenceMetadataDeployment = {
+  stage: {
+    name: string;
+    services: { name: string; image: string }[];
+  };
+};
