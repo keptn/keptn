@@ -364,6 +364,84 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	require.Empty(t, fields.fileWriter.FileExistsCalls())
 }
 
+func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		return nil, errors.New("oops")
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Empty(t, fields.git.GetDefaultBranchCalls())
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+}
+
+func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		return []byte(""), nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Empty(t, fields.git.GetDefaultBranchCalls())
+	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+}
+
 func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 	project := models.UpdateProjectParams{
 		Project: models.Project{ProjectName: "my-project"},
@@ -454,15 +532,6 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 func TestProjectManager_DeleteProject(t *testing.T) {
 	project := "my-project"
 
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
-
 	fields := getTestProjectManagerFields()
 
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
@@ -477,284 +546,12 @@ func TestProjectManager_DeleteProject(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
-	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.fileWriter.DeleteFileCalls(), 2)
-	require.Equal(t, fields.fileWriter.DeleteFileCalls()[0].Path, common.GetProjectMetadataFilePath(project))
-	require.Equal(t, fields.fileWriter.DeleteFileCalls()[1].Path, common.GetProjectConfigPath(project))
-}
-
-func TestProjectManager_DeleteProject_CannotReadCredentials(t *testing.T) {
-	project := "my-project"
-
-	fields := getTestProjectManagerFields()
-
-	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
-		return nil, errors2.ErrMalformedCredentials
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.DeleteProject(project)
-
-	require.ErrorIs(t, err, errors2.ErrMalformedCredentials)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Empty(t, fields.git.ProjectExistsCalls())
-	require.Empty(t, fields.git.GetDefaultBranchCalls())
-	require.Empty(t, fields.git.CheckoutBranchCalls())
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-	require.Empty(t, fields.fileWriter.DeleteFileCalls())
-}
-
-func TestProjectManager_DeleteProject_ProjectDoesNotExist(t *testing.T) {
-	project := "my-project"
-
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
-
-	fields := getTestProjectManagerFields()
-
-	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
-		return false
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.DeleteProject(project)
-
-	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Empty(t, fields.git.GetDefaultBranchCalls())
-	require.Empty(t, fields.git.CheckoutBranchCalls())
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-	require.Empty(t, fields.fileWriter.DeleteFileCalls())
-}
-
-func TestProjectManager_DeleteProject_CannotGetDefaultBranch(t *testing.T) {
-	project := "my-project"
-
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
-
-	fields := getTestProjectManagerFields()
-
-	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
-		return true
-	}
-	fields.fileWriter.FileExistsFunc = func(path string) bool {
-		return true
-	}
-	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
-		return "", errors.New("oops")
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.DeleteProject(project)
-
-	require.NotNil(t, err)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Empty(t, fields.git.CheckoutBranchCalls())
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-	require.Empty(t, fields.fileWriter.DeleteFileCalls())
-}
-
-func TestProjectManager_DeleteProject_CannotCheckoutDefaultBranch(t *testing.T) {
-	project := "my-project"
-
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
-
-	fields := getTestProjectManagerFields()
-
-	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
-		return true
-	}
-	fields.fileWriter.FileExistsFunc = func(path string) bool {
-		return true
-	}
-	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
-		return errors.New("oops")
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.DeleteProject(project)
-
-	require.NotNil(t, err)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-	require.Empty(t, fields.fileWriter.DeleteFileCalls())
-}
-
-func TestProjectManager_DeleteProject_CannotDeleteFile(t *testing.T) {
-	project := "my-project"
-
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
-
-	fields := getTestProjectManagerFields()
-
-	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
-		return true
-	}
-	fields.fileWriter.FileExistsFunc = func(path string) bool {
-		return true
-	}
-	fields.fileWriter.DeleteFileFunc = func(path string) error {
-		if strings.Contains(path, "metadata") {
-			return errors.New("oops")
-		}
-		return nil
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.DeleteProject(project)
-
-	require.NotNil(t, err)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-
 	require.Len(t, fields.fileWriter.DeleteFileCalls(), 1)
-}
-
-func TestProjectManager_DeleteProject_CannotCommit(t *testing.T) {
-	project := "my-project"
-
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
-
-	fields := getTestProjectManagerFields()
-
-	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
-		return true
-	}
-	fields.fileWriter.FileExistsFunc = func(path string) bool {
-		return true
-	}
-	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
-		return "", errors.New("oops")
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.DeleteProject(project)
-
-	require.NotNil(t, err)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
-	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.fileWriter.DeleteFileCalls(), 1)
+	require.Equal(t, fields.fileWriter.DeleteFileCalls()[0].Path, common.GetProjectConfigPath(project))
 }
 
 func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 	project := "my-project"
-
-	expectedGitContext := common_models.GitContext{
-		Project: project,
-		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
-		},
-	}
 
 	fields := getTestProjectManagerFields()
 
@@ -776,23 +573,7 @@ func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 
 	require.NotNil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
-	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.fileWriter.DeleteFileCalls(), 2)
+	require.Len(t, fields.fileWriter.DeleteFileCalls(), 1)
 }
 
 func getTestProjectManagerFields() projectManagerTestFields {
@@ -838,6 +619,9 @@ func getTestProjectManagerFields() projectManagerTestFields {
 			},
 			DeleteFileFunc: func(path string) error {
 				return nil
+			},
+			ReadFileFunc: func(filename string) ([]byte, error) {
+				return []byte("content"), nil
 			},
 		},
 	}

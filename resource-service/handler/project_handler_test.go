@@ -114,7 +114,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			wantParams: &models.CreateProjectParams{
 				Project: models.Project{ProjectName: "my-project"},
 			},
-			wantStatus: http.StatusFailedDependency,
+			wantStatus: http.StatusNotFound,
 		},
 		{
 			name: "credentials for project could not be decoded",
@@ -260,7 +260,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			wantParams: &models.UpdateProjectParams{
 				Project: models.Project{ProjectName: "my-project"},
 			},
-			wantStatus: http.StatusFailedDependency,
+			wantStatus: http.StatusNotFound,
 		},
 		{
 			name: "credentials for project could not be decoded",

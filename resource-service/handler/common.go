@@ -18,21 +18,23 @@ func OnAPIError(c *gin.Context, err error) {
 	logger.Infof("Could not complete request %s %s: %v", c.Request.Method, c.Request.RequestURI, err)
 	if errors.Is(err, errors2.ErrProjectAlreadyExists) {
 		SetConflictErrorResponse(c, "Project already exists")
-	} else if errors.Is(err, errors2.ErrStageAlreadyExists) {
+	} else if errors.Is(err, errors2.ErrStageAlreadyExists) || errors.Is(err, errors2.ErrBranchExists) {
 		SetConflictErrorResponse(c, "Stage already exists")
 	} else if errors.Is(err, errors2.ErrServiceAlreadyExists) {
 		SetConflictErrorResponse(c, "Service already exists")
 	} else if errors.Is(err, errors2.ErrInvalidGitToken) {
 		SetFailedDependencyErrorResponse(c, "Invalid git token")
-	} else if errors.Is(err, errors2.ErrRepositoryNotFound) {
+	} else if errors.Is(err, errors2.ErrRepositoryNotFound) ||
+		errors.Is(err, errors2.ErrCredentialsTokenMustNotBeEmpty) ||
+		errors.Is(err, errors2.ErrCredentialsTokenMustNotBeEmpty) {
 		SetBadRequestErrorResponse(c, "Upstream repository not found")
 	} else if errors.Is(err, errors2.ErrCredentialsNotFound) {
-		SetFailedDependencyErrorResponse(c, "Could not find credentials for upstream repository")
+		SetNotFoundErrorResponse(c, "Could not find credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrMalformedCredentials) {
 		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrProjectNotFound) {
 		SetNotFoundErrorResponse(c, "Project not found")
-	} else if errors.Is(err, errors2.ErrStageNotFound) {
+	} else if errors.Is(err, errors2.ErrStageNotFound) || errors.Is(err, errors2.ErrReferenceNotFound) {
 		SetNotFoundErrorResponse(c, "Stage not found")
 	} else if errors.Is(err, errors2.ErrServiceNotFound) {
 		SetNotFoundErrorResponse(c, "Service not found")

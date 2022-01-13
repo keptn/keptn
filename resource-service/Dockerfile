@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.16.2-alpine as builder-base
+FROM golang:1.16.13-alpine as builder-base
 
 # install additional dependencies
 RUN apk add --no-cache gcc libc-dev git
@@ -25,7 +25,7 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
-FROM golang:1.16.2 as builder-test
+FROM golang:1.16.13 as builder-test
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
@@ -102,11 +102,6 @@ EXPOSE 8080
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
-
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
-#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 RUN adduser -D nonroot -u 65532
 USER nonroot

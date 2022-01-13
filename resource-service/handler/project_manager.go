@@ -22,14 +22,14 @@ type IProjectManager interface {
 type ProjectManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
-	fileWriter       common.IFileSystem
+	fileSystem       common.IFileSystem
 }
 
 func NewProjectManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ProjectManager {
 	projectManager := &ProjectManager{
 		git:              git,
 		credentialReader: credentialReader,
-		fileWriter:       fileWriter,
+		fileSystem:       fileWriter,
 	}
 	return projectManager
 }
@@ -49,7 +49,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		Credentials: credentials,
 	}
 
-	if p.git.ProjectExists(gitContext) && p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
+	if p.git.ProjectExists(gitContext) && p.isProjectInitialized(project.ProjectName) {
 		return errors.ErrProjectAlreadyExists
 	}
 
@@ -60,7 +60,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	rollbackFunc := func() {
 		logger.Infof("Rollback: try to delete created directory for project %s", project.ProjectName)
-		if err := p.fileWriter.DeleteFile(projectDirectory); err != nil {
+		if err := p.fileSystem.DeleteFile(projectDirectory); err != nil {
 			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
 		}
 	}
@@ -73,7 +73,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	metadataString, err := yaml.Marshal(newProjectMetadata)
 
-	err = p.fileWriter.WriteFile(common.GetProjectMetadataFilePath(project.ProjectName), metadataString)
+	err = p.fileSystem.WriteFile(common.GetProjectMetadataFilePath(project.ProjectName), metadataString)
 	if err != nil {
 		rollbackFunc()
 		return fmt.Errorf("could not write metadata.yaml during creating project %s: %w", project, err)
@@ -85,6 +85,21 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		return fmt.Errorf("could not complete initial commit for project %s: %w", project.ProjectName, err)
 	}
 	return nil
+}
+
+func (p ProjectManager) isProjectInitialized(project string) bool {
+	metadataPath := common.GetProjectMetadataFilePath(project)
+	if !p.fileSystem.FileExists(metadataPath) {
+		return false
+	}
+	metadataContent, err := p.fileSystem.ReadFile(metadataPath)
+	if err != nil {
+		return false
+	}
+	if string(metadataContent) == "" {
+		return false
+	}
+	return true
 }
 
 func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error {
@@ -101,7 +116,7 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 		Credentials: credentials,
 	}
 
-	if !p.git.ProjectExists(gitContext) || !p.fileWriter.FileExists(common.GetProjectMetadataFilePath(project.ProjectName)) {
+	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
 		return errors.ErrProjectNotFound
 	}
 
@@ -122,41 +137,7 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
 
-	credentials, err := p.credentialReader.GetCredentials(projectName)
-	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, projectName, err)
-	}
-
-	gitContext := common_models.GitContext{
-		Project:     projectName,
-		Credentials: credentials,
-	}
-
-	if !p.git.ProjectExists(gitContext) || !p.fileWriter.FileExists(common.GetProjectMetadataFilePath(projectName)) {
-		return errors.ErrProjectNotFound
-	}
-
-	logger.Debugf("Deleting project %s", projectName)
-
-	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
-	if err != nil {
-		return fmt.Errorf("could not determine default branch of project %s: %w", projectName, err)
-	}
-
-	// check out the default branch to check interaction with upstream is working
-	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
-		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, projectName, err)
-	}
-
-	if err := p.fileWriter.DeleteFile(common.GetProjectMetadataFilePath(projectName)); err != nil {
-		return fmt.Errorf("could not delete metadata file of project %s: %w", projectName, err)
-	}
-
-	if _, err := p.git.StageAndCommitAll(gitContext, "deleted project metadata"); err != nil {
-		return fmt.Errorf("could not commit changes: %w", err)
-	}
-
-	if err := p.fileWriter.DeleteFile(common.GetProjectConfigPath(projectName)); err != nil {
+	if err := p.fileSystem.DeleteFile(common.GetProjectConfigPath(projectName)); err != nil {
 		return fmt.Errorf("could not delete project %s: %w", projectName, err)
 	}
 

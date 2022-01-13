@@ -12,14 +12,14 @@ require (
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6 // indirect
+	github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949 // indirect
 	// indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
+	golang.org/x/net v0.0.0-20220111093109-d55c255bac03
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.22.5
 	k8s.io/client-go v0.22.5

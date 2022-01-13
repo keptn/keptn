@@ -19,7 +19,6 @@ IMAGES=(
   "bridge2"
   "configuration-service"
   "resource-service"
-  "openshift-route-service"
   "distributor"
   "approval-service"
   "helm-service"

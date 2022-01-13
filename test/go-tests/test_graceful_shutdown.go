@@ -2,7 +2,7 @@ package go_tests
 
 import (
 	"github.com/stretchr/testify/require"
-	"path"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -66,15 +66,18 @@ spec:
 `
 
 func Test_GracefulShutdown(t *testing.T) {
-	repoLocalDir := "../assets/podtato-head"
+	repoLocalDir, err := filepath.Abs("../")
+	require.Nil(t, err)
+	t.Log("Current local dir is : ", repoLocalDir)
+
 	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
-	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
+	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz"
+	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
 
-	t.Logf("Creating a new project %s without a GIT Upstream", keptnProjectName)
+	t.Logf("Creating a new project %s", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
 	require.Nil(t, err)
 	err = CreateProject(keptnProjectName, shipyardFilePath, true)
@@ -104,7 +107,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
-	waitAndKill(t, shipyardPod, 30)
+	waitAndKill(t, shipyardPod, 35)
 
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)

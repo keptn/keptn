@@ -2,12 +2,15 @@ package handler
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
-	"github.com/keptn/keptn/resource-service/errors"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/url"
+	"time"
 )
 
 //IResourceManager provides an interface for resource CRUD operations
@@ -88,7 +91,7 @@ func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.G
 
 	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
 	if err != nil {
-		return nil, errors.ErrResourceInvalidResourceURI
+		return nil, kerrors.ErrResourceInvalidResourceURI
 	}
 
 	resourcePath := configPath + "/" + unescapedResourceName
@@ -127,7 +130,7 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 func (p ResourceManager) establishContext(project models.Project, stage *models.Stage, service *models.Service) (*common_models.GitContext, string, error) {
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
+		return nil, "", fmt.Errorf(kerrors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
@@ -136,7 +139,7 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 	}
 
 	if !p.git.ProjectExists(gitContext) {
-		return nil, "", errors.ErrProjectNotFound
+		return nil, "", kerrors.ErrProjectNotFound
 	}
 
 	var branch string
@@ -159,6 +162,9 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		configPath = common.GetProjectConfigPath(project.ProjectName)
 	} else {
 		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
+		if !p.fileSystem.FileExists(configPath) {
+			return nil, "", kerrors.ErrServiceNotFound
+		}
 	}
 	return &gitContext, configPath, nil
 }
@@ -169,9 +175,12 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	var err error
 
 	if params.GitCommitID != "" {
-		fileContent, err = p.git.GetFileRevision(*gitContext, resourcePath, params.GitCommitID, params.ResourceURI)
+		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {
+		if err := p.git.Pull(*gitContext); err != nil {
+			return nil, err
+		}
 		fileContent, err = p.fileSystem.ReadFile(resourcePath)
 		if err != nil {
 			return nil, err
@@ -197,22 +206,70 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 }
 
 func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
-	if err := p.storeResource(resourcePath, resourceContent); err != nil {
-		return nil, err
-	}
 
-	return p.stageAndCommit(gitContext, "Updated resource")
+	var resultErr error
+	var resultCommit *models.WriteResourceResponse
+	_ = retry.Retry(func() error {
+		err := p.git.Pull(*gitContext)
+		if err != nil {
+			resultErr = err
+			// return nil at this point because retry does not make sense in that case
+			return nil
+		}
+		if err := p.storeResource(resourcePath, resourceContent); err != nil {
+			resultErr = err
+			// return nil at this point because retry does not make sense in that case
+			return nil
+		}
+
+		commit, err := p.stageAndCommit(gitContext, "Updated resource")
+		if err != nil {
+			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+				return err
+			}
+			resultErr = err
+			// return nil at this point because retry does not make sense in that case
+			return nil
+		}
+		resultCommit = commit
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	return resultCommit, resultErr
 }
 
 func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
-	for _, res := range resources {
-		filePath := directory + "/" + res.ResourceURI
-		if err := p.storeResource(filePath, string(res.ResourceContent)); err != nil {
-			return nil, err
-		}
-	}
 
-	return p.stageAndCommit(gitContext, "Added resources")
+	var resultErr error
+	var resultCommit *models.WriteResourceResponse
+	_ = retry.Retry(func() error {
+		err := p.git.Pull(*gitContext)
+		if err != nil {
+			resultErr = err
+			// return nil at this point because retry does not make sense in that case
+			return nil
+		}
+		for _, res := range resources {
+			filePath := directory + "/" + res.ResourceURI
+			if err := p.storeResource(filePath, string(res.ResourceContent)); err != nil {
+				resultErr = err
+				// return nil at this point because retry does not make sense in that case
+				return nil
+			}
+		}
+
+		commit, err := p.stageAndCommit(gitContext, "Updated resource")
+		if err != nil {
+			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+				return err
+			}
+			resultErr = err
+			// return nil at this point because retry does not make sense in that case
+			return nil
+		}
+		resultCommit = commit
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	return resultCommit, resultErr
 }
 
 func (p ResourceManager) storeResource(resourcePath, resourceContent string) error {
@@ -237,6 +294,9 @@ func (p ResourceManager) stageAndCommit(gitContext *common_models.GitContext, me
 }
 
 func (p ResourceManager) deleteResource(gitContext *common_models.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {
+	if !p.fileSystem.FileExists(resourcePath) {
+		return nil, kerrors.ErrResourceNotFound
+	}
 	if err := p.fileSystem.DeleteFile(resourcePath); err != nil {
 		return nil, err
 	}

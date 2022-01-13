@@ -4,9 +4,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	archive "github.com/mholt/archiver/v3"
 	"github.com/otiai10/copy"
 	logger "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -101,11 +103,36 @@ func (fw FileSystem) WriteHelmChart(path string) error {
 
 func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 	filename = filepath.Clean(filename)
+	if IsHelmChartPath(filename) {
+		chartDir := strings.Replace(filename, ".tgz", "", -1)
+		if !fw.FileExists(chartDir) {
+			return nil, errors2.ErrResourceNotFound
+		}
+		// also check if the directory is empty
+		isEmpty, err := IsEmpty(chartDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not check directory content: %w", err)
+		}
+		if isEmpty {
+			return nil, errors2.ErrResourceNotFound
+		}
+		defer func() {
+			if err := fw.DeleteFile(filename); err != nil {
+				logger.Errorf("Could not delete temporary helm chart archive: %v", err)
+			}
+		}()
+		if err := archive.Archive([]string{chartDir}, filename); err != nil {
+			return nil, err
+		}
+	}
+	if !fw.FileExists(filename) {
+		return nil, errors2.ErrResourceNotFound
+	}
 	return ioutil.ReadFile(filename)
 }
 
 func (FileSystem) DeleteFile(path string) error {
-	var err = os.Remove(path)
+	var err = os.RemoveAll(path)
 	if err != nil {
 		return err
 	}
@@ -114,7 +141,6 @@ func (FileSystem) DeleteFile(path string) error {
 
 func (FileSystem) FileExists(path string) bool {
 	_, err := os.Stat(path)
-	// create file if not exists
 	if os.IsNotExist(err) {
 		return false
 	}
@@ -187,4 +213,23 @@ func IsHelmChartPath(resourcePath string) bool {
 		return resourcePathSlice[sliceLen-2] == "helm" && strings.HasSuffix(resourcePathSlice[sliceLen-1], ".tgz")
 	}
 	return false
+}
+
+func IsEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			logger.Errorf("Could not close file handle: %v", err)
+		}
+	}(f)
+
+	_, err = f.Readdirnames(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err
 }
