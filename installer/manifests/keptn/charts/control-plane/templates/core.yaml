@@ -654,11 +654,6 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: resource-volume
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: {{ .Values.resourceService.fsGroup | default 1001 }}
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
       volumes:
         - name: resource-volume
           emptyDir: {}
