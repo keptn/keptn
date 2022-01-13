@@ -1,31 +1,38 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PendingChangesComponent, PendingChangesGuard } from './pending-changes.guard';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 
 type NotificationState = null | 'unsaved';
 class MockComponent implements PendingChangesComponent {
-  private formUnsavedSubject = new Subject<boolean>();
-  returnValue: boolean | Observable<boolean> = true;
+  private pendingChangesSubject = new Subject<boolean>();
+  formTouched = false;
   notificationState: NotificationState = null;
 
-  formTouched(): void {
-    this.returnValue = this.formUnsavedSubject.asObservable();
+  touchForm(): void {
+    this.formTouched = true;
   }
 
   saveForm(): void {
-    this.formUnsavedSubject.next(true);
+    this.pendingChangesSubject.next(true);
+    this.hideNotification();
   }
 
   rejectChanges(): void {
-    this.formUnsavedSubject.next(false);
+    this.pendingChangesSubject.next(false);
+    this.hideNotification();
   }
 
-  canDeactivate(): boolean | Observable<boolean> {
-    return this.returnValue;
+  canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+    if (this.formTouched) {
+      this.showNotification();
+      return this.pendingChangesSubject.asObservable();
+    } else {
+      return of(true);
+    }
   }
 
-  showNotification($event?: BeforeUnloadEvent): void {
+  showNotification(): void {
     this.notificationState = 'unsaved';
   }
 
@@ -58,7 +65,7 @@ describe('PendingChangesGuard', () => {
     'will route if guarded and user accepted the dialog',
     waitForAsync(() => {
       // Mock the behavior of the GuardedComponent:
-      mockComponent.formTouched();
+      mockComponent.touchForm();
       const canDeactivate$ = <Observable<boolean>>guard.canDeactivate(mockComponent);
       canDeactivate$.subscribe((deactivate) => {
         // This is the real test!
@@ -73,7 +80,7 @@ describe('PendingChangesGuard', () => {
     'will not route if guarded and user rejected the dialog',
     waitForAsync(() => {
       // Mock the behavior of the GuardedComponent:
-      mockComponent.formTouched();
+      mockComponent.touchForm();
       const canDeactivate$ = <Observable<boolean>>guard.canDeactivate(mockComponent);
       canDeactivate$.subscribe((deactivate) => {
         // This is the real test!
