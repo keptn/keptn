@@ -203,6 +203,23 @@ jobs:
           push: ${{ matrix.config.should-push-image }}
           pull: true
 
+      - name: Write docker image digest to file
+        if: matrix.config.should-push-image
+        env:
+          IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
+          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
+        run: |
+          echo "${{ matrix.config.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
+
+      - name: Upload Digest file as artifact
+        if: matrix.config.should-push-image
+        uses: actions/upload-artifact@v2
+        env:
+          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
+        with:
+          name: image-digests
+          path: ${{ env.IMAGE_DIGEST_FILENAME }}
+
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
   ############################################################################
@@ -343,13 +360,24 @@ jobs:
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
           CLOUDSDK_REGION: "us-east1"
         run: |
-            echo "Installing GCloud CLI"
-            export OS_TYPE="linux"
-            mkdir ~/downloads
-            ./test/utils/download_and_install_gcloud.sh
-            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+          echo "Installing GCloud CLI"
+          export OS_TYPE="linux"
+          mkdir ~/downloads
+          ./test/utils/download_and_install_gcloud.sh
+          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+          gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+
+      - name: Attach docker image digests to release
+        env:
+          DIGEST_FILE: "digests.csv"
+          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+        run: |
+          for digest_file in ./dist/image-digests/digest-*.txt; do
+            cat "$digest_file" >> $DIGEST_FILE
+          done
+          
+          gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
 
   ############################################################################
   # Push Docker Images to alternative Registries
