@@ -25,6 +25,8 @@
 
   --dt-switch-bar-checked-before-background-color: var(--dt-theme-main-default-color);
   --dt-switch-bar-checked-active-before-background: var(--dt-theme-main-active-color);
+
+  --dt-icon-color: var(--dt-theme-main-default-color);
 }
 
 .dt-button {
