@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6
+	github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949
 	github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/mitchellh/copystructure v1.2.0 // indirect

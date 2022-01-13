@@ -10,12 +10,9 @@ github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XL
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 h1:pR23jlIJMXGMxljxP6QYytEsMQpPU2WT3Wjp1FWYOq0=
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209/go.mod h1:DmxtN+a7U9ktD8I0nTlI9CCrin/Tf7OdXxE3KBTjlOw=
-github.com/cloudevents/sdk-go/protocol/nats/v2 v2.6.1 h1:pwHjPZRVFn+G3ee14iPot92900Y7NrQZQ9xn41yz4Io=
-github.com/cloudevents/sdk-go/protocol/nats/v2 v2.6.1/go.mod h1:n6eZCYwrS18+CPYuauhjQUnc9+/5TrBKUx0cC5u4oOw=
 github.com/cloudevents/sdk-go/protocol/nats/v2 v2.7.0 h1:PJGjumCi9mP2HSVLkyQmrMVTQlQBdp/MidpFtp62JgM=
 github.com/cloudevents/sdk-go/protocol/nats/v2 v2.7.0/go.mod h1:70fIS6gzMmyYtVNWcOXTNMPTFbEMGg3d8Px9fmN8ghQ=
 github.com/cloudevents/sdk-go/v2 v2.5.0/go.mod h1:nlXhgFkf0uTopxmRXalyMwS2LG70cRGPrxzmjJgSG0U=
-github.com/cloudevents/sdk-go/v2 v2.6.1/go.mod h1:nlXhgFkf0uTopxmRXalyMwS2LG70cRGPrxzmjJgSG0U=
 github.com/cloudevents/sdk-go/v2 v2.7.0 h1:Pt+cOKWNG0tZZKRzuvfVsxcWArO0eq/UPKUxskyuSb8=
 github.com/cloudevents/sdk-go/v2 v2.7.0/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
@@ -73,8 +70,8 @@ github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6 h1:1TCxRG+35CA9milfzD61ZenUm0TvaOtiL18LKFCbX4Y=
-github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
+github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949 h1:RPaapqPzdP0lyREsV0nh3HpcDW1Z4A8/D2FQZ2kDSGg=
+github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.13.4 h1:0zhec2I8zGnjWcKyLl6i3gPqKANCCn5e9xmviEEeX6s=
 github.com/klauspost/compress v1.13.4/go.mod h1:8dP1Hq4DHOhN9w426knH3Rhby4rFm6D8eO+e+Dq5Gzg=
