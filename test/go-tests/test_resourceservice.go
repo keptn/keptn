@@ -83,15 +83,15 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	// Creation of objects
 	///////////////////////////////////////
 
-	t.Logf("Creating a new project %s", projectName)
-
 	t.Logf("Deleting project from previous test run %s", projectName)
 	_, err := ApiDELETERequest(configurationServiceBasePath+"/"+projectName, 3)
 	require.Nil(t, err)
 
+	t.Logf("Creating a new upstream repository for project %s", projectName)
 	_, _, err = createConfigServiceUpstreamRepo(projectName)
 	require.Nil(t, err)
 
+	t.Logf("Creating a new project %s", projectName)
 	resp, err := ApiPOSTRequest(configurationServiceBasePath, createProjectRequest, 3)
 	require.Nil(t, err)
 	require.Equal(t, 204, resp.Response().StatusCode)

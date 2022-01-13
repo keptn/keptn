@@ -79,11 +79,12 @@ function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
   return new Promise((resolve) => {
     // Regenerate session for the successful login
     req.session.regenerate(() => {
-      const userIdentifier = process.env.OAUTH_NAME_PROPERTY || 'name';
+      const userIdentifier = process.env.OAUTH_NAME_PROPERTY;
       const claims = tokenSet.claims();
       req.session.authenticated = true;
       req.session.tokenSet = tokenSet;
-      req.session.principal = (claims[userIdentifier] as string | undefined) || getUserIdentifier(claims);
+      req.session.principal =
+        (userIdentifier ? (claims[userIdentifier] as string | undefined) : undefined) || getUserIdentifier(claims);
 
       resolve();
     });
