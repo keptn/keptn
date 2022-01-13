@@ -264,7 +264,7 @@ func (ph *StageResourceHandler) UpdateStageResource(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{service}/resource/{resourceURI} [delete]
+// @Router /project/{projectName}/stage/{stageName}/resource/{resourceURI} [delete]
 func (ph *StageResourceHandler) DeleteStageResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
