@@ -3,6 +3,7 @@ package go_tests
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"os"
 	"strings"
 	"testing"
@@ -28,6 +29,11 @@ func TestMain(m *testing.M) {
 }
 
 func setup() error {
+	if _, doAuth := os.LookupEnv("DO_AUTH"); doAuth {
+		if err := authenticateKeptnCLI(); err != nil {
+			return err
+		}
+	}
 	// before executing the tests, we check whether the context of the Keptn CLI matches the one of the kubectl CLI
 	// i.e. The kubectl CLI should be connected to the cluster the Keptn CLI is currently authenticated against.
 	// this prevents unintended kubectl commands from being executed against a different cluster than the one containing the Keptn instance that should be tested
@@ -38,6 +44,26 @@ func setup() error {
 	if !match {
 		return errors.New("endpoint mismatch between CLI and kubectl detected")
 	}
+	return nil
+}
+
+func authenticateKeptnCLI() error {
+	apiToken, apiEndpoint, err := GetApiCredentials()
+	if err != nil {
+		return err
+	}
+
+	err = retry.Retry(func() error {
+		out, err := ExecuteCommand(fmt.Sprintf("keptn auth --endpoint=%s --api-token=%s", apiEndpoint, apiToken))
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(out, "Successfully authenticated") {
+			return errors.New("authentication unsuccessful")
+		}
+		return nil
+	}, retry.NumberOfRetries(10))
+
 	return nil
 }
 
