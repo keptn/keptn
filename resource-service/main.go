@@ -60,6 +60,7 @@ func main() {
 	engine.UseRawPath = true
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
+	engine.Use(handler.GracefulShutdownMiddleware(wg))
 
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
