@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, HostListener } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import {
   GitData,
@@ -41,8 +41,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
-  private projectFormTouchedSubject = new Subject<boolean>();
-  public isProjectFormUntouched: boolean | Observable<boolean> = true;
+  private pendingChangesSubject = new Subject<boolean>();
+  public isProjectFormTouched = false;
   public shipyardFile?: File;
   public gitData: GitData = {
     gitFormValid: true,
@@ -178,8 +178,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
               5000
             );
 
-            this.projectFormTouchedSubject.next(true);
-            this.isProjectFormUntouched = true;
+            this.pendingChangesSubject.next(true);
+            this.isProjectFormTouched = false;
           },
           (err) => {
             this.isGitUpstreamInProgress = false;
@@ -212,7 +212,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
               this.projectName = projectName;
               this.dataService.loadProjects().subscribe(() => {
                 this.isCreatingProjectInProgress = false;
-                this.isProjectFormUntouched = true;
+                this.isProjectFormTouched = false;
 
                 this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
                   queryParams: { created: true },
@@ -252,13 +252,13 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public reject(): void {
-    this.projectFormTouchedSubject.next(false);
+    this.pendingChangesSubject.next(false);
     this.hideNotification();
   }
 
   public reset(): void {
     this.gitSettingsSection?.reset();
-    this.projectFormTouchedSubject.next(true);
+    this.pendingChangesSubject.next(true);
     this.hideNotification();
   }
 
@@ -285,27 +285,30 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   projectFormTouched(): void {
-    this.isProjectFormUntouched = this.projectFormTouchedSubject.asObservable();
-  }
-
-  canDeactivate(): boolean | Observable<boolean> {
-    return this.isProjectFormUntouched;
+    this.isProjectFormTouched = true;
   }
 
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
-  showNotification($event?: BeforeUnloadEvent): void {
-    if (this.canDeactivate() !== true) {
-      this.unsavedDialogState = 'unsaved';
+  canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+    if (this.isProjectFormTouched) {
       if ($event) {
         $event.returnValue = this.message;
       }
-
-      document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
-      setTimeout(() => {
-        document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.remove('shake');
-      }, 500);
+      this.showNotification();
+      return this.pendingChangesSubject.asObservable();
+    } else {
+      return of(true);
     }
+  }
+
+  showNotification(): void {
+    this.unsavedDialogState = 'unsaved';
+
+    document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
+    setTimeout(() => {
+      document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.remove('shake');
+    }, 500);
   }
 
   hideNotification(): void {
