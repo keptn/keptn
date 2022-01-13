@@ -1,4 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { DataService } from '../../_services/data.service';
+import { EndSessionData } from '../../../../shared/interfaces/end-session-data';
 import { Location } from '@angular/common';
 
 @Component({
@@ -8,10 +10,28 @@ import { Location } from '@angular/common';
 })
 export class KtbUserComponent {
   @Input() user?: string;
+  public formData: EndSessionData = {
+    state: '',
+    post_logout_redirect_uri: '',
+    end_session_endpoint: '',
+    id_token_hint: '',
+  };
 
-  constructor(private readonly location: Location) {}
+  constructor(
+    private readonly dataService: DataService,
+    private readonly _changeDetectorRef: ChangeDetectorRef,
+    private readonly location: Location
+  ) {}
 
-  logout(): void {
-    window.location.href = this.location.prepareExternalUrl('/logout');
+  logout(submitEvent: { target: { submit: () => void } }): void {
+    this.dataService.logout().subscribe((response) => {
+      if (response) {
+        this.formData = response;
+        this._changeDetectorRef.detectChanges();
+        submitEvent.target.submit();
+      } else {
+        window.location.href = this.location.prepareExternalUrl('/');
+      }
+    });
   }
 }

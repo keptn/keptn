@@ -156,6 +156,7 @@ func initChecks(autoApplyNewContext bool, cm CredentialManagerInterface) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	keptnContext = cliConfig.CurrentContext
 	if cliConfig.KubeContextCheck && !GlobalCheckForContextChange {
 		getCurrentContextFromKubeConfig()
 		updatedCLIConfig, kubeConfig, err := checkForContextChange(cliConfigManager, autoApplyNewContext)
@@ -212,7 +213,6 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 
 	if cliConfig.KubeContextCheck {
 		// Setting keptnContext from ~/.keptn/config file
-		keptnContext = cliConfig.CurrentContext
 		if kubeConfigFile.CurrentContext != "" && keptnContext != kubeConfigFile.CurrentContext {
 			fmt.Printf("Kube context has been changed to %s\n", kubeConfigFile.CurrentContext)
 			if keptnContext != "" {

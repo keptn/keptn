@@ -870,7 +870,7 @@ const projectDetailsResponse = {
           },
           openRemediations: [
             {
-              problemTitle: 'Response time degradation',
+              problemTitle: 'Failure rate increase',
               stages: [
                 {
                   name: 'production',
@@ -911,6 +911,7 @@ const projectDetailsResponse = {
             service: 'carts',
             project: 'sockshop',
             time: '2021-11-04T04:51:21.557Z',
+            problemTitle: 'Failure rate increase',
             shkeptncontext: '35383737-3630-4639-b037-353138323631',
             state: 'finished',
             stages: [

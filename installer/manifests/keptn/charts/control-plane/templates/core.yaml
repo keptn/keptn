@@ -231,6 +231,19 @@ spec:
               value: "{{ .Values.bridge.oauth.enabled }}"
             - name: OAUTH_DISCOVERY
               value: "{{ .Values.bridge.oauth.discovery }}"
+            # Base URL e.g. https://example.com/
+            - name: OAUTH_BASE_URL
+              value: "{{ .Values.bridge.oauth.baseUrl }}"
+            - name: OAUTH_CLIENT_ID
+              value: "{{ .Values.bridge.oauth.clientID }}"
+            - name: OAUTH_CLIENT_SECRET
+              value: "{{ .Values.bridge.oauth.clientSecret }}"
+            # Token algorithm which is used for the ID token e.g. "RS256"
+            - name: OAUTH_ID_TOKEN_ALG
+              value: "{{ .Values.bridge.oauth.IDTokenAlg }}"
+            # User identifier property inside the ID token e.g. "name" or "email"
+            - name: OAUTH_NAME_PROPERTY
+              value: "{{ .Values.bridge.oauth.userIdentifier }}"
             - name: SECURE_COOKIE
               value: "{{ .Values.bridge.oauth.secureCookie }}"
             # Session cookie timeout in minutes
@@ -254,7 +267,7 @@ spec:
               memory: "64Mi"
               cpu: "25m"
             limits:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "200m"
           volumeMounts:
             - mountPath: /usr/src/app/dist/assets/branding
@@ -570,6 +583,82 @@ spec:
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # configuration-service
+{{- if .Values.resourceService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-service
+  labels:
+    app.kubernetes.io/name: resource-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: resource-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  replicas: {{ .Values.resourceService.replicas }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: resource-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+        helm.sh/chart: {{ include "control-plane.chart" . }}
+    spec:
+      containers:
+        - name: resource-service
+          image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PREFIX_PATH
+              value: "{{ .Values.prefixPath }}"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+            {{- range $key, $value := .Values.resourceService.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          volumeMounts:
+            - mountPath: /data/config
+              name: resource-volume
+      volumes:
+        - name: resource-volume
+          emptyDir: {}
+      serviceAccountName: keptn-configuration-service
+{{- else }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -690,6 +779,7 @@ spec:
           persistentVolumeClaim:
             claimName: configuration-volume
       serviceAccountName: keptn-configuration-service
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -708,7 +798,11 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/name: resource-service
+    {{- else }}
     app.kubernetes.io/name: configuration-service
+    {{- end }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # statistics-service

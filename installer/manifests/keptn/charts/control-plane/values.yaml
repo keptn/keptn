@@ -69,6 +69,11 @@ bridge:
     secureCookie: false
     trustProxy: ""
     sessionTimeoutMin: ""
+    baseUrl: ""
+    clientID: ""
+    clientSecret: ""
+    IDTokenAlg: ""
+    userIdentifier: ""
 
 distributor:
   metadata:
@@ -107,6 +112,16 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
 
+resourceService:
+  enabled: false
+  replicas: 1
+  image:
+    repository: docker.io/keptn/resource-service
+    tag: ""
+  env:
+    GIT_KEPTN_USER: "keptn"
+    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
@@ -132,11 +147,6 @@ webhookService:
   image:
     repository: docker.io/keptn/webhook-service
     tag: ""
-
-alpine:
-  image:
-    repository: docker.io/alpine
-    tag: "3.13"
 
 ingress:
   enabled: false

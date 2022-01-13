@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/google/martian/log"
 	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -116,7 +115,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 		gitCredentials, err := common.GetCredentials(projectName)
 		if err == nil && gitCredentials != nil {
-			log.Infof("Storing Git credentials for project %s", projectName)
+			logger.Infof("Storing Git credentials for project %s", projectName)
 			if err := common.UpdateOrCreateOrigin(projectName); err != nil {
 				logger.WithError(err).Errorf("Could not add upstream repository while updating project %s", params.Project.ProjectName)
 				// TODO: use git library.
