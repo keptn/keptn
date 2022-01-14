@@ -1,7 +1,7 @@
 import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { Router, NavigationStart, NavigationEnd, NavigationCancel } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Observable, Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
@@ -46,7 +46,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
-      if (event instanceof NavigationStart || event instanceof NavigationEnd || event instanceof NavigationCancel) {
+      if (event instanceof NavigationStart || event instanceof NavigationEnd) {
         this.setProject();
       }
     });
