@@ -9,42 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
-
-func TestOauthAuthenticator_Auth_StoresTokenAndDiscoveryInfoLocally(t *testing.T) {
-	server, serverCLoser := setupMockOAuthServer()
-	defer serverCLoser()
-
-	discovery := &OauthDiscoveryMock{
-		discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
-			return &OauthDiscoveryResult{
-				AuthorizationEndpoint: server.URL + "/auth",
-				TokenEndpoint:         server.URL + "/token",
-			}, nil
-		},
-	}
-
-	tokenStore := &TokenStoreMock{}
-	browser := &BrowserMock{
-		openFn: func(string) error { return nil },
-	}
-	authenticator := NewOauthAuthenticator(discovery, tokenStore, browser)
-	go func() {
-		err := authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", ""})
-		assert.Nil(t, err)
-	}()
-	assert.Eventuallyf(t, func() bool {
-		_, err := http.Get("http://localhost:3000/oauth/redirect?code=code") //nolint:bodyclose
-		return err == nil
-	}, 5*time.Second, 1*time.Second, "")
-
-	assert.Eventuallyf(t, func() bool {
-		token, _ := tokenStore.GetTokenInfo()
-		tokenDiscovery, _ := tokenStore.GetDiscoveryInfo()
-		return token != nil && token.AccessToken == "mocked-token" && tokenDiscovery != nil
-	}, 5*time.Second, 1*time.Second, "")
-}
 
 func TestOauthAuthenticator_Auth(t *testing.T) {
 	discovery := &OauthDiscoveryMock{
@@ -54,9 +19,10 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 	}
 
 	type fields struct {
-		discovery  OauthLocationGetter
-		tokenStore OauthStore
-		browser    URLOpener
+		discovery       OauthLocationGetter
+		tokenStore      OauthStore
+		browser         URLOpener
+		redirectHandler TokenGetter
 	}
 	tests := []struct {
 		name    string
@@ -76,7 +42,7 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 			fields{
 				discovery: discovery,
 				browser: &BrowserMock{
-					openFn: func(string) error { return errors.New("NOPE") },
+					openFn: func(string) error { return errors.New("browser open failed") },
 				},
 				tokenStore: &TokenStoreMock{
 					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
@@ -85,13 +51,50 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 				},
 			}, assert.Error,
 		},
+		{"Auth() - callback handler fails",
+			fields{
+				discovery: discovery,
+				browser: &BrowserMock{
+					openFn: func(string) error { return nil },
+				},
+				tokenStore: &TokenStoreMock{
+					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
+				redirectHandler: FakeRedirectHandler{
+					handleFn: func(bytes []byte, config *oauth2.Config) (*oauth2.Token, error) {
+						return nil, errors.New("callback handler failed")
+					},
+				},
+			}, assert.Error,
+		},
+		{"Auth() - success",
+			fields{
+				discovery: discovery,
+				browser: &BrowserMock{
+					openFn: func(string) error { return nil },
+				},
+				tokenStore: &TokenStoreMock{
+					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
+				redirectHandler: FakeRedirectHandler{
+					handleFn: func(bytes []byte, config *oauth2.Config) (*oauth2.Token, error) {
+						return &oauth2.Token{}, nil
+					},
+				},
+			}, assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &OauthAuthenticator{
-				discovery:  tt.fields.discovery,
-				tokenStore: tt.fields.tokenStore,
-				browser:    tt.fields.browser,
+				discovery:       tt.fields.discovery,
+				tokenStore:      tt.fields.tokenStore,
+				browser:         tt.fields.browser,
+				redirectHandler: tt.fields.redirectHandler,
 			}
 			tt.wantErr(t, a.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", ""}), "Auth()")
 		})

@@ -12,22 +12,20 @@ import (
 
 // TokenGetter handles the retrieval of oauth access tokens
 type TokenGetter interface {
-	Handle() (*oauth2.Token, error)
+	Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error)
 }
 
 // ClosingRedirectHandler is an implementation of TokenGetter
 // It opens a local http server with the hard-coded path "/oauth/redirect"
 // which serves as a callback to transfer the access tokens retrieved during the Oauth flow
 type ClosingRedirectHandler struct {
-	server       *http.Server
-	codeVerifier []byte
-	oauthConfig  *oauth2.Config
+	server *http.Server
 }
 
 // Handle opens a server at port 3000 and performs the exchange of the authorization code into an access token when the
 // user was redirect to the local server
 // It returns the obtained oauth2 token or an error
-func (r *ClosingRedirectHandler) Handle() (*oauth2.Token, error) {
+func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error) {
 	server := &http.Server{}
 	var tokenExchangeErr error
 	var acquiredToken *oauth2.Token
@@ -37,7 +35,7 @@ func (r *ClosingRedirectHandler) Handle() (*oauth2.Token, error) {
 		queryParts, _ := url.ParseQuery(req.URL.RawQuery)
 		code := queryParts["code"][0]
 
-		tok, err := r.oauthConfig.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", string(r.codeVerifier)))
+		tok, err := oauthConfig.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", string(codeVerifier)))
 		if err != nil {
 			fmt.Println(err.Error())
 			tokenExchangeErr = err
@@ -53,4 +51,17 @@ func (r *ClosingRedirectHandler) Handle() (*oauth2.Token, error) {
 	}
 	server.Serve(l)
 	return acquiredToken, tokenExchangeErr
+}
+
+// FakeRedirectHandler is a mocked implementation of TokenGetter
+// usable in tests
+type FakeRedirectHandler struct {
+	handleFn func([]byte, *oauth2.Config) (*oauth2.Token, error)
+}
+
+func (t FakeRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error) {
+	if t.handleFn != nil {
+		return t.handleFn(codeVerifier, oauthConfig)
+	}
+	panic("handleFn of FakeRedirectHandler not set")
 }

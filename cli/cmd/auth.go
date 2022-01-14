@@ -90,7 +90,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			if *authParams.ssoClientID == "" {
 				return fmt.Errorf("Unable to login usin SSO: No client ID provided")
 			}
-			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileOauthStore(), auth2.NewBrowser())
+			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileOauthStore(), auth2.NewBrowser(), &auth2.ClosingRedirectHandler{})
 
 			clientValues := auth2.OauthClientValues{
 				OauthDiscoveryURL: *authParams.ssoDiscovery,

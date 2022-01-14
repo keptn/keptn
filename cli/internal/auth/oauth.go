@@ -17,17 +17,19 @@ const (
 
 // OauthAuthenticator is an implementation of Authenticator which implements the Oauth2 Authorization Code Flow
 type OauthAuthenticator struct {
-	discovery  OauthLocationGetter
-	tokenStore OauthStore
-	browser    URLOpener
+	discovery       OauthLocationGetter
+	tokenStore      OauthStore
+	browser         URLOpener
+	redirectHandler TokenGetter
 }
 
 // NewOauthAuthenticator is creating a new OauthAuthenticator
-func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore, browser URLOpener) *OauthAuthenticator {
+func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore, browser URLOpener, redirectHandler TokenGetter) *OauthAuthenticator {
 	return &OauthAuthenticator{
-		discovery:  discovery,
-		tokenStore: tokenStore,
-		browser:    browser,
+		discovery:       discovery,
+		tokenStore:      tokenStore,
+		browser:         browser,
+		redirectHandler: redirectHandler,
 	}
 }
 
@@ -61,9 +63,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 		return err
 	}
 
-	redirectHandler := ClosingRedirectHandler{codeVerifier: codeVerifier, oauthConfig: config}
-
-	token, err := redirectHandler.Handle()
+	token, err := a.redirectHandler.Handle(codeVerifier, config)
 	if err != nil {
 		return err
 	}
