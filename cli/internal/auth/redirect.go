@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 // TokenGetter handles the retrieval of oauth access tokens
@@ -18,13 +17,13 @@ type TokenGetter interface {
 // ClosingRedirectHandler is an implementation of TokenGetter
 // It opens a local http server with the hard-coded path "/oauth/redirect"
 // which serves as a callback to transfer the access tokens retrieved during the Oauth flow
-type ClosingRedirectHandler struct {
-	server *http.Server
-}
+type ClosingRedirectHandler struct{}
 
 // Handle opens a server at port 3000 and performs the exchange of the authorization code into an access token when the
 // user was redirect to the local server
 // It returns the obtained oauth2 token or an error
+// TODO: close handler after a timeout
+// TODO: get rid of hard-coded path and port
 func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error) {
 	server := &http.Server{}
 	var tokenExchangeErr error
@@ -46,8 +45,7 @@ func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2
 	})
 	l, err := net.Listen("tcp", ":3000")
 	if err != nil {
-		fmt.Printf("can't listen to port %s: %s\n", ":3000", err)
-		os.Exit(1)
+		return nil, err
 	}
 	server.Serve(l)
 	return acquiredToken, tokenExchangeErr
