@@ -69,11 +69,6 @@ bridge:
     secureCookie: false
     trustProxy: ""
     sessionTimeoutMin: ""
-    baseUrl: ""
-    clientID: ""
-    clientSecret: ""
-    IDTokenAlg: ""
-    userIdentifier: ""
 
 distributor:
   metadata:

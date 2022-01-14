@@ -6,16 +6,11 @@ import {
   ServiceStateQualityGatesOnlyResponse,
   ServiceStateResponse,
 } from '../../shared/fixtures/service-state-response.mock';
-import { setupServer } from '../.jest/setupServer';
-import { Express } from 'express';
 
 let axiosMock: MockAdapter;
 
 describe('Test project/:projectName/serviceStates', () => {
-  let app: Express;
-
-  beforeAll(async () => {
-    app = await setupServer();
+  beforeAll(() => {
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
@@ -37,7 +32,7 @@ describe('Test project/:projectName/serviceStates', () => {
       })
       .reply(200, OpenRemediationsResponse);
 
-    const response = await request(app).get(`/api/project/${projectName}/serviceStates`);
+    const response = await request(global.app).get(`/api/project/${projectName}/serviceStates`);
     expect(response.body).toEqual(ServiceStateResponse);
     expect(response.statusCode).toBe(200);
   });
@@ -56,7 +51,7 @@ describe('Test project/:projectName/serviceStates', () => {
       })
       .reply(200, { states: [] });
 
-    const response = await request(app).get(`/api/project/${projectName}/serviceStates`);
+    const response = await request(global.app).get(`/api/project/${projectName}/serviceStates`);
     expect(response.body).toEqual(ServiceStateQualityGatesOnlyResponse);
     expect(response.statusCode).toBe(200);
   });

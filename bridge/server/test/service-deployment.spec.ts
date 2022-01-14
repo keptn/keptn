@@ -19,16 +19,11 @@ import {
   SequenceDeliveryTillStagingResponseMock,
 } from '../fixtures/sequence-response.mock';
 import { TestUtils } from '../.jest/test.utils';
-import { setupServer } from '../.jest/setupServer';
-import { Express } from 'express';
 
 let axiosMock: MockAdapter;
 
 describe('Test /project/:projectName/deployment/:keptnContext', () => {
-  let app: Express;
-
-  beforeAll(async () => {
-    app = await setupServer();
+  beforeAll(() => {
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
@@ -50,7 +45,7 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
       .reply(200, DeploymentTracesResponseMock);
     init(ProjectResponse, SequenceDeliveryResponseMock, projectName, keptnContext);
 
-    const response = await request(app).get(`/api/project/${projectName}/deployment/${keptnContext}`);
+    const response = await request(global.app).get(`/api/project/${projectName}/deployment/${keptnContext}`);
     expect(response.body).toEqual(ServiceDeploymentMock);
     expect(response.statusCode).toBe(200);
   });
@@ -69,7 +64,7 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
       .reply(200, DeploymentTracesResponseMock);
     init(ProjectResponse, SequenceDeliveryResponseMock, projectName, keptnContext);
 
-    const response = await request(app).get(
+    const response = await request(global.app).get(
       `/api/project/${projectName}/deployment/${keptnContext}?fromTime=2021-10-13T10:59:45.104Z`
     );
     expect(response.body).toEqual(ServiceDeploymentWithFromTimeMock);
@@ -100,7 +95,7 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
       .reply(200, EvaluationFinishedStagingResponse);
     init(ProjectResponse, SequenceDeliveryTillStagingResponseMock, projectName, keptnContext);
 
-    const response = await request(app).get(`/api/project/${projectName}/deployment/${keptnContext}`);
+    const response = await request(global.app).get(`/api/project/${projectName}/deployment/${keptnContext}`);
     expect(response.body).toEqual(ServiceDeploymentWithApprovalMock);
     expect(response.statusCode).toBe(200);
   });

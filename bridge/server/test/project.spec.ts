@@ -31,16 +31,11 @@ import {
 import { KeptnService } from '../../shared/models/keptn-service';
 import { ProjectDetailsResponse } from '../fixtures/project-details-response.mock';
 import { ResultTypes } from '../../shared/models/result-types';
-import { setupServer } from '../.jest/setupServer';
-import { Express } from 'express';
 
 let axiosMock: MockAdapter;
 
 describe('Test project resources', () => {
-  let app: Express;
-
-  beforeAll(async () => {
-    app = await setupServer();
+  beforeAll(() => {
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
@@ -51,7 +46,7 @@ describe('Test project resources', () => {
   it('should retrieve service names', async () => {
     const projectName = 'sockshop';
     axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}/stage`).reply(200, StagesResponse);
-    const response = await request(app).get(`/api/project/${projectName}/services`);
+    const response = await request(global.app).get(`/api/project/${projectName}/services`);
     expect(response.body).toEqual(['carts', 'carts-db']);
     expect(response.statusCode).toBe(200);
   });
@@ -59,7 +54,7 @@ describe('Test project resources', () => {
   it('should return an error', async () => {
     const projectName = 'sockshop';
     axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}/stage`).reply(502);
-    const response = await request(app).get(`/api/project/${projectName}/services`);
+    const response = await request(global.app).get(`/api/project/${projectName}/services`);
     expect(response.statusCode).toBe(502);
   });
 
@@ -120,7 +115,7 @@ describe('Test project resources', () => {
       return [200, sequence];
     });
 
-    const response = await request(app).get(`/api/project/${projectName}?approval=true&remediation=true`);
+    const response = await request(global.app).get(`/api/project/${projectName}?approval=true&remediation=true`);
     expect(response.body).toEqual(ProjectDetailsResponse);
   });
 
@@ -176,7 +171,7 @@ describe('Test project resources', () => {
       .onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`)
       .reply(200, SequenceResponseURLFallback);
 
-    const response = await request(app).get(`/api/project/${projectName}`);
+    const response = await request(global.app).get(`/api/project/${projectName}`);
     expect(response.body).toEqual(ProjectDetailsResponseURLFallback);
   });
 
@@ -222,7 +217,7 @@ describe('Test project resources', () => {
       .onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`)
       .reply(200, SequenceResponseEvaluationFallback);
 
-    const response = await request(app).get(`/api/project/${projectName}`);
+    const response = await request(global.app).get(`/api/project/${projectName}`);
     expect(response.body).toEqual(ProjectDetailsResponseEvaluationFallback);
   });
 });

@@ -5,7 +5,6 @@ declare global {
   namespace NodeJS {
     interface Global {
       axiosInstance?: AxiosInstance;
-      issuer?: unknown;
     }
   }
 }

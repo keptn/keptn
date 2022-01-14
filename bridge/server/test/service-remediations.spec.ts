@@ -5,16 +5,11 @@ import {
   ServiceRemediationWithConfigResponse,
   ServiceRemediationWithoutConfigResponse,
 } from '../../shared/fixtures/open-remediations-response.mock';
-import { setupServer } from '../.jest/setupServer';
-import { Express } from 'express';
 
 let axiosMock: MockAdapter;
 
 describe('Test /project/:projectName/service/:serviceName/openRemediations', () => {
-  let app: Express;
-
-  beforeAll(async () => {
-    app = await setupServer();
+  beforeAll(() => {
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
@@ -26,7 +21,7 @@ describe('Test /project/:projectName/service/:serviceName/openRemediations', () 
     const projectName = 'sockshop';
     const serviceName = 'carts';
     TestUtils.mockOpenRemediations(axiosMock, projectName);
-    const response = await request(app).get(
+    const response = await request(global.app).get(
       `/api/project/${projectName}/service/${serviceName}/openRemediations?config=true`
     );
     expect(response.body).toEqual(ServiceRemediationWithConfigResponse);
@@ -37,7 +32,9 @@ describe('Test /project/:projectName/service/:serviceName/openRemediations', () 
     const projectName = 'sockshop';
     const serviceName = 'carts';
     TestUtils.mockOpenRemediations(axiosMock, projectName);
-    const response = await request(app).get(`/api/project/${projectName}/service/${serviceName}/openRemediations`);
+    const response = await request(global.app).get(
+      `/api/project/${projectName}/service/${serviceName}/openRemediations`
+    );
     expect(response.body).toEqual(ServiceRemediationWithoutConfigResponse);
     expect(response.statusCode).toBe(200);
   });

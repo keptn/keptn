@@ -14,10 +14,10 @@ import { execSync } from 'child_process';
 import { AxiosError } from 'axios';
 import { EnvironmentUtils } from './utils/environment.utils';
 import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
-import { setupOAuth } from './user/oauth';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const app = express();
 const apiUrl: string | undefined = process.env.API_URL;
 let apiToken: string | undefined = process.env.API_TOKEN;
 let cliDownloadLink: string | undefined = process.env.CLI_DOWNLOAD_LINK;
@@ -30,20 +30,19 @@ const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, '../../../');
 const serverFolder = join(rootFolder, 'server');
 const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
+const serverFeatureFlags = new ServerFeatureFlags();
+const clientFeatureFlags = new ClientFeatureFlags();
+EnvironmentUtils.setFeatureFlags(process.env, serverFeatureFlags);
+EnvironmentUtils.setFeatureFlags(process.env, clientFeatureFlags);
+
+if (process.env.NODE_ENV !== 'test') {
+  setupDefaultLookAndFeel();
+}
+if (lookAndFeelUrl) {
+  setupLookAndFeel(lookAndFeelUrl);
+}
 
 async function init(): Promise<Express> {
-  const app = express();
-  const serverFeatureFlags = new ServerFeatureFlags();
-  const clientFeatureFlags = new ClientFeatureFlags();
-  EnvironmentUtils.setFeatureFlags(process.env, serverFeatureFlags);
-  EnvironmentUtils.setFeatureFlags(process.env, clientFeatureFlags);
-
-  if (process.env.NODE_ENV !== 'test') {
-    setupDefaultLookAndFeel();
-  }
-  if (lookAndFeelUrl) {
-    setupLookAndFeel(lookAndFeelUrl);
-  }
   if (!apiUrl) {
     throw Error('API_URL is not provided');
   }
@@ -114,7 +113,7 @@ async function init(): Promise<Express> {
   // Remove the X-Powered-By headers, has to be done via express and not helmet
   app.disable('x-powered-by');
 
-  const authType: string = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
+  const authType: string = await setAuth();
 
   // everything starting with /api is routed to the api implementation
   app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags }));
@@ -135,25 +134,27 @@ async function init(): Promise<Express> {
   return app;
 }
 
-async function setOAUTH(app: Express): Promise<void> {
-  const errorSuffix =
-    'must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-    ' Please check your environment variables.';
+async function setOAUTH(): Promise<void> {
+  const sessionRouter = (await import('./user/session.js')).sessionRouter(app);
+  const oauthRouter = await (await import('./user/oauth.js')).oauthRouter;
+  const authCheck = (await import('./user/session.js')).isAuthenticated;
 
-  if (!process.env.OAUTH_DISCOVERY) {
-    throw Error(`OAUTH_DISCOVERY ${errorSuffix}`);
-  }
-  if (!process.env.OAUTH_CLIENT_ID) {
-    throw Error(`OAUTH_CLIENT_ID ${errorSuffix}`);
-  }
-  if (!process.env.OAUTH_BASE_URL) {
-    throw Error(`OAUTH_B_URL ${errorSuffix}`);
-  }
+  // Initialise session middleware
+  app.use(sessionRouter);
+  // Initializing OAuth middleware.
+  app.use(oauthRouter);
 
-  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
+  // Authentication filter for API requests
+  app.use('/api', (req, resp, next) => {
+    if (!authCheck(req)) {
+      next({ response: { status: 401 } });
+      return;
+    }
+    return next();
+  });
 }
 
-async function setBasisAUTH(app: Express): Promise<void> {
+async function setBasisAUTH(): Promise<void> {
   console.error('Installing Basic authentication - please check environment variables!');
 
   setInterval(cleanIpBuckets, cleanBucketsInterval);
@@ -185,14 +186,14 @@ async function setBasisAUTH(app: Express): Promise<void> {
   });
 }
 
-async function setAuth(app: Express, oAuthEnabled: boolean): Promise<string> {
+async function setAuth(): Promise<string> {
   let authType;
-  if (oAuthEnabled) {
-    await setOAUTH(app);
+  if (serverFeatureFlags.OAUTH_ENABLED) {
+    await setOAUTH();
     authType = 'OAUTH';
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
     authType = 'BASIC';
-    await setBasisAUTH(app);
+    await setBasisAUTH();
   } else {
     authType = 'NONE';
     console.log('Not installing authentication middleware');

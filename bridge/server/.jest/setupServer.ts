@@ -1,9 +1,8 @@
 import { init } from '../app';
 import Axios from 'axios';
 import https from 'https';
-import { Express } from 'express';
 
-const setupServer = async (): Promise<Express> => {
+const setup = async (): Promise<void> => {
   global.baseUrl = 'http://localhost/api/';
 
   global.axiosInstance = Axios.create({
@@ -17,7 +16,7 @@ const setupServer = async (): Promise<Express> => {
     },
   });
 
-  return init();
+  global.app = await init();
 };
 
-export { setupServer };
+export default setup();
