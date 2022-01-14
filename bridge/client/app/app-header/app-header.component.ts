@@ -1,6 +1,6 @@
 import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Observable, Subject } from 'rxjs';
@@ -13,6 +13,7 @@ import { environment } from '../../environments/environment';
 import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
+import { DtSelect } from '@dynatrace/barista-components/select';
 
 @Component({
   selector: 'ktb-header',
@@ -21,6 +22,8 @@ import { VersionInfo } from '../_models/keptn-versions';
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
+
+  @ViewChild('projectSelect') projectSelect?: DtSelect<string | undefined>;
   public projects: Observable<Project[] | undefined>;
   public selectedProject: string | undefined;
   public projectBoardView = '';
@@ -200,9 +203,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   changeProject(selectedProject: string | undefined): void {
-    setTimeout(() => {
-      this.router.navigate(this.getRouterLink(selectedProject as string));
-    });
+    this.router.navigate(this.getRouterLink(selectedProject as string));
   }
 
   setProject(): void {
@@ -222,6 +223,10 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       });
     } else {
       this.selectedProject = undefined;
+    }
+
+    if (this.projectSelect) {
+      this.projectSelect.value = this.selectedProject;
     }
   }
 
