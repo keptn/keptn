@@ -51,8 +51,3 @@ Thumbs.db
 # e2e screenshots
 e2e/screenshots/*
 !e2e/screenshots/.gitkeep
-
-# certificates
-*.pem
-*.crt
-*.key

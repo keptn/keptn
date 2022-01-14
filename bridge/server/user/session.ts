@@ -2,20 +2,15 @@ import { Express, Request, Router } from 'express';
 import expressSession from 'express-session';
 import mS from 'memorystore';
 import random from 'crypto-random-string';
-import { IdTokenClaims, TokenSet, TokenSetParameters } from 'openid-client';
 
 declare module 'express-session' {
   export interface SessionData {
-    authenticated?: boolean;
-    tokenSet?: TokenSetParameters;
-    principal?: string;
+    authenticated: boolean;
+    principal: string;
+    logoutHint: string;
   }
 }
-export interface ValidSession extends expressSession.Session {
-  authenticated: boolean;
-  tokenSet: TokenSetParameters;
-  principal?: string;
-}
+const memoryStore = mS(expressSession);
 const router = Router();
 const CHECK_PERIOD = 600_000; // check every 10 minutes
 const SESSION_TIME = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
@@ -23,17 +18,6 @@ const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
 const SESSION_SECRET = random({ length: 200 });
-const memoryStore = mS(expressSession);
-const store = new memoryStore({
-  checkPeriod: CHECK_PERIOD,
-  ttl: SESSION_TIME,
-});
-
-if (process.env.NODE_ENV === 'test') {
-  // else interval does not stop and so Jest does not terminate
-  // jest.fakeTimers would lead to an infinite loop when accessing the store
-  store.stopInterval();
-}
 
 /**
  * Uses a session cookie backed by in-memory cookies store.
@@ -52,20 +36,21 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
-  store,
+  store: new memoryStore({
+    checkPeriod: CHECK_PERIOD,
+    ttl: SESSION_TIME,
+  }),
 };
 
 /**
  * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
  */
-function isAuthenticated(
-  session: expressSession.Session & Partial<expressSession.SessionData>
-): session is ValidSession {
-  if (session.authenticated) {
+function isAuthenticated(req: Request): boolean {
+  if (req.session.authenticated) {
     return true;
   }
 
-  session.authenticated = false;
+  req.session.authenticated = false;
   return false;
 }
 
@@ -75,49 +60,47 @@ function isAuthenticated(
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
-  return new Promise((resolve) => {
-    // Regenerate session for the successful login
-    req.session.regenerate(() => {
-      const userIdentifier = process.env.OAUTH_NAME_PROPERTY;
-      const claims = tokenSet.claims();
-      req.session.authenticated = true;
-      req.session.tokenSet = tokenSet;
-      req.session.principal =
-        (userIdentifier ? (claims[userIdentifier] as string | undefined) : undefined) || getUserIdentifier(claims);
+function authenticateSession(req: Request, principal: string, logoutHint: string, callback: () => void): void {
+  if (!principal) {
+    throw Error('Invalid session initialisation. Principal is mandatory.');
+  }
 
-      resolve();
-    });
+  // Regenerate session for the successful login
+  req.session.regenerate(() => {
+    req.session.authenticated = true;
+    req.session.principal = principal;
+
+    if (logoutHint) {
+      req.session.logoutHint = logoutHint;
+    }
+
+    callback();
   });
-}
-
-function getUserIdentifier(claims: IdTokenClaims): string | undefined {
-  return claims.name || claims.nickname || claims.preferred_username || claims.email;
 }
 
 /**
  * Returns the current principal if session is authenticated. Otherwise returns undefined
  */
 function getCurrentPrincipal(req: Request): string | undefined {
-  return req.session?.principal;
+  if (req.session !== undefined && req.session.authenticated) {
+    return req.session.principal;
+  }
+
+  return undefined;
 }
 
 /**
  * Returns the logout hint bound to this session
  */
 function getLogoutHint(req: Request): string | undefined {
-  return req.session?.tokenSet?.id_token;
+  return req.session?.logoutHint;
 }
 
 /**
  * Destroy the session comes with this request
  */
 function removeSession(req: Request): void {
-  req.session.destroy((error) => {
-    if (error) {
-      console.error(error);
-    }
-  });
+  req.session.destroy(console.error);
 }
 
 function sessionRouter(app: Express): Router {

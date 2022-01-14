@@ -12,5 +12,7 @@ export default {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
+  setupFilesAfterEnv: ['<rootDir>/.jest/setupServer.ts'],
+  globalTeardown: '<rootDir>/.jest/shutdownServer.ts',
   testPathIgnorePatterns: ['<rootDir>/dist', '<rootDir>/node_modules'],
 };

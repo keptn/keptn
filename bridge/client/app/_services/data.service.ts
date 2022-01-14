@@ -28,7 +28,6 @@ import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
-import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 
 @Injectable({
   providedIn: 'root',
@@ -742,9 +741,5 @@ export class DataService {
     services: string[]
   ): Observable<Record<string, unknown>> {
     return this.apiService.getIntersectedEvent(event, eventSuffix, projectName, stages, services);
-  }
-
-  public logout(): Observable<EndSessionData | null> {
-    return this.apiService.logout();
   }
 }
