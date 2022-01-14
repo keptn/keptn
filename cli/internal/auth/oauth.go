@@ -15,12 +15,6 @@ const (
 	openIDScope      = "openid"
 )
 
-// Authenticator is responsible for authenticate the user using SSO/Oauth2
-type Authenticator interface {
-	// Auth is triggering the authentication
-	Auth(discovery OauthLocationGetter, tokenStore OauthStore, redirectURL string) error
-}
-
 // OauthAuthenticator is an implementation of Authenticator which implements the Oauth2 Authorization Code Flow
 type OauthAuthenticator struct {
 	discovery  OauthLocationGetter
@@ -38,15 +32,16 @@ func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore,
 }
 
 // Auth tries to start the Oauth2 Authorization Code Flow
-func (a *OauthAuthenticator) Auth(discoveryURL, clientID string) error {
-	discoveryInfo, err := a.discovery.Discover(context.TODO(), discoveryURL)
+func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
+	discoveryInfo, err := a.discovery.Discover(context.TODO(), clientValues.OauthDiscoveryURL)
 	if err != nil {
 		return err
 	}
 
 	config := &oauth2.Config{
-		ClientID: clientID,
-		Scopes:   []string{openIDScope},
+		ClientID:     clientValues.OauthClientID,
+		ClientSecret: clientValues.OauthClientSecret,
+		Scopes:       []string{openIDScope},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
@@ -75,11 +70,8 @@ func (a *OauthAuthenticator) Auth(discoveryURL, clientID string) error {
 
 	oauthInfo := &OauthInfo{
 		DiscoveryInfo: discoveryInfo,
-		ClientValues: &OauthClientValues{
-			OauthDiscoveryURL: discoveryURL,
-			OauthClientID:     clientID,
-		},
-		Token: token,
+		ClientValues:  &clientValues,
+		Token:         token,
 	}
 	return a.tokenStore.StoreOauthInfo(oauthInfo)
 }
@@ -93,8 +85,9 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 	}
 
 	config := &oauth2.Config{
-		ClientID: oauthInfo.ClientValues.OauthClientID,
-		Scopes:   []string{openIDScope},
+		ClientSecret: oauthInfo.ClientValues.OauthClientSecret,
+		ClientID:     oauthInfo.ClientValues.OauthClientID,
+		Scopes:       []string{openIDScope},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
@@ -112,4 +105,5 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 type OauthClientValues struct {
 	OauthDiscoveryURL string `json:"oauth_discovery_url"`
 	OauthClientID     string `json:"oauth_client_id"`
+	OauthClientSecret string `json:"oauth_client_secret"`
 }

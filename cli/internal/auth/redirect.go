@@ -15,7 +15,7 @@ type TokenGetter interface {
 	Handle() (*oauth2.Token, error)
 }
 
-// CLosingRedirectHandler is an implementation of TokenGetter
+// ClosingRedirectHandler is an implementation of TokenGetter
 // It opens a local http server with the hard-coded path "/oauth/redirect"
 // which serves as a callback to transfer the access tokens retrieved during the Oauth flow
 type ClosingRedirectHandler struct {

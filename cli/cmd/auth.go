@@ -28,6 +28,7 @@ type authCmdParams struct {
 	ssoLogout            *bool
 	ssoDiscovery         *string
 	ssoClientID          *string
+	ssoClientSecret      *string
 }
 
 type smartKeptnAuthParams struct {
@@ -90,7 +91,13 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				return fmt.Errorf("Unable to login usin SSO: No client ID provided")
 			}
 			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileOauthStore(), auth2.NewBrowser())
-			err := oauth.Auth(*authParams.ssoDiscovery, *authParams.ssoClientID)
+
+			clientValues := auth2.OauthClientValues{
+				OauthDiscoveryURL: *authParams.ssoDiscovery,
+				OauthClientID:     *authParams.ssoClientID,
+				OauthClientSecret: *authParams.ssoClientSecret,
+			}
+			err := oauth.Auth(clientValues)
 			if err != nil {
 				return err
 			}
@@ -128,6 +135,7 @@ func init() {
 	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable single sign on access")
 	authParams.ssoDiscovery = authCmd.Flags().String("sso-discovery", "", "Well known discovery URL used for SSO")
 	authParams.ssoClientID = authCmd.Flags().String("sso-client-id", "", "Oauth Client ID used for SSO")
+	authParams.ssoClientSecret = authCmd.Flags().String("sso-client-secret", "", "Oauth Client Secret used for SSO")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")

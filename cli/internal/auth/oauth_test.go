@@ -31,7 +31,7 @@ func TestOauthAuthenticator_Auth_StoresTokenAndDiscoveryInfoLocally(t *testing.T
 	}
 	authenticator := NewOauthAuthenticator(discovery, tokenStore, browser)
 	go func() {
-		err := authenticator.Auth("http://well-known-discovery-url.com", "clientID")
+		err := authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", ""})
 		assert.Nil(t, err)
 	}()
 	assert.Eventuallyf(t, func() bool {
@@ -93,7 +93,7 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
-			tt.wantErr(t, a.Auth("http://well-known-discovery-url.com", "clientID"), "Auth()")
+			tt.wantErr(t, a.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", ""}), "Auth()")
 		})
 	}
 }
