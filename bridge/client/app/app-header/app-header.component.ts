@@ -46,9 +46,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
-      if (event instanceof NavigationStart) {
-        this.setProject();
-      } else if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
+      if (event instanceof NavigationStart || event instanceof NavigationEnd || event instanceof NavigationCancel) {
         this.setProject();
       }
     });
