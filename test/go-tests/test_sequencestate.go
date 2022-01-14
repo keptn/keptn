@@ -303,7 +303,6 @@ func Test_SequenceState(t *testing.T) {
 
 	require.Nil(t, err)
 	require.NotNil(t, deploymentTriggeredEvent)
-	require.NotEmpty(t, deploymentTriggeredEvent.Gitcommitid)
 
 	cloudEvent = keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
 
