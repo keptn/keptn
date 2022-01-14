@@ -1,7 +1,7 @@
 import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd, NavigationCancel } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Observable, of, Subject } from 'rxjs';
 import { filter, switchMap, takeUntil } from 'rxjs/operators';
@@ -46,21 +46,10 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
-      if (event instanceof RoutesRecognized) {
-        const pieces = event.url.split('/');
-        if (pieces[1] === 'evaluation') {
-          this.dataService.projectName.pipe(switchMap((projectName) => (this.selectedProject = projectName)));
-        } else {
-          this.selectedProject = event.state.root.children[0].params.projectName;
-        }
-      } else if (event instanceof NavigationEnd) {
-        // catch url change and update projectBoardView for the project picker
-        const pieces = event.url.split('/');
-        if (pieces.length > 3 && pieces[1] === 'project') {
-          this.projectBoardView = pieces[3];
-        } else {
-          this.projectBoardView = ''; // environment screen
-        }
+      if (event instanceof NavigationStart) {
+        this.readProjectFromUrl();
+      } else if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
+        this.readProjectFromUrl();
       }
     });
 
@@ -212,13 +201,25 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
-  async changeProject(selectedProject: string | undefined): Promise<void> {
-    const projectBefore = this.selectedProject;
-    const result = await this.router.navigate(this.getRouterLink(selectedProject as string));
-    if (!result) {
-      this.selectedProject = projectBefore;
-    } else {
-      this.selectedProject = selectedProject;
+  changeProject(selectedProject: string | undefined): void {
+    setTimeout(() => {
+      this.router.navigate(this.getRouterLink(selectedProject as string));
+    });
+  }
+
+  readProjectFromUrl(): void {
+    const urlPieces = this.router.url.split('/');
+    if (urlPieces[1] === 'project') {
+      this.selectedProject = urlPieces[2];
+
+      // catch url change and update projectBoardView for the project picker
+      if (urlPieces.length > 3) {
+        this.projectBoardView = urlPieces[3];
+      } else {
+        this.projectBoardView = ''; // environment screen
+      }
+    } else if (urlPieces[1] === 'evaluation') {
+      this.dataService.projectName.pipe(switchMap((projectName) => (this.selectedProject = projectName)));
     }
   }
 
