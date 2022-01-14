@@ -219,7 +219,11 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.projectBoardView = ''; // environment screen
       }
     } else if (urlPieces[1] === 'evaluation') {
-      this.dataService.projectName.pipe(switchMap((projectName) => (this.selectedProject = projectName)));
+      this.dataService.projectName.pipe(takeUntil(this.unsubscribe$)).subscribe((projectName: string) => {
+        this.selectedProject = projectName;
+      });
+    } else {
+      this.selectedProject = undefined;
     }
   }
 
