@@ -257,7 +257,7 @@ func addWarningNonExistingProjectUpstream() error {
 	}
 
 	for _, project := range projects {
-		if project.GitRemoteURI == "" || project.GitToken == "" || project.GitUser == "" {
+		if project.GitRemoteURI == "" {
 			fmt.Printf("WARNING:  the project %s has no Git upstream configured. Please consider setting a Git upstream repository using:\n\n", project.ProjectName)
 			fmt.Printf("\tkeptn update project %s --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL\n\n", project.ProjectName)
 		}
