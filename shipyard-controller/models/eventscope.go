@@ -13,6 +13,7 @@ type EventScope struct {
 	v0_2_0.EventData `bson:",inline"`
 	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
 	TriggeredID      string `json:"triggeredId" bson:"triggeredId"`
+	GitCommitID      string `json:"gitcommitid" bson:"gitcommitid"`
 	EventType        string `json:"eventType" bson:"eventType"`
 	EventSource      string `json:"-" bson:"-"`
 	WrappedEvent     Event  `json:"-" bson:"-"`

@@ -47,6 +47,7 @@ type ConfigurationStore interface {
 	CreateStage(projectName string, stage string) error
 	CreateService(projectName string, stageName string, serviceName string) error
 	GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
+	GetStageResource(projectName, stageName, resourceURI string) (*keptnapimodels.Resource, error)
 	DeleteService(projectName string, stageName string, serviceName string) error
 }
 
@@ -68,6 +69,10 @@ func NewGitConfigurationStore(configurationServiceEndpoint string) *GitConfigura
 
 func (g GitConfigurationStore) GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
 	return g.resourceAPI.GetProjectResource(projectName, resourceURI)
+}
+
+func (g GitConfigurationStore) GetStageResource(projectName, stageName, resourceURI string) (*keptnapimodels.Resource, error) {
+	return g.resourceAPI.GetStageResource(projectName, stageName, resourceURI)
 }
 
 func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) error {

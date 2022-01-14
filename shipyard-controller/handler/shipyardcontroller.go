@@ -206,6 +206,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 
+	sc.appendLatestCommitIDToEvent(*eventScope, &eventScope.WrappedEvent)
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.TriggeredEvent); err != nil {
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
@@ -216,6 +217,19 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		EventID:   eventScope.WrappedEvent.ID,
 		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
 	})
+}
+
+func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.EventScope, event *models.Event) {
+	// get the latest git commit ID for the stage if it is not specified in the event
+	if eventScope.WrappedEvent.GitCommitID == "" {
+		latestGitCommitID, err := sc.shipyardRetriever.GetLatestCommitID(eventScope.Project, eventScope.Stage)
+		if err != nil {
+			// TODO discuss
+			// log the error, but having no commit ID should not prevent the sequence from being executed
+			log.Errorf("Could not determine latest commit ID for stage %s in project %s", eventScope.Project, eventScope.Stage)
+		}
+		event.GitCommitID = latestGitCommitID
+	}
 }
 
 func (sc *shipyardController) handleTaskStarted(event models.Event) error {
@@ -617,6 +631,8 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 
 		return sc.triggerNextTaskSequences(eventScope, taskSequence, eventHistory, inputEvent, previousTask.Task.Name)
 	}
+	// propagate the git commit id to the next task
+	eventScope.GitCommitID = inputEvent.GitCommitID
 	return sc.sendTaskTriggeredEvent(eventScope, taskSequence.Name, *task, eventHistory)
 }
 
@@ -711,6 +727,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 	if err != nil {
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
+	sc.appendLatestCommitIDToEvent(*eventScope, toEvent)
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, *toEvent, common.TriggeredEvent); err != nil {
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
@@ -761,6 +778,9 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope models.EventScop
 
 	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
 
+	if eventScope.GitCommitID != "" {
+		event.SetExtension("gitcommitid", eventScope.GitCommitID)
+	}
 	storeEvent := &models.Event{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {
 		log.Errorf("could not transform CloudEvent for storage in mongodb: %s", err.Error())
@@ -773,7 +793,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope models.EventScop
 			sendTaskTimestamp = sendTaskTimestamp.Add(duration)
 		} else {
 			log.Errorf("could not parse triggeredAfter property: %s", err.Error())
-			// TODO how do we handle this? send event immediately or not at all?
 		}
 		log.Infof("queueing %s event with ID %s to be sent at %s", event.Type(), event.ID(), sendTaskTimestamp.String())
 	}
