@@ -115,7 +115,7 @@ configurationService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
 
 resourceService:
-  enabled: false
+  enabled: true
   replicas: 1
   image:
     repository: docker.io/keptn/resource-service

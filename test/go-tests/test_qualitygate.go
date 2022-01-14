@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -57,6 +58,7 @@ total_score:
 const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
+
 	projectName := "quality-gates"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
@@ -340,7 +342,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	resp, err := ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
 		Resources: []*models.Resource{
 			{
-				ResourceContent: qualityGatesSLOFileContent,
+				ResourceContent: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", qualityGatesSLOFileContent))),
 				ResourceURI:     strutils.Stringp("slo.yaml"),
 			},
 		},
@@ -360,6 +362,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	source := "golang-test"
 
 	TriggeredEvent := models.KeptnContextExtendedCE{}
+	TriggeredEvent.Type = strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 	TriggeredEvent.Shkeptncontext = keptnContext
 	TriggeredEvent.Source = strutils.Stringp("fakeshipyard")
 	TriggeredEvent.Data = &keptnv2.EvaluationTriggeredEventData{

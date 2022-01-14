@@ -403,7 +403,7 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
 	if g.ProjectExists(gitContext) {
-		_, w, err := g.getWorkTree(gitContext)
+		r, w, err := g.getWorkTree(gitContext)
 		if err != nil {
 			return err
 		}

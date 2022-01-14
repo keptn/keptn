@@ -68,8 +68,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if event.Context.GetSource() == serviceName {
 		return nil
 	}
-	var shkeptncontext string
-	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
 		ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
