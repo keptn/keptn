@@ -1,7 +1,7 @@
 import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router, ResolveEnd } from '@angular/router';
+import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Observable, of, Subject } from 'rxjs';
 import { filter, switchMap, takeUntil } from 'rxjs/operators';
@@ -13,7 +13,6 @@ import { environment } from '../../environments/environment';
 import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
-import { DtSelectChange } from '@dynatrace/barista-components/select/src/select';
 
 @Component({
   selector: 'ktb-header',
@@ -23,7 +22,7 @@ import { DtSelectChange } from '@dynatrace/barista-components/select/src/select'
 export class AppHeaderComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public projects: Observable<Project[] | undefined>;
-  public project$: Observable<Project | undefined> = of(undefined);
+  public selectedProject: string | undefined;
   public projectBoardView = '';
   public appTitle = environment?.config?.appTitle;
   public logoUrl = environment?.config?.logoUrl;
@@ -47,15 +46,12 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
-      if (event instanceof ResolveEnd) {
+      if (event instanceof RoutesRecognized) {
         const pieces = event.url.split('/');
         if (pieces[1] === 'evaluation') {
-          this.project$ = this.dataService.projectName.pipe(
-            switchMap((projectName) => this.dataService.getProject(projectName))
-          );
+          this.dataService.projectName.pipe(switchMap((projectName) => (this.selectedProject = projectName)));
         } else {
-          const projectName = event.state.root.children[0].params.projectName;
-          this.project$ = this.dataService.getProject(projectName);
+          this.selectedProject = event.state.root.children[0].params.projectName;
         }
       } else if (event instanceof NavigationEnd) {
         // catch url change and update projectBoardView for the project picker
@@ -216,14 +212,14 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
-  changeProject($event: DtSelectChange<string | undefined>): void {
-    this.project$ = of(undefined);
-    setTimeout(() => {
-      const urlPieces = this.router.url.split('/');
-      if (urlPieces[1] === 'project') {
-        this.project$ = this.dataService.getProject(urlPieces[2]);
-      }
-    });
+  async changeProject(selectedProject: string | undefined): Promise<void> {
+    const projectBefore = this.selectedProject;
+    const result = await this.router.navigate(this.getRouterLink(selectedProject as string));
+    if (!result) {
+      this.selectedProject = projectBefore;
+    } else {
+      this.selectedProject = selectedProject;
+    }
   }
 
   ngOnDestroy(): void {
