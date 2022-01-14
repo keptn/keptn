@@ -47,9 +47,9 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
       if (event instanceof NavigationStart) {
-        this.readProjectFromUrl();
+        this.setProject();
       } else if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
-        this.readProjectFromUrl();
+        this.setProject();
       }
     });
 
@@ -207,7 +207,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     });
   }
 
-  readProjectFromUrl(): void {
+  setProject(): void {
     const urlPieces = this.router.url.split('/');
     if (urlPieces[1] === 'project') {
       this.selectedProject = urlPieces[2];
