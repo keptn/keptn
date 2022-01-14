@@ -85,6 +85,8 @@ func Test_SequenceState(t *testing.T) {
 	// send a delivery.triggered event
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
 
+	commitID := "my-git-commit-id"
+
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentTriggeredEventData{
@@ -101,6 +103,7 @@ func Test_SequenceState(t *testing.T) {
 		Shkeptnspecversion: KeptnSpecVersion,
 		Source:             &source,
 		Specversion:        "1.0",
+		Gitcommitid:        commitID,
 		Type:               &eventType,
 	}, 3)
 	require.Nil(t, err)
@@ -159,11 +162,13 @@ func Test_SequenceState(t *testing.T) {
 	}, 10*time.Second, 2*time.Second)
 
 	// get deployment.triggered event
-	deliveryTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
+	deploymentTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
 	require.Nil(t, err)
-	require.NotNil(t, deliveryTriggeredEvent)
+	require.NotNil(t, deploymentTriggeredEvent)
 
-	cloudEvent := keptnv2.ToCloudEvent(*deliveryTriggeredEvent)
+	require.Equal(t, commitID, deploymentTriggeredEvent.Gitcommitid)
+
+	cloudEvent := keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
 
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 
@@ -232,6 +237,8 @@ func Test_SequenceState(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, evaluationTriggeredEvent)
 
+	require.Equal(t, commitID, deploymentTriggeredEvent.Gitcommitid)
+
 	cloudEvent = keptnv2.ToCloudEvent(*evaluationTriggeredEvent)
 
 	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
@@ -292,12 +299,12 @@ func Test_SequenceState(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
-	deliveryTriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("delivery"))
+	deploymentTriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("delivery"))
 
 	require.Nil(t, err)
-	require.NotNil(t, deliveryTriggeredEvent)
+	require.NotNil(t, deploymentTriggeredEvent)
 
-	cloudEvent = keptnv2.ToCloudEvent(*deliveryTriggeredEvent)
+	cloudEvent = keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
 
 	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
