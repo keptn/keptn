@@ -154,7 +154,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy 
       switchMap((projectName) => this.dataService.getTaskNames(projectName)),
       catchError((err: HttpErrorResponse) => {
         this._errorSubject.next(err.error);
-        this.notificationsService.addNotification(NotificationType.ERROR, err.error, 5_000);
+        this.notificationsService.addNotification(NotificationType.ERROR, err.error);
         return throwError(err);
       }),
       take(1)
