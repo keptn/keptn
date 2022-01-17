@@ -14,7 +14,7 @@
   height: 16px;
 
   &.info {
-    fill: $primary-color;
+    fill: var(--dt-theme-main-default-color);
   }
   &.error {
     fill: $error-color;

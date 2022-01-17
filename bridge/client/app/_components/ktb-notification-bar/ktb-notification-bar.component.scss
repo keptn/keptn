@@ -52,7 +52,7 @@
 }
 
 .info-note {
-  background-color: $secondary-color;
+  background-color: var(--dt-theme-main-active-color);
 }
 .error-note {
   background-color: $error-color;
