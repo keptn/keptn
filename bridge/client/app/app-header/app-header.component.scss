@@ -65,6 +65,6 @@ dt-select#projectSelect {
     border-radius: 3px;
   }
   ::ng-deep .dt-select-arrow svg {
-    fill: #fff;
+    fill: #fff !important;
   }
 }
