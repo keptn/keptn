@@ -6,7 +6,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/api/utils"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"os/signal"
