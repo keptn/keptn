@@ -530,16 +530,20 @@ export class DataService {
   public async getTasks(projectName: string): Promise<string[]> {
     const shipyard = await this.getShipyard(projectName);
     const tasks: string[] = ['evaluation'];
-    for (const stage of shipyard.spec.stages) {
-      if (stage.sequences) {
-        for (const sequence of stage.sequences) {
-          for (const task of sequence.tasks) {
-            if (!tasks.includes(task.name)) {
-              tasks.push(task.name);
+    try {
+      for (const stage of shipyard.spec.stages) {
+        if (stage.sequences) {
+          for (const sequence of stage.sequences) {
+            for (const task of sequence.tasks) {
+              if (!tasks.includes(task.name)) {
+                tasks.push(task.name);
+              }
             }
           }
         }
       }
+    } catch (error) {
+      throw Error('Could not parse shipyard.yaml');
     }
     return tasks;
   }
