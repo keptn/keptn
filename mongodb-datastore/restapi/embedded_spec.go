@@ -146,8 +146,9 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Saves an event to the datastore",
+        "summary": "INTERNAL Endpoint: Saves an event to the datastore",
         "operationId": "saveEvent",
+        "deprecated": true,
         "parameters": [
           {
             "name": "body",
@@ -234,8 +235,9 @@ func init() {
         "tags": [
           "health"
         ],
-        "summary": "Health endpoint",
+        "summary": "INTERNAL Endpoint: Health endpoint",
         "operationId": "getHealth",
+        "deprecated": true,
         "responses": {
           "200": {
             "description": "healthy"
@@ -453,8 +455,9 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Saves an event to the datastore",
+        "summary": "INTERNAL Endpoint: Saves an event to the datastore",
         "operationId": "saveEvent",
+        "deprecated": true,
         "parameters": [
           {
             "name": "body",
@@ -547,8 +550,9 @@ func init() {
         "tags": [
           "health"
         ],
-        "summary": "Health endpoint",
+        "summary": "INTERNAL Endpoint: Health endpoint",
         "operationId": "getHealth",
+        "deprecated": true,
         "responses": {
           "200": {
             "description": "healthy"
