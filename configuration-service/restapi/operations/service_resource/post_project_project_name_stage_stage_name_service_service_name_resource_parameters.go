@@ -6,19 +6,16 @@ package service_resource
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 )
 
 // NewPostProjectProjectNameStageStageNameServiceServiceNameResourceParams creates a new PostProjectProjectNameStageStageNameServiceServiceNameResourceParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewPostProjectProjectNameStageStageNameServiceServiceNameResourceParams() PostProjectProjectNameStageStageNameServiceServiceNameResourceParams {
 
 	return PostProjectProjectNameStageStageNameServiceServiceNameResourceParams{}
@@ -79,17 +76,11 @@ func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) B
 				res = append(res, err)
 			}
 
-			ctx := validate.WithOperationRequest(context.Background())
-			if err := body.ContextValidate(ctx, route.Formats); err != nil {
-				res = append(res, err)
-			}
-
 			if len(res) == 0 {
 				o.Resources = body
 			}
 		}
 	}
-
 	rServiceName, rhkServiceName, _ := route.Params.GetOK("serviceName")
 	if err := o.bindServiceName(rServiceName, rhkServiceName, route.Formats); err != nil {
 		res = append(res, err)
@@ -99,6 +90,7 @@ func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) B
 	if err := o.bindStageName(rStageName, rhkStageName, route.Formats); err != nil {
 		res = append(res, err)
 	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -114,6 +106,7 @@ func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) b
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil
@@ -128,6 +121,7 @@ func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) b
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ServiceName = raw
 
 	return nil
@@ -142,6 +136,7 @@ func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) b
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.StageName = raw
 
 	return nil

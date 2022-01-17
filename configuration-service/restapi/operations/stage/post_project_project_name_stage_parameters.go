@@ -6,21 +6,18 @@ package stage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 
 	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPostProjectProjectNameStageParams creates a new PostProjectProjectNameStageParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewPostProjectProjectNameStageParams() PostProjectProjectNameStageParams {
 
 	return PostProjectProjectNameStageParams{}
@@ -71,11 +68,6 @@ func (o *PostProjectProjectNameStageParams) BindRequest(r *http.Request, route *
 				res = append(res, err)
 			}
 
-			ctx := validate.WithOperationRequest(context.Background())
-			if err := body.ContextValidate(ctx, route.Formats); err != nil {
-				res = append(res, err)
-			}
-
 			if len(res) == 0 {
 				o.Stage = &body
 			}
@@ -96,6 +88,7 @@ func (o *PostProjectProjectNameStageParams) bindProjectName(rawData []string, ha
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil
