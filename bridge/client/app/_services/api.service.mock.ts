@@ -400,34 +400,49 @@ export class ApiServiceMock extends ApiService {
     return of({
       deployments: [
         {
-          service: 'carts-db',
-          stage: 'dev',
-          image: 'mongo:4.2.2',
+          stage: {
+            name: 'dev',
+            services: [
+              {
+                name: 'carts',
+                image: 'carts:0.12.3',
+              },
+              {
+                name: 'carts-db',
+                image: 'mongo:4.2.2',
+              },
+            ],
+          },
         },
         {
-          service: 'carts',
-          stage: 'dev',
-          image: 'carts:0.12.3',
+          stage: {
+            name: 'staging',
+            services: [
+              {
+                name: 'carts',
+                image: 'carts:0.12.3',
+              },
+              {
+                name: 'carts-db',
+                image: 'mongo:4.2.2',
+              },
+            ],
+          },
         },
         {
-          service: 'carts-db',
-          stage: 'production',
-          image: 'mongo:4.2.2',
-        },
-        {
-          service: 'carts',
-          stage: 'production',
-          image: 'carts:0.12.3',
-        },
-        {
-          service: 'carts-db',
-          stage: 'staging',
-          image: 'mongo:4.2.2',
-        },
-        {
-          service: 'carts',
-          stage: 'staging',
-          image: 'carts:0.12.3',
+          stage: {
+            name: 'production',
+            services: [
+              {
+                name: 'carts',
+                image: 'carts:0.12.3',
+              },
+              {
+                name: 'carts-db',
+                image: 'mongo:4.2.2',
+              },
+            ],
+          },
         },
       ],
       filter: {

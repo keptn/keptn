@@ -271,9 +271,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     if (filterItem) {
       // Take basis from metadatadata ...
       const serviceFilters: { name: string; value: string }[] = [];
-      metadata.filter.services.forEach((s) => {
-        serviceFilters.push({ name: s, value: s });
-      });
+      for (const svc of metadata.filter.services) {
+        serviceFilters.push({ name: svc, value: svc });
+      }
 
       // ... and enhance with sequence services (if deleted service has a sequence)
       if (this.project?.sequences) {
@@ -290,7 +290,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       filterItem.autocomplete = serviceFilters;
 
       // Remove service from active filters if not in list of services anymore
-      this._seqFilters = this._seqFilters.filter((fltr) => serviceFilters.find((svc) => svc === fltr[1].name));
+      this._seqFilters = this._seqFilters.filter((fltr) => serviceFilters.find((svc) => svc.name === fltr[1].name));
     }
   }
 
