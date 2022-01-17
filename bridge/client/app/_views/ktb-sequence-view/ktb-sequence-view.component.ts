@@ -110,6 +110,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         if (project.projectName !== this.project?.projectName) {
           this.currentSequence = undefined;
           this.selectedStage = undefined;
+          this.filtersChanged({ filters: [] });
         }
         this.project = project;
       });
@@ -265,22 +266,44 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateFilterDataSource(metadata: ISequencesMetadata): void {
-    let filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Service');
+  private mapServiceFilters(metadata: ISequencesMetadata): void {
+    const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Service');
     if (filterItem) {
-      filterItem.autocomplete = metadata.filter.services.map((s) => {
-        return { name: s, value: s };
+      // Take basis from metadatadata ...
+      const serviceFilters: { name: string; value: string }[] = [];
+      metadata.filter.services.map((s) => {
+        serviceFilters.push({ name: s, value: s });
       });
+
+      // ... and enhance with sequence services (if deleted service has a sequence)
+      if (this.project?.sequences) {
+        this.project.sequences
+          .map((s) => s.service)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((serviceName) => {
+            if (serviceFilters.find((fltr) => fltr.name === serviceName) === undefined) {
+              serviceFilters.push({ name: serviceName, value: serviceName });
+            }
+          });
+      }
+
+      filterItem.autocomplete = serviceFilters;
+
+      // Remove service from active filters if not in list of services anymore
+      this._seqFilters = this._seqFilters.filter((fltr) => serviceFilters.find((svc) => svc === fltr[1].name));
     }
-    filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Stage');
+  }
+
+  updateFilterDataSource(metadata: ISequencesMetadata): void {
+    this.mapServiceFilters(metadata);
+
+    const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Stage');
     if (filterItem) {
       filterItem.autocomplete = metadata.filter.stages.map((s) => {
         return { name: s, value: s };
       });
     }
     this.refreshFilterDataSource();
-
-    this.filtersChanged({ filters: [] });
   }
 
   private refreshFilterDataSource(): void {
