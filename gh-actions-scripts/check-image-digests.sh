@@ -13,7 +13,7 @@ for tag in "${tags[@]}"; do
 
     while IFS=, read -r artifact release_digest; do
       echo "Pulling docker image $artifact:$tag..."
-      docker pull "keptn/$artifact:$tag"
+      docker pull "keptn/$artifact:$tag" --quiet
       docker_digest=$(docker inspect "keptn/$artifact:$tag" | jq -r '.[0].RepoDigests[0]' | cut -d'@' -f2)
 
       echo "Checking image digest..."
