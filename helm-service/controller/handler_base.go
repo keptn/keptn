@@ -11,6 +11,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/types"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
+	"net/url"
 	"strings"
 )
 
@@ -82,8 +83,10 @@ func (h *HandlerBase) getUserChart(e keptnv2.EventData, commitID string) (*chart
 	return h.chartRetriever.Retrieve(options)
 }
 
-func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
-	endpointsResource, err := h.getKeptnHandler().ResourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, "helm/endpoints.yaml")
+func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData, commitID string) (*keptnv2.Endpoints, error) {
+	commitOption := url.Values{}
+	commitOption.Add("commitID", commitID)
+	endpointsResource, err := h.getKeptnHandler().ResourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, "helm/endpoints.yaml", keptnapi.AppendQuery(commitOption))
 	if err != nil {
 		// do not fail if the resource is not available
 		if err == keptnapi.ResourceNotFoundError {

@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
+	utils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 )
@@ -43,7 +44,7 @@ type IChartRetriever interface {
 
 // IResourceHandler defines operations to retrieve keptn resources
 type IResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
+	GetServiceResource(project string, stage string, service string, resourceURI string, options ...utils.GetOption) (*models.Resource, error)
 }
 
 // IChartPackager defines the operation to package a helm chart

@@ -69,6 +69,8 @@ github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa
 github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/keptn/go-utils v0.11.1-0.20220110112638-4e1eff727e81 h1:X5LvyLanwN3pI6T8HoqLXar7/ltqKDy/veia3stbwN4=
 github.com/keptn/go-utils v0.11.1-0.20220110112638-4e1eff727e81/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
+github.com/keptn/go-utils v0.11.1-0.20220117092643-ba5397b5d46f h1:tLws5B9DKS+ONKTaIvhmH0cyX2UBCV9pG7HdpH+nkmo=
+github.com/keptn/go-utils v0.11.1-0.20220117092643-ba5397b5d46f/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/keptn/keptn/go-sdk v0.0.0-20211215141221-491a19a96c50 h1:3dTotOli68r2lIEWkppclvEt8YBQn6ctz7mlFi5eS3Q=
 github.com/keptn/keptn/go-sdk v0.0.0-20211215141221-491a19a96c50/go.mod h1:4ElHs+iaN7wZ7mA5Ico4/wBL0o0QMIClEtl30f1t90s=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
