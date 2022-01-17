@@ -15,11 +15,8 @@ import (
 //
 // 		// make and configure a mocked event_handler.ResourceHandler
 // 		mockedResourceHandler := &ResourceHandlerMock{
-// 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error) {
+// 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*keptnapimodels.Resource, error) {
 // 				panic("mock out the GetServiceResource method")
-// 			},
-// 			SetOptsFunc: func(options keptnapi.GetOptions)  {
-// 				panic("mock out the SetOpts method")
 // 			},
 // 		}
 //
@@ -29,10 +26,7 @@ import (
 // 	}
 type ResourceHandlerMock struct {
 	// GetServiceResourceFunc mocks the GetServiceResource method.
-	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
-
-	// SetOptsFunc mocks the SetOpts method.
-	SetOptsFunc func(options keptnapi.GetOptions)
+	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*keptnapimodels.Resource, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -46,19 +40,15 @@ type ResourceHandlerMock struct {
 			Service string
 			// ResourceURI is the resourceURI argument value.
 			ResourceURI string
-		}
-		// SetOpts holds details about calls to the SetOpts method.
-		SetOpts []struct {
 			// Options is the options argument value.
-			Options keptnapi.GetOptions
+			Options []keptnapi.GetOption
 		}
 	}
 	lockGetServiceResource sync.RWMutex
-	lockSetOpts            sync.RWMutex
 }
 
 // GetServiceResource calls GetServiceResourceFunc.
-func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error) {
+func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*keptnapimodels.Resource, error) {
 	if mock.GetServiceResourceFunc == nil {
 		panic("ResourceHandlerMock.GetServiceResourceFunc: method is nil but ResourceHandler.GetServiceResource was just called")
 	}
@@ -67,16 +57,18 @@ func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string
 		Stage       string
 		Service     string
 		ResourceURI string
+		Options     []keptnapi.GetOption
 	}{
 		Project:     project,
 		Stage:       stage,
 		Service:     service,
 		ResourceURI: resourceURI,
+		Options:     options,
 	}
 	mock.lockGetServiceResource.Lock()
 	mock.calls.GetServiceResource = append(mock.calls.GetServiceResource, callInfo)
 	mock.lockGetServiceResource.Unlock()
-	return mock.GetServiceResourceFunc(project, stage, service, resourceURI)
+	return mock.GetServiceResourceFunc(project, stage, service, resourceURI, options...)
 }
 
 // GetServiceResourceCalls gets all the calls that were made to GetServiceResource.
@@ -87,46 +79,17 @@ func (mock *ResourceHandlerMock) GetServiceResourceCalls() []struct {
 	Stage       string
 	Service     string
 	ResourceURI string
+	Options     []keptnapi.GetOption
 } {
 	var calls []struct {
 		Project     string
 		Stage       string
 		Service     string
 		ResourceURI string
+		Options     []keptnapi.GetOption
 	}
 	mock.lockGetServiceResource.RLock()
 	calls = mock.calls.GetServiceResource
 	mock.lockGetServiceResource.RUnlock()
-	return calls
-}
-
-// SetOpts calls SetOptsFunc.
-func (mock *ResourceHandlerMock) SetOpts(options keptnapi.GetOptions) {
-	if mock.SetOptsFunc == nil {
-		panic("ResourceHandlerMock.SetOptsFunc: method is nil but ResourceHandler.SetOpts was just called")
-	}
-	callInfo := struct {
-		Options keptnapi.GetOptions
-	}{
-		Options: options,
-	}
-	mock.lockSetOpts.Lock()
-	mock.calls.SetOpts = append(mock.calls.SetOpts, callInfo)
-	mock.lockSetOpts.Unlock()
-	mock.SetOptsFunc(options)
-}
-
-// SetOptsCalls gets all the calls that were made to SetOpts.
-// Check the length with:
-//     len(mockedResourceHandler.SetOptsCalls())
-func (mock *ResourceHandlerMock) SetOptsCalls() []struct {
-	Options keptnapi.GetOptions
-} {
-	var calls []struct {
-		Options keptnapi.GetOptions
-	}
-	mock.lockSetOpts.RLock()
-	calls = mock.calls.SetOpts
-	mock.lockSetOpts.RUnlock()
 	return calls
 }

@@ -69,14 +69,14 @@ func (h *MockedHandler) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error) {
+func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
 	ch := helm.GetTestGeneratedChart()
-	return &ch, "GENERATED_CHART_GIT_ID", nil
+	return &ch, commitID, nil
 }
 
-func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, string, error) {
+func (h *MockedHandler) getUserChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
 	ch := helm.GetTestUserChart()
-	return &ch, "USER_CHART_GIT_ID", nil
+	return &ch, commitID, nil
 }
 
 func (h *MockedHandler) HandleEvent(e cloudevents.Event) {
@@ -95,7 +95,7 @@ func (h *MockedHandler) getUserManagedEndpoints(event keptnv2.EventData) (*keptn
 	return nil, nil
 }
 
-func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
+func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData, commitID string) (bool, error) {
 	return true, nil
 }
 

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"github.com/cloudevents/sdk-go/v2/types"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	logger "github.com/sirupsen/logrus"
 	"strconv"
@@ -42,6 +43,10 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
+	// retrieve commitId from sequence
+	extensions := ce.Context.GetExtensions()
+	gitVersion, _ := types.ToString(extensions["gitcommitid"])
+
 	if actionTriggeredEvent.Action.Action == ActionScaling {
 		// Send action.started event
 		logger.Info(fmt.Sprintf("Start action scaling for service %s in stage %s of project %s",
@@ -52,7 +57,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 			return
 		}
 
-		resp := h.handleScaling(actionTriggeredEvent)
+		resp := h.handleScaling(actionTriggeredEvent, gitVersion)
 		if resp.Status == keptnv2.StatusErrored {
 			logger.Errorf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message)
 		} else {
@@ -116,7 +121,7 @@ func (h *ActionTriggeredHandler) getFinishedEventData(eventData keptnv2.EventDat
 	}
 }
 
-func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData) keptnv2.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData, commitID string) keptnv2.ActionFinishedEventData {
 
 	value, ok := e.Action.Value.(string)
 	if !ok {
@@ -131,7 +136,11 @@ func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventDat
 
 	replicaCountUpdater := configurationchanger.NewReplicaCountManipulator(replicaIncrement)
 	// Note: This action applies the scaling on the generated chart and therefore assumes a b/g deployment
-	genChart, gitVersion, err := h.configChanger.UpdateChart(e.EventData,
+	genChart, gitVersion, err := h.getGeneratedChart(e.EventData, commitID)
+	if err != nil {
+		return h.getFinishedEventDataForError(e.EventData, err)
+	}
+	genChart, gitVersion, err = h.configChanger.UpdateLoadedChart(genChart, e.EventData,
 		true, replicaCountUpdater)
 	if err != nil {
 		return h.getFinishedEventDataForError(e.EventData, err)

@@ -149,11 +149,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapi.Resource, error) {
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*keptnapi.Resource, error) {
 							return nil, nil
-						},
-						SetOptsFunc: func(options api.GetOptions) {
-
 						},
 					},
 				},

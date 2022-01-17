@@ -5,12 +5,10 @@ import (
 	"github.com/cloudevents/sdk-go/v2/types"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/stretchr/testify/assert"
-	"reflect"
 	"testing"
 )
 
@@ -393,34 +391,6 @@ total_score:
 			objectives, err := parseSLO([]byte(test.SLOFileContent))
 			assert.EqualValues(t, test.ExpectedSLO, objectives)
 			assert.EqualValues(t, test.ExpectedError, err)
-		})
-	}
-}
-
-func Test_configureFileRetrieverOptions(t *testing.T) {
-
-	tests := []struct {
-		name  string
-		event cloudevents.Event
-		want  api.GetOptions
-	}{
-		{
-			name:  "valid event",
-			event: getStartEventWithCommitId("1234"),
-			want: api.GetOptions{
-				CommitID: "1234",
-			},
-		},
-		{
-			name:  "invalid event",
-			event: cloudevents.NewEvent("23345"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := configureFileRetrieverOptions(tt.event); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("configureFileRetrieverOptions() = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }

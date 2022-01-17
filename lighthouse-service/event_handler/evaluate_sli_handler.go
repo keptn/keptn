@@ -133,10 +133,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	}
 
 	// compare the results based on the evaluation strategy
-	eh.SLOFileRetriever.ResourceHandler.SetOpts(keptnapi.GetOptions{
-		CommitID: commitID,
-	})
-	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
+	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 
 	if err != nil {
 		if err == ErrSLOFileNotFound {

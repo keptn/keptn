@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"github.com/cloudevents/sdk-go/v2/types"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -33,6 +34,10 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
 	}
 
+	// retrieve commitId from sequence
+	extensions := ce.Context.GetExtensions()
+	gitVersion, _ := types.ToString(extensions["gitcommitid"])
+
 	// Send release started event
 	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting release for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 	if err := r.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.RollbackTaskName), r.getStartedEventData(e.EventData)); err != nil {
@@ -41,7 +46,7 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 	}
 
 	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
-	gitVersion, err := r.rollbackDeployment(e.EventData)
+	gitVersion, err := r.rollbackDeployment(e.EventData, gitVersion)
 	if err != nil {
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -56,11 +61,15 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 
 }
 
-func (r *RollbackHandler) rollbackDeployment(e keptnv2.EventData) (string, error) {
+func (r *RollbackHandler) rollbackDeployment(e keptnv2.EventData, commitID string) (string, error) {
 
 	canaryWeightTo0Updater := configurationchanger.NewCanaryWeightManipulator(r.mesh, 0)
 
-	genChart, gitVersion, err := r.configurationChanger.UpdateChart(e,
+	chart, _, err := r.getGeneratedChart(e, commitID)
+	if err != nil {
+		return "", err
+	}
+	genChart, gitVersion, err := r.configurationChanger.UpdateLoadedChart(chart, e,
 		true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
@@ -71,7 +80,7 @@ func (r *RollbackHandler) rollbackDeployment(e keptnv2.EventData) (string, error
 		return "", err
 	}
 
-	userChart, _, err := r.getUserChart(e)
+	userChart, _, err := r.getUserChart(e, gitVersion)
 	if err != nil {
 		return "", err
 	}

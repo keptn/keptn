@@ -36,6 +36,11 @@ type IChartStorer interface {
 	Store(storeChartOpts keptnutils.StoreChartOptions) (string, error)
 }
 
+// IChartRetriever defines operations to retrieve a helm chart
+type IChartRetriever interface {
+	Retrieve(storeChartOpts keptnutils.RetrieveChartOptions) (*chart.Chart, string, error)
+}
+
 // IResourceHandler defines operations to retrieve keptn resources
 type IResourceHandler interface {
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)

@@ -3313,10 +3313,8 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
 							return nil, nil
-						},
-						SetOptsFunc: func(options keptnapi.GetOptions) {
 						},
 					},
 				},
@@ -3356,11 +3354,8 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
 							return nil, errors.New("Could not check out branch containing stage config")
-						},
-						SetOptsFunc: func(options keptnapi.GetOptions) {
-
 						},
 					},
 					ServiceHandler: &event_handler_mock.ServiceHandlerMock{GetServiceFunc: func(project string, stage string, service string) (*models.Service, error) {
@@ -3404,12 +3399,10 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+							commitID = strings.TrimPrefix(options[0](commitID), "?commitID=")
 							myres := models.Resource{Metadata: &models.Version{Version: commitID}}
 							return &myres, nil
-						},
-						SetOptsFunc: func(options keptnapi.GetOptions) {
-							commitID = options.CommitID
 						},
 					},
 					ServiceHandler: &event_handler_mock.ServiceHandlerMock{GetServiceFunc: func(project string, stage string, service string) (*models.Service, error) {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
@@ -24,7 +25,10 @@ type DeploymentHandler struct {
 }
 
 // NewDeploymentHandler creates a new DeploymentHandler
-func NewDeploymentHandler(keptnHandler Handler, mesh mesh.Mesh, onboarder Onboarder, chartGenerator helm.ChartGenerator) *DeploymentHandler {
+func NewDeploymentHandler(keptnHandler Handler,
+	mesh mesh.Mesh,
+	onboarder Onboarder,
+	chartGenerator helm.ChartGenerator) *DeploymentHandler {
 	return &DeploymentHandler{
 		Handler:               keptnHandler,
 		mesh:                  mesh,
@@ -36,6 +40,7 @@ func NewDeploymentHandler(keptnHandler Handler, mesh mesh.Mesh, onboarder Onboar
 // HandleEvent handles deployment.triggered events by first changing the new configuration and
 // afterwards applying the configuration in the cluster
 func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
+
 	e := keptnv2.DeploymentTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("Failed to unmarshal data: unable to convert json data from cloudEvent to deployment event")
@@ -52,12 +57,18 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 
 	var userChart *chart.Chart
 	var err error
-	gitVersion := ""
+	// retrieve commitId from sequence
+	extensions := ce.Context.GetExtensions()
+	gitVersion, _ := types.ToString(extensions["gitcommitid"])
+
 	if len(e.ConfigurationChange.Values) > 0 {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Updating values for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 		valuesUpdater := configurationchanger.NewValuesManipulator(e.ConfigurationChange.Values)
-		userChart, gitVersion, err = configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
-			false, valuesUpdater)
+
+		userChart, _, err = h.getGeneratedChart(e.EventData, gitVersion)
+		userChart, gitVersion, err = configurationchanger.NewConfigurationChanger(
+			h.getConfigServiceURL()).UpdateLoadedChart(userChart, e.EventData, false, valuesUpdater)
+
 		if err != nil {
 			err = fmt.Errorf("failed to update values: %v", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
@@ -65,7 +76,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		}
 	} else {
 		// Read chart
-		userChart, gitVersion, err = h.getUserChart(e.EventData)
+		userChart, gitVersion, err = h.getUserChart(e.EventData, gitVersion)
 		if err != nil {
 			err = fmt.Errorf("failed to load chart: %v", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
@@ -85,7 +96,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	if err := h.upgradeGeneratedChart(deploymentStrategy, e); err != nil {
+	if err := h.upgradeGeneratedChart(deploymentStrategy, e, gitVersion); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
@@ -104,9 +115,9 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Deployment finished for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 }
 
-func (h *DeploymentHandler) upgradeGeneratedChart(deploymentStrategy keptnevents.DeploymentStrategy, e keptnv2.DeploymentTriggeredEventData) error {
+func (h *DeploymentHandler) upgradeGeneratedChart(deploymentStrategy keptnevents.DeploymentStrategy, e keptnv2.DeploymentTriggeredEventData, commitID string) error {
 
-	genChart, err := h.catchupGeneratedChartOnboarding(deploymentStrategy, e.EventData)
+	genChart, err := h.catchupGeneratedChartOnboarding(deploymentStrategy, e.EventData, commitID)
 	if err != nil {
 		return err
 	}
@@ -127,15 +138,15 @@ func (h *DeploymentHandler) upgradeGeneratedChart(deploymentStrategy keptnevents
 
 // catchupGeneratedChartOnboarding checks if generated chart already exists and if not, it onboards the chart
 func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy keptnevents.DeploymentStrategy,
-	event keptnv2.EventData) (*chart.Chart, error) {
+	event keptnv2.EventData, commitID string) (*chart.Chart, error) {
 
-	exists, err := h.existsGeneratedChart(event)
+	exists, err := h.existsGeneratedChart(event, commitID)
 	if err != nil {
 		return nil, err
 	}
 
 	if exists {
-		generatedChart, _, err := h.getGeneratedChart(event)
+		generatedChart, _, err := h.getGeneratedChart(event, commitID)
 		return generatedChart, err
 	}
 

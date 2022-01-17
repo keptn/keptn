@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	logger "github.com/sirupsen/logrus"
 	"net/url"
@@ -83,11 +82,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 
-	// collect objectives from SLO file
-	eh.SLOFileRetriever.ResourceHandler.SetOpts(keptnapi.GetOptions{
-		CommitID: commitID,
-	})
-	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
+	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 	if err == nil && objectives != nil {
 		logger.Info("SLO file found")
 		for _, objective := range objectives.Objectives {

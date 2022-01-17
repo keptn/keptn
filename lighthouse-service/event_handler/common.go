@@ -53,8 +53,7 @@ var ErrConfigService = errors.New("could not checkout the SLO")
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
 type ResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
-	SetOpts(options utils.GetOptions)
+	GetServiceResource(project string, stage string, service string, resourceURI string, options ...utils.GetOption) (*keptnapimodels.Resource, error)
 }
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/service_handler_mock.go . ServiceHandler
@@ -72,8 +71,10 @@ type SLOFileRetriever struct {
 	ServiceHandler  ServiceHandler
 }
 
-func (sr *SLOFileRetriever) GetSLOs(project, stage, service string) (*keptn.ServiceLevelObjectives, error) {
-	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
+func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*keptn.ServiceLevelObjectives, error) {
+	commitOption := url.Values{}
+	commitOption.Add("commitID", commitID)
+	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml", utils.AppendQuery(commitOption))
 	if err != nil {
 		_, err2 := sr.ServiceHandler.GetService(project, stage, service)
 		if err2 != nil {
@@ -263,13 +264,4 @@ func getInClusterKubeClient() (kubernetes.Interface, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
-}
-
-func configureFileRetrieverOptions(event cloudevents.Event) utils.GetOptions {
-	options := utils.GetOptions{}
-	eventScope := &keptnapimodels.KeptnContextExtendedCE{}
-	if err := keptnv2.Decode(event, eventScope); err == nil {
-		options.CommitID = eventScope.Gitcommitid
-	}
-	return options
 }

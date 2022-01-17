@@ -14,9 +14,9 @@ type Handler interface {
 	getHelmExecutor() helm.HelmExecutor
 	getConfigServiceURL() string
 	HandleEvent(ce cloudevents.Event)
-	getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error)
-	getUserChart(e keptnv2.EventData) (*chart.Chart, string, error)
-	existsGeneratedChart(e keptnv2.EventData) (bool, error)
+	getGeneratedChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error)
+	getUserChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error)
+	existsGeneratedChart(e keptnv2.EventData, commitID string) (bool, error)
 	handleError(triggerID string, err error, taskName string, finishedEventData interface{})
 	sendEvent(triggerID, ceType string, data interface{}) error
 	upgradeChart(ch *chart.Chart, event keptnv2.EventData,

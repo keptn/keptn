@@ -2,17 +2,16 @@ package controller
 
 import (
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"strings"
-
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+	"github.com/keptn/keptn/helm-service/pkg/types"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
+	"strings"
 )
 
 // HandlerBase provides basic functionality for all handlers
@@ -20,6 +19,7 @@ type HandlerBase struct {
 	keptnHandler     *keptnv2.Keptn
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
+	chartRetriever   types.IChartRetriever
 }
 
 // Opaque key type used for graceful shutdown context value
@@ -30,10 +30,13 @@ var GracefulShutdownKey = gracefulShutdownKeyType{}
 // NewHandlerBase creates a new HandlerBase
 func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor, configServiceURL string) *HandlerBase {
 
+	chartRetriever := keptnutils.NewChartRetriever(keptnapi.NewResourceHandler(configServiceURL))
+
 	return &HandlerBase{
 		keptnHandler:     keptnHandler,
 		helmExecutor:     helmExecutor,
 		configServiceURL: configServiceURL,
+		chartRetriever:   chartRetriever,
 	}
 }
 
@@ -53,16 +56,30 @@ func (h *HandlerBase) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error) {
+func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
 	helmChartName := helm.GetChartName(e.Service, true)
+	options := keptnutils.RetrieveChartOptions{
+		Project:   e.Project,
+		Service:   e.Service,
+		Stage:     e.Stage,
+		ChartName: helmChartName,
+		CommitID:  commitID,
+	}
 	// Read chart
-	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
+	return h.chartRetriever.Retrieve(options)
 }
 
-func (h *HandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, string, error) {
+func (h *HandlerBase) getUserChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
 	helmChartName := helm.GetChartName(e.Service, false)
+	options := keptnutils.RetrieveChartOptions{
+		Project:   e.Project,
+		Service:   e.Service,
+		Stage:     e.Stage,
+		ChartName: helmChartName,
+		CommitID:  commitID,
+	}
 	// Read chart
-	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
+	return h.chartRetriever.Retrieve(options)
 }
 
 func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
@@ -85,9 +102,9 @@ func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2
 	return endpoints, nil
 }
 
-func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
+func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData, commitID string) (bool, error) {
 	genChartName := helm.GetChartName(e.Service, true)
-	return helm.DoesChartExist(e, genChartName, h.getConfigServiceURL())
+	return helm.DoesChartExist(e, genChartName, h.getConfigServiceURL(), commitID)
 }
 
 // HandleError logs the error and sends a finished-event

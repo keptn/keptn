@@ -12,7 +12,7 @@ import (
 // IConfigurationChanger defines operations to change the configuration of a helm chart
 type IConfigurationChanger interface {
 	UpdateLoadedChart(chart *chart.Chart, event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)
-	UpdateChart(event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)
+	//UpdateChart(event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)
 }
 
 // ConfigurationChanger supports to update a Chart in the Git repo
@@ -26,7 +26,7 @@ func NewConfigurationChanger(configServiceURL string) *ConfigurationChanger {
 }
 
 // UpdateChart reads, edits, and stores the chart referenced in the event
-func (c *ConfigurationChanger) UpdateChart(event keptnv2.EventData, generated bool,
+/*func (c *ConfigurationChanger) UpdateChart(event keptnv2.EventData, generated bool,
 	chartUpdater ChartManipulator) (*chart.Chart, string, error) {
 
 	helmChartName := helm.GetChartName(event.Service, generated)
@@ -38,7 +38,7 @@ func (c *ConfigurationChanger) UpdateChart(event keptnv2.EventData, generated bo
 	}
 
 	return c.UpdateLoadedChart(chart, event, generated, chartUpdater)
-}
+}*/
 
 // UpdateLoadedChart updates the passed chart and stores it in Git
 func (c *ConfigurationChanger) UpdateLoadedChart(chart *chart.Chart, event keptnv2.EventData, generated bool,
