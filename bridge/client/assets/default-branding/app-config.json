@@ -1,6 +1,11 @@
 {
   "appTitle": "keptn",
+<<<<<<< HEAD
   "logoUrl": "assets/default-branding/logo.png",
   "logoInvertedUrl": "assets/default-branding/logo_inverted.png",
   "stylesheetUrl": "assets/default-branding/keptn-theme.css"
+=======
+  "logoUrl": "assets/default-branding/logo.svg",
+  "logoInvertedUrl": "assets/default-branding/logo_inverted.png"
+>>>>>>> 093ead478 (add keptn logo as svg and transparent background)
 }
