@@ -10,7 +10,8 @@ import (
 )
 
 // HandleEvent godoc
-// @Summary Handle event
+// @Deprecated true
+// @Summary INTERNAL Endpoint: Handle event
 // @Description Handle incoming cloud event
 // @Tags Events
 // @Security ApiKeyAuth
