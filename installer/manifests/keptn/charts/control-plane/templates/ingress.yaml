@@ -1,5 +1,9 @@
 {{- if .Values.ingress.enabled -}}
+{{- if lt .Capabilities.KubeVersion.Minor "19" }}
+apiVersion: networking.k8s.io/v1beta
+{{- else }}
 apiVersion: networking.k8s.io/v1
+{{- end -}}
 kind: Ingress
 metadata:
 {{- if .Values.ingress.annotations }}
@@ -23,23 +27,35 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          - path: {{ .Values.ingress.path }}
-            pathType: {{ .Values.ingress.pathType }}
-            backend:
-              service:
-                name: api-gateway-nginx
-                port:
-                  number: {{ .Values.apiGatewayNginx.port }}
+        {{- if lt .Capabilities.KubeVersion.Minor "19" }}
+        - backend:
+            serviceName: api-gateway-nginx
+            servicePort: {{ .Values.apiGatewayNginx.port }}
+        {{- else }}
+        - path: {{ .Values.ingress.path }}
+          pathType: {{ .Values.ingress.pathType }}
+          backend:
+            service:
+              name: api-gateway-nginx
+              port:
+                number: {{ .Values.apiGatewayNginx.port }}
+        {{- end -}}
   {{- else }}
     - http:
         paths:
-          - path: {{ .Values.ingress.path }}
-            pathType: {{ .Values.ingress.pathType }}
-            backend:
-              service:
-                name: api-gateway-nginx
-                port:
-                  number: {{ .Values.apiGatewayNginx.port }}
+        {{- if lt .Capabilities.KubeVersion.Minor "19" }}
+        - backend:
+            serviceName: api-gateway-nginx
+            servicePort: {{ .Values.apiGatewayNginx.port }}
+        {{- else }}
+        - path: {{ .Values.ingress.path }}
+          pathType: {{ .Values.ingress.pathType }}
+          backend:
+            service:
+              name: api-gateway-nginx
+              port:
+                number: {{ .Values.apiGatewayNginx.port }}
+        {{- end -}}
   {{- end -}}
   {{- if .Values.ingress.tls }}
   tls:
