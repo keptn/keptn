@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject, throwError, BehaviorSubject } from 'rxjs';
+import { filter, map, switchMap, take, takeUntil, tap, catchError } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { Project } from '../../_models/project';
@@ -20,6 +20,7 @@ import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 import { EventState } from '../../../../shared/models/event-state';
 import { Trace } from '../../_models/trace';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -27,20 +28,22 @@ import { Trace } from '../../_models/trace';
   providers: [NotificationsService],
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
-export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
+export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   public eventPayload: Record<string, unknown> | undefined;
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<{
-    taskNames: string[];
-    subscription: UniformSubscription;
-    project: Project;
-    integrationId: string;
-    webhook?: WebhookConfig;
-    webhookSecrets?: Secret[];
-  }>;
+  public data$:
+    | Observable<{
+        taskNames: string[];
+        subscription: UniformSubscription;
+        project: Project;
+        integrationId: string;
+        webhook?: WebhookConfig;
+        webhookSecrets?: Secret[];
+      }>
+    | undefined = undefined;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -71,6 +74,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       displayValue: EventState.FINISHED,
     },
   ];
+  private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
+  public error$: Observable<string | undefined> = this._errorSubject.asObservable();
 
   constructor(
     private route: ActivatedRoute,
@@ -78,7 +83,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     private router: Router,
     private notificationsService: NotificationsService,
     private _changeDetectorRef: ChangeDetectorRef
-  ) {
+  ) {}
+
+  ngOnInit(): void {
     const subscription$ = this.route.paramMap.pipe(
       map((paramMap) => ({
         integrationId: paramMap.get('integrationId'),
@@ -145,6 +152,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
     const taskNames$ = projectName$.pipe(
       switchMap((projectName) => this.dataService.getTaskNames(projectName)),
+      catchError((err: HttpErrorResponse) => {
+        this._errorSubject.next(err.error);
+        this.notificationsService.addNotification(NotificationType.ERROR, err.error, 5_000);
+        return throwError(err);
+      }),
       take(1)
     );
     const project$ = projectName$.pipe(
@@ -332,5 +344,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    this.notificationsService.clearNotifications();
   }
 }
