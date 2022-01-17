@@ -20,8 +20,9 @@ prefixPath: ""
 keptnSpecVersion: latest
 
 nats:
-  nameOverride: nats
+  nameOverride: keptn-nats
   fullnameOverride: keptn-nats
+  #image: nats:2.4.0
   cluster:
     replicas: 3
     name: nats
@@ -37,7 +38,7 @@ nats:
         enabled: true
         size: 5Gi
         storageDirectory: /data/
-        storageClassName: "standard"
+        storageClassName: ""
 
   natsbox:
     enabled: false
