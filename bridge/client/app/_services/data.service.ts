@@ -747,8 +747,4 @@ export class DataService {
   ): Observable<Record<string, unknown>> {
     return this.apiService.getIntersectedEvent(event, eventSuffix, projectName, stages, services);
   }
-
-  public logout(): Observable<EndSessionData | null> {
-    return this.apiService.logout();
-  }
 }

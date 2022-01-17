@@ -3,7 +3,7 @@
 
 :host {
   width: 100%;
-  border: 1px solid $turquoise-600;
+  border: 1px solid var(--dt-theme-main-default-color);
   background: #ffffff;
 }
 
@@ -14,7 +14,7 @@
 }
 
 .select-overlay-header {
-  background: $turquoise-600;
+  background: var(--dt-theme-main-default-color);
 
   > div {
     color: #ffffff;
@@ -30,7 +30,7 @@
     height: 0;
     border-style: solid;
     border-width: 0 15px 15px 15px;
-    border-color: transparent transparent $turquoise-600 transparent;
+    border-color: transparent transparent var(--dt-theme-main-default-color) transparent;
   }
 
   > div > .dt-icon {
