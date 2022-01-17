@@ -25,7 +25,6 @@ import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
-import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 
 @Injectable({
   providedIn: 'root',
@@ -481,9 +480,5 @@ export class ApiService {
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
     return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
-  }
-
-  public logout(): Observable<EndSessionData | null> {
-    return this.http.get<EndSessionData | null>(`./logout`);
   }
 }

@@ -271,7 +271,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     if (filterItem) {
       // Take basis from metadatadata ...
       const serviceFilters: { name: string; value: string }[] = [];
-      metadata.filter.services.map((s) => {
+      metadata.filter.services.forEach((s) => {
         serviceFilters.push({ name: s, value: s });
       });
 
@@ -280,7 +280,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.project.sequences
           .map((s) => s.service)
           .filter((v, i, a) => a.indexOf(v) === i)
-          .map((serviceName) => {
+          .forEach((serviceName) => {
             if (serviceFilters.find((fltr) => fltr.name === serviceName) === undefined) {
               serviceFilters.push({ name: serviceName, value: serviceName });
             }

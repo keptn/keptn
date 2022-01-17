@@ -29,7 +29,6 @@ import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
-import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 
 @Injectable({
   providedIn: 'root',
