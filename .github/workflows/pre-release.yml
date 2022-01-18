@@ -390,11 +390,6 @@ jobs:
           gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
           gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
 
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.7.2
-
       - name: Upload helm charts
         env:
           ARTIFACTS: "./dist/keptn-installer/*.tgz"
@@ -403,7 +398,8 @@ jobs:
           mv "$ARTIFACTS" ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
-          git add --all
+          git add *.tgz
+          git add index.yaml
           git commit --signoff -m "Keptn Release $RELEASE_TAG"
           git push
 
