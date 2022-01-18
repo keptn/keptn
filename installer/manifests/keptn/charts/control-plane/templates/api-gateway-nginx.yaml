@@ -63,6 +63,54 @@ data:
     rewrite ^/{{ $prefixPathTrimmed }}$ {{ .Values.prefixPath }}/bridge/ permanent;
     rewrite ^{{ .Values.prefixPath }}/api$ {{ .Values.prefixPath }}/api/swagger-ui/ permanent;
 
+    # block POST calls to /api/mongodb-datastore/event
+    location = /api/mongodb-datastore/event {
+      limit_except GET {
+        deny all;
+      }
+      auth_request               /api/v1/auth;
+      rewrite /api/mongodb-datastore/(.*) /$1  break;
+      proxy_pass         http://mongodb-datastore:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # block all calls to /api/mongodb-datastore/health
+    location = /api/mongodb-datastore/health {
+      deny all;
+    }
+
+    # block DELETE calls to /api/controlplane/v*/log
+    location ~* /api/controlPlane/v(.*)/log {
+      limit_except GET POST {
+        deny all;
+      }
+      auth_request               /api/v1/auth;
+
+      rewrite /api/controlPlane/(.*) /$1  break;
+      proxy_pass         http://shipyard-controller:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # block all calls to /api/statistics/v*/event
+    location ~* /api/statistics/v(.*)/event {
+      deny all;
+    }
+
+    # block all calls to /api/configuration-service/v*/project/*/service/*/resource
+    location ~* /api/configuration-service/v(.*)/project/(.*)/service/(.*)/resource {
+      deny all;
+    }
+
     # special configuration for /v1/auth to always use POST requests
     location {{ .Values.prefixPath }}/api/v1/auth {
       rewrite {{ .Values.prefixPath }}/api/v1/auth /v1/auth break;
