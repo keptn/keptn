@@ -3,8 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -41,11 +41,15 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 
 		logging.PrintLog("Starting to delete service", logging.InfoLevel)
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			deleteResp, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
+			deleteResp, err := api.APIV1().DeleteService(*deleteServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)

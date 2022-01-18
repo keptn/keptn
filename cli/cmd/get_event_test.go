@@ -14,7 +14,6 @@ func init() {
 }
 
 func TestGetTriggeredEvent(t *testing.T) {
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")

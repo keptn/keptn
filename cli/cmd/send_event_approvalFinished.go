@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 	"net/url"
 	"os"
 	"strconv"
@@ -85,21 +86,21 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 			endPointErr)
 	}
 
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return err
+	}
 
 	var keptnContext string
 	var triggeredID string
 	var approvalFinishedEvent *keptnv2.ApprovalFinishedEventData
 
 	if *sendApprovalFinishedOptions.ID != "" {
-		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(api.EventsV1(), sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
-		scHandler := apiutils.NewAuthenticatedShipyardControllerHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
-			scHandler, sendApprovalFinishedOptions)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(api.EventsV1(),
+			api.ShipyardControlHandlerV1(), sendApprovalFinishedOptions)
 	}
 	if err != nil {
 		return err
@@ -109,7 +110,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return nil
 	}
 
-	responseEvent, err := sendEvent(keptnContext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEvent, apiHandler)
+	responseEvent, err := sendEvent(keptnContext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEvent, api.APIV1())
 	if err != nil {
 		return err
 	}

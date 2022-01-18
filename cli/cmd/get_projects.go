@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"strconv"
 	"strings"
@@ -29,7 +30,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -94,7 +94,10 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 				endPointErr)
 		}
 
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		if err != nil {
+			return err
+		}
 
 		if !mocking {
 
@@ -104,7 +107,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 				fmt.Fprintln(w, "NAME\tCREATION DATE\tSHIPYARD VERSION")
 			}
 
-			projects, err := projectsHandler.GetAllProjects()
+			projects, err := api.ProjectsV1().GetAllProjects()
 			if err != nil {
 				return err
 			}
