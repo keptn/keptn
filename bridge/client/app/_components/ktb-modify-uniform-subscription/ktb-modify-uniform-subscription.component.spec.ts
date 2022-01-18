@@ -81,20 +81,22 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
   it('should have disabled button if filter contains service but not a stage', async () => {
     // given
-    const data = await component.data$.toPromise();
+    const data = await component.data$?.toPromise();
     fixture.detectChanges();
 
     // when
     const taskControl = getTaskPrefix();
     taskControl.setValue('deployment');
-    data.subscription.filter = {
-      projects: ['sockshop'],
-      stages: [],
-      services: ['carts'],
-    };
+    if (data) {
+      data.subscription.filter = {
+        projects: ['sockshop'],
+        stages: [],
+        services: ['carts'],
+      };
+    }
     fixture.detectChanges();
     // then
-    expect(component.isFormValid(data.subscription)).toBe(false);
+    expect(component.isFormValid(data?.subscription)).toBe(false);
   });
 
   it('should have disabled button if loading', () => {
@@ -127,7 +129,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
   it('should have enabled button if filter contains a stage and a service', async () => {
     // given
-    const data = await component.data$.toPromise();
+    const data = await component.data$?.toPromise();
     fixture.detectChanges();
     // when
     const taskControl = getTaskPrefix();
@@ -135,20 +137,22 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const taskSuffixControl = getTaskSuffix();
     taskSuffixControl.setValue('triggered');
 
-    data.subscription.filter = {
-      projects: ['sockshop'],
-      stages: ['staging'],
-      services: ['carts'],
-    };
+    if (data) {
+      data.subscription.filter = {
+        projects: ['sockshop'],
+        stages: ['staging'],
+        services: ['carts'],
+      };
+    }
     fixture.detectChanges();
 
     // then
-    expect(component.isFormValid(data.subscription)).toBe(true);
+    expect(component.isFormValid(data?.subscription)).toBe(true);
   });
 
   it('should have enabled button if filter contains just a stages', async () => {
     // given
-    const data = await component.data$.toPromise();
+    const data = await component.data$?.toPromise();
     fixture.detectChanges();
     // when
     const taskControl = getTaskPrefix();
