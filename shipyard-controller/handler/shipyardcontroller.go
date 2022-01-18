@@ -224,7 +224,6 @@ func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.Even
 	if eventScope.WrappedEvent.GitCommitID == "" {
 		latestGitCommitID, err := sc.shipyardRetriever.GetLatestCommitID(eventScope.Project, eventScope.Stage)
 		if err != nil {
-			// TODO discuss
 			// log the error, but having no commit ID should not prevent the sequence from being executed
 			log.Errorf("Could not determine latest commit ID for stage %s in project %s", eventScope.Project, eventScope.Stage)
 		}
