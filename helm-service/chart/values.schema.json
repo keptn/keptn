@@ -39,7 +39,20 @@
               "apiValidateTls": {
                 "type": "boolean"
               }
-            }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "token"
+                ],
+                "pattern": "^[A-Za-z0-9-.]{2,63}$"
+              },
+              {
+                "required": [
+                  "tokenSecretName"
+                ]
+              }
+            ]
           }
         }
       }
