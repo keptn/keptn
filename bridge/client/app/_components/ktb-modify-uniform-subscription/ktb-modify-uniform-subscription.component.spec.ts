@@ -96,7 +96,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     }
     fixture.detectChanges();
     // then
-    expect(component.isFormValid(data?.subscription)).toBe(false);
+    expect(data ? component.isFormValid(data.subscription) : undefined).toBe(false);
   });
 
   it('should have disabled button if loading', () => {
@@ -147,7 +147,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(component.isFormValid(data?.subscription)).toBe(true);
+    expect(data ? component.isFormValid(data.subscription) : undefined).toBe(true);
   });
 
   it('should have enabled button if filter contains just a stages', async () => {
@@ -161,15 +161,17 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     taskSuffixControl.setValue('triggered');
 
     // when
-    data.subscription.filter = {
-      projects: ['sockshop'],
-      stages: ['staging'],
-      services: [],
-    };
+    if (data) {
+      data.subscription.filter = {
+        projects: ['sockshop'],
+        stages: ['staging'],
+        services: [],
+      };
+    }
     fixture.detectChanges();
 
     // then
-    expect(component.isFormValid(data.subscription)).toBe(true);
+    expect(data ? component.isFormValid(data.subscription) : undefined).toBe(true);
   });
 
   it('should have a disabled button if the webhook form is invalid', () => {
