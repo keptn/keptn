@@ -147,11 +147,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         takeUntil(this.unsubscribe$)
       )
       .subscribe((projectName) => {
-        this.dataService.getSequenceMetadata(projectName).subscribe((metadata) => {
-          this.latestDeployments = metadata.deployments;
-          this.updateLatestDeployedImage();
-          this.updateFilterDataSource(metadata);
-        });
+        this.loadSequenceMetadata(projectName);
       });
 
     // init; set parameters
@@ -182,6 +178,14 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         // Needed for the updates to work properly
         this.changeDetectorRef_.detectChanges();
       }
+    });
+  }
+
+  public loadSequenceMetadata(projectName: string): void {
+    this.dataService.getSequenceMetadata(projectName).subscribe((metadata) => {
+      this.latestDeployments = metadata.deployments;
+      this.updateLatestDeployedImage();
+      this.updateFilterDataSource(metadata);
     });
   }
 
@@ -290,7 +294,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       filterItem.autocomplete = serviceFilters;
 
       // Remove service from active filters if not in list of services anymore
-      this._seqFilters = this._seqFilters.filter((fltr) => serviceFilters.find((svc) => svc.name === fltr[1].name));
+      this._seqFilters = this._seqFilters.filter(
+        (fltr) => fltr[0].name !== 'Service' || serviceFilters.some((svc) => svc.name === fltr[1].name)
+      );
     }
   }
 
