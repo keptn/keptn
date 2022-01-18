@@ -2,7 +2,7 @@ name: Check Docker Image Digests
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 5 * * 1-5'
+    - cron: '0 5 * * *'
 defaults:
   run:
     shell: bash
