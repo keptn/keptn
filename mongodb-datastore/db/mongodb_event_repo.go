@@ -618,35 +618,44 @@ func getInvalidatedEventQuery(params event.GetEventsByTypeParams, collectionName
 		{Key: matchExpr, Value: matchFields},
 	}
 
+	//lookupStage := bson.D{
+	//	{Key: "$lookup", Value: bson.M{
+	//		"from": getInvalidatedCollectionName(collectionName),
+	//		"let": bson.M{
+	//			"event_id":          "$id",
+	//			"event_triggeredid": triggeredIDVar,
+	//		},
+	//		"pipeline": []bson.M{
+	//			{
+	//				matchExpr: bson.M{
+	//					"$expr": bson.M{
+	//						"$or": []bson.M{
+	//							{
+	//								// backwards-compatibility to 0.7.x -> triggeredid of .invalidated event refers to the id of the evaluation-done event
+	//								"$eq": []string{triggeredIDVar, "$$event_id"},
+	//							},
+	//							{
+	//								// logic for 0.8: triggeredid of .invalidated event refers to the triggeredid of the evaluation.finished event (both are related to the same .triggered event)
+	//								"$eq": []string{triggeredIDVar, "$$event_triggeredid"},
+	//							},
+	//						},
+	//					},
+	//				},
+	//			},
+	//			{
+	//				"$limit": 1,
+	//			},
+	//		},
+	//		"as": "invalidated",
+	//	}},
+	//}
+
 	lookupStage := bson.D{
 		{Key: "$lookup", Value: bson.M{
-			"from": getInvalidatedCollectionName(collectionName),
-			"let": bson.M{
-				"event_id":          "$id",
-				"event_triggeredid": triggeredIDVar,
-			},
-			"pipeline": []bson.M{
-				{
-					matchExpr: bson.M{
-						"$expr": bson.M{
-							"$or": []bson.M{
-								{
-									// backwards-compatibility to 0.7.x -> triggeredid of .invalidated event refers to the id of the evaluation-done event
-									"$eq": []string{triggeredIDVar, "$$event_id"},
-								},
-								{
-									// logic for 0.8: triggeredid of .invalidated event refers to the triggeredid of the evaluation.finished event (both are related to the same .triggered event)
-									"$eq": []string{triggeredIDVar, "$$event_triggeredid"},
-								},
-							},
-						},
-					},
-				},
-				{
-					"$limit": 1,
-				},
-			},
-			"as": "invalidated",
+			"from":         getInvalidatedCollectionName(collectionName),
+			"localField":   "triggeredid",
+			"foreignField": "triggeredid",
+			"as":           "invalidated",
 		}},
 	}
 
