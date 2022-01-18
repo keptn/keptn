@@ -228,7 +228,7 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.D
 			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
 		}
 	} else if deploymentStrategy == keptnevents.UserManaged {
-		endpoints, err := h.getUserManagedEndpoints(inEventData.EventData)
+		endpoints, err := h.getUserManagedEndpoints(inEventData.EventData, gitCommit)
 		if err != nil {
 			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
 		}

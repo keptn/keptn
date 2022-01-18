@@ -87,7 +87,7 @@ type getUserManagedEndpointsData struct {
 	event keptnv2.EventData
 }
 
-func (h *MockedHandler) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+func (h *MockedHandler) getUserManagedEndpoints(event keptnv2.EventData, commitid string) (*keptnv2.Endpoints, error) {
 	h.userManagedEndpointsInvocations = append(h.userManagedEndpointsInvocations, getUserManagedEndpointsData{event})
 	if h.options.GetUserManagedEndpointsBehavior != nil {
 		return h.options.GetUserManagedEndpointsBehavior(event)
