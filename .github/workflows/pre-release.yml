@@ -398,8 +398,6 @@ jobs:
           DIGEST_FILE: "digests.csv"
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          for digest_file in ./dist/image-digests/digest-*.txt; do
-            cat "$digest_file" >> $DIGEST_FILE
-          done
+          cat ./dist/image-digests/digest-*.txt >> $DIGEST_FILE
           
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
