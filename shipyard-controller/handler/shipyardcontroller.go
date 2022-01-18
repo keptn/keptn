@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -13,7 +15,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -38,6 +39,7 @@ type shipyardController struct {
 	sequenceTimeoutChan        chan models.SequenceTimeout
 	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
 	sequenceStartedHooks       []sequencehooks.ISequenceStartedHook
+	sequenceWaitingHooks       []sequencehooks.ISequenceWaitingHook
 	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
 	sequenceTaskStartedHooks   []sequencehooks.ISequenceTaskStartedHook
 	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook

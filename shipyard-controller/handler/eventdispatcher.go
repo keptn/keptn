@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -10,7 +12,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
@@ -104,6 +105,16 @@ func (e *EventDispatcher) OnSequencePaused(pause models.EventScope) {
 	})
 	if err != nil {
 		log.WithError(err).Error("could not set sequence state to 'paused'")
+	}
+}
+
+func (e *EventDispatcher) OnSequenceWaiting(wait models.EventScope) {
+	err := e.eventQueueRepo.CreateOrUpdateEventQueueState(models.EventQueueSequenceState{
+		State: models.SequenceWaitingState,
+		Scope: wait,
+	})
+	if err != nil {
+		log.WithError(err).Error("could not set sequence state to 'waiting'")
 	}
 }
 
