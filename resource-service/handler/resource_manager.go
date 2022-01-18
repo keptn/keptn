@@ -94,9 +94,7 @@ func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.G
 		return nil, kerrors.ErrResourceInvalidResourceURI
 	}
 
-	resourcePath := configPath + "/" + unescapedResourceName
-
-	return p.readResource(gitContext, params, resourcePath)
+	return p.readResource(gitContext, params, configPath, unescapedResourceName)
 }
 
 func (p ResourceManager) UpdateResource(params models.UpdateResourceParams) (*models.WriteResourceResponse, error) {
@@ -169,13 +167,15 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 	return &gitContext, configPath, nil
 }
 
-func (p ResourceManager) readResource(gitContext *common_models.GitContext, params models.GetResourceParams, resourcePath string) (*models.GetResourceResponse, error) {
+func (p ResourceManager) readResource(gitContext *common_models.GitContext, params models.GetResourceParams, configPath string, resourceName string) (*models.GetResourceResponse, error) {
 	var fileContent []byte
 	var revision string
 	var err error
 
+	resourcePath := configPath + "/" + resourceName
+
 	if params.GitCommitID != "" {
-		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
+		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourceName)
 		revision = params.GitCommitID
 	} else {
 		if err := p.git.Pull(*gitContext); err != nil {
