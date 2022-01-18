@@ -38,17 +38,3 @@ func (b Browser) Open(url string) error {
 	}
 	return err
 }
-
-// BrwoserMock is an implementation of URLOpener
-// usable mocking in tests
-type BrowserMock struct {
-	openFn func(string) error
-}
-
-// Open calls the mocked function of the BrwoserMock
-func (b *BrowserMock) Open(url string) error {
-	if b != nil && b.openFn != nil {
-		return b.openFn(url)
-	}
-	return nil
-}

@@ -30,7 +30,6 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
-	//mocking = true
 	cmd := fmt.Sprintf("upgrade --mock")
 
 	ts := getMockVersionHTTPServer()

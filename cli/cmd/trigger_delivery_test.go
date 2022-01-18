@@ -73,7 +73,6 @@ func TestTriggerDelivery(t *testing.T) {
 	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
-	//mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -137,7 +136,6 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
-	//mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -256,7 +254,6 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
-	//mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -304,7 +301,6 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 	projectName := "sockshop"
-	//mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")

@@ -95,11 +95,3 @@ func (o *OauthDiscoveryMock) Discover(ctx context.Context, discoveryURL string) 
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
-
-type HTTPClientMock struct {
-	DoFunc func(r *http.Request) (*http.Response, error)
-}
-
-func (h HTTPClientMock) Do(r *http.Request) (*http.Response, error) {
-	return h.DoFunc(r)
-}

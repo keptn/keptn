@@ -50,16 +50,3 @@ func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2
 	server.Serve(l)
 	return acquiredToken, tokenExchangeErr
 }
-
-// FakeRedirectHandler is a mocked implementation of TokenGetter
-// usable in tests
-type FakeRedirectHandler struct {
-	handleFn func([]byte, *oauth2.Config) (*oauth2.Token, error)
-}
-
-func (t FakeRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error) {
-	if t.handleFn != nil {
-		return t.handleFn(codeVerifier, oauthConfig)
-	}
-	panic("handleFn of FakeRedirectHandler not set")
-}
