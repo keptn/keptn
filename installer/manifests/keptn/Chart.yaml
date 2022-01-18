@@ -1,6 +1,6 @@
 apiVersion: v2
 name: keptn
-description: A Helm chart for Kubernetes
+description: Keptn - Cloud-native application life-cycle orchestration
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -21,6 +21,22 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: latest
+
+home: "https://keptn.sh"
+icon: "https://raw.githubusercontent.com/cncf/artwork/master/projects/keptn/icon/color/keptn-icon-color.svg"
+sources:
+  - "https://github.com/keptn/keptn"
+  - "https://github.com/keptn/helm-charts"
+annotations:
+  artifacthub.io/license: "Apache-2.0"
+  artifacthub.io/links: |
+    - name: support
+      url: https://github.com/keptn/keptn/issues
+keywords:
+  - cloud-native
+  - orchestration
+  - cd
+  - keptn
 
 dependencies:
   - name: control-plane
