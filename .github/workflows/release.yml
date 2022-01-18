@@ -196,6 +196,20 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: "ghcr.io"
+          username: "keptn-bot"
+          password: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Login to Quay.io
+        uses: docker/login-action@v1
+        with:
+          registry: "quay.io"
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
         uses: docker/build-push-action@v2
@@ -203,10 +217,29 @@ jobs:
           context: ${{ matrix.config.working-dir }}
           tags: |
             keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
           build-args: |
             version=${{ env.VERSION }}
           push: ${{ matrix.config.should-push-image }}
           pull: true
+
+      - name: Write docker image digest to file
+        if: matrix.config.should-push-image
+        env:
+          IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
+          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
+        run: |
+          echo "${{ matrix.config.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
+
+      - name: Upload Digest file as artifact
+        if: matrix.config.should-push-image
+        uses: actions/upload-artifact@v2
+        env:
+          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
+        with:
+          name: image-digests
+          path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
@@ -348,50 +381,21 @@ jobs:
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
           CLOUDSDK_REGION: "us-east1"
         run: |
-            echo "Installing GCloud CLI"
-            export OS_TYPE="linux"
-            mkdir ~/downloads
-            ./test/utils/download_and_install_gcloud.sh
-            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+          echo "Installing GCloud CLI"
+          export OS_TYPE="linux"
+          mkdir ~/downloads
+          ./test/utils/download_and_install_gcloud.sh
+          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+          gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
 
-  ############################################################################
-  # Push Docker Images to alternative Registries
-  ############################################################################
-  repush_images:
-    needs: [prepare, release]
-    name: Push Images to alternative Registries
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
-    steps:
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: "ghcr.io"
-          username: "keptn-bot"
-          password: ${{ secrets.KEPTN_BOT_TOKEN }}
-
-      - name: Login to Quay.io
-        uses: docker/login-action@v1
-        with:
-          registry: "quay.io"
-          username: ${{ secrets.QUAY_USER }}
-          password: ${{ secrets.QUAY_TOKEN }}
-
-      - name: Push to alternative Registries
+      - name: Attach docker image digests to release
         env:
-          VERSION: ${{ needs.prepare.outputs.next-version }}
-        uses: akhilerm/tag-push-action@v2.0.0
-        with:
-          src: docker.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-          dst: |
-            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+          DIGEST_FILE: "digests.csv"
+          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+        run: |
+          for digest_file in ./dist/image-digests/digest-*.txt; do
+            cat "$digest_file" >> $DIGEST_FILE
+          done
+          
+          gh release upload "$RELEASE_TAG" "$DIGEST_FILE"

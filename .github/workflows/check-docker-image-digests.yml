@@ -1,0 +1,17 @@
+name: Check Docker Image Digests
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 1-5'
+defaults:
+  run:
+    shell: bash
+jobs:
+  check:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2.4.0
+
+      - name: Check docker image digests
+        run: ./gh-actions-scripts/check-image-digests.sh
