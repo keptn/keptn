@@ -17,6 +17,15 @@ import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ISequencesMetadata, SequenceMetadataDeployment } from '../../../../shared/interfaces/sequencesMetadata';
 
+export type FilterType = [
+  {
+    name: 'Service' | 'Stage' | 'Sequence' | 'Status';
+    autocomplete: { name: string; value: string }[];
+    showInSidebr: boolean;
+  },
+  ...{ name: string; value: string }[]
+];
+
 @Component({
   selector: 'ktb-sequence-view',
   templateUrl: './ktb-sequence-view.component.html',
@@ -75,8 +84,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public currentLatestDeployedImage?: string;
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public _seqFilters: any[] = [];
+  public _seqFilters: FilterType[] = [];
   private latestDeployments: SequenceMetadataDeployment[] = [];
 
   constructor(
@@ -239,15 +247,25 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: [] }): void {
-    this._seqFilters = event.filters;
-    this.sequenceFilters = this._seqFilters.reduce((filters, currentFilter) => {
-      if (!filters[currentFilter[0].name]) {
-        filters[currentFilter[0].name] = [];
-      }
-      filters[currentFilter[0].name].push(currentFilter[1].value);
-      return filters;
-    }, {});
+  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
+    this._seqFilters = event.filters as FilterType[];
+    this.sequenceFilters = this._seqFilters.reduce(
+      (
+        filters: { [key: string]: string[] },
+        currentFilter: [
+          { name: string; autocomplete: { name: string; value: string }[] },
+          ...{ name: string; value: string }[]
+        ]
+      ) => {
+        if (!filters[currentFilter[0].name]) {
+          // Stage | Service | Sequence | Status
+          filters[currentFilter[0].name] = [];
+        }
+        filters[currentFilter[0].name].push(currentFilter[1].value);
+        return filters;
+      },
+      {}
+    );
   }
 
   updateFilterSequence(sequences?: Sequence[]): void {
