@@ -21,7 +21,7 @@ export type FilterType = [
   {
     name: 'Service' | 'Stage' | 'Sequence' | 'Status';
     autocomplete: { name: string; value: string }[];
-    showInSidebr: boolean;
+    showInSidebar: boolean;
   },
   ...{ name: string; value: string }[]
 ];
