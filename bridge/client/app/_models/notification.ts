@@ -30,7 +30,7 @@ class Notification {
     this.time = time ?? 5_000;
   }
 
-  get isPinned() {
+  get isPinned(): boolean {
     return this.time === -1;
   }
 }
