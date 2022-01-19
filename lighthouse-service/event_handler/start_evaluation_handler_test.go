@@ -93,8 +93,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				if returnSlo {
 					encodedSLOContent := base64.StdEncoding.EncodeToString([]byte(sloFileContent))
 					resourceURI := "slo.yaml"
-					if strings.Contains(r.RequestURI, "?commitID=") {
-						token := strings.Split(r.RequestURI, "?commitID=")
+					if strings.Contains(r.RequestURI, "?gitCommitID=") {
+						token := strings.Split(r.RequestURI, "?gitCommitID=")
 						metadata.Version = token[1]
 					}
 					sloResource := &keptnapi.Resource{Metadata: metadata, ResourceURI: &resourceURI, ResourceContent: encodedSLOContent}

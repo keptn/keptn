@@ -3400,7 +3400,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
 						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
-							commitID = strings.TrimPrefix(options[0](commitID), "?commitID=")
+							commitID = strings.TrimPrefix(options[0](commitID), "?gitCommitID=")
 							myres := models.Resource{Metadata: &models.Version{Version: commitID}}
 							return &myres, nil
 						},
