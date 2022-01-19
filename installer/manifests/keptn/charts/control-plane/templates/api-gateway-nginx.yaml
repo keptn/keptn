@@ -63,7 +63,7 @@ data:
     rewrite ^/{{ $prefixPathTrimmed }}$ {{ .Values.prefixPath }}/bridge/ permanent;
     rewrite ^{{ .Values.prefixPath }}/api$ {{ .Values.prefixPath }}/api/swagger-ui/ permanent;
 
-    # block POST calls to /api/mongodb-datastore/event
+    # only allow GET calls to /api/mongodb-datastore/event
     location = {{ .Values.prefixPath }}/api/mongodb-datastore/event {
       limit_except GET {
         deny all;
@@ -84,8 +84,8 @@ data:
       deny all;
     }
 
-    # block DELETE calls to /api/controlplane/v*/log
-    location ~* {{ .Values.prefixPath }}/api/controlPlane/v(.*)/log {
+    # only allow GET and POST calls to /api/controlplane/v1/log
+    location ~* {{ .Values.prefixPath }}/api/controlPlane/v1/log {
       limit_except GET POST {
         deny all;
       }
@@ -101,13 +101,13 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # block all calls to /api/statistics/v*/event
-    location ~* {{ .Values.prefixPath }}/api/statistics/v(.*)/event {
+    # block all calls to /api/statistics/v1/event
+    location ~* {{ .Values.prefixPath }}/api/statistics/v1/event {
       deny all;
     }
 
-    # block all calls to /api/configuration-service/v*/project/*/service/*/resource
-    location ~* {{ .Values.prefixPath }}/api/configuration-service/v(.*)/project/(.*)/service/(.*)/resource {
+    # block all calls to /api/configuration-service/v1/project/*/service/*/resource
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/(.*)/service/(.*)/resource {
       deny all;
     }
 
@@ -284,13 +284,49 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location ~* {{ .Values.prefixPath }}/api/configuration-service/*.resource.* {
-      # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
-      # the access is denied) before we store the file
-      # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+    location ~* /api/configuration-service/v1/project/([^/]*)/service/([^/]*)/resource {
+      auth_request               /api/v1/auth;
 
-      rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*) /$1  break;
+      rewrite /api/configuration-service/(.*) /$1  break;
+      proxy_pass         http://configuration-service:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~* /api/configuration-service/v1/project/([^/]*)/stage/([^/]*)/service/([^/]*)/resource {
+      auth_request               /api/v1/auth;
+
+      rewrite /api/configuration-service/(.*) /$1  break;
+      proxy_pass         http://configuration-service:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~* /api/configuration-service/v1/project/([^/]*)/stage/([^/]*)/resource {
+      auth_request               /api/v1/auth;
+
+      rewrite /api/configuration-service/(.*) /$1  break;
+      proxy_pass         http://configuration-service:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~* /api/configuration-service/v1/project/([^/]*)/resource {
+      auth_request               /api/v1/auth;
+
+      rewrite /api/configuration-service/(.*) /$1  break;
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
