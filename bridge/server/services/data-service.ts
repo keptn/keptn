@@ -32,6 +32,8 @@ import { ServiceRemediationInformation } from '../../shared/interfaces/service-r
 import { Stage } from '../models/stage';
 import { IServiceEvent } from '../../shared/interfaces/service';
 import { Remediation } from '../models/remediation';
+import { IStage } from '../../shared/interfaces/stage';
+import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -545,6 +547,11 @@ export class DataService {
   public async getServiceNames(projectName: string): Promise<string[]> {
     const resp = await this.apiService.getStages(projectName);
     const stages = resp.data.stages;
+
+    return this.reduceServiceNames(stages);
+  }
+
+  private reduceServiceNames(stages: IStage[]): string[] {
     const services: { [serviceName: string]: boolean | undefined } = {};
 
     for (const stage of stages) {
@@ -1266,6 +1273,34 @@ export class DataService {
       serviceRemediationInformation.stages.push({ name: stage, remediations: stageRemediations[stage], config });
     }
     return serviceRemediationInformation;
+  }
+
+  public async getSequencesMetadata(projectName: string): Promise<ISequencesMetadata> {
+    const res = await this.apiService.getStages(projectName);
+    const stages = res.data.stages;
+    const stageNames: string[] = [];
+    const serviceSet: Set<string> = new Set();
+    const deployments: SequenceMetadataDeployment[] = [];
+
+    for (const stg of stages) {
+      // stage names are used for filters
+      stageNames.push(stg.stageName);
+      const svcs = stg.services.map((svc) => {
+        // service names are used for filters
+        serviceSet.add(svc.serviceName);
+        const image = svc.deployedImage?.split('/').pop() ?? '';
+        return { name: svc.serviceName, image };
+      });
+      deployments.push({ stage: { name: stg.stageName, services: svcs } });
+    }
+
+    return {
+      deployments,
+      filter: {
+        stages: stageNames,
+        services: Array.from(serviceSet),
+      },
+    };
   }
 
   public async intersectEvents(
