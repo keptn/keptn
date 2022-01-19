@@ -28,7 +28,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "mongodb-datastore",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/",
   "paths": {
@@ -253,6 +253,9 @@ func init() {
         {
           "type": "object",
           "properties": {
+            "gitcommitid": {
+              "type": "string"
+            },
             "shkeptncontext": {
               "type": "string"
             },
@@ -566,6 +569,9 @@ func init() {
         {
           "type": "object",
           "properties": {
+            "gitcommitid": {
+              "type": "string"
+            },
             "shkeptncontext": {
               "type": "string"
             },
