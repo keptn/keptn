@@ -1,6 +1,6 @@
 apiVersion: v2
 name: keptn
-description: Keptn - Cloud-native application life-cycle orchestration
+description: Cloud-native application life-cycle orchestration
 
 # A chart can be either an 'application' or a 'library' chart.
 #
