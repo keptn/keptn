@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	models "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -130,7 +129,7 @@ func CheckEndpointStatus(endPoint string) error {
 	return nil
 }
 
-func ServiceInSlice(service string, serviceList []*apimodels.Service) bool {
+func ServiceInSlice(service string, serviceList []*models.Service) bool {
 	for _, s := range serviceList {
 		if s.ServiceName == service {
 			return true

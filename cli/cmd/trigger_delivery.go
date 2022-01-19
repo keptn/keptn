@@ -84,44 +84,45 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" in version "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
 
 	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+		return fmt.Errorf("error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
+	}
+
+	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
+	if errObj != nil {
+		return fmt.Errorf("error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
 	}
 
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
 	if deliveryInputData.Stage == nil || *deliveryInputData.Stage == "" {
 		// retrieve the project information to determine the first stage
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
-		if errObj != nil {
-			return fmt.Errorf("Error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
-		}
 		if len(project.Stages) > 0 {
 			deliveryInputData.Stage = &project.Stages[0].StageName
 		} else {
-			return fmt.Errorf("Could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
+			return fmt.Errorf("could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
 		}
+	}
 
-		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		projectServices, err := servicesHandler.GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
-		if err != nil {
-			return fmt.Errorf("Error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
-		}
-		if !ServiceInSlice(*deliveryInputData.Service, projectServices) {
-			return fmt.Errorf("Could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
-		}
+	servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	projectServices, err := servicesHandler.GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
+	if err != nil {
+		return fmt.Errorf("error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
+	}
+	if !ServiceInSlice(*deliveryInputData.Service, projectServices) {
+		return fmt.Errorf("could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
 	}
 
 	jsonStr, err := internal.JSONPathToJSONObj(*deliveryInputData.Values)
 	if err != nil {
-		return fmt.Errorf("Error while parsing --values flag %v", err)
+		return fmt.Errorf("error while parsing --values flag %v", err)
 	}
 
 	valuesJson := map[string]interface{}{}
 	valuesJson["image"] = *deliveryInputData.Image + ":" + *deliveryInputData.Tag
 	err = json.Unmarshal([]byte(jsonStr), &valuesJson)
 	if err != nil {
-		return fmt.Errorf("Error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
+		return fmt.Errorf("error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
 	}
 
 	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
@@ -148,13 +149,13 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 
 	eventByte, err := sdkEvent.MarshalJSON()
 	if err != nil {
-		return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+		return fmt.Errorf("failed to marshal cloud event. %s", err.Error())
 	}
 
 	apiEvent := apimodels.KeptnContextExtendedCE{}
 	err = json.Unmarshal(eventByte, &apiEvent)
 	if err != nil {
-		return fmt.Errorf("Failed to map cloud event to API event model. %v", err)
+		return fmt.Errorf("failed to map cloud event to API event model. %v", err)
 	}
 
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)

@@ -3,14 +3,15 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/fileutils"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/common/fileutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	logger "github.com/sirupsen/logrus"
 
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
@@ -145,15 +146,30 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 			logger.Debug("skipping test execution because " + workload.Script + " not found on service, stage or project level.")
 			return true, nil
 		}
-		err = fmt.Errorf("error loading /jmeter/* files for %s.%s.%s: %w", testInfo.Project, testInfo.Stage, testInfo.Service, err)
+		err = fmt.Errorf("JMeter could not fetch the script %s for service %s in stage %s of project %s: %w",
+			workload.Script,
+			testInfo.Service,
+			testInfo.Stage,
+			testInfo.Project,
+			err)
 		return false, err
 	}
 	if downloadedFileCount == 0 {
-		err = fmt.Errorf("no files found in /jmeter/* for %s.%s.%s", testInfo.Project, testInfo.Stage, testInfo.Service)
+		err = fmt.Errorf(`JMeter could not find default script %s for service %s in stage %s of project %s.
+			Please upload that file to the jmeter subfolder or specify the correct script file in your
+			jmeter.conf.yaml`,
+			workload.Script,
+			testInfo.Service,
+			testInfo.Stage,
+			testInfo.Project)
 		return false, err
 	}
 	if !primaryScriptDownloaded {
-		err = fmt.Errorf("primary file %s was not found for %s.%s.%s", workload.Script, testInfo.Project, testInfo.Stage, testInfo.Service)
+		err = fmt.Errorf("JMeter could not find the primary file %s for service %s in stage %s of project %s",
+			workload.Script,
+			testInfo.Service,
+			testInfo.Stage,
+			testInfo.Project)
 		return false, err
 	}
 	// this flag allows us to control whether files should be removed or not
@@ -162,7 +178,12 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	// Step 1a: Lets validate if the script that was referenced in the workload was downloaded
 	mainScriptFileName := localTempDir + "/" + workload.Script
 	if !fileutils.FileExists(mainScriptFileName) {
-		err = fmt.Errorf("JMeter script %s not found locally at %s for %s.%s.%s", workload.Script, mainScriptFileName, testInfo.Project, testInfo.Stage, testInfo.Service)
+		err = fmt.Errorf("JMeter script %s could not be found locally at %s for service %s in stage %s of project %s",
+			workload.Script,
+			mainScriptFileName,
+			testInfo.Service,
+			testInfo.Stage,
+			testInfo.Project)
 		if removeTempFiles {
 			if err := os.RemoveAll(localTempDir); err != nil {
 				return false, err

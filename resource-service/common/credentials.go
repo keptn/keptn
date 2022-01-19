@@ -3,69 +3,50 @@ package common
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	utils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/keptn/keptn/resource-service/common_models"
+	errors2 "github.com/keptn/keptn/resource-service/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"os"
 )
 
-var ErrCouldNotReadCredentials = errors.New("could not get git credentials from client")
-var ErrDecodeCredentialsError = errors.New("could not decode credentials")
-var ErrNoCredentialsFound = errors.New("no credentials found")
-
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/credential_reader_mock.go . CredentialReader
 type CredentialReader interface {
-	GetCredentials(project string) (*GitCredentials, error)
+	GetCredentials(project string) (*common_models.GitCredentials, error)
 }
 
-type K8sCredentialReader struct{}
+type K8sCredentialReader struct {
+	k8sClient kubernetes.Interface
+}
 
-func (K8sCredentialReader) GetCredentials(project string) (*GitCredentials, error) {
-	clientSet, err := getK8sClient()
-	if err != nil {
-		return nil, ErrCouldNotReadCredentials
-	}
+func NewK8sCredentialReader(k8sClient kubernetes.Interface) *K8sCredentialReader {
+	return &K8sCredentialReader{k8sClient: k8sClient}
+}
 
+func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	secretName := fmt.Sprintf("git-credentials-%s", project)
 
-	secret, err := clientSet.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
+	secret, err := kr.k8sClient.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
-		return nil, ErrNoCredentialsFound
+		return nil, errors2.ErrCredentialsNotFound
 	}
 	if err != nil {
-		return nil, ErrCouldNotReadCredentials
+		return nil, err
 	}
 
 	// secret found -> unmarshal it
-	var credentials GitCredentials
-	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
-	if err != nil {
-		return nil, ErrDecodeCredentialsError
+	credentials := &common_models.GitCredentials{}
+	if err := json.Unmarshal(secret.Data["git-credentials"], credentials); err != nil {
+		return nil, errors2.ErrMalformedCredentials
 	}
-	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
-		return &credentials, nil
+	if err := credentials.Validate(); err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return credentials, nil
 }
 
 func GetKeptnNamespace() string {
 	return os.Getenv("POD_NAMESPACE")
-}
-
-func getK8sClient() (*kubernetes.Clientset, error) {
-	var clientSet *kubernetes.Clientset
-	var useInClusterConfig bool
-	if os.Getenv("env") == "production" {
-		useInClusterConfig = true
-	} else {
-		useInClusterConfig = false
-	}
-	clientSet, err := utils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
-	return clientSet, nil
 }

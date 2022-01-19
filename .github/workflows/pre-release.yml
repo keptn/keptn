@@ -15,7 +15,6 @@ env:
 
   BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
   API_ARTIFACT_PREFIX: "API"
-  OS_ROUTE_SVC_ARTIFACT_PREFIX: "OS_ROUTE_SVC"
   JMETER_SVC_ARTIFACT_PREFIX: "JMETER_SVC"
   HELM_SVC_ARTIFACT_PREFIX: "HELM_SVC"
   APPROVAL_SVC_ARTIFACT_PREFIX: "APPROVAL_SVC"
@@ -36,10 +35,6 @@ env:
   API_ARTIFACT: "api"
   API_FOLDER: "api/"
   API_DOCKER_TEST_TARGET: "builder-test"
-
-  OS_ROUTE_SVC_ARTIFACT: "openshift-route-service"
-  OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
-  OS_ROUTE_SVC_DOCKER_TEST_TARGET: "builder-test"
 
   JMETER_SVC_ARTIFACT: "jmeter-service"
   JMETER_SVC_FOLDER: "jmeter-service/"
@@ -289,7 +284,7 @@ jobs:
           fi
 
       - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
+        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
           branch: ${{ needs.prepare.outputs.branch }}
@@ -322,7 +317,7 @@ jobs:
           git push --follow-tags
 
       - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
+        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
         if: always() # Force to always run this step to ensure "include administrators" is always turned back on
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
