@@ -84,6 +84,7 @@ After this is done the following environment variables have to be set:
 - `OAUTH_CLIENT_ID` - Client ID.
 - `OAUTH_CLIENT_SECRET` (optional) - Client secret. Some identity providers require using the client secret.
 - `OAUTH_ID_TOKEN_ALG` (optional) - Algorithm that is used to verify the ID token (e.g. `ES256`). Default is `RS256`.
+- `OAUTH_SCOPE` (optional) - Additional scopes that should be added to the authentication flow (e.g. `profile email`), separated by space.
 - `OAUTH_NAME_PROPERTY` (optional) - The property of the ID token that identifies the user. Default is `name` and fallback to `nickname`, `preferred_username` and `email`.
 
 #### Additional information:

@@ -24,6 +24,8 @@ function getRootLocation(): string {
 
 function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateSeconds: number): Router {
   const router = Router();
+  const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
+  const scope = `openid${additionalScopes}`;
 
   /**
    * Router level middleware for login
@@ -36,7 +38,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
     codeVerifiers[state] = { codeVerifier, nonce, expiresAt: new Date().getTime() + stateExpireMilliSeconds };
 
     const authorizationUrl = client.authorizationUrl({
-      scope: 'openid',
+      scope,
       state,
       nonce,
       code_challenge: codeChallenge,
@@ -72,7 +74,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       const tokenSet = await client.callback(redirectUri, params, {
         code_verifier: verifiers.codeVerifier,
         nonce: verifiers.nonce,
-        scope: 'openid',
+        scope,
       });
       reduceRefreshDateBy(tokenSet, reduceRefreshDateSeconds);
       await authenticateSession(req, tokenSet);
