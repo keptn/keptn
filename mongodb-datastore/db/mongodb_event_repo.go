@@ -231,7 +231,7 @@ func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) 
 
 	var events *EventsResult
 
-	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated {
+	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated && mr.invalidatedCollectionAvailable(collectionName) {
 		aggregationPipeline := getInvalidatedEventQuery(params, collectionName, matchFields)
 		events, err = mr.aggregateFromDB(collectionName, aggregationPipeline)
 	} else {
@@ -554,6 +554,29 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 	}
 
 	return result, nil
+}
+
+func (mr *MongoDBEventRepo) invalidatedCollectionAvailable(collectionName string) bool {
+	mdbClient, err := mr.DBConnection.GetClient()
+	if err != nil {
+		logger.Errorf("Could not get mongodb client: %v", err)
+		return false
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	names, err := mdbClient.Database(getDatabaseName()).ListCollectionNames(ctx, bson.D{})
+	if err != nil {
+		logger.Errorf("Could not get list collections: %v", err)
+		return false
+	}
+
+	for _, name := range names {
+		if name == getInvalidatedCollectionName(collectionName) {
+			return true
+		}
+	}
+	return false
 }
 
 func getProjectOfEvent(event models.KeptnContextExtendedCE) string {
