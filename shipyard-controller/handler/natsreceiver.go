@@ -192,15 +192,23 @@ func (ps *PullSubscription) Activate() error {
 			msgs, err := ps.subscription.Fetch(10)
 			ps.mtx.Unlock()
 			if err != nil {
-				logger.WithError(err).Errorf("could not fetch messages for topic %s", ps.subscription.Subject)
+				// timeout is not a problem since that simple means that no events for that topic have been sent
+				if !errors.Is(err, nats.ErrTimeout) {
+					logger.WithError(err).Errorf("could not fetch messages for topic %s", ps.subscription.Subject)
+				}
 			}
 			for _, msg := range msgs {
-				// TODO error handling
 				ev := &models.Event{}
-				_ = json.Unmarshal(msg.Data, ev)
+				if err = json.Unmarshal(msg.Data, ev); err != nil {
+					logger.WithError(err).Error("could not unmarshal message")
+				}
 
-				ps.messageHandler(*ev, false)
-				msg.Ack()
+				if err := ps.messageHandler(*ev, false); err != nil {
+					logger.WithError(err).Error("could not process message")
+				}
+				if err := msg.Ack(); err != nil {
+					logger.WithError(err).Error("could not ack message")
+				}
 			}
 		}
 	}()
