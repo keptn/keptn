@@ -6,7 +6,14 @@
   <div fxLayout="row" fxLayoutAlign="space-between center">
     <span *ngIf="!componentInfo" [innerHTML]="message"></span>
     <ng-template #showComponent></ng-template>
-    <button dt-icon-button variant="nested" aria-label="Hide Notification" (click)="closeComponent()">
+    <button
+      dt-icon-button
+      variant="nested"
+      aria-label="Hide Notification"
+      (click)="closeComponent()"
+      title="close"
+      class="close-button"
+    >
       <dt-icon name="abort"></dt-icon>
     </button>
   </div>

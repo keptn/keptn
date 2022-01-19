@@ -5,6 +5,10 @@ dt-alert {
   max-width: 600px;
 }
 
+.close-button:hover:not([disabled]) {
+  background-color: transparent;
+}
+
 ::ng-deep {
   dt-alert.success{
     .dt-alert-text-container {
