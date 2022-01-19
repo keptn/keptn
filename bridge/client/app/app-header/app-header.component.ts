@@ -129,7 +129,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
                             https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(
           latestVersion
         )}.x/operate/upgrade/</a>`;
-        this.notificationsService.addNotification(NotificationType.INFO, versionMessage, undefined, -1, true);
+        this.notificationsService.addNotification(NotificationType.INFO, versionMessage, undefined, -1);
       }
     }
   }

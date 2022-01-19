@@ -7,10 +7,7 @@
 >
   <ktb-notification
     *ngFor="let notification of notifications$ | async"
-    [message]="notification.message"
-    [severity]="notification.type"
-    [timeoutMs]="notification.time"
-    [componentInfo]="notification.componentInfo"
-    (close)="hideNotification(notification)"
+    [notification]="notification"
+    (hide)="hideNotification(notification)"
   ></ktb-notification>
 </div>

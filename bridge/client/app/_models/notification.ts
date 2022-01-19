@@ -13,13 +13,26 @@ export interface ComponentInfo {
 }
 
 class Notification {
+  /**
+   * Timeout of the notification in milliseconds.
+   * <br>If -1, the timeout is disabled and the notification is visualized as pinned.
+   * <br>If not provided, the value is set to 5,000
+   * @param time
+   */
+  public time: number;
+
   constructor(
-    public type: NotificationType,
+    public severity: NotificationType,
     public message: string = '',
     public componentInfo?: ComponentInfo,
-    public time?: number,
-    public showOnTop = false
-  ) {}
+    time?: number
+  ) {
+    this.time = time ?? 5_000;
+  }
+
+  get isPinned() {
+    return this.time === -1;
+  }
 }
 
 export { Notification, NotificationType };

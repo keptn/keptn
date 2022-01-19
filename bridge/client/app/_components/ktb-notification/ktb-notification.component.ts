@@ -12,13 +12,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Location } from '@angular/common';
-import { ComponentInfo, NotificationType } from '../../_models/notification';
-
-const defaultTimeMs = 5_000;
+import { Notification, NotificationType } from '../../_models/notification';
 
 @Component({
-  selector: 'ktb-notification[message]',
+  selector: 'ktb-notification[notification]',
   templateUrl: './ktb-notification.component.html',
   styleUrls: ['./ktb-notification.component.scss'],
   animations: [
@@ -30,40 +27,17 @@ const defaultTimeMs = 5_000;
   ],
 })
 export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
-  private _timeoutMs = defaultTimeMs;
-  private timeout?: ReturnType<typeof setTimeout>;
+  private hideTimeout?: ReturnType<typeof setTimeout>;
   private fadeOutDelay?: ReturnType<typeof setTimeout>;
-  public isPinned = false;
   public fadeStatus: 'in' | 'out' = 'in';
   public fadeOutDuration = 3_000;
   public NotificationType = NotificationType;
 
-  @Input() severity: NotificationType = NotificationType.SUCCESS;
-  @Input() message = '';
-
-  /**
-   * timeout for the notification in milliseconds.
-   * <br>If -1, the timeout is disabled.
-   * <br>If not provided, the value is set to a default one
-   * @param time
-   */
-  @Input()
-  set timeoutMs(time: number | undefined) {
-    this.isPinned = time === -1;
-    this._timeoutMs = time ?? defaultTimeMs;
-  }
-  get timeoutMs(): number | undefined {
-    return this._timeoutMs;
-  }
-  @Input() componentInfo?: ComponentInfo;
-  @Output() close: EventEmitter<void> = new EventEmitter<void>();
+  @Input() notification!: Notification;
+  @Output() hide: EventEmitter<void> = new EventEmitter<void>();
   @ViewChild('showComponent', { read: ViewContainerRef }) componentViewRef?: ViewContainerRef;
 
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    private resolver: ComponentFactoryResolver,
-    public location: Location /*used for create project link*/
-  ) {}
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private resolver: ComponentFactoryResolver) {}
 
   @HostListener('mouseover')
   public onHover(): void {
@@ -83,34 +57,35 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
   }
 
   private loadComponent(): void {
-    if (this.componentInfo && this.componentViewRef) {
+    if (this.notification.componentInfo && this.componentViewRef) {
       const viewContainerRef = this.componentViewRef;
       viewContainerRef.clear();
 
-      const factory = this.resolver.resolveComponentFactory(this.componentInfo.component);
+      const factory = this.resolver.resolveComponentFactory(this.notification.componentInfo.component);
       const componentRef = viewContainerRef.createComponent(factory);
-      (componentRef.instance as { data: Record<string, unknown> }).data = this.componentInfo.data;
+      (componentRef.instance as { data: Record<string, unknown> }).data = this.notification.componentInfo.data;
     }
   }
 
   public closeComponent(): void {
-    this.close.next();
+    this.hide.next();
   }
 
   private startTimeout(): void {
-    if (this.timeoutMs !== -1) {
+    if (this.notification.time !== -1) {
       //Only start fade out the last 3 seconds
       this.fadeOutDelay = setTimeout(() => {
         this.fadeStatus = 'out';
-      }, this._timeoutMs - this.fadeOutDuration);
-      this.timeout = setTimeout(() => {
+      }, this.notification.time - this.fadeOutDuration);
+
+      this.hideTimeout = setTimeout(() => {
         this.closeComponent();
-      }, this._timeoutMs);
+      }, this.notification.time);
     }
   }
 
   private stopTimeout(): void {
-    clearTimeout(this.timeout);
+    clearTimeout(this.hideTimeout);
     clearTimeout(this.fadeOutDelay);
   }
 

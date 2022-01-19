@@ -1,21 +1,23 @@
 <dt-alert
-  [class.success]="severity === NotificationType.SUCCESS"
-  [severity]="severity === NotificationType.SUCCESS ? NotificationType.INFO : severity"
+  [class.success]="notification.severity === NotificationType.SUCCESS"
+  [severity]="notification.severity === NotificationType.SUCCESS ? NotificationType.INFO : notification.severity"
   [@fade]="{ value: fadeStatus, params: { duration: fadeOutDuration } }"
 >
   <div fxLayout="row" fxLayoutAlign="space-between center">
-    <dt-icon *ngIf="isPinned" name="pin" class="pin-icon"></dt-icon>
-    <span *ngIf="!componentInfo" [innerHTML]="message"></span>
+    <dt-icon *ngIf="notification.isPinned" name="pin" class="pin-icon"></dt-icon>
+    <span *ngIf="!notification.componentInfo" [innerHTML]="notification.message"></span>
     <ng-template #showComponent></ng-template>
-    <button
-      dt-icon-button
-      variant="nested"
-      aria-label="Hide Notification"
-      (click)="closeComponent()"
-      title="close"
-      class="close-button"
-    >
-      <dt-icon name="abort"></dt-icon>
-    </button>
+    <div>
+      <button
+        dt-icon-button
+        variant="nested"
+        aria-label="Hide Notification"
+        (click)="closeComponent()"
+        title="close"
+        class="close-button"
+      >
+        <dt-icon name="abort"></dt-icon>
+      </button>
+    </div>
   </div>
 </dt-alert>

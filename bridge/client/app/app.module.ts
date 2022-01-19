@@ -40,7 +40,6 @@ import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-c
 import { DtToggleButtonGroupModule } from '@dynatrace/barista-components/toggle-button-group';
 import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
-import { DtToastModule } from '@dynatrace/barista-components/toast';
 import { MomentModule } from 'ngx-moment';
 import {
   KtbExpandableTileComponent,
@@ -274,7 +273,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtCheckboxModule,
     DtSwitchModule,
     DtConfirmationDialogModule,
-    DtToastModule,
     DtTopBarNavigationModule,
     DtCopyToClipboardModule,
     DtToggleButtonGroupModule,

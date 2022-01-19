@@ -264,6 +264,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     update.subscribe(
       () => {
         this.updating = false;
+        this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
         this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
       },
       () => {
