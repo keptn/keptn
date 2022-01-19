@@ -400,5 +400,5 @@ jobs:
             keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
           build-args: |
             version=${{ env.VERSION }}
-          push: ${{ matrix.config.should-push-image && ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) }}
+          push: ${{ matrix.config.should-push-image && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository }}
           pull: true
