@@ -21,6 +21,8 @@ for tag in "${tags[@]}"; do
       echo "Checking image digest..."
       if [[ "$docker_digest" != "$release_digest" ]]; then
         echo "CAUTION: Docker image digest does not match released digest!"
+        echo "Digest from dockerhub: $docker_digest"
+        echo "Digest from release:   $release_digest"
         exit 1
       else
         echo "Image digest for $artifact:$tag matches released digest. Continuing..."
