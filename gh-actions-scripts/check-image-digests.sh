@@ -9,9 +9,10 @@ for tag in "${tags[@]}"; do
   echo "Checking if release $tag has docker image digests attached..."
   if [[ "${release_assets[*]}" =~ $DIGEST_FILE ]]; then
     echo "Release $tag has docker image digests attached. Downloading digests file..."
-    gh release download --pattern="$DIGEST_FILE"
+    gh release download "$tag" --pattern="$DIGEST_FILE"
     echo "Digests from release:"
     cat "$DIGEST_FILE"
+    echo ""
 
     while IFS=, read -r artifact release_digest; do
       echo "Pulling docker image $artifact:$tag..."
@@ -30,4 +31,5 @@ for tag in "${tags[@]}"; do
     done < $DIGEST_FILE
     rm "$DIGEST_FILE"
   fi
+  echo ""
 done
