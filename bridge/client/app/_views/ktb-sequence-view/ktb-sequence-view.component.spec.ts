@@ -10,6 +10,7 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { SequenceMetadataMock } from '../../_services/_mockData/sequence-metadata.mock';
 import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 import { ProjectsMock } from '../../_services/_mockData/projects.mock';
+import moment from 'moment';
 
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceViewComponent;
@@ -177,5 +178,29 @@ describe('KtbEventsListComponent', () => {
 
     // then
     expect(component._seqFilters).toEqual(activeFilter);
+  });
+
+  it('should show a reload button if older than 1 day', () => {
+    // given
+    const sequence = SequencesMock[0];
+    sequence.time = moment().subtract(1, 'days').subtract(1, 'second').toISOString();
+
+    // when
+    const showButton = component.showReloadButton(sequence);
+
+    // then
+    expect(showButton).toEqual(true);
+  });
+
+  it('should not show a reload button if newer than 1 day', () => {
+    // given
+    const sequence = SequencesMock[0];
+    sequence.time = moment().subtract(1, 'hours').add(1, 'second').toISOString();
+
+    // when
+    const showButton = component.showReloadButton(sequence);
+
+    // then
+    expect(showButton).toEqual(false);
   });
 });
