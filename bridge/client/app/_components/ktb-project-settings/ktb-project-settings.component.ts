@@ -15,13 +15,13 @@ import { EventService } from '../../_services/event.service';
 import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
-import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
+import { NotificationType } from '../../_models/notification';
+import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 
 @Component({
   selector: 'ktb-project-settings',
   templateUrl: './ktb-project-settings.component.html',
   styleUrls: ['./ktb-project-settings.component.scss'],
-  providers: [NotificationsService],
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
@@ -94,7 +94,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-    this.notificationsService.clearNotifications();
   }
 
   private loadProjectsAndSetValidator(): void {
@@ -131,13 +130,15 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     this.unsavedDialogState = null;
     this.notificationsService.addNotification(
       NotificationType.SUCCESS,
-      TemplateRenderedNotifications.CREATE_PROJECT,
-      undefined,
-      true,
+      '',
       {
-        projectName: this.projectName,
-        routerLink: `/project/${this.projectName}/settings/services/create`,
-      }
+        component: KtbProjectCreateMessageComponent,
+        data: {
+          projectName: this.projectName,
+          routerLink: `/project/${this.projectName}/settings/services/create`,
+        },
+      },
+      10_000
     );
     // Remove query param for not showing notification on reload
     this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
@@ -173,8 +174,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
             this.gitData = { ...this.gitData };
             this.notificationsService.addNotification(
               NotificationType.SUCCESS,
-              'The Git upstream was changed successfully.',
-              5000
+              'The Git upstream was changed successfully.'
             );
           },
           (err) => {
@@ -215,11 +215,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
               });
             },
             () => {
-              this.notificationsService.addNotification(
-                NotificationType.ERROR,
-                'The project could not be created.',
-                5000
-              );
+              this.notificationsService.addNotification(NotificationType.ERROR, 'The project could not be created.');
               this.isCreatingProjectInProgress = false;
             }
           );

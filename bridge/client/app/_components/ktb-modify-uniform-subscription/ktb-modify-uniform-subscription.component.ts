@@ -24,7 +24,6 @@ import { Trace } from '../../_models/trace';
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
-  providers: [NotificationsService],
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
@@ -268,11 +267,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
         this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
       },
       () => {
-        this.notificationsService.addNotification(
-          NotificationType.ERROR,
-          'The subscription could not be updated',
-          5_000
-        );
+        this.notificationsService.addNotification(NotificationType.ERROR, 'The subscription could not be updated');
         this.updating = false;
       }
     );
@@ -324,7 +319,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

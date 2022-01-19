@@ -1,0 +1,13 @@
+<dt-alert
+  [class.success]="severity === NotificationType.SUCCESS"
+  [severity]="severity === NotificationType.SUCCESS ? NotificationType.INFO : severity"
+  [@fade]="{ value: fadeStatus, params: { duration: fadeOutDuration } }"
+>
+  <div fxLayout="row" fxLayoutAlign="space-between center">
+    <span *ngIf="!componentInfo" [innerHTML]="message"></span>
+    <ng-template #showComponent></ng-template>
+    <button dt-icon-button variant="nested" aria-label="Hide Notification" (click)="closeComponent()">
+      <dt-icon name="abort"></dt-icon>
+    </button>
+  </div>
+</dt-alert>

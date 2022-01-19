@@ -1,3 +1,5 @@
+import { Type } from '@angular/core';
+
 enum NotificationType {
   INFO = 'info',
   SUCCESS = 'success',
@@ -5,16 +7,18 @@ enum NotificationType {
   ERROR = 'error',
 }
 
-enum TemplateRenderedNotifications {
-  CREATE_PROJECT = 'message_create_project',
+export interface ComponentInfo {
+  component: Type<unknown>;
+  data: Record<string, unknown>;
 }
 
 class Notification {
-  isTemplateRendered?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data?: any;
-
-  constructor(public type: NotificationType, public message: string) {}
+  constructor(
+    public type: NotificationType,
+    public message: string = '',
+    public componentInfo?: ComponentInfo,
+    public time?: number
+  ) {}
 }
 
-export { Notification, NotificationType, TemplateRenderedNotifications };
+export { Notification, NotificationType };
