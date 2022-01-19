@@ -72,7 +72,7 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
   }
 
   private startTimeout(): void {
-    if (this.notification.time !== -1) {
+    if (!this.notification.isPinned) {
       //Only start fade out the last 3 seconds
       this.fadeOutDelay = setTimeout(() => {
         this.fadeStatus = 'out';
