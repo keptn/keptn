@@ -31,5 +31,5 @@ for tag in "${tags[@]}"; do
     done < $DIGEST_FILE
     rm "$DIGEST_FILE"
   fi
-  echo ""
+  echo "============="
 done
