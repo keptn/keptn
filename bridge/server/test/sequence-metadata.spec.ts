@@ -1,11 +1,16 @@
 import request from 'supertest';
 import { StagesResponse } from '../fixtures/stages.mock';
 import MockAdapter from 'axios-mock-adapter';
+import { setupServer } from '../.jest/setupServer';
+import { Express } from 'express';
 
 let axiosMock: MockAdapter;
 
 describe('Test /project/:projectName/sequences/metadata', () => {
-  beforeAll(() => {
+  let app: Express;
+
+  beforeAll(async () => {
+    app = await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
@@ -16,7 +21,7 @@ describe('Test /project/:projectName/sequences/metadata', () => {
   it('should return sequence metadata', async () => {
     const projectName = 'sockshop';
     axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}/stage`).reply(200, StagesResponse);
-    const response = await request(global.app).get(`/api/project/${projectName}/sequences/metadata`);
+    const response = await request(app).get(`/api/project/${projectName}/sequences/metadata`);
     expect(response.body).toEqual({
       deployments: [
         {
