@@ -33,6 +33,7 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
   private _timeoutMs = defaultTimeMs;
   private timeout?: ReturnType<typeof setTimeout>;
   private fadeOutDelay?: ReturnType<typeof setTimeout>;
+  public isPinned = false;
   public fadeStatus: 'in' | 'out' = 'in';
   public fadeOutDuration = 3_000;
   public NotificationType = NotificationType;
@@ -48,6 +49,7 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
    */
   @Input()
   set timeoutMs(time: number | undefined) {
+    this.isPinned = time === -1;
     this._timeoutMs = time ?? defaultTimeMs;
   }
   get timeoutMs(): number | undefined {

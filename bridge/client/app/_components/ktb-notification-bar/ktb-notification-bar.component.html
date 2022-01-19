@@ -6,7 +6,7 @@
   class="notification-container"
 >
   <ktb-notification
-    *ngFor="let notification of (notifications$ | async)?.reverse()"
+    *ngFor="let notification of notifications$ | async"
     [message]="notification.message"
     [severity]="notification.type"
     [timeoutMs]="notification.time"

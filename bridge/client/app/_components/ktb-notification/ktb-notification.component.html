@@ -4,6 +4,7 @@
   [@fade]="{ value: fadeStatus, params: { duration: fadeOutDuration } }"
 >
   <div fxLayout="row" fxLayoutAlign="space-between center">
+    <dt-icon *ngIf="isPinned" name="pin" class="pin-icon"></dt-icon>
     <span *ngIf="!componentInfo" [innerHTML]="message"></span>
     <ng-template #showComponent></ng-template>
     <button

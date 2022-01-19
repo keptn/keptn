@@ -5,6 +5,12 @@ dt-alert {
   max-width: 600px;
 }
 
+.pin-icon {
+  fill: red;
+  width: 30px;
+  height: 30px;
+}
+
 .close-button:hover:not([disabled]) {
   background-color: transparent;
 }

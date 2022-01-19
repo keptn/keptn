@@ -17,7 +17,8 @@ class Notification {
     public type: NotificationType,
     public message: string = '',
     public componentInfo?: ComponentInfo,
-    public time?: number
+    public time?: number,
+    public showOnTop = false
   ) {}
 }
 
