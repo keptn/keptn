@@ -12,11 +12,12 @@
         id="projectSelect"
         placeholder="Choose project"
         aria-label="Choose project"
-        [value]="(project$ | async)?.projectName"
+        #projectSelect
+        (selectionChange)="changeProject($event.value)"
+        [value]="selectedProject"
       >
         <dt-option
           *ngFor="let project of projects | async"
-          [routerLink]="getRouterLink(project.projectName)"
           [value]="project.projectName"
           [textContent]="project.projectName"
         ></dt-option>

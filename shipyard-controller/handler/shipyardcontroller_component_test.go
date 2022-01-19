@@ -131,9 +131,10 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	done := false
 
+	commitID := "my-commit-id"
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	sequenceTriggeredEvent := getArtifactDeliveryTriggeredEvent("dev")
+	sequenceTriggeredEvent := getArtifactDeliveryTriggeredEvent("dev", commitID)
 	err := sc.HandleIncomingEvent(sequenceTriggeredEvent, true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
@@ -163,6 +164,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	if done {
 		return
 	}
+	require.Equal(t, commitID, triggeredEvents[0].GitCommitID)
 	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
@@ -188,6 +190,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), verifyEvent.Event.Type())
+	require.Equal(t, commitID, verifyEvent.Event.Extensions()["gitcommitid"])
 
 	taskEvent := &keptnv2.TestTriggeredEventData{}
 	err = verifyEvent.Event.DataAs(taskEvent)
@@ -282,6 +285,9 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	// verify deployment.triggered event for hardening stage
 	verifyEvent = mockDispatcher.AddCalls()[6].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), verifyEvent.Event.Type())
+
+	// for a new stage the commit ID should be determined again since it is executed based on a different branch
+	require.Equal(t, "latest-commit-id", verifyEvent.Event.Extensions()["gitcommitid"])
 	deploymentEvent = &keptnv2.DeploymentTriggeredEventData{}
 	err = verifyEvent.Event.DataAs(deploymentEvent)
 	require.Nil(t, err)
@@ -349,7 +355,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -418,7 +424,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -491,7 +497,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -611,7 +617,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -688,7 +694,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -768,7 +774,7 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -790,7 +796,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1051,7 +1057,7 @@ func Test_SequenceForUnavailableStage(t *testing.T) {
 
 	// STEP 1
 	// send unknown.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("unknown"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("unknown", ""), true)
 
 	require.Nil(t, err)
 	require.Len(t, mockEventDispatcher.AddCalls(), 1)
@@ -1069,7 +1075,7 @@ func Test_UpdateEventOfServiceFailsFails(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev"), true)
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent("dev", ""), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1090,7 +1096,7 @@ func Test_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	event := getArtifactDeliveryTriggeredEvent("dev")
+	event := getArtifactDeliveryTriggeredEvent("dev", "")
 
 	event.Data = keptnv2.EventData{
 		Project: "my-project",
@@ -1132,6 +1138,9 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 			},
 			GetCachedShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 				return common.UnmarshalShipyard(shipyardContent)
+			},
+			GetLatestCommitIDFunc: func(projectName string, stageName string) (string, error) {
+				return "latest-commit-id", nil
 			},
 		},
 	}
@@ -1466,7 +1475,7 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 	return fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
 }
 
-func getArtifactDeliveryTriggeredEvent(stage string) models.Event {
+func getArtifactDeliveryTriggeredEvent(stage string, commitID string) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentTriggeredEventData{
@@ -1494,6 +1503,7 @@ func getArtifactDeliveryTriggeredEvent(stage string) models.Event {
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "",
+		GitCommitID:    commitID,
 		Type:           common.Stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
 	}
 }

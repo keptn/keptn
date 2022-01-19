@@ -38,7 +38,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 		source, _ = url.Parse("https://github.com/keptn/keptn/api")
 	}
 
-	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, *params.Body.Type, source.String(), params.Body.Data)
+	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, params.Body.Gitcommitid, *params.Body.Type, source.String(), params.Body.Data)
 
 	if err != nil {
 		return sendInternalErrorForPost(err)

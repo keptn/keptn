@@ -1,0 +1,157 @@
+{
+  "states": [
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-01-10T15:33:59.105Z",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:v0.13.1",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "a4cb1750-dad2-4509-be36-cdd6102ad6c0",
+            "time": "2022-01-10T15:38:33.982Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:v0.13.1",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "a4f88d91-4ce8-4adc-abbf-f4243b9fe11b",
+            "time": "2022-01-10T15:37:36.180Z"
+          }
+        },
+        {
+          "name": "production",
+          "image": "docker.io/keptnexamples/carts:v0.13.1",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.production.delivery.finished",
+            "id": "a4cb1750-dad2-4509-be36-cdd6102ad6c0",
+            "time": "2022-01-10T15:38:33.982Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-01-10T15:22:01.228Z",
+      "shkeptncontext": "ce6f3686-90a2-497e-ac6a-e8ed95a845c5",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:v0.13.1",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "a4cb1750-dad2-4509-be36-cdd6102ad6c0",
+            "time": "2022-01-10T15:38:33.982Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:v0.13.1",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "d7f30422-e504-4b5a-bf24-5096c9c65692",
+            "time": "2022-01-10T15:24:59.181Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "d7f30422-e504-4b5a-bf24-5096c9c65692",
+            "time": "2022-01-10T15:24:59.181Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-01-10T15:17:51.728Z",
+      "shkeptncontext": "bb03865b-2bdd-43cc-9848-2a9cced86ff3",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:v0.13.1",
+          "state": "finished",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "5789771a-9bcb-4eff-be5d-4cdcef0f2573",
+            "time": "2022-01-10T15:20:57.485Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "5789771a-9bcb-4eff-be5d-4cdcef0f2573",
+            "time": "2022-01-10T15:20:57.485Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "delivery-direct",
+      "service": "carts-db",
+      "project": "sockshop",
+      "time": "2022-01-10T15:04:09.199Z",
+      "shkeptncontext": "f78c2fc7-d272-4bcd-9845-3f3041080ae5",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/mongo:v4.2.2",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery-direct.finished",
+            "id": "fb4cc274-69f9-4e16-aca8-07ae451a90a9",
+            "time": "2022-01-10T15:05:15.882Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/mongo:v4.2.2",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.delivery-direct.finished",
+            "id": "fb4cc274-69f9-4e16-aca8-07ae451a90a9",
+            "time": "2022-01-10T15:05:15.882Z"
+          }
+        },
+        {
+          "name": "production",
+          "image": "docker.io/mongo:v4.2.2",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.production.delivery-direct.finished",
+            "id": "b362471c-620c-4608-a243-15225ad16f3e",
+            "time": "2022-01-10T15:06:05.285Z"
+          }
+        }
+      ]
+    }
+  ],
+  "totalCount": 4
+}

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Validate Pull Request
-        uses: amannn/action-semantic-pull-request@60ee5322e18468b9e3bb23dd7d427a400b44d0f0
+        uses: amannn/action-semantic-pull-request@e642fa0dddcbe4cd256f0c7f46e88c7f9906f637
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -38,6 +38,7 @@ jobs:
             bridge
             cli
             configuration-service
+            resource-service
             deps
             deps-dev
             distributor

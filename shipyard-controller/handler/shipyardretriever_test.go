@@ -317,3 +317,85 @@ func getTestShipyard() *keptnv2.Shipyard {
 		},
 	}
 }
+
+func TestShipyardRetriever_GetLatestCommitID(t *testing.T) {
+	type fields struct {
+		configurationStore *common_mock.ConfigurationStoreMock
+	}
+	type args struct {
+		projectName string
+		stageName   string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get latest git commit id",
+			fields: fields{
+				configurationStore: &common_mock.ConfigurationStoreMock{
+					GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (*models.Resource, error) {
+						return &models.Resource{Metadata: &models.Version{
+							Version: "my-commit-id",
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+				stageName:   "my-stage",
+			},
+			want:    "my-commit-id",
+			wantErr: false,
+		},
+		{
+			name: "error while retrieving resource",
+			fields: fields{
+				configurationStore: &common_mock.ConfigurationStoreMock{
+					GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (*models.Resource, error) {
+						return nil, errors.New("oops")
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+				stageName:   "my-stage",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "no commit ID set",
+			fields: fields{
+				configurationStore: &common_mock.ConfigurationStoreMock{
+					GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (*models.Resource, error) {
+						return &models.Resource{}, nil
+					},
+				},
+			},
+			args: args{
+				projectName: "my-project",
+				stageName:   "my-stage",
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sr := &ShipyardRetriever{
+				configurationStore: tt.fields.configurationStore,
+			}
+			got, err := sr.GetLatestCommitID(tt.args.projectName, tt.args.stageName)
+			if tt.wantErr {
+				require.NotNil(t, err)
+			} else {
+				require.Nil(t, err)
+			}
+			require.Equal(t, tt.want, got)
+		})
+	}
+}

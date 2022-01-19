@@ -13,57 +13,6 @@ import (
 	"testing"
 )
 
-func Test_obfuscateErrorMessage(t *testing.T) {
-	type args struct {
-		err         error
-		credentials *common_models.GitCredentials
-	}
-	tests := []struct {
-		name             string
-		args             args
-		wantErr          bool
-		wantErrorMessage string
-	}{
-		{
-			name: "remove credentials",
-			args: args{
-				err: errors.New("error message containing token: token"),
-				credentials: &common_models.GitCredentials{
-					User:      "",
-					Token:     "token",
-					RemoteURI: "",
-				},
-			},
-			wantErr:          true,
-			wantErrorMessage: "error message containing ********: ********",
-		},
-		{
-			name: "remove credentials: empty token",
-			args: args{
-				err: errors.New("error message containing no token"),
-				credentials: &common_models.GitCredentials{
-					User:      "",
-					Token:     "",
-					RemoteURI: "",
-				},
-			},
-			wantErr:          true,
-			wantErrorMessage: "error message containing no token",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := obfuscateErrorMessage(tt.args.err, tt.args.credentials)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("obfuscateErrorMessage() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if err.Error() != tt.wantErrorMessage {
-				t.Errorf("obfuscateErrorMessage() error = %s, wantErrorMessage %s", err.Error(), tt.wantErrorMessage)
-			}
-		})
-	}
-}
-
 func Test_addRepoURIToMetadata(t *testing.T) {
 	type args struct {
 		credentials *common_models.GitCredentials
@@ -744,6 +693,89 @@ func Test_getGitKeptnEmail(t *testing.T) {
 			_ = os.Setenv(gitKeptnEmailEnvVar, tt.envVarValue)
 			if got := getGitKeptnEmail(); got != tt.want {
 				t.Errorf("getGitKeptnEmail() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGit_CloneRepo(t *testing.T) {
+	type fields struct {
+		Executor         *common_mock.CommandExecutorMock
+		CredentialReader CredentialReader
+	}
+	type args struct {
+		project     string
+		credentials common_models.GitCredentials
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "clone repo",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						return "", nil
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "clone empty",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						return "warning: You appear to have cloned an empty repository.", nil
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name: "error",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{
+					ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+						return "", errors.New("oops")
+					},
+				},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Git{
+				Executor:         tt.fields.Executor,
+				CredentialReader: tt.fields.CredentialReader,
+			}
+			got, err := g.CloneRepo(tt.args.project, tt.args.credentials)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CloneRepo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("CloneRepo() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

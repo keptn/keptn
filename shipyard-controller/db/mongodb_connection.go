@@ -3,12 +3,13 @@ package db
 import (
 	"context"
 	"fmt"
-	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
 	"sync"
 	"time"
+
+	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var mutex = &sync.Mutex{}
@@ -35,8 +36,6 @@ func getDatabaseName() string {
 
 // EnsureDBConnection makes sure a connection to the mongodb is established
 func (m *MongoDBConnection) EnsureDBConnection() error {
-	mutex.Lock()
-	defer mutex.Unlock()
 	var err error
 	// attention: not calling the cancel() function likely causes memory leaks
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -3,8 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -23,6 +24,40 @@ const shipyardResourceMockResponse = `{
 }`
 
 const metadataMockResponse = `{"bridgeversion":"v1","keptnlabel":"keptn","keptnversion":"0.8.0","namespace":"keptn"}`
+
+const serviceMockResponse = `{
+  "nextPageKey": "0",
+  "services": [
+    {
+      "creationDate": "1638796449959720167",
+      "deployedImage": "ghcr.io/podtato-head/podtatoserver:v0.1.2",
+      "lastEventTypes": {},
+      "openRemediations": null,
+      "serviceName": "carts"
+    }
+  ],
+  "totalCount": 1
+}`
+
+const projectMockResponse = `{
+	"creationDate": "1638796448951137480",
+	"projectName": "sockshop",
+	"shipyard": "",
+	"shipyardVersion": "spec.keptn.sh/0.2.0",
+	"stages": [
+	  {
+		"services": [
+		  {
+			"creationDate": "1638796449959720167",
+			"deployedImage": "podtatoserver:v0.1.2",
+			"openRemediations": null,
+			"serviceName": "carts"
+		  }
+		],
+		"stageName": "dev"
+	  }
+	]
+}`
 
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
@@ -34,7 +69,6 @@ func TestNewArtifact(t *testing.T) {
 	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -61,6 +95,14 @@ func TestNewArtifact(t *testing.T) {
 			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, "/service") {
+				defer r.Body.Close()
+				w.Write([]byte(serviceMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, "/project") {
+				defer r.Body.Close()
+				w.Write([]byte(projectMockResponse))
 				return
 			}
 			return

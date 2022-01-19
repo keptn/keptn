@@ -4,14 +4,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/common/httputils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +26,7 @@ type createProjectCmdParams struct {
 var createProjectParams *createProjectCmdParams
 
 const gitErrMsg = `Please specify a 'git-user', 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository`
-const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended. 
+const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended and will not be supported in the future anymore.
 You can configure a Git upstream repository using: 
 
 keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
@@ -92,11 +93,15 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 				endPointErr)
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			_, err := apiHandler.CreateProject(project)
+			_, err := api.APIV1().CreateProject(project)
 			if err != nil {
 				return fmt.Errorf("Create project was unsuccessful.\n%s", *err.Message)
 			}

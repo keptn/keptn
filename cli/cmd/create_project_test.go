@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -12,7 +13,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 

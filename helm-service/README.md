@@ -30,16 +30,8 @@ You can use `skaffold run --tail` to build and deploy from this directory.
 The *helm-service* handles a set of events. The following sequence diagrams describe the respectively executed actions
 and the involved components.
 
-### Handling of `sh.keptn.event.service.created` events
-The `sh.keptn.event.service.created` event states that a new Keptn service has been created by the `shipyard-controller`.
-This event can contain a Helm chart (in case Keptn is used for Continuous Delivery).
-The `helm-service` processes this chart and stores it in the Git repo.
-
-![](sequence_diagrams/service-created.png)
-  
-
-### Handling of `sh.keptn.event.service.deleted` events
-The `sh.keptn.event.service.deleted` event states that a Keptn service has been deleted by the `shipyard-controller`.
+### Handling of `sh.keptn.event.service.delete.finished` events
+The `sh.keptn.event.service.delete.finished` event states that a Keptn service has been deleted by the `shipyard-controller`.
 In case this service was deployed by the `helm-service`, the `helm-service` uninstalls all releases of this Keptn service.
 
 ![](sequence_diagrams/service-deleted.png)

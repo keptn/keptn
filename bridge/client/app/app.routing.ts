@@ -19,6 +19,7 @@ import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-s
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { PendingChangesGuard } from './_guards/pending-changes.guard';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -30,7 +31,7 @@ const routes: Routes = [
   {
     path: 'create',
     component: ProjectBoardComponent,
-    children: [{ path: 'project', component: KtbProjectSettingsComponent }],
+    children: [{ path: 'project', component: KtbProjectSettingsComponent, canDeactivate: [PendingChangesGuard] }],
   },
   {
     path: 'project/:projectName',
@@ -58,7 +59,7 @@ const routes: Routes = [
         path: 'settings',
         component: KtbSettingsViewComponent,
         children: [
-          { path: 'project', component: KtbProjectSettingsComponent },
+          { path: 'project', component: KtbProjectSettingsComponent, canDeactivate: [PendingChangesGuard] },
           {
             path: 'services',
             component: KtbServiceSettingsComponent,

@@ -162,68 +162,69 @@ func (c Helper) GetValues(releaseName, namespace string) (map[string]interface{}
 // UpgradeChart upgrades/installs the provided chart
 func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 
-	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
-
-		config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
-		if err != nil {
-			return err
-		}
-
-		cfg, err := newActionConfig(config, namespace)
-		if err != nil {
-			return err
-		}
-
-		histClient := action.NewHistory(cfg)
-		var newRelease *release.Release
-
-		timeoutInMinutes := 10
-
-		if releases, err := histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
-			// fresh install
-			iCli := action.NewInstall(cfg)
-			iCli.Namespace = namespace
-			iCli.ReleaseName = releaseName
-			iCli.Wait = true
-			iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
-			newRelease, err = iCli.Run(ch, vals)
-		} else {
-			logging.PrintLog("Found existing installation, overwriting...", logging.InfoLevel)
-
-			// check if the previous installation is still pending (e.g., waiting to complete)
-			for _, r := range releases {
-				if r.Info.Status == release.StatusPendingInstall || r.Info.Status == release.StatusPendingUpgrade ||
-					r.Info.Status == release.StatusPendingRollback {
-					return fmt.Errorf("Previous installation (e.g., using keptn install or helm upgrade) is still in progress. Please try again in %d minutes.", timeoutInMinutes)
-				}
-			}
-
-			// overwrite existing installation
-			iCli := action.NewUpgrade(cfg)
-			iCli.Namespace = namespace
-			iCli.Wait = true
-			iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
-			iCli.ReuseValues = true // reuse values when overwriting existing installation (similar to keptn upgrade)
-			newRelease, err = iCli.Run(releaseName, ch, vals)
-		}
-		// check if install/upgrade worked
-		if err != nil {
-			return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
-				releaseName, namespace, err.Error())
-		}
-		if newRelease != nil {
-			logging.PrintLog(newRelease.Manifest, logging.VerboseLevel)
-			if err := waitForDeploymentsOfHelmRelease(newRelease.Manifest); err != nil {
-				return err
-			}
-		} else {
-			logging.PrintLog("Release is nil", logging.InfoLevel)
-		}
-		logging.PrintLog(fmt.Sprintf("Finished upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
-	} else {
-		logging.PrintLog("Upgrade not done since this is an empty Helm Chart", logging.InfoLevel)
+	if ch == nil || len(ch.Templates) == 0 {
+		return fmt.Errorf("Empty chart provided for %s", releaseName)
 	}
+	logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+
+	config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
+	if err != nil {
+		return err
+	}
+
+	cfg, err := newActionConfig(config, namespace)
+	if err != nil {
+		return err
+	}
+
+	histClient := action.NewHistory(cfg)
+	var newRelease *release.Release
+
+	timeoutInMinutes := 10
+
+	if releases, err2 := histClient.Run(releaseName); err2 == driver.ErrReleaseNotFound {
+		// fresh install
+		iCli := action.NewInstall(cfg)
+		iCli.Namespace = namespace
+		iCli.ReleaseName = releaseName
+		iCli.Wait = true
+		iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
+		newRelease, err = iCli.Run(ch, vals)
+	} else if err2 != nil {
+		return fmt.Errorf("Could not retrieve history of releases associated to %s: %s", releaseName, err.Error())
+	} else {
+		logging.PrintLog("Found existing installation, overwriting...", logging.InfoLevel)
+
+		// check if the previous installation is still pending (e.g., waiting to complete)
+		for _, r := range releases {
+			if r.Info.Status == release.StatusPendingInstall || r.Info.Status == release.StatusPendingUpgrade ||
+				r.Info.Status == release.StatusPendingRollback {
+				return fmt.Errorf("Previous installation (e.g., using keptn install or helm upgrade) is still in progress. Please try again in %d minutes.", timeoutInMinutes)
+			}
+		}
+
+		// overwrite existing installation
+		iCli := action.NewUpgrade(cfg)
+		iCli.Namespace = namespace
+		iCli.Wait = true
+		iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
+		iCli.ReuseValues = true // reuse values when overwriting existing installation (similar to keptn upgrade)
+		newRelease, err = iCli.Run(releaseName, ch, vals)
+	}
+	// check if install/upgrade worked
+	if err != nil {
+		return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
+	}
+	if newRelease == nil {
+		return fmt.Errorf("Failed to install release %s", releaseName)
+	}
+	logging.PrintLog(newRelease.Manifest, logging.VerboseLevel)
+	if err := waitForDeploymentsOfHelmRelease(newRelease.Manifest); err != nil {
+		return err
+	}
+
+	logging.PrintLog(fmt.Sprintf("Finished upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
 	return nil
 }
 

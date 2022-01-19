@@ -14,6 +14,7 @@ import (
 type IShipyardRetriever interface {
 	GetShipyard(projectName string) (*keptnv2.Shipyard, error)
 	GetCachedShipyard(projectName string) (*keptnv2.Shipyard, error)
+	GetLatestCommitID(projectName, stageName string) (string, error)
 }
 
 type ShipyardRetriever struct {
@@ -72,4 +73,17 @@ func (sr *ShipyardRetriever) GetCachedShipyard(projectName string) (*keptnv2.Shi
 		return nil, err
 	}
 	return shipyard, nil
+}
+
+func (sr *ShipyardRetriever) GetLatestCommitID(projectName, stageName string) (string, error) {
+	stageMetadata, err := sr.configurationStore.GetStageResource(projectName, stageName, "metadata.yaml")
+	if err != nil {
+		return "", fmt.Errorf("could not determine latest commit ID for stage %s in project %s: %w", stageName, projectName, err)
+	}
+
+	if stageMetadata == nil || stageMetadata.Metadata == nil {
+		return "", fmt.Errorf("could not determine latest commit ID for stage %s in project %s: stage metadata not found", stageName, projectName)
+	}
+
+	return stageMetadata.Metadata.Version, nil
 }

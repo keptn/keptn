@@ -29,6 +29,8 @@ spec:
         app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-configuration-service
+      securityContext:
+        fsGroup: 1001
       containers:
       - name: configuration-service
         livenessProbe:
@@ -53,6 +55,11 @@ spec:
                 fieldPath: metadata.namespace
           - name: DATASTORE_URI
             value: mongodb-datastore:8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001
         ports:
         - containerPort: 8080
         resources:

@@ -1,7 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.16.2-alpine as builder-base
+FROM golang:1.16.13-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 
@@ -48,7 +48,7 @@ LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
     org.opencontainers.image.version="${version}"
 
 ENV env=production
-ARG JMETER_VERSION="5.4.1"
+ARG JMETER_VERSION="5.4.3"
 ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
 ENV	JMETER_BIN	${JMETER_HOME}/bin
 ENV	JMETER_DOWNLOAD_URL  https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz

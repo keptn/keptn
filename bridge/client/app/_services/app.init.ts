@@ -22,13 +22,13 @@ export class AppInitService {
               });
 
               if (window.config?.stylesheetUrl) {
-                const head = document.getElementsByTagName('head')[0];
+                const body = document.getElementsByTagName('body')[0];
                 const link = document.createElement('link');
                 link.setAttribute('rel', 'stylesheet');
                 link.setAttribute('type', 'text/css');
                 link.setAttribute('href', window.config.stylesheetUrl);
                 link.setAttribute('media', 'all');
-                head.appendChild(link);
+                body.appendChild(link);
               }
             }
           } catch (err) {

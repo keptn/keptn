@@ -25,6 +25,7 @@ remoteControlPlane:
     hostname: ""                             # Hostname of the control plane cluster (and Port)
     apiValidateTls: true                     # Defines if the control plane certificate should be validated
     token: ""                                # Keptn API Token
+    tokenSecretName:                         # Use a predefined secret ie: from sealed-secrets. Must have a config key of keptn-api-token inside the secret
 
 imagePullSecrets: []                         # Secrets to use for container registry credentials
 

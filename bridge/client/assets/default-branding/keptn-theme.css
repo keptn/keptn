@@ -1,0 +1,94 @@
+:root {
+  --dt-theme-main-default-color: #006bb8;
+  --dt-theme-main-hover-color: #0058A8;
+  --dt-theme-main-active-color: #004EA0;
+  --dt-theme-main-background-color: #C2E5FF;
+  --dt-warning-default-color: #c9a000;
+  --dt-warning-hover-color: #ab8300;
+  --dt-warning-active-color: #8e6500;
+  --dt-error-default-color: #dc172a;
+  --dt-error-hover-color: #c41425;
+  --dt-error-active-color: #ab0c17;
+  --dt-recovered-default-color: #3f962a;
+  --dt-recovered-hover-color: #1f7e1e;
+  --dt-recovered-active-color: #006613;
+  --dt-neutral-default-color: #6d6d6d;
+  --dt-neutral-hover-color: #454646;
+  --dt-neutral-active-color: #353535;
+  --dt-cta-default-color: #5ead35;
+  --dt-cta-hover-color: #3f962a;
+  --dt-cta-active-color: #1f7e1e;
+  --dt-critical-default-color: #ab0c17;
+  --dt-critical-hover-color: #93060e;
+  --dt-critical-active-color: #7a0004;
+  --dt-critical-background-color: #f9acaf;
+
+  --dt-accent-active-background-color: #C2E5FF;
+}
+
+.dt-button {
+  --dt-button-default-color: var(--dt-theme-main-default-color);
+  --dt-button-hover-color: var(--dt-theme-main-hover-color);
+  --dt-button-active-color: var(--dt-theme-main-active-color);
+}
+
+.dt-radio-button {
+  --dt-radio-default-color: var(--dt-theme-main-default-color);
+  --dt-radio-hover-color: var(--dt-theme-main-hover-color);
+  --dt-radio-active-color: var(--dt-theme-main-active-color);
+}
+
+.dt-show-more-icon {
+  --dt-show-more-default-color: var(--dt-theme-main-default-color);
+  --dt-show-more-hover-color: var(--dt-theme-main-hover-color);
+  --dt-show-more-active-color: var(--dt-theme-main-active-color);
+}
+
+.dt-switch-bar {
+  --dt-switch-bar-checked-before-background-color: var(--dt-theme-main-default-color);
+  --dt-switch-bar-checked-active-before-background: var(--dt-theme-main-active-color);
+}
+
+.dt-highlight {
+  --dt-highlight-color: var(--dt-theme-main-background-color);
+}
+
+.dt-option:not(.dt-option-disabled).dt-option-active, .dt-option:not(.dt-option-disabled):hover {
+  background-color: var(--dt-theme-main-background-color) !important;
+}
+
+.dt-filter-field-tag-value {
+  color: var(--dt-theme-main-default-color) !important;
+}
+
+.dt-select-arrow svg {
+  fill: var(--dt-theme-main-default-color) !important;
+}
+
+.dt-checkbox-container {
+  border: 2px solid var(--dt-theme-main-default-color) !important;
+}
+
+.dt-checkbox-icon svg {
+  stroke: var(--dt-theme-main-default-color) !important;
+}
+
+:hover .dt-checkbox-icon svg {
+  stroke: var(--dt-theme-main-hover-color) !important;
+}
+
+:active .dt-checkbox-icon svg {
+  stroke: var(--dt-theme-main-active-color) !important;
+}
+
+.dt-button.dt-button-nested .dt-loading-spinner-svg {
+  stroke: var(--dt-neutral-active-color) !important;
+}
+
+.dt-quick-filter-close, .dt-quick-filter-open {
+  color: var(--dt-theme-main-default-color) !important;
+}
+
+.dt-overlay-container {
+  border: 1px solid var(--dt-theme-main-default-color) !important;
+}
