@@ -74,7 +74,7 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	}, 60*time.Second, 5*time.Second)
 
 	// check if the project is already available - if not, delete it before creating it again
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	// create the service

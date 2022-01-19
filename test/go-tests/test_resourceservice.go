@@ -3,6 +3,7 @@ package go_tests
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/osutils"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	corev1 "k8s.io/api/core/v1"
@@ -16,8 +17,8 @@ import (
 const configurationServiceBasePath = "/v1/project"
 
 func Test_ResourceServiceBasic(t *testing.T) {
-	projectName := "resource-service-test-project"
-	nonExistingProjectName := "non_existing_project"
+	projectName := osutils.GetOSEnv(KeptnNamespacePrefix) + "-resource-service-test-project"
+	nonExistingProjectName := osutils.GetOSEnv(KeptnNamespacePrefix) + "-non_existing_project"
 	nonExistingStageName := "non_existing_stage"
 	nonExistingServiceName := "non_existing_service"
 	invalidResourceRequest := "some really random data"

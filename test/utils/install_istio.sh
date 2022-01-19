@@ -12,7 +12,7 @@ export PATH=$PWD/bin:$PATH
 istioctl x precheck
 
 # install istio onto cluster
-istioctl install -y --verify # --set profile=demo
+istioctl install -y --verify
 
 verify_test_step $? "Failed to install Istio"
 
