@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FilterType, KtbSequenceViewComponent } from './ktb-sequence-view.component';
+import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
@@ -17,52 +17,6 @@ describe('KtbEventsListComponent', () => {
   let fixture: ComponentFixture<KtbSequenceViewComponent>;
 
   const projectName = 'sockshop';
-  const activeFilter: FilterType[] = [
-    [
-      {
-        name: 'Service',
-        showInSidebar: true,
-        autocomplete: [
-          {
-            name: 'carts-db',
-            value: 'carts-db',
-          },
-          {
-            name: 'carts',
-            value: 'carts',
-          },
-        ],
-      },
-      {
-        name: 'carts',
-        value: 'carts',
-      },
-    ],
-    [
-      {
-        name: 'Stage',
-        showInSidebar: true,
-        autocomplete: [
-          {
-            name: 'dev',
-            value: 'dev',
-          },
-          {
-            name: 'staging',
-            value: 'staging',
-          },
-          {
-            name: 'production',
-            value: 'production',
-          },
-        ],
-      },
-      {
-        name: 'production',
-        value: 'production',
-      },
-    ],
-  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -115,29 +69,32 @@ describe('KtbEventsListComponent', () => {
     // @ts-ignore // Ignore private property
     component.project.sequences = SequencesMock;
     /* eslint-enable @typescript-eslint/ban-ts-comment */
-    component._seqFilters = activeFilter;
 
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
     component.mapServiceFilters(SequenceMetadataMock);
 
-    expect(component._seqFilters).toEqual(activeFilter);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toEqual([
+      { name: 'carts-db', value: 'carts-db' },
+      { name: 'carts', value: 'carts' },
+    ]);
   });
 
   it('should add a service if it is in a sequence but not in metadata', () => {
     // given
     const metadata = SequenceMetadataMock;
-    metadata.filter.services = metadata.filter.services.slice(0, 1); // remove carts-db
+    metadata.filter.services = metadata.filter.services.splice(1, 1); // remove carts-db
     /* eslint-disable @typescript-eslint/ban-ts-comment */
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
     // @ts-ignore // Ignore private property
     component.project.sequences = SequencesMock;
+    // @ts-ignore // Ignore private property
+    component.filterFieldData.autocomplete[0].autocomplete = [{ name: 'carts', value: 'carts' }];
     /* eslint-enable @typescript-eslint/ban-ts-comment */
-    const filter = activeFilter;
-    filter[0][0].autocomplete = filter[0][0].autocomplete.slice(0, 1); // remove carts-db
-    component._seqFilters = filter;
 
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -145,7 +102,12 @@ describe('KtbEventsListComponent', () => {
     component.mapServiceFilters(metadata);
 
     // then
-    expect(component._seqFilters).toEqual(activeFilter);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toEqual([
+      { name: 'carts', value: 'carts' },
+      { name: 'carts-db', value: 'carts-db' },
+    ]);
   });
 
   it('should remove a service from filters if not available in metadata anymore', () => {
@@ -157,10 +119,9 @@ describe('KtbEventsListComponent', () => {
     component.project = ProjectsMock[0];
     // @ts-ignore // Ignore private property
     component.project.sequences = SequencesMock;
+    // @ts-ignore // Ignore private property
+    component.filterFieldData.autocomplete[0].autocomplete.push({ name: 'helloservice', value: 'helloservice' });
     /* eslint-enable @typescript-eslint/ban-ts-comment */
-    const filter = activeFilter;
-    filter[0][0].autocomplete.push({ name: 'helloservice', value: 'helloservice' });
-    component._seqFilters = filter;
 
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -168,7 +129,25 @@ describe('KtbEventsListComponent', () => {
     component.mapServiceFilters(metadata);
 
     // then
-    expect(component._seqFilters).toEqual(filter);
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toHaveLength(3);
+
+    // As order gets messed up sometimes, it's safer to test each individually
+
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+      name: 'carts-db',
+      value: 'carts-db',
+    });
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+      name: 'helloservice',
+      value: 'helloservice',
+    });
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
 
     // when
     metadata.filter.services.pop();
@@ -177,7 +156,18 @@ describe('KtbEventsListComponent', () => {
     component.mapServiceFilters(metadata);
 
     // then
-    expect(component._seqFilters).toEqual(activeFilter);
+
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toHaveLength(2);
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+      name: 'carts-db',
+      value: 'carts-db',
+    });
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
   });
 
   it('should show a reload button if older than 1 day', () => {
