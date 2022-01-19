@@ -40,6 +40,7 @@ import { EventResultResponseMock } from './_mockData/api-responses/event-result-
 import { ServiceStatesResultResponseMock } from './_mockData/api-responses/service-states-results-response.mock';
 import { DeploymentResponseMock } from './_mockData/api-responses/deployment-response.mock';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { SequenceMetadataMock } from './_mockData/sequence-metadata.mock';
 
 @Injectable({
   providedIn: null,
@@ -397,59 +398,7 @@ export class ApiServiceMock extends ApiService {
   }
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
-    return of({
-      deployments: [
-        {
-          stage: {
-            name: 'dev',
-            services: [
-              {
-                name: 'carts',
-                image: 'carts:0.12.3',
-              },
-              {
-                name: 'carts-db',
-                image: 'mongo:4.2.2',
-              },
-            ],
-          },
-        },
-        {
-          stage: {
-            name: 'staging',
-            services: [
-              {
-                name: 'carts',
-                image: 'carts:0.12.3',
-              },
-              {
-                name: 'carts-db',
-                image: 'mongo:4.2.2',
-              },
-            ],
-          },
-        },
-        {
-          stage: {
-            name: 'production',
-            services: [
-              {
-                name: 'carts',
-                image: 'carts:0.12.3',
-              },
-              {
-                name: 'carts-db',
-                image: 'mongo:4.2.2',
-              },
-            ],
-          },
-        },
-      ],
-      filter: {
-        stages: ['dev', 'production', 'staging'],
-        services: ['carts-db', 'carts'],
-      },
-    });
+    return of(SequenceMetadataMock);
   }
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
