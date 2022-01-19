@@ -241,6 +241,9 @@ spec:
             # Token algorithm which is used for the ID token e.g. "RS256"
             - name: OAUTH_ID_TOKEN_ALG
               value: "{{ .Values.bridge.oauth.IDTokenAlg }}"
+            # Additional scopes that should be added to the authentication flow (e.g. "profile email"), separated by space.
+            - name: OAUTH_SCOPE
+              value: "{{ .Values.bridge.oauth.scope }}"
             # User identifier property inside the ID token e.g. "name" or "email"
             - name: OAUTH_NAME_PROPERTY
               value: "{{ .Values.bridge.oauth.userIdentifier }}"

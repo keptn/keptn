@@ -73,6 +73,7 @@ bridge:
     clientID: ""
     clientSecret: ""
     IDTokenAlg: ""
+    scope: ""
     userIdentifier: ""
 
 distributor:
