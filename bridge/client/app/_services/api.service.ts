@@ -485,6 +485,5 @@ export class ApiService {
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
     return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
-
   }
 }
