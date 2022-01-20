@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { forkJoin, Observable, of, Subject, throwError, BehaviorSubject } from 'rxjs';
+import { forkJoin, Observable, of, Subject, throwError } from 'rxjs';
 import { filter, map, switchMap, take, takeUntil, tap, catchError } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
@@ -28,22 +28,20 @@ import { HttpErrorResponse } from '@angular/common/http';
   providers: [NotificationsService],
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
-export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy {
+export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   public eventPayload: Record<string, unknown> | undefined;
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$:
-    | Observable<{
-        taskNames: string[];
-        subscription: UniformSubscription;
-        project: Project;
-        integrationId: string;
-        webhook?: WebhookConfig;
-        webhookSecrets?: Secret[];
-      }>
-    | undefined = undefined;
+  public data$: Observable<{
+    taskNames: string[];
+    subscription: UniformSubscription;
+    project: Project;
+    integrationId: string;
+    webhook?: WebhookConfig;
+    webhookSecrets?: Secret[];
+  }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -74,8 +72,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy 
       displayValue: EventState.FINISHED,
     },
   ];
-  private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
-  public error$: Observable<string | undefined> = this._errorSubject.asObservable();
+  public errorMessage?: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -83,9 +80,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy 
     private router: Router,
     private notificationsService: NotificationsService,
     private _changeDetectorRef: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {
+  ) {
     const subscription$ = this.route.paramMap.pipe(
       map((paramMap) => ({
         integrationId: paramMap.get('integrationId'),
@@ -151,9 +146,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy 
     );
 
     const taskNames$ = projectName$.pipe(
-      switchMap((projectName) => this.dataService.getTaskNames(projectName)),
+      switchMap((projectName) => {
+        console.log('getTaskNames', projectName);
+        return this.dataService.getTaskNames(projectName);
+      }),
       catchError((err: HttpErrorResponse) => {
-        this._errorSubject.next(err.error);
+        this.errorMessage = err.error;
         this.notificationsService.addNotification(NotificationType.ERROR, err.error);
         return throwError(err);
       }),
@@ -230,6 +228,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy 
           this.eventPayload = Object.keys(event).length ? event : Trace.defaultTrace;
         });
     }
+  }
+
+  public reloadPage(): void {
+    window.location.reload();
   }
 
   private updateDataSource(project: Project): void {
@@ -344,6 +346,5 @@ export class KtbModifyUniformSubscriptionComponent implements OnInit, OnDestroy 
     this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-    this.notificationsService.clearNotifications();
   }
 }

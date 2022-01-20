@@ -1,12 +1,12 @@
 <ktb-notification-bar></ktb-notification-bar>
 <div class="container">
-  <ng-container *ngIf="error$ | async as error">
-    <button class="mt-2" dt-button (click)="ngOnInit()">
+  <ng-container *ngIf="errorMessage">
+    <button class="mt-2" dt-button (click)="reloadPage()">
       <dt-icon name="refresh"></dt-icon>
-      Retry
+      Reload
     </button>
   </ng-container>
-  <ng-container *ngIf="(error$ | async) === undefined">
+  <ng-container *ngIf="!errorMessage">
     <ng-container *ngIf="data$ | async as data; else loading">
       <h2>{{ editMode ? 'Edit' : 'Create' }} subscription</h2>
       <form [formGroup]="subscriptionForm">
