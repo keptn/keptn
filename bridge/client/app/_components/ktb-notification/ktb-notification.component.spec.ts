@@ -85,13 +85,11 @@ describe('KtbNotificationComponent', () => {
   });
 
   it('should start timer again after leave', () => {
-    jest.useFakeTimers();
+    const spy = jest.spyOn(global, 'setTimeout');
     setInputParameter(new Notification(NotificationType.ERROR, 'my message'));
-    jest.runAllTimers();
     component.onHover();
     component.onLeave();
-    expect(component['fadeOutDelay']).not.toBeUndefined();
-    expect(component['hideTimeout']).not.toBeUndefined();
+    expect(spy).toHaveBeenCalledTimes(4); // start and restart
   });
 
   it('should add component and its data', () => {
