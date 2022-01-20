@@ -4,14 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
@@ -58,16 +60,32 @@ func NewSequenceDispatcher(
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	// try to dispatch the sequence immediately
 	if err := sd.dispatchSequence(queueItem); err != nil {
+		log.Errorf("!!!!!!!!!!!!item: %+v\n", queueItem)
 		if err == ErrSequenceBlocked {
 			// if the sequence is currently blocked, insert it into the queue
 			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
 				return err2
 			}
+		} else if err == ErrSequenceBlockedWaiting {
+			// if the sequence is currently blocked and should wait, insert it into the queue
+			if err2 := sd.sequenceQueue.QueueSequence(triggeredToWaitingItem(queueItem)); err2 != nil {
+				return err2
+			}
+			return ErrSequenceBlockedWaiting
 		} else {
 			return err
 		}
 	}
 	return nil
+}
+
+func triggeredToWaitingItem(queueItem models.QueueItem) models.QueueItem {
+	if keptnv2.IsTriggeredEventType(*queueItem.Scope.WrappedEvent.Type) {
+		parts := strings.Split(*queueItem.Scope.WrappedEvent.Type, ".")
+		parts[len(parts)-1] = "waiting"
+		*queueItem.Scope.WrappedEvent.Type = strings.Join(parts, ".")
+	}
+	return queueItem
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
@@ -107,9 +125,11 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 		return
 	}
 
+	log.Errorf("!!!!!!!!!!!!queued_sequences: %+v\n", queuedSequences)
+
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
-			if errors.Is(err, ErrSequenceBlocked) {
+			if errors.Is(err, ErrSequenceBlocked) || errors.Is(err, ErrSequenceBlockedWaiting) {
 				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
 			} else {
 				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
@@ -138,17 +158,18 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// if there is a sequence running in the stage, we cannot trigger this sequence yet
 	if sd.areActiveSequencesBlockingQueuedSequences(taskExecutions) {
 		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
-		return ErrSequenceBlocked
+		return ErrSequenceBlockedWaiting
 	}
 
 	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{
 		ID: &queuedSequence.EventID,
-	}, common.TriggeredEvent)
+	}, common.TriggeredEvent, common.WaitingEvent)
 
 	if err != nil {
 		return err
 	}
 
+	log.Errorf("!!!!!!!!!!!!events1: %+v\n", events)
 	if len(events) == 0 {
 		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queuedSequence.EventID)
 	}

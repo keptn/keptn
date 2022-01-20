@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -10,7 +12,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 type SequenceWatcher struct {
@@ -67,8 +68,8 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasks() {
 }
 
 func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
-	// get open triggered events
-	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent)
+	// get open triggered and waiting events
+	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent, common.WaitingEvent)
 	if err != nil {
 		if err == db.ErrNoEventFound {
 			log.Debugf("no open .triggered events for project %s found", project)
@@ -121,7 +122,7 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 				}
 
 				sw.cancelSequenceChannel <- sequenceCancellation
-				// clean up open .triggered event
+				// clean up open .triggered or .waiting event
 				if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
 					log.WithError(err).Errorf("could not delete event %s", event.ID)
 				}

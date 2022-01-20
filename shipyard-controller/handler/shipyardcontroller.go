@@ -192,6 +192,27 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		return fmt.Errorf("unable to parse seuqnce event of type %s: %w", eventScope.EventType, err)
 	}
 
+	// waitingItem := models.QueueItem{
+	// 	Scope:     *eventScope,
+	// 	EventID:   eventScope.WrappedEvent.ID,
+	// 	Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
+	// }
+
+	// taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(waitingItem.Scope.Project, models.TaskExecution{
+	// 	Stage:   waitingItem.Scope.Stage,
+	// 	Service: waitingItem.Scope.Service,
+	// })
+	// if err != nil {
+	// 	return err
+	// }
+
+	// //if sequence is blocked, send waiting
+	// log.Errorf("shipyard_taskexecutions: %+v\n", taskExecutions)
+	// if len(taskExecutions) != 0 {
+	// 	sc.OnSequenceWaiting(eventScope.WrappedEvent)
+	// 	return sc.sequenceDispatcher.Add(waitingItem)
+	// }
+
 	// fetching cached shipyard file from project git repo
 	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
@@ -213,12 +234,22 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
 
-	sc.onSequenceTriggered(eventScope.WrappedEvent)
-	return sc.sequenceDispatcher.Add(models.QueueItem{
+	err = sc.sequenceDispatcher.Add(models.QueueItem{
 		Scope:     *eventScope,
 		EventID:   eventScope.WrappedEvent.ID,
 		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
 	})
+
+	if err == ErrSequenceBlockedWaiting {
+		sc.OnSequenceWaiting(eventScope.WrappedEvent)
+		log.Errorf("!!!!!!!!!!!!skocil som to waiting")
+		return nil
+	} else {
+		sc.onSequenceTriggered(eventScope.WrappedEvent)
+		log.Errorf("!!!!!!!!!!!!skocil som to triggered")
+	}
+
+	return err
 }
 
 func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.EventScope, event *models.Event) {
@@ -432,6 +463,7 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 		cancel.Project,
 		common.EventFilter{KeptnContext: &cancel.KeptnContext, Stage: &cancel.Stage},
 		common.TriggeredEvent,
+		common.WaitingEvent,
 	)
 	if err != nil {
 		if err == db.ErrNoEventFound {
@@ -589,7 +621,7 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent)
+		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent, common.WaitingEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
 		}
@@ -604,7 +636,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 	} else if project == nil {
 		return nil, ErrProjectNotFound
 	}
-	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent)
+	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent, common.WaitingEvent)
 	if err != nil && err != db.ErrNoEventFound {
 		return nil, err
 	} else if err != nil && err == db.ErrNoEventFound {
