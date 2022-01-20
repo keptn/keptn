@@ -1,11 +1,12 @@
 package common
 
 import (
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 )
 
 func TestParseTimestamp(t *testing.T) {
@@ -48,4 +49,43 @@ func TestParseTimestamp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestChangeEventType(t *testing.T) {
+	type args struct {
+		current   string
+		wanted    string
+		delimiter string
+	}
+
+	tests := []struct {
+		args args
+		want string
+	}{
+		{
+			args: args{
+				current:   "some.funny.event.triggered",
+				wanted:    "waiting",
+				delimiter: ".",
+			},
+			want: "some.funny.event.waiting",
+		},
+		{
+			args: args{
+				current:   "some,funny,event,triggered",
+				wanted:    "waiting",
+				delimiter: ",",
+			},
+			want: "some,funny,event,waiting",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := ChangeEventType(tt.args.current, tt.args.wanted, tt.args.delimiter); got != tt.want {
+				t.Errorf("ChangeEventType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
 }

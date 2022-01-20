@@ -192,27 +192,6 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		return fmt.Errorf("unable to parse seuqnce event of type %s: %w", eventScope.EventType, err)
 	}
 
-	// waitingItem := models.QueueItem{
-	// 	Scope:     *eventScope,
-	// 	EventID:   eventScope.WrappedEvent.ID,
-	// 	Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
-	// }
-
-	// taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(waitingItem.Scope.Project, models.TaskExecution{
-	// 	Stage:   waitingItem.Scope.Stage,
-	// 	Service: waitingItem.Scope.Service,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-
-	// //if sequence is blocked, send waiting
-	// log.Errorf("shipyard_taskexecutions: %+v\n", taskExecutions)
-	// if len(taskExecutions) != 0 {
-	// 	sc.OnSequenceWaiting(eventScope.WrappedEvent)
-	// 	return sc.sequenceDispatcher.Add(waitingItem)
-	// }
-
 	// fetching cached shipyard file from project git repo
 	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
@@ -240,8 +219,32 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
 	})
 
+	// waitingItem := models.QueueItem{
+	// 	Scope:     *eventScope,
+	// 	EventID:   eventScope.WrappedEvent.ID,
+	// 	Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
+	// }
+
+	// taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(waitingItem.Scope.Project, models.TaskExecution{
+	// 	Stage:   waitingItem.Scope.Stage,
+	// 	Service: waitingItem.Scope.Service,
+	// })
+	// if err != nil {
+	// 	return err
+	// }
+
+	// //if sequence is blocked, send waiting
+	// log.Errorf("shipyard_taskexecutions: %+v\n", taskExecutions)
+	// if len(taskExecutions) != 0 {
+	// 	sc.onSequenceWaiting(eventScope.WrappedEvent)
+	// } else {
+	// 	sc.onSequenceTriggered(eventScope.WrappedEvent)
+	// }
+
+	// return sc.sequenceDispatcher.Add(waitingItem)
+
 	if err == ErrSequenceBlockedWaiting {
-		sc.OnSequenceWaiting(eventScope.WrappedEvent)
+		sc.onSequenceWaiting(eventScope.WrappedEvent)
 		log.Errorf("!!!!!!!!!!!!skocil som to waiting")
 		return nil
 	} else {

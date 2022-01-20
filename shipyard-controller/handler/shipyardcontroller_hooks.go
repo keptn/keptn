@@ -65,7 +65,7 @@ func (sc *shipyardController) onSequenceStarted(event models.Event) {
 	}
 }
 
-func (sc *shipyardController) OnSequenceWaiting(event models.Event) {
+func (sc *shipyardController) onSequenceWaiting(event models.Event) {
 	for _, hook := range sc.sequenceWaitingHooks {
 		hook.OnSequenceWaiting(event)
 	}
