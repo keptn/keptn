@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, HostListener } from '@angular/core';
-import { Subject, Observable, of } from 'rxjs';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import {
   GitData,
@@ -15,9 +15,8 @@ import { EventService } from '../../_services/event.service';
 import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
-import { NotificationType } from '../../_models/notification';
 import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
-import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
+import { NotificationType } from '../../_models/notification';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
 
 type DialogState = null | 'unsaved';

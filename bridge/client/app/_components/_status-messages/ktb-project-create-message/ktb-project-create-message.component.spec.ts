@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message.component';
+import { AppModule } from '../../../app.module';
 
 describe('KtbProjectCreateMessageComponent', () => {
   let component: KtbProjectCreateMessageComponent;
@@ -8,6 +8,7 @@ describe('KtbProjectCreateMessageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [AppModule],
       declarations: [],
     }).compileComponents();
   });

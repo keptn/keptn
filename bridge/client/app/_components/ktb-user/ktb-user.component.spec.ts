@@ -44,6 +44,6 @@ describe('ktbUserComponentTest', () => {
     const locationSpy = jest.spyOn(location, 'prepareExternalUrl');
     component.logout(submitForm);
     httpMock.expectOne('./logout').flush(null);
-    expect(locationSpy).toBeCalledWith('/');
+    expect(locationSpy).toBeCalledWith('/logout?status=true');
   });
 });

@@ -58,11 +58,10 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
 
   private loadComponent(): void {
     if (this.notification.componentInfo && this.componentViewRef) {
-      const viewContainerRef = this.componentViewRef;
-      viewContainerRef.clear();
+      this.componentViewRef.clear();
 
       const factory = this.resolver.resolveComponentFactory(this.notification.componentInfo.component);
-      const componentRef = viewContainerRef.createComponent(factory);
+      const componentRef = this.componentViewRef.createComponent(factory);
       Object.assign(componentRef.instance, this.notification.componentInfo.data);
     }
   }

@@ -30,7 +30,7 @@ describe('KtbNotificationBarComponent', () => {
   });
 
   it('should add and remove notifications', () => {
-    let notifications = fixture.debugElement.queryAll(By.css('.page-note'));
+    let notifications = fixture.debugElement.queryAll(By.css('ktb-notification'));
     expect(notifications.length).toBe(0);
 
     service.addNotification(NotificationType.INFO, 'Information');
@@ -39,13 +39,15 @@ describe('KtbNotificationBarComponent', () => {
     service.addNotification(NotificationType.ERROR, 'Error');
     fixture.detectChanges();
 
-    notifications = fixture.debugElement.queryAll(By.css('.page-note'));
+    notifications = fixture.debugElement.queryAll(By.css('ktb-notification dt-alert'));
     expect(notifications.length).toBe(4);
 
-    expect(notifications[0].nativeElement.classList).toContain('info-note');
-    expect(notifications[0].nativeElement.textContent).toContain('Information');
-    expect(notifications[1].nativeElement.classList).toContain('success-note');
-    expect(notifications[2].nativeElement.classList).toContain('warning-note');
-    expect(notifications[3].nativeElement.classList).toContain('error-note');
+    expect(notifications[0].nativeElement.classList).toContain('dt-alert-info');
+    expect(notifications[1].nativeElement.classList).toContain('success');
+    expect(notifications[2].nativeElement.classList).toContain('dt-alert-warning');
+    expect(notifications[3].nativeElement.classList).toContain('dt-alert');
+    expect(notifications[3].nativeElement.querySelector('.dt-alert-icon-container dt-icon').classList).toContain(
+      'dt-alert-icon'
+    );
   });
 });
