@@ -40,6 +40,9 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 // 			GetProjectResourceFunc: func(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
 // 				panic("mock out the GetProjectResource method")
 // 			},
+// 			GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (*keptnapimodels.Resource, error) {
+// 				panic("mock out the GetStageResource method")
+// 			},
 // 			UpdateProjectFunc: func(project keptnapimodels.Project) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
@@ -73,6 +76,9 @@ type ConfigurationStoreMock struct {
 
 	// GetProjectResourceFunc mocks the GetProjectResource method.
 	GetProjectResourceFunc func(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
+
+	// GetStageResourceFunc mocks the GetStageResource method.
+	GetStageResourceFunc func(projectName string, stageName string, resourceURI string) (*keptnapimodels.Resource, error)
 
 	// UpdateProjectFunc mocks the UpdateProject method.
 	UpdateProjectFunc func(project keptnapimodels.Project) error
@@ -131,6 +137,15 @@ type ConfigurationStoreMock struct {
 			// ResourceURI is the resourceURI argument value.
 			ResourceURI string
 		}
+		// GetStageResource holds details about calls to the GetStageResource method.
+		GetStageResource []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// StageName is the stageName argument value.
+			StageName string
+			// ResourceURI is the resourceURI argument value.
+			ResourceURI string
+		}
 		// UpdateProject holds details about calls to the UpdateProject method.
 		UpdateProject []struct {
 			// Project is the project argument value.
@@ -151,6 +166,7 @@ type ConfigurationStoreMock struct {
 	lockDeleteProject         sync.RWMutex
 	lockDeleteService         sync.RWMutex
 	lockGetProjectResource    sync.RWMutex
+	lockGetStageResource      sync.RWMutex
 	lockUpdateProject         sync.RWMutex
 	lockUpdateProjectResource sync.RWMutex
 }
@@ -397,6 +413,45 @@ func (mock *ConfigurationStoreMock) GetProjectResourceCalls() []struct {
 	mock.lockGetProjectResource.RLock()
 	calls = mock.calls.GetProjectResource
 	mock.lockGetProjectResource.RUnlock()
+	return calls
+}
+
+// GetStageResource calls GetStageResourceFunc.
+func (mock *ConfigurationStoreMock) GetStageResource(projectName string, stageName string, resourceURI string) (*keptnapimodels.Resource, error) {
+	if mock.GetStageResourceFunc == nil {
+		panic("ConfigurationStoreMock.GetStageResourceFunc: method is nil but ConfigurationStore.GetStageResource was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+		StageName   string
+		ResourceURI string
+	}{
+		ProjectName: projectName,
+		StageName:   stageName,
+		ResourceURI: resourceURI,
+	}
+	mock.lockGetStageResource.Lock()
+	mock.calls.GetStageResource = append(mock.calls.GetStageResource, callInfo)
+	mock.lockGetStageResource.Unlock()
+	return mock.GetStageResourceFunc(projectName, stageName, resourceURI)
+}
+
+// GetStageResourceCalls gets all the calls that were made to GetStageResource.
+// Check the length with:
+//     len(mockedConfigurationStore.GetStageResourceCalls())
+func (mock *ConfigurationStoreMock) GetStageResourceCalls() []struct {
+	ProjectName string
+	StageName   string
+	ResourceURI string
+} {
+	var calls []struct {
+		ProjectName string
+		StageName   string
+		ResourceURI string
+	}
+	mock.lockGetStageResource.RLock()
+	calls = mock.calls.GetStageResource
+	mock.lockGetStageResource.RUnlock()
 	return calls
 }
 

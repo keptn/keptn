@@ -41,6 +41,9 @@ func main() {
 				"kubernetes" + ":" + kubeAPIPort,
 				"kubernetes.default" + ":" + kubeAPIPort,
 				"kubernetes.default.svc.cluster.local" + ":" + kubeAPIPort,
+				"localhost",
+				"127.0.0.1",
+				"::1",
 			},
 		),
 	)

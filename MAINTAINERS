@@ -3,7 +3,7 @@
 # Names added to this file should be in the following format:
 #     Individual's Name, @githubhandle, Affiliation
 
-# The different levels of membership are outlined here
+# The different levels of membership are outlined here:
 # https://github.com/keptn/community/blob/master/COMMUNITY_MEMBERSHIP.md
 # Before adding yourself to the list below, please have a look at this document.
 
@@ -22,11 +22,12 @@ Ermin Muratovic, @ermin-muratovic, Dynatrace
 Florian Bacher, @bacherfl, Dynatrace
 Giovanni Liva, @thisthat, Dynatrace
 Johannes Bräuer, @johannes-b, Dynatrace
-Jürgen Etzlstorfer, @jetzlstorer, Dynatrace
+Jürgen Etzlstorfer, @jetzlstorer, Microsoft
 Klaus Strießnig, @kirdock, Dynatrace
 Moritz Wiesinger, @mowies, Dynatrace
 Anna Reale, @RealAnna, Dynatrace
 Ondrej Dubaj, @odubajDT, Dynatrace
+Oleg Nenashev, @oleg-nenashev, Dynatrace/CDF/Jenkins
 
 # Approvers
 
@@ -37,9 +38,8 @@ Christian Heckelmann, @checkelmann, ERT / Dynatrace
 
 Arthur Pitman, @arthurpitman, Dynatrace
 Gabriel Tanner, @tannergabriel, Dynatrace
-Kavindu Dodanduwa, @kavindu-dodan, Dynatrace
-Thomas Schütz, @thschue, Dynatrace
-Suraj Banakar, @vadasambar, No Affiliation
 Gilbert Tanner, @TannerGilbert, Dynatrace
-Oleg Nenashev, @oleg-nenashev, Dynatrace/CDF/Jenkins
-
+Kavindu Dodanduwa, @kavindu-dodan, Dynatrace
+Rob Jahn, @robertjahn, Dynatrace
+Suraj Banakar, @vadasambar, No Affiliation
+Thomas Schütz, @thschue, Dynatrace

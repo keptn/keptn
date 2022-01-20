@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -87,10 +88,13 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		EventType:     eventType,
 		NumberOfPages: *eventStruct.NumOfPages,
 	}
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return err
+	}
 
 	if !*getEventParams.Watch {
-		events, modErr := eventHandler.GetEvents(filter)
+		events, modErr := api.EventsV1().GetEvents(filter)
 
 		if modErr != nil {
 			logging.PrintLog(*modErr.Message, logging.QuietLevel)
@@ -107,7 +111,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			PrintEvents(os.Stdout, *eventStruct.Output, events)
 		}
 	} else {
-		watcher := NewDefaultWatcher(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
+		watcher := NewDefaultWatcher(api.EventsV1(), *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
 		PrintEventWatcher(rootCmd.Context(), watcher, *getEventParams.Output, os.Stdout)
 	}
 	return nil

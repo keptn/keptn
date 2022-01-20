@@ -17,6 +17,9 @@ import (
 // 			GetCachedShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 // 				panic("mock out the GetCachedShipyard method")
 // 			},
+// 			GetLatestCommitIDFunc: func(projectName string, stageName string) (string, error) {
+// 				panic("mock out the GetLatestCommitID method")
+// 			},
 // 			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 // 				panic("mock out the GetShipyard method")
 // 			},
@@ -30,6 +33,9 @@ type IShipyardRetrieverMock struct {
 	// GetCachedShipyardFunc mocks the GetCachedShipyard method.
 	GetCachedShipyardFunc func(projectName string) (*keptnv2.Shipyard, error)
 
+	// GetLatestCommitIDFunc mocks the GetLatestCommitID method.
+	GetLatestCommitIDFunc func(projectName string, stageName string) (string, error)
+
 	// GetShipyardFunc mocks the GetShipyard method.
 	GetShipyardFunc func(projectName string) (*keptnv2.Shipyard, error)
 
@@ -40,6 +46,13 @@ type IShipyardRetrieverMock struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 		}
+		// GetLatestCommitID holds details about calls to the GetLatestCommitID method.
+		GetLatestCommitID []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// StageName is the stageName argument value.
+			StageName string
+		}
 		// GetShipyard holds details about calls to the GetShipyard method.
 		GetShipyard []struct {
 			// ProjectName is the projectName argument value.
@@ -47,6 +60,7 @@ type IShipyardRetrieverMock struct {
 		}
 	}
 	lockGetCachedShipyard sync.RWMutex
+	lockGetLatestCommitID sync.RWMutex
 	lockGetShipyard       sync.RWMutex
 }
 
@@ -78,6 +92,41 @@ func (mock *IShipyardRetrieverMock) GetCachedShipyardCalls() []struct {
 	mock.lockGetCachedShipyard.RLock()
 	calls = mock.calls.GetCachedShipyard
 	mock.lockGetCachedShipyard.RUnlock()
+	return calls
+}
+
+// GetLatestCommitID calls GetLatestCommitIDFunc.
+func (mock *IShipyardRetrieverMock) GetLatestCommitID(projectName string, stageName string) (string, error) {
+	if mock.GetLatestCommitIDFunc == nil {
+		panic("IShipyardRetrieverMock.GetLatestCommitIDFunc: method is nil but IShipyardRetriever.GetLatestCommitID was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+		StageName   string
+	}{
+		ProjectName: projectName,
+		StageName:   stageName,
+	}
+	mock.lockGetLatestCommitID.Lock()
+	mock.calls.GetLatestCommitID = append(mock.calls.GetLatestCommitID, callInfo)
+	mock.lockGetLatestCommitID.Unlock()
+	return mock.GetLatestCommitIDFunc(projectName, stageName)
+}
+
+// GetLatestCommitIDCalls gets all the calls that were made to GetLatestCommitID.
+// Check the length with:
+//     len(mockedIShipyardRetriever.GetLatestCommitIDCalls())
+func (mock *IShipyardRetrieverMock) GetLatestCommitIDCalls() []struct {
+	ProjectName string
+	StageName   string
+} {
+	var calls []struct {
+		ProjectName string
+		StageName   string
+	}
+	mock.lockGetLatestCommitID.RLock()
+	calls = mock.calls.GetLatestCommitID
+	mock.lockGetLatestCommitID.RUnlock()
 	return calls
 }
 

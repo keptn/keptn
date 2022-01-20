@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -14,10 +19,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/docker"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 type deliveryStruct struct {
@@ -83,35 +84,48 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" in version "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
 
 	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+		return fmt.Errorf("error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
+	}
+
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return err
+	}
+
+	project, errObj := api.ProjectsV1().GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
+	if errObj != nil {
+		return fmt.Errorf("error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
 	}
 
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
 	if deliveryInputData.Stage == nil || *deliveryInputData.Stage == "" {
 		// retrieve the project information to determine the first stage
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
-		if errObj != nil {
-			return fmt.Errorf("Error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
-		}
 		if len(project.Stages) > 0 {
 			deliveryInputData.Stage = &project.Stages[0].StageName
 		} else {
-			return fmt.Errorf("Could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
+			return fmt.Errorf("could not start sequence because no stage has been found in project %s", *deliveryInputData.Project)
 		}
+	}
+
+	projectServices, err := api.ServicesV1().GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
+	if err != nil {
+		return fmt.Errorf("error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
+	}
+	if !ServiceInSlice(*deliveryInputData.Service, projectServices) {
+		return fmt.Errorf("could not start sequence because service %s has not been found in project %s", *deliveryInputData.Service, *deliveryInputData.Project)
 	}
 
 	jsonStr, err := internal.JSONPathToJSONObj(*deliveryInputData.Values)
 	if err != nil {
-		return fmt.Errorf("Error while parsing --values flag %v", err)
+		return fmt.Errorf("error while parsing --values flag %v", err)
 	}
 
 	valuesJson := map[string]interface{}{}
 	valuesJson["image"] = *deliveryInputData.Image + ":" + *deliveryInputData.Tag
 	err = json.Unmarshal([]byte(jsonStr), &valuesJson)
 	if err != nil {
-		return fmt.Errorf("Error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
+		return fmt.Errorf("error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
 	}
 
 	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
@@ -138,32 +152,29 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 
 	eventByte, err := sdkEvent.MarshalJSON()
 	if err != nil {
-		return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+		return fmt.Errorf("failed to marshal cloud event. %s", err.Error())
 	}
 
 	apiEvent := apimodels.KeptnContextExtendedCE{}
 	err = json.Unmarshal(eventByte, &apiEvent)
 	if err != nil {
-		return fmt.Errorf("Failed to map cloud event to API event model. %v", err)
+		return fmt.Errorf("failed to map cloud event to API event model. %v", err)
 	}
-
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-	eventContext, err2 := apiHandler.SendEvent(apiEvent)
+	eventContext, err2 := api.APIV1().SendEvent(apiEvent)
 	if err2 != nil {
 		logging.PrintLog("trigger delivery was unsuccessful", logging.QuietLevel)
 		return fmt.Errorf("trigger delivery was unsuccessful. %s", *err2.Message)
 	}
 
 	if *deliveryInputData.Watch {
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		filter := apiutils.EventFilter{
 			KeptnContext: *eventContext.KeptnContext,
 			Project:      *deliveryInputData.Project,
 		}
-		watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
+		watcher := NewDefaultWatcher(api.EventsV1(), filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
 		PrintEventWatcher(rootCmd.Context(), watcher, *deliveryInputData.Output, os.Stdout)
 	}
 

@@ -42,6 +42,7 @@ remediationService:
     tag: ""
 
 apiService:
+  tokenSecretName:
   image:
     repository: docker.io/keptn/api
     tag: ""
@@ -73,6 +74,7 @@ bridge:
     clientID: ""
     clientSecret: ""
     IDTokenAlg: ""
+    scope: ""
     userIdentifier: ""
 
 distributor:
@@ -106,6 +108,18 @@ configurationService:
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
   storageClass: null
+  fsGroup: 1001
+  initContainer: true
+  env:
+    GIT_KEPTN_USER: "keptn"
+    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+
+resourceService:
+  enabled: false
+  replicas: 1
+  image:
+    repository: docker.io/keptn/resource-service
+    tag: ""
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
@@ -135,11 +149,6 @@ webhookService:
   image:
     repository: docker.io/keptn/webhook-service
     tag: ""
-
-alpine:
-  image:
-    repository: docker.io/alpine
-    tag: "3.13"
 
 ingress:
   enabled: false

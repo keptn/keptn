@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, HostListener } from '@angular/core';
+import { Subject, Observable, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import {
   GitData,
@@ -17,13 +17,17 @@ import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType } from '../../_models/notification';
 import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
+import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
+import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
+
+type DialogState = null | 'unsaved';
 
 @Component({
   selector: 'ktb-project-settings',
   templateUrl: './ktb-project-settings.component.html',
   styleUrls: ['./ktb-project-settings.component.scss'],
 })
-export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
+export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('deleteProjectDialog')
@@ -32,13 +36,14 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   @ViewChild(KtbProjectSettingsGitComponent)
   private gitSettingsSection?: KtbProjectSettingsGitComponent;
 
-  public unsavedDialogState: string | null = null;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
   public isProjectLoading: boolean | undefined;
   public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
+  private pendingChangesSubject = new Subject<boolean>();
+  public isProjectFormTouched = false;
   public shipyardFile?: File;
   public gitData: GitData = {
     gitFormValid: true,
@@ -47,6 +52,9 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
   });
+
+  public message = 'You have pending changes. Make sure to save your data before you continue.';
+  public unsavedDialogState: DialogState = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -67,6 +75,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
       if (params.projectName) {
         this.isProjectLoading = true;
         this.isCreateMode = false;
+        this.isProjectFormTouched = false;
         this.projectName = params.projectName;
 
         this.projectDeletionData = {
@@ -115,8 +124,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
 
   private loadProject(projectName: string): void {
     this.dataService.loadPlainProject(projectName).subscribe((project) => {
-      this.unsavedDialogState = null;
-
       this.gitData = {
         remoteURI: project.gitRemoteURI,
         gitUser: project.gitUser,
@@ -127,7 +134,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   }
 
   private showCreateNotificationAndRedirect(): void {
-    this.unsavedDialogState = null;
     this.notificationsService.addNotification(
       NotificationType.SUCCESS,
       '',
@@ -149,21 +155,18 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     this.gitData.gitUser = gitData.gitUser;
     this.gitData.gitToken = gitData.gitToken;
     this.gitData.gitFormValid = gitData.gitFormValid;
-    if (gitData.gitFormValid) {
-      this.unsavedDialogState = 'unsaved';
-    } else {
-      this.unsavedDialogState = null;
-    }
+    this.projectFormTouched();
   }
 
   public updateShipyardFile(shipyardFile: File | undefined): void {
     this.shipyardFile = shipyardFile;
+    this.projectFormTouched();
   }
 
   public setGitUpstream(): void {
     if (this.projectName && this.gitData.remoteURI && this.gitData.gitUser && this.gitData.gitToken) {
       this.isGitUpstreamInProgress = true;
-      this.unsavedDialogState = null;
+      this.hideNotification();
       this.dataService
         .setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
@@ -176,6 +179,9 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
               NotificationType.SUCCESS,
               'The Git upstream was changed successfully.'
             );
+
+            this.pendingChangesSubject.next(true);
+            this.isProjectFormTouched = false;
           },
           (err) => {
             this.isGitUpstreamInProgress = false;
@@ -208,6 +214,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
               this.projectName = projectName;
               this.dataService.loadProjects().subscribe(() => {
                 this.isCreatingProjectInProgress = false;
+                this.isProjectFormTouched = false;
 
                 this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
                   queryParams: { created: true },
@@ -229,6 +236,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     this.dataService.deleteProject(projectName).subscribe(
       () => {
         this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
+        this.isProjectFormTouched = false;
         this.router.navigate(['/', 'dashboard']);
       },
       (err) => {
@@ -242,13 +250,71 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     );
   }
 
+  public reject(): void {
+    this.pendingChangesSubject.next(false);
+    this.hideNotification();
+  }
+
   public reset(): void {
     this.gitSettingsSection?.reset();
-    this.unsavedDialogState = null;
+    this.pendingChangesSubject.next(true);
+    this.hideNotification();
   }
 
   public saveAll(): void {
-    this.setGitUpstream();
+    if (this.isCreateMode) {
+      this.createProject();
+    } else {
+      this.setGitUpstream();
+    }
+    this.hideNotification();
+  }
+
+  public isProjectFormInvalid(): boolean {
+    return this.isCreateMode ? this.isProjectCreateFormInvalid() : this.isProjectSettingsFormInvalid();
+  }
+
+  public isProjectCreateFormInvalid(): boolean {
+    return (
+      !this.shipyardFile ||
+      this.projectNameForm.invalid ||
+      !this.gitData.gitFormValid ||
+      this.isCreatingProjectInProgress
+    );
+  }
+
+  public isProjectSettingsFormInvalid(): boolean {
+    return !this.gitData.gitFormValid || this.isGitUpstreamInProgress;
+  }
+
+  projectFormTouched(): void {
+    this.isProjectFormTouched = true;
+  }
+
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload', ['$event'])
+  canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+    if (this.isProjectFormTouched) {
+      if ($event) {
+        $event.returnValue = this.message;
+      }
+      this.showNotification();
+      return this.pendingChangesSubject.asObservable();
+    } else {
+      return of(true);
+    }
+  }
+
+  showNotification(): void {
+    this.unsavedDialogState = 'unsaved';
+
+    document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
+    setTimeout(() => {
+      document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.remove('shake');
+    }, 500);
+  }
+
+  hideNotification(): void {
     this.unsavedDialogState = null;
   }
 }

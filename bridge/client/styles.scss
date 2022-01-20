@@ -8,8 +8,6 @@ $fonts-dir: '^./assets/fonts';
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
-@import 'barista';
-
 pre,
 code {
   font-family: monospace;
@@ -129,7 +127,7 @@ a {
 }
 
 a:hover {
-  color: $primary-color;
+  color: var(--dt-theme-main-default-color);
 }
 
 button.dt-button-primary.danger-button:not([disabled]),
@@ -432,7 +430,7 @@ pre.code {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  border: 1px solid $link-icon-color;
+  border: 1px solid var(--dt-theme-main-default-color);
   border-radius: 5px;
   background-color: transparent;
   text-align: center;
@@ -455,6 +453,12 @@ pre.code {
 
   &.notification-open {
     padding-bottom: 100px;
+  }
+
+  &.column-2 {
+    > dt-form-field {
+      width: 50%;
+    }
   }
 }
 
@@ -485,6 +489,31 @@ pre.code {
   100% {
     transform: translateY(0px);
   }
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%, 50%, 70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%, 60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+.shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 button.action-btn {
@@ -544,3 +573,4 @@ button.small-btn {
 .inline-block {
   display: inline-block;
 }
+

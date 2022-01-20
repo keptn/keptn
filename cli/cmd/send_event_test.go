@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"testing"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -32,7 +32,7 @@ const ce = `{
   "shkeptncontext": "5403dc38-dc42-4218-a587-1b5973ac32fc"
 }`
 
-// TestOnboardServiceWrongHelmChartPath tests the onboard service command.
+// TestSendEvent tests sending an event.
 func TestSendEvent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true

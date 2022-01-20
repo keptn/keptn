@@ -86,6 +86,23 @@ func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 	return nil
 }
 
+// ValidateGitRemoteURL godoc
+func ValidateGitRemoteURL(gitUrl string) error {
+	if gitUrl == "" {
+		return nil
+	}
+
+	if _, err := url.ParseRequestURI(gitUrl); err != nil {
+		return fmt.Errorf("unable to parse requested gitRemoteURL: %s", gitUrl)
+	}
+
+	if !strings.HasPrefix(gitUrl, "https://") && !strings.HasPrefix(gitUrl, "http://") {
+		return fmt.Errorf("only http or https protocols are supported in gitRemoteURL")
+	}
+
+	return nil
+}
+
 // ValidateShipyardStages godoc
 func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 	// A shipyard must have at least one stage

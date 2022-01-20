@@ -1,9 +1,0 @@
-distributor:
-  image:
-    repository: docker.io/keptn/distributor
-    tag: ""
-
-openshiftRouteService:
-  image:
-    repository: docker.io/keptn/openshift-route-service
-    tag: ""

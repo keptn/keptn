@@ -2,6 +2,8 @@ package common
 
 import (
 	"context"
+	"fmt"
+
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -56,7 +58,7 @@ func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get git-credentials secret on kubernetes cluster")
 	}
 	return get.Data, nil
 }

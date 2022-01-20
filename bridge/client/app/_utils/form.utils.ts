@@ -15,6 +15,13 @@ export class FormUtils {
     return null;
   }
 
+  public static payloadSpecialCharValidator(control: AbstractControl): { specialChar: { value: boolean } } | null {
+    if (control.value && control.value.match(/(\$|\||;|>|&|`|\/var\/run)/gi)) {
+      return { specialChar: { value: true } };
+    }
+    return null;
+  }
+
   public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {
     if (allowedExtensions && allowedExtensions.length > 0) {
       const allowedFiles = [];

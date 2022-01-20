@@ -1,5 +1,6 @@
 {
   "appTitle": "keptn",
   "logoUrl": "assets/default-branding/logo.png",
-  "logoInvertedUrl": "assets/default-branding/logo_inverted.png"
+  "logoInvertedUrl": "assets/default-branding/logo_inverted.png",
+  "stylesheetUrl": "assets/default-branding/keptn-theme.css"
 }

@@ -1,10 +1,10 @@
 import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Observable, of, Subject } from 'rxjs';
-import { filter, switchMap, takeUntil } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
 import { NotificationsService } from '../_services/notifications.service';
@@ -13,6 +13,7 @@ import { environment } from '../../environments/environment';
 import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
+import { DtSelect } from '@dynatrace/barista-components/select';
 
 @Component({
   selector: 'ktb-header',
@@ -21,8 +22,10 @@ import { VersionInfo } from '../_models/keptn-versions';
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
+
+  @ViewChild('projectSelect') projectSelect?: DtSelect<string | undefined>;
   public projects: Observable<Project[] | undefined>;
-  public project$: Observable<Project | undefined> = of(undefined);
+  public selectedProject: string | undefined;
   public projectBoardView = '';
   public appTitle = environment?.config?.appTitle;
   public logoUrl = environment?.config?.logoUrl;
@@ -46,24 +49,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
-      if (event instanceof RoutesRecognized) {
-        const pieces = event.url.split('/');
-        if (pieces[1] === 'evaluation') {
-          this.project$ = this.dataService.projectName.pipe(
-            switchMap((projectName) => this.dataService.getProject(projectName))
-          );
-        } else {
-          const projectName = event.state.root.children[0].params.projectName;
-          this.project$ = this.dataService.getProject(projectName);
-        }
-      } else if (event instanceof NavigationEnd) {
-        // catch url change and update projectBoardView for the project picker
-        const pieces = event.url.split('/');
-        if (pieces.length > 3 && pieces[1] === 'project') {
-          this.projectBoardView = pieces[3];
-        } else {
-          this.projectBoardView = ''; // environment screen
-        }
+      if (event instanceof NavigationStart || event instanceof NavigationEnd) {
+        this.setProject();
       }
     });
 
@@ -213,6 +200,34 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   setAppFavicon(path: string): void {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
+  }
+
+  changeProject(selectedProject: string | undefined): void {
+    this.router.navigate(this.getRouterLink(selectedProject as string));
+  }
+
+  setProject(): void {
+    const urlPieces = this.router.url.split('/');
+    if (urlPieces[1] === 'project') {
+      this.selectedProject = urlPieces[2];
+
+      // catch url change and update projectBoardView for the project picker
+      if (urlPieces.length > 3) {
+        this.projectBoardView = urlPieces[3];
+      } else {
+        this.projectBoardView = ''; // environment screen
+      }
+    } else if (urlPieces[1] === 'evaluation') {
+      this.dataService.projectName.pipe(takeUntil(this.unsubscribe$)).subscribe((projectName: string) => {
+        this.selectedProject = projectName;
+      });
+    } else {
+      this.selectedProject = undefined;
+    }
+
+    if (this.projectSelect) {
+      this.projectSelect.value = this.selectedProject;
+    }
   }
 
   ngOnDestroy(): void {

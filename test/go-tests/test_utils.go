@@ -13,6 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/keptn/go-utils/pkg/common/retry"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/imroc/req"
@@ -49,12 +54,12 @@ func (sender *APIEventSender) SendEvent(event v2.Event) error {
 
 func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
 
-	retries := 3
+	retries := 5
 	var err error
 	var resp *req.Resp
 	for i := 0; i < retries; i++ {
 		if err != nil {
-			<-time.After(5 * time.Second)
+			<-time.After(10 * time.Second)
 		}
 		resp, err = ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
 		if err != nil {
@@ -73,7 +78,20 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 			}
 		}
 
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s", projectName, shipyardFilePath))
+		err = RecreateGitUpstreamRepository(projectName)
+		if err != nil {
+			// retry if repo creation failed (gitea might not be available)
+			continue
+		}
+
+		user := GetGiteaUser()
+		token, err := GetGiteaToken()
+		if err != nil {
+			return err
+		}
+
+		// apply the k8s job for creating the git upstream
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", projectName, shipyardFilePath, user, projectName, user, token))
 
 		if err == nil {
 			return nil
@@ -106,12 +124,12 @@ func TriggerSequence(projectName, serviceName, stageName, sequenceName string, e
 		return "", err
 	}
 
-	context := &models.EventContext{}
-	err = resp.ToJSON(context)
+	eventContext := &models.EventContext{}
+	err = resp.ToJSON(eventContext)
 	if err != nil {
 		return "", err
 	}
-	return *context.KeptnContext, nil
+	return *eventContext.KeptnContext, nil
 }
 
 func GetIntegrationWithName(name string) (models.Integration, error) {
@@ -561,4 +579,149 @@ func removeQuotes(str string) string {
 	}
 
 	return str
+}
+
+// GetGiteaToken checks whether the GITEA_TOKEN environment variable is set. If yes, it will return the value for that var. If not, it will try to
+// fetch the token from the secret 'gitea-access' in the keptn namespace
+func GetGiteaToken() (string, error) {
+	// if the token is set as an env var, return that
+	if tokenFromEnv := os.Getenv("GITEA_TOKEN"); tokenFromEnv != "" {
+		return tokenFromEnv, nil
+	}
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return "", err
+	}
+
+	giteaAccessSecret, err := clientset.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "gitea-access", v1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	token := string(giteaAccessSecret.Data["password"])
+	if token == "" {
+		return "", errors.New("no gitea token found")
+	}
+
+	return token, nil
+}
+
+func GetGiteaUser() string {
+	if os.Getenv("GITEA_ADMIN_USER") != "" {
+		return os.Getenv("GITEA_ADMIN_USER")
+	}
+	return "gitea_admin"
+}
+
+// recreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
+func RecreateGitUpstreamRepository(project string) error {
+	jobName := "recreate-upstream-repo"
+	clientset, err := keptnkubeutils.GetClientset(false)
+
+	// check if the job for recreating the project already exists (e.g. due to a previous run
+	get, err := clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), jobName, v1.GetOptions{})
+	if err == nil && get != nil {
+		err := clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Delete(context.TODO(), jobName, v1.DeleteOptions{})
+		if err != nil {
+			return fmt.Errorf("could not delete previous instance of job %s: %w", project, err)
+		}
+	}
+
+	token, err := GetGiteaToken()
+	if err != nil {
+		return err
+	}
+	user := GetGiteaUser()
+
+	deleteCmd := fmt.Sprintf(`curl -X DELETE "http://gitea-http:3000/api/v1/repos/%s/%s?access_token=%s"`, user, project, token)
+	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\", \"default_branch\": \"main\"}"`, token, project)
+
+	parallelPods := int32(1)
+
+	recreateJob := &batchv1.Job{
+		TypeMeta: v1.TypeMeta{},
+		ObjectMeta: v1.ObjectMeta{
+			Name:      jobName,
+			Namespace: GetKeptnNameSpaceFromEnv(),
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "go-tests",
+			},
+		},
+		Spec: batchv1.JobSpec{
+			Parallelism: &parallelPods,
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyNever,
+					Containers: []corev1.Container{
+						{
+							Name:  "delete-previous",
+							Image: "curlimages/curl:7.80.0",
+							Command: []string{
+								"sh", "-c",
+							},
+							Args: []string{
+								deleteCmd,
+							},
+						},
+						{
+							Name:  "create",
+							Image: "curlimages/curl:7.80.0",
+							Command: []string{
+								"sh", "-c",
+							},
+							Args: []string{
+								createCmd,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err = clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Create(context.TODO(), recreateJob, v1.CreateOptions{})
+
+	if err != nil {
+		return fmt.Errorf("could not create job to create upstream repo: %w", err)
+	}
+
+	defer func() {
+		_ = clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Delete(context.TODO(), jobName, v1.DeleteOptions{})
+	}()
+
+	var jobStatus *batchv1.Job
+	// wait for the job to be completed
+	err = retry.Retry(func() error {
+		get, err := clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), jobName, v1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+		if get.Status.CompletionTime == nil {
+			// job not done yet
+			return errors.New("job not completed")
+		}
+
+		jobStatus = get
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(5*time.Second))
+	if err != nil {
+		return err
+	}
+
+	if jobStatus.Status.Failed > 1 {
+		return errors.New("could not (re)create upstream repository")
+	}
+
+	return nil
+}
+
+func checkResourceInResponse(resources models.Resources, resourceName string) error {
+	for _, resource := range resources.Resources {
+		if *resource.ResourceURI == resourceName {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Resource %s not found in received response.", resourceName)
 }
