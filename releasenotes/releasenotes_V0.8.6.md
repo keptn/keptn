@@ -15,12 +15,12 @@ Installing and/or upgrading to this release should be done using the `helm upgra
 
 **Installation** (using `--install`)
 ```console
-helm upgrade keptn keptn --install -n keptn --create-namespace --wait --version=0.8.6 --repo=https://storage.googleapis.com/keptn-installer
+helm upgrade keptn keptn --install -n keptn --create-namespace --wait --version=0.8.6 --repo=https://charts.keptn.sh
 ```
 
 **Upgrade** (using `--reuse-values`)
 ```console
-helm upgrade keptn keptn -n keptn --wait --version=0.8.6 --repo=https://storage.googleapis.com/keptn-installer --reuse-values
+helm upgrade keptn keptn -n keptn --wait --version=0.8.6 --repo=https://charts.keptn.sh --reuse-values
 ```
 
 It is not required to upgrade the CLI.
