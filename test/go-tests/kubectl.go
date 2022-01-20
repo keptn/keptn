@@ -48,25 +48,22 @@ func KubeCtlDeleteFromURL(url string, namespace ...string) error {
 	return nil
 }
 
-func KubeCtlPortForwardSvc(ctx context.Context, svcName, port string) error {
-	fmt.Println("Start port forward")
-
-	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", "keptn-test", svcName, port)
+func KubeCtlPortForwardSvc(ctx context.Context, svcName, port string, namespace ...string) error {
+	var ns = GetKeptnNameSpaceFromEnv()
+	if len(namespace) == 1 {
+		ns = namespace[0]
+	}
+	fmt.Printf("Executing: %s port-forward -n %s %s %s", kubectlExecutable, ns, svcName, port)
+	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", ns, svcName, port)
 	err := cmd.Start()
 	if err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
-	fmt.Println("Started port forward")
 	err = wait.PollImmediate(time.Second*3, 10*time.Second, func() (bool, error) {
 		_, err := net.DialTimeout("tcp", "127.0.0.1:"+port, 1*time.Second)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
 		return err == nil, nil
 	})
 	if err != nil {
-		fmt.Println("Wait for port forward failed")
 		return err
 	}
 
