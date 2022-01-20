@@ -80,10 +80,16 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 }
 
 func triggeredToWaitingItem(queueItem models.QueueItem) models.QueueItem {
+	//log.Errorf("!!!!!!!!!!!!idem prevadzat\n\n")
 	if keptnv2.IsTriggeredEventType(*queueItem.Scope.WrappedEvent.Type) {
+		//log.Errorf("!!!!!!!!!!!!podmienka\n\n")
 		parts := strings.Split(*queueItem.Scope.WrappedEvent.Type, ".")
 		parts[len(parts)-1] = "waiting"
 		*queueItem.Scope.WrappedEvent.Type = strings.Join(parts, ".")
+		parts = strings.Split(queueItem.Scope.EventType, ".")
+		parts[len(parts)-1] = "waiting"
+		queueItem.Scope.EventType = strings.Join(parts, ".")
+		//log.Errorf("!!!!!!!!!!!!po krokoch\n\n")
 	}
 	return queueItem
 }

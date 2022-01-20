@@ -2,17 +2,18 @@ package go_tests
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"os"
-	"sync"
-	"testing"
-	"time"
 )
 
 const sequenceQueueShipyard = `--- 
@@ -109,10 +110,10 @@ func Test_SequenceQueue(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})
 	t.Log("received the expected state!")
 
-	// trigger a second sequence - this one should stay in 'triggered' state until the previous sequence is finished
+	// trigger a second sequence - this one should stay in 'waiting' state until the previous sequence is finished
 	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
-	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceTriggeredState})
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceWaitingState})
 	t.Log("received the expected state!")
 
 	// check if mytask.triggered has been sent for first sequence - this one should be available

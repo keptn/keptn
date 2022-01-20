@@ -463,7 +463,6 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 		cancel.Project,
 		common.EventFilter{KeptnContext: &cancel.KeptnContext, Stage: &cancel.Stage},
 		common.TriggeredEvent,
-		common.WaitingEvent,
 	)
 	if err != nil {
 		if err == db.ErrNoEventFound {
@@ -621,7 +620,7 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent, common.WaitingEvent)
+		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
 		}
@@ -636,7 +635,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 	} else if project == nil {
 		return nil, ErrProjectNotFound
 	}
-	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent, common.WaitingEvent)
+	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent)
 	if err != nil && err != db.ErrNoEventFound {
 		return nil, err
 	} else if err != nil && err == db.ErrNoEventFound {

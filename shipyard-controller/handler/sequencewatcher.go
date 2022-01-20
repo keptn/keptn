@@ -68,8 +68,8 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasks() {
 }
 
 func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
-	// get open triggered and waiting events
-	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent, common.WaitingEvent)
+	// get open triggered events
+	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent)
 	if err != nil {
 		if err == db.ErrNoEventFound {
 			log.Debugf("no open .triggered events for project %s found", project)
@@ -122,7 +122,7 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 				}
 
 				sw.cancelSequenceChannel <- sequenceCancellation
-				// clean up open .triggered or .waiting event
+				// clean up open .triggered event
 				if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
 					log.WithError(err).Errorf("could not delete event %s", event.ID)
 				}
