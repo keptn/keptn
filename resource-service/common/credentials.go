@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
+	logger "github.com/sirupsen/logrus"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -30,9 +31,11 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.Git
 
 	secret, err := kr.k8sClient.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
+		logger.Debug("Could not retrieve credentials named: ", secretName, "err: ", err)
 		return nil, errors2.ErrCredentialsNotFound
 	}
 	if err != nil {
+		logger.Debug("Could not retrieve credentials named: ", secretName, "err: ", err)
 		return nil, err
 	}
 
@@ -42,6 +45,7 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.Git
 		return nil, errors2.ErrMalformedCredentials
 	}
 	if err := credentials.Validate(); err != nil {
+		logger.Debug("Issue with credentials : ", err)
 		return nil, err
 	}
 	return credentials, nil

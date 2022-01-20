@@ -60,17 +60,20 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "quality-gates3"
+	projectName := "quality12"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	//source := "golang-test"
+	source := "golang-test"
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+
+	_, _, err = createConfigServiceUpstreamRepo(projectName)
+	require.Nil(t, err)
+	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -109,7 +112,7 @@ func Test_QualityGates(t *testing.T) {
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 
 	require.NotNil(t, evaluationFinishedEvent)
 	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
@@ -147,7 +150,7 @@ func Test_QualityGates(t *testing.T) {
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -207,54 +210,54 @@ func Test_QualityGates(t *testing.T) {
 		KeySLI: false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[0])
 
-	//	firstEvaluationFinishedID := evaluationFinishedEvent.ID
-	/*
-		// send an evaluation.finished event for this evaluation
-		evaluationInvalidatedEventType := "sh.keptn.event.evaluation.invalidated"
-		_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
-			Contenttype: "application/json",
-			Data: keptnv2.EventData{
-				Project: projectName,
-				Stage:   "hardening",
-				Service: serviceName,
-			},
-			ID:                 uuid.NewString(),
-			Shkeptnspecversion: KeptnSpecVersion,
-			Source:             &source,
-			Specversion:        "1.0",
-			Shkeptncontext:     evaluationFinishedEvent.Shkeptncontext,
-			Triggeredid:        evaluationFinishedEvent.Triggeredid,
-			Type:               &evaluationInvalidatedEventType,
-		}, 3)
-		require.Nil(t, err)
+	firstEvaluationFinishedID := evaluationFinishedEvent.ID
 
-		// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results
-		keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
+	// send an evaluation.finished event for this evaluation
+	evaluationInvalidatedEventType := "sh.keptn.event.evaluation.invalidated"
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "hardening",
+			Service: serviceName,
+		},
+		ID:                 uuid.NewString(),
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Shkeptncontext:     evaluationFinishedEvent.Shkeptncontext,
+		Triggeredid:        evaluationFinishedEvent.Triggeredid,
+		Type:               &evaluationInvalidatedEventType,
+	}, 3)
+	require.Nil(t, err)
 
-		err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
-		require.Nil(t, err)
-		require.NotContains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, firstEvaluationFinishedID)
-		secondEvaluationFinishedID := evaluationFinishedEvent.ID
+	// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results
+	keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
 
-		// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
-		keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+	require.NotContains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, firstEvaluationFinishedID)
+	secondEvaluationFinishedID := evaluationFinishedEvent.ID
 
-		err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
-		require.Nil(t, err)
-		require.Contains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, secondEvaluationFinishedID)
+	// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
+	keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
 
-		project, err := GetProject(projectName)
-		require.Nil(t, err)
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+	require.Contains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, secondEvaluationFinishedID)
 
-		require.NotEmpty(t, project.Stages)
-		require.NotEmpty(t, project.Stages[0].Services)
-		require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)])
-		require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)].KeptnContext)
-		require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)])
-		require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
-		require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)])
-		require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
-	*/
+	project, err := GetProject(projectName)
+	require.Nil(t, err)
+
+	require.NotEmpty(t, project.Stages)
+	require.NotEmpty(t, project.Stages[0].Services)
+	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)])
+	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)].KeptnContext)
+	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)])
+	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
+	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)])
+	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
+
 	performResourceServiceTest(t, projectName, serviceName)
 
 }
@@ -274,7 +277,7 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 		}
 		getSLITriggeredEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 
 	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
 	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
@@ -333,7 +336,7 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 	return keptnContext, evaluationFinishedEvent
 }
 

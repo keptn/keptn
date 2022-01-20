@@ -427,11 +427,13 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 	path := GetProjectConfigPath(gitContext.Project)
 	r, err := g.git.PlainOpen(path)
 	if err != nil {
+		logger.Debug("Could not open project: ", file, " err: ", err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "open", gitContext.Project, err)
 	}
 	h, err := r.ResolveRevision(plumbing.Revision(revision))
 	if err != nil {
+		logger.Debug("Could not resolve revision for : ", revision, " err: ", err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}
@@ -456,6 +458,7 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 			return []byte{},
 				fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, kerrors.ErrResourceNotFound)
 		}
+		logger.Debug("Could not resolve blob for object: ", obj, " file ", file, " err: ", err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}
@@ -570,24 +573,28 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	case *object.Commit:
 		t, err := o.Tree()
 		if err != nil {
+			logger.Debug("Could not resolve commit for path: ", path, " err: ", err)
 			return nil, err
 		}
 		return resolve(t, path)
 	case *object.Tag:
 		target, err := o.Object()
 		if err != nil {
+			logger.Debug("Could not resolve tag for path: ", path, " err: ", err)
 			return nil, err
 		}
 		return resolve(target, path)
 	case *object.Tree:
 		file, err := o.File(path)
 		if err != nil {
+			logger.Debug("Could not resolve file for path: ", path, " err: ", err)
 			return nil, err
 		}
 		return &file.Blob, nil
 	case *object.Blob:
 		return o, nil
 	default:
+		logger.Debug("Could not resolve unsupported object for path: ", path)
 		return nil, object.ErrUnsupportedObject
 	}
 }
