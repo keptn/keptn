@@ -397,7 +397,8 @@ jobs:
         mv ./dist/keptn-installer/*.tgz ./helm-charts-dev/packages
         cd ./helm-charts-dev
         helm repo index ./ --url https://charts-dev.keptn.sh/ --merge ./index.yaml
-        git add --all
+        git add *.tgz
+        git add index.yaml
         git commit --signoff -m "Keptn Dev Version $RELEASE_TAG"
         git push
 
