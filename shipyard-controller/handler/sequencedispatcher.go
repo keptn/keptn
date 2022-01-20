@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -68,7 +67,7 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 			}
 		} else if err == ErrSequenceBlockedWaiting {
 			// if the sequence is currently blocked and should wait, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(triggeredToWaitingItem(queueItem)); err2 != nil {
+			if err2 := sd.sequenceQueue.QueueSequence(triggeredToWaitingQueueItem(queueItem)); err2 != nil {
 				return err2
 			}
 			return ErrSequenceBlockedWaiting
@@ -77,21 +76,6 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		}
 	}
 	return nil
-}
-
-func triggeredToWaitingItem(queueItem models.QueueItem) models.QueueItem {
-	//log.Errorf("!!!!!!!!!!!!idem prevadzat\n\n")
-	if keptnv2.IsTriggeredEventType(*queueItem.Scope.WrappedEvent.Type) {
-		//log.Errorf("!!!!!!!!!!!!podmienka\n\n")
-		parts := strings.Split(*queueItem.Scope.WrappedEvent.Type, ".")
-		parts[len(parts)-1] = "waiting"
-		*queueItem.Scope.WrappedEvent.Type = strings.Join(parts, ".")
-		parts = strings.Split(queueItem.Scope.EventType, ".")
-		parts[len(parts)-1] = "waiting"
-		queueItem.Scope.EventType = strings.Join(parts, ".")
-		//log.Errorf("!!!!!!!!!!!!po krokoch\n\n")
-	}
-	return queueItem
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
@@ -169,7 +153,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 
 	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{
 		ID: &queuedSequence.EventID,
-	}, common.TriggeredEvent, common.WaitingEvent)
+	}, common.TriggeredEvent)
 
 	if err != nil {
 		return err
@@ -187,6 +171,23 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
+}
+
+func triggeredToWaitingQueueItem(queueItem models.QueueItem) models.QueueItem {
+	//log.Errorf("!!!!!!!!!!!!idem prevadzat\n\n")
+	if keptnv2.IsTriggeredEventType(*queueItem.Scope.WrappedEvent.Type) || keptnv2.IsTriggeredEventType(queueItem.Scope.EventType) {
+		//log.Errorf("!!!!!!!!!!!!podmienka\n\n")
+		// parts := strings.Split(*queueItem.Scope.WrappedEvent.Type, ".")
+		// parts[len(parts)-1] = "waiting"
+		// *queueItem.Scope.WrappedEvent.Type = strings.Join(parts, ".")
+		*queueItem.Scope.WrappedEvent.Type = common.ChangeEventType(*queueItem.Scope.WrappedEvent.Type, "waiting", ".")
+		// parts = strings.Split(queueItem.Scope.EventType, ".")
+		// parts[len(parts)-1] = "waiting"
+		// queueItem.Scope.EventType = strings.Join(parts, ".")
+		queueItem.Scope.EventType = common.ChangeEventType(queueItem.Scope.EventType, "waiting", ".")
+		//log.Errorf("!!!!!!!!!!!!po krokoch\n\n")
+	}
+	return queueItem
 }
 
 func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskExecution) bool {

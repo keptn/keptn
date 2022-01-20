@@ -247,9 +247,8 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	} else {
 		sc.onSequenceTriggered(eventScope.WrappedEvent)
 		log.Errorf("!!!!!!!!!!!!skocil som to triggered")
+		return err
 	}
-
-	return err
 }
 
 func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.EventScope, event *models.Event) {
