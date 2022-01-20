@@ -43,7 +43,7 @@ spec:
             - name: "evaluation"`
 
 func Test_SequenceState(t *testing.T) {
-	projectName := "state"
+	projectName := "state-jetstream"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
@@ -201,7 +201,7 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 30*time.Second, 2*time.Second)
 
 	_, err = keptn.SendTaskFinishedEvent(nil, source)
 	require.Nil(t, err)
@@ -225,7 +225,7 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 30*time.Second, 2*time.Second)
 
 	// get evaluation.triggered event
 	evaluationTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
@@ -290,7 +290,7 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 30*time.Second, 2*time.Second)
 
 	deliveryTriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("delivery"))
 
@@ -336,7 +336,7 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 30*time.Second, 2*time.Second)
 }
 
 func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {

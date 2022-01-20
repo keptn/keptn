@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 	"os"
 	"testing"
 	"time"
@@ -93,6 +94,14 @@ func Test_SelfHealing(t *testing.T) {
 	t.Log("Installing unleash-service")
 	unleashServiceVersion := osutils.GetOSEnvOrDefault(unleashServiceEnvVar, defaultUnleashServiceVersion)
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl apply -f \"https://raw.githubusercontent.com/keptn-contrib/unleash-service/%s/deploy/service.yaml\" -n %s", unleashServiceVersion, GetKeptnNameSpaceFromEnv()))
+	require.Nil(t, err)
+
+	err = SetEnvVarsOfDeployment("unleash-service", "distributor", []v1.EnvVar{
+		{
+			Name:  "PUBSUB_URL",
+			Value: "nats://keptn-nats",
+		},
+	})
 	require.Nil(t, err)
 
 	err = WaitForPodOfDeployment("unleash-service")
