@@ -156,6 +156,18 @@ func ApiGETRequest(path string, retries int) (*req.Resp, error) {
 	return caller.Get(path, retries)
 }
 
+func GetInternalKeptnAPI(ctx context.Context, internalService, port string) (*APICaller, error) {
+	err := KubeCtlPortForwardSvc(ctx, internalService, port)
+	if err != nil {
+		return nil, err
+	}
+	keptnInternalAPI, err := NewAPICallerWithBaseURL("http://localhost:8080")
+	if err != nil {
+		return nil, err
+	}
+	return keptnInternalAPI, nil
+}
+
 func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
 	retries := 5
 	var err error
