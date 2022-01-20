@@ -88,7 +88,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			wantParams: &models.CreateProjectParams{
 				Project: models.Project{ProjectName: "my-project"},
 			},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusNotFound,
 		},
 		{
 			name: "invalid git token",
@@ -234,7 +234,7 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			wantParams: &models.UpdateProjectParams{
 				Project: models.Project{ProjectName: "my-project"},
 			},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusNotFound,
 		},
 		{
 			name: "invalid git token",

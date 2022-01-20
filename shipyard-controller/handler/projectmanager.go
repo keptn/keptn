@@ -19,7 +19,7 @@ import (
 )
 
 const shipyardVersion = "spec.keptn.sh/0.2.0"
-const errUpdateProject = "failed to update project '%s'"
+const errUpdateProject = "failed to update project '%s': %w"
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/projectmanager.go . IProjectManager
 type IProjectManager interface {
@@ -225,7 +225,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	if err != nil {
 		log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
-		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName), func() error {
+		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 			// try to rollback already updated git repository secret
 			if err := pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 				User:      oldSecret.User,

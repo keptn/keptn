@@ -362,7 +362,7 @@ func TestUpdateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
-						return &common.ConfigurationStoreError{"whops", common.InvalidTokenError}, func() error { return nil }
+						return common.ErrConfigStoreInvalidToken, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -424,6 +424,40 @@ func TestUpdateProject(t *testing.T) {
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusOK,
+		},
+		{
+			name: "Update project with invalid token",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
+						return common.ErrConfigStoreInvalidToken, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+			},
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusFailedDependency,
+		},
+		{
+			name: "Update project with unavailable git repo",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
+						return common.ErrConfigStoreUpstreamNotFound, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+			},
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusNotFound,
 		},
 	}
 
