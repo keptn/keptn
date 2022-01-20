@@ -203,6 +203,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		}
 		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
 			SetNotFoundErrorResponse(err, c, err.Error())
+			return
 		}
 		if errors.Is(err, ErrProjectNotFound) {
 			SetNotFoundErrorResponse(err, c)

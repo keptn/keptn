@@ -253,7 +253,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 		err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &shipyardResource)
 		if err != nil {
-			log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
+			log.Errorf("Error occurred while updating the project shipyard in configuration store: %s", err.Error())
 			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 				// try to rollback already updated git repository secret
 				if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
