@@ -254,7 +254,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &shipyardResource)
 		if err != nil {
 			log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
-			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName), func() error {
+			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 				// try to rollback already updated git repository secret
 				if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 					User:      oldSecret.User,
@@ -280,7 +280,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	err = pm.ProjectMaterializedView.UpdateProject(&updateProject)
 	if err != nil {
 		log.Errorf("Error occurred while updating the project in materialized view: %s", err.Error())
-		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName), func() error {
+		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 			// try to rollback already updated project resource in configuration service
 			if err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &apimodels.Resource{
 				ResourceContent: oldProject.Shipyard,

@@ -212,7 +212,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 			SetBadRequestErrorResponse(err, c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(ErrInternalError, c)
 		return
 	}
 	c.Status(http.StatusCreated)
