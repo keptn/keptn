@@ -105,12 +105,18 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
    * Router level middleware for logout
    */
   router.get('/logout', async (req: Request, res: Response) => {
+    if (req.query.status) {
+      return res.render('logout', { location: getRootLocation() });
+    }
     if (!isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
     }
 
     const hint = getLogoutHint(req) ?? '';
+    if (req.session.tokenSet.access_token && client.issuer.metadata.revocation_endpoint) {
+      client.revoke(req.session.tokenSet.access_token);
+    }
     removeSession(req);
 
     if (client.issuer.metadata.end_session_endpoint) {
@@ -122,7 +128,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       };
       return res.json(params);
     } else {
-      res.json();
+      return res.json();
     }
   });
 
