@@ -161,7 +161,7 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, port string) (*AP
 	if err != nil {
 		return nil, err
 	}
-	keptnInternalAPI, err := NewAPICallerWithBaseURL("http://localhost:8080")
+	keptnInternalAPI, err := NewAPICallerWithBaseURL("http://127.0.0.1:8080")
 	if err != nil {
 		return nil, err
 	}

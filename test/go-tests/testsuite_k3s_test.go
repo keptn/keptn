@@ -7,7 +7,7 @@ import (
 func Test_K3S(t *testing.T) {
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
-	t.Run("Test_LogForwarding", Test_LogForwarding)
+	/*t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SequenceState", Test_SequenceState)
 	t.Run("Test_SequenceState_RetrieveMultipleSequence", Test_SequenceState_RetrieveMultipleSequence)
 	t.Run("Test_SequenceState_SequenceNotFound", Test_SequenceState_SequenceNotFound)
@@ -36,5 +36,5 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
-	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
+	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)*/
 }
