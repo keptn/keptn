@@ -6,21 +6,18 @@ package service
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 
 	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPostProjectProjectNameStageStageNameServiceParams creates a new PostProjectProjectNameStageStageNameServiceParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewPostProjectProjectNameStageStageNameServiceParams() PostProjectProjectNameStageStageNameServiceParams {
 
 	return PostProjectProjectNameStageStageNameServiceParams{}
@@ -76,21 +73,16 @@ func (o *PostProjectProjectNameStageStageNameServiceParams) BindRequest(r *http.
 				res = append(res, err)
 			}
 
-			ctx := validate.WithOperationRequest(context.Background())
-			if err := body.ContextValidate(ctx, route.Formats); err != nil {
-				res = append(res, err)
-			}
-
 			if len(res) == 0 {
 				o.Service = &body
 			}
 		}
 	}
-
 	rStageName, rhkStageName, _ := route.Params.GetOK("stageName")
 	if err := o.bindStageName(rStageName, rhkStageName, route.Formats); err != nil {
 		res = append(res, err)
 	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -106,6 +98,7 @@ func (o *PostProjectProjectNameStageStageNameServiceParams) bindProjectName(rawD
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil
@@ -120,6 +113,7 @@ func (o *PostProjectProjectNameStageStageNameServiceParams) bindStageName(rawDat
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.StageName = raw
 
 	return nil

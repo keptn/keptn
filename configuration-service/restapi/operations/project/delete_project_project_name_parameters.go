@@ -14,8 +14,7 @@ import (
 )
 
 // NewDeleteProjectProjectNameParams creates a new DeleteProjectProjectNameParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewDeleteProjectProjectNameParams() DeleteProjectProjectNameParams {
 
 	return DeleteProjectProjectNameParams{}
@@ -50,6 +49,7 @@ func (o *DeleteProjectProjectNameParams) BindRequest(r *http.Request, route *mid
 	if err := o.bindProjectName(rProjectName, rhkProjectName, route.Formats); err != nil {
 		res = append(res, err)
 	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -65,6 +65,7 @@ func (o *DeleteProjectProjectNameParams) bindProjectName(rawData []string, hasKe
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil

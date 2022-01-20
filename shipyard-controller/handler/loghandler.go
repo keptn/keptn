@@ -79,7 +79,8 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 
 // DeleteLogEntries
 // @Summary Delete logs
-// @Description Delete logs
+// @Deprecated true
+// @Description INTERNAL Endpoint: Delete logs
 // @Tags Log
 // @Security ApiKeyAuth
 // @Accept json

@@ -31,7 +31,7 @@ func NewSaveEvent(ctx *middleware.Context, handler SaveEventHandler) *SaveEvent 
 
 /*SaveEvent swagger:route POST /event event saveEvent
 
-Saves an event to the datastore
+INTERNAL Endpoint: Saves an event to the datastore
 
 */
 type SaveEvent struct {

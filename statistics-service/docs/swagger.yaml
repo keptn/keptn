@@ -112,6 +112,7 @@ paths:
     post:
       consumes:
       - application/json
+      deprecated: true
       description: Handle incoming cloud event
       parameters:
       - description: Event type
@@ -135,7 +136,7 @@ paths:
             $ref: '#/definitions/operations.Error'
       security:
       - ApiKeyAuth: []
-      summary: Handle event
+      summary: 'INTERNAL Endpoint: Handle event'
       tags:
       - Events
   /statistics:

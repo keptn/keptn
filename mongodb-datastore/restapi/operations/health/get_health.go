@@ -31,7 +31,7 @@ func NewGetHealth(ctx *middleware.Context, handler GetHealthHandler) *GetHealth 
 
 /*GetHealth swagger:route GET /health health getHealth
 
-Health endpoint
+INTERNAL Endpoint: Health endpoint
 
 */
 type GetHealth struct {
