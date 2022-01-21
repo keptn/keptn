@@ -263,6 +263,19 @@ func TestProjectHandler_UpdateProject(t *testing.T) {
 			wantStatus: http.StatusNotFound,
 		},
 		{
+			name: "credentials for project contain empty token",
+			fields: fields{
+				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
+					return errors2.ErrCredentialsTokenMustNotBeEmpty
+				}},
+			},
+			request: httptest.NewRequest(http.MethodPut, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
+			wantParams: &models.UpdateProjectParams{
+				Project: models.Project{ProjectName: "my-project"},
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
 			name: "credentials for project could not be decoded",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{UpdateProjectFunc: func(project models.UpdateProjectParams) error {
