@@ -4,6 +4,7 @@ import SettingsPage from './SettingsPage';
 import NewProjectCreatePage from './NewProjectCreatePage';
 import EnvironmentPage from './EnvironmentPage';
 import ServicesPage from './ServicesPage';
+import Chainable = Cypress.Chainable;
 
 class BasePage {
   NAVIGATION_MENU_LOCATOR: string;
@@ -82,6 +83,14 @@ class BasePage {
     cy.get('dt-select[aria-label="Choose project"]').click();
     cy.get('dt-option[id^="dt-option"]').contains(projectName).click();
     return this;
+  }
+
+  notificationSuccessVisible(text?: string): Chainable<JQuery<HTMLElement>> {
+    let element = cy.get('dt-alert.dt-alert-success');
+    if (text) {
+      element = element.contains(text);
+    }
+    return element.should('be.visible');
   }
 }
 

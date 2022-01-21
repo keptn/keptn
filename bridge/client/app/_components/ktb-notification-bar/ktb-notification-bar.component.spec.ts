@@ -43,7 +43,7 @@ describe('KtbNotificationBarComponent', () => {
     expect(notifications.length).toBe(4);
 
     expect(notifications[0].nativeElement.classList).toContain('dt-alert-info');
-    expect(notifications[1].nativeElement.classList).toContain('success');
+    expect(notifications[1].nativeElement.classList).toContain('dt-alert-success');
     expect(notifications[2].nativeElement.classList).toContain('dt-alert-warning');
     expect(notifications[3].nativeElement.classList).toContain('dt-alert');
     expect(notifications[3].nativeElement.querySelector('.dt-alert-icon-container dt-icon').classList).toContain(

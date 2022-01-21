@@ -16,7 +16,7 @@ dt-alert {
 }
 
 ::ng-deep {
-  dt-alert.success{
+  dt-alert.dt-alert-success{
     .dt-alert-text-container {
       border-color: $cta-color;
     }
