@@ -254,6 +254,10 @@ func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath s
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
 func (g *Git) StageAndCommitAll(project string, message string, withPull bool) error {
+	// ensure that the git user and email are set at this point
+	if err := ConfigureGitUser(project); err != nil {
+		return err
+	}
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := g.Executor.ExecuteCommand("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {
