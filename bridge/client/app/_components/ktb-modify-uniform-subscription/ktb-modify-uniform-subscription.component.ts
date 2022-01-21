@@ -146,10 +146,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     );
 
     const taskNames$ = projectName$.pipe(
-      switchMap((projectName) => {
-        console.log('getTaskNames', projectName);
-        return this.dataService.getTaskNames(projectName);
-      }),
+      switchMap((projectName) => this.dataService.getTaskNames(projectName)),
       catchError((err: HttpErrorResponse) => {
         this.errorMessage = err.error;
         this.notificationsService.addNotification(NotificationType.ERROR, err.error);
