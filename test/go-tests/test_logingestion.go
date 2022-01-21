@@ -1,14 +1,48 @@
 package go_tests
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
+	"os/exec"
 	"testing"
+	"time"
 )
+
+func Test_PortForward(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", "keptn", "service/shipyard-controller", "8080")
+	// some command output will be input into stderr
+	// e.g.
+	// cmd := exec.Command("../../bin/master_build")
+	// stderr, err := cmd.StderrPipe()
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = cmd.Start()
+	fmt.Println("The command is running")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	go func() {
+		time.Sleep(10 * time.Second)
+		cancel()
+	}()
+	// print the output of the subprocess
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		m := scanner.Text()
+		fmt.Println(m)
+	}
+
+}
 
 func Test_LogIngestion(t *testing.T) {
 	myLogID := uuid.New().String()
