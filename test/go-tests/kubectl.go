@@ -59,16 +59,10 @@ func KubeCtlPortForwardSvc(ctx context.Context, svcName, localPort string, remot
 	if err != nil {
 		return err
 	}
-	err = wait.PollImmediate(time.Second*2, 20*time.Second, func() (bool, error) {
-		_, err := net.DialTimeout("tcp", "127.0.0.1:"+localPort, time.Second)
+	err = wait.Poll(2*time.Second, 20*time.Second, func() (bool, error) {
+		_, err := net.DialTimeout("tcp", "127.0.0.1:"+localPort, 2*time.Second)
 		return err == nil, nil
 	})
-
-	out, _ := exec.Command("netstat", "-tulpn").CombinedOutput()
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(out))
 
 	if err != nil {
 		return err
