@@ -543,7 +543,7 @@ func getProjects() *errorableProjectResult {
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
-	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return nil
 	}
@@ -569,7 +569,7 @@ func getKeptnMetadata() *errorableMetadataResult {
 	if err != nil {
 		return newErrorableMetadataResult(nil, err)
 	}
-	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return nil
 	}

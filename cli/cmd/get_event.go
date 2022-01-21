@@ -88,7 +88,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		EventType:     eventType,
 		NumberOfPages: *eventStruct.NumOfPages,
 	}
-	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return err
 	}
