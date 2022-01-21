@@ -25,3 +25,5 @@ var ErrSequenceBlocked = errors.New("sequence is currently blocked")
 var ErrNoMatchingEvent = errors.New("no matching event found")
 
 var ErrSequenceNotFound = errors.New("sequence not found")
+
+var ErrInternalError = errors.New("internal server error")
