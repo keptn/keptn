@@ -53,11 +53,11 @@ type EvaluateSLIHandler struct {
 func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 	e := &keptnv2.GetSLIFinishedEventData{}
 	var shkeptncontext string
-	var commitID string
+
 	extensions := eh.Event.Context.GetExtensions()
 	shkeptncontext, _ = types.ToString(extensions["shkeptncontext"])
-	commitID, _ = types.ToString(extensions["gitcommitid"])
-
+	commitID, err2 := types.ToString(extensions["gitcommitid"])
+	logger.Debug("commit id is: ", commitID, err2)
 	err := eh.Event.DataAs(e)
 
 	if err != nil {

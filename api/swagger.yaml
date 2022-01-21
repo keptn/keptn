@@ -88,6 +88,8 @@ definitions:
         type: string
       triggeredid:
         type: string
+      gitcommitid:
+        type: string
       specversion:
         type: string
       contenttype:

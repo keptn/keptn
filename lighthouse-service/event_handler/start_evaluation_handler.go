@@ -223,7 +223,6 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetExtension("gitcommitid", commitID)
 	event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
 
 	logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
