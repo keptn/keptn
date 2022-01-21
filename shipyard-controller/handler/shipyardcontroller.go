@@ -213,11 +213,11 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
 
-	err = sc.sequenceDispatcher.Add(models.QueueItem{
-		Scope:     *eventScope,
-		EventID:   eventScope.WrappedEvent.ID,
-		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
-	})
+	// err = sc.sequenceDispatcher.Add(models.QueueItem{
+	// 	Scope:     *eventScope,
+	// 	EventID:   eventScope.WrappedEvent.ID,
+	// 	Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
+	// })
 
 	// waitingItem := models.QueueItem{
 	// 	Scope:     *eventScope,
@@ -243,15 +243,29 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 
 	// return sc.sequenceDispatcher.Add(waitingItem)
 
+	// if err == ErrSequenceBlockedWaiting {
+	// 	sc.onSequenceWaiting(eventScope.WrappedEvent)
+	// 	log.Errorf("!!!!!!!!!!!!skocil som to waiting")
+	// 	return nil
+	// } else {
+	// 	sc.onSequenceTriggered(eventScope.WrappedEvent)
+	// 	log.Errorf("!!!!!!!!!!!!skocil som to triggered")
+	// 	return err
+	// }
+
+	sc.onSequenceTriggered(eventScope.WrappedEvent)
+	err = sc.sequenceDispatcher.Add(models.QueueItem{
+		Scope:     *eventScope,
+		EventID:   eventScope.WrappedEvent.ID,
+		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
+	})
 	if err == ErrSequenceBlockedWaiting {
 		sc.onSequenceWaiting(eventScope.WrappedEvent)
 		log.Errorf("!!!!!!!!!!!!skocil som to waiting")
 		return nil
-	} else {
-		sc.onSequenceTriggered(eventScope.WrappedEvent)
-		log.Errorf("!!!!!!!!!!!!skocil som to triggered")
-		return err
 	}
+
+	return err
 }
 
 func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.EventScope, event *models.Event) {

@@ -80,35 +80,12 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event models.Event) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
-	if err != nil {
-		log.Errorf("could not determine stage/sequence name: %s", err.Error())
-		return
-	}
-
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		log.Errorf("could not determine event scope: %s", err.Error())
+		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
-
-	state := models.SequenceState{
-		Name:           sequenceName,
-		Service:        eventScope.Service,
-		Project:        eventScope.Project,
-		Time:           timeutils.GetKeptnTimeStamp(common.ParseTimestamp(event.Time, nil)),
-		Shkeptncontext: eventScope.KeptnContext,
-		State:          models.SequenceWaitingState,
-		Stages:         []models.SequenceStateStage{},
-	}
-
-	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
-		if err == db.ErrStateAlreadyExists {
-			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)
-		} else {
-			log.Errorf("could not create task sequence state: %s", err.Error())
-		}
-	}
+	smv.updateOverallSequenceState(*eventScope, models.SequenceWaitingState)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
