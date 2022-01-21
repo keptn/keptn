@@ -2,6 +2,8 @@ package sequencehooks_test
 
 import (
 	"errors"
+	"testing"
+
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -10,7 +12,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type SequenceStateMVTestFields struct {
@@ -72,6 +73,68 @@ func TestSequenceStateMaterializedView_OnSequenceStarted(t *testing.T) {
 			if tt.expectUpdateToBeCalled {
 				require.NotEmpty(t, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls())
 				require.Equal(t, models.SequenceStartedState, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0].State.State)
+			} else {
+				require.Empty(t, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls())
+			}
+		})
+	}
+}
+
+func TestSequenceStateMaterializedView_OnSequenceWaiting(t *testing.T) {
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name                   string
+		fields                 SequenceStateMVTestFields
+		args                   args
+		expectUpdateToBeCalled bool
+	}{
+		{
+			name: "start sequence",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{
+							States: []models.SequenceState{
+								{
+									Name:           "my-sequence",
+									Service:        "my-service",
+									Project:        "my-project",
+									Shkeptncontext: "my-context",
+									State:          "triggered",
+									Stages:         nil,
+								},
+							},
+						}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+					},
+					Shkeptncontext: "my-context",
+					Type:           common.Stringp("my-type"),
+				},
+			},
+			expectUpdateToBeCalled: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
+			smv.OnSequenceWaiting(tt.args.event)
+
+			if tt.expectUpdateToBeCalled {
+				require.NotEmpty(t, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls())
+				require.Equal(t, models.SequenceWaitingState, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0].State.State)
 			} else {
 				require.Empty(t, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls())
 			}
