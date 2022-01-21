@@ -263,14 +263,8 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 							release-0.8.0 merges with remote release-0.8.0
 						  Local ref configured for 'git push':
 							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
-					} else if args[0] == "checkout" {
-						return "", nil
-					} else if args[0] == "push" {
-						return "", nil
-					} else if args[0] == "pull" {
-						return "", nil
 					}
-					return "", errors.New("unexpected command")
+					return "", nil
 				}},
 				CredentialReader: getDummyCredentialReader(),
 			},
@@ -292,6 +286,11 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				{
 					Command:   "git",
 					Args:      []string{"remote", "show", "origin"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"reset", "--hard"},
 					Directory: "./debug/config/my-project",
 				},
 				{
@@ -330,12 +329,10 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
 					} else if args[0] == "checkout" {
 						return "", nil
-					} else if args[0] == "push" {
-						return "", nil
 					} else if args[0] == "pull" {
 						return "", errors.New("oops")
 					}
-					return "", errors.New("unexpected command")
+					return "", nil
 				}},
 				CredentialReader: getDummyCredentialReader(),
 			},
@@ -357,6 +354,11 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				{
 					Command:   "git",
 					Args:      []string{"remote", "show", "origin"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"reset", "--hard"},
 					Directory: "./debug/config/my-project",
 				},
 				{
@@ -388,14 +390,10 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 							release-0.8.0 merges with remote release-0.8.0
 						  Local ref configured for 'git push':
 							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
-					} else if args[0] == "checkout" {
-						return "", nil
-					} else if args[0] == "push" {
-						return "", nil
 					} else if args[0] == "pull" && args[1] == "-s" {
 						return "", errors.New("Couldn't find remote ref HEAD")
 					}
-					return "", errors.New("unexpected command")
+					return "", nil
 				}},
 				CredentialReader: getDummyCredentialReader(),
 			},
@@ -417,6 +415,11 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				{
 					Command:   "git",
 					Args:      []string{"remote", "show", "origin"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"reset", "--hard"},
 					Directory: "./debug/config/my-project",
 				},
 				{
