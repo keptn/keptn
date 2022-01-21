@@ -57,17 +57,14 @@ func KubeCtlPortForwardSvc(ctx context.Context, svcName, port string, namespace 
 	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", ns, svcName, port)
 	err := cmd.Start()
 	if err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
-	fmt.Println("Waiting for port forward")
 	err = wait.PollImmediate(time.Second*3, 10*time.Second, func() (bool, error) {
 		_, err := net.DialTimeout("tcp", "127.0.0.1:"+port, 1*time.Second)
 		return err == nil, nil
 	})
 
 	if err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
 
