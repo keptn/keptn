@@ -123,14 +123,14 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 				// determine the correct error cases, so we need to rely on the output of the command
 				if strings.Contains(err.Error(), common.GitURLNotFound) || strings.Contains(err.Error(), common.HostNotFound) {
 					logger.Error("Invalid URL detected")
-					return project.NewPutProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(err.Error())})
+					return project.NewPutProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(common.RepositoryNotFoundErrorMsg)})
 				}
 				if strings.Contains(err.Error(), "Authentication failed") || strings.Contains(err.Error(), common.WrongToken) || strings.Contains(err.Error(), common.GitError) {
 					logger.Error("Authentication error detected")
-					return project.NewPutProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(err.Error())})
+					return project.NewPutProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(common.InvalidUpstreamTokenErrorMsg)})
 				}
 
-				return project.NewPutProjectProjectNameDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
+				return project.NewPutProjectProjectNameDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(common.InternalErrorErrMsg)})
 			}
 		}
 	} else {
