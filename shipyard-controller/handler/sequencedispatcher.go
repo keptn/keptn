@@ -66,7 +66,7 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 			}
 		} else if err == ErrSequenceBlockedWaiting {
 			// if the sequence is currently blocked and should wait, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(triggeredToWaitingQueueItem(queueItem)); err2 != nil {
+			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
 				return err2
 			}
 			return ErrSequenceBlockedWaiting
@@ -167,14 +167,6 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
-}
-
-func triggeredToWaitingQueueItem(queueItem models.QueueItem) models.QueueItem {
-	if keptnv2.IsTriggeredEventType(*queueItem.Scope.WrappedEvent.Type) || keptnv2.IsTriggeredEventType(queueItem.Scope.EventType) {
-		*queueItem.Scope.WrappedEvent.Type = common.ChangeEventType(*queueItem.Scope.WrappedEvent.Type, "waiting", ".")
-		queueItem.Scope.EventType = common.ChangeEventType(queueItem.Scope.EventType, "waiting", ".")
-	}
-	return queueItem
 }
 
 func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskExecution) bool {

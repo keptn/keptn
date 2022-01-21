@@ -1,7 +1,6 @@
 package common
 
 import (
-	"strings"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -56,10 +55,4 @@ func Merge(in1, in2 interface{}) interface{} {
 		}
 	}
 	return in1
-}
-
-func ChangeEventType(current string, wanted string, delimiter string) string {
-	parts := strings.Split(current, delimiter)
-	parts[len(parts)-1] = "waiting"
-	return strings.Join(parts, delimiter)
 }
