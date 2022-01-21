@@ -59,8 +59,8 @@ func KubeCtlPortForwardSvc(ctx context.Context, svcName, port string, namespace 
 	if err != nil {
 		return err
 	}
-	err = wait.PollImmediate(time.Second*3, 10*time.Second, func() (bool, error) {
-		_, err := net.DialTimeout("tcp", "127.0.0.1:"+port, 1*time.Second)
+	err = wait.PollImmediate(time.Second*2, 20*time.Second, func() (bool, error) {
+		_, err := net.DialTimeout("tcp", "127.0.0.1:"+port, time.Second)
 		return err == nil, nil
 	})
 

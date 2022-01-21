@@ -79,7 +79,6 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		GitUser:     "some_random_git_user",
 	}
 
-	t.Log("Using internal API of configuration-service")
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8080")
