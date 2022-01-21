@@ -156,12 +156,12 @@ func ApiGETRequest(path string, retries int) (*req.Resp, error) {
 	return caller.Get(path, retries)
 }
 
-func GetInternalKeptnAPI(ctx context.Context, internalService, port string) (*APICaller, error) {
-	err := KubeCtlPortForwardSvc(ctx, internalService, port)
+func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string, remotePort string) (*APICaller, error) {
+	err := KubeCtlPortForwardSvc(ctx, internalService, localPort, remotePort)
 	if err != nil {
 		return nil, err
 	}
-	keptnInternalAPI, err := NewAPICallerWithBaseURL("http://127.0.0.1:8080")
+	keptnInternalAPI, err := NewAPICallerWithBaseURL("http://127.0.0.1:" + localPort)
 	if err != nil {
 		return nil, err
 	}
