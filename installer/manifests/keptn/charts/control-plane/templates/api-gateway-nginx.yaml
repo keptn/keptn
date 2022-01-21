@@ -302,8 +302,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 101
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
         seccompProfile:
           type: RuntimeDefault
+        {{- end }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}

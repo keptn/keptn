@@ -31,8 +31,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
         seccompProfile:
           type: RuntimeDefault
+        {{- end }}
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}

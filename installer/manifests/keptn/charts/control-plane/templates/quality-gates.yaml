@@ -31,8 +31,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
         seccompProfile:
           type: RuntimeDefault
+        {{- end }}
       containers:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}

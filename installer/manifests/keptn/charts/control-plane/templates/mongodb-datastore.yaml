@@ -32,8 +32,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
         seccompProfile:
           type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
