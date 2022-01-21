@@ -110,8 +110,8 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 	projectConfigPath := config.ConfigDir + "/" + project
 
 	// first, ensure that we don't have any uncommitted changes
-	if _, err := g.Executor.ExecuteCommand("git", []string{"reset", "--hard"}, projectConfigPath); err != nil {
-		return fmt.Errorf("failed to reset branch '%s' in project '%s'", branch, project)
+	if err := g.Reset(project); err != nil {
+		return err
 	}
 	_, err := g.Executor.ExecuteCommand("git", []string{"checkout", branch}, projectConfigPath)
 	if err != nil {
