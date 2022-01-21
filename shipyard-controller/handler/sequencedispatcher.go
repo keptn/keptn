@@ -59,7 +59,6 @@ func NewSequenceDispatcher(
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	// try to dispatch the sequence immediately
 	if err := sd.dispatchSequence(queueItem); err != nil {
-		log.Errorf("!!!!!!!!!!!!item: %+v\n", queueItem)
 		if err == ErrSequenceBlocked {
 			// if the sequence is currently blocked, insert it into the queue
 			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
@@ -115,8 +114,6 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 		return
 	}
 
-	log.Errorf("!!!!!!!!!!!!queued_sequences: %+v\n", queuedSequences)
-
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
 			if errors.Is(err, ErrSequenceBlocked) || errors.Is(err, ErrSequenceBlockedWaiting) {
@@ -159,7 +156,6 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 		return err
 	}
 
-	log.Errorf("!!!!!!!!!!!!events1: %+v\n", events)
 	if len(events) == 0 {
 		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queuedSequence.EventID)
 	}
@@ -174,18 +170,9 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 }
 
 func triggeredToWaitingQueueItem(queueItem models.QueueItem) models.QueueItem {
-	//log.Errorf("!!!!!!!!!!!!idem prevadzat\n\n")
 	if keptnv2.IsTriggeredEventType(*queueItem.Scope.WrappedEvent.Type) || keptnv2.IsTriggeredEventType(queueItem.Scope.EventType) {
-		//log.Errorf("!!!!!!!!!!!!podmienka\n\n")
-		// parts := strings.Split(*queueItem.Scope.WrappedEvent.Type, ".")
-		// parts[len(parts)-1] = "waiting"
-		// *queueItem.Scope.WrappedEvent.Type = strings.Join(parts, ".")
 		*queueItem.Scope.WrappedEvent.Type = common.ChangeEventType(*queueItem.Scope.WrappedEvent.Type, "waiting", ".")
-		// parts = strings.Split(queueItem.Scope.EventType, ".")
-		// parts[len(parts)-1] = "waiting"
-		// queueItem.Scope.EventType = strings.Join(parts, ".")
 		queueItem.Scope.EventType = common.ChangeEventType(queueItem.Scope.EventType, "waiting", ".")
-		//log.Errorf("!!!!!!!!!!!!po krokoch\n\n")
 	}
 	return queueItem
 }
