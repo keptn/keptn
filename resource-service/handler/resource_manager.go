@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
+	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"time"
 )
@@ -93,7 +94,11 @@ func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.G
 	if err != nil {
 		return nil, kerrors.ErrResourceInvalidResourceURI
 	}
-
+	if params.GitCommitID != "" && params.Service != nil {
+		//if we need to query for a service resource via commit we must add that folder to the resource path
+		unescapedResourceName = params.Service.ServiceName + "/" + unescapedResourceName
+	}
+	logger.Debug("Looking for ", unescapedResourceName)
 	return p.readResource(gitContext, params, configPath, unescapedResourceName)
 }
 
