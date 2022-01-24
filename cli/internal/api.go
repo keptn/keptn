@@ -13,7 +13,7 @@ var PublicDiscovery = auth2.NewOauthDiscovery(&http.Client{})
 var APIProvider = getAPISet
 
 // getAPISet retrieves the ApiSet containing all Keptn client APIs
-func getAPISet(baseURL string, authToken string, authHeader string, scheme string) (*apiutils.APISet, error) {
+func getAPISet(baseURL string, authToken string) (*apiutils.APISet, error) {
 	var client *http.Client
 	var err error
 	tokenStore := auth2.NewLocalFileOauthStore()
@@ -24,5 +24,5 @@ func getAPISet(baseURL string, authToken string, authHeader string, scheme strin
 			return nil, err
 		}
 	}
-	return apiutils.NewAPISet(baseURL, authToken, authHeader, client, scheme)
+	return apiutils.New(baseURL, apiutils.WithAuthToken(authToken), apiutils.WithHTTPClient(client))
 }
