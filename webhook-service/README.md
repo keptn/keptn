@@ -97,7 +97,26 @@ spec:
         - "curl http://shipyard-controller:8080/v1/project"
 ```
 
-If, in addition to disabling the `<task>.finished` event also the `<task>.started` events should not be sent by the webhook service, the property `sendStarted` can be set to `false`.
+If, in addition to disabling the `<task>.finished` event also the `<task>.started` events should not be sent by the webhook service, the property `sendStarted` can be set to `false`:
+
+```yaml
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.othertask.triggered"
+      subscriptionID: my-subscription-id
+      sendFinished: false
+      sendStarted: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - "curl http://shipyard-controller:8080/v1/project"
+```
 
 ### Enabling webhooks for a project, stage or service
 
