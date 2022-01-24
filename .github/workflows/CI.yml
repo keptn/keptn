@@ -434,21 +434,6 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: debugging
-        run: |
-          echo "should push image: ${{ matrix.config.should-push-image == 'true' }}"
-          echo "event==PR:         ${{ github.event_name == 'pull_request' }}"
-          echo "repo=ours:         ${{ github.event.pull_request.head.repo.full_name == github.repository }}"
-          echo "event==push:       ${{ github.event_name == 'push' }}"
-          echo "renovate PR:       ${{ github.actor != 'renovate[bot]' }}"
-          echo "dependeabot PR:    ${{ github.actor != 'dependabot[bot]' }}"
-          echo "github event name: ${{ github.event_name }}"
-          
-          echo "full conditional result:"
-          echo "                 true                            && ((                           false              &&                                      true                                 ) || (                    false             )) &&                  true                  &&                  true"
-          echo "${{ matrix.config.should-push-image == 'true' }} && (( ${{ github.event_name == 'pull_request' }} && ${{ github.event.pull_request.head.repo.full_name == github.repository }} ) || ( ${{ github.event_name == 'push' }} )) && ${{ github.actor != 'renovate[bot]' }} && ${{ github.actor != 'dependabot[bot]' }}"
-          echo "${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}"
-
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
         if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
