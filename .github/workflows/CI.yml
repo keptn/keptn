@@ -445,8 +445,9 @@ jobs:
           echo "github event name: ${{ github.event_name }}"
           
           echo "full conditional result:"
-          echo "${{ matrix.config.should-push-image == 'true' }} && (( ${{ github.event.action == 'pull_request' }} && ${{ github.event.pull_request.head.repo.full_name == github.repository }} ) || ( ${{ github.event.action == 'push' }} )) && ${{ github.actor != 'renovate[bot]' }} && ${{ github.actor != 'dependabot[bot]' }}"
-          echo "${{ matrix.config.should-push-image == 'true' && (( github.event.action == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event.action == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}"
+          echo "                 true                            && ((                           false              &&                                      true                                 ) || (                    false             )) &&                  true                  &&                  true"
+          echo "${{ matrix.config.should-push-image == 'true' }} && (( ${{ github.event_name == 'pull_request' }} && ${{ github.event.pull_request.head.repo.full_name == github.repository }} ) || ( ${{ github.event_name == 'push' }} )) && ${{ github.actor != 'renovate[bot]' }} && ${{ github.actor != 'dependabot[bot]' }}"
+          echo "${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}"
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
