@@ -2,14 +2,15 @@ package sequencehooks
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 const eventScopeErrorMessage = "could not determine event scope of event"
@@ -74,6 +75,17 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 		return
 	}
 	smv.updateOverallSequenceState(*eventScope, models.SequenceStartedState)
+}
+
+func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.WithError(err).Errorf(eventScopeErrorMessage)
+		return
+	}
+	smv.updateOverallSequenceState(*eventScope, models.SequenceWaitingState)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {

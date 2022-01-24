@@ -17,6 +17,9 @@ require (
 	github.com/swaggo/swag v1.7.8
 	github.com/tryvium-travels/memongo v0.3.2
 	go.mongodb.org/mongo-driver v1.7.5
+	go.uber.org/zap v1.13.0 // indirect
+	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
+	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.22.5
 	k8s.io/apimachinery v0.22.5

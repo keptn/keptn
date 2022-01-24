@@ -1,11 +1,12 @@
 package common
 
 import (
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 )
 
 func TestParseTimestamp(t *testing.T) {
