@@ -15,7 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.8
-	github.com/tryvium-travels/memongo v0.3.2
+	github.com/tryvium-travels/memongo v0.4.0
 	go.mongodb.org/mongo-driver v1.7.5
 	go.uber.org/zap v1.13.0 // indirect
 	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
