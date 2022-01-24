@@ -69,7 +69,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 
 	// check if the incoming event was a task.triggered event, and if the 'sendFinished'  property of the webhook was set to true
 	// only in this case, the result should be sent back to Keptn in the form of a .finished event
-	if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && webhook.SendFinished {
+	if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && webhook.ShouldSendFinishedEvent() {
 		taskName, _, err := keptnv2.ParseTaskEventType(*event.Type)
 		if err != nil {
 			return nil, sdkError(fmt.Sprintf("could not derive task name from event type %s", *event.Type), err)
@@ -96,7 +96,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, err error) (interface{}, *sdk.Error) {
 	// in this case, send .started and .finished event immediately
 	if err := keptnHandler.SendStartedEvent(event); err != nil {
-		// logthe error but continue - we need to try to send the .finished event nevertheless
+		// log the error but continue - we need to try to send the .finished event nevertheless
 		logger.WithError(err).Error("could not send .started event")
 	}
 	result := map[string]interface{}{
@@ -128,7 +128,7 @@ func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn,
 		}
 
 		if ok && whe.PreExecutionError {
-			if webhook.SendFinished {
+			if webhook.ShouldSendFinishedEvent() {
 				// if sendFinished is set, we only need to send one started event
 				// the webhook service will then send a correlating .finished event with the aggregated response payloads
 				th.sendFinishedEvent(keptnHandler, event, result)
@@ -166,8 +166,13 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 	if !keptnv2.IsTaskEventType(*event.Type) || !keptnv2.IsTriggeredEventType(*event.Type) {
 		return nil
 	}
+
+	// check if a started event should be sent for the webhook
+	if !webhook.ShouldSendStartedEvent() {
+		return nil
+	}
 	// check if 'sendFinished' is set to true
-	if webhook.SendFinished {
+	if webhook.ShouldSendFinishedEvent() {
 		// if sendFinished is set, we only need to send one started event
 		// the webhook service will then send a correlating .finished event with the aggregated response payloads
 		if err := keptnHandler.SendStartedEvent(event); err != nil {
