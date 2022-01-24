@@ -59,6 +59,18 @@ var testGetResourceResponse = models.GetResourceResponse{
 	},
 }
 
+var testGetResourceCommitResponse = models.GetResourceResponse{
+	Resource: models.Resource{
+		ResourceContent: "resource.yaml",
+		ResourceURI:     "c3RyaW5n",
+	},
+	Metadata: models.Version{
+		Branch:      "master",
+		UpstreamURL: "http://upstream-url.git",
+		Version:     "my-amazing-commit-id",
+	},
+}
+
 var testGetResourcesResponse = models.GetResourcesResponse{
 	NextPageKey: "1",
 	PageSize:    1,

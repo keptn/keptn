@@ -17,6 +17,7 @@ import (
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
 const KeptnContextCEExtension = "shkeptncontext"
 const TriggeredIDCEExtension = "triggeredid"
+const GitCommitIDCEExtension = "gitcommitid"
 
 //go:generate moq  -out ./resourcehhandler_mock.go . ResourceHandler
 type ResourceHandler interface {

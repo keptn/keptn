@@ -368,6 +368,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Shkeptncontext: keptnContext,
 		Contenttype:    "application/json",
+		Source:         strutils.Stringp("https://github.com/keptn/keptn/api"),
 		Data: keptnv2.EvaluationTriggeredEventData{
 			EventData: keptnv2.EventData{
 				Project: projectName,
@@ -377,10 +378,9 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		},
 		ID:                 uuid.NewString(),
 		Shkeptnspecversion: KeptnSpecVersion,
-		Source:             strutils.Stringp("fakeshipyard"),
 		Specversion:        "1.0",
 		Gitcommitid:        response.CommitID,
-		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType("hardening." + keptnv2.EvaluationTaskName)),
 	}, 3)
 	require.Nil(t, err)
 	body := resp.String()
@@ -393,7 +393,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	keptnContext = *kc.KeptnContext
 	var getSLITriggeredEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if get-sli.triggered event is available")
+		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", keptnContext, " event is available")
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 		if err != nil || event == nil {
 			return false
