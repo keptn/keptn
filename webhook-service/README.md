@@ -71,7 +71,7 @@ Keptn control plane. Those secrets can then be used in the `curl` commands that 
 In addition to secrets, properties from incoming events, such as e.g. `{{.data.project}}`, `{{.shkeptncontext}}` etc. can be referenced using the template syntax.
 Note that the execution of the defined requests will fail if any of the referenced values is not available.
 
-### Disable automatic finished events
+### Disable automatic started/finished events
 
 By default, the webhook service will send one `<task>.started` and one `<task>.finished` event for each received triggered event, where the `<task>.finished` event contains the aggregated responses 
 of the executed requests. This behavior can be changed such that the responsibility of sending the `<task>.finished` events is moved to the services called by the webhook service. In this case,
@@ -96,6 +96,8 @@ spec:
       requests:
         - "curl http://shipyard-controller:8080/v1/project"
 ```
+
+If, in addition to disabling the `<task>.finished` event also the `<task>.started` events should not be sent by the webhook service, the property `sendStarted` can be set to `false`.
 
 ### Enabling webhooks for a project, stage or service
 
