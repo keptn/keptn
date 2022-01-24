@@ -98,6 +98,8 @@ spec:
               value: "{{ .Values.distributor.projectFilter }}"
             - name: SERVICE_FILTER
               value: "{{ .Values.distributor.serviceFilter }}"
+            - name: DISTRIBUTOR_VERSION
+              value: {{ .Values.distributor.image.tag | default .Chart.AppVersion }}
             - name: VERSION
               valueFrom:
                 fieldRef:
