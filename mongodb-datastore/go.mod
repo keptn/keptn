@@ -16,7 +16,7 @@ require (
 	github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tryvium-travels/memongo v0.3.2
+	github.com/tryvium-travels/memongo v0.4.0
 	go.mongodb.org/mongo-driver v1.7.5
 	golang.org/x/net v0.0.0-20220111093109-d55c255bac03
 )

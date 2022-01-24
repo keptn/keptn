@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
@@ -63,6 +64,12 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
 				return err2
 			}
+		} else if err == ErrSequenceBlockedWaiting {
+			// if the sequence is currently blocked and should wait, insert it into the queue
+			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+				return err2
+			}
+			return ErrSequenceBlockedWaiting
 		} else {
 			return err
 		}
@@ -109,7 +116,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
-			if errors.Is(err, ErrSequenceBlocked) {
+			if errors.Is(err, ErrSequenceBlocked) || errors.Is(err, ErrSequenceBlockedWaiting) {
 				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
 			} else {
 				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
@@ -138,7 +145,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	// if there is a sequence running in the stage, we cannot trigger this sequence yet
 	if sd.areActiveSequencesBlockingQueuedSequences(taskExecutions) {
 		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
-		return ErrSequenceBlocked
+		return ErrSequenceBlockedWaiting
 	}
 
 	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{

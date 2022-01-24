@@ -222,8 +222,8 @@ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDk
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 h1:pR23jlIJMXGMxljxP6QYytEsMQpPU2WT3Wjp1FWYOq0=
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209/go.mod h1:DmxtN+a7U9ktD8I0nTlI9CCrin/Tf7OdXxE3KBTjlOw=
 github.com/cloudevents/sdk-go/v2 v2.5.0/go.mod h1:nlXhgFkf0uTopxmRXalyMwS2LG70cRGPrxzmjJgSG0U=
-github.com/cloudevents/sdk-go/v2 v2.7.0 h1:Pt+cOKWNG0tZZKRzuvfVsxcWArO0eq/UPKUxskyuSb8=
-github.com/cloudevents/sdk-go/v2 v2.7.0/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
+github.com/cloudevents/sdk-go/v2 v2.8.0 h1:kmRaLbsafZmidZ0rZ6h7WOMqCkRMcVTLV5lxV/HKQ9Y=
+github.com/cloudevents/sdk-go/v2 v2.8.0/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
@@ -773,8 +773,8 @@ github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8
 github.com/karrick/godirwalk v1.15.8 h1:7+rWAZPn9zuRxaIqqT8Ohs2Q2Ac0msBqwRdxNCr2VVs=
 github.com/karrick/godirwalk v1.15.8/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/keptn/go-utils v0.10.0/go.mod h1:ub4G0WZUckc3TizUoe5jKqfCOOLiH5pnf4M1SDCOT0M=
-github.com/keptn/go-utils v0.11.1-0.20220113195527-4005d064f27c h1:TZn9vf7ZuXd/TuhXtXbdkg+OPfM3C2+b4rDhd1BI9bY=
-github.com/keptn/go-utils v0.11.1-0.20220113195527-4005d064f27c/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
+github.com/keptn/go-utils v0.11.1-0.20220121133159-436bd5859179 h1:uK2eNwHCzZVhAykG6vRdcf3evebnmEcU90hCDXdd3hs=
+github.com/keptn/go-utils v0.11.1-0.20220121133159-436bd5859179/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b h1:L+1m9DuYPfQCEv82/u05jj7EgeeZ/8tDkwf4JoRzMbw=
 github.com/keptn/kubernetes-utils v0.10.1-0.20211102080304-e59377afdc8b/go.mod h1:vSj1n58CWHBrh4DzMhODGU1Z6BKYl9wEFzsg4XmuaJ0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

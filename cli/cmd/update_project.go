@@ -78,7 +78,7 @@ For more information about updating projects or upstream repositories, please go
 			project.GitRemoteURL = *updateProjectParams.RemoteURL
 		}
 
-		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return err
 		}
