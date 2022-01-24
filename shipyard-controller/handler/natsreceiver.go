@@ -9,7 +9,6 @@ import (
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
-	"strings"
 	"sync"
 )
 
@@ -159,10 +158,8 @@ func NewPullSubscription(queueGroup, topic string, js nats.JetStreamContext, mes
 }
 
 func (ps *PullSubscription) Activate() error {
-	consumerName := ps.queueGroup + ":" + ps.topic
-	consumerName = strings.Replace(consumerName, ".", "-", -1)
-	consumerName = strings.Replace(consumerName, "*", "all", -1)
-	consumerName = strings.Replace(consumerName, ">", "all", -1)
+	consumerName := "shipyard-controller:all-events"
+
 	consumerInfo, _ := ps.jetStream.ConsumerInfo(streamName, consumerName)
 	if consumerInfo == nil {
 		_, err := ps.jetStream.AddConsumer(streamName, &nats.ConsumerConfig{
@@ -188,9 +185,7 @@ func (ps *PullSubscription) Activate() error {
 				return
 			default:
 			}
-			ps.mtx.Lock()
 			msgs, err := ps.subscription.Fetch(10)
-			ps.mtx.Unlock()
 			if err != nil {
 				// timeout is not a problem since that simple means that no events for that topic have been sent
 				if !errors.Is(err, nats.ErrTimeout) {
