@@ -260,8 +260,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
   it('should update subscription for all keptn events with keptn.sh.>', () => {
     // given
-    const dataService = TestBed.inject(DataService);
-    const spy = jest.spyOn(dataService, 'updateUniformSubscription');
     const subscription = setSubscription(2, 0);
     /* eslint-disable @typescript-eslint/ban-ts-comment */
     // @ts-ignore //Ignore private property
@@ -276,22 +274,11 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
 
     // then
-    expect(spy).toHaveBeenCalledWith(
-      'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
-      {
-        event: 'sh.keptn.>',
-        filter: { projects: [], services: ['carts'], stages: ['dev'] },
-        id: 'myJmeterSubscriptionId',
-        parameters: [],
-      },
-      undefined
-    );
+    expect(subscription.event).toEqual('sh.keptn.>');
   });
 
-  it('should update subscription for approval keptn wildcard events with keptn.sh.event.approval.>', () => {
+  it('should update subscription for deplyoment keptn wildcard events with keptn.sh.event.approval.>', () => {
     // given
-    const dataService = TestBed.inject(DataService);
-    const spy = jest.spyOn(dataService, 'updateUniformSubscription');
     const subscription = setSubscription(2, 0);
     /* eslint-disable @typescript-eslint/ban-ts-comment */
     // @ts-ignore //Ignore private property
@@ -306,16 +293,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
 
     // then
-    expect(spy).toHaveBeenCalledWith(
-      'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
-      {
-        event: 'sh.keptn.event.deployment.>',
-        filter: { projects: [], services: ['carts'], stages: ['dev'] },
-        id: 'myJmeterSubscriptionId',
-        parameters: [],
-      },
-      undefined
-    );
+    expect(subscription.event).toEqual('sh.keptn.event.deployment.>');
   });
 
   it('should update subscription and webhook', () => {
