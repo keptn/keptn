@@ -510,7 +510,7 @@ jobs:
             TESTSUITE="Test_K3D"
           fi
           
-          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 60m
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 65m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
