@@ -89,11 +89,6 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 	}
 
-	if endPointErr := CheckEndpointStatus(endpoint.String()); endPointErr != nil {
-		return fmt.Errorf("Authentication was unsuccessful: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
 	// Try to call the /auth endpoint of Keptn
 	// NOTE: We expect that some component is setting the api token using the
 	// "x-token" HTTP header. This could've either be done via the CLI
@@ -114,7 +109,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 
 	if !authenticated {
 		if authenticatorOptions.SSO {
-			fmt.Println("WARNING: You are using an SSO integration without an API Token. Please use the --api-token flag or verify that your configuration allows it")
+			fmt.Println("WARNING: You are using the SSO integration feature without a Keptn API Token. Please verify that your configuration allows it or use the --api-token flag")
 		} else {
 			return fmt.Errorf(errMsg)
 		}

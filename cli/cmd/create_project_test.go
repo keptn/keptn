@@ -46,7 +46,6 @@ func testShipyard(t *testing.T, shipyardFilePath string, shipyard string) func()
 // TestCreateProjectCmd tests the default use of the create project command
 func TestCreateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
@@ -62,7 +61,6 @@ func TestCreateProjectCmd(t *testing.T) {
 // due to a missing flag for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
@@ -80,7 +78,6 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 // command with git upstream parameters
 func TestCreateProjectCmdWithGit(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()

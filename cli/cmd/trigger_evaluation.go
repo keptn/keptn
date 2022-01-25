@@ -74,11 +74,6 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 	logging.PrintLog("Starting to trigger evaluation of the service "+
 		*triggerEvaluationData.Service+" in project "+*triggerEvaluationData.Project, logging.InfoLevel)
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
 	startPoint := ""
 	if triggerEvaluationData.Start != nil {
 		startPoint = *triggerEvaluationData.Start

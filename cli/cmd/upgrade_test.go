@@ -28,7 +28,6 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	noSkipMsg := "No upgrade path exists from Keptn version"
 	skipMsg := "Skipping upgrade compatibility check!"
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	Version = "0.11.4"
 	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
 	cmd := fmt.Sprintf("upgrade --mock")

@@ -66,7 +66,6 @@ func init() {
 // TestNewArtifact tests the new-artifact command.
 func TestNewArtifact(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
 	ts := httptest.NewServer(

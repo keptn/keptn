@@ -63,11 +63,6 @@ For more information about updating projects or upstream repositories, please go
 		}
 		logging.PrintLog("Starting to update project", logging.InfoLevel)
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
 		project := apimodels.CreateProject{
 			Name: &args[0],
 		}
