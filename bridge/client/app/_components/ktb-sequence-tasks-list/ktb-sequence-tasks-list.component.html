@@ -16,5 +16,5 @@
   </div>
 </div>
 <ng-template #noStage>
-  <ktb-task-item [task]="tasks[0]" [isExpanded]="isFocusedTask(tasks[0])"></ktb-task-item>
+  <ktb-task-item *ngIf="tasks[0]" [task]="tasks[0]" [isExpanded]="isFocusedTask(tasks[0])"></ktb-task-item>
 </ng-template>
