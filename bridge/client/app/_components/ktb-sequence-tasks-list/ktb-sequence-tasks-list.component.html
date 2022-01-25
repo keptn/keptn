@@ -1,4 +1,4 @@
-<div fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-tasks-list-tasks" *ngIf="stage">
+<div fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-tasks-list-tasks" *ngIf="stage; else noStage">
   <div
     #taskRef
     fxLayout="column"
@@ -15,3 +15,6 @@
     ></ktb-task-item>
   </div>
 </div>
+<ng-template #noStage>
+  <ktb-task-item [task]="tasks[0]" [isExpanded]="isFocusedTask(tasks[0])"></ktb-task-item>
+</ng-template>

@@ -1,4 +1,4 @@
-import { marked, Renderer } from 'marked';
+import marked, { Renderer } from 'marked';
 import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';
 import {
