@@ -147,7 +147,12 @@ jobs:
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
         run: |
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | jq -c '[.workflow_runs[] | select( .conclusion == "success" )][0] | .id')
+          RUN_ID=$( \
+            curl -sL \
+              -H 'Accept: application/vnd.github.v3+json' \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
+            jq -c '[.workflow_runs[] | select( (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" )][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
