@@ -2,7 +2,7 @@
 
 This folder contains docs for developers. If you are looking for the usage documentation of Keptn, or the `keptn` CLI,
 please take a look at the [keptn.sh](https://keptn.sh/docs/) website.
-We reccomend to read our [CONTRIBUTING](../CONTRIBUTING.md) guidelines before reading this document.
+We recommend to read our [CONTRIBUTING](../CONTRIBUTING.md) guidelines before reading this document.
 
 <details>
 <summary>Table of Contents</summary>
