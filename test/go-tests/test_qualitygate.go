@@ -60,7 +60,7 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "qualitycicci"
+	projectName := "quality333"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
@@ -68,8 +68,11 @@ func Test_QualityGates(t *testing.T) {
 
 	source := "golang-test"
 
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	t.Logf("creating project %s", projectName)
+	//_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	//t.Logf("creating project %s", projectName)
+	require.Nil(t, err)
+
+	_, _, err = createConfigServiceUpstreamRepo(projectName)
 	require.Nil(t, err)
 
 	err = CreateProject(projectName, shipyardFilePath, true)
@@ -369,6 +372,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		Shkeptncontext: keptnContext,
 		Contenttype:    "application/json",
 		Source:         strutils.Stringp("https://github.com/keptn/keptn/api"),
+		Time:           time.Now(),
 		Data: keptnv2.EvaluationTriggeredEventData{
 			EventData: keptnv2.EventData{
 				Project: projectName,
@@ -482,19 +486,4 @@ func triggerEvaluation(projectName, stageName, serviceName string) (string, erro
 		}
 	}
 	return keptnContext, err
-}
-
-func GetEventByType(projectName, stage, eventType string) (*models.KeptnContextExtendedCE, error) {
-	resp, err := ApiGETRequest("/mongodb-datastore/event?project="+projectName+"&stage="+stage+"&type="+eventType, 3)
-	if err != nil {
-		return nil, err
-	}
-	events := &models.Events{}
-	if err := resp.ToJSON(events); err != nil {
-		return nil, err
-	}
-	if len(events.Events) > 0 {
-		return events.Events[0], nil
-	}
-	return nil, nil
 }

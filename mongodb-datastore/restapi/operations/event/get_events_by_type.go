@@ -6,6 +6,7 @@ package event
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -35,9 +36,9 @@ func NewGetEventsByType(ctx *middleware.Context, handler GetEventsByTypeHandler)
 	return &GetEventsByType{Context: ctx, Handler: handler}
 }
 
-/*GetEventsByType swagger:route GET /event/type/{eventType} event getEventsByType
+/* GetEventsByType swagger:route GET /event/type/{eventType} event getEventsByType
 
-Gets events by their type from the mongodb
+Gets events by their type from the mongodb, required filter are either 'data.project:<project-name>' or 'shkeptncontext:<keptn-context-id>'
 
 */
 type GetEventsByType struct {
@@ -48,17 +49,15 @@ type GetEventsByType struct {
 func (o *GetEventsByType) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetEventsByTypeParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -87,7 +86,6 @@ func (o *GetEventsByTypeOKBody) Validate(formats strfmt.Registry) error {
 }
 
 func (o *GetEventsByTypeOKBody) validateEvents(formats strfmt.Registry) error {
-
 	if swag.IsZero(o.Events) { // not required
 		return nil
 	}
@@ -101,6 +99,42 @@ func (o *GetEventsByTypeOKBody) validateEvents(formats strfmt.Registry) error {
 			if err := o.Events[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this get events by type o k body based on the context it is used
+func (o *GetEventsByTypeOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateEvents(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetEventsByTypeOKBody) contextValidateEvents(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(o.Events); i++ {
+
+		if o.Events[i] != nil {
+			if err := o.Events[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

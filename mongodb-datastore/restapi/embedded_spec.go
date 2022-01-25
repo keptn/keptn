@@ -37,7 +37,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events from the data store",
+        "summary": "Gets events from the data store, either keptnContext or project must be specified",
         "operationId": "getEvents",
         "parameters": [
           {
@@ -176,7 +176,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events by their type from the mongodb",
+        "summary": "Gets events by their type from the mongodb, required filter are either 'data.project:\u003cproject-name\u003e' or 'shkeptncontext:\u003ckeptn-context-id\u003e'",
         "operationId": "getEventsByType",
         "parameters": [
           {
@@ -255,9 +255,6 @@ func init() {
         {
           "type": "object",
           "properties": {
-            "gitcommitid": {
-              "type": "string"
-            },
             "shkeptncontext": {
               "type": "string"
             },
@@ -340,7 +337,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events from the data store",
+        "summary": "Gets events from the data store, either keptnContext or project must be specified",
         "operationId": "getEvents",
         "parameters": [
           {
@@ -488,7 +485,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events by their type from the mongodb",
+        "summary": "Gets events by their type from the mongodb, required filter are either 'data.project:\u003cproject-name\u003e' or 'shkeptncontext:\u003ckeptn-context-id\u003e'",
         "operationId": "getEventsByType",
         "parameters": [
           {
@@ -573,9 +570,6 @@ func init() {
         {
           "type": "object",
           "properties": {
-            "gitcommitid": {
-              "type": "string"
-            },
             "shkeptncontext": {
               "type": "string"
             },
