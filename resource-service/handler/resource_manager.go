@@ -28,13 +28,15 @@ type ResourceManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
 	fileSystem       common.IFileSystem
+	stageContext     IStageContext
 }
 
-func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ResourceManager {
+func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem, stageContext IStageContext) *ResourceManager {
 	projectResourceManager := &ResourceManager{
 		git:              git,
 		credentialReader: credentialReader,
 		fileSystem:       fileWriter,
+		stageContext:     stageContext,
 	}
 	return projectResourceManager
 }
@@ -140,29 +142,9 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		return nil, "", kerrors.ErrProjectNotFound
 	}
 
-	var branch string
-
-	if stage == nil {
-		branch, err = p.git.GetDefaultBranch(gitContext)
-		if err != nil {
-			return nil, "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
-		}
-	} else {
-		branch = stage.StageName
-	}
-
-	if err := p.git.CheckoutBranch(gitContext, branch); err != nil {
-		return nil, "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, project.ProjectName, err)
-	}
-
-	var configPath string
-	if service == nil {
-		configPath = common.GetProjectConfigPath(project.ProjectName)
-	} else {
-		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
-		if !p.fileSystem.FileExists(configPath) {
-			return nil, "", kerrors.ErrServiceNotFound
-		}
+	configPath, err := p.stageContext.Establish(project, stage, service, gitContext)
+	if err != nil {
+		return nil, "", err
 	}
 	return &gitContext, configPath, nil
 }

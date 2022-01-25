@@ -6,6 +6,7 @@ import (
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
+	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"io/fs"
@@ -16,16 +17,19 @@ import (
 	"time"
 )
 
+const testConfigDir = "/data/config/my-project"
+
 type testResourceManagerFields struct {
 	git              *common_mock.IGitMock
 	credentialReader *common_mock.CredentialReaderMock
 	fileSystem       *common_mock.IFileSystemMock
+	stageContext     *handler_mock.IStageContextMock
 }
 
 func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -49,10 +53,9 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
 	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
@@ -62,7 +65,7 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -100,7 +103,7 @@ func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -139,7 +142,7 @@ func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 func TestResourceManager_CreateResources_ServiceResource_HelmChart(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -180,7 +183,7 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -220,7 +223,7 @@ func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *test
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -257,7 +260,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrMalformedCredentials
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -294,7 +297,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(
 	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
 		return "", errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -331,7 +334,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t 
 	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -365,7 +368,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t 
 func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -406,7 +409,7 @@ func TestResourceManager_UpdateResources_ProjectResource_ProjectNotFound(t *test
 		return false
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -444,7 +447,7 @@ func TestResourceManager_UpdateResources_ProjectResource_WritingFileFails(t *tes
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -484,7 +487,7 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.
 		return "", errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -525,7 +528,7 @@ func TestResourceManager_UpdateResources_ProjectResource_PullFails(t *testing.T)
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -570,7 +573,7 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFailsOnFirstTry(t
 		return "my-revision", nil
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -607,7 +610,7 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFailsOnFirstTry(t
 func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -639,7 +642,7 @@ func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testi
 		return false
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -669,7 +672,7 @@ func TestResourceManager_UpdateResource_ProjectResource_WritingFileFails(t *test
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -701,7 +704,7 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T
 		return "", errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -733,7 +736,7 @@ func TestResourceManager_UpdateResource_ProjectResource_PullFails(t *testing.T) 
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -770,7 +773,7 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFailsOnFirstTry(t 
 		return "my-revision", nil
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -798,7 +801,7 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFailsOnFirstTry(t 
 func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -826,7 +829,7 @@ func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testi
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -853,7 +856,7 @@ func TestResourceManager_DeleteResource_ProjectResource_ResourceNotFound(t *test
 		}
 		return true
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -877,7 +880,7 @@ func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T
 	fields.fileSystem.DeleteFileFunc = func(path string) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -905,7 +908,7 @@ func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T
 	fields.fileSystem.DeleteFileFunc = func(path string) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -930,7 +933,7 @@ func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T
 func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -964,7 +967,7 @@ func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1002,7 +1005,7 @@ func TestResourceManager_GetResource_ProjectResource_PullFails(t *testing.T) {
 	fields.git.PullFunc = func(gitContext common_models.GitContext) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1030,7 +1033,7 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1059,7 +1062,7 @@ func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.
 		}
 		return true
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1088,7 +1091,7 @@ func TestResourceManager_GetResource_ProjectResource_ResourceNotFound(t *testing
 	fields.fileSystem.ReadFileFunc = func(filename string) ([]byte, error) {
 		return nil, errors2.ErrResourceNotFound
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1115,7 +1118,7 @@ func TestResourceManager_GetResource_ProjectResource_CannotReadFIle(t *testing.T
 	fields.fileSystem.ReadFileFunc = func(filename string) ([]byte, error) {
 		return nil, errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1139,7 +1142,7 @@ func TestResourceManager_GetResource_ProjectResource_CannotReadFIle(t *testing.T
 func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1164,7 +1167,7 @@ func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *test
 func TestResourceManager_GetResources(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResources(models.GetResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -1336,5 +1339,8 @@ func getTestResourceManagerFields() testResourceManagerFields {
 				return nil
 			},
 		},
+		stageContext: &handler_mock.IStageContextMock{EstablishFunc: func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
+			return testConfigDir, nil
+		}},
 	}
 }

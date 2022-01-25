@@ -90,17 +90,19 @@ func main() {
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
+	stageContext := getStageContext(git, fileSystem)
+
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
@@ -125,6 +127,11 @@ func main() {
 
 	GracefulShutdown(wg, srv)
 
+}
+
+func getStageContext(git *common.Git, fileSystem *common.FileSystem) *handler.BranchStageContext {
+	stageContext := handler.NewBranchStageContext(git, fileSystem)
+	return stageContext
 }
 
 func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
