@@ -23,6 +23,9 @@ func getAPISet(baseURL string, authToken string) (*apiutils.APISet, error) {
 		if err != nil {
 			return nil, err
 		}
+		if authToken == "" {
+			return apiutils.New(baseURL, apiutils.WithHTTPClient(client))
+		}
 	}
 	return apiutils.New(baseURL, apiutils.WithAuthToken(authToken), apiutils.WithHTTPClient(client))
 }
