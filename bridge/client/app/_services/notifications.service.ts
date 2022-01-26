@@ -12,7 +12,12 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  public addNotification(type: NotificationType, message?: string, componentInfo?: ComponentInfo, time?: number): void {
+  public addNotification(
+    type: NotificationType,
+    message?: string,
+    componentInfo?: ComponentInfo<unknown>,
+    time?: number
+  ): void {
     const notification = new Notification(type, message, componentInfo, time);
     const notifications = this._notifications.getValue();
     // Check if the notification to add already exists

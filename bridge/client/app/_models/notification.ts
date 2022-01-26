@@ -7,9 +7,9 @@ enum NotificationType {
   ERROR = 'error',
 }
 
-export interface ComponentInfo {
-  component: Type<unknown>;
-  data: Record<string, unknown>;
+export interface ComponentInfo<T> {
+  component: Type<T>;
+  data: { [key in keyof T]: unknown };
 }
 
 class Notification {
@@ -24,7 +24,7 @@ class Notification {
   constructor(
     public severity: NotificationType,
     public message: string = '',
-    public componentInfo?: ComponentInfo,
+    public componentInfo?: ComponentInfo<unknown>,
     time?: number
   ) {
     this.time = time ?? 5_000;
