@@ -9,7 +9,7 @@ enum NotificationType {
 
 export interface ComponentInfo<T> {
   component: Type<T>;
-  data: { [key in keyof T]: unknown };
+  data: { [key in keyof T]?: unknown };
 }
 
 class Notification {

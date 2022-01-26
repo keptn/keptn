@@ -13,10 +13,10 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  public addNotification(
+  public addNotification<T>(
     type: NotificationType,
     message?: string,
-    componentInfo?: ComponentInfo<unknown>,
+    componentInfo?: ComponentInfo<T>,
     time?: number
   ): void {
     const notification = new Notification(type, message, componentInfo, time);

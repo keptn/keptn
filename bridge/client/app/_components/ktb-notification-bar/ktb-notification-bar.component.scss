@@ -1,11 +1,11 @@
 .notification-container {
   pointer-events: none;
-  position: absolute;
+  position: fixed;
   margin-top: 10px;
   width: 100%;
+  z-index: 1001; // has to be higher than the user panel
 
   ktb-notification {
     pointer-events: auto;
-    z-index: 1001; // has to be higher than the user panel
   }
 }

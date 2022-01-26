@@ -16,7 +16,7 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
-import { ComponentInfo, NotificationType } from '../../_models/notification';
+import { NotificationType } from '../../_models/notification';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
 
 type DialogState = null | 'unsaved';
@@ -142,7 +142,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
           projectName: this.projectName,
           routerLink: `/project/${this.projectName}/settings/services/create`,
         },
-      } as ComponentInfo<KtbProjectCreateMessageComponent>,
+      },
       10_000
     );
     // Remove query param for not showing notification on reload
