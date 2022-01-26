@@ -57,7 +57,7 @@ describe('Test OAuth env variables', () => {
     process.env.OAUTH_BASE_URL = 'http://localhost';
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
-    for (const endpoint of ['/login', '/oauth/redirect', '/loggedOut']) {
+    for (const endpoint of ['/login', '/oauth/redirect', '/logoutsession']) {
       const response = await request(app).get(endpoint);
       expect(response.status).toBe(500);
     }

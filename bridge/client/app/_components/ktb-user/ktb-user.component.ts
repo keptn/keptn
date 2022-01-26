@@ -30,7 +30,7 @@ export class KtbUserComponent {
         this._changeDetectorRef.detectChanges();
         submitEvent.target.submit();
       } else {
-        window.location.assign(this.location.prepareExternalUrl('/loggedOut'));
+        window.location.assign(this.location.prepareExternalUrl('/logoutsession'));
       }
     });
   }
