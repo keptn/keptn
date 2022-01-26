@@ -18,6 +18,7 @@ import (
 )
 
 const testConfigDir = "/data/config/my-project"
+const testServiceConfigDir = "/data/config/my-project/my-service"
 
 type testResourceManagerFields struct {
 	git              *common_mock.IGitMock
@@ -297,6 +298,48 @@ func TestResourceManager_CreateResources_ProjectResource_CannotEstablishContext(
 
 	fields.stageContext.EstablishFunc = func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
 		return "", errors.New("oops")
+	}
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	revision, err := rm.CreateResources(models.CreateResourcesParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		CreateResourcesPayload: models.CreateResourcesPayload{
+			Resources: []models.Resource{
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file1",
+				},
+				{
+					ResourceContent: "c3RyaW5n",
+					ResourceURI:     "file2",
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, revision)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+
+	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
+}
+
+func TestResourceManager_CreateResources_ProjectResource_ServiceNotFound(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.stageContext.EstablishFunc = func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
+		return testServiceConfigDir, nil
+	}
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		if strings.Contains(path, testServiceConfigDir) {
+			return false
+		}
+		return true
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 

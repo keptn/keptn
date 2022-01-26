@@ -146,6 +146,9 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 	if err != nil {
 		return nil, "", err
 	}
+	if !p.fileSystem.FileExists(configPath) {
+		return nil, "", kerrors.ErrServiceNotFound
+	}
 	return &gitContext, configPath, nil
 }
 

@@ -85,12 +85,12 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem)
+	stageContext := getStageContext(git)
+
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem, stageContext)
 	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
-
-	stageContext := getStageContext(git, fileSystem)
 
 	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
@@ -129,8 +129,8 @@ func main() {
 
 }
 
-func getStageContext(git *common.Git, fileSystem *common.FileSystem) *handler.BranchStageContext {
-	stageContext := handler.NewBranchStageContext(git, fileSystem)
+func getStageContext(git *common.Git) *handler.BranchStageContext {
+	stageContext := handler.NewBranchStageContext(git)
 	return stageContext
 }
 
