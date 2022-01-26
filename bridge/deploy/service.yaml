@@ -63,9 +63,26 @@ spec:
               # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
               value: ''
+            - name: MONGODB_HOST
+              value: keptn-mongo:27017
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: openid
           envFrom:
             - secretRef:
                 name: bridge-credentials
+                optional: true
+            - secretRef:
+                name: mongodb-credentials
                 optional: true
           ports:
             - containerPort: 3000

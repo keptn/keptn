@@ -1,20 +1,20 @@
-import { isAuthenticated, removeSession, sessionRouter } from './session';
 import { Express, NextFunction, Request, Response } from 'express';
-import { getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
 import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
 
 async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: string, baseUrl: string): Promise<void> {
-  let prefix = getRootLocation();
+  const session = await import('./session'); // lazy loading. Only init session if OAUTH is enabled. Else it will try to connect to the database
+  const oauthRoutes = await import('./oauth-routes');
+  let prefix = oauthRoutes.getRootLocation();
   baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
   prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
   const redirectUri = `${baseUrl}${prefix}oauth/redirect`;
   // Initialise session middleware
-  app.use(sessionRouter(app));
+  app.use(session.sessionRouter(app));
   const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
-  setRoutes(app, client, redirectUri);
+  setRoutes(app, client, redirectUri, session, oauthRoutes);
 }
 
 async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
@@ -50,18 +50,24 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
   });
 }
 
-function setRoutes(app: Express, client: BaseClient, redirectUri: string): void {
+function setRoutes(
+  app: Express,
+  client: BaseClient,
+  redirectUri: string,
+  session: typeof import('./session'),
+  oauthRoutes: typeof import('./oauth-routes')
+): void {
   // Initializing OAuth middleware.
-  app.use(oauthRouter(client, redirectUri, reduceRefreshDateSeconds));
+  app.use(oauthRoutes.oauthRouter(client, redirectUri, reduceRefreshDateSeconds));
   // Authentication filter for API requests
   app.use('/api', async (req: Request, resp: Response, next: NextFunction) => {
-    if (!isAuthenticated(req.session)) {
+    if (!session.isAuthenticated(req.session)) {
       return next({ response: { status: 401 } });
     } else {
       const tokenSet = new TokenSet(req.session.tokenSet);
       if (tokenSet.expired()) {
         refreshPromises[req.session.id] ??= client.refresh(tokenSet).then((token) => {
-          reduceRefreshDateBy(token, reduceRefreshDateSeconds);
+          oauthRoutes.reduceRefreshDateBy(token, reduceRefreshDateSeconds);
           return token;
         });
         try {
@@ -78,8 +84,8 @@ function setRoutes(app: Express, client: BaseClient, redirectUri: string): void 
           console.error(`Renewal of access_token did not work. Cause ${err.message}`);
 
           delete refreshPromises[req.session.id];
-          removeSession(req);
-          resp.redirect(getRootLocation());
+          session.removeSession(req);
+          resp.redirect(oauthRoutes.getRootLocation());
         }
       } else {
         return next();

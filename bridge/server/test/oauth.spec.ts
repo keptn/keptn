@@ -1,8 +1,10 @@
 import { CallbackParamsType, TokenSet } from 'openid-client';
 import request from 'supertest';
 import { Express, Request } from 'express';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { init } from '../app';
+import { Jest } from '@jest/environment';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { jest } from '@jest/globals';
 
 // import { jest } from '@jest/globals';
 
@@ -12,8 +14,14 @@ interface OAuthParameters {
   OAUTH_DISCOVERY: string | undefined;
 }
 
+interface CachedStore {
+  [state: string]: { _id: string; codeVerifier: string; nonce: string };
+}
+
 const authorizationUrl = `http://localhost/authorization`;
 const endSessionEndpoint = 'http://localhost/end_session';
+let sessionMock: Jest | undefined;
+let store: CachedStore = {};
 const idToken =
   'myHeader.' +
   Buffer.from(
@@ -57,7 +65,7 @@ describe('Test OAuth env variables', () => {
     process.env.OAUTH_BASE_URL = 'http://localhost';
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
-    for (const endpoint of ['/login', '/oauth/redirect', '/login']) {
+    for (const endpoint of ['/login', '/oauth/redirect', '/logout']) {
       const response = await request(app).get(endpoint);
       expect(response.status).toBe(500);
     }
@@ -71,48 +79,56 @@ describe('Test OAuth', () => {
     app = await setupOAuth();
   });
 
+  beforeEach(() => {
+    store = {};
+  });
+
   it('should redirect to authorizationUrl', async () => {
     const response = await request(app).get('/login');
     const state = response.headers.location?.split('state=').pop();
     expect(response.redirect).toBe(true);
+    expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
     expect(response.headers.location).toEqual(`${authorizationUrl}?state=${state}`);
   });
 
   it('should reject token gain if state is not provided', async () => {
     await request(app).get('/login');
     const response = await request(app).get(`/oauth/redirect?code=someCode`);
-    expect(response.headers.location).toEqual('/');
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.status).toBe(500);
   });
 
   it('should reject token gain if code is not provided', async () => {
     await request(app).get('/login');
     const response = await request(app).get(`/oauth/redirect?state=someState`);
-    expect(response.headers.location).toEqual('/');
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.status).toBe(500);
   });
 
   it('should reject token gain if state is invalid', async () => {
     await request(app).get('/login');
     const response = await request(app).get(`/oauth/redirect?state=invalidState?code=someCode`);
-    expect(response.headers.location).toEqual('/');
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.status).toBe(500);
   });
 
   it('should authenticate successfully', async () => {
-    const { response } = await login(app);
-    expect(response.headers['set-cookie']?.[0]?.split('=')[0]).toBe('KTSESSION');
+    const { response, cookies } = await login(app);
+    expect(cookies?.[0]?.split('=')[0]).toBe('KTSESSION');
+    expect(response.headers.location).toBe('/');
+    expect(response.status).toBe(302);
   });
 
   it('should not be successful if state already used', async () => {
-    const { state } = await login(app);
-    const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`);
+    const { state, cookies } = await login(app);
+    const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`).set('Cookie', cookies);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.status).toBe(500);
   });
 
   it('should logout and return end session data', async () => {
-    const { response } = await login(app);
-    const logoutResponse = await request(app).get(`/logout`).set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const logoutResponse = await request(app).get(`/logout`).set('Cookie', cookies);
     const { state, ...data } = logoutResponse.body;
     expect(state).not.toBeUndefined();
     expect(data).toEqual({
@@ -123,7 +139,6 @@ describe('Test OAuth', () => {
   });
 
   it('should return nothing on logout if not authenticated', async () => {
-    await login(app);
     const response = await request(app).get(`/logout`);
     expect(response.body).toBe('');
   });
@@ -134,18 +149,22 @@ describe('Test OAuth', () => {
   });
 
   it('should be able to fetch data if authenticated', async () => {
-    const { response } = await login(app);
-    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
     expect(dataResponse.status).not.toBe(401);
   });
 });
 
 describe('Test expired token', () => {
+  beforeEach(() => {
+    store = {};
+  });
+
   it('should fail refresh of token and remove session', async () => {
     mockOpenId(true, true, true);
     const app = await setupOAuth();
-    const { response } = await login(app);
-    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
     expect(dataResponse.status).toBe(302);
     expect(dataResponse.redirect).toBe(true);
     expect(dataResponse.headers['set-cookie']?.length ?? 0).toBe(0);
@@ -154,8 +173,8 @@ describe('Test expired token', () => {
   it('should refresh token if expired', async () => {
     mockOpenId(true, true);
     const app = await setupOAuth();
-    const { response } = await login(app);
-    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
     expect(dataResponse.status).not.toBe(401);
   });
 });
@@ -167,10 +186,13 @@ describe('Test OAuth logout without end session endpoint', () => {
     mockOpenId(false);
     app = await setupOAuth();
   });
+  beforeEach(() => {
+    store = {};
+  });
 
   it('should logout and not return nothing', async () => {
-    const { response } = await login(app);
-    const logoutResponse = await request(app).get(`/logout`).set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const logoutResponse = await request(app).get(`/logout`).set('Cookie', cookies);
     expect(logoutResponse.body).toBe('');
   });
 });
@@ -233,6 +255,7 @@ async function setupOAuth(): Promise<Express> {
   process.env.OAUTH_CLIENT_ID = 'myClientID';
   process.env.OAUTH_BASE_URL = 'http://localhost';
   process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
+  await mockSavingValidationData();
   return init();
 }
 
@@ -248,9 +271,30 @@ function setOrDeleteProperty(
   }
 }
 
-async function login(app: Express): Promise<{ state: string; response: request.Response }> {
+async function login(app: Express): Promise<{ state: string; response: request.Response; cookies: string[] }> {
   const authUrlResponse = await request(app).get('/login');
   const state = authUrlResponse.headers.location?.split('state=').pop();
   const response = await request(app).get(`/oauth/redirect?state=${state}&code=someCode`);
-  return { state, response };
+  return { state, response, cookies: response.headers['set-cookie'] };
+}
+
+async function mockSavingValidationData(): Promise<void> {
+  const { saveValidationData, getAndRemoveValidationData, ...defaultSession } = await import('../user/session');
+  sessionMock = jest.unstable_mockModule('../user/session', () => {
+    return {
+      ...defaultSession,
+      async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
+        store[state] = {
+          _id: state,
+          codeVerifier,
+          nonce,
+        };
+      },
+      async getAndRemoveValidationData(state: string): Promise<unknown | undefined> {
+        const value = store[state];
+        delete store[state];
+        return { value };
+      },
+    };
+  });
 }

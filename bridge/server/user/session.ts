@@ -1,8 +1,9 @@
 import { Express, Request, Router } from 'express';
-import expressSession from 'express-session';
-import mS from 'memorystore';
+import expressSession, { MemoryStore } from 'express-session';
 import random from 'crypto-random-string';
 import { IdTokenClaims, TokenSet, TokenSetParameters } from 'openid-client';
+import MongoStore from 'connect-mongo';
+import { Collection, ModifyResult, MongoClient } from 'mongodb';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -16,23 +17,26 @@ export interface ValidSession extends expressSession.Session {
   tokenSet: TokenSetParameters;
   principal?: string;
 }
+interface ValidationType {
+  _id: string;
+  codeVerifier: string;
+  nonce: string;
+  creationDate: Date;
+}
+
 const router = Router();
-const CHECK_PERIOD = 600_000; // check every 10 minutes
-const SESSION_TIME = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
+const SESSION_TIME_SECONDS = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
+const SESSION_VALIDATING_DATA_SECONDS = getOrDefaultValidatingDataTimeout(60);
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
-const SESSION_SECRET = random({ length: 200 });
-const memoryStore = mS(expressSession);
-const store = new memoryStore({
-  checkPeriod: CHECK_PERIOD,
-  ttl: SESSION_TIME,
-});
-
+const SESSION_SECRET = process.env.OAUTH_SESSION_SECRET || random({ length: 200 });
+let store: MemoryStore | MongoStore;
+let validationCollection: Collection<ValidationType> | undefined;
 if (process.env.NODE_ENV === 'test') {
-  // else interval does not stop and so Jest does not terminate
-  // jest.fakeTimers would lead to an infinite loop when accessing the store
-  store.stopInterval();
+  store = new MemoryStore();
+} else {
+  store = await setupMongoDB();
 }
 
 /**
@@ -44,7 +48,7 @@ const sessionConfig = {
   cookie: {
     path: '/',
     httpOnly: true,
-    sameSite: true,
+    sameSite: true, // if true or 'strict', a redirect to oauth/redirect may lead to a missing cookie
     secure: false,
   },
   name: COOKIE_NAME,
@@ -53,7 +57,61 @@ const sessionConfig = {
   saveUninitialized: false,
   genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
   store,
-};
+} as expressSession.SessionOptions & { cookie: expressSession.CookieOptions };
+
+async function setupMongoDB(): Promise<MongoStore> {
+  const mongoCredentials = {
+    user: process.env.MONGODB_USER,
+    password: process.env.MONGODB_PASSWORD,
+    host: process.env.MONGODB_HOST,
+    database: process.env.MONGODB_DATABASE || 'openid',
+  };
+
+  if (!mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
+    console.error(
+      'could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set'
+    );
+    process.exit(1);
+  }
+
+  const mongoClient = new MongoClient(
+    `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}`
+  );
+  await mongoClient.connect();
+
+  validationCollection = mongoClient.db(mongoCredentials.database).collection('validation');
+
+  const indexName = 'validation_index';
+  const indexes = await validationCollection.indexes();
+  let validationIndex = indexes.find((index) => index.name === indexName);
+
+  if (validationIndex && validationIndex.expireAfterSeconds !== SESSION_VALIDATING_DATA_SECONDS) {
+    await validationCollection.dropIndex(indexName);
+    validationIndex = undefined;
+  }
+  if (!validationIndex) {
+    await validationCollection.createIndex(
+      {
+        creationDate: 1,
+      },
+      {
+        name: indexName,
+        expireAfterSeconds: SESSION_VALIDATING_DATA_SECONDS,
+      }
+    );
+  }
+  console.log('Successfully connected to database');
+
+  return MongoStore.create({
+    client: mongoClient,
+    ttl: SESSION_TIME_SECONDS, // if inactive for $SESSION_TIME_SECONDS seconds, session is destroyed
+    dbName: mongoCredentials.database,
+    collectionName: 'sessions',
+    crypto: {
+      secret: SESSION_SECRET,
+    },
+  });
+}
 
 /**
  * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
@@ -70,14 +128,33 @@ function isAuthenticated(
 }
 
 /**
+ * Saves state, code verifier and nonce for the login flow
+ */
+async function saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
+  await validationCollection?.insertOne({
+    _id: state,
+    codeVerifier,
+    nonce,
+    creationDate: new Date(),
+  });
+}
+
+/**
+ * returns state, code verifier and nonce and removes it afterwards
+ */
+function getAndRemoveValidationData(state: string): Promise<ModifyResult<ValidationType>> | undefined {
+  return validationCollection?.findOneAndDelete({ _id: state });
+}
+
+/**
  * Set the session authenticated state for the specific principal
  *
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
 function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
+  // Regenerate session for the successful login
   return new Promise((resolve) => {
-    // Regenerate session for the successful login
     req.session.regenerate(() => {
       const userIdentifier = process.env.OAUTH_NAME_PROPERTY;
       const claims = tokenSet.claims();
@@ -85,7 +162,6 @@ function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
       req.session.tokenSet = tokenSet;
       req.session.principal =
         (userIdentifier ? (claims[userIdentifier] as string | undefined) : undefined) || getUserIdentifier(claims);
-
       resolve();
     });
   });
@@ -121,7 +197,7 @@ function removeSession(req: Request): void {
 }
 
 function sessionRouter(app: Express): Router {
-  console.log(`Enabling sessions for bridge with session timeout ${SESSION_TIME}ms.`);
+  console.log(`Enabling sessions for bridge with session timeout ${SESSION_TIME_SECONDS} seconds.`);
 
   if (process.env.SECURE_COOKIE === 'true') {
     console.log('Setting secure cookies. Make sure SSL is enabled for deployment & correct trust proxy value is used.');
@@ -150,20 +226,38 @@ function sessionRouter(app: Express): Router {
  * provided default value.
  */
 function getOrDefaultSessionTimeout(defMinutes: number): number {
-  if (process.env.SESSION_TIMEOUT_MIN) {
-    const sTimeout = parseInt(process.env.SESSION_TIMEOUT_MIN, 10);
+  return getDefaultTime(process.env.SESSION_TIMEOUT_MIN, defMinutes);
+}
+
+/**
+ * Function to determine validating timeout, the timeout for the temporarily saved validation data for the login.
+ * Input value is in minutes and return value is in millisecond. Value can be
+ * configurable through environment variable SESSION_VALIDATING_TIMEOUT_MIN. If the configuration is invalid, fallback to
+ * provided default value.
+ */
+function getOrDefaultValidatingDataTimeout(defMinutes: number): number {
+  return getDefaultTime(process.env.SESSION_VALIDATING_TIMEOUT_MIN, defMinutes);
+}
+
+function getDefaultTime(timeMin: string | undefined, defMinutes: number): number {
+  if (timeMin) {
+    const sTimeout = parseInt(timeMin, 10);
 
     if (!isNaN(sTimeout) && sTimeout > 0) {
-      return sTimeout * 60 * 1000;
+      return sTimeout * 60;
     }
   }
 
-  return defMinutes * 60 * 1000;
+  return defMinutes * 60;
 }
 
-export { sessionRouter };
-export { isAuthenticated };
-export { authenticateSession };
-export { removeSession };
-export { getLogoutHint };
-export { getCurrentPrincipal as currentPrincipal };
+export {
+  sessionRouter,
+  isAuthenticated,
+  authenticateSession,
+  saveValidationData,
+  getAndRemoveValidationData,
+  removeSession,
+  getLogoutHint,
+  getCurrentPrincipal as currentPrincipal,
+};
