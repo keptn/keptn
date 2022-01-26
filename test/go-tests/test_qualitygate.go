@@ -60,7 +60,7 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "quality333"
+	projectName := "quality344"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
@@ -70,9 +70,6 @@ func Test_QualityGates(t *testing.T) {
 
 	//_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	//t.Logf("creating project %s", projectName)
-	require.Nil(t, err)
-
-	_, _, err = createConfigServiceUpstreamRepo(projectName)
 	require.Nil(t, err)
 
 	err = CreateProject(projectName, shipyardFilePath, true)
