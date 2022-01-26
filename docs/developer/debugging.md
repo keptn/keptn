@@ -1,5 +1,23 @@
 # GOLANG Debugging Guide for Keptn
 
+
+<details>
+<summary>Table of Contents</summary>
+
+<!-- toc -->
+
+- [Pre-Requisites](#pre-requisites)
+- [Repo-Setup](#repo-setup)
+- [Debugging Step by Step](#debugging-step-by-step)
+  * [Setup GoLand with Cloud Code](#setup-goland-with-cloud-code)
+  * [Create a Kubernetes Continuous Deploy Run Configuration](#create-a-kubernetes-continuous-deploy-run-configuration)
+  * [Configure Container Registry](#configure-container-registry)
+  * [Debug now!](#debug-now)
+
+<!-- tocstop -->
+
+</details>
+
 ## Pre-Requisites
 
 * GoLand IDE (VSCode might work too, this guide was written for GoLand however)
@@ -10,9 +28,9 @@
 
 ## Repo-Setup
 
-Most of our services should already have a working setup. But just in case the setup is not there yet, the following 
+Most of our services should already have a working setup. But just in case the setup is not there yet, the following
  steps are required:
- 
+
 1. Add Kubernetes Deployment YAML Files (e.g., deploy/service.yaml) - note down the image name (e.g., `keptn/some-go-service:latest`)
 1. Compile your go binary using buildflags `-gcflags "all=-N -l"`
 1. Add `libc6-compat` to alpine using `apk add --no-cache libc6-compat`
@@ -20,30 +38,30 @@ Most of our services should already have a working setup. But just in case the s
 1. Make sure CMD in Dockerfile refers to the go-binary that you want to debug. Here is an example Dockerfile:
     ```dockerfile
     FROM golang:1.13 as builder
-    
+
     WORKDIR /go/src/github.com/keptn-contrib/some-go-service
-    
+
     ENV GO111MODULE=on
     COPY go.mod go.sum ./
     RUN go mod download
     COPY . .
-    
+
     # Build the command inside the container.
     RUN GOOS=linux go build -gcflags "all=-N -l" -v -o some-go-binary
-    
+
     # Use a Docker multi-stage build to create a lean production image.
     FROM alpine:3.14
     # we need to install ca-certificates and libc6-compat for go programs to work properly
     RUN apk add --no-cache ca-certificates libc6-compat
-    
+
     # Copy the binary to the production image from the builder stage.
     COPY --from=builder /go/src/github.com/keptn-contrib/some-go-service/some-go-binary /some-go-binary
-    
+
     EXPOSE 8080
-    
+
     # required for external tools to detect this as a go binary
     ENV GOTRACEBACK=all
-    
+
     CMD ["/some-go-binary", "other", "params", "--foobar"]
     ```
 1. Add a skaffold.yaml with the following content (note that the image name should not contain a tag):

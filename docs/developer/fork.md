@@ -11,6 +11,18 @@ Request on GitHub, here is some information on the GitHub help pages:
 Changes on the master branch (even within your fork) can lead to losing your changes when syncing with the upstream repo
 or to unresolvable merge conflicts.
 
+<details>
+<summary>Table of Contents</summary>
+
+<!-- toc -->
+
+- [Forking the Keptn Repo](#forking-the-keptn-repo)
+- [Keep your fork synced (merge master from keptn/keptn to your repos master branch)](#keep-your-fork-synced-merge-master-from-keptnkeptn-to-your-repos-master-branch)
+- [Working on a branch](#working-on-a-branch)
+
+<!-- tocstop -->
+</details>
+
 ## Forking the Keptn Repo
 
 1. Fork the *keptn/keptn* repository on GitHub to your account, then clone the forked repo (**do not clone the original keptn/keptn repo**), e.g.:
