@@ -44,14 +44,14 @@
         (click)="$event.stopPropagation()"
       ></a>
     </p>
-    <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!project.gitRemoteURI">
-      <dt-icon class="info mr-1" [name]="'information'"></dt-icon>
+    <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start start" *ngIf="!project.gitRemoteURI">
+      <dt-icon class="event-icon warning mr-1" [name]="'incident'"></dt-icon>
       <p class="small m-0" uitestid="keptn-project-tile-gitRemoteUri-noUpstreamConfigured">
-        No Git upstream configured.
+        Keptn will not support a project without Git upstream repository in future releases.<br />
         <a
           [routerLink]="['/project', project.projectName, 'settings', 'project']"
           uitestid="keptn-project-tile-gitRemoteUri-setUpstream"
-          >Set Git upstream</a
+          >Set the Git upstream of your project</a
         >
       </p>
     </div>
