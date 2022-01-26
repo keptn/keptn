@@ -15,10 +15,10 @@ import (
 )
 
 type serviceManagerTestFields struct {
-	git              *common_mock.IGitMock
-	credentialReader *common_mock.CredentialReaderMock
-	fileWriter       *common_mock.IFileSystemMock
-	stageContext     *handler_mock.IStageContextMock
+	git                  *common_mock.IGitMock
+	credentialReader     *common_mock.CredentialReaderMock
+	fileWriter           *common_mock.IFileSystemMock
+	configurationContext *handler_mock.IConfigurationContextMock
 }
 
 func TestServiceManager_CreateService(t *testing.T) {
@@ -42,7 +42,7 @@ func TestServiceManager_CreateService(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.Nil(t, err)
@@ -76,7 +76,7 @@ func TestServiceManager_CreateService_CannotReadCredentials(t *testing.T) {
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrCredentialsNotFound
 	}
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.ErrorIs(t, err, errors2.ErrCredentialsNotFound)
@@ -111,7 +111,7 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 		return false
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
@@ -145,11 +145,11 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 
 	fields := getTestServiceManagerFields()
 
-	fields.stageContext.EstablishFunc = func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
+	fields.configurationContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
 		return "", errors2.ErrStageNotFound
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.ErrorIs(t, err, errors2.ErrStageNotFound)
@@ -157,7 +157,7 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileWriter.WriteFileCalls())
@@ -189,7 +189,7 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 		return true
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.ErrorIs(t, err, errors2.ErrServiceAlreadyExists)
@@ -197,7 +197,7 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileWriter.WriteFileCalls())
@@ -229,7 +229,7 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 		return errors.New("oops")
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.NotNil(t, err)
@@ -237,7 +237,7 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileWriter.WriteFileCalls())
@@ -269,7 +269,7 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 		return errors.New("oops")
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.NotNil(t, err)
@@ -277,7 +277,7 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
@@ -310,7 +310,7 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 		return "", errors.New("oops")
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
 	require.NotNil(t, err)
@@ -318,7 +318,7 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
@@ -349,7 +349,7 @@ func TestServiceManager_DeleteService(t *testing.T) {
 		return false
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.DeleteService(params)
 
 	require.Nil(t, err)
@@ -357,7 +357,7 @@ func TestServiceManager_DeleteService(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
@@ -392,7 +392,7 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 		return false
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.DeleteService(params)
 
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
@@ -426,7 +426,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 		return false
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.DeleteService(params)
 
 	require.ErrorIs(t, err, errors2.ErrServiceNotFound)
@@ -434,7 +434,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 }
@@ -467,7 +467,7 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 		return errors.New("oops")
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.DeleteService(params)
 
 	require.NotNil(t, err)
@@ -475,7 +475,7 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 }
@@ -508,7 +508,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 		return "", errors.New("oops")
 	}
 
-	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.stageContext)
+	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.DeleteService(params)
 
 	require.NotNil(t, err)
@@ -516,7 +516,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
 
-	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 }
@@ -569,8 +569,8 @@ func getTestServiceManagerFields() serviceManagerTestFields {
 				return nil
 			},
 		},
-		stageContext: &handler_mock.IStageContextMock{
-			EstablishFunc: func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
+		configurationContext: &handler_mock.IConfigurationContextMock{
+			EstablishFunc: func(params common_models.ConfigurationContextParams) (string, error) {
 				return testServiceConfigDir, nil
 			},
 		},

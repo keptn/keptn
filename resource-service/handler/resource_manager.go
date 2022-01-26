@@ -25,18 +25,18 @@ type IResourceManager interface {
 }
 
 type ResourceManager struct {
-	git              common.IGit
-	credentialReader common.CredentialReader
-	fileSystem       common.IFileSystem
-	stageContext     IStageContext
+	git                  common.IGit
+	credentialReader     common.CredentialReader
+	fileSystem           common.IFileSystem
+	configurationContext IConfigurationContext
 }
 
-func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem, stageContext IStageContext) *ResourceManager {
+func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem, stageContext IConfigurationContext) *ResourceManager {
 	projectResourceManager := &ResourceManager{
-		git:              git,
-		credentialReader: credentialReader,
-		fileSystem:       fileWriter,
-		stageContext:     stageContext,
+		git:                  git,
+		credentialReader:     credentialReader,
+		fileSystem:           fileWriter,
+		configurationContext: stageContext,
 	}
 	return projectResourceManager
 }
@@ -142,12 +142,15 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		return nil, "", kerrors.ErrProjectNotFound
 	}
 
-	configPath, err := p.stageContext.Establish(project, stage, service, gitContext)
+	configPath, err := p.configurationContext.Establish(common_models.ConfigurationContextParams{
+		Project:                 project,
+		Stage:                   stage,
+		Service:                 service,
+		GitContext:              gitContext,
+		CheckConfigDirAvailable: true,
+	})
 	if err != nil {
 		return nil, "", err
-	}
-	if !p.fileSystem.FileExists(configPath) {
-		return nil, "", kerrors.ErrServiceNotFound
 	}
 	return &gitContext, configPath, nil
 }

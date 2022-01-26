@@ -85,24 +85,24 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	stageContext := getStageContext(git)
+	configurationContext := getConfigurationContext(git, fileSystem)
 
-	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem, stageContext)
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem, configurationContext)
 	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, stageContext)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
@@ -129,8 +129,8 @@ func main() {
 
 }
 
-func getStageContext(git *common.Git) *handler.BranchStageContext {
-	stageContext := handler.NewBranchStageContext(git)
+func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) *handler.BranchConfigurationContext {
+	stageContext := handler.NewBranchConfigurationContext(git, fileSystem)
 	return stageContext
 }
 

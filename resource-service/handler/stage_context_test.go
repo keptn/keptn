@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -18,9 +19,16 @@ type testBranchStageContextFields struct {
 func TestBranchStageContext_Establish_ProjectContext(t *testing.T) {
 	fields := getTestBranchStageContextFields()
 
-	bs := NewBranchStageContext(fields.git)
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
 
-	configPath, err := bs.Establish(models.Project{ProjectName: "my-project"}, nil, nil, common_models.GitContext{})
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configPath, err := bs.Establish(params)
 
 	require.Nil(t, err)
 
@@ -30,14 +38,54 @@ func TestBranchStageContext_Establish_ProjectContext(t *testing.T) {
 
 	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
 	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Empty(t, fields.fileSystem.FileExistsCalls())
+}
+
+func TestBranchStageContext_Establish_ProjectContext_ProjectDirectoryNotAvailable(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		return false
+	}
+
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: true,
+	}
+	configPath, err := bs.Establish(params)
+
+	require.ErrorIs(t, err, kerrors.ErrProjectNotFound)
+
+	require.Equal(t, "", configPath)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileSystem.FileExistsCalls(), 1)
 }
 
 func TestBranchStageContext_Establish_StageContext(t *testing.T) {
 	fields := getTestBranchStageContextFields()
 
-	bs := NewBranchStageContext(fields.git)
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
 
-	configPath, err := bs.Establish(models.Project{ProjectName: "my-project"}, &models.Stage{StageName: "my-stage"}, nil, common_models.GitContext{})
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+
+	configPath, err := bs.Establish(params)
 
 	require.Nil(t, err)
 
@@ -50,9 +98,17 @@ func TestBranchStageContext_Establish_StageContext(t *testing.T) {
 func TestBranchStageContext_Establish_ServiceContext(t *testing.T) {
 	fields := getTestBranchStageContextFields()
 
-	bs := NewBranchStageContext(fields.git)
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
 
-	configPath, err := bs.Establish(models.Project{ProjectName: "my-project"}, &models.Stage{StageName: "my-stage"}, &models.Service{ServiceName: "my-service"}, common_models.GitContext{})
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 &models.Service{ServiceName: "my-service"},
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+
+	configPath, err := bs.Establish(params)
 
 	require.Nil(t, err)
 
@@ -62,6 +118,34 @@ func TestBranchStageContext_Establish_ServiceContext(t *testing.T) {
 	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
 }
 
+func TestBranchStageContext_Establish_ServiceContext_ServiceDirectoryNotAvailable(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		return false
+	}
+
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 &models.Service{ServiceName: "my-service"},
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: true,
+	}
+	configPath, err := bs.Establish(params)
+
+	require.ErrorIs(t, err, kerrors.ErrServiceNotFound)
+
+	require.Equal(t, "", configPath)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+
+	require.Len(t, fields.fileSystem.FileExistsCalls(), 1)
+}
+
 func TestBranchStageContext_Establish_CannotGetDefaultBranch(t *testing.T) {
 	fields := getTestBranchStageContextFields()
 
@@ -69,9 +153,16 @@ func TestBranchStageContext_Establish_CannotGetDefaultBranch(t *testing.T) {
 		return "", errors.New("oops")
 	}
 
-	bs := NewBranchStageContext(fields.git)
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
 
-	configPath, err := bs.Establish(models.Project{ProjectName: "my-project"}, nil, nil, common_models.GitContext{})
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configPath, err := bs.Establish(params)
 
 	require.NotNil(t, err)
 
@@ -87,9 +178,16 @@ func TestBranchStageContext_Establish_CannotCheckoutBranch(t *testing.T) {
 		return errors.New("oops")
 	}
 
-	bs := NewBranchStageContext(fields.git)
+	bs := NewBranchConfigurationContext(fields.git, fields.fileSystem)
 
-	configPath, err := bs.Establish(models.Project{ProjectName: "my-project"}, nil, nil, common_models.GitContext{})
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configPath, err := bs.Establish(params)
 
 	require.NotNil(t, err)
 
@@ -133,6 +231,11 @@ func getTestBranchStageContextFields() testBranchStageContextFields {
 			},
 			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 				return "my-revision", nil
+			},
+		},
+		fileSystem: &common_mock.IFileSystemMock{
+			FileExistsFunc: func(path string) bool {
+				return true
 			},
 		},
 	}

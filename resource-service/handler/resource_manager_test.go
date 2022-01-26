@@ -24,7 +24,7 @@ type testResourceManagerFields struct {
 	git              *common_mock.IGitMock
 	credentialReader *common_mock.CredentialReaderMock
 	fileSystem       *common_mock.IFileSystemMock
-	stageContext     *handler_mock.IStageContextMock
+	stageContext     *handler_mock.IConfigurationContextMock
 }
 
 func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
@@ -57,9 +57,9 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.stageContext.EstablishCalls(), 1)
-	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Project, 1)
-	require.Nil(t, fields.stageContext.EstablishCalls()[0].Stage, 1)
-	require.Nil(t, fields.stageContext.EstablishCalls()[0].Service, 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Nil(t, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Nil(t, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
 	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
@@ -95,9 +95,9 @@ func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
 	require.Len(t, fields.stageContext.EstablishCalls(), 1)
-	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Project, 1)
-	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Stage, 1)
-	require.Nil(t, fields.stageContext.EstablishCalls()[0].Service, 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Nil(t, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -136,9 +136,9 @@ func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
 	require.Len(t, fields.stageContext.EstablishCalls(), 1)
-	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Project, 1)
-	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Stage, 1)
-	require.Equal(t, &models.Service{ServiceName: "my-service"}, fields.stageContext.EstablishCalls()[0].Service, 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Equal(t, &models.Service{ServiceName: "my-service"}, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -296,50 +296,8 @@ func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t
 func TestResourceManager_CreateResources_ProjectResource_CannotEstablishContext(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.stageContext.EstablishFunc = func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
+	fields.stageContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
 		return "", errors.New("oops")
-	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
-
-	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		ResourceContext: models.ResourceContext{
-			Project: models.Project{ProjectName: "my-project"},
-		},
-		CreateResourcesPayload: models.CreateResourcesPayload{
-			Resources: []models.Resource{
-				{
-					ResourceContent: "c3RyaW5n",
-					ResourceURI:     "file1",
-				},
-				{
-					ResourceContent: "c3RyaW5n",
-					ResourceURI:     "file2",
-				},
-			},
-		},
-	})
-
-	require.NotNil(t, err)
-
-	require.Nil(t, revision)
-
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-
-	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
-}
-
-func TestResourceManager_CreateResources_ProjectResource_ServiceNotFound(t *testing.T) {
-	fields := getTestResourceManagerFields()
-
-	fields.stageContext.EstablishFunc = func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
-		return testServiceConfigDir, nil
-	}
-
-	fields.fileSystem.FileExistsFunc = func(path string) bool {
-		if strings.Contains(path, testServiceConfigDir) {
-			return false
-		}
-		return true
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
@@ -1017,10 +975,10 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
-func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.T) {
+func TestResourceManager_GetResource_ServiceResource_ServiceNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.stageContext.EstablishFunc = func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
+	fields.stageContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
 		return "", errors2.ErrServiceNotFound
 	}
 	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
@@ -1042,9 +1000,9 @@ func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.
 	require.Nil(t, result)
 
 	require.Len(t, fields.stageContext.EstablishCalls(), 1)
-	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Project, 1)
-	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Stage, 1)
-	require.Equal(t, &models.Service{ServiceName: "my-service"}, fields.stageContext.EstablishCalls()[0].Service, 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Equal(t, &models.Service{ServiceName: "my-service"}, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
@@ -1298,8 +1256,10 @@ func getTestResourceManagerFields() testResourceManagerFields {
 				return nil
 			},
 		},
-		stageContext: &handler_mock.IStageContextMock{EstablishFunc: func(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
-			return testConfigDir, nil
-		}},
+		stageContext: &handler_mock.IConfigurationContextMock{
+			EstablishFunc: func(params common_models.ConfigurationContextParams) (string, error) {
+				return testConfigDir, nil
+			},
+		},
 	}
 }

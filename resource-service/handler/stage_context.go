@@ -4,65 +4,100 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
-	"github.com/keptn/keptn/resource-service/models"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
 )
 
-//go:generate moq -pkg handler_mock -skip-ensure -out ./fake/stage_context_mock.go . IStageContext
-type IStageContext interface {
-	Establish(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error)
+const StageDirectoryName = "keptn-stages"
+const ServiceDirectoryName = "keptn-services"
+
+//go:generate moq -pkg handler_mock -skip-ensure -out ./fake/configuration_context_mock.go . IConfigurationContext
+type IConfigurationContext interface {
+	Establish(params common_models.ConfigurationContextParams) (string, error)
 }
 
-type BranchStageContext struct {
-	git common.IGit
-}
-
-func NewBranchStageContext(git common.IGit) *BranchStageContext {
-	return &BranchStageContext{git: git}
-}
-
-func (bs BranchStageContext) Establish(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
-	var branch string
-	var err error
-	if stage == nil {
-		branch, err = bs.git.GetDefaultBranch(gitContext)
-		if err != nil {
-			return "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
-		}
-	} else {
-		branch = stage.StageName
-	}
-
-	if err := bs.git.CheckoutBranch(gitContext, branch); err != nil {
-		return "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, project.ProjectName, err)
-	}
-
-	var configPath string
-	if service == nil {
-		configPath = common.GetProjectConfigPath(project.ProjectName)
-	} else {
-		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
-	}
-	return configPath, nil
-}
-
-type DirectoryStageContext struct {
+type BranchConfigurationContext struct {
 	git        common.IGit
 	fileSystem common.IFileSystem
 }
 
-func (ds DirectoryStageContext) Establish(project models.Project, stage *models.Stage, service *models.Service, gitContext common_models.GitContext) (string, error) {
-	branch, err := ds.git.GetDefaultBranch(gitContext)
-	if err != nil {
-		return "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
-	}
-	if err := ds.git.CheckoutBranch(gitContext, branch); err != nil {
-		return "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, project.ProjectName, err)
+func NewBranchConfigurationContext(git common.IGit, fileSystem common.IFileSystem) *BranchConfigurationContext {
+	return &BranchConfigurationContext{git: git, fileSystem: fileSystem}
+}
+
+func (bs BranchConfigurationContext) Establish(params common_models.ConfigurationContextParams) (string, error) {
+	var branch string
+	var err error
+	if params.Stage == nil {
+		branch, err = bs.git.GetDefaultBranch(params.GitContext)
+		if err != nil {
+			return "", fmt.Errorf("could not determine default branch of project %s: %w", params.Project.ProjectName, err)
+		}
+	} else {
+		branch = params.Stage.StageName
 	}
 
-	if stage != nil && service != nil {
-
+	if err := bs.git.CheckoutBranch(params.GitContext, branch); err != nil {
+		return "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, params.Project.ProjectName, err)
 	}
 
 	var configPath string
+	if params.Service == nil {
+		configPath = common.GetProjectConfigPath(params.Project.ProjectName)
+		if params.CheckConfigDirAvailable && !bs.fileSystem.FileExists(configPath) {
+			return "", kerrors.ErrProjectNotFound
+		}
+	} else {
+		configPath = common.GetServiceConfigPath(params.Project.ProjectName, params.Service.ServiceName)
+		if params.CheckConfigDirAvailable && !bs.fileSystem.FileExists(configPath) {
+			return "", kerrors.ErrServiceNotFound
+		}
+	}
 	return configPath, nil
+}
+
+type DirectoryConfigurationContext struct {
+	git        common.IGit
+	fileSystem common.IFileSystem
+}
+
+func (ds DirectoryConfigurationContext) Establish(params common_models.ConfigurationContextParams) (string, error) {
+	branch, err := ds.git.GetDefaultBranch(params.GitContext)
+	if err != nil {
+		return "", fmt.Errorf("could not determine default branch of project %s: %w", params.Project.ProjectName, err)
+	}
+	if err := ds.git.CheckoutBranch(params.GitContext, branch); err != nil {
+		return "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, params.Project.ProjectName, err)
+	}
+
+	var configPath string
+	if params.Stage != nil && params.Service != nil {
+		configPath = ds.GetServiceConfigPath(params.Project.ProjectName, params.Stage.StageName, params.Service.ServiceName)
+		if params.CheckConfigDirAvailable && !ds.fileSystem.FileExists(configPath) {
+			return "", kerrors.ErrServiceNotFound
+		}
+	} else if params.Stage != nil {
+		configPath = ds.GetStageConfigPath(params.Project.ProjectName, params.Stage.StageName)
+		if params.CheckConfigDirAvailable && !ds.fileSystem.FileExists(configPath) {
+			return "", kerrors.ErrStageNotFound
+		}
+	} else {
+		configPath = ds.GetProjectConfigPath(params.Project.ProjectName)
+		if params.CheckConfigDirAvailable && !ds.fileSystem.FileExists(configPath) {
+			return "", kerrors.ErrProjectNotFound
+		}
+	}
+
+	return configPath, nil
+}
+
+func (ds DirectoryConfigurationContext) GetProjectConfigPath(project string) string {
+	return fmt.Sprintf("%s/%s", common.GetConfigDir(), project)
+}
+
+func (ds DirectoryConfigurationContext) GetStageConfigPath(project, stage string) string {
+	return fmt.Sprintf("%s/%s/%s", ds.GetProjectConfigPath(project), StageDirectoryName, stage)
+}
+
+func (ds DirectoryConfigurationContext) GetServiceConfigPath(project, stage, service string) string {
+	return fmt.Sprintf("%s/%s/%s", ds.GetStageConfigPath(project, stage), ServiceDirectoryName, service)
 }

@@ -15,6 +15,8 @@ type IStageManager interface {
 	DeleteStage(params models.DeleteStageParams) error
 }
 
+// TODO: implement stage manager for directory-based stage structure
+
 type StageManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
