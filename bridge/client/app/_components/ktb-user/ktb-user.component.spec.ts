@@ -46,7 +46,7 @@ describe('ktbUserComponentTest', () => {
     const submitForm = { target: { submit: (): void => {} } };
     component.logout(submitForm);
     httpMock.expectOne('./logout').flush(null);
-    expect(locationAssignMock).toBeCalledWith('/logout?status=true');
+    expect(locationAssignMock).toBeCalledWith('/loggedOut');
   });
 });
 

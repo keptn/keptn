@@ -480,7 +480,7 @@ export class ApiService {
   }
 
   public logout(): Observable<EndSessionData | null> {
-    return this.http.get<EndSessionData | null>(`./logout`);
+    return this.http.post<EndSessionData | null>(`./logout`, {});
   }
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {

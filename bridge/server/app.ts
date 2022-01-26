@@ -67,6 +67,7 @@ async function init(): Promise<Express> {
 
   // server static files - Images & CSS
   app.use('/static', express.static(join(serverFolder, 'views/static'), { maxAge: oneWeek }));
+  app.use('/branding', express.static(join(rootFolder, 'dist/assets/branding'), { maxAge: oneWeek }));
 
   // UI static files - Angular application
   app.use(
@@ -153,7 +154,7 @@ async function setOAUTH(app: Express): Promise<void> {
   await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
 }
 
-async function setBasisAUTH(app: Express): Promise<void> {
+async function setBasicAUTH(app: Express): Promise<void> {
   console.error('Installing Basic authentication - please check environment variables!');
 
   setInterval(cleanIpBuckets, cleanBucketsInterval);
@@ -192,7 +193,7 @@ async function setAuth(app: Express, oAuthEnabled: boolean): Promise<string> {
     authType = 'OAUTH';
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
     authType = 'BASIC';
-    await setBasisAUTH(app);
+    await setBasicAUTH(app);
   } else {
     authType = 'NONE';
     console.log('Not installing authentication middleware');

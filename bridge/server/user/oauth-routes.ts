@@ -89,7 +89,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
           message: '',
         };
         response.message =
-          (err.response.body as Record<string, string>).message ?? 'User is not allowed access the instance.';
+          (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.';
         return res.render('error', response);
       } else {
         return res.render('error', {
@@ -104,10 +104,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
   /**
    * Router level middleware for logout
    */
-  router.get('/logout', async (req: Request, res: Response) => {
-    if (req.query.status) {
-      return res.render('logout', { location: getRootLocation() });
-    }
+  router.post('/logout', async (req: Request, res: Response) => {
     if (!isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
@@ -130,6 +127,10 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
     } else {
       return res.json();
     }
+  });
+
+  router.get('/loggedOut', (req: Request, res: Response) => {
+    return res.render('logout', { location: getRootLocation() });
   });
 
   return router;
