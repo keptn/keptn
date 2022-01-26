@@ -46,14 +46,14 @@ describe('Test notifications', () => {
 
     basePage
       .notificationSuccessVisible()
-      .wait(2000)
+      .wait(5100)
       .should('not.have.css', 'opacity', '1')
       .trigger('mouseover')
-      .should('not.have.css', 'opacity', '0')
-      .wait(5000)
+      .should('have.css', 'opacity', '1')
+      .wait(8100)
       .should('be.visible')
       .trigger('mouseleave')
-      .wait(5000)
+      .wait(8100)
       .should('not.exist');
   });
 

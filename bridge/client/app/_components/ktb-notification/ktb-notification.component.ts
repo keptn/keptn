@@ -75,11 +75,11 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
       //Only start fade out the last 3 seconds
       this.fadeOutDelay = setTimeout(() => {
         this.fadeStatus = 'out';
-      }, this.notification.time - this.fadeOutDuration);
+      }, this.notification.time);
 
       this.hideTimeout = setTimeout(() => {
         this.closeComponent();
-      }, this.notification.time);
+      }, this.notification.time + this.fadeOutDuration);
     }
   }
 
