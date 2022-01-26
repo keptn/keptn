@@ -60,6 +60,10 @@ type DirectoryConfigurationContext struct {
 	fileSystem common.IFileSystem
 }
 
+func NewDirectoryConfigurationContext(git common.IGit, fileSystem common.IFileSystem) *DirectoryConfigurationContext {
+	return &DirectoryConfigurationContext{git: git, fileSystem: fileSystem}
+}
+
 func (ds DirectoryConfigurationContext) Establish(params common_models.ConfigurationContextParams) (string, error) {
 	branch, err := ds.git.GetDefaultBranch(params.GitContext)
 	if err != nil {

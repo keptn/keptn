@@ -240,3 +240,169 @@ func getTestBranchStageContextFields() testBranchStageContextFields {
 		},
 	}
 }
+
+func TestDirectoryConfigurationContext_Establish_ProjectContext(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.Nil(t, err)
+
+	require.Equal(t, common.GetProjectConfigPath("my-project"), configDir)
+}
+
+func TestDirectoryConfigurationContext_Establish_ProjectContext_ProjectNotFound(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		return false
+	}
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: true,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.ErrorIs(t, err, kerrors.ErrProjectNotFound)
+
+	require.Equal(t, "", configDir)
+}
+
+func TestDirectoryConfigurationContext_Establish_StageContext(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.Nil(t, err)
+
+	require.Equal(t, common.GetConfigDir()+"/my-project/keptn-stages/my-stage", configDir)
+}
+func TestDirectoryConfigurationContext_Establish_StageContext_StageNotFound(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		return false
+	}
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: true,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.ErrorIs(t, err, kerrors.ErrStageNotFound)
+
+	require.Equal(t, "", configDir)
+}
+
+func TestDirectoryConfigurationContext_Establish_ServiceContext(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 &models.Service{ServiceName: "my-service"},
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.Nil(t, err)
+
+	require.Equal(t, common.GetConfigDir()+"/my-project/keptn-stages/my-stage/keptn-services/my-service", configDir)
+}
+
+func TestDirectoryConfigurationContext_Establish_ServiceContext_ServiceNotFound(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		return false
+	}
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   &models.Stage{StageName: "my-stage"},
+		Service:                 &models.Service{ServiceName: "my-service"},
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: true,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.ErrorIs(t, err, kerrors.ErrServiceNotFound)
+
+	require.Equal(t, "", configDir)
+}
+
+func TestDirectoryConfigurationContext_Establish_CannotDetermineDefaultBranch(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
+		return "", errors.New("oops")
+	}
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.NotNil(t, err)
+
+	require.Equal(t, "", configDir)
+}
+
+func TestDirectoryConfigurationContext_Establish_CannotCheckoutDefaultBranch(t *testing.T) {
+	fields := getTestBranchStageContextFields()
+
+	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
+		return errors.New("oops")
+	}
+	ds := NewDirectoryConfigurationContext(fields.git, fields.fileSystem)
+
+	params := common_models.ConfigurationContextParams{
+		Project:                 models.Project{ProjectName: "my-project"},
+		Stage:                   nil,
+		Service:                 nil,
+		GitContext:              common_models.GitContext{},
+		CheckConfigDirAvailable: false,
+	}
+	configDir, err := ds.Establish(params)
+
+	require.NotNil(t, err)
+
+	require.Equal(t, "", configDir)
+}
