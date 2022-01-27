@@ -63,7 +63,7 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 					},
 				},
 				redirectHandler: RedirectHandlerMock{
-					handleFn: func(bytes []byte, config *oauth2.Config) (*oauth2.Token, error) {
+					handleFn: func(bytes []byte, config *oauth2.Config, state string) (*oauth2.Token, error) {
 						return nil, errors.New("callback handler failed")
 					},
 				},
@@ -81,7 +81,7 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 					},
 				},
 				redirectHandler: RedirectHandlerMock{
-					handleFn: func(bytes []byte, config *oauth2.Config) (*oauth2.Token, error) {
+					handleFn: func(bytes []byte, config *oauth2.Config, state string) (*oauth2.Token, error) {
 						return &oauth2.Token{}, nil
 					},
 				},

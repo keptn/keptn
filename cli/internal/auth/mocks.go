@@ -32,12 +32,12 @@ func (h HTTPClientMock) Do(r *http.Request) (*http.Response, error) {
 // RedirectHandlerMock is a mocked implementation of TokenGetter
 // usable in tests
 type RedirectHandlerMock struct {
-	handleFn func([]byte, *oauth2.Config) (*oauth2.Token, error)
+	handleFn func([]byte, *oauth2.Config, string) (*oauth2.Token, error)
 }
 
-func (t RedirectHandlerMock) Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error) {
+func (t RedirectHandlerMock) Handle(codeVerifier []byte, oauthConfig *oauth2.Config, state string) (*oauth2.Token, error) {
 	if t.handleFn != nil {
-		return t.handleFn(codeVerifier, oauthConfig)
+		return t.handleFn(codeVerifier, oauthConfig, state)
 	}
 	panic("handleFn of RedirectHandlerMock not set")
 }
