@@ -220,6 +220,11 @@ describe('Integrations', () => {
     cy.byTestId('keptn-notification-bar-message').should('not.exist');
     cy.byTestId('ktb-modify-subscription-reload-button').should('not.exist');
     cy.get('h2').first().should('have.text', 'Create subscription');
+
+    // eslint-disable-next-line promise/always-return,promise/catch-or-return
+    cy.window().then((window) => {
+      window.errorCount = 1;
+    });
   });
 
   function selectFirstItemOfVariableSelector(): void {
