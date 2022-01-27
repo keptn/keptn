@@ -15,5 +15,6 @@ afterEach(() => {
     window.errorCount = 0;
     expect(window.console.error).to.have.callCount(errorCount);
     expect(window.console.warn).to.have.callCount(0);
+    return null;
   });
 });
