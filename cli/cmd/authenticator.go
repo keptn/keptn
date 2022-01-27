@@ -109,7 +109,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 
 	if !authenticated {
 		if authenticatorOptions.SSO {
-			fmt.Println("WARNING: You are using the SSO integration feature without a Keptn API Token. Please verify that your configuration allows it or use the --api-token flag")
+			fmt.Println("WARNING: You are using the SSO integration feature without a Keptn API Token. Please verify that your configuration allows it")
 		} else {
 			return fmt.Errorf(errMsg)
 		}
