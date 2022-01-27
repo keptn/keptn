@@ -67,7 +67,7 @@ describe('Test notifications', () => {
     notification.should('not.exist');
   });
 
-  it('should show the same notifications', () => {
+  it('should not show the same notifications', () => {
     cy.visit('/project/dynatrace/settings/services').byTestId('keptn-create-service-button').click();
     showSuccess();
     cy.byTestId('keptn-create-service-button').click();
