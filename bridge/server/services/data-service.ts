@@ -1384,8 +1384,8 @@ export class DataService {
     return serviceRemediationInformation;
   }
 
-  public async getSequencesMetadata(projectName: string): Promise<ISequencesMetadata> {
-    const res = await this.apiService.getStages(projectName);
+  public async getSequencesMetadata(accessToken: string | undefined, projectName: string): Promise<ISequencesMetadata> {
+    const res = await this.apiService.getStages(accessToken, projectName);
     const stages = res.data.stages;
     const stageNames: string[] = [];
     const serviceSet: Set<string> = new Set();
