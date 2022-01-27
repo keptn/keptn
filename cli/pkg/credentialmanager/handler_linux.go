@@ -87,11 +87,19 @@ func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error)
 		}
 		dataStr := strings.TrimSpace(strings.Replace(string(data), "\r\n", "\n", -1))
 		creds := strings.Split(dataStr, "\n")
-		if len(creds) != 2 {
-			return url.URL{}, "", errors.New("Format of file-based key storage is invalid")
+
+		// no API token, only url
+		if len(creds) == 1 {
+			url, err := url.Parse(creds[0])
+			return *url, "", err
 		}
-		url, err := url.Parse(creds[0])
-		return *url, creds[1], err
+
+		// url and API token
+		if len(creds) == 2 {
+			url, err := url.Parse(creds[0])
+			return *url, creds[1], err
+		}
+		return url.URL{}, "", errors.New("Format of file-based key storage is invalid")
 	}
 	return getCreds(pass.Pass{}, namespace)
 }

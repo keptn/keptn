@@ -40,7 +40,6 @@ import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-c
 import { DtToggleButtonGroupModule } from '@dynatrace/barista-components/toggle-button-group';
 import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
-import { DtToastModule } from '@dynatrace/barista-components/toast';
 import { MomentModule } from 'ngx-moment';
 import {
   KtbExpandableTileComponent,
@@ -144,6 +143,8 @@ import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-
 import { DtRadioModule } from '@dynatrace/barista-components/radio';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
+import { KtbNotificationComponent } from './_components/ktb-notification/ktb-notification.component';
+import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 
 registerLocaleData(localeEn, 'en');
@@ -233,6 +234,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbSequenceStateInfoComponent,
     KtbPayloadViewerComponent,
     KtbVariableSelectorComponent,
+    KtbNotificationComponent,
+    KtbProjectCreateMessageComponent,
   ],
   imports: [
     BrowserModule,
@@ -271,7 +274,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtCheckboxModule,
     DtSwitchModule,
     DtConfirmationDialogModule,
-    DtToastModule,
     DtTopBarNavigationModule,
     DtCopyToClipboardModule,
     DtToggleButtonGroupModule,

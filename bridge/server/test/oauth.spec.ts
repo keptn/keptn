@@ -5,6 +5,7 @@ import { init } from '../app';
 import { Jest } from '@jest/environment';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
+import { TestUtils } from '../.jest/test.utils';
 
 // import { jest } from '@jest/globals';
 
@@ -80,7 +81,7 @@ describe('Test OAuth', () => {
   let app: Express;
   beforeAll(async () => {
     mockOpenId(true);
-    app = await setupOAuth();
+    app = await TestUtils.setupOAuthTest();
   });
 
   beforeEach(() => {
@@ -166,9 +167,10 @@ describe('Test expired token', () => {
 
   it('should fail refresh of token and remove session', async () => {
     mockOpenId(true, true, true);
-    const app = await setupOAuth();
+    const app = await TestUtils.setupOAuthTest();
     const { cookies } = await login(app);
     const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
+
     expect(dataResponse.status).toBe(302);
     expect(dataResponse.redirect).toBe(true);
     expect(dataResponse.headers['set-cookie']?.length ?? 0).toBe(0);
@@ -176,9 +178,10 @@ describe('Test expired token', () => {
 
   it('should refresh token if expired', async () => {
     mockOpenId(true, true);
-    const app = await setupOAuth();
+    const app = await TestUtils.setupOAuthTest();
     const { cookies } = await login(app);
     const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
+
     expect(dataResponse.status).not.toBe(401);
   });
 });
@@ -188,7 +191,7 @@ describe('Test OAuth logout without end session endpoint', () => {
 
   beforeAll(async () => {
     mockOpenId(false);
-    app = await setupOAuth();
+    app = await TestUtils.setupOAuthTest();
   });
 
   beforeEach(() => {
@@ -253,15 +256,6 @@ function mockOpenId(includeEndSessionEndpoint: boolean, expiredToken = false, fa
       });
     },
   };
-}
-
-async function setupOAuth(): Promise<Express> {
-  process.env.OAUTH_ENABLED = 'true';
-  process.env.OAUTH_CLIENT_ID = 'myClientID';
-  process.env.OAUTH_BASE_URL = 'http://localhost';
-  process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
-  await mockSavingValidationData();
-  return init();
 }
 
 function setOrDeleteProperty(

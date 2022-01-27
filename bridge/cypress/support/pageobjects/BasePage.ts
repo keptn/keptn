@@ -4,6 +4,7 @@ import SettingsPage from './SettingsPage';
 import NewProjectCreatePage from './NewProjectCreatePage';
 import EnvironmentPage from './EnvironmentPage';
 import ServicesPage from './ServicesPage';
+import Chainable = Cypress.Chainable;
 
 class BasePage {
   NAVIGATION_MENU_LOCATOR: string;
@@ -82,6 +83,34 @@ class BasePage {
     cy.get('dt-select[aria-label="Choose project"]').click();
     cy.get('dt-option[id^="dt-option"]').contains(projectName).click();
     return this;
+  }
+
+  notificationSuccessVisible(text?: string): Chainable<JQuery<HTMLElement>> {
+    return this.checkNotification('dt-alert.dt-alert-success', text);
+  }
+
+  notificationErrorVisible(text?: string): Chainable<JQuery<HTMLElement>> {
+    let element = cy.get('.dt-alert-icon-container dt-icon');
+    if (text) {
+      element = element.contains(text);
+    }
+    return element.get('.dt-alert-icon').should('be.visible');
+  }
+
+  notificationWarningVisible(text?: string): Chainable<JQuery<HTMLElement>> {
+    return this.checkNotification('dt-alert.dt-alert-warning', text);
+  }
+
+  notificationInfoVisible(text?: string): Chainable<JQuery<HTMLElement>> {
+    return this.checkNotification('dt-alert.dt-alert-info', text);
+  }
+
+  private checkNotification(selector: string, text?: string): Chainable<JQuery<HTMLElement>> {
+    let element = cy.get(selector);
+    if (text) {
+      element = element.contains(text);
+    }
+    return element.should('be.visible');
   }
 }
 

@@ -10,7 +10,7 @@ import (
 
 func TestMain(m *testing.M) {
 	mocking = true
-	internal.APIProvider = func(baseURL string, authToken string) (*apiutils.APISet, error) {
+	internal.APIProvider = func(baseURL string, authToken string, httpClient ...*http.Client) (*apiutils.APISet, error) {
 		return apiutils.New(baseURL, apiutils.WithAuthToken(authToken), apiutils.WithHTTPClient(&http.Client{}))
 	}
 	code := m.Run()

@@ -86,6 +86,8 @@
     "@cypress/schematic": "1.6.0",
     "@types/dompurify": "2.3.3",
     "@types/jest": "27.4.0",
+    "@types/lodash": "^4.14.178",
+    "@types/lodash-es": "^4.17.5",
     "@types/marked": "4.0.1",
     "@types/node": "14.18.9",
     "@types/semver": "7.3.9",
