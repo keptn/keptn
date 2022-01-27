@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -110,7 +109,7 @@ func Test_QualityGates(t *testing.T) {
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 2*time.Minute, 10*time.Second)
+	}, 1*time.Minute, 10*time.Second)
 
 	require.NotNil(t, evaluationFinishedEvent)
 	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
@@ -152,7 +151,7 @@ func Test_QualityGates(t *testing.T) {
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 2*time.Minute, 10*time.Second)
+	}, 1*time.Minute, 10*time.Second)
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -327,11 +326,34 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
 	require.NotEmpty(t, getSLIPayload.GetSLI.End)
 
-	cloudEvent := keptnv2.ToCloudEvent(*getSLITriggeredEvent)
-	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	//cloudEvent := keptnv2.ToCloudEvent(*getSLITriggeredEvent)
+
+	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		Gitcommitid:        commitID,
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+	//keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
 
-	id, err := keptn.SendTaskStartedEvent(nil, source)
+	//id, err := keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
@@ -374,7 +396,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 			},
 		},
 		Extensions:         nil,
-		ID:                 id,
+		ID:                 uuid.NewString(),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: KeptnSpecVersion,
 		Source:             &source,
