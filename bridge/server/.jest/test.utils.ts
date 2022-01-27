@@ -4,6 +4,8 @@ import {
   RemediationTraceResponse,
 } from '../../shared/fixtures/open-remediations-response.mock';
 import { RemediationConfigResponse } from '../fixtures/remediation-config-response.mock';
+import { init } from '../app';
+import { Express } from 'express';
 
 export class TestUtils {
   public static mockOpenRemediations(axiosMock: MockAdapter, projectName: string): void {
@@ -35,5 +37,13 @@ export class TestUtils {
         },
       })
       .reply(200, RemediationTraceResponse);
+  }
+
+  public static async setupOAuthTest(): Promise<Express> {
+    process.env.OAUTH_ENABLED = 'true';
+    process.env.OAUTH_CLIENT_ID = 'myClientID';
+    process.env.OAUTH_BASE_URL = 'http://localhost';
+    process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
+    return init();
   }
 }

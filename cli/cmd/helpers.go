@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"net/http"
 	"strings"
 	"time"
 
@@ -102,31 +101,6 @@ func LookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bo
 	}
 
 	return false
-}
-
-func CheckEndpointStatus(endPoint string) error {
-	if checkEndPointStatusMock {
-		return nil
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), maxHTTPTimeout)
-	defer cancel()
-
-	req, err := http.NewRequest("HEAD", endPoint, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.Do(req.WithContext(ctx))
-	if err != nil {
-		return err
-	}
-	err = resp.Body.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func ServiceInSlice(service string, serviceList []*models.Service) bool {

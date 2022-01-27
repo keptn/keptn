@@ -70,7 +70,6 @@ type DockerImg struct {
 func TestTriggerDelivery(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
 	ts := httptest.NewServer(
@@ -133,7 +132,6 @@ func TestTriggerDelivery(t *testing.T) {
 func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
 	ts := httptest.NewServer(
@@ -204,7 +202,6 @@ func TestCheckImageAvailabilityD(t *testing.T) {
 		{"httpd", ""}}
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -227,7 +224,6 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 	invalidImgs := []DockerImg{{"docker.io/keptnexamples/carts:0.7.5", ""}}
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -253,7 +249,6 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 	const nonExistingProject = "myproj"
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -299,7 +294,6 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 func TestTriggerDeliveryNonExistingService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	projectName := "sockshop"
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
