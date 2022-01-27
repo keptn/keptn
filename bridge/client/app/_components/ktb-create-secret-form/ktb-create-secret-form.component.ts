@@ -67,7 +67,7 @@ export class KtbCreateSecretFormComponent {
           if (err.status === 409) {
             this.notificationService.addNotification(
               NotificationType.ERROR,
-              `A Secret with the name ${secret.name} already exists. Please use another name.`
+              `A secret with the name ${secret.name} already exists. Please use another name for this secret to continue.`
             );
           }
           this.isLoading = false;
