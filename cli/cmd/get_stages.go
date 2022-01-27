@@ -17,9 +17,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"text/tabwriter"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"

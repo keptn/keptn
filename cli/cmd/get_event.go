@@ -16,14 +16,15 @@ package cmd
 
 import (
 	"errors"
+	"net/url"
+	"os"
+	"time"
+
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
-	"time"
 )
 
 type GetEventStruct struct {

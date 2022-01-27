@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 type configureBridgeCmdParams struct {
@@ -16,6 +17,7 @@ var configureBridgeParams *configureBridgeCmdParams
 
 var bridgeCmd = &cobra.Command{
 	Use:          "bridge --user=<user> --password=<password>",
+	Args:         cobra.NoArgs,
 	Short:        "Configures the credentials for the Keptn Bridge",
 	Long:         `Configures the credentials for the Keptn Bridge.`,
 	Example:      `keptn configure bridge --user=<user> --password=<password>`,

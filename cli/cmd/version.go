@@ -17,11 +17,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/spf13/cobra"
 
@@ -55,6 +56,7 @@ var versionCmd = NewVersionCommand(version.NewVersionChecker())
 func NewVersionCommand(vChecker *version.VersionChecker) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:     "version",
+		Args:    cobra.NoArgs,
 		Short:   "Shows the version of Keptn and Keptn CLI",
 		Long:    `Shows the version of Keptn and Keptn CLI, and a note when a new version is available.`,
 		Example: `keptn version`,

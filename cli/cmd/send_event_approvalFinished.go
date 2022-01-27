@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cli/internal"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -34,7 +35,8 @@ type sendApprovalFinishedStruct struct {
 var sendApprovalFinishedOptions sendApprovalFinishedStruct
 
 var approvalFinishedCmd = &cobra.Command{
-	Use: "approval.finished",
+	Use:  "approval.finished",
+	Args: cobra.NoArgs,
 	Short: "Sends an approval.finished event to Keptn in order to confirm an open approval " +
 		"with the specified ID in the provided project and stage",
 	Long: `Sends an approval.finished event to Keptn in order to confirm an open approval with the specified ID in the provided project and stage. 

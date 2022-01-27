@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/common/httputils"
