@@ -27,8 +27,8 @@ import { Notification, NotificationType } from '../../_models/notification';
   ],
 })
 export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
-  private hideTimeout?: ReturnType<typeof setTimeout>;
-  private fadeOutDelay?: ReturnType<typeof setTimeout>;
+  private hideTimeout?: number;
+  private fadeOutDelay?: number;
   public fadeStatus: 'in' | 'out' = 'in';
   public fadeOutDuration = 3_000;
   public NotificationType = NotificationType;
