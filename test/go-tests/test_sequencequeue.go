@@ -384,7 +384,8 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 	wg.Wait()
 
 	// after all sequences have been triggered, delete the project
-	_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+	//_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+	_, err = ApiDELETERequest("/controlPlane/v1/project/"+projectName, 3)
 
 	require.Nil(t, err)
 
