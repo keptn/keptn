@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const keptnInstallerHelmRepoURL = "https://storage.googleapis.com/keptn-installer/"
+const keptnInstallerHelmRepoURL = "https://charts.keptn.sh/packages/"
 
 type installUpgradeParams struct {
 	ConfigFilePath     *string
@@ -17,15 +17,13 @@ type installUpgradeParams struct {
 	SkipUpgradeCheck   *bool
 }
 
-func getKeptnHelmChartRepoURL(input *string) string {
+func getKeptnHelmChartRepoURL() string {
 	// Determine installer version
-	if input != nil && *input != "" {
-		return *input
-	} else if version.IsOfficialKeptnVersion(Version) {
+	if version.IsOfficialKeptnVersion(Version) {
 		version, _ := version.GetOfficialKeptnVersion(Version)
 		return keptnInstallerHelmRepoURL + "keptn-" + version + ".tgz"
 	}
-	return keptnInstallerHelmRepoURL + "latest/keptn-0.1.0.tgz"
+	return keptnInstallerHelmRepoURL + "keptn-" + Version + ".tgz"
 }
 
 func getExecutionPlaneServiceChartRepoURL(input *string, serviceName string) string {
@@ -38,7 +36,7 @@ func getExecutionPlaneServiceChartRepoURL(input *string, serviceName string) str
 		version, _ := version.GetOfficialKeptnVersion(Version)
 		return keptnInstallerHelmRepoURL + serviceName + "-" + version + ".tgz"
 	}
-	return keptnInstallerHelmRepoURL + "latest/" + serviceName + "-0.1.0.tgz"
+	return keptnInstallerHelmRepoURL + serviceName + "-" + Version + ".tgz"
 }
 
 func getServiceChartURLFromKeptnChartURL(input string, serviceName string) string {

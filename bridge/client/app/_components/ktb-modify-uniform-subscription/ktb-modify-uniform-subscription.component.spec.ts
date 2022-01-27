@@ -258,6 +258,44 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(subscription.filter.projects?.includes('sockshop')).toEqual(true);
   });
 
+  it('should update subscription for all keptn events with keptn.sh.>', () => {
+    // given
+    const subscription = setSubscription(2, 0);
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore //Ignore private property
+    component.taskControl.setValue('sh.keptn');
+    component.taskSuffixControl.setValue('>');
+    // @ts-ignore //Ignore private property
+    component.isGlobalControl.setValue(true);
+    component.editMode = true;
+    /* eslint-enable */
+
+    // when
+    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
+
+    // then
+    expect(subscription.event).toEqual('sh.keptn.>');
+  });
+
+  it('should update subscription for deplyoment keptn wildcard events with keptn.sh.event.approval.>', () => {
+    // given
+    const subscription = setSubscription(2, 0);
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore //Ignore private property
+    component.taskControl.setValue('deployment');
+    component.taskSuffixControl.setValue('>');
+    // @ts-ignore //Ignore private property
+    component.isGlobalControl.setValue(true);
+    component.editMode = true;
+    /* eslint-enable */
+
+    // when
+    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
+
+    // then
+    expect(subscription.event).toEqual('sh.keptn.event.deployment.>');
+  });
+
   it('should update subscription and webhook', () => {
     // given
     const subscription = setSubscription(10, 0);

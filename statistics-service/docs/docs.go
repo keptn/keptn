@@ -47,7 +47,8 @@ var doc = `{
                 "tags": [
                     "Events"
                 ],
-                "summary": "Handle event",
+                "summary": "INTERNAL Endpoint: Handle event",
+                "deprecated": true,
                 "parameters": [
                     {
                         "description": "Event type",
@@ -298,7 +299,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "1.0",
+	Version:     "develop",
 	Host:        "",
 	BasePath:    "/v1",
 	Schemes:     []string{},

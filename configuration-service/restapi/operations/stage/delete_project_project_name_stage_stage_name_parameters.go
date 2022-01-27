@@ -14,8 +14,7 @@ import (
 )
 
 // NewDeleteProjectProjectNameStageStageNameParams creates a new DeleteProjectProjectNameStageStageNameParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewDeleteProjectProjectNameStageStageNameParams() DeleteProjectProjectNameStageStageNameParams {
 
 	return DeleteProjectProjectNameStageStageNameParams{}
@@ -60,6 +59,7 @@ func (o *DeleteProjectProjectNameStageStageNameParams) BindRequest(r *http.Reque
 	if err := o.bindStageName(rStageName, rhkStageName, route.Formats); err != nil {
 		res = append(res, err)
 	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -75,6 +75,7 @@ func (o *DeleteProjectProjectNameStageStageNameParams) bindProjectName(rawData [
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil
@@ -89,6 +90,7 @@ func (o *DeleteProjectProjectNameStageStageNameParams) bindStageName(rawData []s
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.StageName = raw
 
 	return nil

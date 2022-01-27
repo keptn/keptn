@@ -12,8 +12,8 @@ This document lays out how to get you started in contributing to Keptn, so pleas
 
 ## Documentation
 
-The Keptn repository is a monorepo with multiple sub-folders that contain microservices, the installer, Keptn Bridge, 
-and the `keptn` CLI. 
+The Keptn repository is a monorepo with multiple sub-folders that contain microservices, the installer, Keptn Bridge,
+and the `keptn` CLI.
 As a starting point, please read the README files in the respective sub-folder. Also, take a look at the docs within the [docs/](docs/) folder in this repository.
 
 We are aware that not every microservice has comprehensive documentation, so if you have any questions feel free to ask us in the [Keptn Slack workspace](https://slack.keptn.sh).
@@ -37,7 +37,7 @@ If you are unsure, just open a [new issue](https://github.com/keptn/keptn/issues
 ### Working items
 
 We use GitHub Issues as the primary method for tracking concrete implementation tasks (e.g., an enhancement proposal can
-lead to multiple issues). In addition, we use a [GitHub Project Board](https://github.com/keptn/keptn/projects) to 
+lead to multiple issues). In addition, we use a [GitHub Project Board](https://github.com/keptn/keptn/projects) to
 plan and assign the working items for the next upcoming days. This board is discussed and presented publicly in our
 [weekly community meeting](https://github.com/keptn/community#%EF%B8%8F-community-meetings).
 
@@ -46,15 +46,15 @@ plan and assign the working items for the next upcoming days. This board is disc
 We derived the following labels based on the Blog Post [Zero-Bug Software Development](https://www.xolv.io/blog/zero-bug-software-development/)
 to classify the importance of work tasks with GitHub issues:
 
-* `type:critical` - This is a **defect** that causes us and/or our end-users/stakeholders to lose a significant amount 
+* `type:critical` - This is a **defect** that causes us and/or our end-users/stakeholders to lose a significant amount
    of time, money and/or value.
 * `type:bug` - Something is not working as intended or documented and therefore needs to be fixed (either by writing
    code or by adapting the documentation).
-* `type:feature` - This indicates that the issue contains a complete new feature that provides value for our 
+* `type:feature` - This indicates that the issue contains a complete new feature that provides value for our
    end-users/stakeholders, most likely in combination with a `kep:XYZ` label
-* `type:improvement` - This label should be used for indicating that something is just an improvement of an existing 
+* `type:improvement` - This label should be used for indicating that something is just an improvement of an existing
    feature.
-* `type:chore` - Chores are issues that provide value to the (developer) team, e.g., cleanups, automation, etc... 
+* `type:chore` - Chores are issues that provide value to the (developer) team, e.g., cleanups, automation, etc...
    (things that keep our team productive and efficient)
 
 **Please note**: The Keptn maintainers reserve the right to change the labels to the best of their knowledge.
@@ -63,7 +63,7 @@ Based on the labels above, we try to adhere to the following bug first policy:
 
 * Issues labeled with `type:critical` need to be addressed right away (either with a comment, a work-around, or a fix).
   The rule is: stop what you are doing, and fix it.
-* Issues labeled with `type:bug` need to have a response within 3 business days, and a workaround or fix needs to be 
+* Issues labeled with `type:bug` need to have a response within 3 business days, and a workaround or fix needs to be
   provided within 10 business days.
 * Issues labeled with `type:feature`, `type:improvement` or `type:chore` will be worked on as per the backlog priority
   order.
@@ -72,9 +72,9 @@ Based on the labels above, we try to adhere to the following bug first policy:
 
 ### Other labels
 
-There are many other labels that either indicate that a feature belongs to a certain part of Keptn (e.g., `bridge`, 
+There are many other labels that either indicate that a feature belongs to a certain part of Keptn (e.g., `bridge`,
 `cli`, `core`, ...) or to an enhancement proposal (e.g., `kep:06`). In addition, we use the labels `good first issue`
-to indicate that this issue is good to get started with contributing to Keptn. 
+to indicate that this issue is good to get started with contributing to Keptn.
 
 
 ### Fork Repositories and work in a branch
@@ -110,7 +110,7 @@ We are running automated code style checks for pull requests using the following
 
 * [reviewdog](.reviewdog.yml) - automatic code review
   * ``golint ./...``
-  * ``gofmt -l -s .`` 
+  * ``gofmt -l -s .``
 * [codecov.io](codecov.yml) - tracks code coverage based on unit tests
 
 ### Following Coding Style for Bridge
@@ -151,7 +151,7 @@ skaffold run --tail --default-repo=your-docker-registry
 ```
 
 Please replace `your-docker-registry` with your DockerHub username and repository name.
-Skaffold does then: 
+Skaffold does then:
 * automatically build the docker image for the service,
 * push the docker image to the defined container registry/repository,
 * deploy the service to the Kubernetes cluster using the image that was just built, and

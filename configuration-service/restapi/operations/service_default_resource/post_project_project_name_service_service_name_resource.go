@@ -6,7 +6,6 @@ package service_default_resource
 // Editing this file might prove futile when you re-run the generate command
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
@@ -36,9 +35,9 @@ func NewPostProjectProjectNameServiceServiceNameResource(ctx *middleware.Context
 	return &PostProjectProjectNameServiceServiceNameResource{Context: ctx, Handler: handler}
 }
 
-/* PostProjectProjectNameServiceServiceNameResource swagger:route POST /project/{projectName}/service/{serviceName}/resource Service Default Resource postProjectProjectNameServiceServiceNameResource
+/*PostProjectProjectNameServiceServiceNameResource swagger:route POST /project/{projectName}/service/{serviceName}/resource Service Default Resource postProjectProjectNameServiceServiceNameResource
 
-Create list of default resources for the service used in all stages
+INTERNAL Endpoint: Create list of default resources for the service used in all stages
 
 */
 type PostProjectProjectNameServiceServiceNameResource struct {
@@ -49,15 +48,17 @@ type PostProjectProjectNameServiceServiceNameResource struct {
 func (o *PostProjectProjectNameServiceServiceNameResource) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		*r = *rCtx
+		r = rCtx
 	}
 	var Params = NewPostProjectProjectNameServiceServiceNameResourceParams()
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
+
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -86,6 +87,7 @@ func (o *PostProjectProjectNameServiceServiceNameResourceBody) Validate(formats 
 }
 
 func (o *PostProjectProjectNameServiceServiceNameResourceBody) validateResources(formats strfmt.Registry) error {
+
 	if swag.IsZero(o.Resources) { // not required
 		return nil
 	}
@@ -99,42 +101,6 @@ func (o *PostProjectProjectNameServiceServiceNameResourceBody) validateResources
 			if err := o.Resources[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// ContextValidate validate this post project project name service service name resource body based on the context it is used
-func (o *PostProjectProjectNameServiceServiceNameResourceBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateResources(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *PostProjectProjectNameServiceServiceNameResourceBody) contextValidateResources(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(o.Resources); i++ {
-
-		if o.Resources[i] != nil {
-			if err := o.Resources[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

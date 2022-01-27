@@ -1,8 +1,0 @@
-name: DCO
-on:
-  pull_request:
-jobs:
-  check:
-    uses: keptn/gh-automation/.github/workflows/dco.yml@v1
-    with:
-      exclude-emails: '49699333+dependabot[bot]@users.noreply.github.com'

@@ -22,7 +22,12 @@ function getRootLocation(): string {
   return '/';
 }
 
-function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateSeconds: number): Router {
+function oauthRouter(
+  client: BaseClient,
+  redirectUri: string,
+  logoutUri: string,
+  reduceRefreshDateSeconds: number
+): Router {
   const router = Router();
   const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
   const scope = `openid${additionalScopes}`;
@@ -86,10 +91,8 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       if (err.response?.statusCode === 403) {
         const response = {
           title: 'Permission denied',
-          message: '',
+          message: (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.',
         };
-        response.message =
-          (err.response.body as Record<string, string>).message ?? 'User is not allowed access the instance.';
         return res.render('error', response);
       } else {
         return res.render('error', {
@@ -104,10 +107,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
   /**
    * Router level middleware for logout
    */
-  router.get('/logout', async (req: Request, res: Response) => {
-    if (req.query.status) {
-      return res.render('logout', { location: getRootLocation() });
-    }
+  router.post('/logout', async (req: Request, res: Response) => {
     if (!isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
@@ -123,13 +123,17 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       const params: EndSessionData = {
         id_token_hint: hint,
         state: generators.state(),
-        post_logout_redirect_uri: redirectUri,
+        post_logout_redirect_uri: logoutUri,
         end_session_endpoint: client.issuer.metadata.end_session_endpoint,
       };
       return res.json(params);
     } else {
       return res.json();
     }
+  });
+
+  router.get('/logoutsession', (req: Request, res: Response) => {
+    return res.render('logout', { location: getRootLocation() });
   });
 
   return router;

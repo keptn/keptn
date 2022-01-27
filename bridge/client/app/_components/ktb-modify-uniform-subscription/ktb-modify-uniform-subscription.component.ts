@@ -246,7 +246,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   ): void {
     this.updating = true;
     let update;
-    subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
+
+    if (this.taskControl.value === EventTypes.PREFIX_SHORT && this.taskSuffixControl.value === '>') {
+      subscription.event = `${this.taskControl.value}.${this.taskSuffixControl.value}`;
+    } else {
+      subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
+    }
     subscription.setIsGlobal(this.isGlobalControl.value, projectName);
 
     if (webhookConfig) {

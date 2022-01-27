@@ -14,6 +14,11 @@ type ISequenceStartedHook interface {
 	OnSequenceStarted(models.Event)
 }
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencestarted.go . ISequenceWaitingHook
+type ISequenceWaitingHook interface {
+	OnSequenceWaiting(models.Event)
+}
+
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetasktriggered.go . ISequenceTaskTriggeredHook
 type ISequenceTaskTriggeredHook interface {
 	OnSequenceTaskTriggered(models.Event)
@@ -38,6 +43,7 @@ type ISubSequenceFinishedHook interface {
 type ISequenceFinishedHook interface {
 	OnSequenceFinished(event models.Event)
 }
+
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequenceaborted.go . ISequenceAbortedHook
 type ISequenceAbortedHook interface {
 	OnSequenceAborted(event models.Event)
