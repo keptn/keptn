@@ -91,7 +91,8 @@ function oauthRouter(
       if (err.response?.statusCode === 403) {
         const response = {
           title: 'Permission denied',
-          message: (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.',
+          message:
+            (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.',
         };
         return res.render('error', response);
       } else {
