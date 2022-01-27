@@ -110,14 +110,33 @@ func (dm DirectoryStageManager) CreateStage(params models.CreateStageParams) err
 	}
 
 	if _, err := dm.git.StageAndCommitAll(*gitContext, "Added stage: "+params.StageName); err != nil {
-		return fmt.Errorf("could not initialize service %s: %w", params.StageName, err)
+		return fmt.Errorf("could not initialize stage %s: %w", params.StageName, err)
 	}
 
 	return nil
 }
 
 func (dm DirectoryStageManager) DeleteStage(params models.DeleteStageParams) error {
-	panic("implement me")
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+
+	gitContext, stagePath, err := dm.establishStageContext(params.Project, params.Stage)
+	if err != nil {
+		return err
+	}
+
+	if !dm.fileSystem.FileExists(stagePath) {
+		return errors.ErrStageNotFound
+	}
+	if err := dm.fileSystem.DeleteFile(stagePath); err != nil {
+		return fmt.Errorf("could not delete directory of stage %s: %w", params.StageName, err)
+	}
+
+	if _, err := dm.git.StageAndCommitAll(*gitContext, "Added stage: "+params.StageName); err != nil {
+		return fmt.Errorf("could not delete stage %s: %w", params.StageName, err)
+	}
+
+	return nil
 }
 
 func (dm DirectoryStageManager) establishStageContext(project models.Project, stage models.Stage) (*common_models.GitContext, string, error) {
