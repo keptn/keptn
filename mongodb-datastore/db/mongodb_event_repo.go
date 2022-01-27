@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/jeremywohl/flatten"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/common"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
@@ -212,7 +211,7 @@ func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) 
 		return nil, err
 	}
 
-	matchFields = setEventTypeMatchCriteria(params.EventType, matchFields)
+	matchFields[typePropertyPath] = params.EventType
 
 	if params.FromTime != nil {
 		matchFields[timePropertyPath] = bson.M{
@@ -618,16 +617,6 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 			continue
 		}
 
-		// backwards compatibility: transform evaluation-done events to evaluation.finished events
-		if keptnEvent.Type == common.Keptn07EvaluationDoneEventType {
-			convertedEvent, err := common.TransformEvaluationDoneEvent(keptnEvent)
-			if err != nil {
-				logger.WithError(err).Errorf("could not transform '%s' event", common.Keptn07EvaluationDoneEventType)
-				continue
-			}
-			keptnEvent = *convertedEvent
-		}
-
 		events = append(events, &keptnEvent)
 	}
 	return events
@@ -640,38 +629,6 @@ func getInvalidatedEventQuery(params event.GetEventsByTypeParams, collectionName
 	matchStage := bson.D{
 		{Key: matchExpr, Value: matchFields},
 	}
-
-	//lookupStage := bson.D{
-	//	{Key: "$lookup", Value: bson.M{
-	//		"from": getInvalidatedCollectionName(collectionName),
-	//		"let": bson.M{
-	//			"event_id":          "$id",
-	//			"event_triggeredid": triggeredIDVar,
-	//		},
-	//		"pipeline": []bson.M{
-	//			{
-	//				matchExpr: bson.M{
-	//					"$expr": bson.M{
-	//						"$or": []bson.M{
-	//							{
-	//								// backwards-compatibility to 0.7.x -> triggeredid of .invalidated event refers to the id of the evaluation-done event
-	//								"$eq": []string{triggeredIDVar, "$$event_id"},
-	//							},
-	//							{
-	//								// logic for 0.8: triggeredid of .invalidated event refers to the triggeredid of the evaluation.finished event (both are related to the same .triggered event)
-	//								"$eq": []string{triggeredIDVar, "$$event_triggeredid"},
-	//							},
-	//						},
-	//					},
-	//				},
-	//			},
-	//			{
-	//				"$limit": 1,
-	//			},
-	//		},
-	//		"as": "invalidated",
-	//	}},
-	//}
 
 	lookupStage := bson.D{
 		{Key: "$lookup", Value: bson.M{
@@ -768,8 +725,7 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 		searchOptions[keptnContextPropertyPath] = *params.KeptnContext
 	}
 	if params.Type != nil {
-		// for backwards compatibility: if evaluation.finished events are queried, also retrieve evaluation-done events
-		searchOptions = setEventTypeMatchCriteria(*params.Type, searchOptions)
+		searchOptions[typePropertyPath] = *params.Type
 	}
 	if params.Source != nil {
 		searchOptions[sourcePropertyPath] = *params.Source
@@ -804,18 +760,6 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 		}
 	}
 
-	return searchOptions
-}
-
-func setEventTypeMatchCriteria(eventType string, searchOptions bson.M) bson.M {
-	if eventType == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) {
-		searchOptions["$or"] = []bson.M{
-			{typePropertyPath: eventType},
-			{typePropertyPath: common.Keptn07EvaluationDoneEventType},
-		}
-	} else {
-		searchOptions[typePropertyPath] = eventType
-	}
 	return searchOptions
 }
 

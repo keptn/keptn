@@ -384,14 +384,11 @@ func Test_getSearchOptions(t *testing.T) {
 				},
 			},
 			want: bson.M{
-				"data.project": "sockshop",
-				"data.stage":   "dev",
-				"data.service": "carts",
-				"source":       "test-service",
-				"$or": []bson.M{
-					{"type": keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)},
-					{"type": common.Keptn07EvaluationDoneEventType},
-				},
+				"data.project":   "sockshop",
+				"data.stage":     "dev",
+				"data.service":   "carts",
+				"source":         "test-service",
+				"type":           keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 				"shkeptncontext": "test-context",
 				"time": bson.M{
 					"$gt": "1",

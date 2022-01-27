@@ -32,7 +32,6 @@ func Test_GKE(t *testing.T) {
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
-	t.Run("Test_QualityGates_BackwardsCompatibility", Test_QualityGates_BackwardsCompatibility)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
 	t.Run("Test_BackupRestore", Test_BackupRestore)
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
