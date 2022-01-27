@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -53,7 +52,6 @@ var getEventCmd = &cobra.Command{
 }
 
 func getEvent(eventStruct GetEventStruct, args []string) error {
-
 	var eventType = ""
 	var endPoint url.URL
 	var apiToken string
@@ -73,11 +71,6 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 
 	if err != nil {
 		return errors.New(authErrorMsg)
-	}
-
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
 	}
 
 	filter := &apiutils.EventFilter{

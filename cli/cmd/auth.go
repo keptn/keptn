@@ -72,7 +72,17 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		// sign out
+		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext))
+		if *authParams.exportConfig {
+			endpoint, apiToken, err := authenticator.GetCredentials()
+			if err != nil {
+				return err
+			}
+			fmt.Println("Endpoint: ", endpoint.String())
+			fmt.Println("API Token: ", apiToken)
+			return nil
+		}
+
 		if *authParams.ssoLogout {
 			store := auth2.NewLocalFileOauthStore()
 			err := store.Wipe()
@@ -82,7 +92,6 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			return nil
 		}
 
-		// sign in
 		if *authParams.sso {
 			if *authParams.ssoDiscovery == "" {
 				return fmt.Errorf("Unable to login using SSO: No OAuth Discovery URL provided")
@@ -97,29 +106,15 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				OauthClientID:     *authParams.ssoClientID,
 				OauthClientSecret: *authParams.ssoClientSecret,
 			}
-			err := oauth.Auth(clientValues)
-			if err != nil {
+			if err := oauth.Auth(clientValues); err != nil {
 				return err
 			}
-		}
-
-		// usual x-token credential stuff
-		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
-		authenticator := NewAuthenticator(namespace, credentialManager)
-
-		if *authParams.exportConfig {
-			endpoint, apiToken, err := authenticator.GetCredentials()
-			if err != nil {
-				return err
-			}
-			fmt.Println("Endpoint: ", endpoint.String())
-			fmt.Println("API Token: ", apiToken)
-			return nil
 		}
 
 		return authenticator.Auth(AuthenticatorOptions{
 			Endpoint: *authParams.endPoint,
 			APIToken: *authParams.apiToken,
+			SSO:      *authParams.sso,
 		})
 	},
 }
