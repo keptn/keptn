@@ -54,12 +54,12 @@ func (sender *APIEventSender) SendEvent(event v2.Event) error {
 
 func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
 
-	retries := 3
+	retries := 5
 	var err error
 	var resp *req.Resp
 	for i := 0; i < retries; i++ {
 		if err != nil {
-			<-time.After(5 * time.Second)
+			<-time.After(10 * time.Second)
 		}
 		resp, err = ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
 		if err != nil {

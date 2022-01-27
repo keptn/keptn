@@ -30,7 +30,7 @@
     "yaml": "1.10.2"
   },
   "devDependencies": {
-    "@babel/preset-env": "7.16.7",
+    "@babel/preset-env": "7.16.8",
     "@babel/preset-typescript": "7.16.7",
     "@types/adm-zip": "0.4.34",
     "@types/cookie-parser": "1.4.2",

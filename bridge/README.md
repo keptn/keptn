@@ -76,14 +76,15 @@ Per default login attempts are throttled to 10 requests within 60 minutes. This 
 - `CLEAN_BUCKET_INTERVAL` - the interval (in minutes) the saved login attempts should be checked and deleted if the last request of an IP is older than `REQUEST_TIME_LIMIT` minutes. Default is 60 minutes.
 
 ### Setting up login via OpenID
-To set up a login via OpenID you have to register an application by the identity provider you want in order to get an ID (`CLIENT_ID`) and a secret (`CLIENT_SECRET`).
-After this is done the following environment variables have to be set:
+To set up a login via OpenID you have to register an application with the identity provider you want, in order to get an ID (`CLIENT_ID`) and a secret (`CLIENT_SECRET`).
+After this is done, the following environment variables have to be set:
 - `OAUTH_ENABLED` - Flag to enable login via OpenID. To enable it set it to `true`.
 - `OAUTH_BASE_URL` - URL of the bridge (e.g. `http://localhost:3000` or `https://myBridgeInstallation.com`).
 - `OAUTH_DISCOVERY` - Discovery URL of the identity provider (e.g. https://api.login.yahoo.com/.well-known/openid-configuration).
 - `OAUTH_CLIENT_ID` - Client ID.
 - `OAUTH_CLIENT_SECRET` (optional) - Client secret. Some identity providers require using the client secret.
 - `OAUTH_ID_TOKEN_ALG` (optional) - Algorithm that is used to verify the ID token (e.g. `ES256`). Default is `RS256`.
+- `OAUTH_SCOPE` (optional) - Additional scopes that should be added to the authentication flow (e.g. `profile email`), separated by space.
 - `OAUTH_NAME_PROPERTY` (optional) - The property of the ID token that identifies the user. Default is `name` and fallback to `nickname`, `preferred_username` and `email`.
 
 #### Additional information:

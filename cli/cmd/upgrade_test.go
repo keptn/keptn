@@ -16,13 +16,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
-
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 )
 
 func TestSkipUpgradeCheck(t *testing.T) {
@@ -31,7 +30,6 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
-	mocking = true
 	cmd := fmt.Sprintf("upgrade --mock")
 
 	ts := getMockVersionHTTPServer()

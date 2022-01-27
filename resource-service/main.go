@@ -19,7 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// @title Control Plane API
+// @title Resource Service API
 // @version develop
 // @description This is the API documentation of the Resource Service.
 
@@ -56,10 +56,14 @@ func main() {
 	}
 
 	engine := gin.Default()
+	engine.UnescapePathValues = false // To be compatible with current configuration-service
+	engine.UseRawPath = true
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
+	engine.Use(handler.GracefulShutdownMiddleware(wg))
 
 	apiV1 := engine.Group("/v1")
+	apiHealth := engine.Group("")
 
 	kubeAPI, err := createKubeAPI()
 	if err != nil {
@@ -67,11 +71,11 @@ func main() {
 	}
 
 	credentialReader := common.NewK8sCredentialReader(kubeAPI)
-	fileWriter := common.NewFileSystem(common.GetConfigDir())
+	fileSystem := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
 
-	projectManager := handler.NewProjectManager(git, credentialReader, fileWriter)
+	projectManager := handler.NewProjectManager(git, credentialReader, fileSystem)
 	projectHandler := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectHandler)
 	projectController.Inject(apiV1)
@@ -81,25 +85,29 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	serviceManager := handler.NewServiceManager(git, credentialReader, fileWriter)
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem)
 	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileWriter)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
+
+	healthHandler := handler.NewHealthHandler()
+	healthController := controller.NewHealthController(healthHandler)
+	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	srv := &http.Server{

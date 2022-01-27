@@ -125,8 +125,16 @@ spec:
             {{- if .Values.remoteControlPlane.enabled }}
             - name: KEPTN_API_ENDPOINT
               value: "{{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api"
+            {{- if not .Values.remoteControlPlane.api.tokenSecretName }}
             - name: KEPTN_API_TOKEN
               value: "{{ .Values.remoteControlPlane.api.token }}"
+            {{- else }}
+            - name: KEPTN_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.remoteControlPlane.api.tokenSecretName }}
+                  key: keptn-api-token
+            {{- end }}
             - name: HTTP_SSL_VERIFY
               {{- $apiValidateTls := .Values.remoteControlPlane.api.apiValidateTls | ternary "true" "false" }}
               value: "{{ $apiValidateTls }}"

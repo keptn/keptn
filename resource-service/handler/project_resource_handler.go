@@ -39,7 +39,7 @@ func NewProjectResourceHandler(projectResourceManager IResourceManager) *Project
 // @Success 201 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/resource [post]
+// @Router /project/{projectName}/resource [post]
 func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -77,13 +77,13 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param	projectName			path	string	true	"The name of the project"
-// @Param commitID              query string false "The commit ID to be checked out"
+// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Param pageSize              query int false "The number of items to return"
 // @Param nextPageKey              query string false "Pointer to the next set of items"
 // @Success 200 {object} models.GetResourcesResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/resource [get]
+// @Router /project/{projectName}/resource [get]
 func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -125,7 +125,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/resource [put]
+// @Router /project/{projectName}/resource [put]
 func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -164,11 +164,11 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 // @Produce  json
 // @Param	projectName					path	string	true	"The name of the project"
 // @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param commitID              query string false "The commit ID to be checked out"
+// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Success 200 {object} models.GetResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/resource/{resourceURI} [get]
+// @Router /project/{projectName}/resource/{resourceURI} [get]
 func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 	params := &models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -211,7 +211,7 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/resource/{resourceURI} [put]
+// @Router /project/{projectName}/resource/{resourceURI} [put]
 func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -253,7 +253,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 // @Success 200 {string} models.WriteResourceResponse
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/resource/{resourceURI} [delete]
+// @Router /project/{projectName}/resource/{resourceURI} [delete]
 func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{

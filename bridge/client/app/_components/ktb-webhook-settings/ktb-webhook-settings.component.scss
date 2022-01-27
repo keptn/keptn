@@ -13,7 +13,7 @@
 .dt-icon.info {
   width: 16px;
   height: 16px;
-  fill: $primary-color;
+  fill: var(--dt-theme-main-default-color);
 }
 
 .send-finished-input + .dt-overlay-trigger {

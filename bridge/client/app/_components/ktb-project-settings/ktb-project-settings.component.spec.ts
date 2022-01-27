@@ -7,11 +7,11 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
-  const UNSAVED_DIALOG_STATE = 'unsaved';
   let dataService: DataService;
   let routeParamsSubject: BehaviorSubject<{ projectName: string } | Record<string, never>>;
 
@@ -22,6 +22,7 @@ describe('KtbProjectSettingsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
+        PendingChangesGuard,
         { provide: ApiService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
@@ -181,10 +182,24 @@ describe('KtbProjectSettingsComponent', () => {
     expect(notifications.length).toEqual(0);
   });
 
-  it('should show a notification when "unsaved" is set', () => {
+  it('should not allow navigation for unsaved changes', () => {
     // given
-    component.isCreateMode = false;
-    component.unsavedDialogState = UNSAVED_DIALOG_STATE;
+
+    // when
+    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
+    fixture.detectChanges();
+
+    // then
+    expect(component.canDeactivate()).not.toEqual(true);
+  });
+
+  it('should show a dialog when showNotification is called', () => {
+    // given
+    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
+    fixture.detectChanges();
+
+    // when
+    component.showNotification();
     fixture.detectChanges();
 
     // then
@@ -193,75 +208,21 @@ describe('KtbProjectSettingsComponent', () => {
 
     // We have to reset the state, as the dt-confirmation-dialog component has some pending timer open
     // and the test will not complete
-    component.unsavedDialogState = null;
+    component.hideNotification();
     fixture.detectChanges();
   });
 
-  it('should show a notification for unsaved changes when git data is changed in update mode', () => {
+  it('should not show dialog when the notification was closed', () => {
     // given
-    component.isCreateMode = true;
-    fixture.detectChanges();
-
-    // when
     component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
     fixture.detectChanges();
 
-    // then
-    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-  });
-
-  it('should not show a notification for unsaved changes when git data is changed in create mode', () => {
     // given
-    routeParamsSubject.next({});
-    component.isCreateMode = true;
+    component.showNotification();
     fixture.detectChanges();
 
     // when
-    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
-    fixture.detectChanges();
-
-    // then
-    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-  });
-
-  it('should not show a notification when not all git data fields are set', () => {
-    // given
-    component.isCreateMode = false;
-    fixture.detectChanges();
-
-    // when
-    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri' });
-    fixture.detectChanges();
-
-    // then
-    expect(component.unsavedDialogState).toBeNull();
-
-    // when
-    component.updateGitData({ gitUser: 'someUser', gitToken: 'someToken' });
-    fixture.detectChanges();
-
-    // then
-    expect(component.unsavedDialogState).toBeNull();
-
-    // when
-    component.updateGitData({ remoteURI: 'someUri', gitToken: 'someToken' });
-    fixture.detectChanges();
-
-    // then
-    expect(component.unsavedDialogState).toBeNull();
-  });
-
-  it('should not show a notification when the notification was closed', () => {
-    // given
-    component.isCreateMode = false;
-    fixture.detectChanges();
-
-    // given
-    component.unsavedDialogState = UNSAVED_DIALOG_STATE;
-    fixture.detectChanges();
-
-    // when
-    component.unsavedDialogState = null;
+    component.hideNotification();
     fixture.detectChanges();
 
     // then

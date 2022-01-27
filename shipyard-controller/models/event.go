@@ -57,6 +57,9 @@ type Event struct {
 	// triggeredid
 	Triggeredid string `json:"triggeredid,omitempty"`
 
+	// gitcommitid
+	GitCommitID string `json:"gitcommitid,omitempty"`
+
 	// type
 	// Required: true
 	Type *string `json:"type"`

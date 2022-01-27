@@ -3,11 +3,10 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )

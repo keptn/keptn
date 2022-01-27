@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"time"
 
@@ -103,11 +104,15 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 		return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
 	}
 
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return err
+	}
+
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	if !mocking {
-		response, err := apiHandler.TriggerEvaluation(
+		response, err := api.APIV1().TriggerEvaluation(
 			*triggerEvaluationData.Project,
 			*triggerEvaluationData.Stage,
 			*triggerEvaluationData.Service,
@@ -129,12 +134,16 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 		}
 
 		if *triggerEvaluationData.Watch {
-			eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+			api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+			if err != nil {
+				return err
+			}
+
 			filter := apiutils.EventFilter{
 				KeptnContext: *response.KeptnContext,
 				Project:      *triggerEvaluationData.Project,
 			}
-			watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*triggerEvaluationData.WatchTime)*time.Second)
+			watcher := NewDefaultWatcher(api.EventsV1(), filter, time.Duration(*triggerEvaluationData.WatchTime)*time.Second)
 			PrintEventWatcher(rootCmd.Context(), watcher, *triggerEvaluationData.Output, os.Stdout)
 		}
 

@@ -142,6 +142,9 @@ func init() {
         "extensions": {
           "type": "object"
         },
+        "gitcommitid": {
+          "type": "string"
+        },
         "id": {
           "type": "string"
         },
@@ -328,6 +331,9 @@ func init() {
         },
         "extensions": {
           "type": "object"
+        },
+        "gitcommitid": {
+          "type": "string"
         },
         "id": {
           "type": "string"

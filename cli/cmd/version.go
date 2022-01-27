@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	"net/url"
 	"os"
 	"strconv"
@@ -25,7 +26,6 @@ import (
 	"github.com/spf13/cobra"
 
 	versionCheck "github.com/hashicorp/go-version"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -181,8 +181,12 @@ func getKeptnServerVersion() (string, error) {
 	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	metadataData, errMetadata := apiHandler.GetMetadata()
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return "", err
+	}
+
+	metadataData, errMetadata := api.APIV1().GetMetadata()
 	if errMetadata != nil {
 		if errMetadata.Message != nil {
 			return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)

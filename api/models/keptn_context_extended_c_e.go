@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -28,6 +26,9 @@ type KeptnContextExtendedCE struct {
 
 	// extensions
 	Extensions interface{} `json:"extensions,omitempty"`
+
+	// gitcommitid
+	Gitcommitid string `json:"gitcommitid,omitempty"`
 
 	// id
 	ID string `json:"id,omitempty"`
@@ -82,8 +83,8 @@ func (m *KeptnContextExtendedCE) Validate(formats strfmt.Registry) error {
 
 func (m *KeptnContextExtendedCE) validateData(formats strfmt.Registry) error {
 
-	if m.Data == nil {
-		return errors.Required("data", "body", nil)
+	if err := validate.Required("data", "body", m.Data); err != nil {
+		return err
 	}
 
 	return nil
@@ -99,6 +100,7 @@ func (m *KeptnContextExtendedCE) validateSource(formats strfmt.Registry) error {
 }
 
 func (m *KeptnContextExtendedCE) validateTime(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Time) { // not required
 		return nil
 	}
@@ -116,11 +118,6 @@ func (m *KeptnContextExtendedCE) validateType(formats strfmt.Registry) error {
 		return err
 	}
 
-	return nil
-}
-
-// ContextValidate validates this keptn context extended c e based on context it is used
-func (m *KeptnContextExtendedCE) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -88,8 +88,12 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			endPointErr)
 	}
 
-	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	project, errObj := projectHandler.GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
+	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	if err != nil {
+		return err
+	}
+
+	project, errObj := api.ProjectsV1().GetProject(apimodels.Project{ProjectName: *deliveryInputData.Project})
 	if errObj != nil {
 		return fmt.Errorf("error while retrieving information for project %v: %s", *deliveryInputData.Project, *errObj.Message)
 	}
@@ -104,8 +108,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		}
 	}
 
-	servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	projectServices, err := servicesHandler.GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
+	projectServices, err := api.ServicesV1().GetAllServices(*deliveryInputData.Project, *deliveryInputData.Stage)
 	if err != nil {
 		return fmt.Errorf("error while retrieving information for service %s: %s", *deliveryInputData.Service, err.Error())
 	}
@@ -158,23 +161,20 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		return fmt.Errorf("failed to map cloud event to API event model. %v", err)
 	}
 
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-	eventContext, err2 := apiHandler.SendEvent(apiEvent)
+	eventContext, err2 := api.APIV1().SendEvent(apiEvent)
 	if err2 != nil {
 		logging.PrintLog("trigger delivery was unsuccessful", logging.QuietLevel)
 		return fmt.Errorf("trigger delivery was unsuccessful. %s", *err2.Message)
 	}
 
 	if *deliveryInputData.Watch {
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		filter := apiutils.EventFilter{
 			KeptnContext: *eventContext.KeptnContext,
 			Project:      *deliveryInputData.Project,
 		}
-		watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
+		watcher := NewDefaultWatcher(api.EventsV1(), filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
 		PrintEventWatcher(rootCmd.Context(), watcher, *deliveryInputData.Output, os.Stdout)
 	}
 

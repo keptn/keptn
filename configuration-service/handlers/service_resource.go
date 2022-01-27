@@ -77,7 +77,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	// archive the Helm chart
-	if strings.Contains(resourcePath, "helm") && strings.Contains(params.ResourceURI, ".tgz") {
+	if isHelmChart(resourcePath) {
 		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
 
 		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
@@ -105,8 +105,8 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
-	// remove Helch chart .tgz file
-	if strings.Contains(resourcePath, "helm") && strings.HasSuffix(params.ResourceURI, ".tgz") {
+	// remove Helm chart .tgz file
+	if isHelmChart(resourcePath) {
 		logger.Debug("Remove the Helm chart: " + params.ResourceURI)
 
 		if err := os.Remove(resourcePath); err != nil {
@@ -128,6 +128,15 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	resource.Metadata = metadata
 
 	return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK().WithPayload(resource)
+}
+
+func isHelmChart(resourcePath string) bool {
+	resourcePathSlice := strings.Split(resourcePath, "/")
+	if sliceLen := len(resourcePathSlice); sliceLen >= 2 {
+		// return true if the resource path ends with "helm/<resourceName>.tgz
+		return resourcePathSlice[sliceLen-2] == "helm" && strings.HasSuffix(resourcePathSlice[sliceLen-1], ".tgz")
+	}
+	return false
 }
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource
@@ -225,7 +234,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 				WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotAddResourceErrorMsg)})
 		}
 
-		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
+		if isHelmChart(filePath) {
 			if err := extractHelmArchiveResource(params.ProjectName, params.StageName, filePath, res); err != nil {
 				logger.Errorf("Could not extract helm archive: %v", err)
 				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -344,7 +353,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 				WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotUpdateResourceErrorMsg)})
 		}
 
-		if strings.Contains(filePath, "helm") && strings.HasSuffix(*res.ResourceURI, ".tgz") {
+		if isHelmChart(filePath) {
 			if err := extractHelmArchiveResource(params.ProjectName, params.StageName, filePath, res); err != nil {
 				logger.Errorf("Could not extract helm archive: %v", err)
 				return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -422,7 +431,11 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	filePath := serviceConfigPath + "/" + params.ResourceURI
-	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
+	err = common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
+	if err != nil {
+		logger.WithError(err).Errorf("Could not determine default branch of project %s", params.ProjectName)
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(common.CannotAddResourceErrorMsg)})
+	}
 
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)

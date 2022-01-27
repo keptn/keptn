@@ -22,8 +22,15 @@ function getRootLocation(): string {
   return '/';
 }
 
-function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateSeconds: number): Router {
+function oauthRouter(
+  client: BaseClient,
+  redirectUri: string,
+  logoutUri: string,
+  reduceRefreshDateSeconds: number
+): Router {
   const router = Router();
+  const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
+  const scope = `openid${additionalScopes}`;
 
   /**
    * Router level middleware for login
@@ -36,7 +43,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
     codeVerifiers[state] = { codeVerifier, nonce, expiresAt: new Date().getTime() + stateExpireMilliSeconds };
 
     const authorizationUrl = client.authorizationUrl({
-      scope: 'openid',
+      scope,
       state,
       nonce,
       code_challenge: codeChallenge,
@@ -72,7 +79,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       const tokenSet = await client.callback(redirectUri, params, {
         code_verifier: verifiers.codeVerifier,
         nonce: verifiers.nonce,
-        scope: 'openid',
+        scope,
       });
       reduceRefreshDateBy(tokenSet, reduceRefreshDateSeconds);
       await authenticateSession(req, tokenSet);
@@ -84,7 +91,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       if (err.response?.statusCode === 403) {
         return res.render('error', {
           title: 'Permission denied',
-          message: (err.response.body as Record<string, string>).message ?? 'User is not allowed access the instance.',
+          message: (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.',
         });
       } else {
         return res.render('error', {
@@ -99,26 +106,33 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
   /**
    * Router level middleware for logout
    */
-  router.get('/logout', async (req: Request, res: Response) => {
+  router.post('/logout', async (req: Request, res: Response) => {
     if (!isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
     }
 
     const hint = getLogoutHint(req) ?? '';
+    if (req.session.tokenSet.access_token && client.issuer.metadata.revocation_endpoint) {
+      client.revoke(req.session.tokenSet.access_token);
+    }
     removeSession(req);
 
     if (client.issuer.metadata.end_session_endpoint) {
       const params: EndSessionData = {
         id_token_hint: hint,
         state: generators.state(),
-        post_logout_redirect_uri: redirectUri,
+        post_logout_redirect_uri: logoutUri,
         end_session_endpoint: client.issuer.metadata.end_session_endpoint,
       };
       return res.json(params);
     } else {
-      res.json();
+      return res.json();
     }
+  });
+
+  router.get('/logoutsession', (req: Request, res: Response) => {
+    return res.render('logout', { location: getRootLocation() });
   });
 
   return router;
