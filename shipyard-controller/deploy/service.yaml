@@ -81,7 +81,7 @@ spec:
             memory: "256Mi"
             cpu: "100m"
       - name: distributor
-        image: keptn/distributor:latest
+        image: docker.io/keptn/distributor:0.13.0-dev
         ports:
           - containerPort: 8080
         lifecycle:
@@ -110,6 +110,8 @@ spec:
             value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH
             value: '/v1/event'
+          - name: DISABLE_REGISTRATION
+            value: "true"
       terminationGracePeriodSeconds: 60
 ---
 apiVersion: v1

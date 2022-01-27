@@ -56,13 +56,6 @@ spec:
               value: '2'
             - name: LOG_LEVEL
               value: debug
-          resources:
-            limits:
-              cpu: 100m
-              memory: 64Mi
-            requests:
-              cpu: 50m
-              memory: 32Mi
           livenessProbe:
             httpGet:
               path: /health
@@ -71,8 +64,6 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
@@ -81,18 +72,8 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            runAsUser: 65532
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
         - name: distributor
-          image: docker.io/keptn/distributor:0.12.0
+          image: docker.io/keptn/distributor:0.13.0-dev
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -129,20 +110,11 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.>'
             - name: PUBSUB_GROUP
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.labels['app.kubernetes.io/name']
-          resources:
-            limits:
-              cpu: 100m
-              memory: 32Mi
-            requests:
-              cpu: 25m
-              memory: 16Mi
           livenessProbe:
             httpGet:
               path: /health
@@ -159,13 +131,7 @@ spec:
             timeoutSeconds: 1
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            runAsUser: 65532
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-      serviceAccountName: keptn-api-service
+          imagePullPolicy: Always
 
 ---
 apiVersion: v1

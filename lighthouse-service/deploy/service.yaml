@@ -65,7 +65,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
         - name: distributor
-          image: keptn/distributor:0.12.0
+          image: docker.io/keptn/distributor:0.13.0-dev
           ports:
             - containerPort: 8080
           resources:

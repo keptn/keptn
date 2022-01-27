@@ -149,7 +149,7 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	return slo, nil
 }
 
-func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandler *keptnv2.Keptn, data interface{}) error {
+func sendEvent(shkeptncontext string, triggeredID, eventType, commitID string, keptnHandler *keptnv2.Keptn, data interface{}) error {
 	source, _ := url.Parse("lighthouse-service")
 
 	event := cloudevents.NewEvent()
@@ -158,6 +158,7 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
 	event.SetExtension("triggeredid", triggeredID)
+	event.SetExtension("gitcommitid", commitID)
 	if data != nil {
 		event.SetData(cloudevents.ApplicationJSON, data)
 	}
@@ -166,7 +167,7 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 	return keptnHandler.SendCloudEvent(event)
 }
 
-func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptnv2.GetSLIFinishedEventData) error {
+func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptnv2.GetSLIFinishedEventData) error {
 	data := keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: incoming.Project,
@@ -184,10 +185,9 @@ func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, s
 			Score:            0,
 			SLOFileContent:   sloFileContent,
 			IndicatorResults: nil,
-			GitCommit:        "",
 		},
 	}
-	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), keptnHandler, data)
+	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, keptnHandler, data)
 }
 
 // SLIProviderConfig godoc

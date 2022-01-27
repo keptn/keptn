@@ -43,7 +43,7 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	startedEvent.EventData.Status = keptnv2.StatusSucceeded
 
 	// send evaluation.started event
-	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, startedEvent)
+	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, startedEvent)
 	if err != nil {
 		logger.Error("Could not send evaluation.started event: " + err.Error())
 		return err
@@ -143,7 +143,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 				Evaluation: evaluationDetails,
 			}
 
-			return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+			return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evaluationFinishedData)
 		}
 	}
 	// send a new event to trigger the SLI retrieval
