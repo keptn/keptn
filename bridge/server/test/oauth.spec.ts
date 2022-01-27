@@ -121,7 +121,7 @@ describe('Test OAuth', () => {
     expect(state).not.toBeUndefined();
     expect(data).toEqual({
       id_token_hint: idToken,
-      post_logout_redirect_uri: 'http://localhost/oauth/redirect',
+      post_logout_redirect_uri: 'http://localhost/logoutsession',
       end_session_endpoint: endSessionEndpoint,
     });
   });
