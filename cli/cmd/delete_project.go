@@ -63,7 +63,7 @@ var delProjectCmd = &cobra.Command{
 				endPointErr)
 		}
 
-		api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return err
 		}

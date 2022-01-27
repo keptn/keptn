@@ -65,8 +65,12 @@ describe('Test OAuth env variables', () => {
     process.env.OAUTH_BASE_URL = 'http://localhost';
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
-    for (const endpoint of ['/login', '/oauth/redirect', '/logout']) {
+    for (const endpoint of ['/login', '/oauth/redirect', '/logoutsession']) {
       const response = await request(app).get(endpoint);
+      expect(response.status).toBe(500);
+    }
+    for (const endpoint of ['/logout']) {
+      const response = await request(app).post(endpoint);
       expect(response.status).toBe(500);
     }
   });
@@ -133,13 +137,13 @@ describe('Test OAuth', () => {
     expect(state).not.toBeUndefined();
     expect(data).toEqual({
       id_token_hint: idToken,
-      post_logout_redirect_uri: 'http://localhost/oauth/redirect',
+      post_logout_redirect_uri: 'http://localhost/logoutsession',
       end_session_endpoint: endSessionEndpoint,
     });
   });
 
   it('should return nothing on logout if not authenticated', async () => {
-    const response = await request(app).get(`/logout`);
+    const response = await request(app).post(`/logout`);
     expect(response.body).toBe('');
   });
 
@@ -186,6 +190,7 @@ describe('Test OAuth logout without end session endpoint', () => {
     mockOpenId(false);
     app = await setupOAuth();
   });
+
   beforeEach(() => {
     store = {};
   });

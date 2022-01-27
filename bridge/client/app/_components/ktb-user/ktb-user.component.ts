@@ -10,7 +10,7 @@ import { Location } from '@angular/common';
 })
 export class KtbUserComponent {
   @Input() user?: string;
-  public formData: EndSessionData = {
+  public logoutFormData: EndSessionData = {
     state: '',
     post_logout_redirect_uri: '',
     end_session_endpoint: '',
@@ -26,11 +26,11 @@ export class KtbUserComponent {
   logout(submitEvent: { target: { submit: () => void } }): void {
     this.dataService.logout().subscribe((response) => {
       if (response) {
-        this.formData = response;
+        this.logoutFormData = response;
         this._changeDetectorRef.detectChanges();
         submitEvent.target.submit();
       } else {
-        window.location.assign(this.location.prepareExternalUrl('/loggedOut'));
+        window.location.assign(this.location.prepareExternalUrl('/logoutsession'));
       }
     });
   }

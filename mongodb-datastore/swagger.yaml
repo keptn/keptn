@@ -12,19 +12,21 @@ produces:
 paths:
   /health:
     get:
+      deprecated: true
       tags:
         - health
       operationId: getHealth
-      summary: Health endpoint
+      summary: 'INTERNAL Endpoint: Health endpoint'
       responses:
         200:
           description: healthy
   /event:
     post:
+      deprecated: true
       tags:
         - event
       operationId: saveEvent
-      summary: Saves an event to the datastore
+      summary: 'INTERNAL Endpoint: Saves an event to the datastore'
       parameters:
         - name: body
           in: body

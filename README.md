@@ -34,6 +34,17 @@ curl -sL https://get.keptn.sh | bash
 keptn install --use-case=continuous-delivery
 ```
 
+If you want to install the latest master version of Keptn onto your cluster you can do that by using the development helm charts repository located at https://charts-dev.keptn.sh .
+```console
+helm repo add keptn-dev https://charts-dev.keptn.sh    # Add the keptn-dev helm repo
+helm repo update                                       # Update all repo contents
+helm search repo keptn-dev --devel --versions          # List all versions present in the keptn-dev repo
+
+# Select a chart version from the previous command that you want to install
+
+helm install -n keptn-dev keptn keptn-dev/keptn --create-namespace --version "<the-version-you-selected-previously>"
+```
+
 You can find more information in our [docs](docs/).
 
 ## Community

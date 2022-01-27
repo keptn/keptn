@@ -18,6 +18,8 @@ const (
 	StartedEvent EventStatus = "started"
 	// FinishedEvent describes a 'finished' event
 	FinishedEvent EventStatus = "finished"
+	// WaitingEvent describes a 'waiting' event
+	WaitingEvent EventStatus = "waiting"
 	// RootEvent indicates that an event triggered a task sequence execution
 	RootEvent EventStatus = "root"
 )

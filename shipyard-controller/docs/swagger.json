@@ -211,7 +211,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Delete logs",
+                "description": "INTERNAL Endpoint: Delete logs",
                 "consumes": [
                     "application/json"
                 ],
@@ -222,6 +222,7 @@
                     "Log"
                 ],
                 "summary": "Delete logs",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -358,7 +359,7 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
-                    "403": {
+                    "404": {
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
@@ -1377,7 +1378,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                                "$ref": "#/definitions/models.Subscription"
                             }
                         }
                     },
@@ -1432,7 +1433,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     }
                 ],
@@ -1499,7 +1500,7 @@
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     },
                     "400": {
@@ -1560,7 +1561,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     }
                 ],
@@ -1648,37 +1649,6 @@
         }
     },
     "definitions": {
-        "github.com_keptn_go-utils_pkg_api_models.Subscription": {
-            "type": "object",
-            "properties": {
-                "filter": {
-                    "$ref": "#/definitions/models.SubscriptionFilter"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "topics": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "github.com_keptn_keptn_shipyard-controller_models.Subscription": {
-            "type": "object",
-            "properties": {
-                "event": {
-                    "type": "string"
-                },
-                "filter": {
-                    "$ref": "#/definitions/models.EventSubscriptionFilter"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "models.CreateEvaluationParams": {
             "type": "object",
             "properties": {
@@ -1807,10 +1777,12 @@
                     "type": "string"
                 },
                 "data": {
-                    "description": "data\nRequired: true"
+                    "description": "data\nRequired: true",
+                    "type": "object"
                 },
                 "extensions": {
-                    "description": "extensions"
+                    "description": "extensions",
+                    "type": "object"
                 },
                 "id": {
                     "description": "id",
@@ -1845,16 +1817,8 @@
         "models.EventContext": {
             "type": "object",
             "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
                 "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
+                    "description": "keptn context\nRequired: true",
                     "type": "string"
                 }
             }
@@ -2104,7 +2068,7 @@
                 },
                 "subscription": {
                     "description": "Deprecated: for backwards compatibility Subscription is populated\nbut new code shall use Subscriptions",
-                    "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.Subscription"
+                    "$ref": "#/definitions/models.Subscription"
                 },
                 "subscriptions": {
                     "type": "array",
@@ -2348,6 +2312,23 @@
                 "totalCount": {
                     "description": "Total number of stages",
                     "type": "number"
+                }
+            }
+        },
+        "models.Subscription": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "$ref": "#/definitions/models.SubscriptionFilter"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

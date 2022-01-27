@@ -14,8 +14,7 @@ import (
 )
 
 // NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIParams creates a new DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIParams() DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams {
 
 	return DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams{}
@@ -70,6 +69,7 @@ func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) Bi
 	if err := o.bindServiceName(rServiceName, rhkServiceName, route.Formats); err != nil {
 		res = append(res, err)
 	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,6 +85,7 @@ func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) bi
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil
@@ -99,6 +100,7 @@ func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) bi
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ResourceURI = raw
 
 	return nil
@@ -113,6 +115,7 @@ func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) bi
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ServiceName = raw
 
 	return nil

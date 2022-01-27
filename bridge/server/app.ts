@@ -159,7 +159,7 @@ async function setOAUTH(app: Express): Promise<void> {
     throw Error(`OAUTH_CLIENT_ID ${errorSuffix}`);
   }
   if (!process.env.OAUTH_BASE_URL) {
-    throw Error(`OAUTH_B_URL ${errorSuffix}`);
+    throw Error(`OAUTH_BASE_URL ${errorSuffix}`);
   }
 
   await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);

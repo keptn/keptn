@@ -10,11 +10,13 @@ async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: str
   let prefix = oauthRoutes.getRootLocation();
   baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
   prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
-  const redirectUri = `${baseUrl}${prefix}oauth/redirect`;
+  const site = `${baseUrl}${prefix}`;
+  const redirectUri = `${site}oauth/redirect`;
+  const logoutUri = `${site}logoutsession`;
   // Initialise session middleware
   app.use(session.sessionRouter(app));
   const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
-  setRoutes(app, client, redirectUri, session, oauthRoutes);
+  setRoutes(app, client, redirectUri, logoutUri, session, oauthRoutes);
 }
 
 async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
@@ -54,11 +56,12 @@ function setRoutes(
   app: Express,
   client: BaseClient,
   redirectUri: string,
+  logoutUri: string,
   session: typeof import('./session'),
   oauthRoutes: typeof import('./oauth-routes')
 ): void {
   // Initializing OAuth middleware.
-  app.use(oauthRoutes.oauthRouter(client, redirectUri, reduceRefreshDateSeconds));
+  app.use(oauthRoutes.oauthRouter(client, redirectUri, logoutUri, reduceRefreshDateSeconds));
   // Authentication filter for API requests
   app.use('/api', async (req: Request, resp: Response, next: NextFunction) => {
     if (!session.isAuthenticated(req.session)) {

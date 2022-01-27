@@ -15,7 +15,7 @@ var doc = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
-        "description": "{{escape .Description}}",
+        "description": "{{.Description}}",
         "title": "{{.Title}}",
         "contact": {
             "name": "Keptn Team",
@@ -226,7 +226,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Delete logs",
+                "description": "INTERNAL Endpoint: Delete logs",
                 "consumes": [
                     "application/json"
                 ],
@@ -237,6 +237,7 @@ var doc = `{
                     "Log"
                 ],
                 "summary": "Delete logs",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -373,7 +374,7 @@ var doc = `{
                             "$ref": "#/definitions/models.Error"
                         }
                     },
-                    "403": {
+                    "404": {
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
@@ -1392,7 +1393,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                                "$ref": "#/definitions/models.Subscription"
                             }
                         }
                     },
@@ -1447,7 +1448,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     }
                 ],
@@ -1514,7 +1515,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     },
                     "400": {
@@ -1575,7 +1576,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     }
                 ],
@@ -1663,37 +1664,6 @@ var doc = `{
         }
     },
     "definitions": {
-        "github.com_keptn_go-utils_pkg_api_models.Subscription": {
-            "type": "object",
-            "properties": {
-                "filter": {
-                    "$ref": "#/definitions/models.SubscriptionFilter"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "topics": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "github.com_keptn_keptn_shipyard-controller_models.Subscription": {
-            "type": "object",
-            "properties": {
-                "event": {
-                    "type": "string"
-                },
-                "filter": {
-                    "$ref": "#/definitions/models.EventSubscriptionFilter"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "models.CreateEvaluationParams": {
             "type": "object",
             "properties": {
@@ -1822,10 +1792,12 @@ var doc = `{
                     "type": "string"
                 },
                 "data": {
-                    "description": "data\nRequired: true"
+                    "description": "data\nRequired: true",
+                    "type": "object"
                 },
                 "extensions": {
-                    "description": "extensions"
+                    "description": "extensions",
+                    "type": "object"
                 },
                 "id": {
                     "description": "id",
@@ -1860,16 +1832,8 @@ var doc = `{
         "models.EventContext": {
             "type": "object",
             "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
                 "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
+                    "description": "keptn context\nRequired: true",
                     "type": "string"
                 }
             }
@@ -2119,7 +2083,7 @@ var doc = `{
                 },
                 "subscription": {
                     "description": "Deprecated: for backwards compatibility Subscription is populated\nbut new code shall use Subscriptions",
-                    "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.Subscription"
+                    "$ref": "#/definitions/models.Subscription"
                 },
                 "subscriptions": {
                     "type": "array",
@@ -2366,6 +2330,23 @@ var doc = `{
                 }
             }
         },
+        "models.Subscription": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "$ref": "#/definitions/models.SubscriptionFilter"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "models.SubscriptionFilter": {
             "type": "object",
             "properties": {
@@ -2447,13 +2428,6 @@ func (s *s) ReadDoc() string {
 		"marshal": func(v interface{}) string {
 			a, _ := json.Marshal(v)
 			return string(a)
-		},
-		"escape": func(v interface{}) string {
-			// escape tabs
-			str := strings.Replace(v.(string), "\t", "\\t", -1)
-			// replace " with \", and if that results in \\", replace that with \\\"
-			str = strings.Replace(str, "\"", "\\\"", -1)
-			return strings.Replace(str, "\\\\\"", "\\\\\\\"", -1)
 		},
 	}).Parse(doc)
 	if err != nil {

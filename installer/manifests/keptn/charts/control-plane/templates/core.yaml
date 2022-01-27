@@ -77,6 +77,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
@@ -131,6 +135,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
@@ -148,6 +153,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
@@ -203,6 +209,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
@@ -282,6 +292,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       serviceAccountName: keptn-default
       volumes:
         - emptyDir: {}
@@ -343,6 +354,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
@@ -409,6 +424,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
@@ -434,6 +450,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
@@ -521,6 +538,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-secret-service
       containers:
         - name: secret-service
@@ -562,6 +583,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: secret-service-configmap-volume
           configMap:
@@ -620,6 +642,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      securityContext:
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
@@ -659,6 +687,12 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: resource-volume
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: resource-volume
           emptyDir: {}
@@ -719,6 +753,10 @@ spec:
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
 {{- if .Values.configurationService.initContainer }}
       initContainers:
         - name: change-user-init
@@ -779,6 +817,7 @@ spec:
             runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
@@ -845,6 +884,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
@@ -901,6 +944,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -925,6 +969,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
@@ -979,6 +1024,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
@@ -1017,6 +1066,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -1039,6 +1089,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 
 ---
@@ -1098,6 +1149,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
@@ -1136,6 +1191,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -1160,6 +1216,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1

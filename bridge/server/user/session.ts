@@ -17,6 +17,7 @@ export interface ValidSession extends expressSession.Session {
   tokenSet: TokenSetParameters;
   principal?: string;
 }
+
 interface ValidationType {
   _id: string;
   codeVerifier: string;

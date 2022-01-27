@@ -27,7 +27,12 @@ function getRootLocation(): string {
   return '/';
 }
 
-function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateSeconds: number): Router {
+function oauthRouter(
+  client: BaseClient,
+  redirectUri: string,
+  logoutUri: string,
+  reduceRefreshDateSeconds: number
+): Router {
   const router = Router();
   const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
   const scope = `openid${additionalScopes}`;
@@ -124,7 +129,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
       const params: EndSessionData = {
         id_token_hint: hint,
         state: generators.state(),
-        post_logout_redirect_uri: redirectUri,
+        post_logout_redirect_uri: logoutUri,
         end_session_endpoint: client.issuer.metadata.end_session_endpoint,
       };
       return res.json(params);
@@ -133,7 +138,7 @@ function oauthRouter(client: BaseClient, redirectUri: string, reduceRefreshDateS
     }
   });
 
-  router.get('/loggedOut', (req: Request, res: Response) => {
+  router.get('/logoutsession', (req: Request, res: Response) => {
     return res.render('logout', { location: getRootLocation() });
   });
 
