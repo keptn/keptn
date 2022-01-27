@@ -84,8 +84,8 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
   }
 
   private stopTimeout(): void {
-    clearTimeout(this.hideTimeout as number);
-    clearTimeout(this.fadeOutDelay as number);
+    clearTimeout(this.hideTimeout as unknown as number); // else jest is complaining, but not locally...
+    clearTimeout(this.fadeOutDelay as unknown as number);
   }
 
   public ngOnDestroy(): void {
