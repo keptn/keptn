@@ -169,6 +169,59 @@ describe('Integrations', () => {
     cy.location('pathname').should('eq', '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297');
   });
 
+  it('should show an error message if can not parse shipyard.yaml', () => {
+    // given
+    cy.intercept('/api/project/sockshop/tasks', {
+      statusCode: 500,
+      body: 'Could not parse shipyard.yaml',
+    }).as('tasksResult');
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
+      .first()
+      .find('dt-expandable-panel')
+      .byTestId('addSubscriptionButton')
+      .click();
+
+    cy.wait('@tasksResult');
+    cy.wait('@tasksResult');
+    cy.wait('@tasksResult');
+
+    // It should show an error message and reload button
+    cy.byTestId('keptn-notification-bar-message').should('have.text', 'Could not parse shipyard.yaml');
+    cy.byTestId('ktb-modify-subscription-reload-button').should('exist');
+
+    // eslint-disable-next-line promise/always-return,promise/catch-or-return
+    cy.window().then((window) => {
+      window.errorCount = 1;
+    });
+  });
+
+  it('should reload page correctly if shipyard.yaml was not parsed initially', () => {
+    // given
+    cy.intercept('/api/project/sockshop/tasks', {
+      statusCode: 500,
+      body: 'Could not parse shipyard.yaml',
+    }).as('tasksResult');
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
+      .first()
+      .find('dt-expandable-panel')
+      .byTestId('addSubscriptionButton')
+      .click();
+
+    cy.wait('@tasksResult');
+    cy.wait('@tasksResult');
+    cy.wait('@tasksResult');
+
+    cy.byTestId('ktb-modify-subscription-reload-button').click();
+    cy.intercept('/api/project/sockshop/tasks', { fixture: 'tasks.mock' });
+
+    // It should not show an error message and reload button
+    cy.byTestId('keptn-notification-bar-message').should('not.exist');
+    cy.byTestId('ktb-modify-subscription-reload-button').should('not.exist');
+    cy.get('h2').first().should('have.text', 'Create subscription');
+  });
+
   function selectFirstItemOfVariableSelector(): void {
     cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').first().find('button').click();
     cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').eq(1).click();
