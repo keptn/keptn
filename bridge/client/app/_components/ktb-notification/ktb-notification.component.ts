@@ -27,8 +27,8 @@ import { Notification, NotificationType } from '../../_models/notification';
   ],
 })
 export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
-  private hideTimeout?: number;
-  private fadeOutDelay?: number;
+  private hideTimeout?: ReturnType<typeof setTimeout>;
+  private fadeOutDelay?: ReturnType<typeof setTimeout>;
   public fadeStatus: 'in' | 'out' = 'in';
   public fadeOutDuration = 3_000;
   public NotificationType = NotificationType;
@@ -84,8 +84,8 @@ export class KtbNotificationComponent implements AfterViewInit, OnDestroy {
   }
 
   private stopTimeout(): void {
-    clearTimeout(this.hideTimeout);
-    clearTimeout(this.fadeOutDelay);
+    clearTimeout(this.hideTimeout as number);
+    clearTimeout(this.fadeOutDelay as number);
   }
 
   public ngOnDestroy(): void {
