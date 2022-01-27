@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
+import { NotificationType } from '../../_models/notification';
+import { NotificationsService } from '../../_services/notifications.service';
 
 @Component({
   selector: 'ktb-secrets-view',
@@ -33,7 +35,8 @@ export class KtbCreateSecretFormComponent {
     private dataService: DataService,
     private router: Router,
     private route: ActivatedRoute,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private notificationService: NotificationsService
   ) {}
 
   get data(): FormArray | null {
@@ -60,7 +63,13 @@ export class KtbCreateSecretFormComponent {
           this.isLoading = false;
           this.router.navigate(['../'], { relativeTo: this.route });
         },
-        () => {
+        (err) => {
+          if (err.status === 409) {
+            this.notificationService.addNotification(
+              NotificationType.ERROR,
+              `Secret could not be created: Secret ${secret.name} already exists`
+            );
+          }
           this.isLoading = false;
         }
       );

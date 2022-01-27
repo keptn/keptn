@@ -38,6 +38,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         } else {
           // The backend returned an unsuccessful response code.
           // The response body may contain clues as to what went wrong,
+
+          // Special case for already existing secrets
+          if (error.status == 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
+            return throwError(error);
+          }
           this.notificationService.addNotification(NotificationType.ERROR, error.message);
         }
 
