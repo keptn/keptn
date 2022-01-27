@@ -145,6 +145,7 @@ import { DtRadioModule } from '@dynatrace/barista-components/radio';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
+import { ArrayToStringPipe } from './_pipes/array-to-string';
 
 registerLocaleData(localeEn, 'en');
 
@@ -233,6 +234,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbSequenceStateInfoComponent,
     KtbPayloadViewerComponent,
     KtbVariableSelectorComponent,
+    ArrayToStringPipe,
   ],
   imports: [
     BrowserModule,
