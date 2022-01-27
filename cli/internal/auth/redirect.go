@@ -26,21 +26,33 @@ type ClosingRedirectHandler struct{}
 // TODO: get rid of hard-coded path and port
 func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config, oauthState string) (*oauth2.Token, error) {
 	server := &http.Server{}
-	var tokenExchangeErr error
+	var handleRedirectErr error
 	var acquiredToken *oauth2.Token
 
 	http.HandleFunc("/oauth/redirect", func(w http.ResponseWriter, req *http.Request) {
 		defer func() { go server.Close() }()
-		queryParts, _ := url.ParseQuery(req.URL.RawQuery)
-		state := queryParts["state"][0]
-		if state != oauthState {
-			tokenExchangeErr = fmt.Errorf("invalid oauth state")
+		queryParts, err := url.ParseQuery(req.URL.RawQuery)
+		if err != nil {
+			handleRedirectErr = err
 			return
 		}
-		code := queryParts["code"][0]
-		tok, err := oauthConfig.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", string(codeVerifier)))
+		state := queryParts["state"]
+		if len(state) == 0 {
+			handleRedirectErr = fmt.Errorf("no oauth state param found")
+			return
+		}
+		if state[0] != oauthState {
+			handleRedirectErr = fmt.Errorf("invalid oauth state")
+			return
+		}
+		code := queryParts["code"]
+		if len(code) == 0 {
+			handleRedirectErr = fmt.Errorf("no code param fround")
+			return
+		}
+		tok, err := oauthConfig.Exchange(context.Background(), code[0], oauth2.SetAuthURLParam("code_verifier", string(codeVerifier)))
 		if err != nil {
-			tokenExchangeErr = err
+			handleRedirectErr = err
 			return
 		}
 		acquiredToken = tok
@@ -51,5 +63,5 @@ func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2
 		return nil, err
 	}
 	server.Serve(l)
-	return acquiredToken, tokenExchangeErr
+	return acquiredToken, handleRedirectErr
 }
