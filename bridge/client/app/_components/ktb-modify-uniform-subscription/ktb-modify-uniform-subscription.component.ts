@@ -150,7 +150,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       catchError((err: HttpErrorResponse) => {
         this.errorMessage = err.error;
         this.notificationsService.addNotification(NotificationType.ERROR, err.error);
-        return throwError(err);
       }),
       take(1)
     );
