@@ -35,7 +35,6 @@ describe('Test /project/:projectName/tasks', () => {
       .onGet(`${global.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
       .reply(200, ShipyardInvalidResponse);
     const response = await request(app).get(`/api/project/${projectName}/tasks`);
-    expect(response.body).toEqual('Could not parse shipyard.yaml');
     expect(response.statusCode).toBe(500);
   });
 });
