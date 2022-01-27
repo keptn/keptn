@@ -400,7 +400,7 @@ const apiRouter = (params: {
         ...(req.method !== 'GET' && { data: req.body }),
         headers: {
           ...(apiToken && { 'x-token': apiToken }),
-          ...(accessToken && { Authorization: `Bearer ${req.session?.tokenSet?.access_token}` }),
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
           'Content-Type': 'application/json',
         },
       });
