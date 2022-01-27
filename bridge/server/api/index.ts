@@ -393,15 +393,14 @@ const apiRouter = (params: {
 
   router.all('*', async (req, res, next) => {
     try {
-      const auth: { [key: string]: string } = apiToken
-        ? { 'x-token': apiToken }
-        : { Authorization: `Bearer ${req.session?.tokenSet?.access_token}` };
+      const accessToken = req.session?.tokenSet?.access_token;
       const result = await axios({
         method: req.method as Method,
         url: `${apiUrl}${req.url}`,
         ...(req.method !== 'GET' && { data: req.body }),
         headers: {
-          ...auth,
+          ...(apiToken && { 'x-token': apiToken }),
+          ...(accessToken && { Authorization: `Bearer ${req.session?.tokenSet?.access_token}` }),
           'Content-Type': 'application/json',
         },
       });
