@@ -31,4 +31,5 @@ export enum EventTypes {
   ACTION_STARTED = 'sh.keptn.event.action.started',
   ACTION_FINISHED = 'sh.keptn.event.action.finished',
   PREFIX = 'sh.keptn.event.',
+  PREFIX_SHORT = 'sh.keptn',
 }

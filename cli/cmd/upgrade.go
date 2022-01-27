@@ -88,8 +88,13 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if *upgradeParams.PatchNamespace {
 		return nil
 	}
+	var chartRepoURL string
 
-	chartRepoURL := getKeptnHelmChartRepoURL(upgradeParams.ChartRepoURL)
+	if !isStringFlagSet(upgradeParams.ChartRepoURL) {
+		chartRepoURL = getKeptnHelmChartRepoURL()
+	} else {
+		chartRepoURL = *upgradeParams.ChartRepoURL
+	}
 
 	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
@@ -248,7 +253,7 @@ func addWarningNonExistingProjectUpstream() error {
 		return errors.New(authErrorMsg)
 	}
 
-	api, err := internal.APIProvider(endPoint.String(), apiToken, "x-token", endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return err
 	}

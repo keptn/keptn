@@ -41,6 +41,9 @@
             [overlayDisabled]="true"
           ></ktb-evaluation-info>
         </div>
+        <div *ngIf="task.traces.length === 0 && !isSubtask" class="mt-2">
+          No events are available for this sequence.
+        </div>
         <div *ngIf="task.data.canary">
           <p class="m-0 nobreak">
             <span class="bold">Action: </span><span [textContent]="task.data.canary.action"></span>
@@ -130,6 +133,7 @@
       *ngIf="subTask.isTriggered(); else taskLine"
       [task]="subTask"
       [latestDeployment]="latestDeployment"
+      [isSubtask]="true"
       (itemClicked)="onClick($event)"
       (click)="$event.stopPropagation(); onClick(subTask)"
     ></ktb-task-item>

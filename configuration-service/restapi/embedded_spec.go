@@ -400,7 +400,8 @@ func init() {
         "tags": [
           "Service Default Resource"
         ],
-        "summary": "Create list of default resources for the service used in all stages",
+        "summary": "INTERNAL Endpoint: Create list of default resources for the service used in all stages",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/resources"
@@ -1880,7 +1881,8 @@ func init() {
         "tags": [
           "Service Default Resource"
         ],
-        "summary": "Create list of default resources for the service used in all stages",
+        "summary": "INTERNAL Endpoint: Create list of default resources for the service used in all stages",
+        "deprecated": true,
         "parameters": [
           {
             "description": "List of resources",

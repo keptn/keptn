@@ -14,12 +14,12 @@ Installing and/or upgrading to this release should be done using the `helm upgra
 
 **Installation** (using `--install`)
 ```console
-helm upgrade keptn keptn --install -n keptn --create-namespace --wait --version=0.8.5 --repo=https://storage.googleapis.com/keptn-installer --set=control-plane.bridge.lookAndFeelUrl=https://example.com/bridge-look-and-feel.zip
+helm upgrade keptn keptn --install -n keptn --create-namespace --wait --version=0.8.5 --repo=https://charts.keptn.sh --set=control-plane.bridge.lookAndFeelUrl=https://example.com/bridge-look-and-feel.zip
 ```
 
 **Upgrade** (using `--reuse-values`)
 ```console
-helm upgrade keptn keptn -n keptn --wait --version=0.8.5 --repo=https://storage.googleapis.com/keptn-installer --reuse-values --set=control-plane.bridge.lookAndFeelUrl=https://example.com/bridge-look-and-feel.zip
+helm upgrade keptn keptn -n keptn --wait --version=0.8.5 --repo=https://charts.keptn.sh --reuse-values --set=control-plane.bridge.lookAndFeelUrl=https://example.com/bridge-look-and-feel.zip
 ```
 
 It is not required to upgrade the CLI.

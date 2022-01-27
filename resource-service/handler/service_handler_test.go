@@ -160,7 +160,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 					Service: models.Service{ServiceName: "my-service"},
 				},
 			},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusNotFound,
 		},
 		{
 			name: "invalid payload",

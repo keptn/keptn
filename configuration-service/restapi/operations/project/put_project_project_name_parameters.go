@@ -6,21 +6,18 @@ package project
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 
 	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPutProjectProjectNameParams creates a new PutProjectProjectNameParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewPutProjectProjectNameParams() PutProjectProjectNameParams {
 
 	return PutProjectProjectNameParams{}
@@ -66,21 +63,16 @@ func (o *PutProjectProjectNameParams) BindRequest(r *http.Request, route *middle
 				res = append(res, err)
 			}
 
-			ctx := validate.WithOperationRequest(context.Background())
-			if err := body.ContextValidate(ctx, route.Formats); err != nil {
-				res = append(res, err)
-			}
-
 			if len(res) == 0 {
 				o.Project = &body
 			}
 		}
 	}
-
 	rProjectName, rhkProjectName, _ := route.Params.GetOK("projectName")
 	if err := o.bindProjectName(rProjectName, rhkProjectName, route.Formats); err != nil {
 		res = append(res, err)
 	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -96,6 +88,7 @@ func (o *PutProjectProjectNameParams) bindProjectName(rawData []string, hasKey b
 
 	// Required: true
 	// Parameter is provided by construction from the route
+
 	o.ProjectName = raw
 
 	return nil

@@ -1,5 +1,24 @@
 # Integration Tests
 
+
+<details>
+<summary>Table of Contents</summary>
+
+<!-- toc -->
+
+- [Structure of Integration Tests](#structure-of-integration-tests)
+  * [Adding a new Integration Test](#adding-a-new-integration-test)
+- [Running Integration Tests](#running-integration-tests)
+- [Run Integration Tests remotely on Github](#run-integration-tests-remotely-on-github)
+- [Run Integration Tests locally](#run-integration-tests-locally)
+  * [Prepare your local environment to run integration tests](#prepare-your-local-environment-to-run-integration-tests)
+    + [**Setup steps for K3d (recommended on Linux)**](#setup-steps-for-k3d-recommended-on-linux)
+    + [**Setup steps for Minishift (not recommended)**](#setup-steps-for-minishift-not-recommended)
+  * [Run the full installation of Integration Tests locally](#run-the-full-installation-of-integration-tests-locally)
+
+<!-- tocstop -->
+</details>
+
 ## Structure of Integration Tests
 
 The Integration Tests and their resources are located under the `/test` directory in this repository. For running the Integration Tests, there are two main directories, we will focus on:

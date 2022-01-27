@@ -9,33 +9,8 @@ import (
 
 type configStoreErrType int
 
-const (
-	InvalidTokenError configStoreErrType = iota
-)
-
-// ConfigurationStoreError is the a error type which will eventually
-// be returned by methods of implementations of the ConfigurationStore
-type ConfigurationStoreError struct {
-	// Message is the message of the error for further information
-	Message string
-	// Reason is the type of error which happened
-	Reason configStoreErrType
-}
-
-// Error returns the error message
-func (e *ConfigurationStoreError) Error() string {
-	return e.Message
-}
-
-// IsInvalidTokenError checks whether a given error is of type
-// ConfigurationStoreError with a reason of InvalidTokenError
-func IsInvalidTokenError(err error) bool {
-	var e *ConfigurationStoreError
-	if errors.As(err, &e) {
-		return e.Reason == InvalidTokenError
-	}
-	return false
-}
+var ErrConfigStoreInvalidToken = errors.New("invalid git token")
+var ErrConfigStoreUpstreamNotFound = errors.New("upstream repository not found")
 
 //go:generate moq -pkg common_mock -out ./fake/configurationstore_mock.go . ConfigurationStore
 type ConfigurationStore interface {
@@ -137,10 +112,9 @@ func (g GitConfigurationStore) DeleteService(projectName string, stageName strin
 
 func (g GitConfigurationStore) buildErrResponse(err *keptnapimodels.Error) error {
 	if err.Code == http.StatusFailedDependency {
-		return &ConfigurationStoreError{
-			Message: err.GetMessage(),
-			Reason:  InvalidTokenError,
-		}
+		return ErrConfigStoreInvalidToken
+	} else if err.Code == http.StatusNotFound {
+		return ErrConfigStoreUpstreamNotFound
 	}
 	return errors.New(*err.Message)
 }

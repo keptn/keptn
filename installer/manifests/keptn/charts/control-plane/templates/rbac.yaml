@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -185,7 +185,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - extensions
@@ -194,7 +194,7 @@ rules:
       - deployments
     verbs:
       - get
-      - list   
+      - list
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
