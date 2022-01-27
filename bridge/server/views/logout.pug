@@ -3,7 +3,7 @@ html
 
   head
     link(rel="stylesheet", href="static/error.v1.css")
-    title= title
+    title="Logout"
   body
     div.container
 
@@ -11,10 +11,8 @@ html
         img(src="branding/logo_inverted.png", alt="Logo")
 
       div.text
-        h2= title
-        p #{message}
+        h2="You haven been logged out"
 
         if location
           div.location
-            - var linkText = locationMessage ? locationMessage : 'Retry'
-            a(href= location ) #{linkText}
+            a(href= location ) Go to dashboard
