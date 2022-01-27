@@ -32,17 +32,15 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           this._handleUnauthorizedError(error);
         } else if (error.status === 403) {
           this.notificationService.addNotification(NotificationType.ERROR, 'Insufficient permissions');
+        } else if (error.status == 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
+          // Special case for already existing secrets - for unit test has to be before instanceof ErrorEvent
+          return throwError(error);
         } else if (error.error instanceof ErrorEvent) {
           // A client-side or network error occurred. Handle it accordingly.
           this.notificationService.addNotification(NotificationType.ERROR, error.error.message);
         } else {
           // The backend returned an unsuccessful response code.
           // The response body may contain clues as to what went wrong,
-
-          // Special case for already existing secrets
-          if (error.status == 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
-            return throwError(error);
-          }
           this.notificationService.addNotification(NotificationType.ERROR, error.message);
         }
 

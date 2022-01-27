@@ -7,6 +7,8 @@ import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 import { ApiService } from '../_services/api.service';
 import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { Secret } from '../_models/secret';
 
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
@@ -95,5 +97,25 @@ describe('HttpErrorInterceptorService', () => {
       NotificationType.ERROR,
       'Login credentials invalid. Please check your provided username and password.'
     );
+  });
+
+  it('should not show any notification when a secret already exists', () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    const secret = new Secret();
+    secret.name = 'secret';
+    secret.scope = SecretScope.DEFAULT;
+
+    apiService.addSecret(secret).subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/secrets/v1/secret');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 409 });
+
+    // when
+
+    // then
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 });
