@@ -1,65 +1,11 @@
-@import '../../../variables';
-@import '~@dynatrace/barista-components/core/src/style/variables';
-
-.page-note {
-  z-index: 101;
+.notification-container {
+  pointer-events: none;
+  position: fixed;
+  margin-top: 10px;
   width: 100%;
-  text-align: center;
-  line-height: 2.5;
-  overflow: hidden;
+  z-index: 1001; // has to be higher than the user panel
 
-  animation: slideDown 4s ease 0s 1 forwards;
-}
-
-:host ::ng-deep {
-  .dt-button.dt-button-nested.dt-icon-button:active:not([disabled]),
-  .dt-button.dt-button-nested.dt-icon-button:hover:not([disabled]) {
-    background: transparent;
-    svg {
-      fill: $gray-300;
-    }
+  ktb-notification {
+    pointer-events: auto;
   }
-
-  .dt-icon-button {
-    margin-top: 1px;
-  }
-
-  .info-note,
-  .error-note,
-  .success-note {
-    a {
-      color: #ffffff;
-    }
-
-    .dt-button-nested .dt-button-icon .dt-icon svg {
-      fill: #ffffff;
-    }
-
-    .long-note {
-      line-height: 1.4;
-    }
-
-    span.small {
-      color: #ffffff;
-    }
-  }
-}
-
-.info-note,
-.error-note,
-.success-note {
-  color: #ffffff;
-}
-
-.info-note {
-  background-color: var(--dt-theme-main-active-color);
-}
-.error-note {
-  background-color: $error-color;
-}
-.success-note {
-  background-color: $cta-color-active;
-}
-.warning-note {
-  background-color: $warning-color;
 }

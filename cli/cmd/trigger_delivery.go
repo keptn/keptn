@@ -83,11 +83,6 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	logging.PrintLog("Starting to deliver the service "+
 		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" in version "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
 	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return err

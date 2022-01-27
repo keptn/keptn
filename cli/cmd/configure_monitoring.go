@@ -83,11 +83,6 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 		sdkEvent.SetData(cloudevents.ApplicationJSON, configureMonitoringEventData)
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return err

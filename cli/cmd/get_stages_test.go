@@ -17,7 +17,6 @@ func init() {
 func TestGetStage(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("get stage hardening --project=sockshop --mock")
 	_, err := executeActionCommandC(cmd)

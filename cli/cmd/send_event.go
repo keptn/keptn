@@ -58,11 +58,6 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return err

@@ -178,7 +178,6 @@ func initChecks(autoApplyNewContext bool, cm CredentialManagerInterface) {
 
 func getCurrentContextFromKubeConfig() {
 	kubeConfigFile.CurrentContext = ""
-	keptnContext = ""
 	if MockAuthCreds || MockKubeConfigCheck {
 		return
 	}

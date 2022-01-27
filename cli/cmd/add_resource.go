@@ -82,11 +82,6 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			return err
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Resource %s could not be uploaded: %s"+endPointErrorReasons,
-				*addResourceCmdParams.Resource, endPointErr)
-		}
-
 		// Handle different cases of adding resource to a projects default branch, stage branch, and/or service sub-directory
 		if isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) {
 			// add to all stages

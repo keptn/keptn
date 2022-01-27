@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -25,6 +26,11 @@ func Test_LogIngestion(t *testing.T) {
 			Message:       "yet another error happened",
 		},
 	}}
+
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/shipyard-controller", "8888", "8080")
+	require.Nil(t, err)
 
 	// store our error logs via the API
 	resp, err := ApiPOSTRequest("/controlPlane/v1/log", myErrorLogs, 3)
@@ -56,7 +62,7 @@ func Test_LogIngestion(t *testing.T) {
 	require.Equal(t, int64(3), getLogsResponse.TotalCount)
 
 	// delete the logs
-	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID), 3)
+	resp, err = internalKeptnAPI.Delete(fmt.Sprintf("/v1/log?integrationId=%s", myLogID), 3)
 
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)

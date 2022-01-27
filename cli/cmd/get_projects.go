@@ -89,11 +89,6 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return err
@@ -166,7 +161,6 @@ func filterProjects(projects []*models.Project, projectName string) []*models.Pr
 }
 
 func parseCreationDate(creationDate string) string {
-
 	const na = "n/a"
 	if creationDate == "" {
 		return na
@@ -181,9 +175,7 @@ func parseCreationDate(creationDate string) string {
 }
 
 func init() {
-
 	getCmd.AddCommand(getProjectCmd)
 	getProject.outputFormat = getProjectCmd.Flags().StringP("output", "o", "",
 		"Output format. One of json|yaml")
-
 }

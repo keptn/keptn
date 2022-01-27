@@ -144,10 +144,7 @@ func NewSecretCmdHandler(cm credentialmanager.CredentialManagerInterface) (*Secr
 	if err != nil {
 		return nil, errors.New(authErrorMsg)
 	}
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return nil, fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
+
 	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return nil, err
