@@ -451,6 +451,10 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 	blob, err := resolve(obj, file)
 
 	if err != nil {
+		if errors.Is(err, object.ErrFileNotFound) {
+			return []byte{},
+				fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, kerrors.ErrResourceNotFound)
+		}
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}

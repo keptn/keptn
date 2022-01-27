@@ -302,6 +302,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 101
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
@@ -346,8 +350,9 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 101
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: false # we need it for caching. It is used to create /var/cache/nginx/client_temp
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: api-nginx-config
           configMap:
@@ -365,7 +370,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}       
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:

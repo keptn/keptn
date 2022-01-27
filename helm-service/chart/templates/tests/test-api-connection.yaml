@@ -13,7 +13,11 @@ spec:
       image: busybox
       args:
         - wget
+        {{- if not .Values.remoteControlPlane.api.tokenSecretName }}
         - '--header=x-token: {{ .Values.remoteControlPlane.api.token }}'
+        {{- else }}
+        - '--header=x-token: {{ index (lookup "v1" "Secret" .Release.Namespace "keptn-api-token").data "keptn-api-token" }}'
+        {{- end }}
         - {{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api/v1/metadata
   restartPolicy: Never
   {{- end -}}

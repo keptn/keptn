@@ -28,7 +28,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "mongodb-datastore",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/",
   "paths": {
@@ -146,8 +146,9 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Saves an event to the datastore",
+        "summary": "INTERNAL Endpoint: Saves an event to the datastore",
         "operationId": "saveEvent",
+        "deprecated": true,
         "parameters": [
           {
             "name": "body",
@@ -234,8 +235,9 @@ func init() {
         "tags": [
           "health"
         ],
-        "summary": "Health endpoint",
+        "summary": "INTERNAL Endpoint: Health endpoint",
         "operationId": "getHealth",
+        "deprecated": true,
         "responses": {
           "200": {
             "description": "healthy"
@@ -253,6 +255,9 @@ func init() {
         {
           "type": "object",
           "properties": {
+            "gitcommitid": {
+              "type": "string"
+            },
             "shkeptncontext": {
               "type": "string"
             },
@@ -453,8 +458,9 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Saves an event to the datastore",
+        "summary": "INTERNAL Endpoint: Saves an event to the datastore",
         "operationId": "saveEvent",
+        "deprecated": true,
         "parameters": [
           {
             "name": "body",
@@ -547,8 +553,9 @@ func init() {
         "tags": [
           "health"
         ],
-        "summary": "Health endpoint",
+        "summary": "INTERNAL Endpoint: Health endpoint",
         "operationId": "getHealth",
+        "deprecated": true,
         "responses": {
           "200": {
             "description": "healthy"
@@ -566,6 +573,9 @@ func init() {
         {
           "type": "object",
           "properties": {
+            "gitcommitid": {
+              "type": "string"
+            },
             "shkeptncontext": {
               "type": "string"
             },

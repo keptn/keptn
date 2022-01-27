@@ -28,6 +28,7 @@ import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
+import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 
 @Injectable({
   providedIn: 'root',
@@ -47,7 +48,6 @@ export class DataService {
   protected _hasUnreadUniformRegistrationLogs = new BehaviorSubject<boolean>(false);
   protected readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   protected readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
-  private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   protected _evaluationResults = new Subject<EvaluationHistory>();
@@ -404,6 +404,10 @@ export class DataService {
       map((response) => response.body),
       map((body) => body?.states.map((sequence) => Sequence.fromJSON(sequence)) ?? [])
     );
+  }
+
+  public getSequenceMetadata(projectName: string): Observable<ISequencesMetadata> {
+    return this.apiService.getSequencesMetadata(projectName);
   }
 
   protected addNewSequences(

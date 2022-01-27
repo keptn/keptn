@@ -23,6 +23,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_Webhook", Test_Webhook)
 	t.Run("Test_Webhook_OverlappingSubscriptions", Test_Webhook_OverlappingSubscriptions)
 	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledFinishedEvents)
+	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledStartedEvents)
 	t.Run("Test_SequenceTimeout", Test_SequenceTimeout)
 	t.Run("Test_SequenceTimeoutDelayedTask", Test_SequenceTimeoutDelayedTask)
 	t.Run("Test_SequenceControl_Abort", Test_SequenceControl_Abort)

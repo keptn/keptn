@@ -1,5 +1,4 @@
 import {
-  ChangeDetectorRef,
   Component,
   Directive,
   EventEmitter,
@@ -53,12 +52,12 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   set task(value: Trace | undefined) {
     if (this._task !== value) {
       this._task = value;
-      this.changeDetectorRef.markForCheck();
     }
   }
 
+  @Input() latestDeployment: string | undefined;
+
   constructor(
-    private changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
     private dialog: MatDialog,
     private clipboard: ClipboardService,

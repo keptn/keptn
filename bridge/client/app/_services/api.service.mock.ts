@@ -39,6 +39,8 @@ import { EvaluationResultsResponseDataMock } from './_mockData/api-responses/eva
 import { EventResultResponseMock } from './_mockData/api-responses/event-result-response.mock';
 import { ServiceStatesResultResponseMock } from './_mockData/api-responses/service-states-results-response.mock';
 import { DeploymentResponseMock } from './_mockData/api-responses/deployment-response.mock';
+import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { SequenceMetadataMock } from './_mockData/sequence-metadata.mock';
 
 @Injectable({
   providedIn: null,
@@ -393,6 +395,10 @@ export class ApiServiceMock extends ApiService {
     return of({
       data: {},
     });
+  }
+
+  public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
+    return of(SequenceMetadataMock);
   }
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */

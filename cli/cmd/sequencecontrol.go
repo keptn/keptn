@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 )
 
@@ -42,7 +43,11 @@ func controlSequence(sequenceState SequenceState, params sequenceControlStruct) 
 		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
 	}
-	sequenceControlHandler := apiutils.NewAuthenticatedSequenceControlHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return err
+	}
+
 	controlParams := apiutils.SequenceControlParams{
 		Project:      *params.project,
 		KeptnContext: *params.keptnContext,
@@ -50,5 +55,5 @@ func controlSequence(sequenceState SequenceState, params sequenceControlStruct) 
 		State:        string(sequenceState),
 	}
 
-	return sequenceControlHandler.ControlSequence(controlParams)
+	return api.SequencesV1().ControlSequence(controlParams)
 }

@@ -2,18 +2,18 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
+	auth2 "github.com/keptn/keptn/cli/internal/auth"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +24,11 @@ type authCmdParams struct {
 	acceptContext        bool
 	secure               *bool
 	skipNamespaceListing *bool
+	sso                  *bool
+	ssoLogout            *bool
+	ssoDiscovery         *string
+	ssoClientID          *string
+	ssoClientSecret      *string
 }
 
 type smartKeptnAuthParams struct {
@@ -67,6 +72,38 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		// sign out
+		if *authParams.ssoLogout {
+			store := auth2.NewLocalFileOauthStore()
+			err := store.Wipe()
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		// sign in
+		if *authParams.sso {
+			if *authParams.ssoDiscovery == "" {
+				return fmt.Errorf("Unable to login using SSO: No OAuth Discovery URL provided")
+			}
+			if *authParams.ssoClientID == "" {
+				return fmt.Errorf("Unable to login usin SSO: No client ID provided")
+			}
+			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileOauthStore(), auth2.NewBrowser(), &auth2.ClosingRedirectHandler{})
+
+			clientValues := auth2.OauthClientValues{
+				OauthDiscoveryURL: *authParams.ssoDiscovery,
+				OauthClientID:     *authParams.ssoClientID,
+				OauthClientSecret: *authParams.ssoClientSecret,
+			}
+			err := oauth.Auth(clientValues)
+			if err != nil {
+				return err
+			}
+		}
+
+		// usual x-token credential stuff
 		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
 		authenticator := NewAuthenticator(namespace, credentialManager)
 
@@ -94,6 +131,11 @@ func init() {
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
+	authParams.sso = authCmd.Flags().Bool("sso", false, "Use single sign on")
+	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable single sign on access")
+	authParams.ssoDiscovery = authCmd.Flags().String("sso-discovery", "", "Well known discovery URL used for SSO")
+	authParams.ssoClientID = authCmd.Flags().String("sso-client-id", "", "Oauth Client ID used for SSO")
+	authParams.ssoClientSecret = authCmd.Flags().String("sso-client-secret", "", "Oauth Client Secret used for SSO")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
@@ -112,18 +154,20 @@ func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthPa
 		return nil
 	}
 
-	if !mocking {
-		if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
-			namespace, err = smartKeptnCLIAuth()
-			if err != nil {
-				return err
-			}
-		}
+	if *authParams.sso {
+		return nil
+	}
 
-		err = smartFetchKeptnAuthParameters(authParams, smartKeptnAuth)
+	if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
+		namespace, err = smartKeptnCLIAuth()
 		if err != nil {
-			return fmt.Errorf(err.Error()+parametersRequiredMessage, getReleaseDocsURL(), namespace, namespace)
+			return err
 		}
+	}
+
+	err = smartFetchKeptnAuthParameters(authParams, smartKeptnAuth)
+	if err != nil {
+		return fmt.Errorf(err.Error()+parametersRequiredMessage, getReleaseDocsURL(), namespace, namespace)
 	}
 	return nil
 }
@@ -169,20 +213,6 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	}
 
 	return nil
-}
-
-// try to authenticate towards the given endpoint with the provided apiToken
-func authenticate(endPoint string, apiToken string) error {
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"auth",
-		fmt.Sprintf("--endpoint=%s", endPoint),
-		fmt.Sprintf("--api-token=%s", apiToken),
-	}
-	rootCmd.SetArgs(args)
-	return rootCmd.Execute()
 }
 
 func smartKeptnCLIAuth() (string, error) {

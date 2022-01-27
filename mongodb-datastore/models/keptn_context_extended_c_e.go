@@ -17,6 +17,9 @@ import (
 type KeptnContextExtendedCE struct {
 	Event
 
+	// gitcommitid
+	Gitcommitid string `json:"gitcommitid,omitempty"`
+
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
@@ -38,6 +41,8 @@ func (m *KeptnContextExtendedCE) UnmarshalJSON(raw []byte) error {
 
 	// AO1
 	var dataAO1 struct {
+		Gitcommitid string `json:"gitcommitid,omitempty"`
+
 		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Shkeptnspecversion string `json:"shkeptnspecversion,omitempty"`
@@ -47,6 +52,8 @@ func (m *KeptnContextExtendedCE) UnmarshalJSON(raw []byte) error {
 	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
 		return err
 	}
+
+	m.Gitcommitid = dataAO1.Gitcommitid
 
 	m.Shkeptncontext = dataAO1.Shkeptncontext
 
@@ -67,12 +74,16 @@ func (m KeptnContextExtendedCE) MarshalJSON() ([]byte, error) {
 	}
 	_parts = append(_parts, aO0)
 	var dataAO1 struct {
+		Gitcommitid string `json:"gitcommitid,omitempty"`
+
 		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Shkeptnspecversion string `json:"shkeptnspecversion,omitempty"`
 
 		Triggeredid string `json:"triggeredid,omitempty"`
 	}
+
+	dataAO1.Gitcommitid = m.Gitcommitid
 
 	dataAO1.Shkeptncontext = m.Shkeptncontext
 

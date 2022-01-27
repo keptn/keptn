@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { DataService } from '../../_services/data.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { ProjectsMock } from '../../_services/_mockData/projects.mock';
-import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
+import { SequenceMetadataMock } from '../../_services/_mockData/sequence-metadata.mock';
+import { SequencesMock } from '../../_services/_mockData/sequences.mock';
+import { ProjectsMock } from '../../_services/_mockData/projects.mock';
+import moment from 'moment';
 
 describe('KtbEventsListComponent', () => {
-  let httpMock: HttpTestingController;
-
   let component: KtbSequenceViewComponent;
   let fixture: ComponentFixture<KtbSequenceViewComponent>;
-  let dataService: DataService;
 
   const projectName = 'sockshop';
 
@@ -31,14 +31,12 @@ describe('KtbEventsListComponent', () => {
           },
         },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
+        { provide: ApiService, useClass: ApiServiceMock },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceViewComponent);
     component = fixture.componentInstance;
-
-    dataService = fixture.debugElement.injector.get(DataService);
-    httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
   });
 
@@ -46,127 +44,153 @@ describe('KtbEventsListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show loading indicator while loading', async () => {
+  it('should update the latest deployed image', () => {
     // given
-    dataService.loadProjects();
-    const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
-    projectsRequest.flush({
-      projects: ProjectsMock,
-      totalCount: ProjectsMock.length,
-    });
-
-    fixture.detectChanges();
-
-    const loadingIndicator = fixture.nativeElement.querySelector('[uitestid=keptn-loadingSequences]');
-    const emptyStateContainer = fixture.nativeElement.querySelector('[uitestid=keptn-noSequences]');
-    const sequenceList = fixture.nativeElement.querySelector('[uitestid=keptn-sequence-view-roots]');
-
-    // then
-    expect(loadingIndicator).toBeTruthy();
-    expect(emptyStateContainer).toBeFalsy();
-    expect(sequenceList).toBeFalsy();
-  });
-
-  it('should show empty state if no sequences loaded', async () => {
-    // given
-    dataService.loadProjects();
-    const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
-    projectsRequest.flush({
-      projects: ProjectsMock,
-      totalCount: ProjectsMock.length,
-    });
-
-    const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
-    sequencesRequest.flush({
-      states: [],
-      totalCount: 0,
-    });
-
-    httpMock.verify();
-    fixture.detectChanges();
-
-    const loadingIndicator = fixture.nativeElement.querySelector('[uitestid=keptn-loadingSequences]');
-    const emptyStateContainer = fixture.nativeElement.querySelector('[uitestid=keptn-noSequences]');
-    const sequenceList = fixture.nativeElement.querySelector('[uitestid=keptn-sequence-view-roots]');
-
-    // then
-    expect(loadingIndicator).toBeFalsy();
-    expect(emptyStateContainer).toBeTruthy();
-    expect(sequenceList).toBeFalsy();
-  });
-
-  it('should show list of sequences', async () => {
-    // given
-    dataService.loadProjects();
-    const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
-    projectsRequest.flush({
-      projects: ProjectsMock,
-      totalCount: ProjectsMock.length,
-    });
-
-    const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
-    sequencesRequest.flush({
-      states: SequencesMock,
-      totalCount: SequencesMock.length,
-    });
-
-    httpMock.verify();
-    fixture.detectChanges();
-
-    const loadingIndicator = fixture.nativeElement.querySelector('[uitestid=keptn-loadingSequences]');
-    const emptyStateContainer = fixture.nativeElement.querySelector('[uitestid=keptn-noSequences]');
-    const sequenceList = fixture.nativeElement.querySelector('[uitestid=keptn-sequence-view-roots]');
-
-    // then
-    expect(loadingIndicator).toBeFalsy();
-    expect(emptyStateContainer).toBeFalsy();
-    expect(sequenceList).toBeTruthy();
-  });
-
-  it('should show empty list after filter applied', async () => {
-    // given
-    dataService.loadProjects();
-    const projectsRequest = httpMock.expectOne('./api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50');
-    projectsRequest.flush({
-      projects: ProjectsMock,
-      totalCount: ProjectsMock.length,
-    });
-
-    const sequencesRequest = httpMock.expectOne(`./api/controlPlane/v1/sequence/${projectName}?pageSize=25`);
-    sequencesRequest.flush({
-      states: SequencesMock,
-      totalCount: SequencesMock.length,
-    });
-
-    httpMock.verify();
-    fixture.detectChanges();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    component.latestDeployments = SequenceMetadataMock.deployments;
+    component.selectedStage = 'staging';
+    component.currentSequence = SequencesMock[0];
 
     // when
-    clickFilterCheckbox('carts-db');
-    clickFilterCheckbox('delivery');
-    fixture.detectChanges();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    component.updateLatestDeployedImage();
 
     // then
-    const loadingIndicator = fixture.nativeElement.querySelector('[uitestid=keptn-loadingSequences]');
-    const emptyStateFilteredContainer = fixture.nativeElement.querySelector('[uitestid=keptn-noSequencesFiltered]');
-    const sequenceList = fixture.nativeElement.querySelector('[uitestid=keptn-sequence-view-roots]');
-
-    expect(loadingIndicator).toBeFalsy();
-    expect(emptyStateFilteredContainer).toBeTruthy();
-    expect(sequenceList).toBeFalsy();
+    expect(component.currentLatestDeployedImage).toEqual('carts:0.12.3');
   });
 
-  function clickFilterCheckbox(selector: string): void {
-    const checkboxes = document.evaluate(
-      `//dt-checkbox[contains(., '${selector}')]`,
-      document,
-      null,
-      XPathResult.ANY_TYPE,
-      null
-    );
-    const checkbox = checkboxes.iterateNext();
-    if (checkbox) {
-      checkbox.childNodes[0].childNodes[0].dispatchEvent(new Event('click'));
-    }
-  }
+  it('should not alter service filters if metadata and sequences match', () => {
+    // given
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    // @ts-ignore // Ignore private property
+    component.project.sequences = SequencesMock;
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    component.mapServiceFilters(SequenceMetadataMock);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toEqual([
+      { name: 'carts-db', value: 'carts-db' },
+      { name: 'carts', value: 'carts' },
+    ]);
+  });
+
+  it('should add a service if it is in a sequence but not in metadata', () => {
+    // given
+    const metadata = SequenceMetadataMock;
+    metadata.filter.services = metadata.filter.services.splice(1, 1); // remove carts-db
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    // @ts-ignore // Ignore private property
+    component.project.sequences = SequencesMock;
+    // @ts-ignore // Ignore private property
+    component.filterFieldData.autocomplete[0].autocomplete = [{ name: 'carts', value: 'carts' }];
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    component.mapServiceFilters(metadata);
+
+    // then
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toEqual([
+      { name: 'carts', value: 'carts' },
+      { name: 'carts-db', value: 'carts-db' },
+    ]);
+  });
+
+  it('should remove a service from filters if not available in metadata anymore', () => {
+    // given
+    const metadata = SequenceMetadataMock;
+    metadata.filter.services.push('helloservice');
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    // @ts-ignore // Ignore private property
+    component.project.sequences = SequencesMock;
+    // @ts-ignore // Ignore private property
+    component.filterFieldData.autocomplete[0].autocomplete.push({ name: 'helloservice', value: 'helloservice' });
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    component.mapServiceFilters(metadata);
+
+    // then
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toHaveLength(3);
+
+    // As order gets messed up sometimes, it's safer to test each individually
+
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+      name: 'carts-db',
+      value: 'carts-db',
+    });
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+      name: 'helloservice',
+      value: 'helloservice',
+    });
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
+
+    // when
+    metadata.filter.services.pop();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore // Ignore private property
+    component.mapServiceFilters(metadata);
+
+    // then
+
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toHaveLength(2);
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
+    // @ts-ignore // Ignore private property
+    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+      name: 'carts-db',
+      value: 'carts-db',
+    });
+    /* eslint-enable @typescript-eslint/ban-ts-comment */
+  });
+
+  it('should show a reload button if older than 1 day', () => {
+    // given
+    const sequence = SequencesMock[0];
+    sequence.time = moment().subtract(1, 'days').subtract(1, 'second').toISOString();
+
+    // when
+    const showButton = component.showReloadButton(sequence);
+
+    // then
+    expect(showButton).toEqual(true);
+  });
+
+  it('should not show a reload button if newer than 1 day', () => {
+    // given
+    const sequence = SequencesMock[0];
+    sequence.time = moment().subtract(1, 'hours').add(1, 'second').toISOString();
+
+    // when
+    const showButton = component.showReloadButton(sequence);
+
+    // then
+    expect(showButton).toEqual(false);
+  });
 });

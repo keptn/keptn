@@ -16,13 +16,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
-
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 )
 
 func TestSkipUpgradeCheck(t *testing.T) {
@@ -30,8 +29,8 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	skipMsg := "Skipping upgrade compatibility check!"
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
+	Version = "0.11.4"
 	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
-	mocking = true
 	cmd := fmt.Sprintf("upgrade --mock")
 
 	ts := getMockVersionHTTPServer()
@@ -55,7 +54,7 @@ func TestSkipUpgradeCheck(t *testing.T) {
 		t.Errorf("upgrade Response did not match [no skip] : \nERROR: %v\nOUT: %v", err, out)
 	}
 
-	cmd = fmt.Sprintf("upgrade --skip-upgrade-check --mock")
+	cmd = fmt.Sprintf("upgrade --skip-upgrade-check --mock --chart-repo=https://charts-dev.keptn.sh/packages/keptn-0.9.0.tgz")
 	r = newRedirector()
 	r.redirectStdOut()
 

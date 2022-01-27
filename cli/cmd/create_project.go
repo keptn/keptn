@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
@@ -12,7 +13,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -93,11 +93,15 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 				endPointErr)
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			_, err := apiHandler.CreateProject(project)
+			_, err := api.APIV1().CreateProject(project)
 			if err != nil {
 				return fmt.Errorf("Create project was unsuccessful.\n%s", *err.Message)
 			}

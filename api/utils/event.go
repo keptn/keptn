@@ -26,7 +26,7 @@ func GetDatastoreURL() string {
 }
 
 // SendEvent godoc
-func SendEvent(keptnContext, triggeredID, eventType, source string, data interface{}) error {
+func SendEvent(keptnContext, triggeredID, gitCommitID, eventType, source string, data interface{}) error {
 	if source == "" {
 		source = "https://github.com/keptn/keptn/api"
 	}
@@ -38,6 +38,7 @@ func SendEvent(keptnContext, triggeredID, eventType, source string, data interfa
 	ev.SetDataContentType(cloudevents.ApplicationJSON)
 	ev.SetExtension("shkeptncontext", keptnContext)
 	ev.SetExtension("triggeredid", triggeredID)
+	ev.SetExtension("gitcommitid", gitCommitID)
 	ev.SetData(cloudevents.ApplicationJSON, data)
 
 	k, err := keptnv2.NewKeptn(&ev, keptnutils.KeptnOpts{

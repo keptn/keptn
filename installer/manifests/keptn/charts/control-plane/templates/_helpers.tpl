@@ -97,6 +97,12 @@ lifecycle:
   valueFrom:
     fieldRef:
       fieldPath: metadata.labels['app.kubernetes.io/version']
+- name: DISTRIBUTOR_VERSION
+{{- if .Values.distributor.image.tag }}
+  value: {{ .Values.distributor.image.tag }}
+{{- else }}
+  value: {{ .Chart.AppVersion }}
+{{- end }}
 - name: LOCATION
   valueFrom:
    fieldRef:

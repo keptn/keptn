@@ -8,8 +8,6 @@ $fonts-dir: '^./assets/fonts';
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
-@import 'barista';
-
 pre,
 code {
   font-family: monospace;
@@ -129,7 +127,7 @@ a {
 }
 
 a:hover {
-  color: $primary-color;
+  color: var(--dt-theme-main-default-color);
 }
 
 button.dt-button-primary.danger-button:not([disabled]),
@@ -432,7 +430,7 @@ pre.code {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  border: 1px solid $link-icon-color;
+  border: 1px solid var(--dt-theme-main-default-color);
   border-radius: 5px;
   background-color: transparent;
   text-align: center;

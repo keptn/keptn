@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"sort"
 
@@ -196,19 +197,23 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
-		if common.IsInvalidTokenError(err) {
+		if errors.Is(err, common.ErrConfigStoreInvalidToken) {
 			SetFailedDependencyErrorResponse(err, c, err.Error())
 			return
 		}
-		if err == ErrProjectNotFound {
+		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
+			SetNotFoundErrorResponse(err, c, err.Error())
+			return
+		}
+		if errors.Is(err, ErrProjectNotFound) {
 			SetNotFoundErrorResponse(err, c)
 			return
 		}
-		if err == ErrInvalidStageChange {
+		if errors.Is(err, ErrInvalidStageChange) {
 			SetBadRequestErrorResponse(err, c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(ErrInternalError, c)
 		return
 	}
 	c.Status(http.StatusCreated)
