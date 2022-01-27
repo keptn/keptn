@@ -11,10 +11,9 @@ Cypress.on('window:before:load', (window) => {
 afterEach(() => {
   // eslint-disable-next-line promise/always-return,promise/catch-or-return
   cy.window().then((window) => {
-    const errorCount = window.errorCount ?? 0;
-    window.errorCount = 0;
-    expect(window.console.error).to.have.callCount(errorCount);
+    expect(window.console.error).to.have.callCount(window.errorCount ?? 0);
     expect(window.console.warn).to.have.callCount(0);
+    window.errorCount = 0;
     return null;
   });
 });
