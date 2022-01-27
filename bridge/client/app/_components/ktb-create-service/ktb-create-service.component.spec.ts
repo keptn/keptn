@@ -95,7 +95,7 @@ describe('KtbCreateServiceComponent', () => {
 
     // then
     expect(loadProjectsSpy).toHaveBeenCalledWith(projectName);
-    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.SUCCESS, 'Service successfully created!', 5_000);
+    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.SUCCESS, 'Service successfully created!');
   });
 
   it('should not create service', () => {
@@ -111,7 +111,7 @@ describe('KtbCreateServiceComponent', () => {
     component.createService(projectName);
 
     // then
-    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.ERROR, 'service already exists', 5_000);
+    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.ERROR, 'service already exists');
   });
 
   it('should go back', () => {

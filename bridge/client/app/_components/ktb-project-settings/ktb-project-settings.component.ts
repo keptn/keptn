@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, HostListener } from '@angular/core';
-import { Subject, Observable, of } from 'rxjs';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import {
   GitData,
@@ -15,7 +15,8 @@ import { EventService } from '../../_services/event.service';
 import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
-import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
+import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
+import { NotificationType } from '../../_models/notification';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
 
 type DialogState = null | 'unsaved';
@@ -24,7 +25,6 @@ type DialogState = null | 'unsaved';
   selector: 'ktb-project-settings',
   templateUrl: './ktb-project-settings.component.html',
   styleUrls: ['./ktb-project-settings.component.scss'],
-  providers: [NotificationsService],
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$ = new Subject<void>();
@@ -102,7 +102,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-    this.notificationsService.clearNotifications();
   }
 
   private loadProjectsAndSetValidator(): void {
@@ -136,13 +135,15 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   private showCreateNotificationAndRedirect(): void {
     this.notificationsService.addNotification(
       NotificationType.SUCCESS,
-      TemplateRenderedNotifications.CREATE_PROJECT,
-      undefined,
-      true,
+      '',
       {
-        projectName: this.projectName,
-        routerLink: `/project/${this.projectName}/settings/services/create`,
-      }
+        component: KtbProjectCreateMessageComponent,
+        data: {
+          projectName: this.projectName,
+          routerLink: `/project/${this.projectName}/settings/services/create`,
+        },
+      },
+      10_000
     );
     // Remove query param for not showing notification on reload
     this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
@@ -175,8 +176,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
             this.gitData = { ...this.gitData };
             this.notificationsService.addNotification(
               NotificationType.SUCCESS,
-              'The Git upstream was changed successfully.',
-              5000
+              'The Git upstream was changed successfully.'
             );
 
             this.pendingChangesSubject.next(true);
@@ -221,11 +221,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
               });
             },
             () => {
-              this.notificationsService.addNotification(
-                NotificationType.ERROR,
-                'The project could not be created.',
-                5000
-              );
+              this.notificationsService.addNotification(NotificationType.ERROR, 'The project could not be created.');
               this.isCreatingProjectInProgress = false;
             }
           );
