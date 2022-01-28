@@ -59,7 +59,7 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "qualityt"
+	projectName := "qualitytrue"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
@@ -432,14 +432,14 @@ func storeSLOWithCommit(t *testing.T, projectName string, serviceName string, co
 		Resources: []*models.Resource{
 			{
 				ResourceContent: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),
-				ResourceURI:     strutils.Stringp("slo.yaml"),
+				ResourceURI:     strutils.Stringp("/slo.yaml"),
 			},
 		},
 	}, 3)
 	require.Nil(t, err)
-	require.Equal(t, 201, resp.Response().StatusCode)
 
 	t.Logf("Received response %s", resp.String())
+	require.Equal(t, 201, resp.Response().StatusCode)
 
 	response := struct {
 		CommitID string `json:"commitID"`
