@@ -153,21 +153,13 @@ func (p ProjectManager) migrateProject(project models.UpdateProjectParams, gitCo
 		return nil
 	}
 
-	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
-	if err != nil {
-		return err
-	}
-	err = p.git.CheckoutBranch(gitContext, defaultBranch)
-
 	err = retry.Retry(func() error {
 		if err := p.git.Pull(gitContext); err != nil {
 			return err
 		}
 		metadata.IsUsingDirectoryStructure = true
-		marshal, err := yaml.Marshal(metadata)
-		if err != nil {
-			return err
-		}
+		marshal, _ := yaml.Marshal(metadata)
+
 		if err := p.git.MigrateProject(gitContext, marshal); err != nil {
 			return err
 		}

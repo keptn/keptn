@@ -303,6 +303,358 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
 }
 
+func TestProjectManager_UpdateProject_WithMigration(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Migrate: true,
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return true
+	}
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		if strings.HasSuffix(filename, "metadata.yaml") {
+			return []byte(`projectname: "sequence-queue3"`), nil
+		}
+		return []byte("content"), nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.Nil(t, err)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+
+	require.Len(t, fields.git.MigrateProjectCalls(), 1)
+}
+
+func TestProjectManager_UpdateProject_WithMigration_CannotPull(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Migrate: true,
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return true
+	}
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		if strings.HasSuffix(filename, "metadata.yaml") {
+			return []byte(`projectname: "sequence-queue3"`), nil
+		}
+		return []byte("content"), nil
+	}
+
+	fields.git.PullFunc = func(gitContext common_models.GitContext) error {
+		return errors.New("oops")
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.NotNil(t, err)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+
+	require.Len(t, fields.git.MigrateProjectCalls(), 0)
+}
+
+func TestProjectManager_UpdateProject_WithMigration_MigrationFailsOnFirstTry(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Migrate: true,
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return true
+	}
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		if strings.HasSuffix(filename, "metadata.yaml") {
+			return []byte(`projectname: "sequence-queue3"`), nil
+		}
+		return []byte("content"), nil
+	}
+
+	nrTries := 0
+	fields.git.MigrateProjectFunc = func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
+		if nrTries == 0 {
+			nrTries++
+			return errors.New("oops")
+		}
+		return nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.Nil(t, err)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+
+	require.Len(t, fields.git.MigrateProjectCalls(), 2)
+}
+
+func TestProjectManager_UpdateProject_WithMigration_AlreadyMigrated(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Migrate: true,
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return true
+	}
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		if strings.HasSuffix(filename, "metadata.yaml") {
+			return []byte(`projectName: "sequence-queue3"
+isUsingDirectoryStructure: true`), nil
+		}
+		return []byte("content"), nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.Nil(t, err)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+
+	require.Len(t, fields.git.MigrateProjectCalls(), 0)
+}
+
+func TestProjectManager_UpdateProject_WithMigration_InvalidMetadata(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Migrate: true,
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return true
+	}
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		if strings.HasSuffix(filename, "metadata.yaml") {
+			// metadata.yaml with wrong indentation
+			return []byte(`projectName: "sequence-queue3"
+		isUsingDirectoryStructure: true`), nil
+		}
+		return []byte("content"), nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.NotNil(t, err)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+
+	require.Len(t, fields.git.MigrateProjectCalls(), 0)
+}
+
+func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
+	project := models.UpdateProjectParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Migrate: true,
+	}
+
+	expectedGitContext := common_models.GitContext{
+		Project: "my-project",
+		Credentials: &common_models.GitCredentials{
+			User:      "my-user",
+			Token:     "my-token",
+			RemoteURI: "my-remote-uri",
+		},
+	}
+
+	fields := getTestProjectManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return true
+	}
+	fields.fileWriter.FileExistsFunc = func(path string) bool {
+		return true
+	}
+
+	nrTries := 0
+	fields.fileWriter.ReadFileFunc = func(filename string) ([]byte, error) {
+		if nrTries == 0 {
+			nrTries++
+			return []byte("content"), nil
+		}
+		if strings.HasSuffix(filename, "metadata.yaml") {
+			// metadata.yaml with wrong indentation
+			return nil, errors.New("no file :(")
+		}
+		return []byte("content"), nil
+	}
+
+	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
+	err := p.UpdateProject(project)
+
+	require.NotNil(t, err)
+
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+
+	require.Len(t, fields.git.ProjectExistsCalls(), 1)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
+	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
+
+	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+
+	require.Len(t, fields.git.MigrateProjectCalls(), 0)
+}
+
 func TestProjectManager_UpdateProject_CannotReadCredentials(t *testing.T) {
 	project := models.UpdateProjectParams{
 		Project: models.Project{ProjectName: "my-project"},
@@ -595,6 +947,12 @@ func getTestProjectManagerFields() projectManagerTestFields {
 				return "main", nil
 			},
 			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
+				return nil
+			},
+			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
+				return nil
+			},
+			PullFunc: func(gitContext common_models.GitContext) error {
 				return nil
 			},
 		},
