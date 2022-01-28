@@ -44,13 +44,15 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 	config := &oauth2.Config{
 		ClientID:     clientValues.OauthClientID,
 		ClientSecret: clientValues.OauthClientSecret,
-		Scopes:       []string{openIDScope},
+		Scopes:       clientValues.OauthScopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
 		RedirectURL: redirectURL,
 	}
+
+	enforceOpenIDScope(config)
 
 	codeVerifier, err := GenerateCodeVerifier()
 	if err != nil {
@@ -92,16 +94,30 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 		return nil, fmt.Errorf("failed to get OAuth HTTP client: %w", err)
 	}
 
+	openIDScopePresent := false
+	for _, s := range oauthInfo.ClientValues.OauthScopes {
+		if s == "openid" {
+			openIDScopePresent = true
+			break
+		}
+	}
+	if !openIDScopePresent {
+		oauthInfo.ClientValues.OauthScopes = append(oauthInfo.ClientValues.OauthScopes, "openid")
+	}
+
 	config := &oauth2.Config{
 		ClientSecret: oauthInfo.ClientValues.OauthClientSecret,
 		ClientID:     oauthInfo.ClientValues.OauthClientID,
-		Scopes:       []string{openIDScope},
+		Scopes:       oauthInfo.ClientValues.OauthScopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
 		RedirectURL: redirectURL,
 	}
+
+	enforceOpenIDScope(config)
+
 	nrts := &NotifyRefreshTokenSource{
 		config:     config,
 		tokenStore: a.tokenStore,
@@ -109,9 +125,23 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 	return oauth2.NewClient(ctx, nrts), nil
 }
 
+func enforceOpenIDScope(config *oauth2.Config) {
+	openIDScopePresent := false
+	for _, s := range config.Scopes {
+		if s == "openid" {
+			openIDScopePresent = true
+			break
+		}
+	}
+	if !openIDScopePresent {
+		config.Scopes = append(config.Scopes, "openid")
+	}
+}
+
 // OauthClientValues are values set by the user when performing SSO
 type OauthClientValues struct {
-	OauthDiscoveryURL string `json:"oauth_discovery_url"`
-	OauthClientID     string `json:"oauth_client_id"`
-	OauthClientSecret string `json:"oauth_client_secret"`
+	OauthDiscoveryURL string   `json:"oauth_discovery_url"`
+	OauthClientID     string   `json:"oauth_client_id"`
+	OauthClientSecret string   `json:"oauth_client_secret"`
+	OauthScopes       []string `json:"oauth_scopes"`
 }

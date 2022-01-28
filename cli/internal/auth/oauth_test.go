@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -96,7 +94,7 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 				browser:         tt.fields.browser,
 				redirectHandler: tt.fields.redirectHandler,
 			}
-			tt.wantErr(t, a.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", ""}), "Auth()")
+			tt.wantErr(t, a.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}}), "Auth()")
 		})
 	}
 }
@@ -171,22 +169,5 @@ func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 				return
 			}
 		})
-	}
-}
-
-func setupMockOAuthServer() (*httptest.Server, func()) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
-	})
-
-	mux.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
-		w.Write([]byte("access_token=mocked-token&scope=user&token_type=bearer"))
-	})
-
-	server := httptest.NewServer(mux)
-
-	return server, func() {
-		server.Close()
 	}
 }
