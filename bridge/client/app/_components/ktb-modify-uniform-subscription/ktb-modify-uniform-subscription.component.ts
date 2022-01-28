@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject, throwError } from 'rxjs';
+import { filter, map, switchMap, take, takeUntil, tap, catchError } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { Project } from '../../_models/project';
@@ -20,6 +20,7 @@ import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 import { EventState } from '../../../../shared/models/event-state';
 import { Trace } from '../../_models/trace';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -70,6 +71,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       displayValue: EventState.FINISHED,
     },
   ];
+  public errorMessage?: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -144,6 +146,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
     const taskNames$ = projectName$.pipe(
       switchMap((projectName) => this.dataService.getTaskNames(projectName)),
+      catchError((err: HttpErrorResponse) => {
+        this.errorMessage = err.error;
+        this.notificationsService.addNotification(NotificationType.ERROR, err.error);
+        return throwError(err);
+      }),
       take(1)
     );
     const project$ = projectName$.pipe(
@@ -217,6 +224,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
           this.eventPayload = Object.keys(event).length ? event : Trace.defaultTrace;
         });
     }
+  }
+
+  public reloadPage(): void {
+    window.location.reload();
   }
 
   private updateDataSource(project: Project): void {
