@@ -76,7 +76,7 @@ func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) err
 	}
 
 	// additionally store "invalidated" events in a dedicated collection
-	if strings.HasSuffix(string(event.Type), ".invalidated") {
+	if strings.HasSuffix(string(*event.Type), ".invalidated") {
 		if err := mr.storeEvaluationInvalidatedEvent(ctx, collection, eventInterface); err != nil {
 			logger.WithError(err).Error("could not store .invalidated event")
 			return err
@@ -611,7 +611,7 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 		data, _ := json.Marshal(outputEvent)
 
 		var keptnEvent models.KeptnContextExtendedCE
-		err = keptnEvent.UnmarshalJSON(data)
+		err = keptnEvent.UnmarshalBinary(data)
 		if err != nil {
 			logger.WithError(err).Error("Could not unmarshal")
 			continue
