@@ -515,7 +515,6 @@ func (g *Git) ProjectRepoExists(project string) bool {
 	return false
 }
 
-// TODO test!!
 func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataContent []byte) error {
 	if err := g.Pull(gitContext); err != nil {
 		return err

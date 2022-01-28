@@ -846,17 +846,19 @@ func (s *BaseSuite) TestGit_MigrateProject(c *C) {
 	}
 
 	err = g.Push(gitContext)
-	if err != nil {
-		c.Errorf("Push() error = %v, wantErr %v", err, false)
-	}
+	c.Assert(err, IsNil)
 
 	err = g.CheckoutBranch(gitContext, "master")
+	c.Assert(err, IsNil)
 
 	err = g.MigrateProject(gitContext, []byte("new-metadata-content"))
+	c.Assert(err, IsNil)
 
-	if err != nil {
-		c.Errorf("MigrateProject() error = %v, wantErr %v", err, false)
-	}
+	stat, err := os.Stat(GetProjectConfigPath(gitContext.Project) + "/keptn-stages/new-branch")
+	c.Assert(err, IsNil)
+
+	c.Assert(stat.IsDir(), Equals, true)
+
 }
 
 func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
