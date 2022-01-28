@@ -131,15 +131,10 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
 	}
 
-	return nil
-}
-
-func (p ProjectManager) DeleteProject(projectName string) error {
-	common.LockProject(projectName)
-	defer common.UnlockProject(projectName)
-
-	if err := p.fileSystem.DeleteFile(common.GetProjectConfigPath(projectName)); err != nil {
-		return fmt.Errorf("could not delete project %s: %w", projectName, err)
+	if project.Migrate {
+		if err := p.migrateProject(project, gitContext); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -147,24 +142,7 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 
 // MigrateProject migrates the branch-based structure for representing stages to the new directory-based format,
 // where each stage is represented as a directory within the main branch
-func (p ProjectManager) MigrateProject(project models.MigrateProjectParams) error {
-	common.LockProject(project.ProjectName)
-	defer common.UnlockProject(project.ProjectName)
-
-	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
-	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
-	}
-
-	gitContext := common_models.GitContext{
-		Project:     project.ProjectName,
-		Credentials: credentials,
-	}
-
-	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
-		return errors.ErrProjectNotFound
-	}
-
+func (p ProjectManager) migrateProject(project models.UpdateProjectParams, gitContext common_models.GitContext) error {
 	metadata, err := p.getProjectMetadate(project.ProjectName)
 	if err != nil {
 		return err
@@ -199,6 +177,16 @@ func (p ProjectManager) MigrateProject(project models.MigrateProjectParams) erro
 
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (p ProjectManager) DeleteProject(projectName string) error {
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
+
+	if err := p.fileSystem.DeleteFile(common.GetProjectConfigPath(projectName)); err != nil {
+		return fmt.Errorf("could not delete project %s: %w", projectName, err)
 	}
 
 	return nil

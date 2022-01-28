@@ -25,20 +25,10 @@ func (p CreateProjectParams) Validate() error {
 // swagger:model UpdateProjectParams
 type UpdateProjectParams struct {
 	Project
+	Migrate bool `json:"migrate"`
 }
 
 func (p UpdateProjectParams) Validate() error {
-	return p.Project.Validate()
-}
-
-// MigrateProjectParams contains information about the project to be updated
-//
-// swagger:models MigrateProjectParams
-type MigrateProjectParams struct {
-	Project
-}
-
-func (p MigrateProjectParams) Validate() error {
 	return p.Project.Validate()
 }
 
