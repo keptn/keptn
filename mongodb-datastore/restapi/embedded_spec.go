@@ -273,7 +273,7 @@ func init() {
         "shkeptncontext": {
           "type": "string"
         },
-        "shkeptnversion": {
+        "shkeptnspecversion": {
           "type": "string"
         },
         "source": {
@@ -615,7 +615,7 @@ func init() {
         "shkeptncontext": {
           "type": "string"
         },
-        "shkeptnversion": {
+        "shkeptnspecversion": {
           "type": "string"
         },
         "source": {

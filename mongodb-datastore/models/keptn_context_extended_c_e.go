@@ -38,8 +38,8 @@ type KeptnContextExtendedCE struct {
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
-	// shkeptnversion
-	Shkeptnversion string `json:"shkeptnversion,omitempty"`
+	// shkeptnspecversion
+	Shkeptnspecversion string `json:"shkeptnspecversion,omitempty"`
 
 	// source
 	// Required: true

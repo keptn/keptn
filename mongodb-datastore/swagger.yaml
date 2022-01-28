@@ -196,7 +196,7 @@ definitions:
         type: string
       gitcommitid:
         type: string
-      shkeptnversion:
+      shkeptnspecversion:
         type: string
       specversion:
         type: string
