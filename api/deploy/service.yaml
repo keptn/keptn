@@ -26,9 +26,8 @@ spec:
         app.kubernetes.io/version: develop
     spec:
       containers:
-
         - name: api-service
-          image: docker.io/keptn/api:0.12.0
+          image: keptn/api:latest
           ports:
             - containerPort: 8080
               protocol: TCP

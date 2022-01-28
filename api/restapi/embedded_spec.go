@@ -151,6 +151,9 @@ func init() {
         "shkeptncontext": {
           "type": "string"
         },
+        "shkeptnversion": {
+          "type": "string"
+        },
         "source": {
           "type": "string",
           "format": "uri-reference"
@@ -339,6 +342,9 @@ func init() {
           "type": "string"
         },
         "shkeptncontext": {
+          "type": "string"
+        },
+        "shkeptnversion": {
           "type": "string"
         },
         "source": {

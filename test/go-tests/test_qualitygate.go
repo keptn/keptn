@@ -59,16 +59,16 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "quality2"
+	projectName := "quality4547"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
 	source := "golang-test"
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	t.Logf("creating project %s", projectName)
+	//_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	require.Nil(t, err)
+	t.Logf("creating project %s", projectName)
 
 	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
@@ -160,6 +160,7 @@ func Test_QualityGates(t *testing.T) {
 	require.NotEmpty(t, evaluationFinishedPayload.Message)
 	//
 	//// ...and an SLO file
+
 	sloFilePath, err = CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
 	require.Nil(t, err)
 	defer os.Remove(sloFilePath)
@@ -262,11 +263,14 @@ func Test_QualityGates(t *testing.T) {
 }
 
 func performResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
-	commitID := storeSLOWithCommit(t, projectName, serviceName, qualityGatesSLOFileContent)
+	commitID := ""
+	if checkCommit {
+		commitID = storeSLOWithCommit(t, projectName, serviceName, qualityGatesSLOFileContent)
+	}
 	keptnContext := ""
 	source := "golang-test"
 
-	t.Log("sent evaluation.hardening.triggered")
+	t.Log("sent evaluation.hardening.triggered with commitid= ", commitID)
 	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationTriggeredEventData{
@@ -441,6 +445,7 @@ func storeSLOWithCommit(t *testing.T, projectName string, serviceName string, co
 		CommitID string `json:"commitID"`
 	}{}
 	resp.ToJSON(&response)
+	t.Log("Saved with commitID", response.CommitID)
 	return response.CommitID
 }
 
