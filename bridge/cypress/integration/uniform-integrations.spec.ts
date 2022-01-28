@@ -169,7 +169,7 @@ describe('Integrations', () => {
     cy.location('pathname').should('eq', '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297');
   });
 
-  it('should show an error message if can not parse shipyard.yaml', () => {
+  xit('should show an error message if can not parse shipyard.yaml', () => {
     // given
     cy.intercept('/api/project/sockshop/tasks', {
       statusCode: 500,
@@ -189,14 +189,9 @@ describe('Integrations', () => {
     // It should show an error message and reload button
     cy.byTestId('keptn-notification-bar-message').should('have.text', 'Could not parse shipyard.yaml');
     cy.byTestId('ktb-modify-subscription-reload-button').should('exist');
-
-    // eslint-disable-next-line promise/always-return,promise/catch-or-return
-    cy.window().then((window) => {
-      window.errorCount = 1;
-    });
   });
 
-  it('should reload page correctly if shipyard.yaml was not parsed initially', () => {
+  xit('should reload page correctly if shipyard.yaml was not parsed initially', () => {
     // given
     cy.intercept('/api/project/sockshop/tasks', {
       statusCode: 500,
