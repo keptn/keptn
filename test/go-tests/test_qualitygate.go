@@ -432,7 +432,7 @@ func storeSLOWithCommit(t *testing.T, projectName string, serviceName string, co
 		Resources: []*models.Resource{
 			{
 				ResourceContent: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),
-				ResourceURI:     strutils.Stringp("/slo.yaml"),
+				ResourceURI:     strutils.Stringp("slo.yaml"),
 			},
 		},
 	}, 3)
