@@ -98,17 +98,6 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 		return nil, fmt.Errorf("failed to get OAuth HTTP client: %w", err)
 	}
 
-	openIDScopePresent := false
-	for _, s := range oauthInfo.ClientValues.OauthScopes {
-		if s == "openid" {
-			openIDScopePresent = true
-			break
-		}
-	}
-	if !openIDScopePresent {
-		oauthInfo.ClientValues.OauthScopes = append(oauthInfo.ClientValues.OauthScopes, "openid")
-	}
-
 	config := &oauth2.Config{
 		ClientSecret: oauthInfo.ClientValues.OauthClientSecret,
 		ClientID:     oauthInfo.ClientValues.OauthClientID,
