@@ -836,6 +836,29 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 	}
 }
 
+func (s *BaseSuite) TestGit_MigrateProject(c *C) {
+	g := NewGit(GogitReal{})
+
+	gitContext := s.NewGitContext()
+	err := g.CreateBranch(gitContext, "new-branch", "master")
+	if err != nil {
+		c.Errorf("CreateBranch() error = %v, wantErr %v", err, false)
+	}
+
+	err = g.Push(gitContext)
+	if err != nil {
+		c.Errorf("Push() error = %v, wantErr %v", err, false)
+	}
+
+	err = g.CheckoutBranch(gitContext, "master")
+
+	err = g.MigrateProject(gitContext, []byte("new-metadata-content"))
+
+	if err != nil {
+		c.Errorf("MigrateProject() error = %v, wantErr %v", err, false)
+	}
+}
+
 func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 
 	tests := []struct {

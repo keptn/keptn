@@ -407,20 +407,27 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 		if err != nil {
 			return err
 		}
-		if err := r.Fetch(&git.FetchOptions{
-			RemoteName: "origin",
-			RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
-			Auth: &http.BasicAuth{
-				Username: gitContext.Credentials.User,
-				Password: gitContext.Credentials.Token,
-			},
-			Force: true,
-		}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		if err = g.fetch(gitContext, r); err != nil {
 			return err
 		}
 		return w.Checkout(options)
 	}
 	return kerrors.ErrProjectNotFound
+}
+
+func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
+	if err := r.Fetch(&git.FetchOptions{
+		RemoteName: "origin",
+		RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+		Auth: &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		},
+		Force: true,
+	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return err
+	}
+	return nil
 }
 
 func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
@@ -508,6 +515,7 @@ func (g *Git) ProjectRepoExists(project string) bool {
 	return false
 }
 
+// TODO test!!
 func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataContent []byte) error {
 	if err := g.Pull(gitContext); err != nil {
 		return err
@@ -516,7 +524,7 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	tmpGitContext := gitContext
 	tmpGitContext.Project = "_keptn-tmp_" + gitContext.Project
 
-	tmpProjectPath := GetProjectConfigPath(gitContext.Project)
+	tmpProjectPath := GetProjectConfigPath(tmpGitContext.Project)
 	projectPath := GetProjectConfigPath(gitContext.Project)
 
 	_, err := g.CloneRepo(tmpGitContext)
@@ -530,9 +538,12 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 		return err
 	}
 
+	if err := g.fetch(tmpGitContext, oldRepo); err != nil {
+		return err
+	}
 	branches, err := oldRepo.Branches()
 	err = branches.ForEach(func(branch *plumbing.Reference) error {
-		return g.migrateBranch(branch, err, oldRepoWorktree, projectPath, tmpProjectPath)
+		return g.migrateBranch(branch, oldRepoWorktree, projectPath, tmpProjectPath)
 	})
 	if err != nil {
 		return err
@@ -554,8 +565,8 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	return nil
 }
 
-func (g *Git) migrateBranch(branch *plumbing.Reference, err error, oldRepoWorktree *git.Worktree, projectPath string, tmpProjectPath string) error {
-	err = oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
+func (g *Git) migrateBranch(branch *plumbing.Reference, oldRepoWorktree *git.Worktree, projectPath string, tmpProjectPath string) error {
+	err := oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
 	if err != nil {
 		return err
 	}
