@@ -532,41 +532,7 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 
 	branches, err := oldRepo.Branches()
 	err = branches.ForEach(func(branch *plumbing.Reference) error {
-		err = oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
-		if err != nil {
-			return err
-		}
-		// TODO use common function to determine stage directories
-		err = ensureDirectoryExists(projectPath + "/keptn-stages")
-		if err != nil {
-			return err
-		}
-
-		err = ensureDirectoryExists(projectPath + "/keptn-stages/" + branch.Name().Short())
-		if err != nil {
-			return err
-		}
-
-		files, err := ioutil.ReadDir(tmpProjectPath)
-		if err != nil {
-			return err
-		}
-
-		for _, file := range files {
-			if file.Name() == ".git" {
-				continue
-			}
-			err := os.Rename(tmpProjectPath+"/"+file.Name(), projectPath+"/keptn-stages/"+branch.Name().Short()+"/"+file.Name())
-			if err != nil {
-				return err
-			}
-		}
-		err = oldRepoWorktree.Reset(&git.ResetOptions{Mode: git.HardReset})
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return g.migrateBranch(branch, err, oldRepoWorktree, projectPath, tmpProjectPath)
 	})
 	if err != nil {
 		return err
@@ -582,6 +548,44 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	}
 
 	if err := os.RemoveAll(tmpProjectPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *Git) migrateBranch(branch *plumbing.Reference, err error, oldRepoWorktree *git.Worktree, projectPath string, tmpProjectPath string) error {
+	err = oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
+	if err != nil {
+		return err
+	}
+	// TODO use common function to determine stage directories
+	err = ensureDirectoryExists(projectPath + "/keptn-stages")
+	if err != nil {
+		return err
+	}
+
+	err = ensureDirectoryExists(projectPath + "/keptn-stages/" + branch.Name().Short())
+	if err != nil {
+		return err
+	}
+
+	files, err := ioutil.ReadDir(tmpProjectPath)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		if file.Name() == ".git" {
+			continue
+		}
+		err := os.Rename(tmpProjectPath+"/"+file.Name(), projectPath+"/keptn-stages/"+branch.Name().Short()+"/"+file.Name())
+		if err != nil {
+			return err
+		}
+	}
+	err = oldRepoWorktree.Reset(&git.ResetOptions{Mode: git.HardReset})
+	if err != nil {
 		return err
 	}
 

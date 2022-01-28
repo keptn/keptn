@@ -103,5 +103,5 @@ func (ds DirectoryConfigurationContext) GetStageConfigPath(project, stage string
 }
 
 func (ds DirectoryConfigurationContext) GetServiceConfigPath(project, stage, service string) string {
-	return fmt.Sprintf("%s/%s/%s", ds.GetStageConfigPath(project, stage), ServiceDirectoryName, service)
+	return fmt.Sprintf("%s/%s", ds.GetStageConfigPath(project, stage), service)
 }
