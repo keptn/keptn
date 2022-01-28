@@ -9,12 +9,7 @@ import (
 	"testing"
 )
 
-func TestOauthAuthenticator_Auth(t *testing.T) {
-	discovery := &OauthDiscoveryMock{
-		discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
-			return &OauthDiscoveryResult{}, nil
-		},
-	}
+func Test_Auth_DependenciesFail(t *testing.T) {
 
 	type fields struct {
 		discovery       OauthLocationGetter
@@ -38,7 +33,11 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 		},
 		{"Auth() - open browser fails",
 			fields{
-				discovery: discovery,
+				discovery: &OauthDiscoveryMock{
+					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
 				browser: &BrowserMock{
 					openFn: func(string) error { return errors.New("browser open failed") },
 				},
@@ -51,7 +50,11 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 		},
 		{"Auth() - callback handler fails",
 			fields{
-				discovery: discovery,
+				discovery: &OauthDiscoveryMock{
+					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
 				browser: &BrowserMock{
 					openFn: func(string) error { return nil },
 				},
@@ -69,7 +72,11 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 		},
 		{"Auth() - success",
 			fields{
-				discovery: discovery,
+				discovery: &OauthDiscoveryMock{
+					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
 				browser: &BrowserMock{
 					openFn: func(string) error { return nil },
 				},
@@ -99,13 +106,76 @@ func TestOauthAuthenticator_Auth(t *testing.T) {
 	}
 }
 
-func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
-	discovery := &OauthDiscoveryMock{
-		discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
-			return &OauthDiscoveryResult{}, nil
-		},
+func Test_Auth_Scopes(t *testing.T) {
+	discovery := &OauthDiscoveryMock{}
+	tokenStore := &TokenStoreMock{}
+	browser := &BrowserMock{}
+	redirectHandler := &RedirectHandlerMock{}
+	authenticator := &OauthAuthenticator{
+		discovery:       discovery,
+		tokenStore:      tokenStore,
+		browser:         browser,
+		redirectHandler: redirectHandler,
 	}
+	t.Run("Auth - default openid scope is set", func(t *testing.T) {
+		redirectHandler.handleFn = func(b []byte, c *oauth2.Config, s string) (*oauth2.Token, error) {
+			assert.Equal(t, 1, len(c.Scopes))
+			assert.Equal(t, "openid", c.Scopes[0])
+			return nil, nil
+		}
+		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}})
+	})
+	t.Run("Auth - scopes always contain default openid scope", func(t *testing.T) {
+		redirectHandler.handleFn = func(b []byte, c *oauth2.Config, s string) (*oauth2.Token, error) {
+			assert.Equal(t, 2, len(c.Scopes))
+			assert.Contains(t, c.Scopes, "openid")
+			assert.Contains(t, c.Scopes, "somescope")
+			return nil, nil
+		}
+		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{"somescope"}})
+	})
+}
 
+func Test_Auth_MissingOauthInfo(t *testing.T) {
+	discovery := &OauthDiscoveryMock{}
+	tokenStore := &TokenStoreMock{}
+	browser := &BrowserMock{}
+	redirectHandler := &RedirectHandlerMock{}
+	authenticator := &OauthAuthenticator{
+		discovery:       discovery,
+		tokenStore:      tokenStore,
+		browser:         browser,
+		redirectHandler: redirectHandler,
+	}
+	t.Run("Auth - client id set and client secret is optional", func(t *testing.T) {
+		{
+			redirectHandler.handleFn = func(b []byte, c *oauth2.Config, s string) (*oauth2.Token, error) {
+				assert.Equal(t, "clientID", c.ClientID)
+				assert.Equal(t, "", c.ClientSecret)
+				return nil, nil
+			}
+			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}})
+		}
+	})
+	t.Run("Auth - client id and secret given", func(t *testing.T) {
+		{
+			redirectHandler.handleFn = func(b []byte, c *oauth2.Config, s string) (*oauth2.Token, error) {
+				assert.Equal(t, "clientID", c.ClientID)
+				assert.Equal(t, "clientSecret", c.ClientSecret)
+				return nil, nil
+			}
+			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "clientSecret", []string{}})
+		}
+	})
+	t.Run("Auth - client id missing", func(t *testing.T) {
+		{
+			err := authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "", "", []string{}})
+			assert.NotNil(t, err)
+		}
+	})
+}
+
+func Test_GetOauthClient(t *testing.T) {
 	type fields struct {
 		discovery  OauthLocationGetter
 		tokenStore OauthStore
@@ -123,7 +193,11 @@ func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 	}{
 		{"GetOauthClient - no persisted oauth info",
 			fields{
-				discovery: discovery,
+				discovery: &OauthDiscoveryMock{
+					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
 				tokenStore: &TokenStoreMock{
 					getOauthInfoFn: func() (*OauthInfo, error) {
 						return nil, fmt.Errorf("not found")
@@ -137,7 +211,11 @@ func TestOauthAuthenticator_GetOauthClient(t *testing.T) {
 			assert.Error},
 		{"GetOauthClient - success",
 			fields{
-				discovery: discovery,
+				discovery: &OauthDiscoveryMock{
+					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
+						return &OauthDiscoveryResult{}, nil
+					},
+				},
 				tokenStore: &TokenStoreMock{
 					getOauthInfoFn: func() (*OauthInfo, error) {
 						return &OauthInfo{

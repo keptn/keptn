@@ -36,6 +36,10 @@ func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore,
 
 // Auth tries to start the Oauth2 Authorization Code Flow
 func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
+	if err := clientValues.ValidateMandatoryFields(); err != nil {
+		return err
+	}
+
 	discoveryInfo, err := a.discovery.Discover(context.TODO(), clientValues.OauthDiscoveryURL)
 	if err != nil {
 		return fmt.Errorf("failed to perform OAuth Discovery using URL %s: %w: ", clientValues.OauthDiscoveryURL, err)
@@ -144,4 +148,11 @@ type OauthClientValues struct {
 	OauthClientID     string   `json:"oauth_client_id"`
 	OauthClientSecret string   `json:"oauth_client_secret"`
 	OauthScopes       []string `json:"oauth_scopes"`
+}
+
+func (v *OauthClientValues) ValidateMandatoryFields() error {
+	if v.OauthClientID == "" || v.OauthDiscoveryURL == "" {
+		return fmt.Errorf("client values invalid: client id and discovery URL must be set")
+	}
+	return nil
 }
