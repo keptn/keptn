@@ -146,6 +146,7 @@ import { KtbVariableSelectorComponent } from './_components/ktb-variable-selecto
 import { KtbNotificationComponent } from './_components/ktb-notification/ktb-notification.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
+import { ArrayToStringPipe } from './_pipes/array-to-string';
 
 registerLocaleData(localeEn, 'en');
 
@@ -234,6 +235,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbSequenceStateInfoComponent,
     KtbPayloadViewerComponent,
     KtbVariableSelectorComponent,
+    ArrayToStringPipe,
     KtbNotificationComponent,
     KtbProjectCreateMessageComponent,
   ],
