@@ -80,7 +80,7 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	return getAllApprovalEventsInService(approvalTriggered, api.ShipyardControlHandlerV1(), api.EventsV1())
 }
 
-func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler apiutils.EventsV1Interface) error {
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
 		Stage:     *approvalTriggered.Stage,
 		Project:   *approvalTriggered.Project,
@@ -95,7 +95,7 @@ func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, sc
 	return nil
 }
 
-func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler apiutils.EventsV1Interface) error {
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
 		Project:   *approvalTriggered.Project,
 		Stage:     *approvalTriggered.Stage,
