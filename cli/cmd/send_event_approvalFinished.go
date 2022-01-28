@@ -118,7 +118,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	return nil
 }
 
-func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEvent interface{}, apiHandler *apiutils.APIHandler) (*apimodels.EventContext, error) {
+func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEvent interface{}, apiHandler apiutils.APIV1Interface) (*apimodels.EventContext, error) {
 	ID := uuid.New().String()
 	source, _ := url.Parse("https://github.com/keptn/keptn/cli#" + eventType)
 
@@ -150,7 +150,7 @@ func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEven
 	return responseEvent, nil
 }
 
-func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, scHandler *apiutils.ShipyardControllerHandler,
+func getApprovalFinishedForService(eventHandler apiutils.EventsV1Interface, scHandler *apiutils.ShipyardControllerHandler,
 	approvalFinishedOptions sendApprovalFinishedStruct) (string, string, *keptnv2.ApprovalFinishedEventData, error) {
 
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
@@ -263,7 +263,7 @@ func selectApprovalOption(nrOfOptions int) (int, error) {
 	return selectedOption, nil
 }
 
-func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) {
+func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHandler apiutils.EventsV1Interface, approvalFinishedOptions sendApprovalFinishedStruct) {
 	// initialize tabwriter
 	w := new(tabwriter.Writer)
 
@@ -286,7 +286,7 @@ func appendOptionToWriter(w *tabwriter.Writer, index int, commitID, score string
 	fmt.Fprintf(w, "\n (%d)\t%s\t%s\t", index+1, commitID, score)
 }
 
-func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
+func getScoreForApprovalTriggeredEvent(eventHandler apiutils.EventsV1Interface, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
 	score := "n/a"
 	evaluationDoneEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:      *approvalFinishedOptions.Project,
@@ -333,7 +333,7 @@ func getApprovalImageEvent(approval *apimodels.KeptnContextExtendedCE) string {
 	return unknownImage
 }
 
-func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
+func getApprovalFinishedForID(eventHandler apiutils.EventsV1Interface, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
 	string, *keptnv2.ApprovalFinishedEventData, error) {
 	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:   *sendApprovalFinishedOptions.Project,
