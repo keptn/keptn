@@ -407,9 +407,11 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 		if err != nil {
 			return err
 		}
-		if err := r.Fetch(&git.FetchOptions{
-			RemoteName: "origin",
-			RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+		remote, _ := r.Remote("origin")
+		if err := remote.Fetch(&git.FetchOptions{
+			// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
+			//// take all branch from remote and put them in the local repo as origin branches
+			RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
 			Auth: &http.BasicAuth{
 				Username: gitContext.Credentials.User,
 				Password: gitContext.Credentials.Token,

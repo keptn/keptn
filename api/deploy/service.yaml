@@ -131,7 +131,7 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: Always
-
+      serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
 kind: Service
