@@ -9,6 +9,10 @@ func GetProjectConfigPath(project string) string {
 	return fmt.Sprintf("%s/%s", GetConfigDir(), project)
 }
 
+func GetTmpProjectConfigPath(project string) string {
+	return fmt.Sprintf("%s/tmp_projects_migration/%s", GetConfigDir(), project)
+}
+
 func GetProjectMetadataFilePath(project string) string {
 	return fmt.Sprintf("%s/%s", GetProjectConfigPath(project), "metadata.yaml")
 }

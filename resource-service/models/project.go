@@ -31,6 +31,17 @@ func (p UpdateProjectParams) Validate() error {
 	return p.Project.Validate()
 }
 
+// MigrateProjectParams contains information about the project to be updated
+//
+// swagger:models MigrateProjectParams
+type MigrateProjectParams struct {
+	Project
+}
+
+func (p MigrateProjectParams) Validate() error {
+	return p.Project.Validate()
+}
+
 // DeleteProjectPathParams contains path parameters for the delete project endpoint
 //
 // swagger:model DeleteProjectPathParams

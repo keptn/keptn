@@ -33,6 +33,7 @@ type IGit interface {
 	GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
 	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
+	MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error
 }
 
 type Git struct {
@@ -505,6 +506,86 @@ func (g *Git) ProjectRepoExists(project string) bool {
 		}
 	}
 	return false
+}
+
+func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataContent []byte) error {
+	if err := g.Pull(gitContext); err != nil {
+		return err
+	}
+
+	tmpGitContext := gitContext
+	tmpGitContext.Project = "_keptn-tmp_" + gitContext.Project
+
+	tmpProjectPath := GetProjectConfigPath(gitContext.Project)
+	projectPath := GetProjectConfigPath(gitContext.Project)
+
+	_, err := g.CloneRepo(tmpGitContext)
+	if err != nil {
+		return err
+	}
+
+	// check out branches of the tmp remote and store the content in the master branch of the repo
+	oldRepo, oldRepoWorktree, err := g.getWorkTree(tmpGitContext)
+	if err != nil {
+		return err
+	}
+
+	branches, err := oldRepo.Branches()
+	err = branches.ForEach(func(branch *plumbing.Reference) error {
+		err = oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
+		if err != nil {
+			return err
+		}
+		// TODO use common function to determine stage directories
+		err = ensureDirectoryExists(projectPath + "/keptn-stages")
+		if err != nil {
+			return err
+		}
+
+		err = ensureDirectoryExists(projectPath + "/keptn-stages/" + branch.Name().Short())
+		if err != nil {
+			return err
+		}
+
+		files, err := ioutil.ReadDir(tmpProjectPath)
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			if file.Name() == ".git" {
+				continue
+			}
+			err := os.Rename(tmpProjectPath+"/"+file.Name(), projectPath+"/keptn-stages/"+branch.Name().Short()+"/"+file.Name())
+			if err != nil {
+				return err
+			}
+		}
+		err = oldRepoWorktree.Reset(&git.ResetOptions{Mode: git.HardReset})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(GetProjectMetadataFilePath(gitContext.Project), newMetadataContent, os.ModePerm); err != nil {
+		return err
+	}
+
+	_, err = g.StageAndCommitAll(gitContext, "migrated project structure")
+	if err != nil {
+		return err
+	}
+
+	if err := os.RemoveAll(tmpProjectPath); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository, *git.Worktree, error) {

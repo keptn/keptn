@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
@@ -142,4 +143,78 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 	}
 
 	return nil
+}
+
+// MigrateProject migrates the branch-based structure for representing stages to the new directory-based format,
+// where each stage is represented as a directory within the main branch
+func (p ProjectManager) MigrateProject(project models.MigrateProjectParams) error {
+	common.LockProject(project.ProjectName)
+	defer common.UnlockProject(project.ProjectName)
+
+	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
+	if err != nil {
+		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
+	}
+
+	gitContext := common_models.GitContext{
+		Project:     project.ProjectName,
+		Credentials: credentials,
+	}
+
+	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
+		return errors.ErrProjectNotFound
+	}
+
+	metadata, err := p.getProjectMetadate(project.ProjectName)
+	if err != nil {
+		return err
+	}
+
+	// if the project already has the new structure, there is no need to migrate it anymore
+	if metadata.IsUsingDirectoryStructure {
+		return nil
+	}
+
+	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
+	if err != nil {
+		return err
+	}
+	err = p.git.CheckoutBranch(gitContext, defaultBranch)
+
+	err = retry.Retry(func() error {
+		if err := p.git.Pull(gitContext); err != nil {
+			return err
+		}
+		metadata.IsUsingDirectoryStructure = true
+		marshal, err := yaml.Marshal(metadata)
+		if err != nil {
+			return err
+		}
+		if err := p.git.MigrateProject(gitContext, marshal); err != nil {
+			return err
+		}
+
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p ProjectManager) getProjectMetadate(projectName string) (*common.ProjectMetadata, error) {
+	metadataContent, err := p.fileSystem.ReadFile(common.GetProjectMetadataFilePath(projectName))
+	if err != nil {
+		return nil, err
+	}
+
+	metadata := &common.ProjectMetadata{}
+
+	if err := yaml.Unmarshal(metadataContent, metadata); err != nil {
+		return nil, err
+	}
+
+	return metadata, nil
 }

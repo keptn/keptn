@@ -302,6 +302,69 @@ func TestDirectoryStageManager_CreateStage(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestDirectoryStageManager_CreateStage_CannotEstablishContext(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.configurationContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
+		return "", errors.New("oops")
+	}
+
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.CreateStage(models.CreateStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		CreateStagePayload: models.CreateStagePayload{
+			Stage: models.Stage{StageName: "my-stage"},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+}
+
+func TestDirectoryStageManager_CreateStage_CannotGetCredentials(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
+		return nil, errors.New("oops")
+	}
+
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.CreateStage(models.CreateStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		CreateStagePayload: models.CreateStagePayload{
+			Stage: models.Stage{StageName: "my-stage"},
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+}
+
+func TestDirectoryStageManager_CreateStage_ProjectNotFound(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
+		return false
+	}
+
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.CreateStage(models.CreateStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		CreateStagePayload: models.CreateStagePayload{
+			Stage: models.Stage{StageName: "my-stage"},
+		},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+}
+
 func TestDirectoryStageManager_CreateStage_StageAlreadyExists(t *testing.T) {
 	fields := getTestStageManagerFields()
 
@@ -401,4 +464,78 @@ func TestDirectoryStageManager_DeleteStage(t *testing.T) {
 	})
 
 	require.Nil(t, err)
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+}
+
+func TestDirectoryStageManager_DeleteStage_CannotEstablishContext(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.configurationContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
+		return "", errors.New("oops")
+	}
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.DeleteStage(models.DeleteStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Stage:   models.Stage{StageName: "my-stage"},
+	})
+
+	require.NotNil(t, err)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+}
+
+func TestDirectoryStageManager_DeleteStage_StageDirectoryNotAvailable(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.fileSystem.FileExistsFunc = func(path string) bool {
+		return false
+	}
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.DeleteStage(models.DeleteStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Stage:   models.Stage{StageName: "my-stage"},
+	})
+
+	require.ErrorIs(t, err, errors2.ErrStageNotFound)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+}
+
+func TestDirectoryStageManager_DeleteStage_CannotDeleteDirectory(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.fileSystem.DeleteFileFunc = func(path string) error {
+		return errors.New("oops")
+	}
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.DeleteStage(models.DeleteStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Stage:   models.Stage{StageName: "my-stage"},
+	})
+
+	require.NotNil(t, err)
+
+	require.Empty(t, fields.git.StageAndCommitAllCalls())
+}
+
+func TestDirectoryStageManager_DeleteStage_CannotCommitChanges(t *testing.T) {
+	fields := getTestStageManagerFields()
+
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
+		return "", errors.New("oops")
+	}
+	dm := NewDirectoryStageManager(fields.configurationContext, fields.fileSystem, fields.credentialReader, fields.git)
+
+	err := dm.DeleteStage(models.DeleteStageParams{
+		Project: models.Project{ProjectName: "my-project"},
+		Stage:   models.Stage{StageName: "my-stage"},
+	})
+
+	require.NotNil(t, err)
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 }
