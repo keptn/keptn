@@ -59,12 +59,16 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 	sum := sha256.Sum256(codeVerifier)
 	codeChallenge := strings.TrimRight(base64.URLEncoding.EncodeToString(sum[:]), "=")
 
-	authURL := config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", codeChallenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"))
+	state, err := State(10)
+	if err != nil {
+		return fmt.Errorf("failed to generate random state query parameter")
+	}
+	authURL := config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", codeChallenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"))
 	if err := a.browser.Open(authURL); err != nil {
 		return fmt.Errorf("failed to open user Browser: %w", err)
 	}
 
-	token, err := a.redirectHandler.Handle(codeVerifier, config)
+	token, err := a.redirectHandler.Handle(codeVerifier, config, state)
 	if err != nil {
 		return fmt.Errorf("failed to handle redirect: %w", err)
 	}
