@@ -546,7 +546,7 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	}
 	branches, err := oldRepo.Branches()
 	err = branches.ForEach(func(branch *plumbing.Reference) error {
-		if branch.Name().Short() != defaultBranch && branch.Name().Short() != "HEAD" {
+		if branch.Name().Short() != defaultBranch {
 			return g.migrateBranch(branch, oldRepoWorktree, projectPath, tmpProjectPath)
 		}
 		return nil
