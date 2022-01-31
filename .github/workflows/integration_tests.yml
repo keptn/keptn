@@ -253,7 +253,7 @@ jobs:
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
           GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY_NEW }}
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
           CLOUDSDK_REGION: "us-east1"
