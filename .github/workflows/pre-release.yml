@@ -296,6 +296,18 @@ jobs:
         uses: actions/setup-node@v2.5.1
         with:
           node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Configure Git
+        env:
+          KEPTN_BOT_NAME: ${{ env.KEPTN_BOT_NAME }}
+          KEPTN_BOT_EMAIL: ${{ env.KEPTN_BOT_EMAIL }}
+        run: |
+          git config --global user.name "$KEPTN_BOT_NAME"
+          git config --global user.email "$KEPTN_BOT_EMAIL"
+      - name: Download Pre-Release Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ./dist
 
       - name: Get k8s resource stats
         env:
