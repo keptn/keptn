@@ -67,11 +67,6 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 
 	logging.PrintLog("Starting to get approval.triggered events", logging.InfoLevel)
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
 	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return err
@@ -85,7 +80,7 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	return getAllApprovalEventsInService(approvalTriggered, api.ShipyardControlHandlerV1(), api.EventsV1())
 }
 
-func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler apiutils.EventsV1Interface) error {
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
 		Stage:     *approvalTriggered.Stage,
 		Project:   *approvalTriggered.Project,
@@ -100,7 +95,7 @@ func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, sc
 	return nil
 }
 
-func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler apiutils.EventsV1Interface) error {
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
 		Project:   *approvalTriggered.Project,
 		Stage:     *approvalTriggered.Stage,

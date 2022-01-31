@@ -69,11 +69,6 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return err

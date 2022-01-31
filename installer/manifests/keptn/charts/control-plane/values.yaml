@@ -70,6 +70,12 @@ bridge:
     secureCookie: false
     trustProxy: ""
     sessionTimeoutMin: ""
+    baseUrl: ""
+    clientID: ""
+    clientSecret: ""
+    IDTokenAlg: ""
+    scope: ""
+    userIdentifier: ""
 
 distributor:
   metadata:

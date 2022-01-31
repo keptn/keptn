@@ -6,7 +6,9 @@ import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@an
 import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 import { ApiService } from '../_services/api.service';
 import { NotificationsService } from '../_services/notifications.service';
-import { DtToast } from '@dynatrace/barista-components/toast';
+import { NotificationType } from '../_models/notification';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { Secret } from '../_models/secret';
 
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
@@ -38,7 +40,7 @@ describe('HttpErrorInterceptorService', () => {
 
   it('should show an error when any other error than 401 is returned', async () => {
     // given
-    const spy = jest.spyOn(TestBed.inject(DtToast), 'create');
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
     await apiService.getMetadata().subscribe();
 
@@ -66,7 +68,7 @@ describe('HttpErrorInterceptorService', () => {
 
   it('should show a toast when oauth is redirected', async () => {
     // given
-    const spy = jest.spyOn(TestBed.inject(DtToast), 'create');
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
     await apiService.getMetadata().subscribe();
 
@@ -76,7 +78,7 @@ describe('HttpErrorInterceptorService', () => {
     testRequest.error(errorEvent, { headers, status: 401 });
 
     // then
-    expect(spy).toHaveBeenCalledWith('Login required. Redirecting to login.');
+    expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
   });
 
   it('should show a error notification when basic auth is unauthorized', async () => {
@@ -92,8 +94,28 @@ describe('HttpErrorInterceptorService', () => {
 
     // then
     expect(spy).toHaveBeenCalledWith(
-      'error',
+      NotificationType.ERROR,
       'Login credentials invalid. Please check your provided username and password.'
     );
+  });
+
+  it('should not show any notification when a secret already exists', () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    const secret = new Secret();
+    secret.name = 'secret';
+    secret.scope = SecretScope.DEFAULT;
+
+    apiService.addSecret(secret).subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/secrets/v1/secret');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 409 });
+
+    // when
+
+    // then
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 });

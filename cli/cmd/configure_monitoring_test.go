@@ -16,8 +16,6 @@ func init() {
 func TestConfigureMonitoringCmd(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-
 	*params.Project = ""
 	*params.Service = ""
 	cmd := fmt.Sprintf("configure monitoring prometheus --project=%s --service=%s --mock", "sockshop", "carts")
@@ -30,7 +28,6 @@ func TestConfigureMonitoringCmd(t *testing.T) {
 func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*params.Project = ""
 	*params.Service = ""

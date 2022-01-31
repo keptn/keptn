@@ -96,6 +96,8 @@ describe('Changing git credentials', () => {
       statusCode: 200,
     });
 
+    cy.intercept('GET', '/api/project/dynatrace/serviceStates', { statusCode: 200, body: [] });
+
     cy.visit('/');
     cy.wait('@metadataCmpl');
     basePage.selectProject(DYNATRACE_PROJECT);

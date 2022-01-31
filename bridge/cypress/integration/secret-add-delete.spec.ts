@@ -6,8 +6,9 @@ describe('Keptn Secrets adding deleting test', () => {
     const basePage = new BasePage();
     const secretsPage = new SecretsPage();
     const SECRET_NAME = 'dynatrace-prod';
-    const SECRET_KEY = 'secretkey';
+    const SECRET_KEY = 'DT_API_TOKEN';
     const SECRET_VALUE = 'secretvalue!@#$%^&*(!@#$%^&*()';
+    const SECRET_SCOPE = 'dynatrace-service';
     const DYNATRACE_PROJECT = 'dynatrace';
 
     cy.fixture('get.project.json').as('initProjectJSON');
@@ -27,7 +28,12 @@ describe('Keptn Secrets adding deleting test', () => {
     cy.intercept('GET', 'api/secrets/v1/secret', {
       statusCode: 200,
       body: {
-        Secrets: [{ name: 'dynatrace' }, { name: 'dynatrace-prod' }, { name: 'rgwdeshgf' }, { name: 'test111' }],
+        Secrets: [
+          { name: 'dynatrace', scope: 'dynatrace-service', keys: ['DT_API_TOKEN', 'DT_TENANT'] },
+          { name: 'dynatrace-prod', scope: 'dynatrace-service', keys: [SECRET_KEY] },
+          { name: 'api', scope: 'keptn-default', keys: ['API_TOKEN'] },
+          { name: 'webhook', scope: 'keptn-webhook-service', keys: ['webhook_url', 'webhook_secret', 'webhook_proxy'] },
+        ],
       },
     }).as('getSecrets');
 
@@ -44,7 +50,7 @@ describe('Keptn Secrets adding deleting test', () => {
       body: '[]',
     }).as('uniformRegPost');
 
-    cy.intercept('DELETE', 'api/secrets/v1/secret?name=dynatrace-prod&scope=keptn-default', {
+    cy.intercept('DELETE', 'api/secrets/v1/secret?name=dynatrace-prod&scope=dynatrace-service', {
       statusCode: 200,
     }).as('deleteSecret');
 
@@ -54,7 +60,13 @@ describe('Keptn Secrets adding deleting test', () => {
 
     basePage.goToUniformPage().goToSecretsPage();
 
-    secretsPage.addSecret(SECRET_NAME, SECRET_KEY, SECRET_VALUE);
+    secretsPage.addSecret(SECRET_NAME, SECRET_SCOPE, SECRET_KEY, SECRET_VALUE);
+
+    cy.get('dt-row').eq(1).find('dt-cell').eq(0).find('p').should('have.text', SECRET_NAME);
+    cy.get('dt-row').eq(1).find('dt-cell').eq(1).find('p').should('have.text', SECRET_SCOPE);
+    cy.get('dt-row').eq(1).find('dt-cell').eq(2).find('p').should('contain.text', SECRET_KEY);
+
     secretsPage.deleteSecret(SECRET_NAME);
+    cy.get('dt-row').eq(1).find('dt-cell').eq(0).find('p').should('not.have.text', SECRET_NAME);
   });
 });

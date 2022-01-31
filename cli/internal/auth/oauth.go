@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"golang.org/x/oauth2"
 	"net/http"
 	"strings"
@@ -35,15 +36,19 @@ func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore,
 
 // Auth tries to start the Oauth2 Authorization Code Flow
 func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
+	if err := clientValues.ValidateMandatoryFields(); err != nil {
+		return err
+	}
+
 	discoveryInfo, err := a.discovery.Discover(context.TODO(), clientValues.OauthDiscoveryURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to perform OAuth Discovery using URL %s: %w: ", clientValues.OauthDiscoveryURL, err)
 	}
 
 	config := &oauth2.Config{
 		ClientID:     clientValues.OauthClientID,
 		ClientSecret: clientValues.OauthClientSecret,
-		Scopes:       []string{openIDScope},
+		Scopes:       clientValues.OauthScopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
@@ -51,21 +56,27 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 		RedirectURL: redirectURL,
 	}
 
+	enforceOpenIDScope(config)
+
 	codeVerifier, err := GenerateCodeVerifier()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate code verifier: %w", err)
 	}
 	sum := sha256.Sum256(codeVerifier)
 	codeChallenge := strings.TrimRight(base64.URLEncoding.EncodeToString(sum[:]), "=")
 
-	authURL := config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", codeChallenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"))
+	state, err := State(10)
+	if err != nil {
+		return fmt.Errorf("failed to generate random state query parameter")
+	}
+	authURL := config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", codeChallenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"))
 	if err := a.browser.Open(authURL); err != nil {
-		return err
+		return fmt.Errorf("failed to open user Browser: %w", err)
 	}
 
-	token, err := a.redirectHandler.Handle(codeVerifier, config)
+	token, err := a.redirectHandler.Handle(codeVerifier, config, state)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to handle redirect: %w", err)
 	}
 
 	oauthInfo := &OauthInfo{
@@ -73,7 +84,10 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 		ClientValues:  &clientValues,
 		Token:         token,
 	}
-	return a.tokenStore.StoreOauthInfo(oauthInfo)
+	if err := a.tokenStore.StoreOauthInfo(oauthInfo); err != nil {
+		return fmt.Errorf("failed to sotre oauth information: %w", err)
+	}
+	return nil
 }
 
 // GetOauthClient will eventually return an already ready to use http client which is configured to use
@@ -81,19 +95,22 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, error) {
 	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get OAuth HTTP client: %w", err)
 	}
 
 	config := &oauth2.Config{
 		ClientSecret: oauthInfo.ClientValues.OauthClientSecret,
 		ClientID:     oauthInfo.ClientValues.OauthClientID,
-		Scopes:       []string{openIDScope},
+		Scopes:       oauthInfo.ClientValues.OauthScopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
 		RedirectURL: redirectURL,
 	}
+
+	enforceOpenIDScope(config)
+
 	nrts := &NotifyRefreshTokenSource{
 		config:     config,
 		tokenStore: a.tokenStore,
@@ -101,9 +118,30 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 	return oauth2.NewClient(ctx, nrts), nil
 }
 
+func enforceOpenIDScope(config *oauth2.Config) {
+	openIDScopePresent := false
+	for _, s := range config.Scopes {
+		if s == "openid" {
+			openIDScopePresent = true
+			break
+		}
+	}
+	if !openIDScopePresent {
+		config.Scopes = append(config.Scopes, "openid")
+	}
+}
+
 // OauthClientValues are values set by the user when performing SSO
 type OauthClientValues struct {
-	OauthDiscoveryURL string `json:"oauth_discovery_url"`
-	OauthClientID     string `json:"oauth_client_id"`
-	OauthClientSecret string `json:"oauth_client_secret"`
+	OauthDiscoveryURL string   `json:"oauth_discovery_url"`
+	OauthClientID     string   `json:"oauth_client_id"`
+	OauthClientSecret string   `json:"oauth_client_secret"`
+	OauthScopes       []string `json:"oauth_scopes"`
+}
+
+func (v *OauthClientValues) ValidateMandatoryFields() error {
+	if v.OauthClientID == "" || v.OauthDiscoveryURL == "" {
+		return fmt.Errorf("client values invalid: client id and discovery URL must be set")
+	}
+	return nil
 }

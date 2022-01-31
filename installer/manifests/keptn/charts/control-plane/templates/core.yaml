@@ -243,6 +243,22 @@ spec:
               value: "{{ .Values.bridge.oauth.enabled }}"
             - name: OAUTH_DISCOVERY
               value: "{{ .Values.bridge.oauth.discovery }}"
+            # Base URL e.g. https://example.com/
+            - name: OAUTH_BASE_URL
+              value: "{{ .Values.bridge.oauth.baseUrl }}"
+            - name: OAUTH_CLIENT_ID
+              value: "{{ .Values.bridge.oauth.clientID }}"
+            - name: OAUTH_CLIENT_SECRET
+              value: "{{ .Values.bridge.oauth.clientSecret }}"
+            # Token algorithm which is used for the ID token e.g. "RS256"
+            - name: OAUTH_ID_TOKEN_ALG
+              value: "{{ .Values.bridge.oauth.IDTokenAlg }}"
+            # Additional scopes that should be added to the authentication flow (e.g. "profile email"), separated by space.
+            - name: OAUTH_SCOPE
+              value: "{{ .Values.bridge.oauth.scope }}"
+            # User identifier property inside the ID token e.g. "name" or "email"
+            - name: OAUTH_NAME_PROPERTY
+              value: "{{ .Values.bridge.oauth.userIdentifier }}"
             - name: SECURE_COOKIE
               value: "{{ .Values.bridge.oauth.secureCookie }}"
             # Session cookie timeout in minutes

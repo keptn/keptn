@@ -1,8 +1,13 @@
 package go_tests
 
 import (
+	"context"
 	"fmt"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"net"
+	"os/exec"
+	"time"
 )
 
 const kubectlExecutable = "kubectl"
@@ -40,5 +45,28 @@ func KubeCtlDeleteFromURL(url string, namespace ...string) error {
 		return err
 	}
 	fmt.Println(result)
+	return nil
+}
+
+func KubeCtlPortForwardSvc(ctx context.Context, svcName, localPort string, remotePort string, namespace ...string) error {
+	var ns = GetKeptnNameSpaceFromEnv()
+	if len(namespace) == 1 {
+		ns = namespace[0]
+	}
+	fmt.Printf("Executing: %s port-forward -n %s %s %s", kubectlExecutable, ns, svcName, localPort+":"+remotePort)
+	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", ns, svcName, localPort+":"+remotePort)
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	err = wait.Poll(2*time.Second, 20*time.Second, func() (bool, error) {
+		_, err := net.DialTimeout("tcp", "127.0.0.1:"+localPort, 2*time.Second)
+		return err == nil, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

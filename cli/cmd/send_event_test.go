@@ -36,7 +36,6 @@ const ce = `{
 func TestSendEvent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	resourceFileName := "ce.json"
 	defer testResource(t, resourceFileName, ce)()

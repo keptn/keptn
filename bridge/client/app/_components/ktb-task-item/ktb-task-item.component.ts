@@ -35,6 +35,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   public project$: Observable<Project | undefined> = of(undefined);
   public _task?: Trace;
   @Input() public isExpanded = false;
+  @Input() public isSubtask = false;
 
   @ViewChild('taskPayloadDialog')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

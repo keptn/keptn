@@ -28,6 +28,7 @@ type authCmdParams struct {
 	ssoLogout            *bool
 	ssoDiscovery         *string
 	ssoClientID          *string
+	ssoScopes            *[]string
 	ssoClientSecret      *string
 }
 
@@ -72,7 +73,17 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		// sign out
+		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext))
+		if *authParams.exportConfig {
+			endpoint, apiToken, err := authenticator.GetCredentials()
+			if err != nil {
+				return err
+			}
+			fmt.Println("Endpoint: ", endpoint.String())
+			fmt.Println("API Token: ", apiToken)
+			return nil
+		}
+
 		if *authParams.ssoLogout {
 			store := auth2.NewLocalFileOauthStore()
 			err := store.Wipe()
@@ -82,7 +93,6 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			return nil
 		}
 
-		// sign in
 		if *authParams.sso {
 			if *authParams.ssoDiscovery == "" {
 				return fmt.Errorf("Unable to login using SSO: No OAuth Discovery URL provided")
@@ -96,30 +106,17 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				OauthDiscoveryURL: *authParams.ssoDiscovery,
 				OauthClientID:     *authParams.ssoClientID,
 				OauthClientSecret: *authParams.ssoClientSecret,
+				OauthScopes:       *authParams.ssoScopes,
 			}
-			err := oauth.Auth(clientValues)
-			if err != nil {
+			if err := oauth.Auth(clientValues); err != nil {
 				return err
 			}
-		}
-
-		// usual x-token credential stuff
-		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
-		authenticator := NewAuthenticator(namespace, credentialManager)
-
-		if *authParams.exportConfig {
-			endpoint, apiToken, err := authenticator.GetCredentials()
-			if err != nil {
-				return err
-			}
-			fmt.Println("Endpoint: ", endpoint.String())
-			fmt.Println("API Token: ", apiToken)
-			return nil
 		}
 
 		return authenticator.Auth(AuthenticatorOptions{
 			Endpoint: *authParams.endPoint,
 			APIToken: *authParams.apiToken,
+			SSO:      *authParams.sso,
 		})
 	},
 }
@@ -135,6 +132,7 @@ func init() {
 	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable single sign on access")
 	authParams.ssoDiscovery = authCmd.Flags().String("sso-discovery", "", "Well known discovery URL used for SSO")
 	authParams.ssoClientID = authCmd.Flags().String("sso-client-id", "", "Oauth Client ID used for SSO")
+	authParams.ssoScopes = authCmd.Flags().StringArray("sso-scopes", []string{}, "Oauth scopes used for SSO")
 	authParams.ssoClientSecret = authCmd.Flags().String("sso-client-secret", "", "Oauth Client Secret used for SSO")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
