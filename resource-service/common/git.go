@@ -418,7 +418,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
 	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
-		RefSpecs:   []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
+		RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
 		Auth: &http.BasicAuth{
 			Username: gitContext.Credentials.User,
 			Password: gitContext.Credentials.Token,
@@ -546,7 +546,7 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	}
 	branches, err := oldRepo.Branches()
 	err = branches.ForEach(func(branch *plumbing.Reference) error {
-		if branch.Name().Short() != defaultBranch {
+		if branch.Name().Short() != defaultBranch && branch.Name().Short() != "HEAD" {
 			return g.migrateBranch(branch, oldRepoWorktree, projectPath, tmpProjectPath)
 		}
 		return nil
