@@ -17,7 +17,8 @@ import (
 const configurationServiceBasePath = "/v1/project"
 
 func Test_ResourceServiceBasic(t *testing.T) {
-	projectName := osutils.GetOSEnv(KeptnNamespacePrefix) + "-resource-service-test-project"
+	// this is to avoid name aliasing with multiple CI parallel run of the integration tests
+	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespacePrefix, DefaultKeptnNamespace) + "-resource-service-test-project"
 	nonExistingProjectName := osutils.GetOSEnv(KeptnNamespacePrefix) + "-non_existing_project"
 	nonExistingStageName := "non_existing_stage"
 	nonExistingServiceName := "non_existing_service"
