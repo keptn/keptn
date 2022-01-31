@@ -224,7 +224,7 @@ jobs:
             ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
           build-args: |
             version=${{ env.VERSION }}
-          push: false
+          push: ${{ matrix.config.should-push-image }}
           pull: true
 
       - name: Write docker image digest to file
