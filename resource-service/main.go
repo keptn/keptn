@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/keptn/resource-service/common"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
+	"github.com/keptn/keptn/resource-service/config"
 	"github.com/keptn/keptn/resource-service/controller"
 	"github.com/keptn/keptn/resource-service/handler"
 	log "github.com/sirupsen/logrus"
@@ -38,6 +40,11 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 func main() {
+	if err := envconfig.Process("", &config.Global); err != nil {
+		log.Errorf("Failed to process env var: %v", err)
+		os.Exit(1)
+	}
+
 	log.SetLevel(log.InfoLevel)
 
 	if os.Getenv(envVarLogLevel) != "" {
@@ -129,9 +136,14 @@ func main() {
 
 }
 
-func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) *handler.BranchConfigurationContext {
-	stageContext := handler.NewBranchConfigurationContext(git, fileSystem)
-	return stageContext
+func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) handler.IConfigurationContext {
+	var configContext handler.IConfigurationContext
+	if config.Global.DirectoryStageStructure {
+		configContext = handler.NewDirectoryConfigurationContext(git, fileSystem)
+	} else {
+		configContext = handler.NewBranchConfigurationContext(git, fileSystem)
+	}
+	return configContext
 }
 
 func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
