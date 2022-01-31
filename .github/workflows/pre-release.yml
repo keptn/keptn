@@ -320,4 +320,4 @@ jobs:
             }
           ] |
           unique_by(.name)' > $RESOURCE_JSON
-          npx tablemark-cli@v2.0.0 $RESOURCE_JSON
+          npx tablemark-cli@v2.0.0 $RESOURCE_JSON -c "Name" -c "CPU Request" -c "CPU Limit" -c "RAM Request" -c "RAM Limit" > "$RESOURCE_MARKDOWN"
