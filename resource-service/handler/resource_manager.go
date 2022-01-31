@@ -94,7 +94,7 @@ func (p ResourceManager) GetResource(params models.GetResourceParams) (*models.G
 	if err != nil {
 		return nil, kerrors.ErrResourceInvalidResourceURI
 	}
-	if params.GitCommitID != "" && params.Service != nil {
+	if params.GitCommitID != "" && params.GitCommitID != "\"\"" && params.Service != nil {
 		//if we need to query for a service resource via commit we must add that folder to the resource path
 		unescapedResourceName = params.Service.ServiceName + "/" + unescapedResourceName
 	}
@@ -179,7 +179,7 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 
 	resourcePath := configPath + "/" + resourceName
 
-	if params.GitCommitID != "" {
+	if params.GitCommitID != "" && params.GitCommitID != "\"\"" {
 		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourceName)
 		revision = params.GitCommitID
 	} else {

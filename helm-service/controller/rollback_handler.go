@@ -2,9 +2,8 @@ package controller
 
 import (
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/types"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"

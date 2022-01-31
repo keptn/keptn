@@ -61,7 +61,9 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 
 func (g *GetActionEventHandler) getRemediationResource(keptn sdk.IKeptn, eventData *keptnv2.GetActionTriggeredEventData, commitID string) (*models.Resource, error) {
 	commitOption := url.Values{}
-	commitOption.Add("commitID", commitID)
+	if commitID != "" {
+		commitOption.Add("commitID", commitID)
+	}
 	if eventData.Service == "" {
 		return keptn.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, remediationResourceFileName, utils.AppendQuery(commitOption))
 	}

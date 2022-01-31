@@ -1,8 +1,6 @@
 package go_tests
 
 import (
-	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -25,6 +23,36 @@ spec:
   stages: 
     - 
       name: hardening`
+
+const qualityGatesShortSLOFileContent = `---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "<800"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
+      - criteria:
+          - "<=1000"
+          - "<=+100%"
+    weight: 1
+  - sli: "throughput"
+    pass:
+      - criteria:
+          - "<=+100%"
+          - ">=-80%"
+  - sli: "error_rate"
+total_score:
+  pass: "100%"
+  warning: "65%"`
 
 const qualityGatesSLOFileContent = `---
 spec_version: "0.1.1"
@@ -60,7 +88,7 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "qualitytesting"
+	projectName := "quality-gates"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
@@ -265,8 +293,13 @@ func Test_QualityGates(t *testing.T) {
 
 func performResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
 	commitID := ""
+	commitID1 := ""
 	if checkCommit {
-		commitID = storeSLOWithCommit(t, projectName, serviceName, qualityGatesSLOFileContent)
+		commitID1 = storeWithCommit(t, projectName, "hardening",
+			serviceName, qualityGatesShortSLOFileContent, "slo.yaml")
+
+		commitID = storeWithCommit(t, projectName, "hardening",
+			serviceName, qualityGatesSLOFileContent, "slo.yaml")
 	}
 	keptnContext := ""
 	source := "golang-test"
@@ -331,8 +364,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
 	require.NotEmpty(t, getSLIPayload.GetSLI.End)
 
-	//cloudEvent := keptnv2.ToCloudEvent(*getSLITriggeredEvent)
-
+	//SLI uses a different commitID
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIStartedEventData{
@@ -352,13 +384,10 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		Specversion:        "1.0",
 		Time:               time.Now(),
 		Triggeredid:        getSLITriggeredEvent.ID,
-		Gitcommitid:        commitID,
+		Gitcommitid:        commitID1,
 		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
 	}, 3)
-	//keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
-	require.Nil(t, err)
 
-	//id, err := keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
@@ -408,7 +437,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		Specversion:        "1.0",
 		Time:               time.Now(),
 		Triggeredid:        getSLITriggeredEvent.ID,
-		Gitcommitid:        commitID,
+		Gitcommitid:        commitID1,
 		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
 	}, 3)
 	require.Nil(t, err)
@@ -424,35 +453,11 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		evaluationFinishedEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
+	if checkCommit {
+		//lighthouse should have used the new commitID to calculate the final result
+		require.Equal(t, evaluationFinishedEvent.Gitcommitid, commitID1)
+	}
 	return keptnContext, evaluationFinishedEvent
-}
-
-func storeSLOWithCommit(t *testing.T, projectName string, serviceName string, content string) string {
-
-	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
-	defer closeInternalKeptnAPI()
-	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
-	require.Nil(t, err)
-	t.Log("Storing new slo file")
-	resp, err := internalKeptnAPI.Post(configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
-		Resources: []*models.Resource{
-			{
-				ResourceContent: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),
-				ResourceURI:     strutils.Stringp("slo.yaml"),
-			},
-		},
-	}, 3)
-	require.Nil(t, err)
-
-	t.Logf("Received response %s", resp.String())
-	require.Equal(t, 201, resp.Response().StatusCode)
-
-	response := struct {
-		CommitID string `json:"commitID"`
-	}{}
-	resp.ToJSON(&response)
-	t.Log("Saved with commitID", response.CommitID)
-	return response.CommitID
 }
 
 func triggerEvaluation(projectName, stageName, serviceName string) (string, error) {

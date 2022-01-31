@@ -73,7 +73,9 @@ type SLOFileRetriever struct {
 
 func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*keptn.ServiceLevelObjectives, error) {
 	commitOption := url.Values{}
-	commitOption.Add("gitCommitID", commitID)
+	if commitID != "" {
+		commitOption.Add("gitCommitID", commitID)
+	}
 	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml", utils.AppendQuery(commitOption))
 	if err != nil {
 		_, err2 := sr.ServiceHandler.GetService(project, stage, service)
