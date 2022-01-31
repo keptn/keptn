@@ -11,7 +11,7 @@ import (
 
 // TokenGetter handles the retrieval of oauth access tokens
 type TokenGetter interface {
-	Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error)
+	Handle(codeVerifier []byte, oauthConfig *oauth2.Config, state string) (*oauth2.Token, error)
 }
 
 // ClosingRedirectHandler is an implementation of TokenGetter
@@ -24,20 +24,35 @@ type ClosingRedirectHandler struct{}
 // It returns the obtained oauth2 token or an error
 // TODO: close handler after a timeout
 // TODO: get rid of hard-coded path and port
-func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config) (*oauth2.Token, error) {
+func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2.Config, oauthState string) (*oauth2.Token, error) {
 	server := &http.Server{}
-	var tokenExchangeErr error
+	var handleRedirectErr error
 	var acquiredToken *oauth2.Token
 
 	http.HandleFunc("/oauth/redirect", func(w http.ResponseWriter, req *http.Request) {
 		defer func() { go server.Close() }()
-		queryParts, _ := url.ParseQuery(req.URL.RawQuery)
-		code := queryParts["code"][0]
-
-		tok, err := oauthConfig.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", string(codeVerifier)))
+		queryParts, err := url.ParseQuery(req.URL.RawQuery)
 		if err != nil {
-			fmt.Println(err.Error())
-			tokenExchangeErr = err
+			handleRedirectErr = err
+			return
+		}
+		state := queryParts["state"]
+		if len(state) == 0 {
+			handleRedirectErr = fmt.Errorf("no oauth state param found")
+			return
+		}
+		if state[0] != oauthState {
+			handleRedirectErr = fmt.Errorf("invalid oauth state")
+			return
+		}
+		code := queryParts["code"]
+		if len(code) == 0 {
+			handleRedirectErr = fmt.Errorf("no code param fround")
+			return
+		}
+		tok, err := oauthConfig.Exchange(context.Background(), code[0], oauth2.SetAuthURLParam("code_verifier", string(codeVerifier)))
+		if err != nil {
+			handleRedirectErr = err
 			return
 		}
 		acquiredToken = tok
@@ -48,5 +63,5 @@ func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2
 		return nil, err
 	}
 	server.Serve(l)
-	return acquiredToken, tokenExchangeErr
+	return acquiredToken, handleRedirectErr
 }

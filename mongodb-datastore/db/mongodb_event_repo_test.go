@@ -102,7 +102,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
-		Triggeredid:        "my-evaluation-id",
+		Triggeredid:        "my-triggered-id",
 	}
 
 	err = repo.InsertEvent(invalidatedEvent)
@@ -384,14 +384,11 @@ func Test_getSearchOptions(t *testing.T) {
 				},
 			},
 			want: bson.M{
-				"data.project": "sockshop",
-				"data.stage":   "dev",
-				"data.service": "carts",
-				"source":       "test-service",
-				"$or": []bson.M{
-					{"type": keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)},
-					{"type": common.Keptn07EvaluationDoneEventType},
-				},
+				"data.project":   "sockshop",
+				"data.stage":     "dev",
+				"data.service":   "carts",
+				"source":         "test-service",
+				"type":           keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 				"shkeptncontext": "test-context",
 				"time": bson.M{
 					"$gt": "1",
@@ -619,31 +616,10 @@ func Test_getAggregationPipeline(t *testing.T) {
 				},
 				bson.D{
 					{Key: "$lookup", Value: bson.M{
-						"from": "test-collection-invalidatedEvents",
-						"let": bson.M{
-							"event_id":          "$id",
-							"event_triggeredid": "$triggeredid",
-						},
-						"pipeline": []bson.M{
-							{
-								"$match": bson.M{
-									"$expr": bson.M{
-										"$or": []bson.M{
-											{
-												"$eq": []string{"$triggeredid", "$$event_id"},
-											},
-											{
-												"$eq": []string{"$triggeredid", "$$event_triggeredid"},
-											},
-										},
-									},
-								},
-							},
-							{
-								"$limit": 1,
-							},
-						},
-						"as": "invalidated",
+						"from":         "test-collection-invalidatedEvents",
+						"localField":   "triggeredid",
+						"foreignField": "triggeredid",
+						"as":           "invalidated",
 					}},
 				},
 				bson.D{
