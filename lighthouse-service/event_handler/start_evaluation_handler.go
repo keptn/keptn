@@ -81,42 +81,13 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 
-	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
-	if err == nil && objectives != nil {
-		logger.Info("SLO file found")
-		for _, objective := range objectives.Objectives {
-			indicators = append(indicators, objective.SLI)
-		}
-
-		if objectives.Filter != nil {
-			for key, value := range objectives.Filter {
-				filter := &keptnv2.SLIFilter{
-					Key:   key,
-					Value: value,
-				}
-				filters = append(filters, filter)
-			}
-		}
-	} else if err != nil && err != ErrSLOFileNotFound {
-		var message string
-		if err == ErrServiceNotFound {
-			message = "error retrieving SLO file: service " + e.Service + " not found"
-		} else if err == ErrStageNotFound {
-			message = "error retrieving SLO file: stage " + e.Stage + " not found"
-		} else if err == ErrProjectNotFound {
-			message = "error retrieving SLO file: project " + e.Project + " not found"
-		} else {
-			message = fmt.Sprintf("error retrieving SLO file: %s", err.Error())
-		}
-		logger.Error(message)
-		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message)
-	} else if err != nil && err == ErrSLOFileNotFound {
-		logger.Error("no SLO file found")
+	if err2, end := eh.computeObjectives(e, commitID, indicators, filters, evaluationStartTimestamp, evaluationEndTimestamp); end {
+		return err2
 	}
 
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus') from the respective configmap
 	var sliProvider string
-	sliProvider, err = eh.SLIProviderConfig.GetSLIProvider(e.Project)
+	sliProvider, err := eh.SLIProviderConfig.GetSLIProvider(e.Project)
 	if err != nil {
 		// no provider found - fallback to default SLI provider
 		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
@@ -150,6 +121,42 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
 	err = eh.sendInternalGetSLIEvent(keptnContext, commitID, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
 	return nil
+}
+
+func (eh *StartEvaluationHandler) computeObjectives(e *keptnv2.EvaluationTriggeredEventData, commitID string, indicators []string, filters []*keptnv2.SLIFilter, evaluationStartTimestamp string, evaluationEndTimestamp string) (error, bool) {
+	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
+	if err == nil && objectives != nil {
+		logger.Info("SLO file found")
+		for _, objective := range objectives.Objectives {
+			indicators = append(indicators, objective.SLI)
+		}
+
+		if objectives.Filter != nil {
+			for key, value := range objectives.Filter {
+				filter := &keptnv2.SLIFilter{
+					Key:   key,
+					Value: value,
+				}
+				filters = append(filters, filter)
+			}
+		}
+	} else if err != nil && err != ErrSLOFileNotFound {
+		var message string
+		if err == ErrServiceNotFound {
+			message = "error retrieving SLO file: service " + e.Service + " not found"
+		} else if err == ErrStageNotFound {
+			message = "error retrieving SLO file: stage " + e.Stage + " not found"
+		} else if err == ErrProjectNotFound {
+			message = "error retrieving SLO file: project " + e.Project + " not found"
+		} else {
+			message = fmt.Sprintf("error retrieving SLO file: %s", err.Error())
+		}
+		logger.Error(message)
+		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message), true
+	} else if err != nil && err == ErrSLOFileNotFound {
+		logger.Error("no SLO file found")
+	}
+	return nil, false
 }
 
 func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
@@ -224,7 +231,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
 	event.SetExtension("gitcommitid", commitID)
-	event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
+	_ = event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
 
 	logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)

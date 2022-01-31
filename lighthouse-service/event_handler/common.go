@@ -20,7 +20,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
-const eventbroker = "EVENTBROKER"
 const datastore = "MONGODB_DATASTORE"
 const configurationServiceURL = "configuration-service:8080"
 
@@ -78,20 +77,9 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*
 	}
 	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml", utils.AppendQuery(commitOption))
 	if err != nil {
-		_, err2 := sr.ServiceHandler.GetService(project, stage, service)
-		if err2 != nil {
-			if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
-				return nil, ErrProjectNotFound
-			} else if strings.Contains(strings.ToLower(err2.Error()), "stage not found") {
-				return nil, ErrStageNotFound
-			} else if strings.Contains(strings.ToLower(err2.Error()), "service not found") {
-				return nil, ErrServiceNotFound
-			}
-		} else {
-			if strings.Contains(strings.ToLower(err.Error()), "could not check out ") {
-				return nil, ErrConfigService
-			}
-			return nil, ErrSLOFileNotFound
+		_, serviceErr := sr.ServiceHandler.GetService(project, stage, service)
+		if serviceErr != nil {
+			return checkNotFound(serviceErr, err)
 		}
 	}
 	if sloFile == nil || sloFile.ResourceContent == "" {
@@ -105,6 +93,21 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*
 	}
 
 	return slo, nil
+}
+
+func checkNotFound(notFound, checkOut error) (*keptn.ServiceLevelObjectives, error) {
+	if strings.Contains(strings.ToLower(notFound.Error()), "project not found") {
+		return nil, ErrProjectNotFound
+	} else if strings.Contains(strings.ToLower(notFound.Error()), "stage not found") {
+		return nil, ErrStageNotFound
+	} else if strings.Contains(strings.ToLower(notFound.Error()), "service not found") {
+		return nil, ErrServiceNotFound
+	} else {
+		if strings.Contains(strings.ToLower(checkOut.Error()), "could not check out ") {
+			return nil, ErrConfigService
+		}
+		return nil, ErrSLOFileNotFound
+	}
 }
 
 func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
@@ -162,7 +165,7 @@ func sendEvent(shkeptncontext string, triggeredID, eventType, commitID string, k
 	event.SetExtension("triggeredid", triggeredID)
 	event.SetExtension("gitcommitid", commitID)
 	if data != nil {
-		event.SetData(cloudevents.ApplicationJSON, data)
+		_ = event.SetData(cloudevents.ApplicationJSON, data)
 	}
 
 	logger.Debug("Send event: " + eventType)
