@@ -67,7 +67,7 @@ func Test_QualityGates(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	source := "golang-test"
-	//_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	require.Nil(t, err)
 	t.Logf("creating project %s", projectName)
 
@@ -434,7 +434,7 @@ func storeSLOWithCommit(t *testing.T, projectName string, serviceName string, co
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
 	require.Nil(t, err)
 	t.Log("Storing new slo file")
-	resp, err := internalKeptnAPI.Post("/api/configuration-service"+configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
+	resp, err := internalKeptnAPI.Post(configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
 		Resources: []*models.Resource{
 			{
 				ResourceContent: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),
