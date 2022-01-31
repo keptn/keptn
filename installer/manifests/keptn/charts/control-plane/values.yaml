@@ -117,7 +117,7 @@ resourceService:
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
-    DIRECTORY_STAGE_STRUCTURE: "false"
+    DIRECTORY_STAGE_STRUCTURE: "true"
 
 mongodbDatastore:
   image:
