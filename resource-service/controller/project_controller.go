@@ -15,6 +15,6 @@ func NewProjectController(projectHandler handler.IProjectHandler) Controller {
 
 func (controller ProjectController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.POST("/project", controller.ProjectHandler.CreateProject)
-	apiGroup.PUT("/project/:projectName", controller.ProjectHandler.UpdateProject)
+	apiGroup.PUT("/project", controller.ProjectHandler.UpdateProject)
 	apiGroup.DELETE("/project/:projectName", controller.ProjectHandler.DeleteProject)
 }
