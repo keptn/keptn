@@ -95,8 +95,12 @@ func Test_QualityGates(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	source := "golang-test"
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	require.Nil(t, err)
+
+	resp, err := ExecuteCommand(fmt.Sprintf("kubectl get configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	if !strings.Contains(resp, "not found") && err != nil {
+		_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+		require.Nil(t, err)
+	}
 	t.Logf("creating project %s", projectName)
 
 	err = CreateProject(projectName, shipyardFilePath, true)
