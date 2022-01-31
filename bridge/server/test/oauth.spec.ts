@@ -2,6 +2,7 @@ import { CallbackParamsType, TokenSet } from 'openid-client';
 import request from 'supertest';
 import { Express, Request } from 'express';
 import { init } from '../app';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Jest } from '@jest/environment';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
@@ -66,14 +67,19 @@ describe('Test OAuth env variables', () => {
     process.env.OAUTH_BASE_URL = 'http://localhost';
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
+    // if not found, index.html is sent
     for (const endpoint of ['/login', '/oauth/redirect', '/logoutsession']) {
       const response = await request(app).get(endpoint);
-      expect(response.status).toBe(500);
+      expect(response.text).not.toBeUndefined();
     }
     for (const endpoint of ['/logout']) {
       const response = await request(app).post(endpoint);
-      expect(response.status).toBe(500);
+      expect(response.text).not.toBeUndefined();
     }
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
@@ -81,7 +87,7 @@ describe('Test OAuth', () => {
   let app: Express;
   beforeAll(async () => {
     mockOpenId(true);
-    app = await TestUtils.setupOAuthTest();
+    app = await setupOAuth();
   });
 
   beforeEach(() => {
@@ -100,21 +106,21 @@ describe('Test OAuth', () => {
     await request(app).get('/login');
     const response = await request(app).get(`/oauth/redirect?code=someCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
-    expect(response.status).toBe(500);
+    expect(response.text).not.toBeUndefined(); // error view is rendered
   });
 
   it('should reject token gain if code is not provided', async () => {
     await request(app).get('/login');
     const response = await request(app).get(`/oauth/redirect?state=someState`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
-    expect(response.status).toBe(500);
+    expect(response.text).not.toBeUndefined();
   });
 
   it('should reject token gain if state is invalid', async () => {
     await request(app).get('/login');
     const response = await request(app).get(`/oauth/redirect?state=invalidState?code=someCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
-    expect(response.status).toBe(500);
+    expect(response.text).not.toBeUndefined();
   });
 
   it('should authenticate successfully', async () => {
@@ -128,12 +134,12 @@ describe('Test OAuth', () => {
     const { state, cookies } = await login(app);
     const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`).set('Cookie', cookies);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
-    expect(response.status).toBe(500);
+    expect(response.text).not.toBeUndefined();
   });
 
   it('should logout and return end session data', async () => {
     const { cookies } = await login(app);
-    const logoutResponse = await request(app).get(`/logout`).set('Cookie', cookies);
+    const logoutResponse = await request(app).post(`/logout`).set('Cookie', cookies);
     const { state, ...data } = logoutResponse.body;
     expect(state).not.toBeUndefined();
     expect(data).toEqual({
@@ -158,6 +164,10 @@ describe('Test OAuth', () => {
     const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
     expect(dataResponse.status).not.toBe(401);
   });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
+  });
 });
 
 describe('Test expired token', () => {
@@ -167,7 +177,7 @@ describe('Test expired token', () => {
 
   it('should fail refresh of token and remove session', async () => {
     mockOpenId(true, true, true);
-    const app = await TestUtils.setupOAuthTest();
+    const app = await setupOAuth();
     const { cookies } = await login(app);
     const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
 
@@ -178,11 +188,15 @@ describe('Test expired token', () => {
 
   it('should refresh token if expired', async () => {
     mockOpenId(true, true);
-    const app = await TestUtils.setupOAuthTest();
+    const app = await setupOAuth();
     const { cookies } = await login(app);
     const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
 
     expect(dataResponse.status).not.toBe(401);
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
@@ -191,7 +205,7 @@ describe('Test OAuth logout without end session endpoint', () => {
 
   beforeAll(async () => {
     mockOpenId(false);
-    app = await TestUtils.setupOAuthTest();
+    app = await setupOAuth();
   });
 
   beforeEach(() => {
@@ -200,8 +214,12 @@ describe('Test OAuth logout without end session endpoint', () => {
 
   it('should logout and not return nothing', async () => {
     const { cookies } = await login(app);
-    const logoutResponse = await request(app).get(`/logout`).set('Cookie', cookies);
+    const logoutResponse = await request(app).post(`/logout`).set('Cookie', cookies);
     expect(logoutResponse.body).toBe('');
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
@@ -275,6 +293,11 @@ async function login(app: Express): Promise<{ state: string; response: request.R
   const state = authUrlResponse.headers.location?.split('state=').pop();
   const response = await request(app).get(`/oauth/redirect?state=${state}&code=someCode`);
   return { state, response, cookies: response.headers['set-cookie'] };
+}
+
+async function setupOAuth(): Promise<Express> {
+  await mockSavingValidationData();
+  return TestUtils.setupOAuthTest();
 }
 
 async function mockSavingValidationData(): Promise<void> {
