@@ -177,72 +177,72 @@ jobs:
   ############################################################################
   # Build Docker Images
   ############################################################################
-  docker_build:
-    needs: prepare
-    name: Docker Build
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
-    env:
-      BRANCH: ${{ needs.prepare.outputs.branch }}
-      VERSION: ${{ needs.prepare.outputs.next-version }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2.4.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: "ghcr.io"
-          username: "keptn-bot"
-          password: ${{ secrets.KEPTN_BOT_TOKEN }}
-
-      - name: Login to Quay.io
-        uses: docker/login-action@v1
-        with:
-          registry: "quay.io"
-          username: ${{ secrets.QUAY_USER }}
-          password: ${{ secrets.QUAY_TOKEN }}
-
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        uses: docker/build-push-action@v2
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: |
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-          build-args: |
-            version=${{ env.VERSION }}
-          push: ${{ matrix.config.should-push-image }}
-          pull: true
-
-      - name: Write docker image digest to file
-        if: matrix.config.should-push-image
-        env:
-          IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
-          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
-        run: |
-          echo "${{ matrix.config.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
-
-      - name: Upload Digest file as artifact
-        if: matrix.config.should-push-image
-        uses: actions/upload-artifact@v2
-        env:
-          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
-        with:
-          name: image-digests
-          path: ${{ env.IMAGE_DIGEST_FILENAME }}
+#  docker_build:
+#    needs: prepare
+#    name: Docker Build
+#    runs-on: ubuntu-20.04
+#    strategy:
+#      matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
+#    env:
+#      BRANCH: ${{ needs.prepare.outputs.branch }}
+#      VERSION: ${{ needs.prepare.outputs.next-version }}
+#    steps:
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.4.0
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v1
+#
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v1
+#        with:
+#          username: ${{ secrets.REGISTRY_USER }}
+#          password: ${{ secrets.REGISTRY_PASSWORD }}
+#
+#      - name: Login to GitHub Container Registry
+#        uses: docker/login-action@v1
+#        with:
+#          registry: "ghcr.io"
+#          username: "keptn-bot"
+#          password: ${{ secrets.KEPTN_BOT_TOKEN }}
+#
+#      - name: Login to Quay.io
+#        uses: docker/login-action@v1
+#        with:
+#          registry: "quay.io"
+#          username: ${{ secrets.QUAY_USER }}
+#          password: ${{ secrets.QUAY_TOKEN }}
+#
+#      - id: docker_build_image
+#        name: "Docker Build keptn/${{ matrix.config.artifact }}"
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: ${{ matrix.config.working-dir }}
+#          tags: |
+#            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+#            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+#            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
+#          build-args: |
+#            version=${{ env.VERSION }}
+#          push: ${{ matrix.config.should-push-image }}
+#          pull: true
+#
+#      - name: Write docker image digest to file
+#        if: matrix.config.should-push-image
+#        env:
+#          IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
+#          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
+#        run: |
+#          echo "${{ matrix.config.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
+#
+#      - name: Upload Digest file as artifact
+#        if: matrix.config.should-push-image
+#        uses: actions/upload-artifact@v2
+#        env:
+#          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
+#        with:
+#          name: image-digests
+#          path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
@@ -260,13 +260,13 @@ jobs:
   ############################################################################
   # Build CLI
   ############################################################################
-  build-cli:
-    needs: prepare
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
-    with:
-      branch: ${{ needs.prepare.outputs.branch }}
-      version: ${{ needs.prepare.outputs.next-version }}
-      release: true
+#  build-cli:
+#    needs: prepare
+#    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+#    with:
+#      branch: ${{ needs.prepare.outputs.branch }}
+#      version: ${{ needs.prepare.outputs.next-version }}
+#      release: true
 
   ############################################################################
   # Pre-Release
@@ -274,7 +274,8 @@ jobs:
   pre-release:
     name: "Pre-Release"
     runs-on: ubuntu-20.04
-    needs: [prepare, docker_build, build-helm-charts, build-cli]
+#    needs: [prepare, docker_build, build-helm-charts, build-cli]
+    needs: [prepare, build-helm-charts]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -283,131 +284,32 @@ jobs:
           path: keptn
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
-      - name: Checkout helm-charts repo
-        uses: actions/checkout@v2
-        with:
-          repository: keptn/helm-charts
-          path: helm-charts
-          ref: gh-pages
-          token: ${{ secrets.KEPTN_BOT_TOKEN }}
-
       - name: Set up Node.js
         uses: actions/setup-node@v2.5.1
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Configure Git
+      - name: Get k8s resource stats
         env:
-          KEPTN_BOT_NAME: ${{ env.KEPTN_BOT_NAME }}
-          KEPTN_BOT_EMAIL: ${{ env.KEPTN_BOT_EMAIL }}
+          HELM_TEMPLATE: template.yml
+          RESOURCE_JSON: resources.json
+          RESOURCE_MARKDOWN: resources.md
         run: |
-          git config --global user.name "$KEPTN_BOT_NAME"
-          git config --global user.email "$KEPTN_BOT_EMAIL"
-
-      - name: Download Pre-Release Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: ./dist
-
-      - name: Prepare GitHub Pre-Release Notes
-        working-directory: keptn
-        env:
-          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
-        run: |
-          if [[ ! -z "$SEMVER_TYPE" ]]; then
-            npx standard-version@^9.3.1 \
-              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
-              -i "${{ env.RELEASE_NOTES_FILE }}" \
-              --skip.commit \
-              --skip.tag \
-              --header "" \
-              --release-as "$SEMVER_TYPE"
-          else
-            npx standard-version@^9.3.1 \
-              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
-              -i "${{ env.RELEASE_NOTES_FILE }}" \
-              --skip.commit \
-              --skip.tag \
-              --header ""
-          fi
-
-      - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
-        with:
-          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ needs.prepare.outputs.branch }}
-          enforce_admins: false
-
-      - name: Create pre-release package
-        id: create-release-package
-        working-directory: keptn
-        env:
-          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-        run: |
-          echo "🚀 Creating release package now..."
-
-          if [[ ! -z "$SEMVER_TYPE" ]]; then
-            npx standard-version@^9.3.1 \
-              --release-as "$SEMVER_TYPE" \
-              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
-              --skip.commit \
-              --skip.changelog
-          else
-            npx standard-version@^9.3.1 \
-              --prerelease "${{ env.PRERELEASE_KEYWORD }}" \
-              --skip.commit \
-              --skip.changelog
-          fi
-
-          echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
-
-          echo "⚡️ Pushing changes to remote repository..."
-          git push --follow-tags
-
-      - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
-        if: always() # Force to always run this step to ensure "include administrators" is always turned back on
-        with:
-          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ needs.prepare.outputs.branch }}
-          enforce_admins: true
-
-      - name: Create GitHub Pre-Release
-        working-directory: keptn
-        env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-        run: |
-          gh release create "$RELEASE_TAG" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" --title "$RELEASE_TAG"
-
-      - name: Upload Release Assets
-        working-directory: keptn
-        env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-        run: |
-          gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
-          gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
-
-      - name: Upload helm charts
-        env:
-          ARTIFACTS: "./dist/keptn-installer/*.tgz"
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-        run: |
-          mv "$ARTIFACTS" ./helm-charts/packages
-          cd ./helm-charts
-          helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
-          git add *.tgz
-          git add index.yaml
-          git commit --signoff -m "Keptn Release $RELEASE_TAG"
-          git push
-
-      - name: Attach docker image digests to release
-        env:
-          DIGEST_FILE: "digests.csv"
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-        run: |
-          cat ./dist/image-digests/digest-*.txt >> $DIGEST_FILE
-          
-          gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
+          helm template ../dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
+          cat $HELM_TEMPLATE | \
+          yq eval-all -o=json '
+            [
+              .spec.template.spec.containers.[] | 
+              {"name":.name, "resources":.resources}
+            ]' | \
+          jq '[
+            .[] | {
+              name: .name, 
+              cpu_request: .resources.requests.cpu, 
+              cpu_limit: .resources.limits.cpu, 
+              mem_request: .resources.requests.memory, 
+              mem_limit: .resources.limits.memory
+            }
+          ] |
+          unique_by(.name)' > $RESOURCE_JSON
+          npx tablemark-cli@v2.0.0 $RESOURCE_JSON
