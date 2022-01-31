@@ -854,11 +854,14 @@ func (s *BaseSuite) TestGit_MigrateProject(c *C) {
 	err = g.MigrateProject(gitContext, []byte("new-metadata-content"))
 	c.Assert(err, IsNil)
 
-	stat, err := os.Stat(GetProjectConfigPath(gitContext.Project) + "/keptn-stages/new-branch")
+	revision, err := g.GetCurrentRevision(gitContext)
 	c.Assert(err, IsNil)
 
-	c.Assert(stat.IsDir(), Equals, true)
-
+	got, err := g.GetFileRevision(gitContext, revision, "keptn-stages/new-branch/LICENSE")
+	c.Assert(err, IsNil)
+	if len(got) == 0 {
+		c.Error("Expected metadata file to be present")
+	}
 }
 
 func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
