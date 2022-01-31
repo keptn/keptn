@@ -78,7 +78,7 @@ function oauthRouter(
     }
 
     try {
-      const validationData = (await getAndRemoveValidationData(params.state))?.value;
+      const validationData = await getAndRemoveValidationData(params.state);
       if (!validationData) {
         return res.render('error', invalidRequest);
       }

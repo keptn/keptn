@@ -3,7 +3,8 @@ import expressSession, { MemoryStore } from 'express-session';
 import random from 'crypto-random-string';
 import { IdTokenClaims, TokenSet, TokenSetParameters } from 'openid-client';
 import MongoStore from 'connect-mongo';
-import { Collection, ModifyResult, MongoClient } from 'mongodb';
+import { Collection, MongoClient } from 'mongodb';
+import { Crypto } from './crypto';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -32,8 +33,16 @@ const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
 const SESSION_SECRET = process.env.OAUTH_SESSION_SECRET || random({ length: 200 });
+const DATABASE_SECRET = process.env.OAUTH_DATABASE_SECRET || random({ length: 32 });
+const crypto = new Crypto(DATABASE_SECRET);
 let store: MemoryStore | MongoStore;
 let validationCollection: Collection<ValidationType> | undefined;
+
+if (DATABASE_SECRET.length !== 32) {
+  console.error('The length of the env variable "OAUTH_DATABASE_SECRET" must be 32');
+  process.exit(1);
+}
+
 if (process.env.NODE_ENV === 'test') {
   store = new MemoryStore();
 } else {
@@ -109,7 +118,7 @@ async function setupMongoDB(): Promise<MongoStore> {
     dbName: mongoCredentials.database,
     collectionName: 'sessions',
     crypto: {
-      secret: SESSION_SECRET,
+      secret: DATABASE_SECRET,
     },
   });
 }
@@ -134,8 +143,8 @@ function isAuthenticated(
 async function saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
   await validationCollection?.insertOne({
     _id: state,
-    codeVerifier,
-    nonce,
+    codeVerifier: crypto.encrypt(codeVerifier),
+    nonce: crypto.encrypt(nonce),
     creationDate: new Date(),
   });
 }
@@ -143,8 +152,20 @@ async function saveValidationData(state: string, codeVerifier: string, nonce: st
 /**
  * returns state, code verifier and nonce and removes it afterwards
  */
-function getAndRemoveValidationData(state: string): Promise<ModifyResult<ValidationType>> | undefined {
-  return validationCollection?.findOneAndDelete({ _id: state });
+async function getAndRemoveValidationData(state: string): Promise<ValidationType | undefined> {
+  const data = await validationCollection?.findOneAndDelete({ _id: state });
+  try {
+    return data?.value
+      ? {
+          _id: data.value._id,
+          codeVerifier: crypto.decrypt(data.value.codeVerifier),
+          nonce: crypto.decrypt(data.value.nonce),
+          creationDate: data.value.creationDate,
+        }
+      : undefined;
+  } catch (e) {
+    console.error('Error wile decrypting validation data. Cause:', e);
+  }
 }
 
 /**
