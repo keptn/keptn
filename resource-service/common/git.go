@@ -418,7 +418,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
 	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
-		RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		Auth: &http.BasicAuth{
 			Username: gitContext.Credentials.User,
 			Password: gitContext.Credentials.Token,
