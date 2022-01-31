@@ -96,7 +96,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 		Source:             stringp("test-source"),
 		Specversion:        "1.0",
 		Time:               strfmt.DateTime{},
-		Type:               models.Type(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
+		Type:               stringp(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
 		Triggeredid:        "my-triggered-id",
