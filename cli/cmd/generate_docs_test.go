@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/stretchr/testify/assert"
@@ -40,5 +41,37 @@ func TestGenerateDocs(t *testing.T) {
 
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestGenerateDocsUnknownCommand
+func TestGenerateDocsUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("generate docs someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn generate docs\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestGenerateDocsUnknownParameter
+func TestGenerateDocsUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("generate docs --project=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --project"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

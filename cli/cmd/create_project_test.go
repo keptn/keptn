@@ -3,15 +3,16 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -174,5 +175,37 @@ spec:
 			assert.Equal(t, tt.wantErr, err != nil)
 
 		})
+	}
+}
+
+// TestCreateProjectUnknownCommand
+func TestCreateProjectUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("create project sockshop someUnknownCommand --shipyard=shipyard.yaml")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "too many arguments set"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestCreateProjectUnknownParameter
+func TestCreateProjectUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("create project sockshop --projectt=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

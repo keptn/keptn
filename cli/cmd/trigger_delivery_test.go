@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -344,5 +345,37 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 				t.Errorf("wanted error: %t, got: %v", tt.wantErr, err)
 			}
 		})
+	}
+}
+
+// TestTriggerDeliveryUnknownCommand
+func TestTriggerDeliveryUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image --tag=tag")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestTriggerDeliveryUnknownParameter
+func TestTriggerDeliveryUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("trigger delivery --projectt=sockshop --service=service --image=image --tag=tag")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

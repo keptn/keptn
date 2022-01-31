@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/internal"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -33,9 +34,12 @@ var crServiceCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
+		} else if len(args) >= 2 {
+			cmd.SilenceUsage = false
+			return errors.New("too many arguments set")
 		}
 
 		if !keptncommon.ValidateUnixDirectoryName(args[0]) {

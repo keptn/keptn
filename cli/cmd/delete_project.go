@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -37,9 +38,12 @@ var delProjectCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument PROJECTNAME not set")
+		} else if len(args) >= 2 {
+			cmd.SilenceUsage = false
+			return errors.New("too many arguments set")
 		}
 
 		return nil

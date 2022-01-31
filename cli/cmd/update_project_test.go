@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -34,5 +35,37 @@ func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 
 	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
 		t.Errorf("missing expected error, but got %v", err)
+	}
+}
+
+// TestUpdateProjectUnknownCommand
+func TestUpdateProjectUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("update project sockshop someUnknownCommand --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "too many arguments set"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestUpdateProjectUnknownParameter
+func TestUpdateProjectUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --git-userr"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

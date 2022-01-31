@@ -16,12 +16,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/version"
 )
 
 func TestSkipUpgradeCheck(t *testing.T) {
@@ -136,5 +137,37 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 				t.Errorf("isContinuousDeliveryEnabled() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestUpgradeUnknownCommand
+func TestUpgradeUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("upgrade someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn upgrade\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestUpgradeUnknownParameter
+func TestUpgradeUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("upgrade --project=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --project"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

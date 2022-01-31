@@ -16,11 +16,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/version"
 )
 
 func TestVersionCmd(t *testing.T) {
@@ -53,5 +54,37 @@ func TestVersionCmd(t *testing.T) {
 	}
 	if !strings.Contains(out, "cluster version") {
 		t.Error("expected cluster version")
+	}
+}
+
+// TestVersionUnknownCommand
+func TestVersionUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("version someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn version\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestVersionUnknownParameter
+func TestVersionUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("version --projectt=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

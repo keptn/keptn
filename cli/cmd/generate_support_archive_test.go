@@ -1,13 +1,15 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/stretchr/testify/assert"
 
@@ -43,5 +45,37 @@ func TestGenerateSupportArchive(t *testing.T) {
 
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestGenerateSupportArchiveUnknownCommand
+func TestGenerateSupportArchiveUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("generate support-archive someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn generate support-archive\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestGenerateSupportArchiveUnknownParameter
+func TestGenerateSupportArchiveUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("generate support-archive --project=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --project"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

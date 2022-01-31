@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/bmizerany/assert"
 	"github.com/keptn/keptn/cli/pkg/common"
 	commonfake "github.com/keptn/keptn/cli/pkg/common/fake"
@@ -9,8 +13,6 @@ import (
 	kubefake "github.com/keptn/keptn/cli/pkg/kube/fake"
 	"helm.sh/helm/v3/pkg/chart"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"testing"
 )
 
 func TestInstallCmdHandler_doInstallation(t *testing.T) {
@@ -240,5 +242,37 @@ func TestInstallCmdHandler_doInstallation(t *testing.T) {
 				assert.Equal(t, tt.chartsToBeApplied[index], upgradeChartCall.Ch)
 			}
 		})
+	}
+}
+
+// TestInstallUnknownCommand
+func TestInstallUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("install someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn install\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestInstallUnknownParameter
+func TestInstallUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("install --project=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --project"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

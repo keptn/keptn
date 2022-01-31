@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -35,5 +36,37 @@ func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 	if err.Error() != "Please specify a service" {
 		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestConfigureMonitoringUnknownCommand
+func TestConfigureMonitoringUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("configure monitoring prometheus someUnknownCommand --project=sockshop --service=helloservice")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "Requires a monitoring provider as argument"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestConfigureMonitoringUnknownParameter
+func TestConfigureMonitoringUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("configure monitoring prometheus --projectt=sockshop --service=helloservice")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

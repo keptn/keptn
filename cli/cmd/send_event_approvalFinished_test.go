@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const approvalTriggeredMockResponse = `{
@@ -258,4 +260,36 @@ func createMockStdIn(userInput string) (*os.File, *os.File) {
 
 	oldStdin := os.Stdin
 	return tmpfile, oldStdin
+}
+
+// TestSendEventApprovalFinishedUnknownCommand
+func TestSendEventApprovalFinishedUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("send event approval.finished someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn send event approval.finished\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestSendEventApprovalFinishedUnknownParameter
+func TestSendEventApprovalFinishedUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("send event approval.finished --projectt=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
 }

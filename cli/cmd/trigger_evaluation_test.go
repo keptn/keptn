@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 func init() {
@@ -146,4 +147,36 @@ func TestTriggerEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	}
 
 	assert.EqualValues(t, "Start and end time of evaluation time frame not set: end date must be at least 1 minute after start date", err.Error())
+}
+
+// TestTriggerEvaluationUnknownCommand
+func TestTriggerEvaluationUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("trigger evaluation someUnknownCommand --project=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn trigger evaluation\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestTriggerEvaluationUnknownParameter
+func TestTriggerEvaluationUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("trigger evaluation --projectt=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
 }

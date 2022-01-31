@@ -14,20 +14,20 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-func TestDeleteProjectCmd(t *testing.T) {
+func TestDeleteServiceCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("delete project %s --mock", "sockshop")
+	cmd := fmt.Sprintf("delete secret myservice --mock --project=sockshop")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
-// TestDeleteProjectUnknownCommand
-func TestDeleteProjectUnknownCommand(t *testing.T) {
+// TestDeleteServiceUnknownCommand
+func TestDeleteServiceUnknownCommand(t *testing.T) {
 
-	cmd := fmt.Sprintf("delete project sockshop someUnknownCommand")
+	cmd := fmt.Sprintf("delete secret myservice someUnknownCommand")
 	_, err := executeActionCommandC(cmd)
 	if err == nil {
 		t.Errorf("Expected an error")
@@ -40,10 +40,10 @@ func TestDeleteProjectUnknownCommand(t *testing.T) {
 	}
 }
 
-// TestDeleteProjectUnknownParameter
-func TestDeleteProjectUnknownParmeter(t *testing.T) {
+// TestDeleteServiceUnknownParameter
+func TestDeleteServiceUnknownParmeter(t *testing.T) {
 
-	cmd := fmt.Sprintf("delete project sockshop --projectt=sockshop")
+	cmd := fmt.Sprintf("delete secret myservice --projectt=myservice")
 	_, err := executeActionCommandC(cmd)
 	if err == nil {
 		t.Errorf("Expected an error")

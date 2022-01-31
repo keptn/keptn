@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -92,6 +93,38 @@ func TestAddCorrectHttpPrefix(t *testing.T) {
 				t.Errorf("addCorrectHttpPrefix(): got %s, want %s", s, tt.out)
 			}
 		})
+	}
+}
+
+// TestAuthUnknownCommand
+func TestAuthUnknownCommand(t *testing.T) {
+
+	cmd := fmt.Sprintf("auth someUnknownCommand")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown command \"someUnknownCommand\" for \"keptn auth\""
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+}
+
+// TestAuthUnknownParameter
+func TestAuthUnknownParmeter(t *testing.T) {
+
+	cmd := fmt.Sprintf("auth --projectt=sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	expected := "unknown flag: --projectt"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }
 
