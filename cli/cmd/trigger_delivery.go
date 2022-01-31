@@ -52,9 +52,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 `,
 	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image> --tag=<tag> [--sequence=<sequence>]`,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+	Args:         cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return doTriggerDeliveryPreRunCheck(delivery)
 	},

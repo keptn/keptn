@@ -28,9 +28,7 @@ var abortSequenceCmd = &cobra.Command{
 	Long:         `Aborts the execution of a sequence. Currently running task(s) will not be aborted.`,
 	Example:      `keptn abort sequence --project <my-project> --keptn-context <keptn-context>`,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+	Args:         cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := AbortSequence(abortSequenceParams); err != nil {
 			return err

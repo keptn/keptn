@@ -4,15 +4,16 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	auth2 "github.com/keptn/keptn/cli/internal/auth"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	auth2 "github.com/keptn/keptn/cli/internal/auth"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/spf13/cobra"
 )
@@ -48,6 +49,7 @@ var exportAPIToken string
 // authCmd represents the auth command
 var authCmd = &cobra.Command{
 	Use:   "auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=SECRET_TOKEN",
+	Args:  cobra.NoArgs,
 	Short: "Authenticates the Keptn CLI against a Keptn installation",
 	Long: `Authenticates the Keptn CLI against a Keptn installation using an endpoint and an API token. 
 The endpoint and API token are automatically configured during the Keptn installation.

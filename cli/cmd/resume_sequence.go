@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -26,9 +27,7 @@ var resumeSequenceCmd = &cobra.Command{
 	Short:        "Resumes the execution of a sequence",
 	Example:      `keptn resume sequence --project <my-project> --keptn-context <keptn-context>`,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+	Args:         cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := ResumeSequence(resumeSequenceParams); err != nil {
 			return err

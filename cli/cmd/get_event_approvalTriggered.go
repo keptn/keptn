@@ -42,6 +42,7 @@ var approvalTriggered approvalTriggeredStruct
 // approvalTriggeredCmd represents the approval.triggered command
 var approvalTriggeredCmd = &cobra.Command{
 	Use:          "approval.triggered",
+	Args:         cobra.NoArgs,
 	Short:        "Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service",
 	Long:         `Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service.`,
 	Example:      `keptn get event approval.triggered --project=sockshop --stage=staging --service=carts`,
