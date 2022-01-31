@@ -296,7 +296,7 @@ jobs:
         uses: actions/setup-node@v2.5.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Configure Git
         env:
           KEPTN_BOT_NAME: ${{ env.KEPTN_BOT_NAME }}
@@ -317,6 +317,7 @@ jobs:
         run: |
           ls -lah ./
           ls -lah ./dist
+          ls -lah ./dist/keptn-installer
           helm template ./dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
           cat $HELM_TEMPLATE | \
           yq eval-all -o=json '
