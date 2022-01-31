@@ -30,6 +30,9 @@ npx tablemark-cli@v2.0.0 "$RESOURCE_JSON" -c "Name" -c "CPU Request" -c "CPU Lim
 # Attach resource stats to release notes
 {
   echo ""
+  echo "<details>"
+  echo "<summary>Kubernetes Resource Data</summary>"
   echo "### Resource Stats"
+  cat "$RESOURCE_MARKDOWN"
+  echo "</details>"
 } >> "$RELEASE_NOTES_FILE"
-cat "$RESOURCE_MARKDOWN" >> "$RELEASE_NOTES_FILE"
