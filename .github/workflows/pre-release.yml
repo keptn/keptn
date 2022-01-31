@@ -374,34 +374,13 @@ jobs:
           enforce_admins: true
 
       - name: Get k8s resource stats
+        working-directory: keptn
         env:
           HELM_TEMPLATE: template.yml
           RESOURCE_JSON: resources.json
           RESOURCE_MARKDOWN: resources.md
-        run: |
-          helm template ./dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
-          yq eval-all '[
-            .spec.template.spec.containers.[] | 
-            {
-              "name":.name, 
-              "resources":.resources
-            }
-          ]' "$HELM_TEMPLATE" -o=json | \
-          jq '[
-            .[] | {
-              name: .name,
-              cpu_request: .resources.requests.cpu,
-              cpu_limit: .resources.limits.cpu,
-              mem_request: .resources.requests.memory,
-              mem_limit: .resources.limits.memory
-            }
-          ] |
-          unique_by(.name)' > $RESOURCE_JSON
-          npx tablemark-cli@v2.0.0 $RESOURCE_JSON -c "Name" -c "CPU Request" -c "CPU Limit" -c "RAM Request" -c "RAM Limit" > "$RESOURCE_MARKDOWN"
-          
-          echo "" >> ${{ env.RELEASE_NOTES_FILE }}
-          echo "### Resource Stats" >> ${{ env.RELEASE_NOTES_FILE }}
-          cat "$RESOURCE_MARKDOWN" >> ${{ env.RELEASE_NOTES_FILE }}
+          RELEASE_NOTES_FILE: ${{ env.RELEASE_NOTES_FILE }}
+        run: ./gh-actions-scripts/generate-k8s-resource-stats.sh
 
       - name: Create GitHub Pre-Release
         working-directory: keptn
