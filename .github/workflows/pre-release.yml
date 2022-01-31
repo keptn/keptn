@@ -284,6 +284,14 @@ jobs:
           path: keptn
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
+      - name: Checkout helm-charts repo
+        uses: actions/checkout@v2
+        with:
+          repository: keptn/helm-charts
+          path: helm-charts
+          ref: gh-pages
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v2.5.1
         with:
@@ -295,7 +303,7 @@ jobs:
           RESOURCE_JSON: resources.json
           RESOURCE_MARKDOWN: resources.md
         run: |
-          helm template ../dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
+          helm template ./dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
           cat $HELM_TEMPLATE | \
           yq eval-all -o=json '
             [
