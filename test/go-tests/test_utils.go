@@ -33,8 +33,7 @@ import (
 const (
 	KeptnSpecVersion      = "0.2.0"
 	KeptnNamespaceEnvVar  = "KEPTN_NAMESPACE"
-	DefaultKeptnNamespace = "keptn"
-	KeptnNamespacePrefix  = "KEPTN_NAMESPACE_PREFIX"
+	DefaultKeptnNamespace = "keptn-test"
 )
 
 type APICaller struct {
@@ -174,7 +173,9 @@ func CreateProject(projectName string, shipyardFilePath string, recreateIfAlread
 	retries := 5
 	var err error
 	var resp *req.Resp
-	newProjectName := osutils.GetOSEnv(KeptnNamespacePrefix) + "-" + projectName
+
+	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
+	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 
 	for i := 0; i < retries; i++ {
 		if err != nil {
