@@ -569,7 +569,7 @@ func (g *Git) migrateBranch(branch *plumbing.Reference, oldRepoWorktree *git.Wor
 	if err != nil {
 		return err
 	}
-	// TODO use common function to determine stage directories
+
 	err = ensureDirectoryExists(projectPath + "/keptn-stages")
 	if err != nil {
 		return err
