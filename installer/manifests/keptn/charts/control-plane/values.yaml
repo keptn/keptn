@@ -115,7 +115,7 @@ configurationService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
 
 resourceService:
-  enabled: true #TODO set back to false
+  enabled: false
   replicas: 1
   image:
     repository: docker.io/keptn/resource-service
@@ -123,7 +123,7 @@ resourceService:
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
-    DIRECTORY_STAGE_STRUCTURE: "true" #TODO set back to false
+    DIRECTORY_STAGE_STRUCTURE: "false"
 
 mongodbDatastore:
   image:
