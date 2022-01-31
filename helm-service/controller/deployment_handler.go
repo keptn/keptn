@@ -59,14 +59,14 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	var err error
 	// retrieve commitId from sequence
 	extensions := ce.Context.GetExtensions()
-	gitVersion, _ := types.ToString(extensions["gitcommitid"])
+	commitID, _ := types.ToString(extensions["gitcommitid"])
 
 	if len(e.ConfigurationChange.Values) > 0 {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Updating values for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 		valuesUpdater := configurationchanger.NewValuesManipulator(e.ConfigurationChange.Values)
 
-		userChart, _, err = h.getGeneratedChart(e.EventData, gitVersion)
-		userChart, gitVersion, err = configurationchanger.NewConfigurationChanger(
+		userChart, _, err = h.getGeneratedChart(e.EventData, commitID)
+		userChart, commitID, err = configurationchanger.NewConfigurationChanger(
 			h.getConfigServiceURL()).UpdateLoadedChart(userChart, e.EventData, false, valuesUpdater)
 
 		if err != nil {
@@ -76,7 +76,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		}
 	} else {
 		// Read chart
-		userChart, gitVersion, err = h.getUserChart(e.EventData, gitVersion)
+		userChart, commitID, err = h.getUserChart(e.EventData, commitID)
 		if err != nil {
 			err = fmt.Errorf("failed to load chart: %v", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
@@ -96,13 +96,13 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	if err := h.upgradeGeneratedChart(deploymentStrategy, e, gitVersion); err != nil {
+	if err := h.upgradeGeneratedChart(deploymentStrategy, e, commitID); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
 
 	// Send finished event
-	data, err := h.getFinishedEventDataForSuccess(e, gitVersion,
+	data, err := h.getFinishedEventDataForSuccess(e, commitID,
 		getDeploymentName(deploymentStrategy, false), deploymentStrategy)
 	if err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))

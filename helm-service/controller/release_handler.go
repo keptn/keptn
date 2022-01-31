@@ -29,8 +29,7 @@ func NewReleaseHandler(keptnHandler Handler,
 	configurationChanger configurationchanger.IConfigurationChanger,
 	chartGenerator helm.ChartGenerator,
 	chartStorer keptntypes.IChartStorer,
-	chartPackager keptntypes.IChartPackager,
-	configServiceURL string) *ReleaseHandler {
+	chartPackager keptntypes.IChartPackager) *ReleaseHandler {
 	//generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return &ReleaseHandler{
 		Handler:               keptnHandler,
@@ -52,7 +51,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 	}
 	// retrieve commitId from sequence
 	extensions := ce.Context.GetExtensions()
-	gitVersion, _ := types.ToString(extensions["gitcommitid"])
+	commitID, _ := types.ToString(extensions["gitcommitid"])
 
 	// Send release started event
 	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting release for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
@@ -73,7 +72,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 		if e.Result == keptnv2.ResultPass || e.Result == keptnv2.ResultWarning {
 			h.getKeptnHandler().Logger.Info(fmt.Sprintf("Promote service %s in stage %s of project %s",
 				e.Service, e.Stage, e.Project))
-			gitVersion, err = h.promoteDeployment(e.EventData, gitVersion)
+			commitID, err = h.promoteDeployment(e.EventData, commitID)
 			if err != nil {
 				h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
 				return
@@ -86,7 +85,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 	}
 
 	// Send finished event
-	data := h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished release", gitVersion)
+	data := h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished release", commitID)
 	if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), data); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -122,7 +121,7 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData, commitID string)
 	if err != nil {
 		return "", err
 	}
-	genChart, gitVersion, err := h.configurationChanger.UpdateLoadedChart(genChart, e, true, canaryWeightTo0Updater)
+	genChart, commitID, err = h.configurationChanger.UpdateLoadedChart(genChart, e, true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
 	}
@@ -131,14 +130,14 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData, commitID string)
 	}
 
 	// Scale down replicas of user chart
-	userChart, _, err := h.getUserChart(e, gitVersion)
+	userChart, _, err := h.getUserChart(e, commitID)
 	if err != nil {
 		return "", err
 	}
 	if err := h.upgradeChartWithReplicas(userChart, e, keptnevents.Duplicate, 0); err != nil {
 		return "", err
 	}
-	return gitVersion, nil
+	return commitID, nil
 }
 
 func (h *ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {

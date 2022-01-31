@@ -91,20 +91,20 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	//create dependencies
 
-	mesh := mesh.NewIstioMesh()
+	istioMesh := mesh.NewIstioMesh()
 	logger.Debug("Got event of type " + event.Type())
 
 	// ToDo: Multithreaded is important here, such that the endpoint responds immediately
 	// else we will have deployment handler take 30 seconds, and after that the response will be sent
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
+		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, istioMesh)
 		go gracefulMiddleware(ctx, event, deploymentHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
-		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
+		releaseHandler := createReleaseHandler(configServiceURL, istioMesh, keptnHandler)
 		go gracefulMiddleware(ctx, event, releaseHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName) {
-		rollbackHandler := createRollbackHandler(configServiceURL, mesh, keptnHandler)
+		rollbackHandler := createRollbackHandler(configServiceURL, istioMesh, keptnHandler)
 		go gracefulMiddleware(ctx, event, rollbackHandler)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
@@ -147,7 +147,7 @@ func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Kep
 	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
 	chartPackager := keptnutils.NewChartPackager()
 	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	releaseHandler := controller.NewReleaseHandler(keptnBaseHandler, mesh, configChanger, chartGenerator, chartStorer, chartPackager, url.String())
+	releaseHandler := controller.NewReleaseHandler(keptnBaseHandler, mesh, configChanger, chartGenerator, chartStorer, chartPackager)
 	return releaseHandler
 }
 

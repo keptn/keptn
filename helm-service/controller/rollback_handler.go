@@ -35,7 +35,7 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 
 	// retrieve commitId from sequence
 	extensions := ce.Context.GetExtensions()
-	gitVersion, _ := types.ToString(extensions["gitcommitid"])
+	commitID, _ := types.ToString(extensions["gitcommitid"])
 
 	// Send release started event
 	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting release for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
@@ -45,13 +45,13 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 	}
 
 	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
-	gitVersion, err := r.rollbackDeployment(e.EventData, gitVersion)
+	commitID, err := r.rollbackDeployment(e.EventData, commitID)
 	if err != nil {
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
 
-	data := r.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished rollback", gitVersion)
+	data := r.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished rollback")
 	if err := r.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.RollbackTaskName), data); err != nil {
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -68,7 +68,7 @@ func (r *RollbackHandler) rollbackDeployment(e keptnv2.EventData, commitID strin
 	if err != nil {
 		return "", err
 	}
-	genChart, gitVersion, err := r.configurationChanger.UpdateLoadedChart(chart, e,
+	genChart, commitID, err := r.configurationChanger.UpdateLoadedChart(chart, e,
 		true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
@@ -79,14 +79,14 @@ func (r *RollbackHandler) rollbackDeployment(e keptnv2.EventData, commitID strin
 		return "", err
 	}
 
-	userChart, _, err := r.getUserChart(e, gitVersion)
+	userChart, _, err := r.getUserChart(e, commitID)
 	if err != nil {
 		return "", err
 	}
 	if err := r.upgradeChartWithReplicas(userChart, e, keptnevents.Duplicate, 0); err != nil {
 		return "", err
 	}
-	return gitVersion, nil
+	return commitID, nil
 }
 
 func (r *RollbackHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.RollbackStartedEventData {
@@ -98,7 +98,7 @@ func (r *RollbackHandler) getStartedEventData(inEventData keptnv2.EventData) kep
 }
 
 func (r *RollbackHandler) getFinishedEventData(inEventData keptnv2.EventData, status keptnv2.StatusType, result keptnv2.ResultType,
-	message string, gitCommit string) keptnv2.RollbackFinishedEventData {
+	message string) keptnv2.RollbackFinishedEventData {
 
 	inEventData.Status = status
 	inEventData.Result = result
@@ -110,5 +110,5 @@ func (r *RollbackHandler) getFinishedEventData(inEventData keptnv2.EventData, st
 }
 
 func (r *RollbackHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.RollbackFinishedEventData {
-	return r.getFinishedEventData(eventData, keptnv2.StatusErrored, keptnv2.ResultFailed, err.Error(), "")
+	return r.getFinishedEventData(eventData, keptnv2.StatusErrored, keptnv2.ResultFailed, err.Error())
 }
