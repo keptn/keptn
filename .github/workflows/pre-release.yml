@@ -310,7 +310,7 @@ jobs:
         run: |
           helm template ./dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
           cat $HELM_TEMPLATE | \
-          yq eval-all -o=json '[.spec.template.spec.containers.[] |  {"name":.name, "resources":.resources}]' | \
+          yq eval-all '[.spec.template.spec.containers.[] |  {"name":.name, "resources":.resources}]' -o=json | \
           jq '[
             .[] | {
               name: .name, 
