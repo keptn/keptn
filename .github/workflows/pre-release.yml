@@ -315,10 +315,8 @@ jobs:
           RESOURCE_JSON: resources.json
           RESOURCE_MARKDOWN: resources.md
         run: |
-          ls -lah ./
-          ls -lah ./dist
-          ls -lah ./dist/keptn-installer
           helm template ./dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
+          cat $HELM_TEMPLATE
           cat $HELM_TEMPLATE | \
           yq eval-all -o=json '
             [
