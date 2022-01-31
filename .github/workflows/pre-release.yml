@@ -309,17 +309,17 @@ jobs:
           RESOURCE_MARKDOWN: resources.md
         run: |
           helm template ./dist/keptn-installer/keptn-*.tgz --dry-run > $HELM_TEMPLATE
-          cat "$HELM_TEMPLATE" | yq eval-all '[.spec.template.spec.containers.[] ]' -o=json
+          cat "$HELM_TEMPLATE" | yq eval-all '[.spec.template.spec.containers.[] | {"name":.name, "resources":.resources}]' -o=json
           
-          cat "$HELM_TEMPLATE" | yq eval-all '[.spec.template.spec.containers.[] | {"name":.name, "resources":.resources}]' -o=json | \
-          jq '[
-            .[] | {
-              name: .name, 
-              cpu_request: .resources.requests.cpu, 
-              cpu_limit: .resources.limits.cpu, 
-              mem_request: .resources.requests.memory, 
-              mem_limit: .resources.limits.memory
-            }
-          ] |
-          unique_by(.name)' > $RESOURCE_JSON
-          npx tablemark-cli@v2.0.0 $RESOURCE_JSON
+#          cat "$HELM_TEMPLATE" | yq eval-all '[.spec.template.spec.containers.[] | {"name":.name, "resources":.resources}]' -o=json | \
+#          jq '[
+#            .[] | {
+#              name: .name,
+#              cpu_request: .resources.requests.cpu,
+#              cpu_limit: .resources.limits.cpu,
+#              mem_request: .resources.requests.memory,
+#              mem_limit: .resources.limits.memory
+#            }
+#          ] |
+#          unique_by(.name)' > $RESOURCE_JSON
+#          npx tablemark-cli@v2.0.0 $RESOURCE_JSON
