@@ -298,7 +298,7 @@ func TestDirectoryConfigurationContext_Establish_StageContext(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, common.GetConfigDir()+"/my-project/keptn-stages/my-stage", configDir)
+	require.Equal(t, common.GetConfigDir()+"/my-project/.keptn-stages/my-stage", configDir)
 }
 func TestDirectoryConfigurationContext_Establish_StageContext_StageNotFound(t *testing.T) {
 	fields := getTestBranchStageContextFields()
@@ -338,7 +338,7 @@ func TestDirectoryConfigurationContext_Establish_ServiceContext(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, common.GetConfigDir()+"/my-project/keptn-stages/my-stage/my-service", configDir)
+	require.Equal(t, common.GetConfigDir()+"/my-project/.keptn-stages/my-stage/my-service", configDir)
 }
 
 func TestDirectoryConfigurationContext_Establish_ServiceContext_ServiceNotFound(t *testing.T) {

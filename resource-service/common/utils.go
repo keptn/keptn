@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+const StageDirectoryName = ".keptn-stages"
+
 func GetProjectConfigPath(project string) string {
 	return fmt.Sprintf("%s/%s", GetConfigDir(), project)
 }

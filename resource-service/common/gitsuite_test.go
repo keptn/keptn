@@ -857,7 +857,7 @@ func (s *BaseSuite) TestGit_MigrateProject(c *C) {
 	revision, err := g.GetCurrentRevision(gitContext)
 	c.Assert(err, IsNil)
 
-	got, err := g.GetFileRevision(gitContext, revision, "keptn-stages/new-branch/LICENSE")
+	got, err := g.GetFileRevision(gitContext, revision, ".keptn-stages/new-branch/LICENSE")
 	c.Assert(err, IsNil)
 
 	if len(got) == 0 {

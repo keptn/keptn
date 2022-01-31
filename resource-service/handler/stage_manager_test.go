@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-const testStageConfigDir = "/data/config/my-project/keptn-stages/my-stage"
+const testStageConfigDir = "/data/config/my-project/.keptn-stages/my-stage"
 
 type stageManagerTestFields struct {
 	git                  *common_mock.IGitMock

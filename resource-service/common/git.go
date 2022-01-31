@@ -577,12 +577,12 @@ func (g *Git) migrateBranch(branch *plumbing.Reference, oldRepoWorktree *git.Wor
 		return err
 	}
 
-	err = ensureDirectoryExists(projectPath + "/keptn-stages")
+	err = ensureDirectoryExists(projectPath + "/" + StageDirectoryName)
 	if err != nil {
 		return err
 	}
 
-	err = ensureDirectoryExists(projectPath + "/keptn-stages/" + branch.Name().Short())
+	err = ensureDirectoryExists(projectPath + "/" + StageDirectoryName + "/" + branch.Name().Short())
 	if err != nil {
 		return err
 	}
@@ -596,7 +596,7 @@ func (g *Git) migrateBranch(branch *plumbing.Reference, oldRepoWorktree *git.Wor
 		if file.Name() == ".git" {
 			continue
 		}
-		err := os.Rename(tmpProjectPath+"/"+file.Name(), projectPath+"/keptn-stages/"+branch.Name().Short()+"/"+file.Name())
+		err := os.Rename(tmpProjectPath+"/"+file.Name(), projectPath+"/"+StageDirectoryName+"/"+branch.Name().Short()+"/"+file.Name())
 		if err != nil {
 			return err
 		}

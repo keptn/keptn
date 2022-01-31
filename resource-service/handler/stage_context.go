@@ -7,9 +7,6 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 )
 
-const StageDirectoryName = "keptn-stages"
-const ServiceDirectoryName = "keptn-services"
-
 //go:generate moq -pkg handler_mock -skip-ensure -out ./fake/configuration_context_mock.go . IConfigurationContext
 type IConfigurationContext interface {
 	Establish(params common_models.ConfigurationContextParams) (string, error)
@@ -99,7 +96,7 @@ func (ds DirectoryConfigurationContext) GetProjectConfigPath(project string) str
 }
 
 func (ds DirectoryConfigurationContext) GetStageConfigPath(project, stage string) string {
-	return fmt.Sprintf("%s/%s/%s", ds.GetProjectConfigPath(project), StageDirectoryName, stage)
+	return fmt.Sprintf("%s/%s/%s", ds.GetProjectConfigPath(project), common.StageDirectoryName, stage)
 }
 
 func (ds DirectoryConfigurationContext) GetServiceConfigPath(project, stage, service string) string {
