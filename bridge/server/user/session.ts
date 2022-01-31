@@ -33,13 +33,13 @@ const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
 const SESSION_SECRET = process.env.OAUTH_SESSION_SECRET || random({ length: 200 });
-const DATABASE_SECRET = process.env.OAUTH_DATABASE_SECRET || random({ length: 32 });
+const DATABASE_SECRET = process.env.OAUTH_DATABASE_ENCRYPT_SECRET || random({ length: 32 });
 const crypto = new Crypto(DATABASE_SECRET);
 let store: MemoryStore | MongoStore;
 let validationCollection: Collection<ValidationType> | undefined;
 
 if (DATABASE_SECRET.length !== 32) {
-  console.error('The length of the env variable "OAUTH_DATABASE_SECRET" must be 32');
+  console.error('The length of the env variable "OAUTH_DATABASE_ENCRYPT_SECRET" must be 32');
   process.exit(1);
 }
 
