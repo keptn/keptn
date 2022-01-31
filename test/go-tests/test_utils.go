@@ -374,7 +374,14 @@ func GetKeptnNameSpaceFromEnv() string {
 }
 
 func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*models.KeptnContextExtendedCE, error) {
-	resp, err := ApiGETRequest("/mongodb-datastore/event?project="+projectName+"&keptnContext="+keptnContext+"&stage="+stage+"&type="+eventType, 3)
+
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/mongodb-datastore", "8888", "8080")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := internalKeptnAPI.Get("/event?project="+projectName+"&keptnContext="+keptnContext+"&stage="+stage+"&type="+eventType, 3)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +396,13 @@ func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*
 }
 
 func GetEventsOfType(keptnContext, projectName, stage, eventType string) ([]*models.KeptnContextExtendedCE, error) {
-	resp, err := ApiGETRequest("/mongodb-datastore/event?project="+projectName+"&keptnContext="+keptnContext+"&stage="+stage+"&type="+eventType, 3)
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/mongodb-datastore", "8888", "8080")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := internalKeptnAPI.Get("/mongodb-datastore/event?project="+projectName+"&keptnContext="+keptnContext+"&stage="+stage+"&type="+eventType, 3)
 	if err != nil {
 		return nil, err
 	}

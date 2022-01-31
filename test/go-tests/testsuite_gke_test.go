@@ -32,7 +32,7 @@ func Test_GKE(t *testing.T) {
 	//t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
 
 	// Platform-specific Tests
-	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
+	//t.Run("Test_ResourceService", Test_ResourceServiceBasic)
 	t.Run("Test_QualityGates", Test_QualityGates)
 	//t.Run("Test_QualityGates_BackwardsCompatibility", Test_QualityGates_BackwardsCompatibility)
 	//t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)

@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
@@ -59,7 +60,7 @@ const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
 
-	projectName := "qualitytrue"
+	projectName := "qualitytesting"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
@@ -427,8 +428,13 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 }
 
 func storeSLOWithCommit(t *testing.T, projectName string, serviceName string, content string) string {
+
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
+	require.Nil(t, err)
 	t.Log("Storing new slo file")
-	resp, err := ApiPOSTRequest(configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
+	resp, err := internalKeptnAPI.Post("/api/configuration-service"+configurationServiceBasePath+"/"+projectName+"/stage/"+"hardening"+"/service/"+serviceName+"/resource", models.Resources{
 		Resources: []*models.Resource{
 			{
 				ResourceContent: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),
