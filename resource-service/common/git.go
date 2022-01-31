@@ -418,7 +418,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
 	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
-		RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+		RefSpecs:   []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
 		Auth: &http.BasicAuth{
 			Username: gitContext.Credentials.User,
 			Password: gitContext.Credentials.Token,
@@ -526,8 +526,12 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	tmpProjectPath := GetProjectConfigPath(tmpGitContext.Project)
 	projectPath := GetProjectConfigPath(gitContext.Project)
 
-	_, err := g.CloneRepo(tmpGitContext)
+	defaultBranch, err := g.GetDefaultBranch(gitContext)
 	if err != nil {
+		return err
+	}
+
+	if _, err := g.CloneRepo(tmpGitContext); err != nil {
 		return err
 	}
 
@@ -542,7 +546,10 @@ func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataCon
 	}
 	branches, err := oldRepo.Branches()
 	err = branches.ForEach(func(branch *plumbing.Reference) error {
-		return g.migrateBranch(branch, oldRepoWorktree, projectPath, tmpProjectPath)
+		if branch.Name().Short() != defaultBranch {
+			return g.migrateBranch(branch, oldRepoWorktree, projectPath, tmpProjectPath)
+		}
+		return nil
 	})
 	if err != nil {
 		return err
