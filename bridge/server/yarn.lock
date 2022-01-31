@@ -4066,10 +4066,10 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-openid-client@5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/openid-client/-/openid-client-5.1.0.tgz#e9a22574c0cf1ce64555b96a4670e33593cc276a"
-  integrity sha512-gTTNQ8SzfoWIeSeVkYGMDzaHHx06wRnJRYCyG1xrkGu9Xww7X4Uz4fFEJ19KQRee4xttb38GIcxACRxQVChegg==
+openid-client@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/openid-client/-/openid-client-5.1.2.tgz#a80cc6a7d8d7159ad97c51781338f5a954396bba"
+  integrity sha512-AV5wCy011lrZZvzQa4HGhItTb64+D8V50vEtS/HhaFjiM8jDItUyDu4C73nMr6zrlEvgprFdbyGGwkGiQ4ggJg==
   dependencies:
     jose "^4.1.4"
     lru-cache "^6.0.0"
