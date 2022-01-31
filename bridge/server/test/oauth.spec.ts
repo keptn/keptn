@@ -131,8 +131,8 @@ describe('Test OAuth', () => {
   });
 
   it('should not be successful if state already used', async () => {
-    const { state, cookies } = await login(app);
-    const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`).set('Cookie', cookies);
+    const { state } = await login(app);
+    const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
     expect(response.text).not.toBeUndefined();
   });
@@ -315,7 +315,7 @@ async function mockSavingValidationData(): Promise<void> {
       async getAndRemoveValidationData(state: string): Promise<unknown | undefined> {
         const value = store[state];
         delete store[state];
-        return { value };
+        return value ? { value } : undefined;
       },
     };
   });
