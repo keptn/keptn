@@ -45,13 +45,13 @@ func NewGit(git Gogit) *Git {
 
 func configureGitUser(repository *git.Repository) error {
 
-	config, err := repository.Config()
-	config.User.Name = getGitKeptnUser()
-	config.User.Email = getGitKeptnEmail()
+	c, err := repository.Config()
+	c.User.Name = getGitKeptnUser()
+	c.User.Email = getGitKeptnEmail()
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotSetUser, err)
 	}
-	repository.SetConfig(config)
+	repository.SetConfig(c)
 	return nil
 
 }
@@ -430,13 +430,13 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 	path := GetProjectConfigPath(gitContext.Project)
 	r, err := g.git.PlainOpen(path)
 	if err != nil {
-		logger.Debug("Could not open project: ", file, " err: ", err)
+		logger.Debugf("Could not open project %s: %s", file, err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "open", gitContext.Project, err)
 	}
 	h, err := r.ResolveRevision(plumbing.Revision(revision))
 	if err != nil {
-		logger.Debug("Could not resolve revision for : ", revision, " err: ", err)
+		logger.Debugf("Could not resolve revision for %s: %s", revision, err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}
@@ -461,7 +461,6 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 			return []byte{},
 				fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, kerrors.ErrResourceNotFound)
 		}
-		logger.Debug("Could not resolve blob for object: ", obj, " file ", file, " err: ", err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}
@@ -482,11 +481,11 @@ func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, err
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
 	}
-	config, err := r.Config()
+	repoConfig, err := r.Config()
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
 	}
-	def := config.Init.DefaultBranch
+	def := repoConfig.Init.DefaultBranch
 	if def == "" {
 		def = "master"
 	}
@@ -576,21 +575,21 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	case *object.Commit:
 		t, err := o.Tree()
 		if err != nil {
-			logger.Debug("Could not resolve commit for path: ", path, " err: ", err)
+			logger.Debugf("Could not resolve commit for path %s: %s ", path, err)
 			return nil, err
 		}
 		return resolve(t, path)
 	case *object.Tag:
 		target, err := o.Object()
 		if err != nil {
-			logger.Debug("Could not resolve tag for path: ", path, " err: ", err)
+			logger.Debugf("Could not resolve tag for path %s: %s ", path, err)
 			return nil, err
 		}
 		return resolve(target, path)
 	case *object.Tree:
 		file, err := o.File(path)
 		if err != nil {
-			logger.Debug("Could not resolve file for path: ", path, " err: ", err)
+			logger.Debugf("Could not resolve file for path %s: %s ", path, err)
 			return nil, err
 		}
 		return &file.Blob, nil
