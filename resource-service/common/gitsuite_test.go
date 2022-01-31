@@ -859,6 +859,7 @@ func (s *BaseSuite) TestGit_MigrateProject(c *C) {
 
 	got, err := g.GetFileRevision(gitContext, revision, "keptn-stages/new-branch/LICENSE")
 	c.Assert(err, IsNil)
+
 	if len(got) == 0 {
 		c.Error("Expected metadata file to be present")
 	}
