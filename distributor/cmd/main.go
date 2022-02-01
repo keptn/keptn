@@ -171,12 +171,12 @@ func createHTTPClient(envConfig config.EnvConfig) *http.Client {
 		Timeout: 5 * time.Second,
 	}
 
-	if envConfig.SSOClientID != "" && envConfig.SSOClientSecret != "" && len(envConfig.SSOScopes) > 0 {
+	if envConfig.UseSSO() {
 		conf := clientcredentials.Config{
 			ClientID:     envConfig.SSOClientID,
 			ClientSecret: envConfig.SSOClientSecret,
 			Scopes:       envConfig.SSOScopes,
-			TokenURL:     "https://sso-dev.dynatracelabs.com:443/sso/oauth2/token", //TODO: make configurable
+			TokenURL:     envConfig.SSOTokenURL,
 		}
 
 		client := conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))

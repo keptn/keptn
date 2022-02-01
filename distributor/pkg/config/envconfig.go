@@ -38,6 +38,7 @@ type EnvConfig struct {
 	SSOClientID          string   `envconfig:"SSO_CLIENT_ID" default:""`
 	SSOClientSecret      string   `envconfig:"SSO_CLIENT_SECRET" default:""`
 	SSOScopes            []string `envconfig:"SSO_SCOPES" default:""`
+	SSOTokenURL          string   `envconfig:"SSO_TOKENURL" default: ""`
 }
 
 func RegistrationInterval(env EnvConfig) time.Duration {
@@ -109,6 +110,10 @@ func (env *EnvConfig) ProxyHost(path string) (string, string, string) {
 		}
 	}
 	return "", "", ""
+}
+
+func (env *EnvConfig) UseSSO() bool {
+	return env.SSOClientID != "" && env.SSOClientSecret != "" && env.SSOTokenURL != "" && len(env.SSOScopes) > 0
 }
 
 func (env *EnvConfig) PollingEndpoint() string {
