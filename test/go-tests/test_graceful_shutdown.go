@@ -70,33 +70,33 @@ func Test_GracefulShutdown(t *testing.T) {
 	require.Nil(t, err)
 	t.Log("Current local dir is : ", repoLocalDir)
 
-	keptnProjectName := "tinypodtato"
+	projectName := "tinypodtato"
 	serviceName := "helloservice"
 	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz"
 	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 	shipyardPod := "shipyard-controller"
 
-	t.Logf("Creating a new project %s", keptnProjectName)
+	t.Logf("Creating a new project %s", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
 	require.Nil(t, err)
-	err = CreateProject(keptnProjectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
-	t.Logf("Creating service %s in project %s", serviceName, keptnProjectName)
-	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, keptnProjectName)
+	t.Logf("Creating service %s in project %s", serviceName, projectName)
+	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, projectName)
 	require.Nil(t, err)
 
-	t.Logf("Adding resource for service %s in project %s", serviceName, keptnProjectName)
-	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", keptnProjectName, serviceName, serviceChartLocalDir, "helm/helloservice.tgz")
+	t.Logf("Adding resource for service %s in project %s", serviceName, projectName)
+	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", projectName, serviceName, serviceChartLocalDir, "helm/helloservice.tgz")
 	require.Nil(t, err)
 
 	t.Log("Adding jmeter config in staging")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "staging", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
 	require.Nil(t, err)
 
 	t.Log("Adding load test resources for jmeter in staging")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", keptnProjectName, serviceName, "staging", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
+	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "staging", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
 	require.Nil(t, err)
 
 	///////////////////////////////////////
@@ -104,7 +104,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	///////////////////////////////////////
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", keptnProjectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
 	waitAndKill(t, shipyardPod, 35)
@@ -118,22 +118,22 @@ func Test_GracefulShutdown(t *testing.T) {
 	//keptnkubeutils.WaitForDeploymentToBeRolledOut(false, serviceName, GetKeptnNameSpaceFromEnv())
 
 	t.Log("Verify Direct delivery of helloservice in stage dev")
-	err = VerifyDirectDeployment(serviceName, keptnProjectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	logError(err, t, shipyardPod)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
-	cartPubURL, err := GetPublicURLOfService(serviceName, keptnProjectName, "dev")
+	cartPubURL, err := GetPublicURLOfService(serviceName, projectName, "dev")
 	logError(err, t, shipyardPod)
 
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	logError(err, t, shipyardPod)
 
 	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
-	err = VerifyBlueGreenDeployment(serviceName, keptnProjectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	logError(err, t, shipyardPod)
 
 	t.Log("Verify network access to public URI of helloservice in stage staging")
-	cartPubURL, err = GetPublicURLOfService(serviceName, keptnProjectName, "staging")
+	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "staging")
 	logError(err, t, shipyardPod)
 
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
