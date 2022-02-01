@@ -75,6 +75,7 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 	require.Len(t, get[0].Status.CurrentTask.Events, 1)
 	require.Equal(t, triggeredEvent, get[0].Status.CurrentTask.Events[0])
 
+	// ensure that multiple writers can append data to a shared sequence and all inserts are persisted
 	nrConcurrentWrites := 10
 
 	wg := sync.WaitGroup{}
