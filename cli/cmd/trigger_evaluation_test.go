@@ -151,32 +151,10 @@ func TestTriggerEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 
 // TestTriggerEvaluationUnknownCommand
 func TestTriggerEvaluationUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("trigger evaluation someUnknownCommand --project=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn trigger evaluation\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("trigger evaluation someUnknownCommand --project=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59", "unknown command \"someUnknownCommand\" for \"keptn trigger evaluation\"", t)
 }
 
 // TestTriggerEvaluationUnknownParameter
 func TestTriggerEvaluationUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("trigger evaluation --projectt=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("trigger evaluation --projectt=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59", "unknown flag: --projectt", t)
 }

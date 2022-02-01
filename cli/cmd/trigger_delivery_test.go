@@ -350,32 +350,10 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 
 // TestTriggerDeliveryUnknownCommand
 func TestTriggerDeliveryUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image --tag=tag")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image --tag=tag", "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\"", t)
 }
 
 // TestTriggerDeliveryUnknownParameter
 func TestTriggerDeliveryUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("trigger delivery --projectt=sockshop --service=service --image=image --tag=tag")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("trigger delivery --projectt=sockshop --service=service --image=image --tag=tag", "unknown flag: --projectt", t)
 }

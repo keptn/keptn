@@ -41,32 +41,10 @@ func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 
 // TestConfigureMonitoringUnknownCommand
 func TestConfigureMonitoringUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("configure monitoring prometheus someUnknownCommand --project=sockshop --service=helloservice")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "Requires a monitoring provider as argument"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("configure monitoring prometheus someUnknownCommand --project=sockshop --service=helloservice", "Requires a monitoring provider as argument", t)
 }
 
 // TestConfigureMonitoringUnknownParameter
 func TestConfigureMonitoringUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("configure monitoring prometheus --projectt=sockshop --service=helloservice")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("configure monitoring prometheus --projectt=sockshop --service=helloservice", "unknown flag: --projectt", t)
 }

@@ -40,32 +40,10 @@ func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 
 // TestUpdateProjectUnknownCommand
 func TestUpdateProjectUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("update project sockshop someUnknownCommand --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "too many arguments set"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "too many arguments set", t)
 }
 
 // TestUpdateProjectUnknownParameter
 func TestUpdateProjectUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --git-userr"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "unknown flag: --git-userr", t)
 }

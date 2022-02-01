@@ -59,32 +59,10 @@ func TestVersionCmd(t *testing.T) {
 
 // TestVersionUnknownCommand
 func TestVersionUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("version someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn version\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("version someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn version\"", t)
 }
 
 // TestVersionUnknownParameter
 func TestVersionUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("version --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("version --projectt=sockshop", "unknown flag: --projectt", t)
 }

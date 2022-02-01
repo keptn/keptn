@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -247,32 +246,10 @@ func TestInstallCmdHandler_doInstallation(t *testing.T) {
 
 // TestInstallUnknownCommand
 func TestInstallUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("install someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn install\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("install someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn install\"", t)
 }
 
 // TestInstallUnknownParameter
 func TestInstallUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("install --project=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --project"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("install --project=sockshop", "unknown flag: --project", t)
 }

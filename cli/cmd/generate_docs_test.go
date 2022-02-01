@@ -46,32 +46,10 @@ func TestGenerateDocs(t *testing.T) {
 
 // TestGenerateDocsUnknownCommand
 func TestGenerateDocsUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("generate docs someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn generate docs\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("generate docs someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn generate docs\"", t)
 }
 
 // TestGenerateDocsUnknownParameter
 func TestGenerateDocsUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("generate docs --project=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --project"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("generate docs --project=sockshop", "unknown flag: --project", t)
 }

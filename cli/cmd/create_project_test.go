@@ -180,32 +180,10 @@ spec:
 
 // TestCreateProjectUnknownCommand
 func TestCreateProjectUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("create project sockshop someUnknownCommand --shipyard=shipyard.yaml")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "too many arguments set"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("create project sockshop someUnknownCommand --shipyard=shipyard.yaml", "too many arguments set", t)
 }
 
 // TestCreateProjectUnknownParameter
 func TestCreateProjectUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("create project sockshop --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("create project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
 }

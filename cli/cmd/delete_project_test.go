@@ -26,32 +26,10 @@ func TestDeleteProjectCmd(t *testing.T) {
 
 // TestDeleteProjectUnknownCommand
 func TestDeleteProjectUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("delete project sockshop someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "too many arguments set"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("delete project sockshop someUnknownCommand", "too many arguments set", t)
 }
 
 // TestDeleteProjectUnknownParameter
 func TestDeleteProjectUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("delete project sockshop --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("delete project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
 }

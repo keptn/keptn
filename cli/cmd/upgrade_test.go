@@ -142,32 +142,10 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 
 // TestUpgradeUnknownCommand
 func TestUpgradeUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("upgrade someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn upgrade\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("upgrade someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn upgrade\"", t)
 }
 
 // TestUpgradeUnknownParameter
 func TestUpgradeUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("upgrade --project=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --project"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("upgrade --project=sockshop", "unknown flag: --project", t)
 }

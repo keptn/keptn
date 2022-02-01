@@ -28,32 +28,10 @@ func TestEvaluationFinishedGetEvent(t *testing.T) {
 
 // TestGetEventEvaluationFinishedUnknownCommand
 func TestGetEventEvaluationFinishedUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("get event evaluation.finished someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn get event evaluation.finished\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("get event evaluation.finished someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn get event evaluation.finished\"", t)
 }
 
 // TestGetEventEvaluationFinishedUnknownParameter
 func TestGetEventEvaluationFinishedUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("get event evaluation.finished --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("get event evaluation.finished --projectt=sockshop", "unknown flag: --projectt", t)
 }

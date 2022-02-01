@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -264,32 +263,10 @@ func createMockStdIn(userInput string) (*os.File, *os.File) {
 
 // TestSendEventApprovalFinishedUnknownCommand
 func TestSendEventApprovalFinishedUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("send event approval.finished someUnknownCommand")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn send event approval.finished\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("send event approval.finished someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn send event approval.finished\"", t)
 }
 
 // TestSendEventApprovalFinishedUnknownParameter
 func TestSendEventApprovalFinishedUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("send event approval.finished --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("send event approval.finished --projectt=sockshop", "unknown flag: --projectt", t)
 }

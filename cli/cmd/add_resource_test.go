@@ -186,56 +186,18 @@ func TestAddResourceToProjectService(t *testing.T) {
 
 // TestAddResourceWhenArgsArePresent
 func TestAddResourceWhenArgsArePresent(t *testing.T) {
-
-	setup()
-	defer teardown()
-
-	resourceFileName := "testResource.txt"
-	defer testResource(t, resourceFileName, "")()
-
-	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --service=%s --resource=%s "+
-		"-- resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-	got := err.Error()
-	expected := "accepts 0 arg(s), received 2"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("add-resource --project=sockshop --stage=dev --service=carts --resource=testResource.txt "+
+		"-- resourceUri=resource/testResource.txt --mock", "accepts 0 arg(s), received 2", t)
 }
 
 // TestAddResourceUnknownCommand
 func TestAddResourceUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("add-resource someUnknownCommand --project=%s --stage=%s --service=%s --resource=%s "+
-		"--resourceUri=%s --mock", "sockshop", "dev", "carts", "testResource.txt", "resource/testResource.txt")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "accepts 0 arg(s), received 1"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("add-resource someUnknownCommand --project=sockshop --stage=dev --service=carts --resource=testResource.txt "+
+		"--resourceUri=resource/testResource.txt --mock", "accepts 0 arg(s), received 1", t)
 }
 
 // TestAddResourceUnknownParameter
 func TestAddResourceUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("add-resource --projectt=%s --stage=%s --service=%s --resource=%s "+
-		"--resourceUri=%s --mock", "sockshop", "dev", "carts", "testResource.txt", "resource/testResource.txt")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("add-resource --projectt=sockshop --stage=dev --service=carts --resource=testResource.txt "+
+		"--resourceUri=resource/testResource.txt --mock", "unknown flag: --projectt", t)
 }

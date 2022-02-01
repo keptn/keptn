@@ -27,32 +27,10 @@ func TestCreateServiceCmd(t *testing.T) {
 
 // TestCreateServiceUnknownCommand
 func TestCreateServiceUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("create service myservice someUnknownCommand --project=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "too many arguments set"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("create service myservice someUnknownCommand --project=sockshop", "too many arguments set", t)
 }
 
 // TestCreateServiceUnknownParameter
 func TestCreateServiceUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("create service myservice --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("create service myservice --projectt=sockshop", "unknown flag: --projectt", t)
 }

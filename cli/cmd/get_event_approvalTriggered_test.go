@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -120,32 +119,10 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 
 // TestGetEventApprovalTriggeredUnknownCommand
 func TestGetEventApprovalTriggeredUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("get event approval.triggered someUnknownCommand --project=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn get event approval.triggered\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("get event approval.triggered someUnknownCommand --project=sockshop", "unknown command \"someUnknownCommand\" for \"keptn get event approval.triggered\"", t)
 }
 
 // TestGetEventApprovalTriggeredUnknownParameter
 func TestGetEventApprovalTriggeredUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("get event approval.triggered --projectt=sockshop")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --projectt"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("get event approval.triggered --projectt=sockshop", "unknown flag: --projectt", t)
 }

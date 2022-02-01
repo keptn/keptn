@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -45,32 +44,10 @@ func Test_getReplaceSecretCommand(t *testing.T) {
 
 // TestConfigureBridgeUnknownCommand
 func TestConfigureBridgeUnknownCommand(t *testing.T) {
-
-	cmd := fmt.Sprintf("configure bridge someUnknownCommand --user=user --password=pass")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown command \"someUnknownCommand\" for \"keptn configure bridge\""
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("configure bridge someUnknownCommand --user=user --password=pass", "unknown command \"someUnknownCommand\" for \"keptn configure bridge\"", t)
 }
 
 // TestConfigureBridgeUnknownParameter
 func TestConfigureBridgeUnknownParmeter(t *testing.T) {
-
-	cmd := fmt.Sprintf("configure bridge --userr=user --password=pass")
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-
-	got := err.Error()
-	expected := "unknown flag: --userr"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+	testInvalidInputHelper("configure bridge --userr=user --password=pass", "unknown flag: --userr", t)
 }
