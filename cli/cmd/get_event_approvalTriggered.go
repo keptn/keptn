@@ -18,10 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cli/internal"
 	"net/url"
 	"os"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -41,6 +42,7 @@ var approvalTriggered approvalTriggeredStruct
 // approvalTriggeredCmd represents the approval.triggered command
 var approvalTriggeredCmd = &cobra.Command{
 	Use:          "approval.triggered",
+	Args:         cobra.NoArgs,
 	Short:        "Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service",
 	Long:         `Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service.`,
 	Example:      `keptn get event approval.triggered --project=sockshop --stage=staging --service=carts`,

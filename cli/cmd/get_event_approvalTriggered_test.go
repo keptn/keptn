@@ -116,3 +116,13 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 		})
 	}
 }
+
+// TestGetEventApprovalTriggeredUnknownCommand
+func TestGetEventApprovalTriggeredUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("get event approval.triggered someUnknownCommand --project=sockshop", "unknown command \"someUnknownCommand\" for \"keptn get event approval.triggered\"", t)
+}
+
+// TestGetEventApprovalTriggeredUnknownParameter
+func TestGetEventApprovalTriggeredUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("get event approval.triggered --projectt=sockshop", "unknown flag: --projectt", t)
+}

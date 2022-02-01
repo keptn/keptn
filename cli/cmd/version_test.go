@@ -16,11 +16,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/version"
 )
 
 func TestVersionCmd(t *testing.T) {
@@ -54,4 +55,14 @@ func TestVersionCmd(t *testing.T) {
 	if !strings.Contains(out, "cluster version") {
 		t.Error("expected cluster version")
 	}
+}
+
+// TestVersionUnknownCommand
+func TestVersionUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("version someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn version\"", t)
+}
+
+// TestVersionUnknownParameter
+func TestVersionUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("version --projectt=sockshop", "unknown flag: --projectt", t)
 }

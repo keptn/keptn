@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/common/httputils"
@@ -53,9 +54,12 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument PROJECTNAME not set")
+		} else if len(args) >= 2 {
+			cmd.SilenceUsage = false
+			return errors.New("too many arguments set")
 		}
 		return nil
 	},

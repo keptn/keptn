@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 func init() {

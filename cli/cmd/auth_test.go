@@ -95,6 +95,16 @@ func TestAddCorrectHttpPrefix(t *testing.T) {
 	}
 }
 
+// TestAuthUnknownCommand
+func TestAuthUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("auth someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn auth\"", t)
+}
+
+// TestAuthUnknownParameter
+func TestAuthUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("auth --projectt=sockshop", "unknown flag: --projectt", t)
+}
+
 func mockedHostnameResolveFn(hostname string) ([]string, error) {
 	if hostname == "a.b.c.d" {
 		return []string{}, errors.New("Unable to resolve " + hostname)

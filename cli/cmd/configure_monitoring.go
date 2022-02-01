@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -15,8 +18,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
-	"net/url"
-	"time"
 )
 
 type configureMonitoringCmdParams struct {

@@ -26,6 +26,7 @@ slug: %s
 // generateDocsCmd implements the generate docs command
 var generateDocsCmd = &cobra.Command{
 	Use:   "docs",
+	Args:  cobra.NoArgs,
 	Short: "Generates the markdown documentation for the Keptn CLI",
 	Long: `Generates markdown documentation for the Keptn CLI.
 

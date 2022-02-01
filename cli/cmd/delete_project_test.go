@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -21,4 +22,14 @@ func TestDeleteProjectCmd(t *testing.T) {
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
+}
+
+// TestDeleteProjectUnknownCommand
+func TestDeleteProjectUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("delete project sockshop someUnknownCommand", "too many arguments set", t)
+}
+
+// TestDeleteProjectUnknownParameter
+func TestDeleteProjectUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("delete project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
 }

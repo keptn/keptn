@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -345,4 +346,14 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestTriggerDeliveryUnknownCommand
+func TestTriggerDeliveryUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image --tag=tag", "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\"", t)
+}
+
+// TestTriggerDeliveryUnknownParameter
+func TestTriggerDeliveryUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("trigger delivery --projectt=sockshop --service=service --image=image --tag=tag", "unknown flag: --projectt", t)
 }

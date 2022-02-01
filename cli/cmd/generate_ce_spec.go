@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/keptn/keptn/cli/internal/cespec"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var generateCeSpecParams *generateCmdParams
@@ -12,6 +13,7 @@ var generateCeSpecParams *generateCmdParams
 // generateCESpecCmd implements the generate cloud-events-spec command
 var generateCESpecCmd = &cobra.Command{
 	Use:   "cloud-events-spec",
+	Args:  cobra.NoArgs,
 	Short: "Generates the markdown documentation for the Keptn CloudEvents",
 	Long: `Generates markdown documentation for the Keptn CloudEvents.
 

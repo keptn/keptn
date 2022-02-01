@@ -16,12 +16,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/version"
 )
 
 func TestSkipUpgradeCheck(t *testing.T) {
@@ -137,4 +138,14 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestUpgradeUnknownCommand
+func TestUpgradeUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("upgrade someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn upgrade\"", t)
+}
+
+// TestUpgradeUnknownParameter
+func TestUpgradeUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("upgrade --project=sockshop", "unknown flag: --project", t)
 }
