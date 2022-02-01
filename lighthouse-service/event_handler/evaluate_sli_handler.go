@@ -21,7 +21,6 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"gopkg.in/yaml.v3"
 )
 
 type datastoreResult struct {
@@ -132,7 +131,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	}
 
 	// compare the results based on the evaluation strategy
-	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
+	sloConfig, sloFileContent, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 
 	if err != nil {
 		if err == ErrSLOFileNotFound {
@@ -142,13 +141,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		}
 
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), "", eh.KeptnHandler, e)
-	}
-
-	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
-	sloFileContent, err := eh.KeptnHandler.GetKeptnResource("slo.yaml") //TODO can I remove this now that we do have commitid retireval?
-	if err != nil {
-		logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation.finished event.")
-		sloFileContent, _ = yaml.Marshal(sloConfig)
 	}
 
 	// get results of previous evaluations from data store (mongodb-datastore)

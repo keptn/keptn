@@ -32,7 +32,7 @@ type IServiceHandler interface {
 	GetAllServices(project string, stage string) ([]*models.Service, error)
 }
 
-// IChartStorer defines operation to store a halem chart
+// IChartStorer defines operation to store a helm chart
 type IChartStorer interface {
 	Store(storeChartOpts keptnutils.StoreChartOptions) (string, error)
 }

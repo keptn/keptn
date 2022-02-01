@@ -124,7 +124,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 }
 
 func (eh *StartEvaluationHandler) computeObjectives(e *keptnv2.EvaluationTriggeredEventData, commitID string, indicators []string, filters []*keptnv2.SLIFilter, evaluationStartTimestamp string, evaluationEndTimestamp string) (error, bool) {
-	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
+	objectives, _, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 	if err == nil && objectives != nil {
 		logger.Info("SLO file found")
 		for _, objective := range objectives.Objectives {

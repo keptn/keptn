@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/keptn/keptn/resource-service/errors"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -204,7 +205,7 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
-
+	logger.Debugf("Looking for resource with params %s", *params)
 	resource, err := ph.ServiceResourceManager.GetResource(*params)
 	if err != nil {
 		OnAPIError(c, err)

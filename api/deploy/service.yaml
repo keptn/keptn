@@ -114,6 +114,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: DISABLE_REGISTRATION
+              value : 'true'
           livenessProbe:
             httpGet:
               path: /health

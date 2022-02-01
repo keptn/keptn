@@ -178,7 +178,7 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	var err error
 
 	resourcePath := configPath + "/" + resourceName
-
+	logger.Debugf("Retrieving resurce %s", resourcePath)
 	if params.GitCommitID != "" && params.GitCommitID != "\"\"" {
 		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourceName)
 		revision = params.GitCommitID
@@ -281,11 +281,11 @@ func (p ResourceManager) storeResource(resourcePath, resourceContent string) err
 	if err := p.fileSystem.WriteBase64EncodedFile(resourcePath, resourceContent); err != nil {
 		return err
 	}
-	if common.IsHelmChartPath(resourcePath) {
-		if err := p.fileSystem.WriteHelmChart(resourcePath); err != nil {
-			return err
-		}
-	}
+	//if common.IsHelmChartPath(resourcePath) {
+	//	if err := p.fileSystem.WriteHelmChart(resourcePath); err != nil {
+	//		return err
+	//	}
+	//}
 	return nil
 }
 

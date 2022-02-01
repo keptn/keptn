@@ -301,7 +301,7 @@ func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, e
 	return hash.String(), nil
 }
 
-// returns what is the curren commit id of remote and if the remote is uptodate with the local branch
+// returns what is the current commit id of remote and if the remote is up-to-date with the local branch
 func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (string, bool, error) {
 	repo, _, err := g.getWorkTree(gitContext)
 	if err != nil {

@@ -70,7 +70,7 @@ type SLOFileRetriever struct {
 	ServiceHandler  ServiceHandler
 }
 
-func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*keptn.ServiceLevelObjectives, error) {
+func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*keptn.ServiceLevelObjectives, []byte, error) {
 	commitOption := url.Values{}
 	if commitID != "" {
 		commitOption.Add("gitCommitID", commitID)
@@ -79,34 +79,34 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*
 	if err != nil {
 		_, serviceErr := sr.ServiceHandler.GetService(project, stage, service)
 		if serviceErr != nil {
-			return checkNotFound(serviceErr, err)
+			return nil, nil, checkNotFound(serviceErr, err)
 		}
 	}
 	if sloFile == nil || sloFile.ResourceContent == "" {
-		return nil, ErrSLOFileNotFound
+		return nil, nil, ErrSLOFileNotFound
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
 
 	if err != nil {
-		return nil, errors.New("Could not parse SLO file for service " + service + " in stage " + stage + " in project " + project)
+		return nil, nil, errors.New("Could not parse SLO file for service " + service + " in stage " + stage + " in project " + project)
 	}
-
-	return slo, nil
+	// return also slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	return slo, []byte(sloFile.ResourceContent), nil
 }
 
-func checkNotFound(notFound, checkOut error) (*keptn.ServiceLevelObjectives, error) {
+func checkNotFound(notFound, checkOut error) error {
 	if strings.Contains(strings.ToLower(notFound.Error()), "project not found") {
-		return nil, ErrProjectNotFound
+		return ErrProjectNotFound
 	} else if strings.Contains(strings.ToLower(notFound.Error()), "stage not found") {
-		return nil, ErrStageNotFound
+		return ErrStageNotFound
 	} else if strings.Contains(strings.ToLower(notFound.Error()), "service not found") {
-		return nil, ErrServiceNotFound
+		return ErrServiceNotFound
 	} else {
 		if strings.Contains(strings.ToLower(checkOut.Error()), "could not check out ") {
-			return nil, ErrConfigService
+			return ErrConfigService
 		}
-		return nil, ErrSLOFileNotFound
+		return ErrSLOFileNotFound
 	}
 }
 
