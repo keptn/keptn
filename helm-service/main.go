@@ -221,7 +221,6 @@ func hasAdminRights() (bool, error) {
 }
 
 func getGracefulContext() context.Context {
-
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}

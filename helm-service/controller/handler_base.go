@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	cloudtypes "github.com/cloudevents/sdk-go/v2/types"
 	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -12,6 +13,7 @@ import (
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -66,6 +68,7 @@ func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData, commitID string) (*
 		ChartName: helmChartName,
 		CommitID:  commitID,
 	}
+
 	// Read chart
 	return h.chartRetriever.Retrieve(options)
 }
@@ -178,4 +181,15 @@ func getKeptnValues(project, stage, service, deploymentName string) map[string]i
 func addReplicas(vals map[string]interface{}, replicas int) map[string]interface{} {
 	vals["replicaCount"] = replicas
 	return vals
+}
+
+func retrieveCommit(ce cloudevents.Event) string {
+	// retrieve commitId from sequence
+	extensions := ce.Context.GetExtensions()
+	//no need to check if toString has error since gitcommitid can only be a string
+	commitID := ""
+	if os.Getenv("USE_COMMITID") == "true" {
+		commitID, _ = cloudtypes.ToString(extensions["gitcommitid"])
+	}
+	return commitID
 }

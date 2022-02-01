@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/types"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
@@ -33,10 +32,7 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
 	}
 
-	// retrieve commitId from sequence
-	extensions := ce.Context.GetExtensions()
-	//no need to check if toString has error since gitcommitid can only be a string
-	commitID, _ := types.ToString(extensions["gitcommitid"])
+	commitID := retrieveCommit(ce)
 
 	// Send release started event
 	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting release for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))

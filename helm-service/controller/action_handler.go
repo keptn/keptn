@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/types"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	logger "github.com/sirupsen/logrus"
 	"strconv"
@@ -43,10 +42,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	// retrieve commitId from sequence
-	extensions := ce.Context.GetExtensions()
-	//no need to check if toString has error since gitcommitid can only be a string
-	commitID, _ := types.ToString(extensions["gitcommitid"])
+	commitID := retrieveCommit(ce)
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {
 		// Send action.started event

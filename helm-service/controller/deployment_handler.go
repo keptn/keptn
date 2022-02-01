@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/types"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
@@ -57,10 +56,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 
 	var userChart *chart.Chart
 	var err error
-	// retrieve commitId from sequence
-	extensions := ce.Context.GetExtensions()
-	//no need to check if toString has error since gitcommitid can only be a string
-	commitID, _ := types.ToString(extensions["gitcommitid"])
+	commitID := retrieveCommit(ce)
 
 	if len(e.ConfigurationChange.Values) > 0 {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Updating values for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
