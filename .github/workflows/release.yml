@@ -369,6 +369,15 @@ jobs:
           branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: true
 
+      - name: Get k8s resource stats
+        working-directory: keptn
+        env:
+          HELM_TEMPLATE: template.yml
+          RESOURCE_JSON: resources.json
+          RESOURCE_MARKDOWN: resources.md
+          RELEASE_NOTES_FILE: ${{ env.RELEASE_NOTES_FILE }}
+        run: ./gh-actions-scripts/generate-k8s-resource-stats.sh
+
       - name: Create GitHub Release
         working-directory: keptn
         env:
