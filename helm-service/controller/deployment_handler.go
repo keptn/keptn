@@ -66,7 +66,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Updating values for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 		valuesUpdater := configurationchanger.NewValuesManipulator(e.ConfigurationChange.Values)
 
-		userChart, _, err = h.getGeneratedChart(e.EventData, commitID)
+		userChart, _, err = h.getUserChart(e.EventData, commitID)
 		userChart, commitID, err = configurationchanger.NewConfigurationChanger(
 			h.getConfigServiceURL()).UpdateLoadedChart(userChart, e.EventData, false, valuesUpdater)
 
