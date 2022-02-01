@@ -10,6 +10,7 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -160,12 +161,14 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	var revision string
 	var err error
 
-	resourcePath := configPath + "/" + resourceName
-
 	if params.GitCommitID != "" {
-		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourceName)
+		// if commit ID is set, path needs to be relative to the project directory
+		configPath = strings.TrimPrefix(configPath, common.GetProjectConfigPath(params.ProjectName))
+		resourcePath := configPath + "/" + resourceName
+		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {
+		resourcePath := configPath + "/" + resourceName
 		if err := p.git.Pull(*gitContext); err != nil {
 			return nil, err
 		}
