@@ -103,7 +103,7 @@ func Test_QualityGates(t *testing.T) {
 	}
 	t.Logf("creating project %s", projectName)
 
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

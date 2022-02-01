@@ -169,15 +169,20 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 	return keptnInternalAPI, nil
 }
 
-func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
+func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
+
 	retries := 5
 	var err error
 	var resp *req.Resp
+
+	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
+	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
+
 	for i := 0; i < retries; i++ {
 		if err != nil {
 			<-time.After(10 * time.Second)
 		}
-		resp, err = ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
+		resp, err = ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
 		if err != nil {
 			continue
 		}
@@ -185,16 +190,16 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		if resp.Response().StatusCode == http.StatusOK {
 			if recreateIfAlreadyThere {
 				// delete project if it exists
-				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
-				if err != nil && !strings.Contains(err.Error(), "not found") {
+				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
+				if err != nil {
 					continue
 				}
 			} else {
-				return errors.New("project already exists")
+				return "", errors.New("project already exists")
 			}
 		}
 
-		err = RecreateGitUpstreamRepository(projectName)
+		err = RecreateGitUpstreamRepository(newProjectName)
 		if err != nil {
 			// retry if repo creation failed (gitea might not be available)
 			continue
@@ -203,18 +208,18 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		user := GetGiteaUser()
 		token, err := GetGiteaToken()
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		// apply the k8s job for creating the git upstream
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", projectName, shipyardFilePath, user, projectName, user, token))
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
 		if err == nil {
-			return nil
+			return newProjectName, nil
 		}
 	}
 
-	return err
+	return "", err
 }
 
 func TriggerSequence(projectName, serviceName, stageName, sequenceName string, eventData keptncommon.EventProperties) (string, error) {
