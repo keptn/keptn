@@ -19,12 +19,13 @@ require (
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.7.2
-	k8s.io/api v0.22.6
-	k8s.io/apimachinery v0.22.6
-	k8s.io/cli-runtime v0.22.6
-	k8s.io/client-go v0.22.6
-	k8s.io/kubectl v0.22.6
+	helm.sh/helm/v3 v3.8.0
+	k8s.io/api v0.23.1
+	k8s.io/apimachinery v0.23.1
+	k8s.io/cli-runtime v0.23.1
+	k8s.io/client-go v0.23.1
+	k8s.io/kubectl v0.23.1
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
 // required as per https://github.com/helm/helm/issues/9354
