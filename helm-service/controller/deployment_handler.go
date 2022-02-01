@@ -59,6 +59,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	var err error
 	// retrieve commitId from sequence
 	extensions := ce.Context.GetExtensions()
+	//no need to check if toString has error since gitcommitid can only be a string
 	commitID, _ := types.ToString(extensions["gitcommitid"])
 
 	if len(e.ConfigurationChange.Values) > 0 {

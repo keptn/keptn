@@ -45,6 +45,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event) {
 
 	// retrieve commitId from sequence
 	extensions := ce.Context.GetExtensions()
+	//no need to check if toString has error since gitcommitid can only be a string
 	commitID, _ := types.ToString(extensions["gitcommitid"])
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {

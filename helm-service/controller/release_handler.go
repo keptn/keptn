@@ -51,6 +51,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 	}
 	// retrieve commitId from sequence
 	extensions := ce.Context.GetExtensions()
+	//no need to check if toString has error since gitcommitid can only be a string
 	commitID, _ := types.ToString(extensions["gitcommitid"])
 
 	// Send release started event

@@ -55,6 +55,7 @@ func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 
 	extensions := eh.Event.Context.GetExtensions()
 	shkeptncontext, _ = types.ToString(extensions["shkeptncontext"])
+	//no need to check if toString has error since gitcommitid can only be a string
 	commitID, _ := types.ToString(extensions["gitcommitid"])
 	err := eh.Event.DataAs(e)
 
