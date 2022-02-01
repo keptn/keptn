@@ -12,6 +12,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -32,6 +33,7 @@ type IShipyardController interface {
 type shipyardController struct {
 	eventRepo                  db.EventRepo
 	taskSequenceRepo           db.TaskSequenceRepo
+	taskSequenceV2Repo         db.TaskSequenceV2Repo
 	projectMvRepo              db.ProjectMVRepo
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
@@ -65,6 +67,7 @@ func GetShipyardControllerInstance(
 			projectMvRepo: db.NewProjectMVRepo(
 				db.NewMongoDBKeyEncodingProjectsRepo(cbConnectionInstance),
 				db.NewMongoDBEventsRepo(cbConnectionInstance)),
+			taskSequenceV2Repo:  db.NewMongoDBTaskSequenceV2Repo(cbConnectionInstance),
 			eventDispatcher:     eventDispatcher,
 			sequenceDispatcher:  sequenceDispatcher,
 			sequenceTimeoutChan: sequenceTimeoutChannel,
@@ -253,6 +256,38 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 		return nil
 	}
 
+	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{
+		Scope: modelsv2.EventScope{
+			KeptnContext: eventScope.KeptnContext,
+			Project:      eventScope.Project,
+			Stage:        eventScope.Stage,
+			Service:      eventScope.Service,
+		},
+		Status:             "", // TODO limit to active sequences to optimize
+		CurrentTriggeredID: eventScope.TriggeredID,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to handle %s event: %w", eventScope.EventType, err)
+	}
+
+	if len(sequenceExecutions) == 0 {
+		log.Infof("The received %s event with keptn context %s is not accociated with a task that was previously triggered",
+			eventScope.EventType, eventScope.KeptnContext)
+		return nil
+	}
+
+	sequenceExecution := sequenceExecutions[0]
+
+	sc.taskSequenceV2Repo.AppendTaskEvent(sequenceExecution, modelsv2.TaskEvent{
+		EventType: *event.Type,
+		Source:    *event.Source,
+		Result:    string(eventScope.Result),
+		Status:    string(eventScope.Status),
+		Time:      event.Time,
+		//Properties: eventScope., // TODO fill
+	})
+
+	// OLD
 	wasTriggered, err := sc.wasTaskTriggered(*eventScope)
 	if err != nil {
 		return fmt.Errorf("unable to handle %s event: %w", eventScope.EventType, err)
@@ -345,47 +380,48 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
-	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(cancel.Project,
-		models.TaskExecution{
-			KeptnContext: cancel.KeptnContext,
-			Stage:        cancel.Stage,
-		})
+	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{Scope: modelsv2.EventScope{
+		KeptnContext: cancel.KeptnContext,
+		Project:      cancel.Project,
+		Stage:        cancel.Stage,
+	}})
+
 	if err != nil {
 		return fmt.Errorf("unable to get active task executions for project %s in stage %s for keptn context %s", cancel.Project, cancel.Stage, cancel.KeptnContext)
 	}
-	if len(taskExecutions) == 0 {
-		log.Infof("no active task execution for context %s found. Trying to remove it from the queue", cancel.KeptnContext)
-		return sc.cancelQueuedSequence(cancel)
+
+	if len(sequenceExecutions) == 0 {
+		log.Infof("no active task execution for context %s found.", cancel.KeptnContext)
+		return nil
 	}
 
 	// delete all open .triggered events for the task sequence
-	for _, sequenceEvent := range taskExecutions {
-		err := sc.eventRepo.DeleteEvent(cancel.Project, sequenceEvent.TriggeredEventID, common.TriggeredEvent)
+	for _, sequenceExecution := range sequenceExecutions {
+		err := sc.eventRepo.DeleteEvent(cancel.Project, sequenceExecution.Status.CurrentTask.TriggeredID, common.TriggeredEvent)
 		if err != nil {
 			// log the error, but continue
 			log.WithError(err).Error("could not delete event")
 		}
-	}
 
-	lastTaskOfSequence := getLastTaskOfSequence(taskExecutions)
-	sequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(models.EventScope{
-		EventData: keptnv2.EventData{
-			Project: cancel.Project,
-			Stage:   lastTaskOfSequence.Stage,
-		},
-		KeptnContext: cancel.KeptnContext,
-	}, lastTaskOfSequence.TaskSequenceName)
-	if err != nil {
-		return err
-	}
+		sequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: cancel.Project,
+				Stage:   sequenceExecution.Scope.Stage,
+			},
+			KeptnContext: cancel.KeptnContext,
+		}, sequenceExecution.Sequence.Name)
+		if err != nil {
+			return err
+		}
 
-	if sequenceTriggeredEvent != nil {
-		return sc.forceTaskSequenceCompletion(*sequenceTriggeredEvent, lastTaskOfSequence.TaskSequenceName)
+		if sequenceTriggeredEvent != nil {
+			return sc.forceTaskSequenceCompletion(*sequenceTriggeredEvent, sequenceExecution)
+		}
 	}
 	return nil
 }
 
-func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, taskSequenceName string) error {
+func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, sequenceExecution modelsv2.TaskSequence) error {
 	sc.onSequenceAborted(sequenceTriggeredEvent)
 	scope, err := models.NewEventScope(sequenceTriggeredEvent)
 	if err != nil {
@@ -395,49 +431,7 @@ func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent
 	scope.Result = keptnv2.ResultPass
 	scope.Status = keptnv2.StatusAborted
 
-	return sc.completeTaskSequence(*scope, taskSequenceName, sequenceTriggeredEvent.ID)
-}
-
-func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl) error {
-	// first, remove the sequence from the queue
-	err := sc.sequenceDispatcher.Remove(
-		models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: cancel.Project,
-				Stage:   cancel.Stage,
-			},
-			KeptnContext: cancel.KeptnContext,
-		},
-	)
-
-	if err != nil {
-		log.WithError(err).Errorf("could not remove sequence %s from sequence queue", cancel.KeptnContext)
-	}
-
-	events, err := sc.eventRepo.GetEvents(
-		cancel.Project,
-		common.EventFilter{KeptnContext: &cancel.KeptnContext, Stage: &cancel.Stage},
-		common.TriggeredEvent,
-	)
-	if err != nil {
-		if err == db.ErrNoEventFound {
-			return ErrSequenceNotFound
-		}
-		return err
-	} else if len(events) == 0 {
-		return ErrSequenceNotFound
-	}
-	// the first event of the context should be a task sequence event that contains the sequence name
-	sequenceTriggeredEvent := events[0]
-	if !keptnv2.IsSequenceEventType(*sequenceTriggeredEvent.Type) {
-		return ErrSequenceNotFound
-	}
-	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*sequenceTriggeredEvent.Type)
-	if err != nil {
-		return err
-	}
-
-	return sc.forceTaskSequenceCompletion(sequenceTriggeredEvent, sequenceName)
+	return sc.completeTaskSequence(*scope, sequenceExecution.Sequence.Name, sequenceTriggeredEvent.ID)
 }
 
 func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) error {
@@ -451,23 +445,31 @@ func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) er
 	eventScope.Result = keptnv2.ResultFailed
 	eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *timeout.LastEvent.Type)
 
-	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(eventScope.Project, models.TaskExecution{TriggeredEventID: timeout.LastEvent.ID})
+	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{
+		CurrentTriggeredID: timeout.LastEvent.ID,
+		Scope: modelsv2.EventScope{
+			KeptnContext: eventScope.KeptnContext,
+			Project:      eventScope.Project,
+			Stage:        eventScope.Stage,
+		}})
+
 	if err != nil {
 		return fmt.Errorf("Could not retrieve task executions associated to eventID %s: %s", timeout.LastEvent.ID, err.Error())
 	}
 
-	if len(taskExecutions) == 0 {
+	if len(sequenceExecutions) == 0 {
 		log.Infof("No task executions associated with eventID %s found", timeout.LastEvent.ID)
 		return nil
 	}
-	taskContext := taskExecutions[0]
+
+	sequenceExecution := sequenceExecutions[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
-	taskSequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(*eventScope, taskContext.TaskSequenceName)
+	taskSequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(*eventScope, sequenceExecution.Sequence.Name)
 	if err != nil {
 		return err
 	}
 	if taskSequenceTriggeredEvent != nil {
-		if err := sc.completeTaskSequence(*eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
+		if err := sc.completeTaskSequence(*eventScope, sequenceExecution.Sequence.Name, taskSequenceTriggeredEvent.ID); err != nil {
 			return err
 		}
 	}
@@ -673,6 +675,9 @@ func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventSc
 }
 
 func (sc *shipyardController) completeTaskSequence(eventScope models.EventScope, taskSequenceName, triggeredID string) error {
+	// TODO
+	// sc.taskSequenceV2Repo.Get()
+	// OLD
 	err := sc.taskSequenceRepo.DeleteTaskExecution(eventScope.KeptnContext, eventScope.Project, eventScope.Stage, taskSequenceName)
 	if err != nil {
 		return err

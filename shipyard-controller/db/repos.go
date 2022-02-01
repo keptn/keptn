@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	"time"
 )
 
@@ -87,4 +88,11 @@ type SequenceQueueRepo interface {
 	QueueSequence(item models.QueueItem) error
 	GetQueuedSequences() ([]models.QueueItem, error)
 	DeleteQueuedSequences(itemFilter models.QueueItem) error
+}
+
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/tasksequencev2repo_mock.go . TaskSequenceV2Repo
+type TaskSequenceV2Repo interface {
+	Get(filter GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error)
+	Upsert(item modelsv2.TaskSequence) error
+	AppendTaskEvent(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) error
 }

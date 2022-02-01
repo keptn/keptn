@@ -19,9 +19,10 @@ type MongoDBTaskSequenceV2Repo struct {
 }
 
 type GetTaskSequenceFilter struct {
-	Scope  modelsv2.EventScope
-	Status string
-	Name   string
+	Scope              modelsv2.EventScope
+	Status             string
+	Name               string
+	CurrentTriggeredID string
 }
 
 func NewMongoDBTaskSequenceV2Repo(dbConnection *MongoDBConnection) *MongoDBTaskSequenceV2Repo {
@@ -124,6 +125,7 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) getSearchOptions(filter GetTaskSequenc
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.Stage, "scope.stage")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.Service, "scope.service")
 	searchOptions = appendFilterAs(searchOptions, filter.Status, "status.state")
+	searchOptions = appendFilterAs(searchOptions, filter.CurrentTriggeredID, "status.currentTask.triggeredID")
 
 	return searchOptions
 }
