@@ -33,11 +33,11 @@ spec:
             - name: "release"`
 
 func Test_GracefulShutdown(t *testing.T) {
-	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
+	repoLocalDir, err := filepath.Abs("../")
 	require.Nil(t, err)
 	t.Log("Current local dir is : ", repoLocalDir)
 
-	projectName := "tinypodtato"
+	keptnProjectName := "tinypodtato"
 	serviceName := "helloservice"
 	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz"
 	serviceJmeterDir := repoLocalDir + "/jmeter"
@@ -47,7 +47,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	t.Logf("Creating a new project %s", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
 	require.Nil(t, err)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	keptnProjectName, err = CreateProject(keptnProjectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", serviceName, keptnProjectName)
