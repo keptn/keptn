@@ -281,11 +281,11 @@ func (p ResourceManager) storeResource(resourcePath, resourceContent string) err
 	if err := p.fileSystem.WriteBase64EncodedFile(resourcePath, resourceContent); err != nil {
 		return err
 	}
-	//if common.IsHelmChartPath(resourcePath) {
-	//	if err := p.fileSystem.WriteHelmChart(resourcePath); err != nil {
-	//		return err
-	//	}
-	//}
+	if common.IsHelmChartPath(resourcePath) {
+		if err := p.fileSystem.WriteHelmChart(resourcePath); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
