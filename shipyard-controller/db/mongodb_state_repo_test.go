@@ -42,6 +42,8 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 		return nil, err
 	}
 
+	fmt.Println(os.Getenv("MONGODB_EXTERNAL_CONNECTION_STRING"))
+
 	var mongoClient *mongo.Client
 	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
 	if err != nil {
