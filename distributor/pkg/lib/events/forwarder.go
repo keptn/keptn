@@ -193,7 +193,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		path = req.URL.Path
 	}
 	logger.Debugf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
-	proxyScheme, proxyHost, proxyPath := config.Global.GetProxyHost(path)
+	proxyScheme, proxyHost, proxyPath := config.Global.ProxyHost(path)
 
 	if proxyScheme == "" || proxyHost == "" {
 		logger.Error("Could not get proxy Host URL - got empty values of 'proxyScheme' or 'proxyHost'")

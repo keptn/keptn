@@ -76,7 +76,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			env := EnvConfig{
 				KeptnAPIEndpoint: tt.externalEndpoint,
 			}
-			scheme, host, path := env.GetProxyHost(tt.args.path)
+			scheme, host, path := env.ProxyHost(tt.args.path)
 
 			if scheme != tt.wantScheme {
 				t.Errorf("getProxyHost(); host = %v, want %v", scheme, tt.wantScheme)
@@ -115,8 +115,8 @@ func Test_getHTTPPollingEndpoint(t *testing.T) {
 			env := EnvConfig{
 				KeptnAPIEndpoint: tt.apiEndpointEnvVar,
 			}
-			if got := env.GetHTTPPollingEndpoint(); got != tt.want {
-				t.Errorf("GetHTTPPollingEndpoint() = %v, want %v", got, tt.want)
+			if got := env.PollingEndpoint(); got != tt.want {
+				t.Errorf("PollingEndpoint() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -215,7 +215,7 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 			env := EnvConfig{}
 			_ = envconfig.Process("", &env)
 
-			got := env.GetPubSubRecipientURL()
+			got := env.PubSubRecipientURL()
 			if got != tt.want {
 				t.Errorf("getPubSubRecipientURL() got = %v, want1 %v", got, tt.want)
 			}
@@ -238,9 +238,9 @@ func Test_ValidateKeptnAPIEndpointURL(t *testing.T) {
 func Test_GetPubSubTopics(t *testing.T) {
 	// multiple topics
 	config := EnvConfig{PubSubTopic: "a,b,c"}
-	assert.Equal(t, 3, len(config.GetPubSubTopics()))
+	assert.Equal(t, 3, len(config.PubSubTopics()))
 
 	// zero topics
 	config = EnvConfig{}
-	assert.Equal(t, 0, len(config.GetPubSubTopics()))
+	assert.Equal(t, 0, len(config.PubSubTopics()))
 }

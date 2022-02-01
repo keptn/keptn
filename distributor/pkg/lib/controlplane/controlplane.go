@@ -18,12 +18,12 @@ type IControlPlane interface {
 
 type ControlPlane struct {
 	sync.Mutex
-	uniformHandler *api.UniformHandler
+	uniformHandler api.UniformV1Interface
 	connectionType config.ConnectionType
 	currentID      string
 }
 
-func NewControlPlane(uniformHandler *api.UniformHandler, connectionType config.ConnectionType) *ControlPlane {
+func NewControlPlane(uniformHandler api.UniformV1Interface, connectionType config.ConnectionType) *ControlPlane {
 	return &ControlPlane{
 		uniformHandler: uniformHandler,
 		connectionType: connectionType,
@@ -95,7 +95,7 @@ func (c *ControlPlane) createRegistrationData() models.Integration {
 
 	// create subscription
 	var subscriptions []models.EventSubscription
-	for _, t := range config.Global.GetPubSubTopics() {
+	for _, t := range config.Global.PubSubTopics() {
 		ts := models.EventSubscription{
 			Event: t,
 			Filter: models.EventSubscriptionFilter{

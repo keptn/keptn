@@ -23,6 +23,8 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
 	logger "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 	"net/http"
 	"net/url"
 	"os"
@@ -37,25 +39,21 @@ func main() {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
-	os.Exit(_main(config.Global))
-}
+	env := config.Global
 
-func _main(env config.EnvConfig) int {
-	connectionType := config.GetPubSubConnectionType()
 	executionContext := createExecutionContext()
 	eventSender, err := setupEventSender(env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize event sender.")
 	}
-	httpClient := setupHTTPClient()
 
-	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
-	// restrict the timeout for the http handlers to 5s
-	// otherwise, retry mechanisms of these components will be blocked for too long
-	uniformHandler.HTTPClient.Timeout = 5 * time.Second
-	uniformLogHandler.HTTPClient.Timeout = 5 * time.Second
+	httpClient := createHTTPClient(env)
+	apiset, err := createKeptnAPI(httpClient)
+	if err != nil {
+		logger.WithError(err).Fatal("Could not initialize API set.")
+	}
 
-	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType)
+	controlPlane := controlplane.NewControlPlane(apiset.UniformV1(), config.PubSubConnectionType())
 	uniformWatch := setupUniformWatch(controlPlane)
 	forwarder := events.NewForwarder(httpClient)
 
@@ -70,12 +68,12 @@ func _main(env config.EnvConfig) int {
 		if id == "" {
 			logger.Fatal("Could not register Uniform")
 		}
-		uniformLogger := controlplane.NewEventUniformLog(id, uniformLogHandler)
+		uniformLogger := controlplane.NewEventUniformLog(id, apiset.LogsV1())
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
 	}
 
-	logger.Infof("Connection type: %s", connectionType)
-	if connectionType == config.ConnectionTypeHTTP {
+	logger.Infof("Connection type: %s", config.PubSubConnectionType())
+	if config.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		err := env.ValidateKeptnAPIEndpointURL()
 		if err != nil {
 			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
@@ -95,7 +93,6 @@ func _main(env config.EnvConfig) int {
 		}
 	}
 	executionContext.Wg.Wait()
-	return 0
 }
 
 func createExecutionContext() *events.ExecutionContext {
@@ -150,34 +147,46 @@ func isOneOfFilteredServices(serviceName string) bool {
 	return false
 }
 
-func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
-	if connectionType == config.ConnectionTypeHTTP {
-		scheme := "http" // default
+func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
+	if config.PubSubConnectionType() == config.ConnectionTypeHTTP {
+		scheme := "http"
 		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
-		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
-		return uniformHandler, uniformLogHandler
+		return keptnapi.New(config.Global.KeptnAPIEndpoint+"/controlPlane", keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
 	}
-	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
+	return keptnapi.New(config.DefaultShipyardControllerBaseURL, keptnapi.WithHTTPClient(httpClient)) //TODO: check if this should be an unauthenticated api set
 }
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {
 	return events.NewUniformWatch(controlPlane)
 }
 
-func setupHTTPClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
+func createHTTPClient(envConfig config.EnvConfig) *http.Client {
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
+		},
+		Timeout: 5 * time.Second,
 	}
-	client := &http.Client{Transport: tr}
-	return client
+
+	if envConfig.SSOClientID != "" && envConfig.SSOClientSecret != "" && len(envConfig.SSOScopes) > 0 {
+		conf := clientcredentials.Config{
+			ClientID:     envConfig.SSOClientID,
+			ClientSecret: envConfig.SSOClientSecret,
+			Scopes:       envConfig.SSOScopes,
+			TokenURL:     "https://sso-dev.dynatracelabs.com:443/sso/oauth2/token", //TODO: make configurable
+		}
+
+		client := conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
+		return client
+	}
+	return c
 }
 
 func setupEventSender(env config.EnvConfig) (events.EventSender, error) {
-	eventSender, err := keptnv2.NewHTTPEventSender(env.GetPubSubRecipientURL())
+	eventSender, err := keptnv2.NewHTTPEventSender(env.PubSubRecipientURL())
 	if err != nil {
 		return nil, err
 	}
