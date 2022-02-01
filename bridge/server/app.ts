@@ -15,6 +15,7 @@ import { AxiosError } from 'axios';
 import { EnvironmentUtils } from './utils/environment.utils';
 import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
+import { SessionService } from './user/session';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -116,7 +117,7 @@ async function init(): Promise<Express> {
   // Remove the X-Powered-By headers, has to be done via express and not helmet
   app.disable('x-powered-by');
 
-  const authType: string = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
+  const { authType, session } = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
 
   // everything starting with /api is routed to the api implementation
   app.use(
@@ -128,7 +129,7 @@ async function init(): Promise<Express> {
       integrationsPageLink,
       authType,
       clientFeatureFlags,
-      serverFeatureFlags,
+      session,
     })
   );
 
@@ -148,7 +149,7 @@ async function init(): Promise<Express> {
   return app;
 }
 
-async function setOAUTH(app: Express): Promise<void> {
+async function setOAUTH(app: Express): Promise<SessionService> {
   const errorSuffix =
     'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' +
     ' Please check your environment variables.';
@@ -163,7 +164,7 @@ async function setOAUTH(app: Express): Promise<void> {
     throw Error(`OAUTH_BASE_URL ${errorSuffix}`);
   }
 
-  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
+  return setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
 }
 
 async function setBasicAUTH(app: Express): Promise<void> {
@@ -198,10 +199,11 @@ async function setBasicAUTH(app: Express): Promise<void> {
   });
 }
 
-async function setAuth(app: Express, oAuthEnabled: boolean): Promise<string> {
+async function setAuth(app: Express, oAuthEnabled: boolean): Promise<{ authType: string; session?: SessionService }> {
   let authType;
+  let session: SessionService | undefined;
   if (oAuthEnabled) {
-    await setOAUTH(app);
+    session = await setOAUTH(app);
     authType = 'OAUTH';
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
     authType = 'BASIC';
@@ -211,7 +213,7 @@ async function setAuth(app: Express, oAuthEnabled: boolean): Promise<string> {
     console.log('Not installing authentication middleware');
   }
 
-  return authType;
+  return { authType, session };
 }
 
 function setupDefaultLookAndFeel(): void {

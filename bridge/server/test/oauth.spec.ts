@@ -1,12 +1,38 @@
 import { CallbackParamsType, TokenSet } from 'openid-client';
 import request from 'supertest';
 import { Express, Request } from 'express';
-import { init } from '../app';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Jest } from '@jest/environment';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
-import { TestUtils } from '../.jest/test.utils';
+import { SessionService } from '../user/session';
+
+let store: CachedStore = {};
+jest.unstable_mockModule('../user/session', () => {
+  return {
+    SessionService: jest.fn().mockImplementation(() => {
+      return Object.assign(new SessionService(), {
+        async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
+          store[state] = {
+            _id: state,
+            codeVerifier,
+            nonce,
+          };
+        },
+        async getAndRemoveValidationData(state: string): Promise<unknown | undefined> {
+          const value = store[state];
+          delete store[state];
+          return value ? { value } : undefined;
+        },
+      });
+    }),
+  };
+});
+
+// has to be imported after jest mocked
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { TestUtils } = await import('../.jest/test.utils');
+const { init } = await import('../app');
 
 // import { jest } from '@jest/globals';
 
@@ -14,6 +40,8 @@ interface OAuthParameters {
   OAUTH_CLIENT_ID: string | undefined;
   OAUTH_BASE_URL: string | undefined;
   OAUTH_DISCOVERY: string | undefined;
+  OAUTH_SESSION_SECRET: string | undefined;
+  OAUTH_DATABASE_ENCRYPT_SECRET: string | undefined;
 }
 
 interface CachedStore {
@@ -23,7 +51,6 @@ interface CachedStore {
 const authorizationUrl = `http://localhost/authorization`;
 const endSessionEndpoint = 'http://localhost/end_session';
 let sessionMock: Jest | undefined;
-let store: CachedStore = {};
 const idToken =
   'myHeader.' +
   Buffer.from(
@@ -39,16 +66,43 @@ describe('Test OAuth env variables', () => {
         OAUTH_CLIENT_ID: 'myClientID',
         OAUTH_BASE_URL: 'http://localhost',
         OAUTH_DISCOVERY: undefined,
+        OAUTH_SESSION_SECRET: 'mySessionSecret',
+        OAUTH_DATABASE_ENCRYPT_SECRET: 'database_secret_'.repeat(2),
       },
       {
         OAUTH_CLIENT_ID: 'myClientID',
         OAUTH_BASE_URL: undefined,
         OAUTH_DISCOVERY: 'http://localhost/.well-known/openid-configuration',
+        OAUTH_SESSION_SECRET: 'mySessionSecret',
+        OAUTH_DATABASE_ENCRYPT_SECRET: 'database_secret_'.repeat(2),
       },
       {
         OAUTH_CLIENT_ID: undefined,
         OAUTH_BASE_URL: 'http://localhost',
         OAUTH_DISCOVERY: 'http://localhost/.well-known/openid-configuration',
+        OAUTH_SESSION_SECRET: 'mySessionSecret',
+        OAUTH_DATABASE_ENCRYPT_SECRET: 'database_secret_'.repeat(2),
+      },
+      {
+        OAUTH_CLIENT_ID: 'myClientID',
+        OAUTH_BASE_URL: 'http://localhost',
+        OAUTH_DISCOVERY: 'http://localhost/.well-known/openid-configuration',
+        OAUTH_SESSION_SECRET: undefined,
+        OAUTH_DATABASE_ENCRYPT_SECRET: 'database_secret_'.repeat(2),
+      },
+      {
+        OAUTH_CLIENT_ID: 'myClientID',
+        OAUTH_BASE_URL: 'http://localhost',
+        OAUTH_DISCOVERY: 'http://localhost/.well-known/openid-configuration',
+        OAUTH_SESSION_SECRET: 'mySessionSecret',
+        OAUTH_DATABASE_ENCRYPT_SECRET: undefined,
+      },
+      {
+        OAUTH_CLIENT_ID: 'myClientID',
+        OAUTH_BASE_URL: 'http://localhost',
+        OAUTH_DISCOVERY: 'http://localhost/.well-known/openid-configuration',
+        OAUTH_SESSION_SECRET: 'mySessionSecret',
+        OAUTH_DATABASE_ENCRYPT_SECRET: 'database_secret_', // length !== 32
       },
     ];
     for (const parameter of parameters) {
@@ -56,6 +110,8 @@ describe('Test OAuth env variables', () => {
       setOrDeleteProperty(process.env, parameter, 'OAUTH_CLIENT_ID');
       setOrDeleteProperty(process.env, parameter, 'OAUTH_BASE_URL');
       setOrDeleteProperty(process.env, parameter, 'OAUTH_DISCOVERY');
+      setOrDeleteProperty(process.env, parameter, 'OAUTH_SESSION_SECRET');
+      setOrDeleteProperty(process.env, parameter, 'OAUTH_DATABASE_ENCRYPT_SECRET');
 
       await expect(init()).rejects.toThrowError();
     }
@@ -301,22 +357,6 @@ async function setupOAuth(): Promise<Express> {
 }
 
 async function mockSavingValidationData(): Promise<void> {
-  const { saveValidationData, getAndRemoveValidationData, ...defaultSession } = await import('../user/session');
-  sessionMock = jest.unstable_mockModule('../user/session', () => {
-    return {
-      ...defaultSession,
-      async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
-        store[state] = {
-          _id: state,
-          codeVerifier,
-          nonce,
-        };
-      },
-      async getAndRemoveValidationData(state: string): Promise<unknown | undefined> {
-        const value = store[state];
-        delete store[state];
-        return value ? { value } : undefined;
-      },
-    };
-  });
+  process.env.OAUTH_SESSION_SECRET = 'mySessionSecret';
+  process.env.OAUTH_DATABASE_ENCRYPT_SECRET = 'database_secret_'.repeat(2); // length of 32
 }

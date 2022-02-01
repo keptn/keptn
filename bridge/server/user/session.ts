@@ -26,269 +26,278 @@ interface ValidationType {
   creationDate: Date;
 }
 
-const router = Router();
-const SESSION_TIME_SECONDS = getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
-const SESSION_VALIDATING_DATA_SECONDS = getOrDefaultValidatingDataTimeout(60);
-const COOKIE_LENGTH = 10;
-const COOKIE_NAME = 'KTSESSION';
-const DEFAULT_TRUST_PROXY = 1;
-const errorSuffix =
-  'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' + ' Please check your environment variables.';
-if (!process.env.OAUTH_SESSION_SECRET) {
-  console.error(`OAUTH_SESSION_SECRET ${errorSuffix}`);
-  process.exit(1);
-}
+// before using it "init" has to be called!
+export class SessionService {
+  private validationCollection: Collection<ValidationType> | undefined;
+  private sessionConfig: (expressSession.SessionOptions & { cookie: expressSession.CookieOptions }) | undefined;
+  private readonly crypto: Crypto;
+  private readonly SESSION_TIME_SECONDS: number;
+  private readonly DEFAULT_TRUST_PROXY = 1;
+  private readonly cookieName = 'KTSESSION';
+  private readonly cookieLength = 10;
+  private readonly sessionSecret: string;
+  private readonly SESSION_VALIDATING_DATA_SECONDS;
+  private readonly databaseSecret: string;
 
-if (!process.env.OAUTH_DATABASE_ENCRYPT_SECRET) {
-  console.error(`OAUTH_DATABASE_ENCRYPT_SECRET ${errorSuffix}`);
-  process.exit(1);
-} else if (process.env.OAUTH_DATABASE_ENCRYPT_SECRET.length !== 32) {
-  console.error('The length of the env variable "OAUTH_DATABASE_ENCRYPT_SECRET" must be 32');
-  process.exit(1);
-}
-const SESSION_SECRET = process.env.OAUTH_SESSION_SECRET;
-const DATABASE_SECRET = process.env.OAUTH_DATABASE_ENCRYPT_SECRET;
-const crypto = new Crypto(DATABASE_SECRET);
-let store: MemoryStore | MongoStore;
-let validationCollection: Collection<ValidationType> | undefined;
-
-if (process.env.NODE_ENV === 'test') {
-  store = new MemoryStore();
-} else {
-  store = await setupMongoDB();
-}
-
-/**
- * Uses a session cookie backed by in-memory cookies store.
- *
- * Cookie store is a LRU cache, hence session removal will occur when there are stale instances.
- */
-const sessionConfig = {
-  cookie: {
-    path: '/',
-    httpOnly: true,
-    sameSite: true, // if true or 'strict', a redirect to oauth/redirect may lead to a missing cookie
-    secure: false,
-  },
-  name: COOKIE_NAME,
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  genid: (): string => random({ length: COOKIE_LENGTH, type: 'url-safe' }),
-  store,
-} as expressSession.SessionOptions & { cookie: expressSession.CookieOptions };
-
-async function setupMongoDB(): Promise<MongoStore> {
-  const mongoCredentials = {
-    user: process.env.MONGODB_USER,
-    password: process.env.MONGODB_PASSWORD,
-    host: process.env.MONGODB_HOST,
-    database: process.env.MONGODB_DATABASE || 'openid',
-  };
-
-  if (!mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
-    console.error(
-      'could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set'
-    );
-    process.exit(1);
-  }
-
-  const mongoClient = new MongoClient(
-    `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}`
-  );
-  await mongoClient.connect();
-
-  validationCollection = mongoClient.db(mongoCredentials.database).collection('validation');
-
-  const indexName = 'validation_index';
-  const indexes = await validationCollection.indexes();
-  let validationIndex = indexes.find((index) => index.name === indexName);
-
-  if (validationIndex && validationIndex.expireAfterSeconds !== SESSION_VALIDATING_DATA_SECONDS) {
-    await validationCollection.dropIndex(indexName);
-    validationIndex = undefined;
-  }
-  if (!validationIndex) {
-    await validationCollection.createIndex(
-      {
-        creationDate: 1,
-      },
-      {
-        name: indexName,
-        expireAfterSeconds: SESSION_VALIDATING_DATA_SECONDS,
-      }
-    );
-  }
-  console.log('Successfully connected to database');
-
-  return MongoStore.create({
-    client: mongoClient,
-    ttl: SESSION_TIME_SECONDS, // if inactive for $SESSION_TIME_SECONDS seconds, session is destroyed
-    dbName: mongoCredentials.database,
-    collectionName: 'sessions',
-    crypto: {
-      secret: DATABASE_SECRET,
-    },
-  });
-}
-
-/**
- * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
- */
-function isAuthenticated(
-  session: expressSession.Session & Partial<expressSession.SessionData>
-): session is ValidSession {
-  if (session.authenticated) {
-    return true;
-  }
-
-  session.authenticated = false;
-  return false;
-}
-
-/**
- * Saves state, code verifier and nonce for the login flow
- */
-async function saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
-  await validationCollection?.insertOne({
-    _id: state,
-    codeVerifier: crypto.encrypt(codeVerifier),
-    nonce: crypto.encrypt(nonce),
-    creationDate: new Date(),
-  });
-}
-
-/**
- * returns state, code verifier and nonce and removes it afterwards
- */
-async function getAndRemoveValidationData(state: string): Promise<ValidationType | undefined> {
-  const data = await validationCollection?.findOneAndDelete({ _id: state });
-  try {
-    return data?.value
-      ? {
-          _id: data.value._id,
-          codeVerifier: crypto.decrypt(data.value.codeVerifier),
-          nonce: crypto.decrypt(data.value.nonce),
-          creationDate: data.value.creationDate,
-        }
-      : undefined;
-  } catch (e) {
-    console.error('Error wile decrypting validation data. Cause:', e);
-  }
-}
-
-/**
- * Set the session authenticated state for the specific principal
- *
- * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
- * logout supported from OAuth service.
- */
-function authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
-  // Regenerate session for the successful login
-  return new Promise((resolve) => {
-    req.session.regenerate(() => {
-      const userIdentifier = process.env.OAUTH_NAME_PROPERTY;
-      const claims = tokenSet.claims();
-      req.session.authenticated = true;
-      req.session.tokenSet = tokenSet;
-      req.session.principal =
-        (userIdentifier ? (claims[userIdentifier] as string | undefined) : undefined) || getUserIdentifier(claims);
-      resolve();
-    });
-  });
-}
-
-function getUserIdentifier(claims: IdTokenClaims): string | undefined {
-  return claims.name || claims.nickname || claims.preferred_username || claims.email;
-}
-
-/**
- * Returns the current principal if session is authenticated. Otherwise returns undefined
- */
-function getCurrentPrincipal(req: Request): string | undefined {
-  return req.session?.principal;
-}
-
-/**
- * Returns the logout hint bound to this session
- */
-function getLogoutHint(req: Request): string | undefined {
-  return req.session?.tokenSet?.id_token;
-}
-
-/**
- * Destroy the session comes with this request
- */
-function removeSession(req: Request): void {
-  req.session.destroy((error) => {
-    if (error) {
-      console.error(error);
+  constructor() {
+    this.SESSION_TIME_SECONDS = this.getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
+    this.SESSION_VALIDATING_DATA_SECONDS = this.getOrDefaultValidatingDataTimeout(60);
+    const errorSuffix =
+      'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' +
+      ' Please check your environment variables.';
+    if (!process.env.OAUTH_SESSION_SECRET) {
+      throw Error(`OAUTH_SESSION_SECRET ${errorSuffix}`);
     }
-  });
-}
 
-function sessionRouter(app: Express): Router {
-  console.log(`Enabling sessions for bridge with session timeout ${SESSION_TIME_SECONDS} seconds.`);
+    if (!process.env.OAUTH_DATABASE_ENCRYPT_SECRET) {
+      throw Error(`OAUTH_DATABASE_ENCRYPT_SECRET ${errorSuffix}`);
+    } else if (process.env.OAUTH_DATABASE_ENCRYPT_SECRET.length !== 32) {
+      throw Error('The length of the env variable "OAUTH_DATABASE_ENCRYPT_SECRET" must be 32');
+    }
+    this.sessionSecret = process.env.OAUTH_SESSION_SECRET;
+    this.databaseSecret = process.env.OAUTH_DATABASE_ENCRYPT_SECRET;
+    this.crypto = new Crypto(this.databaseSecret);
+  }
 
-  if (process.env.SECURE_COOKIE === 'true') {
-    console.log('Setting secure cookies. Make sure SSL is enabled for deployment & correct trust proxy value is used.');
-    sessionConfig.cookie.secure = true;
+  public async init(): Promise<SessionService> {
+    let store: MemoryStore | MongoStore;
 
-    const trustProxy = process.env.TRUST_PROXY;
-
-    if (trustProxy) {
-      console.log('Using trust proxy hops value : ' + trustProxy);
-      app.set('trust proxy', +trustProxy);
+    if (process.env.NODE_ENV === 'test') {
+      store = new MemoryStore();
     } else {
-      console.log('Using default trust proxy hops value : ' + DEFAULT_TRUST_PROXY);
-      app.set('trust proxy', DEFAULT_TRUST_PROXY);
+      store = await this.setupMongoDB();
+    }
+
+    /**
+     * Uses a session cookie backed by in-memory cookies store.
+     *
+     * Cookie store is a LRU cache, hence session removal will occur when there are stale instances.
+     */
+    this.sessionConfig = {
+      cookie: {
+        path: '/',
+        httpOnly: true,
+        sameSite: true, // if true or 'strict', a redirect to oauth/redirect may lead to a missing cookie
+        secure: false,
+      },
+      name: this.cookieName,
+      secret: this.sessionSecret,
+      resave: false,
+      saveUninitialized: false,
+      genid: (): string => random({ length: this.cookieLength, type: 'url-safe' }),
+      store,
+    };
+    return this;
+  }
+
+  public async setupMongoDB(): Promise<MongoStore> {
+    const mongoCredentials = {
+      user: process.env.MONGODB_USER,
+      password: process.env.MONGODB_PASSWORD,
+      host: process.env.MONGODB_HOST,
+      database: process.env.MONGODB_DATABASE || 'openid',
+    };
+
+    if (!mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
+      console.error(
+        'could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set'
+      );
+      process.exit(1);
+    }
+
+    const mongoClient = new MongoClient(
+      `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}`
+    );
+    await mongoClient.connect();
+
+    this.validationCollection = mongoClient.db(mongoCredentials.database).collection('validation');
+
+    const indexName = 'validation_index';
+    const indexes = await this.validationCollection.indexes();
+    let validationIndex = indexes.find((index) => index.name === indexName);
+
+    if (validationIndex && validationIndex.expireAfterSeconds !== this.SESSION_VALIDATING_DATA_SECONDS) {
+      await this.validationCollection.dropIndex(indexName);
+      validationIndex = undefined;
+    }
+    if (!validationIndex) {
+      await this.validationCollection.createIndex(
+        {
+          creationDate: 1,
+        },
+        {
+          name: indexName,
+          expireAfterSeconds: this.SESSION_VALIDATING_DATA_SECONDS,
+        }
+      );
+    }
+    console.log('Successfully connected to database');
+
+    return MongoStore.create({
+      client: mongoClient,
+      ttl: this.SESSION_TIME_SECONDS, // if inactive for $SESSION_TIME_SECONDS seconds, session is destroyed
+      dbName: mongoCredentials.database,
+      collectionName: 'sessions',
+      crypto: {
+        secret: this.databaseSecret,
+      },
+    });
+  }
+
+  /**
+   * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
+   */
+  public isAuthenticated(
+    session: expressSession.Session & Partial<expressSession.SessionData>
+  ): session is ValidSession {
+    if (session.authenticated) {
+      return true;
+    }
+
+    session.authenticated = false;
+    return false;
+  }
+
+  /**
+   * Saves state, code verifier and nonce for the login flow
+   */
+  public async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
+    await this.validationCollection?.insertOne({
+      _id: state,
+      codeVerifier: this.crypto.encrypt(codeVerifier),
+      nonce: this.crypto.encrypt(nonce),
+      creationDate: new Date(),
+    });
+  }
+
+  /**
+   * returns state, code verifier and nonce and removes it afterwards
+   */
+  public async getAndRemoveValidationData(state: string): Promise<ValidationType | undefined> {
+    const data = await this.validationCollection?.findOneAndDelete({ _id: state });
+    try {
+      return data?.value
+        ? {
+            _id: data.value._id,
+            codeVerifier: this.crypto.decrypt(data.value.codeVerifier),
+            nonce: this.crypto.decrypt(data.value.nonce),
+            creationDate: data.value.creationDate,
+          }
+        : undefined;
+    } catch (e) {
+      console.error('Error wile decrypting validation data. Cause:', e);
     }
   }
 
-  // Register session middleware
-  router.use(expressSession(sessionConfig));
-
-  return router;
-}
-
-/**
- * Function to determine session timeout. Input value is in minutes and return value is in millisecond. Value can be
- * configurable through environment variable SESSION_TIMEOUT_MIN. If the configuration is invalid, fallback to
- * provided default value.
- */
-function getOrDefaultSessionTimeout(defMinutes: number): number {
-  return getDefaultTime(process.env.SESSION_TIMEOUT_MIN, defMinutes);
-}
-
-/**
- * Function to determine validating timeout, the timeout for the temporarily saved validation data for the login.
- * Input value is in minutes and return value is in millisecond. Value can be
- * configurable through environment variable SESSION_VALIDATING_TIMEOUT_MIN. If the configuration is invalid, fallback to
- * provided default value.
- */
-function getOrDefaultValidatingDataTimeout(defMinutes: number): number {
-  return getDefaultTime(process.env.SESSION_VALIDATING_TIMEOUT_MIN, defMinutes);
-}
-
-function getDefaultTime(timeMin: string | undefined, defMinutes: number): number {
-  if (timeMin) {
-    const sTimeout = parseInt(timeMin, 10);
-
-    if (!isNaN(sTimeout) && sTimeout > 0) {
-      return sTimeout * 60;
-    }
+  /**
+   * Set the session authenticated state for the specific principal
+   *
+   * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
+   * logout supported from OAuth service.
+   */
+  public authenticateSession(req: Request, tokenSet: TokenSet): Promise<void> {
+    // Regenerate session for the successful login
+    return new Promise((resolve) => {
+      req.session.regenerate(() => {
+        const userIdentifier = process.env.OAUTH_NAME_PROPERTY;
+        const claims = tokenSet.claims();
+        req.session.authenticated = true;
+        req.session.tokenSet = tokenSet;
+        req.session.principal =
+          (userIdentifier ? (claims[userIdentifier] as string | undefined) : undefined) ||
+          this.getUserIdentifier(claims);
+        resolve();
+      });
+    });
   }
 
-  return defMinutes * 60;
-}
+  private getUserIdentifier(claims: IdTokenClaims): string | undefined {
+    return claims.name || claims.nickname || claims.preferred_username || claims.email;
+  }
 
-export {
-  sessionRouter,
-  isAuthenticated,
-  authenticateSession,
-  saveValidationData,
-  getAndRemoveValidationData,
-  removeSession,
-  getLogoutHint,
-  getCurrentPrincipal as currentPrincipal,
-};
+  /**
+   * Returns the current principal if session is authenticated. Otherwise returns undefined
+   */
+  public getCurrentPrincipal(req: Request): string | undefined {
+    return req.session?.principal;
+  }
+
+  /**
+   * Returns the logout hint bound to this session
+   */
+  public getLogoutHint(req: Request): string | undefined {
+    return req.session?.tokenSet?.id_token;
+  }
+
+  /**
+   * Destroy the session comes with this request
+   */
+  public removeSession(req: Request): void {
+    req.session.destroy((error) => {
+      if (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  public sessionRouter(app: Express): Router {
+    if (!this.sessionConfig) {
+      throw Error('Session store is not initialized! Did you forget to call init()?');
+    }
+    const router = Router();
+    console.log(`Enabling sessions for bridge with session timeout ${this.SESSION_TIME_SECONDS} seconds.`);
+
+    if (process.env.SECURE_COOKIE === 'true') {
+      console.log(
+        'Setting secure cookies. Make sure SSL is enabled for deployment & correct trust proxy value is used.'
+      );
+      this.sessionConfig.cookie.secure = true;
+
+      const trustProxy = process.env.TRUST_PROXY;
+
+      if (trustProxy) {
+        console.log('Using trust proxy hops value : ' + trustProxy);
+        app.set('trust proxy', +trustProxy);
+      } else {
+        console.log('Using default trust proxy hops value : ' + this.DEFAULT_TRUST_PROXY);
+        app.set('trust proxy', this.DEFAULT_TRUST_PROXY);
+      }
+    }
+
+    // Register session middleware
+    router.use(expressSession(this.sessionConfig));
+
+    return router;
+  }
+
+  /**
+   * public to determine session timeout. Input value is in minutes and return value is in millisecond. Value can be
+   * configurable through environment variable SESSION_TIMEOUT_MIN. If the configuration is invalid, fallback to
+   * provided default value.
+   */
+  private getOrDefaultSessionTimeout(defMinutes: number): number {
+    return this.getDefaultTime(process.env.SESSION_TIMEOUT_MIN, defMinutes);
+  }
+
+  /**
+   * public to determine validating timeout, the timeout for the temporarily saved validation data for the login.
+   * Input value is in minutes and return value is in millisecond. Value can be
+   * configurable through environment variable SESSION_VALIDATING_TIMEOUT_MIN. If the configuration is invalid, fallback to
+   * provided default value.
+   */
+  private getOrDefaultValidatingDataTimeout(defMinutes: number): number {
+    return this.getDefaultTime(process.env.SESSION_VALIDATING_TIMEOUT_MIN, defMinutes);
+  }
+
+  private getDefaultTime(timeMin: string | undefined, defMinutes: number): number {
+    if (timeMin) {
+      const sTimeout = parseInt(timeMin, 10);
+
+      if (!isNaN(sTimeout) && sTimeout > 0) {
+        return sTimeout * 60;
+      }
+    }
+
+    return defMinutes * 60;
+  }
+}

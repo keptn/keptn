@@ -1,14 +1,7 @@
 import { Request, Response, Router } from 'express';
-import {
-  authenticateSession,
-  getAndRemoveValidationData,
-  getLogoutHint,
-  isAuthenticated,
-  removeSession,
-  saveValidationData,
-} from './session';
 import oClient, { BaseClient, errors, TokenSet } from 'openid-client';
 import { EndSessionData } from '../../shared/interfaces/end-session-data';
+import { SessionService } from './session';
 
 const generators = oClient.generators; // else jest isn't working
 const prefixPath = process.env.PREFIX_PATH;
@@ -31,7 +24,8 @@ function oauthRouter(
   client: BaseClient,
   redirectUri: string,
   logoutUri: string,
-  reduceRefreshDateSeconds: number
+  reduceRefreshDateSeconds: number,
+  session: SessionService
 ): Router {
   const router = Router();
   const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
@@ -46,7 +40,7 @@ function oauthRouter(
     const nonce = generators.nonce();
     const state = generators.state();
     try {
-      await saveValidationData(state, codeVerifier, nonce);
+      await session.saveValidationData(state, codeVerifier, nonce);
 
       const authorizationUrl = client.authorizationUrl({
         scope,
@@ -78,7 +72,7 @@ function oauthRouter(
     }
 
     try {
-      const validationData = await getAndRemoveValidationData(params.state);
+      const validationData = await session.getAndRemoveValidationData(params.state);
       if (!validationData) {
         return res.render('error', invalidRequest);
       }
@@ -90,7 +84,7 @@ function oauthRouter(
         scope,
       });
       reduceRefreshDateBy(tokenSet, reduceRefreshDateSeconds);
-      await authenticateSession(req, tokenSet);
+      await session.authenticateSession(req, tokenSet);
       res.redirect(getRootLocation());
     } catch (error) {
       const err = error as errors.OPError | errors.RPError;
@@ -112,16 +106,16 @@ function oauthRouter(
    * Router level middleware for logout
    */
   router.post('/logout', async (req: Request, res: Response) => {
-    if (!isAuthenticated(req.session)) {
+    if (!session.isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
     }
 
-    const hint = getLogoutHint(req) ?? '';
+    const hint = session.getLogoutHint(req) ?? '';
     if (req.session.tokenSet.access_token && client.issuer.metadata.revocation_endpoint) {
       client.revoke(req.session.tokenSet.access_token);
     }
-    removeSession(req);
+    session.removeSession(req);
 
     if (client.issuer.metadata.end_session_endpoint) {
       const params: EndSessionData = {

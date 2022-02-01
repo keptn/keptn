@@ -44,6 +44,8 @@ export class TestUtils {
     process.env.OAUTH_CLIENT_ID = 'myClientID';
     process.env.OAUTH_BASE_URL = 'http://localhost';
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
+    process.env.OAUTH_SESSION_SECRET = 'mySessionSecret';
+    process.env.OAUTH_DATABASE_ENCRYPT_SECRET = 'database_secret_'.repeat(2); // length of 32
     return init();
   }
 }

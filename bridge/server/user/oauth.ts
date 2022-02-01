@@ -1,13 +1,19 @@
 import { Express, NextFunction, Request, Response } from 'express';
 import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
+import { SessionService } from './session';
+import { getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
 
-async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: string, baseUrl: string): Promise<void> {
-  const session = await import('./session'); // lazy loading. Only init session if OAUTH is enabled. Else it will try to connect to the database
-  const oauthRoutes = await import('./oauth-routes');
-  let prefix = oauthRoutes.getRootLocation();
+async function setupOAuth(
+  app: Express,
+  discoveryEndpoint: string,
+  clientId: string,
+  baseUrl: string
+): Promise<SessionService> {
+  const session = await new SessionService().init();
+  let prefix = getRootLocation();
   baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
   prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
   const site = `${baseUrl}${prefix}`;
@@ -16,7 +22,8 @@ async function setupOAuth(app: Express, discoveryEndpoint: string, clientId: str
   // Initialise session middleware
   app.use(session.sessionRouter(app));
   const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
-  setRoutes(app, client, redirectUri, logoutUri, session, oauthRoutes);
+  setRoutes(app, client, redirectUri, logoutUri, session);
+  return session;
 }
 
 async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
@@ -57,11 +64,10 @@ function setRoutes(
   client: BaseClient,
   redirectUri: string,
   logoutUri: string,
-  session: typeof import('./session'),
-  oauthRoutes: typeof import('./oauth-routes')
+  session: SessionService
 ): void {
   // Initializing OAuth middleware.
-  app.use(oauthRoutes.oauthRouter(client, redirectUri, logoutUri, reduceRefreshDateSeconds));
+  app.use(oauthRouter(client, redirectUri, logoutUri, reduceRefreshDateSeconds, session));
   // Authentication filter for API requests
   app.use('/api', async (req: Request, resp: Response, next: NextFunction) => {
     if (!session.isAuthenticated(req.session)) {
@@ -70,7 +76,7 @@ function setRoutes(
       const tokenSet = new TokenSet(req.session.tokenSet);
       if (tokenSet.expired()) {
         refreshPromises[req.session.id] ??= client.refresh(tokenSet).then((token) => {
-          oauthRoutes.reduceRefreshDateBy(token, reduceRefreshDateSeconds);
+          reduceRefreshDateBy(token, reduceRefreshDateSeconds);
           return token;
         });
         try {
@@ -88,7 +94,7 @@ function setRoutes(
 
           delete refreshPromises[req.session.id];
           session.removeSession(req);
-          resp.redirect(oauthRoutes.getRootLocation());
+          resp.redirect(getRootLocation());
         }
       } else {
         return next();

@@ -4,8 +4,9 @@ import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
 import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
 import { EnvironmentUtils } from '../utils/environment.utils';
-import { ClientFeatureFlags, ServerFeatureFlags } from '../feature-flags';
+import { ClientFeatureFlags } from '../feature-flags';
 import { EventTypes } from '../../shared/interfaces/event-types';
+import { SessionService } from '../user/session';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ const apiRouter = (params: {
   integrationsPageLink: string;
   authType: string;
   clientFeatureFlags: ClientFeatureFlags;
-  serverFeatureFlags: ServerFeatureFlags;
+  session: SessionService | undefined;
 }): Router => {
   // fetch parameters for bridgeInfo endpoint
   const {
@@ -26,7 +27,7 @@ const apiRouter = (params: {
     integrationsPageLink,
     authType,
     clientFeatureFlags: featureFlags,
-    serverFeatureFlags,
+    session,
   } = params;
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
   const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
@@ -38,11 +39,7 @@ const apiRouter = (params: {
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
-    let user;
-    if (serverFeatureFlags.OAUTH_ENABLED) {
-      const { currentPrincipal } = await import('../user/session');
-      user = currentPrincipal(req);
-    }
+    const user = session?.getCurrentPrincipal(req);
     const bridgeInfo: KeptnInfoResult = {
       bridgeVersion,
       featureFlags,
