@@ -5,9 +5,18 @@
 {{- end -}}
 
 {{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
+{{- $bridgeSessionSecret := (randAlphaNum 45) | b64enc | quote }}
+{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
+
 {{- if $bridgesecret }}
-{{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
+  {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
+  {{- if index $bridgesecret.data "OAUTH_SESSION_SECRET" }}
+    {{- $bridgeSessionSecret = index $bridgesecret.data "OAUTH_SESSION_SECRET" }}
+  {{- end -}}
+  {{- if index $bridgesecret.data "OAUTH_DATABASE_ENCRYPT_SECRET" }}
+    {{- $bridgeDatabaseEncryptSecret = index $bridgesecret.data "OAUTH_DATABASE_ENCRYPT_SECRET" }}
+  {{- end -}}
 {{- end -}}
 
 {{- if not .Values.apiService.tokenSecretName }}
@@ -44,6 +53,8 @@ type: Opaque
 data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
+  OAUTH_SESSION_SECRET: {{ $bridgeSessionSecret }}
+  OAUTH_DATABASE_ENCRYPT_SECRET: {{ $bridgeDatabaseEncryptSecret }}
 ---
 {{- end }}
 apiVersion: apps/v1
@@ -118,7 +129,7 @@ spec:
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }} 
+                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
                   key: keptn-api-token
             - name: POD_NAMESPACE
               valueFrom:
@@ -223,7 +234,7 @@ spec:
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }} 
+                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
                   key: keptn-api-token
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
@@ -267,6 +278,20 @@ spec:
             # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
               value: "{{ .Values.bridge.oauth.trustProxy }}"
+            - name: MONGODB_HOST
+              value: keptn-mongo:27017
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: openid
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}

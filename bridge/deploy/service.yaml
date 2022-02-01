@@ -81,9 +81,6 @@ spec:
             - secretRef:
                 name: bridge-credentials
                 optional: true
-            - secretRef:
-                name: mongodb-credentials
-                optional: true
           ports:
             - containerPort: 3000
           resources:

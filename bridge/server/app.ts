@@ -150,7 +150,7 @@ async function init(): Promise<Express> {
 
 async function setOAUTH(app: Express): Promise<void> {
   const errorSuffix =
-    'must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+    'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' +
     ' Please check your environment variables.';
 
   if (!process.env.OAUTH_DISCOVERY) {

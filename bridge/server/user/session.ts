@@ -32,16 +32,25 @@ const SESSION_VALIDATING_DATA_SECONDS = getOrDefaultValidatingDataTimeout(60);
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
-const SESSION_SECRET = process.env.OAUTH_SESSION_SECRET || random({ length: 200 });
-const DATABASE_SECRET = process.env.OAUTH_DATABASE_ENCRYPT_SECRET || random({ length: 32 });
-const crypto = new Crypto(DATABASE_SECRET);
-let store: MemoryStore | MongoStore;
-let validationCollection: Collection<ValidationType> | undefined;
+const errorSuffix =
+  'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' + ' Please check your environment variables.';
+if (!process.env.OAUTH_SESSION_SECRET) {
+  console.error(`OAUTH_SESSION_SECRET ${errorSuffix}`);
+  process.exit(1);
+}
 
-if (DATABASE_SECRET.length !== 32) {
+if (!process.env.OAUTH_DATABASE_ENCRYPT_SECRET) {
+  console.error(`OAUTH_DATABASE_ENCRYPT_SECRET ${errorSuffix}`);
+  process.exit(1);
+} else if (process.env.OAUTH_DATABASE_ENCRYPT_SECRET.length !== 32) {
   console.error('The length of the env variable "OAUTH_DATABASE_ENCRYPT_SECRET" must be 32');
   process.exit(1);
 }
+const SESSION_SECRET = process.env.OAUTH_SESSION_SECRET;
+const DATABASE_SECRET = process.env.OAUTH_DATABASE_ENCRYPT_SECRET;
+const crypto = new Crypto(DATABASE_SECRET);
+let store: MemoryStore | MongoStore;
+let validationCollection: Collection<ValidationType> | undefined;
 
 if (process.env.NODE_ENV === 'test') {
   store = new MemoryStore();
