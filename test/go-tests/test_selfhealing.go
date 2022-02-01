@@ -62,7 +62,7 @@ func Test_SelfHealing(t *testing.T) {
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
