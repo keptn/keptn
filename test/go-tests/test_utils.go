@@ -33,7 +33,7 @@ import (
 const (
 	KeptnSpecVersion      = "0.2.0"
 	KeptnNamespaceEnvVar  = "KEPTN_NAMESPACE"
-	DefaultKeptnNamespace = "keptn-test"
+	DefaultKeptnNamespace = "keptn"
 )
 
 type APICaller struct {
