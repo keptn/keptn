@@ -3,7 +3,7 @@ import { dirname, join } from 'path';
 import { unlink } from 'fs/promises';
 import * as https from 'https';
 import * as http from 'http';
-import helmet from 'helmet';
+import { contentSecurityPolicy, frameguard, noSniff, permittedCrossDomainPolicies, xssFilter } from 'helmet';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
@@ -96,7 +96,7 @@ async function init(): Promise<Express> {
   app.use(cookieParser());
 
   app.use(
-    helmet.contentSecurityPolicy({
+    contentSecurityPolicy({
       useDefaults: true,
       directives: {
         'script-src': [
@@ -109,10 +109,10 @@ async function init(): Promise<Express> {
       },
     })
   );
-  app.use(helmet.noSniff());
-  app.use(helmet.permittedCrossDomainPolicies());
-  app.use(helmet.frameguard());
-  app.use(helmet.xssFilter());
+  app.use(noSniff());
+  app.use(permittedCrossDomainPolicies());
+  app.use(frameguard());
+  app.use(xssFilter());
   // Remove the X-Powered-By headers, has to be done via express and not helmet
   app.disable('x-powered-by');
 
