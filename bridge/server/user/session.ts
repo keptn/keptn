@@ -1,10 +1,11 @@
-import { Express, Request, Router } from 'express';
+import { Express, NextFunction, Request, Response, Router } from 'express';
 import expressSession, { MemoryStore } from 'express-session';
 import random from 'crypto-random-string';
 import { IdTokenClaims, TokenSet, TokenSetParameters } from 'openid-client';
 import MongoStore from 'connect-mongo';
 import { Collection, MongoClient } from 'mongodb';
 import { Crypto } from './crypto';
+import { getRootLocation } from './oauth-routes';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -141,6 +142,7 @@ export class SessionService {
       crypto: {
         secret: this.databaseSecret,
       },
+      touchAfter: this.SESSION_TIME_SECONDS / 2, // session is only updated every {this.SESSION_TIME_SECONDS / 2} seconds
     });
   }
 
@@ -265,9 +267,41 @@ export class SessionService {
     }
 
     // Register session middleware
-    router.use(expressSession(this.sessionConfig));
+    router.use(async (req, res, next: NextFunction) => {
+      const status = await this.setSessionAndGetNextResponse(req, res);
+      if (
+        status instanceof Error &&
+        (status.message === 'Encrypted session was tampered with!' || status.message.startsWith('Unexpected token'))
+      ) {
+        // Database encryption changed. Delete session cookie of client
+
+        // Redirect to login does not work because the redirect to the SSO provider fails then
+        // Probably related to some invalid headers
+
+        res.cookie(this.cookieName, '', { expires: new Date() }); // on redirect res.clearCookie does not work
+        if (req.path.startsWith('/api/')) {
+          // Redirect to root does not work
+          // Client does not reload the page and another call is not triggered immediately
+          next({ response: { status: 401 } });
+        } else {
+          // On initial load, if pages are directly accessed like /dashboard, response must not be 401,
+          // else this would not allow fetching/forwarding/accessing the page/website
+          res.redirect(getRootLocation());
+        }
+      } else {
+        return next(status);
+      }
+    });
 
     return router;
+  }
+
+  private setSessionAndGetNextResponse(req: Request, res: Response): Promise<Error | string | undefined> {
+    return new Promise((resolve) => {
+      expressSession(this.sessionConfig)(req, res, (status: Error | string | undefined) => {
+        resolve(status);
+      });
+    });
   }
 
   /**

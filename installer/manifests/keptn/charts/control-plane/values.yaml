@@ -70,6 +70,7 @@ bridge:
     secureCookie: false
     trustProxy: ""
     sessionTimeoutMin: ""
+    sessionValidatingTimeoutMin: ""
     baseUrl: ""
     clientID: ""
     clientSecret: ""

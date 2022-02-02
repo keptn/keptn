@@ -5,20 +5,18 @@
 {{- end -}}
 
 {{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
-{{- $bridgeSessionSecret := (randAlphaNum 45) | b64enc | quote }}
-{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
-
 {{- if $bridgesecret }}
   {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
-  {{- if index $bridgesecret.data "OAUTH_SESSION_SECRET" }}
-    {{- $bridgeSessionSecret = index $bridgesecret.data "OAUTH_SESSION_SECRET" }}
-  {{- end -}}
-  {{- if index $bridgesecret.data "OAUTH_DATABASE_ENCRYPT_SECRET" }}
-    {{- $bridgeDatabaseEncryptSecret = index $bridgesecret.data "OAUTH_DATABASE_ENCRYPT_SECRET" }}
-  {{- end -}}
 {{- end -}}
 
+{{- $bridgeSessionSecret := (randAlphaNum 45) | b64enc | quote }}
+{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) | b64enc | quote }}
+{{- $bridgeOAuth := (lookup "v1" "Secret" .Release.Namespace "bridge-oauth") }}
+{{- if $bridgeOAuth }}
+  {{- $bridgeSessionSecret = index $bridgeOAuth.data "OAUTH_SESSION_SECRET" }}
+  {{- $bridgeDatabaseEncryptSecret = index $bridgeOAuth.data "OAUTH_DATABASE_ENCRYPT_SECRET" }}
+{{- end -}}
 {{- if not .Values.apiService.tokenSecretName }}
 ---
 apiVersion: v1
@@ -53,10 +51,25 @@ type: Opaque
 data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
+---
+{{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bridge-oauth
+  labels:
+    app.kubernetes.io/name: bridge-oauth
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+type: Opaque
+data:
   OAUTH_SESSION_SECRET: {{ $bridgeSessionSecret }}
   OAUTH_DATABASE_ENCRYPT_SECRET: {{ $bridgeDatabaseEncryptSecret }}
 ---
-{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -275,6 +288,9 @@ spec:
             # Session cookie timeout in minutes
             - name: SESSION_TIMEOUT_MIN
               value: "{{ .Values.bridge.oauth.sessionTimeoutMin}}"
+            # Timeout of validation data (state, nonce, code verifier) during login
+            - name: SESSION_VALIDATING_TIMEOUT_MIN
+              value: "{{ .Values.bridge.oauth.sessionValidatingTimeoutMin}}"
             # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
               value: "{{ .Values.bridge.oauth.trustProxy }}"
@@ -299,6 +315,9 @@ spec:
           envFrom:
             - secretRef:
                 name: bridge-credentials
+                optional: true
+            - secretRef:
+                name: bridge-oauth
                 optional: true
           ports:
             - containerPort: 3000
