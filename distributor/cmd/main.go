@@ -55,7 +55,7 @@ func main() {
 
 	controlPlane := controlplane.NewControlPlane(apiset.UniformV1(), config.PubSubConnectionType())
 	uniformWatch := setupUniformWatch(controlPlane)
-	forwarder := events.NewForwarder(httpClient)
+	forwarder := events.NewForwarder(apiset.APIV1(), apiset.ProxyV1())
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
@@ -148,15 +148,18 @@ func isOneOfFilteredServices(serviceName string) bool {
 }
 
 func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
 	if config.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		scheme := "http"
 		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-		return keptnapi.New(config.Global.KeptnAPIEndpoint+"/controlPlane", keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
+		return keptnapi.New(config.Global.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
 	}
-	return keptnapi.New(config.DefaultShipyardControllerBaseURL, keptnapi.WithHTTPClient(httpClient)) //TODO: check if this should be an unauthenticated api set
+	return keptnapi.New(config.DefaultShipyardControllerBaseURL, keptnapi.WithHTTPClient(httpClient))
 }
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {

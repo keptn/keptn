@@ -7,6 +7,7 @@ import (
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
@@ -53,9 +54,11 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 		expectedReceivedMessageCount++
 	})
 
+	apiset, _ := keptnapi.New(config.DefaultShipyardControllerBaseURL)
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		httpClient:        &http.Client{},
+		keptnEventAPI:     apiset.APIV1(),
+		keptnProxyAPI:     apiset.ProxyV1(),
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 
@@ -78,16 +81,19 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 }
 
 func Test_ForwardEventsToKeptnAPI(t *testing.T) {
+
 	receivedMessageCount := 0
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) { receivedMessageCount++ }))
 
 	envconfig.Process("", &config.Global)
 	config.Global.KeptnAPIEndpoint = ts.URL
+	apiset, _ := keptnapi.New(ts.URL)
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		httpClient:        &http.Client{},
+		keptnProxyAPI:     apiset.ProxyV1(),
+		keptnEventAPI:     apiset.APIV1(),
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -117,9 +123,12 @@ func Test_APIProxy(t *testing.T) {
 	config.Global.KeptnAPIEndpoint = ""
 	config.InClusterAPIProxyMappings["/testpath"] = strings.TrimPrefix(ts.URL, "http://")
 
+	apiset, _ := keptnapi.New(ts.URL)
+
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		httpClient:        &http.Client{},
+		keptnProxyAPI:     apiset.ProxyV1(),
+		keptnEventAPI:     apiset.APIV1(),
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 	ctx, cancel := context.WithCancel(context.Background())

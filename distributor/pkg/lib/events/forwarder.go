@@ -1,7 +1,6 @@
 package events
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -13,22 +12,22 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 )
 
 // Forwarder receives events directly from the Keptn Service and forwards them to the Keptn API
 type Forwarder struct {
 	EventChannel      chan cloudevents.Event
-	httpClient        *http.Client
+	keptnEventAPI     api.APIV1Interface
+	keptnProxyAPI     api.ProxyV1Interface
 	pubSubConnections map[string]*cenats.Sender
 }
 
-func NewForwarder(httpClient *http.Client) *Forwarder {
+func NewForwarder(keptnEventAPI api.APIV1Interface, keptnProxyAPI api.ProxyV1Interface) *Forwarder {
 	return &Forwarder{
-		httpClient:        httpClient,
 		EventChannel:      make(chan cloudevents.Event),
+		keptnEventAPI:     keptnEventAPI,
+		keptnProxyAPI:     keptnProxyAPI,
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 }
@@ -37,7 +36,7 @@ func (f *Forwarder) Start(executionContext *ExecutionContext) {
 	mux := http.NewServeMux()
 	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
 	mux.Handle(config.Global.EventForwardingPath, http.HandlerFunc(f.handleEvent))
-	mux.Handle(config.Global.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
+	mux.Handle(config.Global.APIProxyPath, http.HandlerFunc(f.keptnProxyAPI.Proxy))
 	serverURL := fmt.Sprintf("localhost:%d", config.Global.APIProxyPort)
 
 	svr := &http.Server{
@@ -132,46 +131,21 @@ func (f *Forwarder) forwardEventToNATSServer(event cloudevents.Event) error {
 }
 
 func (f *Forwarder) forwardEventToAPI(event cloudevents.Event) error {
-	payload, err := event.MarshalJSON()
+	e, err := v0_2_0.ToKeptnEvent(event)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", config.Global.KeptnAPIEndpoint+"/v1/event", bytes.NewBuffer(payload))
-	if err != nil {
-		return err
+	_, sendErr := f.keptnEventAPI.SendEvent(e)
+	if sendErr != nil {
+		return fmt.Errorf(sendErr.GetMessage())
 	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	if config.Global.KeptnAPIToken != "" {
-		logger.Debug("Adding x-token header to HTTP request")
-		req.Header.Add("x-token", config.Global.KeptnAPIToken)
-	}
-
-	resp, err := f.httpClient.Do(req)
-	if err != nil {
-		logger.Errorf("Could not send event to API endpoint: %v", err)
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == 200 {
-		logger.Info("Event forwarded successfully")
-		return nil
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Errorf("Could not decode response: %v", err)
-		return err
-	}
-
-	logger.Debugf("Response from Keptn API: %v", string(body))
-	return errors.New(string(body))
+	return nil
 }
 
 func (f *Forwarder) createPubSubConnection(topic string) (*cenats.Sender, error) {
 	if topic == "" {
-		return nil, errors.New("no PubSub Topic defined")
+		return nil, errors.New("no" +
+			" PubSub Topic defined")
 	}
 
 	if f.pubSubConnections[topic] == nil {
@@ -185,73 +159,73 @@ func (f *Forwarder) createPubSubConnection(topic string) (*cenats.Sender, error)
 	return f.pubSubConnections[topic], nil
 }
 
-func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
-	var path string
-	if req.URL.RawPath != "" {
-		path = req.URL.RawPath
-	} else {
-		path = req.URL.Path
-	}
-	logger.Debugf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
-	proxyScheme, proxyHost, proxyPath := config.Global.ProxyHost(path)
-
-	if proxyScheme == "" || proxyHost == "" {
-		logger.Error("Could not get proxy Host URL - got empty values of 'proxyScheme' or 'proxyHost'")
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
-	if err != nil {
-		logger.Errorf("Could not create request to be forwarded: %v", err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	forwardReq.Header = req.Header
-
-	parsedProxyURL, err := url.Parse(proxyScheme + "://" + strings.TrimSuffix(proxyHost, "/") + "/" + strings.TrimPrefix(proxyPath, "/"))
-	if err != nil {
-		logger.Errorf("Could not decode url with scheme: %s, host: %s, path: %s - %v", proxyScheme, proxyHost, proxyPath, err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	forwardReq.URL = parsedProxyURL
-	forwardReq.URL.RawQuery = req.URL.RawQuery
-	logger.Debugf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String())
-
-	if config.Global.KeptnAPIToken != "" {
-		logger.Debug("Adding x-token header to HTTP request")
-		forwardReq.Header.Add("x-token", config.Global.KeptnAPIToken)
-	}
-
-	client := f.httpClient
-	resp, err := client.Do(forwardReq)
-	if err != nil {
-		logger.Errorf("Could not send request to API endpoint: %v", err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	for name, headers := range resp.Header {
-		for _, h := range headers {
-			rw.Header().Set(name, h)
-		}
-	}
-
-	rw.WriteHeader(resp.StatusCode)
-
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Errorf("Could not read response payload: %v", err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	logger.Debugf("Received response from API: Status=%d", resp.StatusCode)
-	if _, err := rw.Write(respBytes); err != nil {
-		logger.Errorf("could not send response from API: %v", err)
-	}
-}
+//func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
+//	var path string
+//	if req.URL.RawPath != "" {
+//		path = req.URL.RawPath
+//	} else {
+//		path = req.URL.Path
+//	}
+//	logger.Debugf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
+//	proxyScheme, proxyHost, proxyPath := config.Global.ProxyHost(path)
+//
+//	if proxyScheme == "" || proxyHost == "" {
+//		logger.Error("Could not get proxy Host URL - got empty values of 'proxyScheme' or 'proxyHost'")
+//		rw.WriteHeader(http.StatusInternalServerError)
+//		return
+//	}
+//
+//	forwardReq, err := http.NewRequest(req. Method, req.URL.String(), req.Body)
+//	if err != nil {
+//		logger.Errorf("Could not create request to be forwarded: %v", err)
+//		rw.WriteHeader(http.StatusInternalServerError)
+//		return
+//	}
+//
+//	forwardReq.Header = req.Header
+//
+//	parsedProxyURL, err := url.Parse(proxyScheme + "://" + strings.TrimSuffix(proxyHost, "/") + "/" + strings.TrimPrefix(proxyPath, "/"))
+//	if err != nil {
+//		logger.Errorf("Could not decode url with scheme: %s, host: %s, path: %s - %v", proxyScheme, proxyHost, proxyPath, err)
+//		rw.WriteHeader(http.StatusInternalServerError)
+//		return
+//	}
+//
+//	forwardReq.URL = parsedProxyURL
+//	forwardReq.URL.RawQuery = req.URL.RawQuery
+//	logger.Debugf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String())
+//
+//	if config.Global.KeptnAPIToken != "" {
+//		logger.Debug("Adding x-token header to HTTP request")
+//		forwardReq.Header.Add("x-token", config.Global.KeptnAPIToken)
+//	}
+//
+//	client := f.httpClient
+//	resp, err := client.Do(forwardReq)
+//	if err != nil {
+//		logger.Errorf("Could not send request to API endpoint: %v", err)
+//		rw.WriteHeader(http.StatusInternalServerError)
+//		return
+//	}
+//	defer resp.Body.Close()
+//
+//	for name, headers := range resp.Header {
+//		for _, h := range headers {
+//			rw.Header().Set(name, h)
+//		}
+//	}
+//
+//	rw.WriteHeader(resp.StatusCode)
+//
+//	respBytes, err := ioutil.ReadAll(resp.Body)
+//	if err != nil {
+//		logger.Errorf("Could not read response payload: %v", err)
+//		rw.WriteHeader(http.StatusInternalServerError)
+//		return
+//	}
+//
+//	logger.Debugf("Received response from API: Status=%d", resp.StatusCode)
+//	if _, err := rw.Write(respBytes); err != nil {
+//		logger.Errorf("could not send response from API: %v", err)
+//	}
+//}
