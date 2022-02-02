@@ -162,7 +162,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -756,7 +756,7 @@ jobs:
           cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -857,7 +857,7 @@ jobs:
           submodules: 'true'
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -943,7 +943,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
