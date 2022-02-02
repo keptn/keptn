@@ -68,7 +68,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Success 204 {string} string "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project [put]
+// @Router /project/{projectName} [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {

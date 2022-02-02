@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/keptn/resource-service/common"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
+	"github.com/keptn/keptn/resource-service/config"
 	"github.com/keptn/keptn/resource-service/controller"
 	"github.com/keptn/keptn/resource-service/handler"
 	log "github.com/sirupsen/logrus"
@@ -38,6 +40,11 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 func main() {
+	if err := envconfig.Process("", &config.Global); err != nil {
+		log.Errorf("Failed to process env var: %v", err)
+		os.Exit(1)
+	}
+
 	log.SetLevel(log.InfoLevel)
 
 	if os.Getenv(envVarLogLevel) != "" {
@@ -74,33 +81,34 @@ func main() {
 	fileSystem := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
+	configurationContext := getConfigurationContext(git, fileSystem)
 
 	projectManager := handler.NewProjectManager(git, credentialReader, fileSystem)
 	projectHandler := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectHandler)
 	projectController.Inject(apiV1)
 
-	stageManager := handler.NewStageManager(git, credentialReader)
+	stageManager := getStageManager(configurationContext, git, fileSystem, credentialReader)
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem)
+	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem, configurationContext)
 	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
+	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
+	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem)
+	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
@@ -125,6 +133,26 @@ func main() {
 
 	GracefulShutdown(wg, srv)
 
+}
+
+func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) handler.IConfigurationContext {
+	var configContext handler.IConfigurationContext
+	if config.Global.DirectoryStageStructure {
+		configContext = handler.NewDirectoryConfigurationContext(git, fileSystem)
+	} else {
+		configContext = handler.NewBranchConfigurationContext(git, fileSystem)
+	}
+	return configContext
+}
+
+func getStageManager(configurationContext handler.IConfigurationContext, git common.IGit, fileSystem common.IFileSystem, credentialReader common.CredentialReader) handler.IStageManager {
+	var stageManager handler.IStageManager
+	if config.Global.DirectoryStageStructure {
+		stageManager = handler.NewDirectoryStageManager(configurationContext, fileSystem, credentialReader, git)
+	} else {
+		stageManager = handler.NewStageManager(git, credentialReader)
+	}
+	return stageManager
 }
 
 func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {

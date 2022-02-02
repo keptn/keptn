@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
@@ -130,6 +131,45 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
 	}
 
+	if project.Migrate {
+		if err := p.migrateProject(project, gitContext); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MigrateProject migrates the branch-based structure for representing stages to the new directory-based format,
+// where each stage is represented as a directory within the main branch
+func (p ProjectManager) migrateProject(project models.UpdateProjectParams, gitContext common_models.GitContext) error {
+	metadata, err := p.getProjectMetadate(project.ProjectName)
+	if err != nil {
+		return err
+	}
+
+	// if the project already has the new structure, there is no need to migrate it anymore
+	if metadata.IsUsingDirectoryStructure {
+		return nil
+	}
+
+	err = retry.Retry(func() error {
+		if err := p.git.Pull(gitContext); err != nil {
+			return err
+		}
+		metadata.IsUsingDirectoryStructure = true
+		marshal, _ := yaml.Marshal(metadata)
+
+		if err := p.git.MigrateProject(gitContext, marshal); err != nil {
+			return err
+		}
+
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -142,4 +182,19 @@ func (p ProjectManager) DeleteProject(projectName string) error {
 	}
 
 	return nil
+}
+
+func (p ProjectManager) getProjectMetadate(projectName string) (*common.ProjectMetadata, error) {
+	metadataContent, err := p.fileSystem.ReadFile(common.GetProjectMetadataFilePath(projectName))
+	if err != nil {
+		return nil, err
+	}
+
+	metadata := &common.ProjectMetadata{}
+
+	if err := yaml.Unmarshal(metadataContent, metadata); err != nil {
+		return nil, err
+	}
+
+	return metadata, nil
 }
