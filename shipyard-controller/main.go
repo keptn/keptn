@@ -120,7 +120,16 @@ func main() {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	taskSequenceV2Repo := db.NewMongoDBTaskSequenceV2Repo(db.GetMongoDBConnectionInstance())
+
+	eventDispatcher := handler.NewEventDispatcher(
+		createEventsRepo(),
+		createEventQueueRepo(),
+		createTaskSequenceRepo(),
+		eventSender,
+		time.Duration(eventDispatcherSyncInterval)*time.Second,
+		taskSequenceV2Repo,
+	)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -128,6 +137,7 @@ func main() {
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		clock.New(),
+		taskSequenceV2Repo,
 	)
 
 	sequenceTimeoutChannel := make(chan models.SequenceTimeout)

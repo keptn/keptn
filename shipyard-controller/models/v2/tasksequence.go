@@ -50,6 +50,13 @@ func (e TaskSequence) GetNextTaskOfSequence() *keptnv2.Task {
 	return nil
 }
 
+func (e TaskSequence) GetLastTaskExecutionResult() *TaskExecutionResult {
+	if len(e.Status.PreviousTasks) == 0 {
+		return nil
+	}
+	return &e.Status.PreviousTasks[len(e.Status.PreviousTasks)-1]
+}
+
 // IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
 func (e TaskExecution) IsFinished() bool {
 	if len(e.Events) == 0 {

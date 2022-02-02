@@ -6,6 +6,7 @@ const (
 	SequenceFinished       = "finished"
 	TimedOut               = "timedOut"
 	SequencePaused         = "paused"
+	SequenceSuspended      = "suspended" // i.e. when waiting for an approval
 	SequenceAborted        = "aborted"
 )
 

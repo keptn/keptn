@@ -46,8 +46,9 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 	require.Nil(t, err)
 
 	get, err := mdbrepo.Get(GetTaskSequenceFilter{
-		Scope: scope,
-		Name:  "delivery",
+		Scope:  scope,
+		Name:   "delivery",
+		Status: []string{"triggered"},
 	})
 
 	require.Nil(t, err)
