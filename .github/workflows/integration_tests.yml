@@ -424,32 +424,6 @@ jobs:
           kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
           sleep 15
 
-      - name: Verify Deployments of Keptn
-        run: |
-          source test/utils.sh
-          echo "Verifying that services and namespaces have been created"
-
-          # verify the deployments within the keptn namespace (for keptn control plane)
-          verify_deployment_in_namespace "api-gateway-nginx" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE} TODO undo this change
-          verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "statistics-service" ${KEPTN_NAMESPACE}
-
-          # verify deployments for continuous delivery
-          if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
-            verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "approval-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
-          fi
-
-          # verify the datastore deployments
-          verify_deployment_in_namespace "mongo" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
-
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
         timeout-minutes: 5

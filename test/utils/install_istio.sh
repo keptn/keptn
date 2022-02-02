@@ -15,6 +15,3 @@ istioctl x precheck
 istioctl install -y --verify
 
 verify_test_step $? "Failed to install Istio"
-
-# verify the pods within istio-system
-verify_deployment_in_namespace "istio-ingressgateway" "istio-system"
