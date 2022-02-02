@@ -94,5 +94,5 @@ type SequenceQueueRepo interface {
 type TaskSequenceV2Repo interface {
 	Get(filter GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error)
 	Upsert(item modelsv2.TaskSequence) error
-	AppendTaskEvent(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) error
+	AppendTaskEvent(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) (*modelsv2.TaskSequence, error)
 }

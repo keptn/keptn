@@ -79,29 +79,36 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) Upsert(item modelsv2.TaskSequence) err
 	return nil
 }
 
-func (mdbrepo *MongoDBTaskSequenceV2Repo) AppendTaskEvent(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) error {
+func (mdbrepo *MongoDBTaskSequenceV2Repo) AppendTaskEvent(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) (*modelsv2.TaskSequence, error) {
 	if taskSequence.Scope.Project == "" {
-		return errors.New("project must be set")
+		return nil, errors.New("project must be set")
 	}
 	if taskSequence.ID == "" {
-		return errors.New("id must be set")
+		return nil, errors.New("id must be set")
 	}
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer cancel()
 
-	opts := options.Update().SetUpsert(true)
+	// return the resulting document after the update
+	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	filter := bson.D{{"_id", taskSequence.ID}}
 
 	update := bson.M{"$push": bson.M{"status.currentTask.events": event}}
-	_, err = collection.UpdateOne(ctx, filter, update, opts)
-	if err != nil {
-		return err
+
+	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
+	if res.Err() != nil {
+		return nil, err
 	}
-	return nil
+
+	seq := &modelsv2.TaskSequence{}
+	if err := res.Decode(seq); err != nil {
+		return nil, err
+	}
+	return seq, nil
 }
 
 func (mdbrepo *MongoDBTaskSequenceV2Repo) getCollectionAndContext(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {

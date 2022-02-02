@@ -60,24 +60,15 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 		Source:    "my-source",
 		Time:      timeutils.GetKeptnTimeStamp(time.Now().UTC()),
 	}
-	err = mdbrepo.AppendTaskEvent(get[0], triggeredEvent)
+	result, err := mdbrepo.AppendTaskEvent(get[0], triggeredEvent)
 
 	require.Nil(t, err)
 
-	get, err = mdbrepo.Get(GetTaskSequenceFilter{
-		Scope:              scope,
-		Name:               "delivery",
-		CurrentTriggeredID: "1234",
-	})
-
-	require.Nil(t, err)
-
-	require.Len(t, get, 1)
-	require.Len(t, get[0].Status.CurrentTask.Events, 1)
-	require.Equal(t, triggeredEvent, get[0].Status.CurrentTask.Events[0])
+	require.Len(t, result.Status.CurrentTask.Events, 1)
+	require.Equal(t, triggeredEvent, result.Status.CurrentTask.Events[0])
 
 	// ensure that multiple writers can append data to a shared sequence and all inserts are persisted
-	nrConcurrentWrites := 10
+	nrConcurrentWrites := 100
 
 	wg := sync.WaitGroup{}
 
@@ -85,8 +76,9 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 
 	for i := 0; i < nrConcurrentWrites; i++ {
 		go func() {
-			err2 := mdbrepo.AppendTaskEvent(get[0], triggeredEvent)
+			_, err2 := mdbrepo.AppendTaskEvent(get[0], triggeredEvent)
 			require.Nil(t, err2)
+
 			wg.Done()
 		}()
 	}

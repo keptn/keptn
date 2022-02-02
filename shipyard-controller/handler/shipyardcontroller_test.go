@@ -128,6 +128,7 @@ func Test_GetTriggeredEventsOfProject(t *testing.T) {
 	}
 }
 
+// TODO handleStarted/handleFinished have been consolidated into handleTaskEvent. test cases covered here should be moved to the tests of handleTaskEvent()
 func Test_HandleStartedEvents(t *testing.T) {
 	type fields struct {
 		projectMvRepo    db.ProjectMVRepo
@@ -296,8 +297,8 @@ func TestHandleFinishedEvent(t *testing.T) {
 			}
 
 			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
-			if err := em.handleTaskFinished(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("handleTaskFinished() error = %v, wantErr %v", err, tt.wantErr)
+			if err := em.handleTaskEvent(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("handleTaskEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantHookCalled {

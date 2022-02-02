@@ -38,6 +38,39 @@ type TaskExecution struct {
 	Events      []TaskEvent `json:"events" bson:"events"`
 }
 
+func (e TaskSequence) GetNextTaskOfSequence() *keptnv2.Task {
+	nextTaskIndex := 0
+	if e.Status.PreviousTasks != nil && len(e.Status.PreviousTasks) > 0 {
+		nextTaskIndex = len(e.Status.PreviousTasks)
+	}
+
+	if len(e.Sequence.Tasks) > nextTaskIndex {
+		return &e.Sequence.Tasks[nextTaskIndex]
+	}
+	return nil
+}
+
+// IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
+func (e TaskExecution) IsFinished() bool {
+	if len(e.Events) == 0 {
+		return false
+	}
+	nrStartedEvents := 0
+	nrFinishedEvents := 0
+	for _, event := range e.Events {
+		if keptnv2.IsStartedEventType(event.EventType) {
+			nrStartedEvents++
+		} else if keptnv2.IsFinishedEventType(event.EventType) {
+			nrFinishedEvents++
+		}
+	}
+
+	if nrFinishedEvents == nrStartedEvents && nrFinishedEvents > 0 {
+		return true
+	}
+	return false
+}
+
 type TaskEvent struct {
 	EventType  string                 `json:"eventType" bson:"eventType"`
 	Source     string                 `json:"source" bson:"source"`
