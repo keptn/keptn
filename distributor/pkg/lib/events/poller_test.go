@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
@@ -66,8 +67,8 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 		HTTPPollingInterval: "1",
 	}
 	eventSender := keptnfake.EventSender{}
-
-	poller := NewPoller(envConfig, &eventSender, &http.Client{})
+	apiset, _ := keptnapi.New(server.URL)
+	poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
@@ -150,7 +151,8 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 	}
 	eventSender := keptnfake.EventSender{}
 
-	poller := NewPoller(envConfig, &eventSender, &http.Client{})
+	apiset, _ := keptnapi.New(server.URL)
+	poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)

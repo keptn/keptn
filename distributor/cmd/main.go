@@ -79,7 +79,7 @@ func main() {
 			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
 		}
 		logger.Info("Starting HTTP event poller")
-		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
+		httpEventPoller := events.NewPoller(env, apiset.ShipyardControlV1(), eventSender)
 		uniformWatch.RegisterListener(httpEventPoller)
 		if err := httpEventPoller.Start(executionContext); err != nil {
 			logger.Fatalf("Could not start HTTP event poller: %v", err)
