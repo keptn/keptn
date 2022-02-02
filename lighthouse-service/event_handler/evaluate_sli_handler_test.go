@@ -6,6 +6,7 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"github.com/stretchr/testify/assert"
@@ -3274,7 +3275,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 	keptn, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
 		EventSender: &keptnfake.EventSender{},
 	})
-
+	var commitID string
 	type fields struct {
 		Event            cloudevents.Event
 		HTTPClient       *http.Client
@@ -3285,6 +3286,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 	tests := []struct {
 		name       string
 		fields     fields
+		wantID     string
 		wantErr    bool
 		wantEvents []keptnv2.EvaluationFinishedEventData
 	}{
@@ -3300,19 +3302,21 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 							ID:                 "my-id",
 							Shkeptncontext:     "my-context",
 							Shkeptnspecversion: "0.2.0",
-							Source:             stringp("my-source"),
+							Source:             strutils.Stringp("my-source"),
 							Specversion:        "1.0",
 							Triggeredid:        "my-triggered-id",
-							Type:               stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+							Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
 						},
 					}, nil
 				},
 				},
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-						return nil, nil
-					}},
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+							return nil, nil
+						},
+					},
 				},
 			},
 			wantErr: false,
@@ -3339,19 +3343,21 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 							ID:                 "my-id",
 							Shkeptncontext:     "my-context",
 							Shkeptnspecversion: "0.2.0",
-							Source:             stringp("my-source"),
+							Source:             strutils.Stringp("my-source"),
 							Specversion:        "1.0",
 							Triggeredid:        "my-triggered-id",
-							Type:               stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+							Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
 						},
 					}, nil
 				},
 				},
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-						return nil, errors.New("Could not check out branch containing stage config")
-					}},
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+							return nil, errors.New("Could not check out branch containing stage config")
+						},
+					},
 					ServiceHandler: &event_handler_mock.ServiceHandlerMock{GetServiceFunc: func(project string, stage string, service string) (*models.Service, error) {
 						return &models.Service{}, nil
 					}},
@@ -3369,9 +3375,60 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:   "reading SLO file with correct CommitId",
+			wantID: "12345",
+			fields: fields{
+				Event: incomingEvent,
+				EventStore: &event_handler_mock.EventStoreMock{GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+					return []*models.KeptnContextExtendedCE{
+						{
+							Contenttype:        "",
+							Data:               keptnv2.EvaluationTriggeredEventData{},
+							ID:                 "my-id",
+							Shkeptncontext:     "my-context",
+							Shkeptnspecversion: "0.2.0",
+							Source:             strutils.Stringp("my-source"),
+							Specversion:        "1.0",
+							Triggeredid:        "my-triggered-id",
+							Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+						},
+					}, nil
+				},
+				},
+				KeptnHandler: keptn,
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
+						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+							commitID = strings.TrimPrefix(options[0](commitID), "?gitCommitID=")
+							myres := models.Resource{Metadata: &models.Version{Version: commitID}}
+							return &myres, nil
+						},
+					},
+					ServiceHandler: &event_handler_mock.ServiceHandlerMock{GetServiceFunc: func(project string, stage string, service string) (*models.Service, error) {
+						return &models.Service{}, nil
+					}},
+				},
+			},
+			wantErr: false,
+			wantEvents: []keptnv2.EvaluationFinishedEventData{
+				{
+					EventData: keptnv2.EventData{
+						Status:  keptnv2.StatusSucceeded,
+						Result:  keptnv2.ResultPass,
+						Message: "duno",
+					},
+					Evaluation: keptnv2.EvaluationDetails{},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			commitID = ""
+			if tt.wantID != "" {
+				tt.fields.Event.SetExtension("gitcommitid", tt.wantID)
+			}
 			eh := &EvaluateSLIHandler{
 				Event:            tt.fields.Event,
 				HTTPClient:       tt.fields.HTTPClient,
@@ -3406,7 +3463,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				}
 				assert.EqualValues(t, tt.wantEvents[index].EventData, (*evaluationFinishedEvent).EventData)
 			}
-
+			require.EqualValues(t, commitID, tt.wantID)
 		})
 	}
 }

@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Inspired by `hugo gen doc`  - see https://github.com/gohugoio/hugo/blob/release-0.69.0/commands/gendoc.go
@@ -9,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -19,6 +19,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/keptn/cli/pkg/common"
 
@@ -78,6 +80,7 @@ type metaData struct {
 // generateSupportArchiveCmd implements the generate support-archive command
 var generateSupportArchiveCmd = &cobra.Command{
 	Use:   "support-archive",
+	Args:  cobra.NoArgs,
 	Short: "Generates a support archive containing all logs",
 	Long:  `Generates a support archive containing information of the Keptn installation and logs from the services`,
 	Example: `keptn generate support-archive

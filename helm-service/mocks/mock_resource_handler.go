@@ -5,35 +5,36 @@
 package mocks
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/keptn/go-utils/pkg/api/models"
-	reflect "reflect"
 )
 
-// MockIResourceHandler is a mock of IResourceHandler interface
+// MockIResourceHandler is a mock of IResourceHandler interface.
 type MockIResourceHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockIResourceHandlerMockRecorder
 }
 
-// MockIResourceHandlerMockRecorder is the mock recorder for MockIResourceHandler
+// MockIResourceHandlerMockRecorder is the mock recorder for MockIResourceHandler.
 type MockIResourceHandlerMockRecorder struct {
 	mock *MockIResourceHandler
 }
 
-// NewMockIResourceHandler creates a new mock instance
+// NewMockIResourceHandler creates a new mock instance.
 func NewMockIResourceHandler(ctrl *gomock.Controller) *MockIResourceHandler {
 	mock := &MockIResourceHandler{ctrl: ctrl}
 	mock.recorder = &MockIResourceHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIResourceHandler) EXPECT() *MockIResourceHandlerMockRecorder {
 	return m.recorder
 }
 
-// GetServiceResource mocks base method
+// GetServiceResource mocks base method.
 func (m *MockIResourceHandler) GetServiceResource(arg0, arg1, arg2, arg3 string) (*models.Resource, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceResource", arg0, arg1, arg2, arg3)
@@ -42,7 +43,7 @@ func (m *MockIResourceHandler) GetServiceResource(arg0, arg1, arg2, arg3 string)
 	return ret0, ret1
 }
 
-// GetServiceResource indicates an expected call of GetServiceResource
+// GetServiceResource indicates an expected call of GetServiceResource.
 func (mr *MockIResourceHandlerMockRecorder) GetServiceResource(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceResource", reflect.TypeOf((*MockIResourceHandler)(nil).GetServiceResource), arg0, arg1, arg2, arg3)

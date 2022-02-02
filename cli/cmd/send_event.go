@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/keptn/cli/internal"
 

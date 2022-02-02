@@ -46,13 +46,13 @@ func NewGit(git Gogit) *Git {
 
 func configureGitUser(repository *git.Repository) error {
 
-	config, err := repository.Config()
-	config.User.Name = getGitKeptnUser()
-	config.User.Email = getGitKeptnEmail()
+	c, err := repository.Config()
+	c.User.Name = getGitKeptnUser()
+	c.User.Email = getGitKeptnEmail()
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotSetUser, err)
 	}
-	repository.SetConfig(config)
+	repository.SetConfig(c)
 	return nil
 
 }
@@ -144,6 +144,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		return nil, err
 	}
 
+	os.MkdirAll(projectPath+"/.git", 0700)
 	w, err := init.Worktree()
 	if err != nil {
 		return nil, err
@@ -301,7 +302,7 @@ func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, e
 	return hash.String(), nil
 }
 
-// returns what is the curren commit id of remote and if the remote is uptodate with the local branch
+// returns what is the current commit id of remote and if the remote is up-to-date with the local branch
 func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (string, bool, error) {
 	repo, _, err := g.getWorkTree(gitContext)
 	if err != nil {
@@ -419,6 +420,9 @@ func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) erro
 	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
+		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
+		//// take all branch from remote and put them in the local repo as origin branches and as branches
+		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
 		Auth: &http.BasicAuth{
 			Username: gitContext.Credentials.User,
 			Password: gitContext.Credentials.Token,
@@ -434,11 +438,13 @@ func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision stri
 	path := GetProjectConfigPath(gitContext.Project)
 	r, err := g.git.PlainOpen(path)
 	if err != nil {
+		logger.Debugf("Could not open project %s: %s", file, err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "open", gitContext.Project, err)
 	}
 	h, err := r.ResolveRevision(plumbing.Revision(revision))
 	if err != nil {
+		logger.Debugf("Could not resolve revision for %s: %s", revision, err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}
@@ -483,11 +489,11 @@ func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, err
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
 	}
-	config, err := r.Config()
+	repoConfig, err := r.Config()
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
 	}
-	def := config.Init.DefaultBranch
+	def := repoConfig.Init.DefaultBranch
 	if def == "" {
 		def = "master"
 	}
@@ -671,24 +677,28 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	case *object.Commit:
 		t, err := o.Tree()
 		if err != nil {
+			logger.Debugf("Could not resolve commit for path %s: %s ", path, err)
 			return nil, err
 		}
 		return resolve(t, path)
 	case *object.Tag:
 		target, err := o.Object()
 		if err != nil {
+			logger.Debugf("Could not resolve tag for path %s: %s ", path, err)
 			return nil, err
 		}
 		return resolve(target, path)
 	case *object.Tree:
 		file, err := o.File(path)
 		if err != nil {
+			logger.Debugf("Could not resolve file for path %s: %s ", path, err)
 			return nil, err
 		}
 		return &file.Blob, nil
 	case *object.Blob:
 		return o, nil
 	default:
+		logger.Debug("Could not resolve unsupported object for path: ", path)
 		return nil, object.ErrUnsupportedObject
 	}
 }

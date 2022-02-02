@@ -373,6 +373,17 @@ jobs:
           branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: true
 
+      - name: Get k8s resource stats
+        working-directory: keptn
+        env:
+          HELM_TEMPLATE: template.yml
+          RESOURCE_JSON: resources.json
+          RESOURCE_MARKDOWN: resources.md
+          RELEASE_NOTES_FILE: ${{ env.RELEASE_NOTES_FILE }}
+        run: |
+          ./gh-actions-scripts/generate-k8s-resource-stats.sh
+          cat "$RELEASE_NOTES_FILE"
+
       - name: Create GitHub Pre-Release
         working-directory: keptn
         env:
@@ -409,5 +420,5 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           cat ./dist/image-digests/digest-*.txt >> $DIGEST_FILE
-          
+
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"

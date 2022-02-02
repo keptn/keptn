@@ -3,6 +3,7 @@ package helm
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io"
+	"net/url"
 	"strings"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
@@ -110,11 +111,14 @@ func GetReleaseName(project string, stage string, service string, generated bool
 }
 
 // DoesChartExist checks if the GIT repo contains the specified chart
-func DoesChartExist(event keptnv2.EventData, chartName string, configServiceURL string) (bool, error) {
+func DoesChartExist(event keptnv2.EventData, chartName string, configServiceURL string, commitID string) (bool, error) {
 	resourceHandler := utils.NewResourceHandler(configServiceURL)
 
 	helmChartURI := "helm/" + chartName + ".tgz"
-	_, err := resourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, helmChartURI)
+
+	commitOption := url.Values{}
+	commitOption.Add("commitID", commitID)
+	_, err := resourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, helmChartURI, utils.AppendQuery(commitOption))
 	if err == utils.ResourceNotFoundError {
 		return false, nil
 	} else if err == nil {

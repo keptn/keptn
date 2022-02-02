@@ -3,10 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
+
+	"github.com/keptn/keptn/cli/internal"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"

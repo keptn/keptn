@@ -5,6 +5,7 @@ package event_handler_mock
 
 import (
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"sync"
 )
 
@@ -14,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked event_handler.ResourceHandler
 // 		mockedResourceHandler := &ResourceHandlerMock{
-// 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error) {
+// 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*keptnapimodels.Resource, error) {
 // 				panic("mock out the GetServiceResource method")
 // 			},
 // 		}
@@ -25,7 +26,7 @@ import (
 // 	}
 type ResourceHandlerMock struct {
 	// GetServiceResourceFunc mocks the GetServiceResource method.
-	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
+	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*keptnapimodels.Resource, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,13 +40,15 @@ type ResourceHandlerMock struct {
 			Service string
 			// ResourceURI is the resourceURI argument value.
 			ResourceURI string
+			// Options is the options argument value.
+			Options []keptnapi.GetOption
 		}
 	}
 	lockGetServiceResource sync.RWMutex
 }
 
 // GetServiceResource calls GetServiceResourceFunc.
-func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error) {
+func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*keptnapimodels.Resource, error) {
 	if mock.GetServiceResourceFunc == nil {
 		panic("ResourceHandlerMock.GetServiceResourceFunc: method is nil but ResourceHandler.GetServiceResource was just called")
 	}
@@ -54,16 +57,18 @@ func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string
 		Stage       string
 		Service     string
 		ResourceURI string
+		Options     []keptnapi.GetOption
 	}{
 		Project:     project,
 		Stage:       stage,
 		Service:     service,
 		ResourceURI: resourceURI,
+		Options:     options,
 	}
 	mock.lockGetServiceResource.Lock()
 	mock.calls.GetServiceResource = append(mock.calls.GetServiceResource, callInfo)
 	mock.lockGetServiceResource.Unlock()
-	return mock.GetServiceResourceFunc(project, stage, service, resourceURI)
+	return mock.GetServiceResourceFunc(project, stage, service, resourceURI, options...)
 }
 
 // GetServiceResourceCalls gets all the calls that were made to GetServiceResource.
@@ -74,12 +79,14 @@ func (mock *ResourceHandlerMock) GetServiceResourceCalls() []struct {
 	Stage       string
 	Service     string
 	ResourceURI string
+	Options     []keptnapi.GetOption
 } {
 	var calls []struct {
 		Project     string
 		Stage       string
 		Service     string
 		ResourceURI string
+		Options     []keptnapi.GetOption
 	}
 	mock.lockGetServiceResource.RLock()
 	calls = mock.calls.GetServiceResource

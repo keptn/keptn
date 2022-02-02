@@ -16,14 +16,15 @@ package cmd
 
 import (
 	"errors"
+	"net/url"
+	"os"
+	"time"
+
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
-	"time"
 )
 
 type GetEventStruct struct {
@@ -42,7 +43,19 @@ var getEventParams GetEventStruct
 
 // getEventCmd represents the get command
 var getEventCmd = &cobra.Command{
-	Use:     "event [eventType]",
+	Use: "event [eventType]",
+	Args: func(cmd *cobra.Command, args []string) error {
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
+		if len(args) != 1 {
+			cmd.SilenceUsage = false
+			return errors.New("required command EVENTTYPE not set")
+		}
+		return nil
+	},
 	Aliases: []string{"events"},
 	Short:   `Returns the latest Keptn event specified by event type`,
 	Long:    `Returns the latest Keptn event specified by event type. The event type is defined here: https://github.com/keptn/spec/blob/0.1.4/cloudevents.md`,

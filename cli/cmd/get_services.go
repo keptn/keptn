@@ -18,10 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 

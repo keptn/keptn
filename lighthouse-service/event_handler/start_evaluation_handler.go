@@ -23,9 +23,14 @@ type StartEvaluationHandler struct {
 
 func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	var keptnContext string
+	var commitID string
+
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
+	_ = eh.Event.ExtensionAs("gitcommitid", &commitID)
 
 	e := &keptnv2.EvaluationTriggeredEventData{}
+	// setup SLOFileRetriver options
+
 	err := eh.Event.DataAs(e)
 	if err != nil {
 		logger.Error("Could not parse event payload: " + err.Error())
@@ -38,7 +43,7 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	startedEvent.EventData.Status = keptnv2.StatusSucceeded
 
 	// send evaluation.started event
-	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, startedEvent)
+	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, startedEvent)
 	if err != nil {
 		logger.Error("Could not send evaluation.started event: " + err.Error())
 		return err
@@ -55,16 +60,15 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 			wg.Add(1)
 		}
 	}
-	go eh.sendGetSliCloudEvent(ctx, keptnContext, e, evaluationStartTimestamp, evaluationEndTimestamp)
+	go eh.sendGetSliCloudEvent(ctx, keptnContext, commitID, e, evaluationStartTimestamp, evaluationEndTimestamp)
 
 	return nil
 }
 
 // fetch SLO and send the internal get-sli event
-func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
+func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, keptnContext string, commitID string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
 
 	defer func() {
-		logger.Info("Terminating Evaluate-SLI handler")
 		val := ctx.Value(GracefulShutdownKey)
 		if val == nil {
 			return
@@ -77,8 +81,50 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 
-	// collect objectives from SLO file
-	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
+	if err2, end := eh.computeObjectives(e, commitID, indicators, filters, evaluationStartTimestamp, evaluationEndTimestamp); end {
+		return err2
+	}
+
+	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus') from the respective configmap
+	var sliProvider string
+	sliProvider, err := eh.SLIProviderConfig.GetSLIProvider(e.Project)
+	if err != nil {
+		// no provider found - fallback to default SLI provider
+		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
+		if err != nil {
+			// no default SLI provider configured
+			logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+			evaluationDetails := keptnv2.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        evaluationStartTimestamp,
+				TimeEnd:          evaluationEndTimestamp,
+				Result:           string(keptnv2.ResultPass),
+			}
+
+			evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: e.Project,
+					Stage:   e.Stage,
+					Service: e.Service,
+					Labels:  e.Labels,
+					Status:  keptnv2.StatusSucceeded,
+					Result:  keptnv2.ResultPass,
+					Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+				},
+				Evaluation: evaluationDetails,
+			}
+
+			return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evaluationFinishedData)
+		}
+	}
+	// send a new event to trigger the SLI retrieval
+	logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
+	err = eh.sendInternalGetSLIEvent(keptnContext, commitID, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
+	return nil
+}
+
+func (eh *StartEvaluationHandler) computeObjectives(e *keptnv2.EvaluationTriggeredEventData, commitID string, indicators []string, filters []*keptnv2.SLIFilter, evaluationStartTimestamp string, evaluationEndTimestamp string) (error, bool) {
+	objectives, _, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 	if err == nil && objectives != nil {
 		logger.Info("SLO file found")
 		for _, objective := range objectives.Objectives {
@@ -106,47 +152,11 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 			message = fmt.Sprintf("error retrieving SLO file: %s", err.Error())
 		}
 		logger.Error(message)
-		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message)
+		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message), true
 	} else if err != nil && err == ErrSLOFileNotFound {
 		logger.Error("no SLO file found")
 	}
-
-	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus') from the respective configmap
-	var sliProvider string
-	sliProvider, err = eh.SLIProviderConfig.GetSLIProvider(e.Project)
-	if err != nil {
-		// no provider found - fallback to default SLI provider
-		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
-		if err != nil {
-			// no default SLI provider configured
-			logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
-			evaluationDetails := keptnv2.EvaluationDetails{
-				IndicatorResults: nil,
-				TimeStart:        evaluationStartTimestamp,
-				TimeEnd:          evaluationEndTimestamp,
-				Result:           string(keptnv2.ResultPass),
-			}
-
-			evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
-				EventData: keptnv2.EventData{
-					Project: e.Project,
-					Stage:   e.Stage,
-					Service: e.Service,
-					Labels:  e.Labels,
-					Status:  keptnv2.StatusSucceeded,
-					Result:  keptnv2.ResultPass,
-					Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
-				},
-				Evaluation: evaluationDetails,
-			}
-
-			return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
-		}
-	}
-	// send a new event to trigger the SLI retrieval
-	logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
-	return nil
+	return nil, false
 }
 
 func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
@@ -192,7 +202,7 @@ func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, s
 	return "", "", errors.New("evaluation.triggered event does not contain evaluation timeframe")
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, commitID string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
 	source, _ := url.Parse("lighthouse-service")
 
 	getSLITriggeredEventData := keptnv2.GetSLITriggeredEventData{
@@ -220,7 +230,8 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
+	event.SetExtension("gitcommitid", commitID)
+	_ = event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
 
 	logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)

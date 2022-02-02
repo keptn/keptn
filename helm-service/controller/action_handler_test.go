@@ -81,7 +81,7 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 		},
 	})
 
-	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
+	mockedConfigurationChanger.EXPECT().UpdateLoadedChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
 	instance.HandleEvent(ce)
 	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
 	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
@@ -260,7 +260,7 @@ func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", opt) //NewMockHandler(ctrl)
 	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
-	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
+	mockedConfigurationChanger.EXPECT().UpdateLoadedChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
 
 	instance := ActionTriggeredHandler{
 		Handler:       mockedBaseHandler,

@@ -36,22 +36,6 @@ func (m *MockIConfigurationChanger) EXPECT() *MockIConfigurationChangerMockRecor
 	return m.recorder
 }
 
-// UpdateChart mocks base method.
-func (m *MockIConfigurationChanger) UpdateChart(arg0 v0_2_0.EventData, arg1 bool, arg2 configurationchanger.ChartManipulator) (*chart.Chart, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateChart", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*chart.Chart)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// UpdateChart indicates an expected call of UpdateChart.
-func (mr *MockIConfigurationChangerMockRecorder) UpdateChart(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateChart", reflect.TypeOf((*MockIConfigurationChanger)(nil).UpdateChart), arg0, arg1, arg2)
-}
-
 // UpdateLoadedChart mocks base method.
 func (m *MockIConfigurationChanger) UpdateLoadedChart(arg0 *chart.Chart, arg1 v0_2_0.EventData, arg2 bool, arg3 configurationchanger.ChartManipulator) (*chart.Chart, string, error) {
 	m.ctrl.T.Helper()

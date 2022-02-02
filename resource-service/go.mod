@@ -7,10 +7,9 @@ require (
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.4.2
+	github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/nats-io/nats-server/v2 v2.7.1
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

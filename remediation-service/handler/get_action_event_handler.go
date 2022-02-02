@@ -2,12 +2,13 @@ package handler
 
 import (
 	"fmt"
-
 	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
+	utils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"net/url"
 )
 
 const remediationSpecVersion = "spec.keptn.sh/0.1.4"
@@ -21,14 +22,16 @@ func NewGetActionEventHandler() *GetActionEventHandler {
 }
 
 func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
+	commitID := event.Gitcommitid
 	getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
+	// retrieve commitId from sequence
 
 	if err := keptnv2.Decode(event.Data, getActionTriggeredData); err != nil {
 		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not decode input event data"}
 	}
 
 	// get remediation.yaml resource
-	resource, err := g.getRemediationResource(k, getActionTriggeredData)
+	resource, err := g.getRemediationResource(k, getActionTriggeredData, commitID)
 	if err != nil {
 		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not get remediation.yaml file for services " + getActionTriggeredData.Service + " in stage " + getActionTriggeredData.Stage + "."}
 	}
@@ -56,11 +59,15 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 	return finishedEventData, nil
 }
 
-func (g *GetActionEventHandler) getRemediationResource(keptn sdk.IKeptn, eventData *keptnv2.GetActionTriggeredEventData) (*models.Resource, error) {
-	if eventData.Service == "" {
-		return keptn.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, remediationResourceFileName)
+func (g *GetActionEventHandler) getRemediationResource(keptn sdk.IKeptn, eventData *keptnv2.GetActionTriggeredEventData, commitID string) (*models.Resource, error) {
+	commitOption := url.Values{}
+	if commitID != "" {
+		commitOption.Add("commitID", commitID)
 	}
-	return keptn.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, remediationResourceFileName)
+	if eventData.Service == "" {
+		return keptn.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, remediationResourceFileName, utils.AppendQuery(commitOption))
+	}
+	return keptn.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, remediationResourceFileName, utils.AppendQuery(commitOption))
 }
 
 // ParseRemediationResource returns the in-memory representation of a keptn resource.

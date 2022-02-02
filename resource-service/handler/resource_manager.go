@@ -161,7 +161,7 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	var revision string
 	var err error
 
-	if params.GitCommitID != "" {
+	if params.GitCommitID != "" && params.GitCommitID != "\"\""{
 		// if commit ID is set, path needs to be relative to the project directory
 		configPath = strings.TrimPrefix(configPath, common.GetProjectConfigPath(params.ProjectName))
 		resourcePath := configPath + "/" + resourceName
