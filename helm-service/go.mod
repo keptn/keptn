@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.6.3
+	helm.sh/helm/v3 v3.7.2
 	k8s.io/api v0.22.6
 	k8s.io/apimachinery v0.22.6
 	k8s.io/cli-runtime v0.22.6
