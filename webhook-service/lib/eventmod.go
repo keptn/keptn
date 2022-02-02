@@ -61,6 +61,10 @@ func (e *EventDataAdapter) Service() string {
 	return e.eventData.Service
 }
 
+func (e *EventDataAdapter) GitCommitID() string {
+	return e.event.Gitcommitid
+}
+
 func (e *EventDataAdapter) SubscriptionID() (string, error) {
 	distributorData := &DistributorData{}
 	if err := e.event.GetTemporaryData("distributor", distributorData); err != nil {
