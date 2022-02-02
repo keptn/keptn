@@ -434,18 +434,6 @@ function wait_for_daemonset_in_namespace() {
   fi
 }
 
-function verify_deployment_in_namespace() {
-  DEPLOYMENT=$1; NAMESPACE=$2;
-
-  DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
-  if [[ -z "$DEPLOYMENT_LIST" ]]; then
-    print_error "Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
-    exit 1
-  else
-    echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
-  fi
-}
-
 function verify_pod_in_namespace() {
   POD=$1; NAMESPACE=$2;
 
