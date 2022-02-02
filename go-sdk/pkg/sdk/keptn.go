@@ -3,14 +3,16 @@ package sdk
 import (
 	"context"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/api"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
@@ -19,9 +21,9 @@ const TriggeredIDCEExtension = "triggeredid"
 
 //go:generate moq  -out ./resourcehhandler_mock.go . ResourceHandler
 type ResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
-	GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error)
-	GetProjectResource(project string, resourceURI string) (*models.Resource, error)
+	GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
+	GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
+	GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
 }
 
 //go:generate moq  -out ./eventsender_mock.go . EventSender

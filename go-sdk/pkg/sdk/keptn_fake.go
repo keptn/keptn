@@ -10,6 +10,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 )
 
 type FakeKeptn struct {
@@ -146,15 +147,15 @@ type TestResourceHandler struct {
 	Resource models.Resource
 }
 
-func (t TestResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (t TestResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s/%s/%s", project, stage, service, resourceURI)), nil
 }
 
-func (t TestResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (t TestResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s/%s", project, stage, resourceURI)), nil
 }
 
-func (t TestResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (t TestResourceHandler) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s", project, resourceURI)), nil
 }
 

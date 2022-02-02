@@ -4,8 +4,10 @@
 package sdk
 
 import (
-	"github.com/keptn/go-utils/pkg/api/models"
 	"sync"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 )
 
 // Ensure, that ResourceHandlerMock does implement ResourceHandler.
@@ -79,7 +81,7 @@ type ResourceHandlerMock struct {
 }
 
 // GetProjectResource calls GetProjectResourceFunc.
-func (mock *ResourceHandlerMock) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (mock *ResourceHandlerMock) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	if mock.GetProjectResourceFunc == nil {
 		panic("ResourceHandlerMock.GetProjectResourceFunc: method is nil but ResourceHandler.GetProjectResource was just called")
 	}
