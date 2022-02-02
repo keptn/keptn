@@ -47,7 +47,6 @@ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDk
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 h1:pR23jlIJMXGMxljxP6QYytEsMQpPU2WT3Wjp1FWYOq0=
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209/go.mod h1:DmxtN+a7U9ktD8I0nTlI9CCrin/Tf7OdXxE3KBTjlOw=
 github.com/cloudevents/sdk-go/v2 v2.5.0/go.mod h1:nlXhgFkf0uTopxmRXalyMwS2LG70cRGPrxzmjJgSG0U=
-github.com/cloudevents/sdk-go/v2 v2.7.0/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
 github.com/cloudevents/sdk-go/v2 v2.8.0 h1:kmRaLbsafZmidZ0rZ6h7WOMqCkRMcVTLV5lxV/HKQ9Y=
 github.com/cloudevents/sdk-go/v2 v2.8.0/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
@@ -165,8 +164,8 @@ github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa
 github.com/keptn/go-utils v0.11.1-0.20220117092643-ba5397b5d46f/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c h1:K2POShv4cf/AOSPHlah132D1La0ufF5QTvKUQaE6U4c=
 github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
-github.com/keptn/keptn/go-sdk v0.0.0-20220117144756-b73c1a3ed66a h1:VTLIjKFx+u4j5fBFXGR+DKd6edQBXRGeHbBYVNCp/C0=
-github.com/keptn/keptn/go-sdk v0.0.0-20220117144756-b73c1a3ed66a/go.mod h1:vPAurkR5HC9eLaI9kxiEOsTd4bdfcyV+vOvBggIPkRw=
+github.com/keptn/keptn/go-sdk v0.0.0-20220202074141-65e36657d0f8 h1:30HyfIBJCNDiG3PvteaflREEtaM6A6EUQk+JbaafSYo=
+github.com/keptn/keptn/go-sdk v0.0.0-20220202074141-65e36657d0f8/go.mod h1:dlH8mDYSLylfU8pQnuJoWeb98t91ykaLwIR9QrenzHU=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
