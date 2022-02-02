@@ -177,25 +177,25 @@ type StringResourceHandler struct {
 	ResourceContent string
 }
 
-func (s StringResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (s StringResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return &models.Resource{
-		Metadata:        nil,
+		Metadata:        &models.Version{Version: "CommitID"},
 		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
 
-func (s StringResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (s StringResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return &models.Resource{
-		Metadata:        nil,
+		Metadata:        &models.Version{Version: "CommitID"},
 		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
 
-func (s StringResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (s StringResourceHandler) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return &models.Resource{
-		Metadata:        nil,
+		Metadata:        &models.Version{Version: "CommitID"},
 		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
