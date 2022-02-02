@@ -20,7 +20,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
-const eventbroker = "EVENTBROKER"
 const datastore = "MONGODB_DATASTORE"
 const configurationServiceURL = "configuration-service:8080"
 
@@ -53,7 +52,7 @@ var ErrConfigService = errors.New("could not checkout the SLO")
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
 type ResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
+	GetServiceResource(project string, stage string, service string, resourceURI string, options ...utils.GetOption) (*keptnapimodels.Resource, error)
 }
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/service_handler_mock.go . ServiceHandler
@@ -71,36 +70,44 @@ type SLOFileRetriever struct {
 	ServiceHandler  ServiceHandler
 }
 
-func (sr *SLOFileRetriever) GetSLOs(project, stage, service string) (*keptn.ServiceLevelObjectives, error) {
-	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
+func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*keptn.ServiceLevelObjectives, []byte, error) {
+	commitOption := url.Values{}
+	if commitID != "" {
+		commitOption.Add("gitCommitID", commitID)
+	}
+	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml", utils.AppendQuery(commitOption))
 	if err != nil {
-		_, err2 := sr.ServiceHandler.GetService(project, stage, service)
-		if err2 != nil {
-			if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
-				return nil, ErrProjectNotFound
-			} else if strings.Contains(strings.ToLower(err2.Error()), "stage not found") {
-				return nil, ErrStageNotFound
-			} else if strings.Contains(strings.ToLower(err2.Error()), "service not found") {
-				return nil, ErrServiceNotFound
-			}
-		} else {
-			if strings.Contains(strings.ToLower(err.Error()), "could not check out ") {
-				return nil, ErrConfigService
-			}
-			return nil, ErrSLOFileNotFound
+		_, serviceErr := sr.ServiceHandler.GetService(project, stage, service)
+		if serviceErr != nil {
+			return nil, nil, checkNotFound(serviceErr, err)
 		}
 	}
 	if sloFile == nil || sloFile.ResourceContent == "" {
-		return nil, ErrSLOFileNotFound
+		return nil, nil, ErrSLOFileNotFound
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
 
 	if err != nil {
-		return nil, errors.New("Could not parse SLO file for service " + service + " in stage " + stage + " in project " + project)
+		return nil, nil, errors.New("Could not parse SLO file for service " + service + " in stage " + stage + " in project " + project)
 	}
+	// return also slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	return slo, []byte(sloFile.ResourceContent), nil
+}
 
-	return slo, nil
+func checkNotFound(notFound, checkOut error) error {
+	if strings.Contains(strings.ToLower(notFound.Error()), "project not found") {
+		return ErrProjectNotFound
+	} else if strings.Contains(strings.ToLower(notFound.Error()), "stage not found") {
+		return ErrStageNotFound
+	} else if strings.Contains(strings.ToLower(notFound.Error()), "service not found") {
+		return ErrServiceNotFound
+	} else {
+		if strings.Contains(strings.ToLower(checkOut.Error()), "could not check out ") {
+			return ErrConfigService
+		}
+		return ErrSLOFileNotFound
+	}
 }
 
 func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
@@ -147,7 +154,7 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	return slo, nil
 }
 
-func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandler *keptnv2.Keptn, data interface{}) error {
+func sendEvent(shkeptncontext string, triggeredID, eventType, commitID string, keptnHandler *keptnv2.Keptn, data interface{}) error {
 	source, _ := url.Parse("lighthouse-service")
 
 	event := cloudevents.NewEvent()
@@ -156,15 +163,16 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
 	event.SetExtension("triggeredid", triggeredID)
+	event.SetExtension("gitcommitid", commitID)
 	if data != nil {
-		event.SetData(cloudevents.ApplicationJSON, data)
+		_ = event.SetData(cloudevents.ApplicationJSON, data)
 	}
 
 	logger.Debug("Send event: " + eventType)
 	return keptnHandler.SendCloudEvent(event)
 }
 
-func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptnv2.GetSLIFinishedEventData) error {
+func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptnv2.GetSLIFinishedEventData) error {
 	data := keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: incoming.Project,
@@ -182,10 +190,9 @@ func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, s
 			Score:            0,
 			SLOFileContent:   sloFileContent,
 			IndicatorResults: nil,
-			GitCommit:        "",
 		},
 	}
-	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), keptnHandler, data)
+	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, keptnHandler, data)
 }
 
 // SLIProviderConfig godoc

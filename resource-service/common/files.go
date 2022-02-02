@@ -104,6 +104,7 @@ func (fw FileSystem) WriteHelmChart(path string) error {
 func (fw FileSystem) ReadFile(filename string) ([]byte, error) {
 	filename = filepath.Clean(filename)
 	if IsHelmChartPath(filename) {
+		logger.Debug("Looking for helm chart")
 		chartDir := strings.Replace(filename, ".tgz", "", -1)
 		if !fw.FileExists(chartDir) {
 			return nil, errors2.ErrResourceNotFound
@@ -207,6 +208,7 @@ func (fw FileSystem) untarHelm(filePath string) error {
 }
 
 func IsHelmChartPath(resourcePath string) bool {
+	logger.Debug("Checking for helm chart")
 	resourcePathSlice := strings.Split(resourcePath, "/")
 	if sliceLen := len(resourcePathSlice); sliceLen >= 2 {
 		// return true if the resource path ends with "helm/<resourceName>.tgz

@@ -230,6 +230,7 @@ func sdkError(msg string, err error) *sdk.Error {
 	}
 }
 
+//TODO gitcommit here too?
 func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *lib.EventDataAdapter, subscriptionID string) (*lib.Webhook, error) {
 	// first try to retrieve the webhook config at the service level
 	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(eventAdapter.Project(), eventAdapter.Stage(), eventAdapter.Service(), webhookConfigFileName)

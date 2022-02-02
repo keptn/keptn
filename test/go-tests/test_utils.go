@@ -5,6 +5,7 @@ import (
 	b64 "encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -406,6 +407,34 @@ func GetEventsOfType(keptnContext, projectName, stage, eventType string) ([]*mod
 		return events.Events, nil
 	}
 	return nil, nil
+}
+
+func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri string) string {
+
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
+	require.Nil(t, err)
+	t.Log("Storing new slo file")
+	resp, err := internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stage+"/service/"+serviceName+"/resource", models.Resources{
+		Resources: []*models.Resource{
+			{
+				ResourceContent: b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),
+				ResourceURI:     strutils.Stringp(uri),
+			},
+		},
+	}, 3)
+	require.Nil(t, err)
+
+	t.Logf("Received response %s", resp.String())
+	require.Equal(t, 201, resp.Response().StatusCode)
+
+	response := struct {
+		CommitID string `json:"commitID"`
+	}{}
+	resp.ToJSON(&response)
+	t.Log("Saved with commitID", response.CommitID)
+	return response.CommitID
 }
 
 func GetEventTraceForContext(keptnContext, projectName string) ([]*models.KeptnContextExtendedCE, error) {

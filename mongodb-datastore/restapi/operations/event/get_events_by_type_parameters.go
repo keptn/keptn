@@ -101,7 +101,6 @@ func (o *GetEventsByTypeParams) BindRequest(r *http.Request, route *middleware.M
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -117,7 +116,6 @@ func (o *GetEventsByTypeParams) bindEventType(rawData []string, hasKey bool, for
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.EventType = raw
 
 	return nil
@@ -132,6 +130,7 @@ func (o *GetEventsByTypeParams) bindExcludeInvalidated(rawData []string, hasKey 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -154,10 +153,10 @@ func (o *GetEventsByTypeParams) bindFilter(rawData []string, hasKey bool, format
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Filter = &raw
 
 	return nil
@@ -172,10 +171,10 @@ func (o *GetEventsByTypeParams) bindFromTime(rawData []string, hasKey bool, form
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.FromTime = &raw
 
 	return nil
@@ -190,6 +189,7 @@ func (o *GetEventsByTypeParams) bindLimit(rawData []string, hasKey bool, formats
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEventsByTypeParams()
 		return nil
@@ -211,11 +211,11 @@ func (o *GetEventsByTypeParams) bindLimit(rawData []string, hasKey bool, formats
 // validateLimit carries on validations for parameter Limit
 func (o *GetEventsByTypeParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
