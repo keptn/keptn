@@ -2,10 +2,11 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
-	logger "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -46,15 +47,33 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) Get(filter GetTaskSequenceFilter) ([]m
 	result := []modelsv2.TaskSequence{}
 
 	for cur.Next(ctx) {
-		integration := &modelsv2.TaskSequence{}
-		if err := cur.Decode(integration); err != nil {
-			// log the error, but continue
-			logger.Errorf("could not decode integration: %s", err.Error())
+		var outInterface interface{}
+		err := cur.Decode(&outInterface)
+		sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+		if err != nil {
+			log.Errorf("Could not decode sequenceExecution: %v", err)
+			continue
 		}
-		result = append(result, *integration)
+		result = append(result, *sequenceExecution)
 	}
 
 	return result, nil
+}
+
+func transformBSONToSequenceExecution(outInterface interface{}) (*modelsv2.TaskSequence, error) {
+	outInterface, err := flattenRecursively(outInterface)
+	if err != nil {
+		return nil, err
+	}
+
+	data, _ := json.Marshal(outInterface)
+
+	sequenceExecution := &modelsv2.TaskSequence{}
+	if err := json.Unmarshal(data, sequenceExecution); err != nil {
+		return nil, err
+	}
+	sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
+	return sequenceExecution, nil
 }
 
 func (mdbrepo *MongoDBTaskSequenceV2Repo) Upsert(item modelsv2.TaskSequence) error {
@@ -84,7 +103,7 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) AppendTaskEvent(taskSequence modelsv2.
 		return nil, errors.New("project must be set")
 	}
 	if taskSequence.ID == "" {
-		return nil, errors.New("id must be set")
+		return nil, errors.New("id of sequenceExecution must be set")
 	}
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
 	if err != nil {
@@ -104,11 +123,16 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) AppendTaskEvent(taskSequence modelsv2.
 		return nil, err
 	}
 
-	seq := &modelsv2.TaskSequence{}
-	if err := res.Decode(seq); err != nil {
+	outInterface := map[string]interface{}{}
+	err = res.Decode(outInterface)
+	if err != nil {
 		return nil, err
 	}
-	return seq, nil
+	sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+	if err != nil {
+		return nil, err
+	}
+	return sequenceExecution, nil
 }
 
 func (mdbrepo *MongoDBTaskSequenceV2Repo) getCollectionAndContext(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {

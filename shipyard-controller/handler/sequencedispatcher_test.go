@@ -5,9 +5,11 @@ import (
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -68,7 +70,13 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock)
+	mockTaskSequenceExecutionRepo := &db_mock.TaskSequenceV2RepoMock{
+		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+			return nil, nil
+		},
+	}
+
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock, mockTaskSequenceExecutionRepo)
 
 	sequenceDispatcher.Run(context.Background(), func(event models.Event) error {
 		startSequenceCalls = append(startSequenceCalls, event)
@@ -169,7 +177,7 @@ func TestSequenceDispatcher_Remove(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, mockSequenceQueueRepo, nil, 10*time.Second, nil)
+	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, mockSequenceQueueRepo, nil, 10*time.Second, nil, nil)
 
 	myScope := models.EventScope{
 		EventData:    keptnv2.EventData{Project: "my-project"},

@@ -94,9 +94,18 @@ func (sc *shipyardController) run(ctx context.Context) {
 			}
 		}
 	}()
-	sc.eventDispatcher.Run(context.Background())
-	sc.sequenceDispatcher.Run(context.Background(), sc.StartTaskSequence)
 }
+
+func (sc shipyardController) StartDispatchers(ctx context.Context) {
+
+	sc.eventDispatcher.Run(ctx)
+	sc.sequenceDispatcher.Run(ctx, sc.StartTaskSequence)
+}
+
+//func (sc shipyardController) StopDispatchers() {
+//	sc.eventDispatcher.
+//	sc.sequenceDispatcher.Run(context.Background(), sc.StartTaskSequence)
+//}
 
 func (sc *shipyardController) ControlSequence(controlSequence models.SequenceControl) error {
 	switch controlSequence.State {
@@ -509,6 +518,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 	sequenceExecution := sequenceExecutions[0]
+	sequenceExecution.Status.State = models.SequenceStartedState
 	if err := sc.taskSequenceV2Repo.Upsert(sequenceExecution); err != nil {
 		msg := fmt.Sprintf("could not update sequence execution state %s: %s", taskSequenceName, err.Error())
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
@@ -616,6 +626,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 		}
 		return sc.triggerNextTaskSequences(eventScope, sequenceExecution.Sequence, eventHistory, inputEvent, lastTaskName)
 	}
+	//return sc.sendTaskTriggeredEvent(eventScope, sequenceExecution.Sequence.Name, *task, eventHistory)
 	return sc.triggerTask(eventScope, sequenceExecution, *task, eventHistory)
 }
 
@@ -626,7 +637,10 @@ func (sc *shipyardController) appendTriggerEventProperties(sequenceExecution mod
 	triggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(
 		models.EventScope{
 			KeptnContext: sequenceExecution.Scope.KeptnContext,
-			EventData:    keptnv2.EventData{Stage: sequenceExecution.Scope.Stage},
+			EventData: keptnv2.EventData{
+				Stage:   sequenceExecution.Scope.Stage,
+				Project: sequenceExecution.Scope.Project,
+			},
 		}, sequenceExecution.Sequence.Name)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to load event that triggered task sequence %s.%s with KeptnContext %s: %w", sequenceExecution.Scope.Stage, sequenceExecution.Sequence.Name, sequenceExecution.Scope.KeptnContext, err)
@@ -803,7 +817,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 
 	sequenceExecution.Status.CurrentTask = modelsv2.TaskExecution{
 		Name:        task.Name,
-		TriggeredID: storeEvent.Triggeredid,
+		TriggeredID: storeEvent.ID,
 		Events:      []modelsv2.TaskEvent{},
 	}
 

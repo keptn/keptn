@@ -201,7 +201,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	if startedSequenceExecutions != nil && len(startedSequenceExecutions) > 0 {
 		// if there is another sequence with the state 'started'
 		for _, otherSequence := range startedSequenceExecutions {
-			if otherSequence.Status.CurrentTask.TriggeredID != eventScope.TriggeredID {
+			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
 					return ErrOtherActiveSequencesRunning
 				}
