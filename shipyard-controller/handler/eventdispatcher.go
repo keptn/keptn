@@ -187,7 +187,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return ErrSequencePaused
 	}
 
-	startedSequenceExecutions, err := e.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{
+	startedSequenceExecutions, err := e.taskSequenceV2Repo.Get(modelsv2.GetTaskSequenceFilter{
 		Scope: modelsv2.EventScope{
 			Project: eventScope.Project,
 			Stage:   eventScope.Stage,

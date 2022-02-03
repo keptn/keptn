@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,18 +20,11 @@ type MongoDBTaskSequenceV2Repo struct {
 	DbConnection *MongoDBConnection
 }
 
-type GetTaskSequenceFilter struct {
-	Scope              modelsv2.EventScope
-	Status             []string
-	Name               string
-	CurrentTriggeredID string
-}
-
 func NewMongoDBTaskSequenceV2Repo(dbConnection *MongoDBConnection) *MongoDBTaskSequenceV2Repo {
 	return &MongoDBTaskSequenceV2Repo{DbConnection: dbConnection}
 }
 
-func (mdbrepo *MongoDBTaskSequenceV2Repo) Get(filter GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+func (mdbrepo *MongoDBTaskSequenceV2Repo) Get(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(filter.Scope.Project)
 	if err != nil {
 		return nil, err
@@ -147,7 +141,7 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) getCollectionAndContext(project string
 	return collection, ctx, cancel, nil
 }
 
-func (mdbrepo *MongoDBTaskSequenceV2Repo) getSearchOptions(filter GetTaskSequenceFilter) bson.M {
+func (mdbrepo *MongoDBTaskSequenceV2Repo) getSearchOptions(filter modelsv2.GetTaskSequenceFilter) bson.M {
 	searchOptions := bson.M{}
 
 	searchOptions = appendFilterAs(searchOptions, filter.Name, "sequence.name")

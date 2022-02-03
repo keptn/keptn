@@ -7,8 +7,8 @@ import (
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
+
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
@@ -52,7 +52,7 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 	}
 
 	sequenceExecutionRpo := &db_mock.TaskSequenceV2RepoMock{
-		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+		GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 			return nil, nil
 		},
 	}
@@ -185,7 +185,7 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 	}
 
 	sequenceExecutionRepo := &db_mock.TaskSequenceV2RepoMock{
-		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+		GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 			return []modelsv2.TaskSequence{
 				{
 					ID:       "my-task-sequence-execution-id",
@@ -295,7 +295,7 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 	}
 
 	sequenceExecutionRepo := &db_mock.TaskSequenceV2RepoMock{
-		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+		GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 			return nil, nil
 		},
 	}
@@ -430,7 +430,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	}
 
 	sequenceExecutionRepo := &db_mock.TaskSequenceV2RepoMock{
-		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+		GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 			return nil, nil
 		},
 	}
@@ -536,7 +536,7 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	}
 
 	sequenceExecutionRepo := &db_mock.TaskSequenceV2RepoMock{
-		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+		GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 			return nil, nil
 		},
 	}

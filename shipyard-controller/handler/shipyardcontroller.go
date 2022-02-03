@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
@@ -367,7 +368,7 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
-	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{Scope: modelsv2.EventScope{
+	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(modelsv2.GetTaskSequenceFilter{Scope: modelsv2.EventScope{
 		KeptnContext: cancel.KeptnContext,
 		Project:      cancel.Project,
 		Stage:        cancel.Stage,
@@ -432,7 +433,7 @@ func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) er
 	eventScope.Result = keptnv2.ResultFailed
 	eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *timeout.LastEvent.Type)
 
-	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{
+	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(modelsv2.GetTaskSequenceFilter{
 		CurrentTriggeredID: timeout.LastEvent.ID,
 		Scope: modelsv2.EventScope{
 			KeptnContext: eventScope.KeptnContext,
@@ -499,7 +500,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	sc.onSequenceStarted(event)
 
 	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(
-		db.GetTaskSequenceFilter{
+		modelsv2.GetTaskSequenceFilter{
 			Scope: modelsv2.EventScope{
 				KeptnContext: eventScope.KeptnContext,
 				Project:      eventScope.Project,
@@ -528,7 +529,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 }
 
 func (sc *shipyardController) getOpenTaskExecution(eventScope models.EventScope) (*modelsv2.TaskSequence, error) {
-	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{
+	sequenceExecutions, err := sc.taskSequenceV2Repo.Get(modelsv2.GetTaskSequenceFilter{
 		Scope: modelsv2.EventScope{
 			KeptnContext: eventScope.KeptnContext,
 			Project:      eventScope.Project,
@@ -613,6 +614,12 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 
 	task := sequenceExecution.GetNextTaskOfSequence()
 	if task == nil {
+		if sequenceExecution.Status.CurrentTask.IsFailed() {
+			eventScope.Result = keptnv2.ResultFailed
+		}
+		if sequenceExecution.Status.CurrentTask.IsErrored() {
+			eventScope.Status = keptnv2.StatusErrored
+		}
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(eventScope, sequenceExecution, inputEvent.ID, models.SequenceFinished)
 		if err != nil {

@@ -4,7 +4,6 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/db"
 	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	"sync"
 )
@@ -35,7 +34,7 @@ type TaskSequenceV2RepoMock struct {
 	AppendTaskEventFunc func(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) (*modelsv2.TaskSequence, error)
 
 	// GetFunc mocks the Get method.
-	GetFunc func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error)
+	GetFunc func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error)
 
 	// UpsertFunc mocks the Upsert method.
 	UpsertFunc func(item modelsv2.TaskSequence) error
@@ -52,7 +51,7 @@ type TaskSequenceV2RepoMock struct {
 		// Get holds details about calls to the Get method.
 		Get []struct {
 			// Filter is the filter argument value.
-			Filter db.GetTaskSequenceFilter
+			Filter modelsv2.GetTaskSequenceFilter
 		}
 		// Upsert holds details about calls to the Upsert method.
 		Upsert []struct {
@@ -101,12 +100,12 @@ func (mock *TaskSequenceV2RepoMock) AppendTaskEventCalls() []struct {
 }
 
 // Get calls GetFunc.
-func (mock *TaskSequenceV2RepoMock) Get(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+func (mock *TaskSequenceV2RepoMock) Get(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 	if mock.GetFunc == nil {
 		panic("TaskSequenceV2RepoMock.GetFunc: method is nil but TaskSequenceV2Repo.Get was just called")
 	}
 	callInfo := struct {
-		Filter db.GetTaskSequenceFilter
+		Filter modelsv2.GetTaskSequenceFilter
 	}{
 		Filter: filter,
 	}
@@ -120,10 +119,10 @@ func (mock *TaskSequenceV2RepoMock) Get(filter db.GetTaskSequenceFilter) ([]mode
 // Check the length with:
 //     len(mockedTaskSequenceV2Repo.GetCalls())
 func (mock *TaskSequenceV2RepoMock) GetCalls() []struct {
-	Filter db.GetTaskSequenceFilter
+	Filter modelsv2.GetTaskSequenceFilter
 } {
 	var calls []struct {
-		Filter db.GetTaskSequenceFilter
+		Filter modelsv2.GetTaskSequenceFilter
 	}
 	mock.lockGet.RLock()
 	calls = mock.calls.Get

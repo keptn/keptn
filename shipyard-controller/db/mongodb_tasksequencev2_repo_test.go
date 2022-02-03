@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	"github.com/stretchr/testify/require"
 	"sync"
@@ -45,7 +46,7 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 
 	require.Nil(t, err)
 
-	get, err := mdbrepo.Get(GetTaskSequenceFilter{
+	get, err := mdbrepo.Get(modelsv2.GetTaskSequenceFilter{
 		Scope:  scope,
 		Name:   "delivery",
 		Status: []string{"triggered"},
@@ -86,7 +87,7 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 
 	wg.Wait()
 
-	get, err = mdbrepo.Get(GetTaskSequenceFilter{
+	get, err = mdbrepo.Get(modelsv2.GetTaskSequenceFilter{
 		Scope: scope,
 		Name:  "delivery",
 	})

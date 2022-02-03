@@ -39,6 +39,9 @@ type TaskExecution struct {
 }
 
 func (e TaskSequence) GetNextTaskOfSequence() *keptnv2.Task {
+	if e.Status.CurrentTask.IsFailed() {
+		return nil
+	}
 	nextTaskIndex := 0
 	if e.Status.PreviousTasks != nil && len(e.Status.PreviousTasks) > 0 {
 		nextTaskIndex = len(e.Status.PreviousTasks)
@@ -78,6 +81,28 @@ func (e TaskExecution) IsFinished() bool {
 	return false
 }
 
+func (e TaskExecution) IsFailed() bool {
+	for _, event := range e.Events {
+		if keptnv2.IsFinishedEventType(event.EventType) {
+			if event.Result == string(keptnv2.ResultFailed) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (e TaskExecution) IsErrored() bool {
+	for _, event := range e.Events {
+		if keptnv2.IsFinishedEventType(event.EventType) {
+			if event.Status == string(keptnv2.StatusErrored) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 type TaskEvent struct {
 	EventType  string                 `json:"eventType" bson:"eventType"`
 	Source     string                 `json:"source" bson:"source"`
@@ -85,4 +110,11 @@ type TaskEvent struct {
 	Status     string                 `json:"status" bson:"status"`
 	Time       string                 `json:"time" bson:"time"`
 	Properties map[string]interface{} `json:"properties" bson:"properties"`
+}
+
+type GetTaskSequenceFilter struct {
+	Scope              EventScope
+	Status             []string
+	Name               string
+	CurrentTriggeredID string
 }

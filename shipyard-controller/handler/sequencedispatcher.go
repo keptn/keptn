@@ -130,7 +130,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 		return ErrSequenceBlocked
 	}
 
-	startedSequenceExecutions, err := sd.taskSequenceV2Repo.Get(db.GetTaskSequenceFilter{
+	startedSequenceExecutions, err := sd.taskSequenceV2Repo.Get(modelsv2.GetTaskSequenceFilter{
 		Scope: modelsv2.EventScope{
 			Project: queuedSequence.Scope.Project,
 			Stage:   queuedSequence.Scope.Stage,

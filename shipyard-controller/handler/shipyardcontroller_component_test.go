@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	fakehooks "github.com/keptn/keptn/shipyard-controller/handler/sequencehooks/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -376,24 +378,20 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	// STEP 2
 	// send deployment.started event
 	go func() {
-		time.After(2 * time.Second)
+		<-time.After(2 * time.Second)
 		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	}()
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
-		t,
-		sc,
-		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
-		keptnv2.DeploymentTaskName,
-		keptnv2.TestTaskName,
-		"",
-	)
-	if done {
-		return
-	}
-	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
+
+	err = sc.HandleIncomingEvent(getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass), true)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		return len(mockDispatcher.AddCalls()) == 2
+	}, 10*time.Second, 1*time.Second)
+
 	verifyEvent = mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), verifyEvent.Event.Type())
 
@@ -445,25 +443,29 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	// STEP 2
 	// send deployment.started event
 	go func() {
-		time.After(2 * time.Second)
+		<-time.After(2 * time.Second)
 		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	}()
 
 	// STEP 3
 	// send deployment.finished event
-	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
-		t,
-		sc,
-		getErroredDeploymentFinishedEvent("dev", triggeredID, "test-source"),
-		keptnv2.DeploymentTaskName,
-		"",
-	)
-	if done {
-		return
-	}
+	err = sc.HandleIncomingEvent(getErroredDeploymentFinishedEvent("dev", triggeredID, "test-source"), true)
+	require.Nil(t, err)
 
 	// check for dev.artifact-delivery.finished event
-	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
+	require.Eventually(t, func() bool {
+		return 4 == len(mockDispatcher.AddCalls())
+	}, 10*time.Second, 1*time.Second)
+
+	triggeredEvents, err = sc.eventRepo.GetEvents("test-project", common.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
+
+	require.Empty(t, triggeredEvents)
+
 	taskSequenceCompletionEvent := mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), taskSequenceCompletionEvent.Event.Type())
 
@@ -1446,18 +1448,18 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 	}
 
 	// check startedEvent collection -> should still contain one <eventType>.started event
-	// TODO adapt check to sequenceExecution
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
-		Type:        keptnv2.GetStartedEventType(eventType),
-		Stage:       &scope.Stage,
-		Service:     common.Stringp("carts"),
-		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
-	}, common.StartedEvent)
-	if len(startedEvents) != 1 {
-		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
-		return true
-	}
-	done = fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage, nil)
+	get, err := sc.taskSequenceV2Repo.Get(modelsv2.GetTaskSequenceFilter{
+		Scope: modelsv2.EventScope{
+			KeptnContext: scope.KeptnContext,
+			Project:      scope.Project,
+			Stage:        scope.Stage,
+		},
+		CurrentTriggeredID: finishedEvent.Triggeredid,
+	})
+
+	require.Nil(t, err)
+	require.Len(t, get, 1)
+
 	return done
 }
 

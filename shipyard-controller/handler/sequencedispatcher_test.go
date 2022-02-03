@@ -5,7 +5,6 @@ import (
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -71,7 +70,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 
 	mockTaskSequenceExecutionRepo := &db_mock.TaskSequenceV2RepoMock{
-		GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+		GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 			return nil, nil
 		},
 	}
