@@ -34,7 +34,7 @@ function oauthRouter(
   /**
    * Router level middleware for login
    */
-  router.get('/login', async (req: Request, res: Response) => {
+  router.get('/oauth/login', async (req: Request, res: Response) => {
     const codeVerifier = generators.codeVerifier();
     const codeChallenge = generators.codeChallenge(codeVerifier);
     const nonce = generators.nonce();
@@ -105,7 +105,7 @@ function oauthRouter(
   /**
    * Router level middleware for logout
    */
-  router.post('/logout', async (req: Request, res: Response) => {
+  router.post('/oauth/logout', async (req: Request, res: Response) => {
     if (!session.isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
@@ -130,6 +130,7 @@ function oauthRouter(
     }
   });
 
+  // exception for this endpoint (not "/oauth/" before) because this will be moved to the client in future
   router.get('/logoutsession', (req: Request, res: Response) => {
     return res.render('logout', { location: getRootLocation() });
   });

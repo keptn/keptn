@@ -124,11 +124,11 @@ describe('Test OAuth env variables', () => {
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
     // if not found, index.html is sent
-    for (const endpoint of ['/login', '/oauth/redirect', '/logoutsession']) {
+    for (const endpoint of ['/oauth/login', '/oauth/redirect', '/logoutsession']) {
       const response = await request(app).get(endpoint);
       expect(response.text).not.toBeUndefined();
     }
-    for (const endpoint of ['/logout']) {
+    for (const endpoint of ['/oauth/logout']) {
       const response = await request(app).post(endpoint);
       expect(response.text).not.toBeUndefined();
     }
@@ -151,7 +151,7 @@ describe('Test OAuth', () => {
   });
 
   it('should redirect to authorizationUrl', async () => {
-    const response = await request(app).get('/login');
+    const response = await request(app).get('/oauth/login/');
     const state = response.headers.location?.split('state=').pop();
     expect(response.redirect).toBe(true);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
@@ -159,21 +159,21 @@ describe('Test OAuth', () => {
   });
 
   it('should reject token gain if state is not provided', async () => {
-    await request(app).get('/login');
+    await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?code=someCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
     expect(response.text).not.toBeUndefined(); // error view is rendered
   });
 
   it('should reject token gain if code is not provided', async () => {
-    await request(app).get('/login');
+    await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?state=someState`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
     expect(response.text).not.toBeUndefined();
   });
 
   it('should reject token gain if state is invalid', async () => {
-    await request(app).get('/login');
+    await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?state=invalidState?code=someCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
     expect(response.text).not.toBeUndefined();
@@ -195,7 +195,7 @@ describe('Test OAuth', () => {
 
   it('should logout and return end session data', async () => {
     const { cookies } = await login(app);
-    const logoutResponse = await request(app).post(`/logout`).set('Cookie', cookies);
+    const logoutResponse = await request(app).post(`/oauth/logout`).set('Cookie', cookies);
     const { state, ...data } = logoutResponse.body;
     expect(state).not.toBeUndefined();
     expect(data).toEqual({
@@ -206,7 +206,7 @@ describe('Test OAuth', () => {
   });
 
   it('should return nothing on logout if not authenticated', async () => {
-    const response = await request(app).post(`/logout`);
+    const response = await request(app).post(`/oauth/logout`);
     expect(response.body).toBe('');
   });
 
@@ -270,7 +270,7 @@ describe('Test OAuth logout without end session endpoint', () => {
 
   it('should logout and not return nothing', async () => {
     const { cookies } = await login(app);
-    const logoutResponse = await request(app).post(`/logout`).set('Cookie', cookies);
+    const logoutResponse = await request(app).post(`/oauth/logout`).set('Cookie', cookies);
     expect(logoutResponse.body).toBe('');
   });
 
@@ -345,7 +345,7 @@ function setOrDeleteProperty(
 }
 
 async function login(app: Express): Promise<{ state: string; response: request.Response; cookies: string[] }> {
-  const authUrlResponse = await request(app).get('/login');
+  const authUrlResponse = await request(app).get('/oauth/login/');
   const state = authUrlResponse.headers.location?.split('state=').pop();
   const response = await request(app).get(`/oauth/redirect?state=${state}&code=someCode`);
   return { state, response, cookies: response.headers['set-cookie'] };
