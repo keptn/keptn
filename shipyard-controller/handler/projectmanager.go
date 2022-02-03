@@ -95,19 +95,17 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 	}
 
 	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-		User:      params.GitUser,
-		Token:     params.GitToken,
-		RemoteURI: params.GitRemoteURL,
+		User:       params.GitUser,
+		Token:      params.GitToken,
+		RemoteURI:  params.GitRemoteURL,
+		PrivateKey: params.GitPrivateKey,
 	})
 	if err != nil {
 		return err, nilRollback
 	}
 
 	err = pm.ConfigurationStore.CreateProject(apimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	})
 
 	rollbackFunc := func() error {
@@ -554,7 +552,8 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *mode
 }
 
 type gitCredentials struct {
-	User      string `json:"user,omitempty"`
-	Token     string `json:"token,omitempty"`
-	RemoteURI string `json:"remoteURI,omitempty"`
+	User       string `json:"user,omitempty"`
+	Token      string `json:"token,omitempty"`
+	RemoteURI  string `json:"remoteURI,omitempty"`
+	PrivateKey string `json:"privateKey,omitempty"`
 }

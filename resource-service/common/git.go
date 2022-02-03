@@ -3,20 +3,22 @@ package common
 import (
 	"errors"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/keptn/keptn/resource-service/common_models"
-	kerrors "github.com/keptn/keptn/resource-service/errors"
-	logger "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/keptn/keptn/resource-service/common_models"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
+	logger "github.com/sirupsen/logrus"
+	ssh2 "golang.org/x/crypto/ssh"
 )
 
 // IGit provides functions to interact with the git repository of a project
@@ -85,36 +87,65 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
+	logger.Info("som v clonerepo a idem newpublickeys a privatekey je ")
+	publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+	if err != nil {
+		logger.Info("publickey nevyslo, error je ", err)
+		return false, err
+	}
+	// d1 := []byte("Host *\n\tStrictHostKeyChecking no\n")
+	// err = os.WriteFile("/etc/ssh/ssh_config", d1, 0644)
+	// if err != nil {
+	// 	logger.Info("nepodarilo sa zapisat")
+	// }
+	// 	const known_hosts = `|1|sGVjWufpaYojeb3q8zHzWAF5Bik=|O3jMs8goRh9aIZmygB32uOd+1ag= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+	// |1|tkk5rzaiVN412IjHPmfHGz7knNs=|5UN3KUVC3xrVR+6JCIvfXXW3Sck= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+	// |1|IYHOYgTDqfjhK/R63yJGylgKq98=|p6sl0Z326p2ZLTp/3U3ALt/GKYE= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+	// |1|EPtaSFOBMd59fA5kxDPURk5OtMk=|MXXmYgzcVddqXZODX7N5BRO6YFc= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+	// |1|Qt/yHOFqRg56PRkjuwaeQAlApcU=|6DxELWbZUCyjg3FRsYpUjCtkjlY= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+	// |1|YdaemWm6kwXuhOOKTWMP22O+/+s=|Dsz7FoAYb7bNyEOkn3NDM4iMKjM= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==`
+	// 	err = os.WriteFile("~/.ssh/known_hosts", []byte(known_hosts), 0644)
+	// 	if err != nil {
+	// 		logger.Info("nepodarilo sa zapisat, error je ", err)
+	// 	}
+	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+	logger.Info("publickey vyslo")
 	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
-			URL: gitContext.Credentials.RemoteURI,
-			Auth: &http.BasicAuth{
-				Username: gitContext.Credentials.User,
-				Password: gitContext.Credentials.Token,
-			},
+			URL:  gitContext.Credentials.RemoteURI,
+			Auth: publicKey,
 		},
 	)
 
 	if err != nil {
+		logger.Info("plainclone nevyslo")
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
+			logger.Info("plainclone nevyslo222")
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
+				logger.Info("plainclone1 nevyslo, error je ", err)
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, err)
 			}
 		} else {
+			logger.Info("plainclone2 nevyslo, error je ", err)
 			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
 		}
 	}
 
+	logger.Info("plainclone vyslo2")
+
 	err = configureGitUser(clone)
 	if err != nil {
+		logger.Info("plainclone nevyslo3333")
 		return false, err
 	}
 
 	_, err = clone.Head()
 	if err != nil {
+		logger.Info("plainclone nevyslo333344444")
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
 	}
+	logger.Info("plainclone vyslo az dokonca")
 	return true, nil
 }
 
@@ -192,36 +223,44 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
-
+	os.Setenv("SSH_AUTH_SOCK", "/run/user/1000/keyring/ssh")
+	logger.Info("som v stage and commit all")
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
+		logger.Info("som v stage and commit all error1", err)
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
 	rollbackFunc := func() {
 		err := g.resetHard(gitContext)
 		if err != nil {
+			logger.Info("som v stage and commit all error2", err)
 			logger.WithError(err).Warn("could not reset")
 		}
 	}
 	err = g.Pull(gitContext)
 	if err != nil {
+		logger.Info("som v stage and commit all error3333333 ", err) //tu to pada
 		rollbackFunc()
 		return "", err
 	}
 
 	err = g.Push(gitContext)
 	if err != nil {
+		logger.Info("som v stage and commit all error4", err)
 		rollbackFunc()
 		return "", err
 	}
 
 	id, updated, err := g.getCurrentRemoteRevision(gitContext)
 	if err != nil {
+		logger.Info("som v stage and commit all error5", err)
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
 	if !updated {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
 	}
+
+	logger.Info("vsetko ok v stageandcommit")
 
 	return id, nil
 }
@@ -236,12 +275,17 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
 	}
 
+	publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+	if err != nil {
+		logger.Info("publickey v push nevyslo, error je ", err)
+		return err
+	}
+	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+	logger.Info("publickey v push vyslo")
+
 	err = repo.Push(&git.PushOptions{
 		RemoteName: "origin",
-		Auth: &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
-		},
+		Auth:       publicKey,
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, git.ErrForceNeeded) {
@@ -263,19 +307,28 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		if err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		auth := &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
+
+		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+		if err != nil {
+			logger.Info("publickey v pull nevyslo, error je ", err)
+			return err
 		}
+		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+		logger.Info("publickey v pull vyslo")
+
+		// auth := &http.BasicAuth{
+		// 	Username: gitContext.Credentials.User,
+		// 	Password: gitContext.Credentials.Token,
+		// }
 		err = w.Pull(&git.PullOptions{
 			RemoteName:    "origin",
 			Force:         true,
 			ReferenceName: head.Name(),
-			Auth:          auth,
+			Auth:          publicKey,
 		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: publicKey})
 		}
 		if err != nil {
 			if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
@@ -345,8 +398,10 @@ func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (str
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 	// move head to sourceBranch
+	logger.Info("idem vytvarat brach ")
 	err := g.CheckoutBranch(gitContext, sourceBranch)
 	if err != nil {
+		logger.Info("idem vytvarat brach error1 ", err)
 		return err
 	}
 	b := plumbing.NewBranchReferenceName(branch)
@@ -357,17 +412,20 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	}
 	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
+		logger.Info("idem vytvarat brach error2 ", err)
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
 
 	// First try to check out branch
 	err = w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
 	if err == nil {
+		logger.Info("idem vytvarat brach error3 ", err)
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, kerrors.ErrBranchExists)
 	}
 
 	if err != nil {
 		// got an error  - try to create it
+		logger.Info("idem vytvarat brach error4 ", err)
 		if err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b}); err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 		}
@@ -375,8 +433,11 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 
 	err = r.CreateBranch(newBranch)
 	if err != nil {
+		logger.Info("idem vytvarat brach error5 ", err)
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
+
+	logger.Info("vsetko vyslo v branchi, ideme prec")
 
 	return nil
 }
@@ -417,16 +478,21 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 }
 
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
+	publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+	if err != nil {
+		logger.Info("publickey v fetch nevyslo, error je ", err)
+		return err
+	}
+	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+	logger.Info("publickey v fetch vyslo")
+
 	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
 		//// take all branch from remote and put them in the local repo as origin branches and as branches
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
-		Auth: &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
-		},
+		Auth:  publicKey,
 		Force: true,
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
@@ -504,20 +570,28 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 	if g.ProjectRepoExists(gitContext.Project) {
 		return true
 	}
-	clone, _ := g.CloneRepo(gitContext)
+	clone, err := g.CloneRepo(gitContext)
+	if err != nil {
+		logger.Info("clonoval som repository a error je ", err)
+	}
 	return clone
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
 	path := GetProjectConfigPath(project)
+	logger.Info("v projectrepoexists path je %s", path)
 	_, err := os.Stat(path)
 	if err == nil {
 		// path exists
+		logger.Info("idem do plainopen")
 		_, err = g.git.PlainOpen(path)
+		logger.Info("error z plaininfo je ", err)
 		if err == nil {
+			logger.Info("plainopen dobre")
 			return true
 		}
 	}
+	logger.Info("plainopen zle")
 	return false
 }
 

@@ -19,6 +19,9 @@ type UpdateProjectParams struct {
 	// git token
 	GitToken string `json:"gitToken,omitempty"`
 
+	// git private key
+	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
 
@@ -36,6 +39,9 @@ type CreateProjectParams struct {
 
 	// git token
 	GitToken string `json:"gitToken,omitempty"`
+
+	// git private key
+	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
@@ -105,9 +111,9 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
 	}
 
-	if err := common.ValidateGitRemoteURL(createProjectParams.GitRemoteURL); err != nil {
-		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
-	}
+	// if err := common.ValidateGitRemoteURL(createProjectParams.GitRemoteURL); err != nil {
+	// 	return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
+	// }
 
 	return nil
 }

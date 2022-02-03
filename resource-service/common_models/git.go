@@ -1,11 +1,5 @@
 package common_models
 
-import (
-	"net/url"
-
-	kerrors "github.com/keptn/keptn/resource-service/errors"
-)
-
 // GitCredentials contains git credentials info
 type GitCredentials struct {
 	User       string `json:"user,omitempty"`
@@ -20,12 +14,12 @@ type GitContext struct {
 }
 
 func (g GitCredentials) Validate() error {
-	_, err := url.Parse(g.RemoteURI)
-	if err != nil {
-		return kerrors.ErrCredentialsInvalidRemoteURI
-	}
-	if g.Token == "" {
-		return kerrors.ErrCredentialsTokenMustNotBeEmpty
-	}
+	// _, err := url.Parse(g.RemoteURI)
+	// if err != nil {
+	// 	return kerrors.ErrCredentialsInvalidRemoteURI
+	// }
+	// if g.Token == "" {
+	// 	return kerrors.ErrCredentialsTokenMustNotBeEmpty
+	// }
 	return nil
 }

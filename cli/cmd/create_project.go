@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/keptn/keptn/cli/internal"
@@ -18,10 +19,11 @@ import (
 )
 
 type createProjectCmdParams struct {
-	Shipyard  *string
-	GitUser   *string
-	GitToken  *string
-	RemoteURL *string
+	Shipyard      *string
+	GitUser       *string
+	GitToken      *string
+	RemoteURL     *string
+	GitPrivateKey *string
 }
 
 var createProjectParams *createProjectCmdParams
@@ -86,10 +88,15 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			Shipyard: &encodedShipyardContent,
 		}
 
-		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+		if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
 			project.GitUser = *createProjectParams.GitUser
-			project.GitToken = *createProjectParams.GitToken
 			project.GitRemoteURL = *createProjectParams.RemoteURL
+			project.GitToken = *createProjectParams.GitToken
+			content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
+			if err != nil {
+				fmt.Errorf("PrivateKey read unsuccessful.\n%s", err.Error())
+			}
+			project.GitPrivateKey = string(content)
 		}
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
@@ -121,7 +128,7 @@ func checkGitCredentials() error {
 		return nil
 	}
 
-	if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+	if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
 		return nil
 	}
 	return errors.New(gitErrMsg)
@@ -149,5 +156,6 @@ func init() {
 
 	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
+	createProjectParams.GitPrivateKey = crProjectCmd.Flags().StringP("git-private-key", "k", "", "The git private key of the git user")
 	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
 }
