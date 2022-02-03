@@ -10,7 +10,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -18,6 +18,8 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
+
+const defaultVersion = "N/A"
 
 // Swagger Structure
 
@@ -61,14 +63,13 @@ type metadataHandler struct {
 func (h *metadataHandler) getMetadata() middleware.Responder {
 	logger.Info("API received a GET metadata event")
 
-	var namespace string
-	namespace = os.Getenv("POD_NAMESPACE")
+	namespace := os.Getenv("POD_NAMESPACE")
 
 	var payload models.Metadata
 	payload.Namespace = namespace
-	payload.Keptnversion = "N/A"
+	payload.Keptnversion = defaultVersion
 	payload.Keptnlabel = "keptn"
-	payload.Bridgeversion = "N/A"
+	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
 
 	if h.k8sClient != nil {
@@ -83,12 +84,8 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 			logger.WithError(err).Error("Error getting deployment info")
 		}
 
-		if info, err := h.getSwaggerInfo(); err == nil {
-			for k, v := range info {
-				if k == "version" {
-					payload.Keptnversion = fmt.Sprintf("%v", v)
-				}
-			}
+		if keptnVersion, err := h.getSwaggerKeptnVersion(); err == nil {
+			payload.Keptnversion = keptnVersion
 		} else {
 			logger.WithError(err).Error("Error getting swagger info")
 		}
@@ -97,18 +94,23 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	return metadata.NewMetadataOK().WithPayload(&payload)
 }
 
-func (h *metadataHandler) getSwaggerInfo() (map[interface{}]interface{}, error) {
+func (h *metadataHandler) getSwaggerKeptnVersion() (string, error) {
 	// Load swagger.yaml from /swagger-ui/swagger.yaml
 	mapSwagger := make(map[interface{}]interface{})
 	yamlFile, err := ioutil.ReadFile(h.swaggerFilePath)
 
 	if err != nil {
-		return nil, err
+		return defaultVersion, err
 	}
 	err = yaml.Unmarshal(yamlFile, &mapSwagger)
 	if err != nil {
-		return nil, err
+		return defaultVersion, err
 	}
 	info := mapSwagger["info"].(map[interface{}]interface{})
-	return info, nil
+	for k, v := range info {
+		if k == "version" {
+			return fmt.Sprintf("%v", v), nil
+		}
+	}
+	return defaultVersion, nil
 }
