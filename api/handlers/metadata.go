@@ -3,10 +3,11 @@ package handlers
 import (
 	"context"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
 	"gopkg.in/yaml.v2"
@@ -77,7 +78,10 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 			// log the error, but continue
 			logger.WithError(err).Error("Error getting deployment info")
 		} else {
-			payload.Bridgeversion = strings.TrimPrefix(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, "keptn/")
+			v := strings.Split(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, ":")
+			if len(v) >= 2 {
+				payload.Bridgeversion = v[1]
+			}
 		}
 
 		// Load swagger.yaml from /swagger-ui/swagger.yaml
