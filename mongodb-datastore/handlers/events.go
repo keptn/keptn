@@ -20,7 +20,7 @@ func NewEventRequestHandler(eventRepo db.EventRepo) *EventRequestHandler {
 }
 
 func (erh *EventRequestHandler) ProcessEvent(event *models.KeptnContextExtendedCE) error {
-	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
+	if string(*event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
 		return erh.eventRepo.DropProjectCollections(*event)
 	}
 

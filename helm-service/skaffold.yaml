@@ -24,5 +24,5 @@ deploy:
         overrides:
           distributor:
             image:
-              tag: 0.8.4
+              tag: 0.13.0-dev
         chartPath: chart

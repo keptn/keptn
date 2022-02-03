@@ -836,6 +836,35 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 	}
 }
 
+func (s *BaseSuite) TestGit_MigrateProject(c *C) {
+	g := NewGit(GogitReal{})
+
+	gitContext := s.NewGitContext()
+	err := g.CreateBranch(gitContext, "new-branch", "master")
+	if err != nil {
+		c.Errorf("CreateBranch() error = %v, wantErr %v", err, false)
+	}
+
+	err = g.Push(gitContext)
+	c.Assert(err, IsNil)
+
+	err = g.CheckoutBranch(gitContext, "master")
+	c.Assert(err, IsNil)
+
+	err = g.MigrateProject(gitContext, []byte("new-metadata-content"))
+	c.Assert(err, IsNil)
+
+	revision, err := g.GetCurrentRevision(gitContext)
+	c.Assert(err, IsNil)
+
+	got, err := g.GetFileRevision(gitContext, revision, ".keptn-stages/new-branch/LICENSE")
+	c.Assert(err, IsNil)
+
+	if len(got) == 0 {
+		c.Error("Expected metadata file to be present")
+	}
+}
+
 func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 
 	tests := []struct {

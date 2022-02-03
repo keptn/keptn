@@ -33,6 +33,7 @@ type IGit interface {
 	GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
 	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
+	MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error
 }
 
 type Git struct {
@@ -45,13 +46,13 @@ func NewGit(git Gogit) *Git {
 
 func configureGitUser(repository *git.Repository) error {
 
-	config, err := repository.Config()
-	config.User.Name = getGitKeptnUser()
-	config.User.Email = getGitKeptnEmail()
+	c, err := repository.Config()
+	c.User.Name = getGitKeptnUser()
+	c.User.Email = getGitKeptnEmail()
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotSetUser, err)
 	}
-	repository.SetConfig(config)
+	repository.SetConfig(c)
 	return nil
 
 }
@@ -143,6 +144,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		return nil, err
 	}
 
+	os.MkdirAll(projectPath+"/.git", 0700)
 	w, err := init.Worktree()
 	if err != nil {
 		return nil, err
@@ -300,7 +302,7 @@ func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, e
 	return hash.String(), nil
 }
 
-// returns what is the curren commit id of remote and if the remote is uptodate with the local branch
+// returns what is the current commit id of remote and if the remote is up-to-date with the local branch
 func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (string, bool, error) {
 	repo, _, err := g.getWorkTree(gitContext)
 	if err != nil {
@@ -406,15 +408,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 		if err != nil {
 			return err
 		}
-		if err := r.Fetch(&git.FetchOptions{
-			RemoteName: "origin",
-			RefSpecs:   []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
-			Auth: &http.BasicAuth{
-				Username: gitContext.Credentials.User,
-				Password: gitContext.Credentials.Token,
-			},
-			Force: true,
-		}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		if err = g.fetch(gitContext, r); err != nil {
 			return err
 		}
 		return w.Checkout(options)
@@ -422,15 +416,35 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 	return kerrors.ErrProjectNotFound
 }
 
+func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
+	if err := r.Fetch(&git.FetchOptions{
+		RemoteName: "origin",
+		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
+		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
+		//// take all branch from remote and put them in the local repo as origin branches and as branches
+		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
+		Auth: &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		},
+		Force: true,
+	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return err
+	}
+	return nil
+}
+
 func (g *Git) GetFileRevision(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 	path := GetProjectConfigPath(gitContext.Project)
 	r, err := g.git.PlainOpen(path)
 	if err != nil {
+		logger.Debugf("Could not open project %s: %s", file, err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "open", gitContext.Project, err)
 	}
 	h, err := r.ResolveRevision(plumbing.Revision(revision))
 	if err != nil {
+		logger.Debugf("Could not resolve revision for %s: %s", revision, err)
 		return []byte{},
 			fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "retrieve revision in ", gitContext.Project, err)
 	}
@@ -475,11 +489,11 @@ func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, err
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
 	}
-	config, err := r.Config()
+	repoConfig, err := r.Config()
 	if err != nil {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
 	}
-	def := config.Init.DefaultBranch
+	def := repoConfig.Init.DefaultBranch
 	if def == "" {
 		def = "master"
 	}
@@ -505,6 +519,100 @@ func (g *Git) ProjectRepoExists(project string) bool {
 		}
 	}
 	return false
+}
+
+func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataContent []byte) error {
+	if err := g.Pull(gitContext); err != nil {
+		return err
+	}
+
+	tmpGitContext := gitContext
+	tmpGitContext.Project = "_keptn-tmp_" + gitContext.Project
+
+	tmpProjectPath := GetProjectConfigPath(tmpGitContext.Project)
+	projectPath := GetProjectConfigPath(gitContext.Project)
+
+	defaultBranch, err := g.GetDefaultBranch(gitContext)
+	if err != nil {
+		return err
+	}
+
+	if _, err := g.CloneRepo(tmpGitContext); err != nil {
+		return err
+	}
+
+	// check out branches of the tmp remote and store the content in the master branch of the repo
+	oldRepo, oldRepoWorktree, err := g.getWorkTree(tmpGitContext)
+	if err != nil {
+		return err
+	}
+
+	if err := g.fetch(tmpGitContext, oldRepo); err != nil {
+		return err
+	}
+	branches, err := oldRepo.Branches()
+	err = branches.ForEach(func(branch *plumbing.Reference) error {
+		if branch.Name().Short() != defaultBranch {
+			return g.migrateBranch(branch, oldRepoWorktree, projectPath, tmpProjectPath)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(GetProjectMetadataFilePath(gitContext.Project), newMetadataContent, os.ModePerm); err != nil {
+		return err
+	}
+
+	_, err = g.StageAndCommitAll(gitContext, "migrated project structure")
+	if err != nil {
+		return err
+	}
+
+	if err := os.RemoveAll(tmpProjectPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *Git) migrateBranch(branch *plumbing.Reference, oldRepoWorktree *git.Worktree, projectPath string, tmpProjectPath string) error {
+	err := oldRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
+	if err != nil {
+		return err
+	}
+
+	err = ensureDirectoryExists(projectPath + "/" + StageDirectoryName)
+	if err != nil {
+		return err
+	}
+
+	err = ensureDirectoryExists(projectPath + "/" + StageDirectoryName + "/" + branch.Name().Short())
+	if err != nil {
+		return err
+	}
+
+	files, err := ioutil.ReadDir(tmpProjectPath)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		if file.Name() == ".git" {
+			continue
+		}
+		err := os.Rename(tmpProjectPath+"/"+file.Name(), projectPath+"/"+StageDirectoryName+"/"+branch.Name().Short()+"/"+file.Name())
+		if err != nil {
+			return err
+		}
+	}
+	err = oldRepoWorktree.Reset(&git.ResetOptions{Mode: git.HardReset})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository, *git.Worktree, error) {
@@ -569,24 +677,28 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	case *object.Commit:
 		t, err := o.Tree()
 		if err != nil {
+			logger.Debugf("Could not resolve commit for path %s: %s ", path, err)
 			return nil, err
 		}
 		return resolve(t, path)
 	case *object.Tag:
 		target, err := o.Object()
 		if err != nil {
+			logger.Debugf("Could not resolve tag for path %s: %s ", path, err)
 			return nil, err
 		}
 		return resolve(target, path)
 	case *object.Tree:
 		file, err := o.File(path)
 		if err != nil {
+			logger.Debugf("Could not resolve file for path %s: %s ", path, err)
 			return nil, err
 		}
 		return &file.Blob, nil
 	case *object.Blob:
 		return o, nil
 	default:
+		logger.Debug("Could not resolve unsupported object for path: ", path)
 		return nil, object.ErrUnsupportedObject
 	}
 }

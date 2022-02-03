@@ -10,6 +10,7 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -25,16 +26,18 @@ type IResourceManager interface {
 }
 
 type ResourceManager struct {
-	git              common.IGit
-	credentialReader common.CredentialReader
-	fileSystem       common.IFileSystem
+	git                  common.IGit
+	credentialReader     common.CredentialReader
+	fileSystem           common.IFileSystem
+	configurationContext IConfigurationContext
 }
 
-func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ResourceManager {
+func NewResourceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem, stageContext IConfigurationContext) *ResourceManager {
 	projectResourceManager := &ResourceManager{
-		git:              git,
-		credentialReader: credentialReader,
-		fileSystem:       fileWriter,
+		git:                  git,
+		credentialReader:     credentialReader,
+		fileSystem:           fileWriter,
+		configurationContext: stageContext,
 	}
 	return projectResourceManager
 }
@@ -140,29 +143,15 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		return nil, "", kerrors.ErrProjectNotFound
 	}
 
-	var branch string
-
-	if stage == nil {
-		branch, err = p.git.GetDefaultBranch(gitContext)
-		if err != nil {
-			return nil, "", fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
-		}
-	} else {
-		branch = stage.StageName
-	}
-
-	if err := p.git.CheckoutBranch(gitContext, branch); err != nil {
-		return nil, "", fmt.Errorf("could not check out branch %s of project %s: %w", branch, project.ProjectName, err)
-	}
-
-	var configPath string
-	if service == nil {
-		configPath = common.GetProjectConfigPath(project.ProjectName)
-	} else {
-		configPath = common.GetServiceConfigPath(project.ProjectName, service.ServiceName)
-		if !p.fileSystem.FileExists(configPath) {
-			return nil, "", kerrors.ErrServiceNotFound
-		}
+	configPath, err := p.configurationContext.Establish(common_models.ConfigurationContextParams{
+		Project:                 project,
+		Stage:                   stage,
+		Service:                 service,
+		GitContext:              gitContext,
+		CheckConfigDirAvailable: true,
+	})
+	if err != nil {
+		return nil, "", err
 	}
 	return &gitContext, configPath, nil
 }
@@ -172,12 +161,14 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	var revision string
 	var err error
 
-	resourcePath := configPath + "/" + resourceName
-
-	if params.GitCommitID != "" {
-		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourceName)
+	if params.GitCommitID != "" && params.GitCommitID != "\"\"" {
+		// if commit ID is set, path needs to be relative to the project directory
+		configPath = strings.TrimPrefix(configPath, common.GetProjectConfigPath(params.ProjectName))
+		resourcePath := configPath + "/" + resourceName
+		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {
+		resourcePath := configPath + "/" + resourceName
 		if err := p.git.Pull(*gitContext); err != nil {
 			return nil, err
 		}

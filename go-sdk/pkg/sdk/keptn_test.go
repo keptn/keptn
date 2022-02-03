@@ -147,6 +147,7 @@ func newTestTaskTriggeredEvent() cloudevents.Event {
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, "keptncontext")
 	c.SetExtension(TriggeredIDCEExtension, "ID")
+	c.SetExtension(GitCommitIDCEExtension, "mycommitid")
 	c.SetSource("unittest")
 	c.SetData(cloudevents.ApplicationJSON, FakeTaskData{})
 	return c

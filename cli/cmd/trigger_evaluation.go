@@ -17,10 +17,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
-	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -46,6 +47,7 @@ var triggerEvaluation triggerEvaluationStruct
 
 var triggerEvaluationCmd = &cobra.Command{
 	Use:   "evaluation",
+	Args:  cobra.NoArgs,
 	Short: "Triggers the evaluation of a test for a service in a project and stage",
 	Long: `Triggers the evaluation of a test for a service in a project and stage 
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const approvalTriggeredMockResponse = `{
@@ -258,4 +259,14 @@ func createMockStdIn(userInput string) (*os.File, *os.File) {
 
 	oldStdin := os.Stdin
 	return tmpfile, oldStdin
+}
+
+// TestSendEventApprovalFinishedUnknownCommand
+func TestSendEventApprovalFinishedUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("send event approval.finished someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn send event approval.finished\"", t)
+}
+
+// TestSendEventApprovalFinishedUnknownParameter
+func TestSendEventApprovalFinishedUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("send event approval.finished --projectt=sockshop", "unknown flag: --projectt", t)
 }

@@ -17,6 +17,7 @@ describe('Project delete test', () => {
 
     cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
       statusCode: 200,
+      fixture: 'get.approval.json',
     });
 
     cy.intercept('DELETE', '/api/controlPlane/v1/project/dynatrace', {
@@ -29,6 +30,7 @@ describe('Project delete test', () => {
 
     cy.intercept('GET', 'api/project/dynatrace', {
       statusCode: 200,
+      fixture: 'get.approval.json',
     });
 
     cy.visit('/');

@@ -21,9 +21,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"strings"
+
+	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -54,6 +55,7 @@ var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker())
 func NewUpgraderCommand(vChecker *version.KeptnVersionChecker) *cobra.Command {
 	upgradeCmd := &cobra.Command{
 		Use:   "upgrade",
+		Args:  cobra.NoArgs,
 		Short: "Upgrades Keptn on a Kubernetes cluster.",
 		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 

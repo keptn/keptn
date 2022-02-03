@@ -1,11 +1,15 @@
 package event_handler
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
+
+	"github.com/keptn/go-utils/pkg/common/strutils"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 type getSLOTestObject struct {
@@ -388,5 +392,38 @@ total_score:
 			assert.EqualValues(t, test.ExpectedSLO, objectives)
 			assert.EqualValues(t, test.ExpectedError, err)
 		})
+	}
+}
+
+func getStartEventWithCommitId(id string) cloudevents.Event {
+	return cloudevents.Event{
+		Context: &cloudevents.EventContextV1{
+			Type:            keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
+			Source:          types.URIRef{},
+			ID:              "",
+			Time:            nil,
+			DataContentType: strutils.Stringp("application/json"),
+			Extensions: map[string]interface{}{
+				"shkeptncontext": "my-context",
+				"gitcommitid":    id,
+			},
+		},
+		DataEncoded: []byte(`{
+    "project": "sockshop",
+    "stage": "staging",
+    "service": "carts",
+    "testStrategy": "",
+    "deploymentStrategy": "direct",
+	"evaluation": {
+		"timeframe": "5m"
+    },
+    "labels": {
+      "testid": "12345",
+      "buildnr": "build17",
+      "runby": "JohnDoe"
+    },
+    "result": "pass"
+  }`),
+		DataBase64: false,
 	}
 }

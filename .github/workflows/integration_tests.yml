@@ -54,6 +54,7 @@ jobs:
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.19"
+            CLUSTER_NAME: "keptn-integration-test-1"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
@@ -62,6 +63,7 @@ jobs:
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.21"
+            CLUSTER_NAME: "keptn-integration-test-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
@@ -73,7 +75,7 @@ jobs:
       PLATFORM: ${{ matrix.PLATFORM }}
       PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
-      KEPTN_NAMESPACE: "keptn-test"
+      KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
@@ -160,7 +162,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -204,9 +206,9 @@ jobs:
         id: extract_helm_chart_name
         run: |
           ls dist/keptn-installer/*.tgz # debug output
-          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
-          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
-          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
+          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
+          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz)
+          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz)
 
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
           echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
@@ -250,33 +252,46 @@ jobs:
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
           GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
           CLOUDSDK_REGION: "us-east1"
+          GKE_KUBECONFIG: ${{ secrets.INTEGRATION_TEST_KUBECONFIG }}
           BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
-          CLUSTER_NAME_NIGHTLY=gh-nightly
-          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
-          export CLUSTER_NAME_NIGHTLY=${CLUSTER_NAME_NIGHTLY}-${BRANCH_SLUG:0:15}-gke${GKE_VERSION//./}
-          echo $CLUSTER_NAME_NIGHTLY
-          echo "Installing gcloud CLI"
+          export CLUSTER_NAME_NIGHTLY=${{ matrix.CLUSTER_NAME }}
+          echo "Setting up GCloud CLI"
           export OS_TYPE="linux"
-          ./test/utils/download_and_install_gcloud.sh
+          
           echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
+          export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
+          
           gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-          test/utils/gke_create_cluster.sh
-          test/utils/gke_authenticate_at_cluster.sh
-
+          gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
+          gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
+          gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
+          
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" >> $GITHUB_ENV
+          
+          echo "Setting up kubectl"
+          echo "Setting KUBECONFIG to $PWD/.kubeconfig"
+          
+          echo "$GKE_KUBECONFIG" >> "$PWD/.kubeconfig"
+          chmod 600 "$PWD/.kubeconfig"
+          export KUBECONFIG="$PWD/.kubeconfig"
+          
+          echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
+          
+          echo "Setting kube context..."
+          kubectl config use-context "$CLUSTER_NAME_NIGHTLY"
+          
           echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
 
       - name: Install Istio
-        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
+        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # no need to install istio on minishift or GKE (pre-installed)
         run: test/utils/install_istio.sh
-
-      - name: Host helm chart via python http server
-        run: cd dist/keptn-installer/ && python3 -m http.server &
 
       - name: Push images to airgapped registry
         if: env.RUN_AIRGAPPED_TEST == 'true'
@@ -336,11 +351,11 @@ jobs:
           echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
-            installer/airgapped/install_keptn.sh "$AIRGAPPED_REGISTRY_URL/" "http://0.0.0.0:8000/$HELM_CHART_NAME" "http://0.0.0.0:8000/$HELM_SERVICE_HELM_CHART_NAME" "http://0.0.0.0:8000/$JMETER_SERVICE_HELM_CHART_NAME"
+            installer/airgapped/install_keptn.sh "$AIRGAPPED_REGISTRY_URL/" "$HELM_CHART_NAME" "$HELM_SERVICE_HELM_CHART_NAME" "$JMETER_SERVICE_HELM_CHART_NAME"
           else
             # Install Keptn via CLI
             keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
-               --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
+               --chart-repo=${HELM_CHART_NAME} --creds=creds.json $USE_CASE
           fi
           echo "::endgroup::"
 
@@ -365,7 +380,7 @@ jobs:
           sleep 30 # TODO
           kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
           sleep 30 # TODO
-          curl -vkL --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
           GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
           kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN}
           rm gitea-token.txt
@@ -399,36 +414,15 @@ jobs:
           # set ingress-hostname params
           INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           echo "INGRESS_IP=$INGRESS_IP"
-          kubectl create configmap -n ${KEPTN_NAMESPACE} ingress-config --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io --from-literal=ingress_port=80 --from-literal=ingress_protocol=http --from-literal=ingress_gateway=public-gateway.istio-system -oyaml --dry-run=client | kubectl replace -f -
+          kubectl create configmap -n ${KEPTN_NAMESPACE} ingress-config \
+            --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io \
+            --from-literal=ingress_port=80 \
+            --from-literal=ingress_protocol=http \
+            --from-literal=ingress_gateway=public-gateway.istio-system -oyaml \
+            --dry-run=client | kubectl replace -f -
           # restart helm-service
           kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
           sleep 15
-
-      - name: Verify Deployments of Keptn
-        run: |
-          source test/utils.sh
-          echo "Verifying that services and namespaces have been created"
-
-          # verify the deployments within the keptn namespace (for keptn control plane)
-          verify_deployment_in_namespace "api-gateway-nginx" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "statistics-service" ${KEPTN_NAMESPACE}
-
-          # verify deployments for continuous delivery
-          if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
-            verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "approval-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
-          fi
-
-          # verify the datastore deployments
-          verify_deployment_in_namespace "mongo" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
 
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
@@ -469,11 +463,11 @@ jobs:
 
           KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
 
-          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
 
-          helm test jmeter-service -n keptn-jmeter-service
-          helm test helm-service -n keptn-helm-service
+          helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
+          helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
 
       - name: Prepare test run
         id: prepare_test_run
@@ -544,32 +538,36 @@ jobs:
           mv support-archive/keptn*.zip support-archive/${SUPPORT_ARCHIVE_FILENAME}.zip
 
       - name: Uninstall Keptn
+        if: always() && env.CLOUD_PROVIDER != 'GKE'
         timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
 
-      - name: Uninstall remote execution plane
-        timeout-minutes: 5
-        if: env.REMOTE_EXECUTION_PLANE == 'true'
-        run: |
-          kubectl delete namespace keptn-helm-service
-          kubectl delete namespace keptn-jmeter-service
-
       - name: Uninstall Istio
-        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishift, so no need to uninstall it
+        if: always() && env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # istio was not installed on minishift or GKE, so no need to uninstall it
         timeout-minutes: 5
         run: test/utils/uninstall_istio.sh
 
-      - name: Cleanup GKE cluster
-        if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
-        timeout-minutes: 10
-        env:
-          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
-          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-          CLOUDSDK_REGION: "us-east1"
-          CLUSTER_NAME_NIGHTLY: ${{ steps.install_gke.outputs.CLUSTER_NAME_NIGHTLY }}
-        run: test/utils/gke_delete_cluster.sh
+      - name: Cleanup test namespace
+        if: always() && env.CLOUD_PROVIDER == 'GKE'
+        run: |
+          readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+
+          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
+              kubectl annotate namespace "$namespace" janitor/ttl=3d
+            done
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
+              kubectl annotate namespace "$namespace" janitor/ttl=6h
+            done
+          else
+            for namespace in "${namespaces[@]}"; do
+              echo "Deleting namespace $namespace ..."
+              kubectl delete namespace "$namespace" --wait=false
+            done
+          fi
 
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
@@ -758,7 +756,7 @@ jobs:
           cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -859,7 +857,7 @@ jobs:
           submodules: 'true'
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -945,7 +943,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.16.0
+        uses: dawidd6/action-download-artifact@v2.17.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -33,9 +34,12 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
+		} else if len(args) >= 2 {
+			cmd.SilenceUsage = false
+			return errors.New("too many arguments set")
 		}
 		service := args[0]
 

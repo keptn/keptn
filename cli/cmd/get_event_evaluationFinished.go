@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cli/internal"
 
@@ -36,6 +37,7 @@ var evaluationDone evaluationDoneStruct
 // getEvaluationFinishedCmd represents the evaluation.finished command
 var getEvaluationFinishedCmd = &cobra.Command{
 	Use:          "evaluation.finished",
+	Args:         cobra.NoArgs,
 	Short:        "Returns the latest Keptn sh.keptn.event.evaluation.finished event from a specific Keptn context",
 	Long:         `Returns the latest Keptn sh.keptn.event.evaluation.finished event from a specific Keptn context.`,
 	Example:      `keptn get event evaluation.finished --keptn-context=1234-5678-90ab-cdef`,

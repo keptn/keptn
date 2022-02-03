@@ -1,11 +1,13 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/common"
 	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/common"
 
 	"github.com/keptn/keptn/cli/pkg/helm"
 
@@ -18,6 +20,7 @@ import (
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
 	Use:   "uninstall",
+	Args:  cobra.NoArgs,
 	Short: "Uninstalls Keptn from a Kubernetes cluster",
 	Long: `Uninstalls Keptn from a Kubernetes cluster.
 

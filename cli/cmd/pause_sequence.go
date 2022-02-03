@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -27,9 +28,7 @@ var pauseSequenceCmd = &cobra.Command{
 	Long:         `Pauses the execution of a sequence. Currently running task(s) will not be paused.`,
 	Example:      `keptn pause sequence --project <my-project> --keptn-context <keptn-context>`,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+	Args:         cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := PauseSequence(pauseSequenceParams); err != nil {
 			return err

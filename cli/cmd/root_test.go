@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -80,6 +81,19 @@ func executeActionCommandC(cmd string) (string, error) {
 	err = rootCmd.Execute()
 
 	return buf.String(), err
+}
+
+func testInvalidInputHelper(inputCmd string, expectedOutput string, t *testing.T) {
+	cmd := fmt.Sprintf(inputCmd)
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+
+	got := err.Error()
+	if got != expectedOutput {
+		t.Errorf("Expected %q, got %q", expectedOutput, got)
+	}
 }
 
 func getMockVersionHTTPServer() *httptest.Server {

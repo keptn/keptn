@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"strings"
+	"testing"
+
 	"github.com/bmizerany/assert"
 	"github.com/keptn/keptn/cli/pkg/common"
 	commonfake "github.com/keptn/keptn/cli/pkg/common/fake"
@@ -9,8 +12,6 @@ import (
 	kubefake "github.com/keptn/keptn/cli/pkg/kube/fake"
 	"helm.sh/helm/v3/pkg/chart"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"testing"
 )
 
 func TestInstallCmdHandler_doInstallation(t *testing.T) {
@@ -241,4 +242,14 @@ func TestInstallCmdHandler_doInstallation(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestInstallUnknownCommand
+func TestInstallUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("install someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn install\"", t)
+}
+
+// TestInstallUnknownParameter
+func TestInstallUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("install --project=sockshop", "unknown flag: --project", t)
 }

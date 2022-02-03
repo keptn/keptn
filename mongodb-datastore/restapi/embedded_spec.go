@@ -37,7 +37,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events from the data store",
+        "summary": "Gets events from the data store, either keptnContext or project must be specified",
         "operationId": "getEvents",
         "parameters": [
           {
@@ -176,7 +176,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events by their type from the mongodb",
+        "summary": "Gets events by their type from the mongodb, required filter are either 'data.project:\u003cproject-name\u003e' or 'shkeptncontext:\u003ckeptn-context-id\u003e'",
         "operationId": "getEventsByType",
         "parameters": [
           {
@@ -248,28 +248,52 @@ func init() {
   },
   "definitions": {
     "KeptnContextExtendedCE": {
-      "allOf": [
-        {
-          "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
         },
-        {
-          "type": "object",
-          "properties": {
-            "gitcommitid": {
-              "type": "string"
-            },
-            "shkeptncontext": {
-              "type": "string"
-            },
-            "shkeptnspecversion": {
-              "type": "string"
-            },
-            "triggeredid": {
-              "type": "string"
-            }
-          }
+        "data": {
+          "type": "object"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "gitcommitid": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "shkeptnspecversion": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "triggeredid": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
-      ]
+      }
     },
     "error": {
       "type": "object",
@@ -340,7 +364,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events from the data store",
+        "summary": "Gets events from the data store, either keptnContext or project must be specified",
         "operationId": "getEvents",
         "parameters": [
           {
@@ -488,7 +512,7 @@ func init() {
         "tags": [
           "event"
         ],
-        "summary": "Gets events by their type from the mongodb",
+        "summary": "Gets events by their type from the mongodb, required filter are either 'data.project:\u003cproject-name\u003e' or 'shkeptncontext:\u003ckeptn-context-id\u003e'",
         "operationId": "getEventsByType",
         "parameters": [
           {
@@ -566,37 +590,52 @@ func init() {
   },
   "definitions": {
     "KeptnContextExtendedCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/event"
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
         },
-        {
-          "type": "object",
-          "properties": {
-            "gitcommitid": {
-              "type": "string"
-            },
-            "shkeptncontext": {
-              "type": "string"
-            },
-            "shkeptnspecversion": {
-              "type": "string"
-            },
-            "triggeredid": {
-              "type": "string"
-            }
-          }
+        "data": {
+          "type": "object"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "gitcommitid": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "shkeptnspecversion": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "triggeredid": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
-      ]
-    },
-    "contenttype": {
-      "type": "string"
-    },
-    "data": {
-      "type": [
-        "object",
-        "string"
-      ]
+      }
     },
     "error": {
       "type": "object",
@@ -616,62 +655,7 @@ func init() {
         }
       }
     },
-    "event": {
-      "type": "object",
-      "required": [
-        "specversion",
-        "id",
-        "type",
-        "source"
-      ],
-      "properties": {
-        "contenttype": {
-          "$ref": "#/definitions/contenttype"
-        },
-        "data": {
-          "$ref": "#/definitions/data"
-        },
-        "extensions": {
-          "$ref": "#/definitions/extensions"
-        },
-        "id": {
-          "$ref": "#/definitions/id"
-        },
-        "source": {
-          "$ref": "#/definitions/source"
-        },
-        "specversion": {
-          "$ref": "#/definitions/specversion"
-        },
-        "time": {
-          "$ref": "#/definitions/time"
-        },
-        "type": {
-          "$ref": "#/definitions/type"
-        }
-      }
-    },
-    "extensions": {
-      "type": "object"
-    },
-    "id": {
-      "type": "string"
-    },
     "principal": {
-      "type": "string"
-    },
-    "source": {
-      "type": "string",
-      "format": "uri-reference"
-    },
-    "specversion": {
-      "type": "string"
-    },
-    "time": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "type": {
       "type": "string"
     }
   },

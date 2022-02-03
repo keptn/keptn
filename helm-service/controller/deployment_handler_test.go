@@ -42,6 +42,7 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	ce.SetExtension("gitcommitid", "USER_CHART_GIT_ID")
 	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
@@ -104,6 +105,7 @@ func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	ce.SetExtension("gitcommitid", "USER_CHART_GIT_ID")
 	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
@@ -169,6 +171,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	ce.SetExtension("gitcommitid", "USER_CHART_GIT_ID")
 	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
@@ -242,6 +245,7 @@ func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t 
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	ce.SetExtension("gitcommitid", "USER_CHART_GIT_ID")
 	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
@@ -309,6 +313,7 @@ func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *test
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	ce.SetExtension("gitcommitid", "USER_CHART_GIT_ID")
 	deploymentHandler.HandleEvent(ce)
 
 	expectedDeploymentFinishedEvent := cloudevents.NewEvent()

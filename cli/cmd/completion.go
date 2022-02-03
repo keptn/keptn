@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 var completionCmd = &cobra.Command{
 	Use:   "completion [bash|zsh|fish|powershell]",
 	Short: "Generate completion script",
-	Long:  "Installing bash completion on macOS using homebrew \n" +
+	Long: "Installing bash completion on macOS using homebrew \n" +
 		"	If running Bash 3.2 included with macOS, run brew install bash-completion \n" +
 		"	If running Bash 4.1+, run brew install bash-completion@2 \n" +
 		"	If you've installed via other means, you may need add the completion to your completion directory, run keptn completion bash > $(brew --prefix)/etc/bash_completion.d/keptn \n\n" +
@@ -26,18 +27,18 @@ var completionCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),
-	Run: func (cmd *cobra.Command, args []string){
-	switch args[0]{
-case "bash":
-	cmd.Root().GenBashCompletion(os.Stdout)
-case "zsh":
-	cmd.Root().GenZshCompletion(os.Stdout)
-case "fish":
-	cmd.Root().GenFishCompletion(os.Stdout, true)
-case "powershell":
-	cmd.Root().GenPowerShellCompletion(os.Stdout)
-}
-},
+	Run: func(cmd *cobra.Command, args []string) {
+		switch args[0] {
+		case "bash":
+			cmd.Root().GenBashCompletion(os.Stdout)
+		case "zsh":
+			cmd.Root().GenZshCompletion(os.Stdout)
+		case "fish":
+			cmd.Root().GenFishCompletion(os.Stdout, true)
+		case "powershell":
+			cmd.Root().GenPowerShellCompletion(os.Stdout)
+		}
+	},
 }
 
 func init() {

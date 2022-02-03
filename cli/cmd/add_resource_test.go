@@ -3,10 +3,11 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -185,22 +186,18 @@ func TestAddResourceToProjectService(t *testing.T) {
 
 // TestAddResourceWhenArgsArePresent
 func TestAddResourceWhenArgsArePresent(t *testing.T) {
+	testInvalidInputHelper("add-resource --project=sockshop --stage=dev --service=carts --resource=testResource.txt "+
+		"-- resourceUri=resource/testResource.txt --mock", "accepts 0 arg(s), received 2", t)
+}
 
-	setup()
-	defer teardown()
+// TestAddResourceUnknownCommand
+func TestAddResourceUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("add-resource someUnknownCommand --project=sockshop --stage=dev --service=carts --resource=testResource.txt "+
+		"--resourceUri=resource/testResource.txt --mock", "accepts 0 arg(s), received 1", t)
+}
 
-	resourceFileName := "testResource.txt"
-	defer testResource(t, resourceFileName, "")()
-
-	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --service=%s --resource=%s "+
-		"-- resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
-	_, err := executeActionCommandC(cmd)
-	if err == nil {
-		t.Errorf("Expected an error")
-	}
-	got := err.Error()
-	expected := "accepts 0 arg(s), received 2"
-	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)
-	}
+// TestAddResourceUnknownParameter
+func TestAddResourceUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("add-resource --projectt=sockshop --stage=dev --service=carts --resource=testResource.txt "+
+		"--resourceUri=resource/testResource.txt --mock", "unknown flag: --projectt", t)
 }
