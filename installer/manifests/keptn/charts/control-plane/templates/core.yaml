@@ -295,7 +295,7 @@ spec:
             - name: TRUST_PROXY
               value: "{{ .Values.bridge.oauth.trustProxy }}"
             - name: MONGODB_HOST
-              value: keptn-mongo:27017
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -307,7 +307,7 @@ spec:
                   name: mongodb-credentials
                   key: mongodb-password
             - name: MONGODB_DATABASE
-              value: openid
+              value: {{ .Values.mongo.auth.bridgeAuthDatabase | default "openid" }}
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
