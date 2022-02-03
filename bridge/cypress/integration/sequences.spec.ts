@@ -92,6 +92,7 @@ describe('Sequences', () => {
     clearFilter();
     cy.get('dt-quick-filter-group').eq(3).find('dt-checkbox').eq(3).click();
     testSelectableTiles(2, 'keptn-sequence-info-status', 'succeeded');
+    cy.byTestId('keptn-loadingOldSequences').should('not.exist');
 
     // Test one combined filter
     clearFilter();
