@@ -14,6 +14,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
@@ -87,35 +88,28 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
-	logger.Info("som v clonerepo a idem newpublickeys a privatekey je ")
-	publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
-	if err != nil {
-		logger.Info("publickey nevyslo, error je ", err)
-		return false, err
+
+	gitCloneOptions := &git.CloneOptions{
+		URL: gitContext.Credentials.RemoteURI,
 	}
-	// d1 := []byte("Host *\n\tStrictHostKeyChecking no\n")
-	// err = os.WriteFile("/etc/ssh/ssh_config", d1, 0644)
-	// if err != nil {
-	// 	logger.Info("nepodarilo sa zapisat")
-	// }
-	// 	const known_hosts = `|1|sGVjWufpaYojeb3q8zHzWAF5Bik=|O3jMs8goRh9aIZmygB32uOd+1ag= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	// |1|tkk5rzaiVN412IjHPmfHGz7knNs=|5UN3KUVC3xrVR+6JCIvfXXW3Sck= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	// |1|IYHOYgTDqfjhK/R63yJGylgKq98=|p6sl0Z326p2ZLTp/3U3ALt/GKYE= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	// |1|EPtaSFOBMd59fA5kxDPURk5OtMk=|MXXmYgzcVddqXZODX7N5BRO6YFc= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	// |1|Qt/yHOFqRg56PRkjuwaeQAlApcU=|6DxELWbZUCyjg3FRsYpUjCtkjlY= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	// |1|YdaemWm6kwXuhOOKTWMP22O+/+s=|Dsz7FoAYb7bNyEOkn3NDM4iMKjM= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==`
-	// 	err = os.WriteFile("~/.ssh/known_hosts", []byte(known_hosts), 0644)
-	// 	if err != nil {
-	// 		logger.Info("nepodarilo sa zapisat, error je ", err)
-	// 	}
-	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-	logger.Info("publickey vyslo")
-	clone, err := g.git.PlainClone(projectPath, false,
-		&git.CloneOptions{
-			URL:  gitContext.Credentials.RemoteURI,
-			Auth: publicKey,
-		},
-	)
+	logger.Info("som v clonerepo a idem newpublickeys a privatekey je ")
+	if gitContext.Credentials.PrivateKey != "" {
+		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+		if err != nil {
+			logger.Info("publickey nevyslo, error je ", err)
+			return false, err
+		}
+		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+		logger.Info("publickey vyslo")
+		gitCloneOptions.Auth = publicKey
+	} else if gitContext.Credentials.Token != "" {
+		gitCloneOptions.Auth = &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		}
+	}
+
+	clone, err := g.git.PlainClone(projectPath, false, gitCloneOptions)
 
 	if err != nil {
 		logger.Info("plainclone nevyslo")
@@ -223,7 +217,7 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
-	os.Setenv("SSH_AUTH_SOCK", "/run/user/1000/keyring/ssh")
+	//os.Setenv("SSH_AUTH_SOCK", "/run/user/1000/keyring/ssh")
 	logger.Info("som v stage and commit all")
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
@@ -275,18 +269,26 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
 	}
 
-	publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
-	if err != nil {
-		logger.Info("publickey v push nevyslo, error je ", err)
-		return err
-	}
-	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-	logger.Info("publickey v push vyslo")
-
-	err = repo.Push(&git.PushOptions{
+	gitPushOptions := &git.PushOptions{
 		RemoteName: "origin",
-		Auth:       publicKey,
-	})
+	}
+	if gitContext.Credentials.PrivateKey != "" {
+		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+		if err != nil {
+			logger.Info("publickey v push nevyslo, error je ", err)
+			return err
+		}
+		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+		logger.Info("publickey v push vyslo")
+		gitPushOptions.Auth = publicKey
+	} else if gitContext.Credentials.Token != "" {
+		gitPushOptions.Auth = &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		}
+	}
+
+	err = repo.Push(gitPushOptions)
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, git.ErrForceNeeded) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, kerrors.ErrForceNeeded)
@@ -308,27 +310,31 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
 
-		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
-		if err != nil {
-			logger.Info("publickey v pull nevyslo, error je ", err)
-			return err
-		}
-		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-		logger.Info("publickey v pull vyslo")
-
-		// auth := &http.BasicAuth{
-		// 	Username: gitContext.Credentials.User,
-		// 	Password: gitContext.Credentials.Token,
-		// }
-		err = w.Pull(&git.PullOptions{
+		gitPullOptions := &git.PullOptions{
 			RemoteName:    "origin",
 			Force:         true,
 			ReferenceName: head.Name(),
-			Auth:          publicKey,
-		})
+		}
+		if gitContext.Credentials.PrivateKey != "" {
+			publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+			if err != nil {
+				logger.Info("publickey v pull nevyslo, error je ", err)
+				return err
+			}
+			publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+			logger.Info("publickey v pull vyslo")
+			gitPullOptions.Auth = publicKey
+		} else if gitContext.Credentials.Token != "" {
+			gitPullOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
+		}
+
+		err = w.Pull(gitPullOptions)
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: publicKey})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitPullOptions.Auth})
 		}
 		if err != nil {
 			if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
@@ -478,23 +484,32 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 }
 
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
-	publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
-	if err != nil {
-		logger.Info("publickey v fetch nevyslo, error je ", err)
-		return err
-	}
-	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-	logger.Info("publickey v fetch vyslo")
 
-	if err := r.Fetch(&git.FetchOptions{
+	gitFetchOptions := &git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
 		//// take all branch from remote and put them in the local repo as origin branches and as branches
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
-		Auth:  publicKey,
 		Force: true,
-	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+	}
+	if gitContext.Credentials.PrivateKey != "" {
+		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.PrivateKey), "<password>")
+		if err != nil {
+			logger.Info("publickey v fetch nevyslo, error je ", err)
+			return err
+		}
+		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+		logger.Info("publickey v fetch vyslo")
+		gitFetchOptions.Auth = publicKey
+	} else if gitContext.Credentials.Token != "" {
+		gitFetchOptions.Auth = &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		}
+	}
+
+	if err := r.Fetch(gitFetchOptions); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}
 	return nil

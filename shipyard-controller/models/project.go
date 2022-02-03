@@ -111,9 +111,9 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
 	}
 
-	// if err := common.ValidateGitRemoteURL(createProjectParams.GitRemoteURL); err != nil {
-	// 	return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
-	// }
+	if err := common.ValidateGitRemoteURL(createProjectParams.GitRemoteURL); err != nil {
+		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
+	}
 
 	return nil
 }
