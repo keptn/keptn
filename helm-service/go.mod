@@ -3,32 +3,23 @@ module github.com/keptn/keptn/helm-service
 go 1.16
 
 require (
-	github.com/Masterminds/squirrel v1.5.2 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.8.0
-	github.com/containerd/containerd v1.5.7 // indirect
-	github.com/distribution/distribution/v3 v3.0.0-20210804104954-38ab4c606ee3 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c
 	github.com/keptn/kubernetes-utils v0.10.1-0.20220131134426-088ca4bddca0
 	github.com/kinbiko/jsonassert v1.1.0
-	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.2.1 // indirect
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
 	k8s.io/api v0.22.6
-	k8s.io/apiextensions-apiserver v0.22.4 // indirect
 	k8s.io/apimachinery v0.22.6
 	k8s.io/cli-runtime v0.22.6
 	k8s.io/client-go v0.22.6
 	k8s.io/kubectl v0.22.6
-	oras.land/oras-go v0.4.0 // indirect
-	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/yaml v1.3.0
 )
 
