@@ -1,0 +1,150 @@
+:root {
+  --keptn-header-color: #bcb6ae;
+  --keptn-primary-background-color: #242424;
+  --keptn-secondary-background-color: #202020;
+  --keptn-primary-font-color: #fff;
+  --keptn-secondary-font-color: #bcb6ae;
+  --keptn-link-color: #c7c2ba;
+  --keptn-border-color: #373c3e;
+  --keptn-tag-color: #1f2223;
+  --dt-theme-main-background-color: var(--keptn-secondary-background-color);
+}
+
+h2 {
+  color: var(--keptn-secondary-font-color);
+}
+
+input {
+  background-color: var(--keptn-secondary-background-color);
+}
+
+body {
+  background-color: var(--keptn-primary-background-color);
+  color: var(--keptn-primary-font-color);
+}
+
+a {
+  color: var(--keptn-link-color);
+}
+
+p.small, span.small, p.smaller, span.smaller {
+  color: var(--keptn-secondary-font-color);
+}
+
+/****** Components ******/
+/* Tiles */
+dt-tile, .ktb-selectable-tile-container {
+  border-color: var(--keptn-border-color) !important;
+}
+dt-tile:hover {
+  border-color: var(--dt-theme-main-active-color) !important;
+}
+
+.dt-tile-subtitle, .dt-tile-title {
+  color: var(--keptn-primary-font-color);
+}
+
+.dt-tile-header {
+  background-color: var(--keptn-border-color);
+}
+
+.dt-tile-content, dt-tile, .ktb-selectable-tile-content {
+  background-color: var(--keptn-secondary-background-color);
+}
+
+.dt-tile-content {
+  color: var(--keptn-primary-font-color);
+}
+
+.dt-tile-header {
+  border-color: var(--keptn-border-color) !important;
+}
+/* Tiles */
+
+/* Tables */
+dt-row:nth-child(2n) {
+  background-color: var(--keptn-primary-background-color) !important;
+  border-color: var(--keptn-border-color) !important;
+}
+dt-row:nth-child(2n+1) {
+  background-color: var(--keptn-secondary-background-color) !important;
+  border-color: var(--keptn-border-color) !important;
+}
+/* Tables */
+
+/* Filter */
+dt-filter-field {
+  border-color: var(--keptn-border-color) !important;
+}
+
+.dt-filter-field-body {
+  background-color: var(--keptn-secondary-background-color);
+}
+
+.dt-filter-field-tag {
+  background-color: var(--keptn-tag-color) !important;
+  border-color: var(--keptn-border-color) !important;
+}
+
+.dt-filter-field-tag-button-nested:hover:not([disabled]) {
+  background-color: var(--keptn-secondary-background-color) !important;
+  /* looks like this is impossible or hard to change. The element is scoped and also defines the color with !important*/
+}
+/* Filter */
+
+/* Select */
+.dt-select-panel {
+  background-color: var(--keptn-primary-background-color) !important;
+  border-color: var(--keptn-border-color) !important;
+}
+dt-option {
+  color: var(--keptn-primary-font-color) !important;
+}
+/* Select */
+
+/* Tags */
+dt-tag {
+  background-color: var(--keptn-tag-color) !important;
+  color:var(--keptn-secondary-font-color) !important;
+}
+/* Tags */
+
+/* Info Group */
+.dt-info-group-title {
+  color: var(--keptn-header-color);
+}
+/* Info Group */
+/****** Components ******/
+
+/****** Pages ******/
+
+/* Notifications */
+.dt-alert-text-container {
+  background-color: var(--keptn-secondary-background-color) !important;
+  color: var(--keptn-primary-font-color) !important;
+}
+/* Notifications */
+
+/* Dashboard */
+.project-dashboard-actions {
+  background-color: var(--keptn-primary-background-color) !important;
+  box-shadow: var(--keptn-secondary-background-color) 0 0 5px 5px !important;
+  border-top-color: var(--keptn-secondary-background-color) !important;
+}
+/* Dashboard */
+
+/* Environment View */
+.ktb-stage-overview:after {
+  box-shadow: -7px 0 10px var(--keptn-secondary-background-color) inset !important;
+  border-right: 1px solid var(--keptn-secondary-background-color) !important;
+}
+
+.container.dark {
+  background-color: var(--keptn-secondary-background-color);
+}
+.stage-state {
+  border-bottom: 1px solid var(--keptn-border-color) !important;
+  border-top: 1px solid var(--keptn-border-color) !important;
+}
+/* Environment View */
+/****** Pages ******/
