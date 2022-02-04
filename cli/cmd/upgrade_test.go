@@ -16,22 +16,21 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/version"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/version"
 )
 
 func TestSkipUpgradeCheck(t *testing.T) {
 	noSkipMsg := "No upgrade path exists from Keptn version"
 	skipMsg := "Skipping upgrade compatibility check!"
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
+	Version = "0.11.4"
 	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
-	mocking = true
 	cmd := fmt.Sprintf("upgrade --mock")
 
 	ts := getMockVersionHTTPServer()
@@ -55,7 +54,7 @@ func TestSkipUpgradeCheck(t *testing.T) {
 		t.Errorf("upgrade Response did not match [no skip] : \nERROR: %v\nOUT: %v", err, out)
 	}
 
-	cmd = fmt.Sprintf("upgrade --skip-upgrade-check --mock")
+	cmd = fmt.Sprintf("upgrade --skip-upgrade-check --mock --chart-repo=https://charts-dev.keptn.sh/packages/keptn-0.9.0.tgz")
 	r = newRedirector()
 	r.redirectStdOut()
 
@@ -139,4 +138,14 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestUpgradeUnknownCommand
+func TestUpgradeUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("upgrade someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn upgrade\"", t)
+}
+
+// TestUpgradeUnknownParameter
+func TestUpgradeUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("upgrade --project=sockshop", "unknown flag: --project", t)
 }

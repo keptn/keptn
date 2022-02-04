@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -33,7 +35,8 @@ type sendApprovalFinishedStruct struct {
 var sendApprovalFinishedOptions sendApprovalFinishedStruct
 
 var approvalFinishedCmd = &cobra.Command{
-	Use: "approval.finished",
+	Use:  "approval.finished",
+	Args: cobra.NoArgs,
 	Short: "Sends an approval.finished event to Keptn in order to confirm an open approval " +
 		"with the specified ID in the provided project and stage",
 	Long: `Sends an approval.finished event to Keptn in order to confirm an open approval with the specified ID in the provided project and stage. 
@@ -80,26 +83,21 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return err
+	}
 
 	var keptnContext string
 	var triggeredID string
 	var approvalFinishedEvent *keptnv2.ApprovalFinishedEventData
 
 	if *sendApprovalFinishedOptions.ID != "" {
-		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(api.EventsV1(), sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
-		scHandler := apiutils.NewAuthenticatedShipyardControllerHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
-			scHandler, sendApprovalFinishedOptions)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(api.EventsV1(),
+			api.ShipyardControlHandlerV1(), sendApprovalFinishedOptions)
 	}
 	if err != nil {
 		return err
@@ -109,7 +107,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return nil
 	}
 
-	responseEvent, err := sendEvent(keptnContext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEvent, apiHandler)
+	responseEvent, err := sendEvent(keptnContext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEvent, api.APIV1())
 	if err != nil {
 		return err
 	}
@@ -122,7 +120,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	return nil
 }
 
-func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEvent interface{}, apiHandler *apiutils.APIHandler) (*apimodels.EventContext, error) {
+func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEvent interface{}, apiHandler apiutils.APIV1Interface) (*apimodels.EventContext, error) {
 	ID := uuid.New().String()
 	source, _ := url.Parse("https://github.com/keptn/keptn/cli#" + eventType)
 
@@ -154,7 +152,7 @@ func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEven
 	return responseEvent, nil
 }
 
-func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, scHandler *apiutils.ShipyardControllerHandler,
+func getApprovalFinishedForService(eventHandler apiutils.EventsV1Interface, scHandler *apiutils.ShipyardControllerHandler,
 	approvalFinishedOptions sendApprovalFinishedStruct) (string, string, *keptnv2.ApprovalFinishedEventData, error) {
 
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
@@ -267,7 +265,7 @@ func selectApprovalOption(nrOfOptions int) (int, error) {
 	return selectedOption, nil
 }
 
-func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) {
+func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHandler apiutils.EventsV1Interface, approvalFinishedOptions sendApprovalFinishedStruct) {
 	// initialize tabwriter
 	w := new(tabwriter.Writer)
 
@@ -290,7 +288,7 @@ func appendOptionToWriter(w *tabwriter.Writer, index int, commitID, score string
 	fmt.Fprintf(w, "\n (%d)\t%s\t%s\t", index+1, commitID, score)
 }
 
-func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
+func getScoreForApprovalTriggeredEvent(eventHandler apiutils.EventsV1Interface, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
 	score := "n/a"
 	evaluationDoneEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:      *approvalFinishedOptions.Project,
@@ -337,7 +335,7 @@ func getApprovalImageEvent(approval *apimodels.KeptnContextExtendedCE) string {
 	return unknownImage
 }
 
-func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
+func getApprovalFinishedForID(eventHandler apiutils.EventsV1Interface, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
 	string, *keptnv2.ApprovalFinishedEventData, error) {
 	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:   *sendApprovalFinishedOptions.Project,

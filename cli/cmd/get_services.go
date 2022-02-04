@@ -22,9 +22,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -69,16 +70,13 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
 
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
 		if !mocking {
-			projects, err := projectsHandler.GetAllProjects()
+			projects, err := api.ProjectsV1().GetAllProjects()
 			if err != nil {
 				return err
 			}
@@ -103,7 +101,7 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 			for _, project := range filteredProjects {
 				//stagesHandler := apiutils.NewStageHandler(endPoint.String())
 				for _, stage := range project.Stages {
-					services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
+					services, err := api.ServicesV1().GetAllServices(project.ProjectName, stage.StageName)
 					if err != nil {
 						return errors.New(err.Error())
 					}

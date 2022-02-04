@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"gopkg.in/yaml.v3"
 	"strings"
@@ -143,10 +144,12 @@ func NewSecretCmdHandler(cm credentialmanager.CredentialManagerInterface) (*Secr
 	if err != nil {
 		return nil, errors.New(authErrorMsg)
 	}
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return nil, fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
+
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return nil, err
 	}
-	sh.secretAPI = api.NewAuthenticatedSecretHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+
+	sh.secretAPI = api.SecretsV1()
 	return sh, nil
 }

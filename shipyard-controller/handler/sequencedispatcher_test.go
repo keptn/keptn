@@ -169,6 +169,9 @@ func TestSequenceDispatcher(t *testing.T) {
 			},
 			KeptnContext: "my-context-id-2",
 			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+			WrappedEvent: models.Event{
+				Type: common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+			},
 		},
 		EventID: "my-event-id-2",
 	}

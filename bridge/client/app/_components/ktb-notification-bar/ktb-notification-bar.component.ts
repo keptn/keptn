@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Notification, TemplateRenderedNotifications } from '../../_models/notification';
+import { Notification } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
-import { Location } from '@angular/common';
 
 @Component({
   selector: 'ktb-notification-bar',
@@ -10,10 +9,9 @@ import { Location } from '@angular/common';
   styleUrls: ['./ktb-notification-bar.component.scss'],
 })
 export class KtbNotificationBarComponent {
-  public notificationTypes = TemplateRenderedNotifications;
   public notifications$: Observable<Notification[]>;
 
-  constructor(private notificationsService: NotificationsService, public location: Location) {
+  constructor(private notificationsService: NotificationsService) {
     this.notifications$ = this.notificationsService.notifications;
   }
 

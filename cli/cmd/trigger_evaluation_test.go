@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 func init() {
@@ -16,7 +17,6 @@ func init() {
 func TestTriggerEvaluation(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*triggerEvaluation.Timeframe = ""
 	*triggerEvaluation.Start = ""
@@ -33,7 +33,6 @@ func TestTriggerEvaluation(t *testing.T) {
 func TestTriggerEvaluationWrongFormat(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*triggerEvaluation.Timeframe = ""
 	*triggerEvaluation.Start = ""
@@ -51,7 +50,6 @@ func TestTriggerEvaluationWrongFormat(t *testing.T) {
 func TestTriggerEvaluationVariousFormats(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	times := []string{
 		"2020-01-02T15:00:00",
@@ -81,7 +79,6 @@ func TestTriggerEvaluationVariousFormats(t *testing.T) {
 func TestTriggerEvaluationStartTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*triggerEvaluation.Timeframe = ""
 	*triggerEvaluation.Start = ""
@@ -99,7 +96,6 @@ func TestTriggerEvaluationStartTimeSpecified(t *testing.T) {
 func TestTriggerEvaluationStartAndEndTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*triggerEvaluation.Timeframe = ""
 	*triggerEvaluation.Start = ""
@@ -117,7 +113,6 @@ func TestTriggerEvaluationStartAndEndTimeSpecified(t *testing.T) {
 func TestTriggerEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*triggerEvaluation.Timeframe = ""
 	*triggerEvaluation.Start = ""
@@ -138,7 +133,6 @@ func TestTriggerEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 func TestTriggerEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*triggerEvaluation.Timeframe = ""
 	*triggerEvaluation.Start = ""
@@ -153,4 +147,14 @@ func TestTriggerEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	}
 
 	assert.EqualValues(t, "Start and end time of evaluation time frame not set: end date must be at least 1 minute after start date", err.Error())
+}
+
+// TestTriggerEvaluationUnknownCommand
+func TestTriggerEvaluationUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("trigger evaluation someUnknownCommand --project=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59", "unknown command \"someUnknownCommand\" for \"keptn trigger evaluation\"", t)
+}
+
+// TestTriggerEvaluationUnknownParameter
+func TestTriggerEvaluationUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("trigger evaluation --projectt=sockshop --service=service --timeframe=5m --start=2019-10-31T11:59:59", "unknown flag: --projectt", t)
 }

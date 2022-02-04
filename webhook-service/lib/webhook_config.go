@@ -26,6 +26,7 @@ type Webhook struct {
 	Type           string    `yaml:"type"`
 	SubscriptionID string    `yaml:"subscriptionID"`
 	SendFinished   bool      `yaml:"sendFinished"`
+	SendStarted    *bool     `yaml:"sendStarted,omitempty"`
 	EnvFrom        []EnvFrom `yaml:"envFrom"`
 	Requests       []string  `yaml:"requests"`
 }
@@ -68,4 +69,15 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 	}
 
 	return webHookConfig, nil
+}
+
+func (wh Webhook) ShouldSendStartedEvent() bool {
+	if wh.SendStarted == nil {
+		return true
+	}
+	return *wh.SendStarted
+}
+
+func (wh Webhook) ShouldSendFinishedEvent() bool {
+	return wh.SendFinished
 }

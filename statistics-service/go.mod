@@ -14,8 +14,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.8
-	github.com/tryvium-travels/memongo v0.3.2
-	go.mongodb.org/mongo-driver v1.7.5
+	github.com/tryvium-travels/memongo v0.4.0
+	go.mongodb.org/mongo-driver v1.8.3
 )
 
 replace (

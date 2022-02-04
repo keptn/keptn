@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -33,19 +34,26 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
+		} else if len(args) >= 2 {
+			cmd.SilenceUsage = false
+			return errors.New("too many arguments set")
 		}
 		service := args[0]
 
 		logging.PrintLog("Starting to delete service", logging.InfoLevel)
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
+		}
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			deleteResp, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
+			deleteResp, err := api.APIV1().DeleteService(*deleteServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)

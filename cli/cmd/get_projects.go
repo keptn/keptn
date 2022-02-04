@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	"os"
 	"strconv"
 	"strings"
@@ -29,7 +30,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -89,12 +89,10 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
-
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if !mocking {
 
@@ -104,7 +102,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 				fmt.Fprintln(w, "NAME\tCREATION DATE\tSHIPYARD VERSION")
 			}
 
-			projects, err := projectsHandler.GetAllProjects()
+			projects, err := api.ProjectsV1().GetAllProjects()
 			if err != nil {
 				return err
 			}
@@ -163,7 +161,6 @@ func filterProjects(projects []*models.Project, projectName string) []*models.Pr
 }
 
 func parseCreationDate(creationDate string) string {
-
 	const na = "n/a"
 	if creationDate == "" {
 		return na
@@ -178,9 +175,7 @@ func parseCreationDate(creationDate string) string {
 }
 
 func init() {
-
 	getCmd.AddCommand(getProjectCmd)
 	getProject.outputFormat = getProjectCmd.Flags().StringP("output", "o", "",
 		"Output format. One of json|yaml")
-
 }

@@ -3,8 +3,6 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -46,7 +47,6 @@ func testShipyard(t *testing.T, shipyardFilePath string, shipyard string) func()
 // TestCreateProjectCmd tests the default use of the create project command
 func TestCreateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
@@ -62,7 +62,6 @@ func TestCreateProjectCmd(t *testing.T) {
 // due to a missing flag for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
@@ -80,7 +79,6 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 // command with git upstream parameters
 func TestCreateProjectCmdWithGit(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
@@ -178,4 +176,14 @@ spec:
 
 		})
 	}
+}
+
+// TestCreateProjectUnknownCommand
+func TestCreateProjectUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("create project sockshop someUnknownCommand --shipyard=shipyard.yaml", "too many arguments set", t)
+}
+
+// TestCreateProjectUnknownParameter
+func TestCreateProjectUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("create project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
 }

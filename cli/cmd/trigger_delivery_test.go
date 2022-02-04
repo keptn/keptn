@@ -12,10 +12,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -70,10 +71,8 @@ type DockerImg struct {
 func TestTriggerDelivery(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -134,10 +133,8 @@ func TestTriggerDelivery(t *testing.T) {
 func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	receivedEvent := make(chan bool)
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -206,7 +203,6 @@ func TestCheckImageAvailabilityD(t *testing.T) {
 		{"httpd", ""}}
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -229,7 +225,6 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 	invalidImgs := []DockerImg{{"docker.io/keptnexamples/carts:0.7.5", ""}}
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -255,8 +250,6 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 	const nonExistingProject = "myproj"
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -302,9 +295,7 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 func TestTriggerDeliveryNonExistingService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	projectName := "sockshop"
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -355,4 +346,14 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestTriggerDeliveryUnknownCommand
+func TestTriggerDeliveryUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image --tag=tag", "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\"", t)
+}
+
+// TestTriggerDeliveryUnknownParameter
+func TestTriggerDeliveryUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("trigger delivery --projectt=sockshop --service=service --image=image --tag=tag", "unknown flag: --projectt", t)
 }

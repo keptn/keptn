@@ -54,7 +54,7 @@ func TestHandleRollbackEvent(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, rollbackTriggeredEventData)
 
-	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(&testGenChart, "version", nil)
+	mockedConfigurationChanger.EXPECT().UpdateLoadedChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&testGenChart, "version", nil)
 	instance.HandleEvent(ce)
 
 	assert.Equal(t, 1, len(mockedBaseHandler.upgradeChartInvocations))
@@ -111,7 +111,7 @@ func TestHandleRollbackEvent_UpdatingChartFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, rollbackTriggeredEventData)
 
-	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "", errors.New("Whoops..."))
+	mockedConfigurationChanger.EXPECT().UpdateLoadedChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "", errors.New("Whoops..."))
 
 	instance.HandleEvent(ce)
 

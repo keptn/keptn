@@ -24,6 +24,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
@@ -31,7 +33,6 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/version"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/helm"
 	"github.com/keptn/keptn/cli/pkg/platform"
 
@@ -54,6 +55,7 @@ var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker())
 func NewUpgraderCommand(vChecker *version.KeptnVersionChecker) *cobra.Command {
 	upgradeCmd := &cobra.Command{
 		Use:   "upgrade",
+		Args:  cobra.NoArgs,
 		Short: "Upgrades Keptn on a Kubernetes cluster.",
 		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
@@ -88,8 +90,13 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if *upgradeParams.PatchNamespace {
 		return nil
 	}
+	var chartRepoURL string
 
-	chartRepoURL := getKeptnHelmChartRepoURL(upgradeParams.ChartRepoURL)
+	if !isStringFlagSet(upgradeParams.ChartRepoURL) {
+		chartRepoURL = getKeptnHelmChartRepoURL()
+	} else {
+		chartRepoURL = *upgradeParams.ChartRepoURL
+	}
 
 	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
@@ -248,10 +255,14 @@ func addWarningNonExistingProjectUpstream() error {
 		return errors.New(authErrorMsg)
 	}
 
-	projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return err
+	}
+
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-	projects, err := projectsHandler.GetAllProjects()
+	projects, err := api.ProjectsV1().GetAllProjects()
 	if err != nil {
 		return fmt.Errorf("failed to get all projects from namespace %s", namespace)
 	}

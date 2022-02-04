@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/cloudevents/sdk-go/v2/types"
 	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
@@ -17,8 +18,6 @@ import (
 	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"gopkg.in/yaml.v3"
-
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -52,28 +51,32 @@ type EvaluateSLIHandler struct {
 
 func (eh *EvaluateSLIHandler) HandleEvent(ctx context.Context) error {
 	e := &keptnv2.GetSLIFinishedEventData{}
-
 	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-	err := eh.Event.DataAs(&e)
+
+	extensions := eh.Event.Context.GetExtensions()
+	shkeptncontext, _ = types.ToString(extensions["shkeptncontext"])
+	//no need to check if toString has error since gitcommitid can only be a string
+	commitID, _ := types.ToString(extensions["gitcommitid"])
+	err := eh.Event.DataAs(e)
 
 	if err != nil {
 		msg := "Could not parse event payload: " + err.Error()
 		logger.Error(msg)
-		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", commitID, msg, "", eh.KeptnHandler, e)
 	}
+
 	val := ctx.Value(GracefulShutdownKey)
 	if val != nil {
 		if wg, ok := val.(*sync.WaitGroup); ok {
 			wg.Add(1)
 		}
 	}
-	go eh.processGetSliFinishedEvent(ctx, shkeptncontext, e)
+	go eh.processGetSliFinishedEvent(ctx, shkeptncontext, commitID, e)
 
 	return nil
 }
 
-func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
+func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, shkeptncontext string, commitID string, e *keptnv2.GetSLIFinishedEventData) error {
 
 	defer func() {
 		val := ctx.Value(GracefulShutdownKey)
@@ -94,12 +97,12 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	if err2 != nil {
 		msg := fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2)
 		logger.Error(msg)
-		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", commitID, msg, "", eh.KeptnHandler, e)
 	}
 	if triggeredEvents == nil || len(triggeredEvents) == 0 {
 		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
 		logger.Error(msg)
-		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", commitID, msg, "", eh.KeptnHandler, e)
 	}
 	triggeredID := triggeredEvents[0].ID
 
@@ -125,27 +128,20 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	if e.Result == "fail" {
 		evalResult.EventData.Result = keptnv2.ResultFailed
 		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
-		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evalResult)
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 
 	// compare the results based on the evaluation strategy
-	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
+	sloConfig, sloFileContent, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 
 	if err != nil {
 		if err == ErrSLOFileNotFound {
 			evalResult.EventData.Result = keptnv2.ResultPass
 			evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project)
-			return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evalResult)
+			return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 		}
 
-		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), "", eh.KeptnHandler, e)
-	}
-
-	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
-	sloFileContent, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
-	if err != nil {
-		logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation.finished event.")
-		sloFileContent, _ = yaml.Marshal(sloConfig)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), "", eh.KeptnHandler, e)
 	}
 
 	// get results of previous evaluations from data store (mongodb-datastore)
@@ -158,7 +154,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 
 	previousEvaluationEvents, comparisonEventIDs, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
 	if err != nil {
-		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
 	}
 
 	var filteredPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
@@ -175,13 +171,13 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
 	if err != nil {
-		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
 	}
 	logger.Debug("Evaluation result: " + string(evaluationResult.Result))
 
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
-	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, evaluationResult)
+	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
 }
 
 func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {

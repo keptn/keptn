@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -22,6 +23,36 @@ spec:
   stages: 
     - 
       name: hardening`
+
+const qualityGatesShortSLOFileContent = `---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "<800"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
+      - criteria:
+          - "<=1000"
+          - "<=+100%"
+    weight: 1
+  - sli: "throughput"
+    pass:
+      - criteria:
+          - "<=+100%"
+          - ">=-80%"
+  - sli: "error_rate"
+total_score:
+  pass: "100%"
+  warning: "65%"`
 
 const qualityGatesSLOFileContent = `---
 spec_version: "0.1.1"
@@ -56,6 +87,7 @@ total_score:
 const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
+
 	projectName := "quality-gates"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
@@ -64,9 +96,14 @@ func Test_QualityGates(t *testing.T) {
 
 	source := "golang-test"
 
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	resp, err := ExecuteCommand(fmt.Sprintf("kubectl get configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	if !strings.Contains(resp, "not found") && err != nil {
+		_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+		require.Nil(t, err)
+	}
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -117,7 +154,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, float64(0), evaluationFinishedPayload.Evaluation.Score)
 	require.Equal(t, "", evaluationFinishedPayload.Evaluation.SLOFileContent)
 
-	// now let's add an SLI provider
+	//// now let's add an SLI provider
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName))
 	require.Nil(t, err)
 
@@ -128,6 +165,10 @@ func Test_QualityGates(t *testing.T) {
 
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", projectName, "hardening", serviceName, sloFilePath))
 	require.Nil(t, err)
+	checkCommit := false
+	if image, err := GetImageOfDeploymentContainer("resource-service", "resource-service"); err == nil && image != "" {
+		checkCommit = true
+	}
 
 	t.Log("triggering the evaluation again")
 	keptnContext, err = triggerEvaluation(projectName, "hardening", serviceName)
@@ -150,8 +191,9 @@ func Test_QualityGates(t *testing.T) {
 
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.Result)
 	require.NotEmpty(t, evaluationFinishedPayload.Message)
+	//
+	//// ...and an SLO file
 
-	// ...and an SLO file
 	sloFilePath, err = CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
 	require.Nil(t, err)
 	defer os.Remove(sloFilePath)
@@ -160,7 +202,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("triggering the evaluation again")
-	keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
+	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -225,7 +267,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 
 	// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results
-	keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
+	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -233,7 +275,7 @@ func Test_QualityGates(t *testing.T) {
 	secondEvaluationFinishedID := evaluationFinishedEvent.ID
 
 	// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
-	keptnContext, evaluationFinishedEvent = performEvaluationSequence(t, projectName, serviceName)
+	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -250,17 +292,62 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
 	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)])
 	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
+
 }
 
-func performEvaluationSequence(t *testing.T, projectName string, serviceName string) (string, *models.KeptnContextExtendedCE) {
-	keptnContext, err := triggerEvaluation(projectName, "hardening", serviceName)
-	source := "golang-test"
-	require.Nil(t, err)
-	require.NotEmpty(t, keptnContext)
+func performResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
+	commitID := ""
+	commitID1 := ""
+	if checkCommit {
+		commitID1 = storeWithCommit(t, projectName, "hardening",
+			serviceName, qualityGatesShortSLOFileContent, "slo.yaml")
 
+		commitID = storeWithCommit(t, projectName, "hardening",
+			serviceName, qualityGatesSLOFileContent, "slo.yaml")
+	}
+	keptnContext := ""
+	source := "golang-test"
+
+	t.Log("sent evaluation.hardening.triggered with commitid= ", commitID)
+	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.EvaluationTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+			},
+			Test: keptnv2.Test{},
+			Evaluation: keptnv2.Evaluation{
+				End:       "2022-01-26T10:10:53.931Z",
+				Start:     "2022-01-26T10:05:53.931Z",
+				Timeframe: "",
+			},
+			Deployment: keptnv2.Deployment{},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		Gitcommitid:        commitID,
+		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType("hardening." + keptnv2.EvaluationTaskName)),
+	}, 3)
+	require.Nil(t, err)
+	body := resp.String()
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	require.NotEmpty(t, body)
+	kc := struct {
+		KeptnContext *string `json:"keptnContext"`
+	}{}
+	resp.ToJSON(&kc)
+	keptnContext = *kc.KeptnContext
 	var getSLITriggeredEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if get-sli.triggered event is available")
+		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", keptnContext, " event is available")
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 		if err != nil || event == nil {
 			return false
@@ -268,6 +355,11 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 		getSLITriggeredEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
+	t.Log("got SLI triggered event, checking commitid")
+
+	if checkCommit {
+		require.Equal(t, commitID, getSLITriggeredEvent.Gitcommitid)
+	}
 
 	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
 	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
@@ -276,44 +368,82 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
 	require.NotEmpty(t, getSLIPayload.GetSLI.End)
 
-	cloudEvent := keptnv2.ToCloudEvent(*getSLITriggeredEvent)
-	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
-	require.Nil(t, err)
-
-	_, err = keptn.SendTaskStartedEvent(nil, source)
-	require.Nil(t, err)
-
-	// send finished event with result=fail
-	_, err = keptn.SendTaskFinishedEvent(&keptnv2.GetSLIFinishedEventData{
-		EventData: keptnv2.EventData{
-			Status: keptnv2.StatusSucceeded,
-			Result: keptnv2.ResultPass,
+	//SLI uses a different commitID
+	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
 		},
-		GetSLI: keptnv2.GetSLIFinished{
-			Start: getSLIPayload.GetSLI.Start,
-			End:   getSLIPayload.GetSLI.End,
-			IndicatorValues: []*keptnv2.SLIResult{
-				{
-					Metric:  "response_time_p95",
-					Value:   200,
-					Success: true,
-					Message: "",
-				},
-				{
-					Metric:  "throughput",
-					Value:   200,
-					Success: true,
-					Message: "",
-				},
-				{
-					Metric:  "error_rate",
-					Value:   0,
-					Success: true,
-					Message: "",
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		Gitcommitid:        commitID1,
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Labels:  nil,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+			GetSLI: keptnv2.GetSLIFinished{
+				Start: getSLIPayload.GetSLI.Start,
+				End:   getSLIPayload.GetSLI.End,
+				IndicatorValues: []*keptnv2.SLIResult{
+					{
+						Metric:        "response_time_p95",
+						Value:         200,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+					{
+						Metric:        "throughput",
+						Value:         200,
+						Success:       true,
+						ComparedValue: 0,
+						Message:       "",
+					},
+					{
+						Metric:        "error_rate",
+						Value:         0,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
 				},
 			},
 		},
-	}, source)
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		Gitcommitid:        commitID1,
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
 	require.Nil(t, err)
 
 	// wait for the evaluation.finished event to be available and evaluate it
@@ -327,6 +457,10 @@ func performEvaluationSequence(t *testing.T, projectName string, serviceName str
 		evaluationFinishedEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
+	if checkCommit {
+		//lighthouse should have used the new commitID to calculate the final result
+		require.Equal(t, evaluationFinishedEvent.Gitcommitid, commitID1)
+	}
 	return keptnContext, evaluationFinishedEvent
 }
 

@@ -3,7 +3,6 @@ import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest
 import { Observable, throwError } from 'rxjs';
 import { catchError, retryWhen } from 'rxjs/operators';
 import { genericRetryStrategy, RetryParams } from './http-generic-retry-strategy';
-import { DtToast } from '@dynatrace/barista-components/toast';
 import { Location } from '@angular/common';
 import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 import { NotificationsService } from '../_services/notifications.service';
@@ -17,7 +16,6 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   private isAuthorizedErrorShown = false;
 
   constructor(
-    private readonly toast: DtToast,
     private readonly location: Location,
     private readonly notificationService: NotificationsService,
     @Inject(RETRY_ON_HTTP_ERROR) private hasRetry: boolean
@@ -32,13 +30,18 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
           this._handleUnauthorizedError(error);
+        } else if (error.status === 403) {
+          this.notificationService.addNotification(NotificationType.ERROR, 'Insufficient permissions');
+        } else if (error.status === 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
+          // Special case for already existing secrets - for unit test has to be before instanceof ErrorEvent
+          return throwError(error);
         } else if (error.error instanceof ErrorEvent) {
           // A client-side or network error occurred. Handle it accordingly.
-          this.toast.create(`${error.error.message}`);
+          this.notificationService.addNotification(NotificationType.ERROR, error.error.message);
         } else {
           // The backend returned an unsuccessful response code.
           // The response body may contain clues as to what went wrong,
-          this.toast.create(`${error.message}`);
+          this.notificationService.addNotification(NotificationType.ERROR, error.message);
         }
 
         return throwError(error);
@@ -51,7 +54,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     if (authType === 'OAUTH') {
       if (!this.isReloading) {
         this.isReloading = true;
-        this.toast.create('Login required. Redirecting to login.');
+        this.notificationService.addNotification(NotificationType.INFO, 'Login required. Redirecting to login.');
         // Wait for few moments to let user see the toast message and navigate to external login route
         setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/login')), 1000);
       }

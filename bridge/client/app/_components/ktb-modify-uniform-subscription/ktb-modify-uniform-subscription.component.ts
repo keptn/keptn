@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject, throwError } from 'rxjs';
+import { filter, map, switchMap, take, takeUntil, tap, catchError } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { Project } from '../../_models/project';
@@ -20,11 +20,11 @@ import { Secret } from '../../_models/secret';
 import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 import { EventState } from '../../../../shared/models/event-state';
 import { Trace } from '../../_models/trace';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
-  providers: [NotificationsService],
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
@@ -71,6 +71,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       displayValue: EventState.FINISHED,
     },
   ];
+  public errorMessage?: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -145,6 +146,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
     const taskNames$ = projectName$.pipe(
       switchMap((projectName) => this.dataService.getTaskNames(projectName)),
+      catchError((err: HttpErrorResponse) => {
+        this.errorMessage = err.error;
+        this.notificationsService.addNotification(NotificationType.ERROR, err.error);
+        return throwError(err);
+      }),
       take(1)
     );
     const project$ = projectName$.pipe(
@@ -220,6 +226,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     }
   }
 
+  public reloadPage(): void {
+    window.location.reload();
+  }
+
   private updateDataSource(project: Project): void {
     this._dataSource.data = {
       autocomplete: [
@@ -247,7 +257,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   ): void {
     this.updating = true;
     let update;
-    subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
+
+    if (this.taskControl.value === EventTypes.PREFIX_SHORT && this.taskSuffixControl.value === '>') {
+      subscription.event = `${this.taskControl.value}.${this.taskSuffixControl.value}`;
+    } else {
+      subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
+    }
     subscription.setIsGlobal(this.isGlobalControl.value, projectName);
 
     if (webhookConfig) {
@@ -265,14 +280,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     update.subscribe(
       () => {
         this.updating = false;
+        this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
         this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
       },
       () => {
-        this.notificationsService.addNotification(
-          NotificationType.ERROR,
-          'The subscription could not be updated',
-          5_000
-        );
+        this.notificationsService.addNotification(NotificationType.ERROR, 'The subscription could not be updated');
         this.updating = false;
       }
     );
@@ -324,7 +336,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

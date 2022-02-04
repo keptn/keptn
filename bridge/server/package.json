@@ -15,21 +15,22 @@
   },
   "dependencies": {
     "adm-zip": "0.5.9",
-    "axios": "0.24.0",
+    "axios": "0.25.0",
     "cookie-parser": "1.4.6",
     "crypto-random-string": "4.0.0",
     "depd": "2.0.0",
     "express": "4.17.2",
     "express-session": "1.17.2",
-    "helmet": "4.6.0",
+    "helmet": "5.0.2",
     "memorystore": "1.6.6",
     "morgan": "1.10.0",
+    "openid-client": "5.1.2",
     "pug": "3.0.2",
     "semver": "7.3.5",
     "yaml": "1.10.2"
   },
   "devDependencies": {
-    "@babel/preset-env": "7.16.7",
+    "@babel/preset-env": "7.16.11",
     "@babel/preset-typescript": "7.16.7",
     "@types/adm-zip": "0.4.34",
     "@types/cookie-parser": "1.4.2",
@@ -37,14 +38,14 @@
     "@types/express-session": "1.17.4",
     "@types/jest": "27.4.0",
     "@types/morgan": "1.9.3",
-    "@types/node": "14.18.5",
+    "@types/node": "14.18.10",
     "@types/semver": "7.3.9",
     "@types/supertest": "2.0.11",
     "axios-mock-adapter": "1.20.0",
     "jest": "27.4.7",
     "nodemon": "2.0.15",
-    "supertest": "6.1.6",
-    "ts-jest": "27.1.2",
+    "supertest": "6.2.2",
+    "ts-jest": "27.1.3",
     "typescript": "4.4.4"
   }
 }

@@ -163,7 +163,6 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindType(qType, qhkType, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -179,10 +178,10 @@ func (o *GetEventsParams) bindBeforeTime(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.BeforeTime = &raw
 
 	return nil
@@ -197,10 +196,10 @@ func (o *GetEventsParams) bindEventID(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.EventID = &raw
 
 	return nil
@@ -215,10 +214,10 @@ func (o *GetEventsParams) bindFromTime(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.FromTime = &raw
 
 	return nil
@@ -233,10 +232,10 @@ func (o *GetEventsParams) bindKeptnContext(rawData []string, hasKey bool, format
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.KeptnContext = &raw
 
 	return nil
@@ -251,10 +250,10 @@ func (o *GetEventsParams) bindNextPageKey(rawData []string, hasKey bool, formats
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.NextPageKey = &raw
 
 	return nil
@@ -269,6 +268,7 @@ func (o *GetEventsParams) bindPageSize(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEventsParams()
 		return nil
@@ -290,11 +290,11 @@ func (o *GetEventsParams) bindPageSize(rawData []string, hasKey bool, formats st
 // validatePageSize carries on validations for parameter PageSize
 func (o *GetEventsParams) validatePageSize(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("pageSize", "query", int64(*o.PageSize), 1, false); err != nil {
+	if err := validate.MinimumInt("pageSize", "query", *o.PageSize, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("pageSize", "query", int64(*o.PageSize), 100, false); err != nil {
+	if err := validate.MaximumInt("pageSize", "query", *o.PageSize, 100, false); err != nil {
 		return err
 	}
 
@@ -310,10 +310,10 @@ func (o *GetEventsParams) bindProject(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Project = &raw
 
 	return nil
@@ -328,10 +328,10 @@ func (o *GetEventsParams) bindRoot(rawData []string, hasKey bool, formats strfmt
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Root = &raw
 
 	return nil
@@ -346,10 +346,10 @@ func (o *GetEventsParams) bindService(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Service = &raw
 
 	return nil
@@ -364,10 +364,10 @@ func (o *GetEventsParams) bindSource(rawData []string, hasKey bool, formats strf
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Source = &raw
 
 	return nil
@@ -382,10 +382,10 @@ func (o *GetEventsParams) bindStage(rawData []string, hasKey bool, formats strfm
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Stage = &raw
 
 	return nil
@@ -400,10 +400,10 @@ func (o *GetEventsParams) bindType(rawData []string, hasKey bool, formats strfmt
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Type = &raw
 
 	return nil

@@ -5,10 +5,13 @@ class SecretsPage {
     cy.get('.dt-button > .dt-button-label').contains('Add secret').click();
   }
 
-  addSecret(SECRET_NAME: string, SECRET_KEY: string, SECRET_VALUE: string): void {
+  addSecret(SECRET_NAME: string, SECRET_SCOPE: string, SECRET_KEY: string, SECRET_VALUE: string): void {
     this.clickAddSecret();
     cy.get('input[uitestid="keptn-secret-name-input"]')
       .type(SECRET_NAME)
+      .get('dt-select[uitestid="keptn-secret-scope-input"]')
+      .type(SECRET_SCOPE)
+      .type('{enter}')
       .get('input[uitestid="keptn-secret-key-input"]')
       .type(SECRET_KEY)
       .get('input[uitestid="keptn-secret-value-input"]')
@@ -19,7 +22,12 @@ class SecretsPage {
   }
 
   deleteSecret(SECRET_NAME: string | number | RegExp): void {
-    cy.get('dt-row.dt-row > dt-cell > p').contains(SECRET_NAME).parent().next().children('button').click();
+    cy.get('dt-row.dt-row > dt-cell > p')
+      .contains(SECRET_NAME)
+      .parent()
+      .nextAll('.dt-table-column-action')
+      .children('button')
+      .click();
     cy.get('span.dt-button-label').contains('Delete').click();
   }
 }

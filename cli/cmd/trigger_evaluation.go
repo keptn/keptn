@@ -17,9 +17,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"os"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -45,6 +47,7 @@ var triggerEvaluation triggerEvaluationStruct
 
 var triggerEvaluationCmd = &cobra.Command{
 	Use:   "evaluation",
+	Args:  cobra.NoArgs,
 	Short: "Triggers the evaluation of a test for a service in a project and stage",
 	Long: `Triggers the evaluation of a test for a service in a project and stage 
 
@@ -73,11 +76,6 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 	logging.PrintLog("Starting to trigger evaluation of the service "+
 		*triggerEvaluationData.Service+" in project "+*triggerEvaluationData.Project, logging.InfoLevel)
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
 	startPoint := ""
 	if triggerEvaluationData.Start != nil {
 		startPoint = *triggerEvaluationData.Start
@@ -103,11 +101,15 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 		return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
 	}
 
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return err
+	}
+
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	if !mocking {
-		response, err := apiHandler.TriggerEvaluation(
+		response, err := api.APIV1().TriggerEvaluation(
 			*triggerEvaluationData.Project,
 			*triggerEvaluationData.Stage,
 			*triggerEvaluationData.Service,
@@ -129,12 +131,16 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 		}
 
 		if *triggerEvaluationData.Watch {
-			eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+			api, err := internal.APIProvider(endPoint.String(), apiToken)
+			if err != nil {
+				return err
+			}
+
 			filter := apiutils.EventFilter{
 				KeptnContext: *response.KeptnContext,
 				Project:      *triggerEvaluationData.Project,
 			}
-			watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*triggerEvaluationData.WatchTime)*time.Second)
+			watcher := NewDefaultWatcher(api.EventsV1(), filter, time.Duration(*triggerEvaluationData.WatchTime)*time.Second)
 			PrintEventWatcher(rootCmd.Context(), watcher, *triggerEvaluationData.Output, os.Stdout)
 		}
 

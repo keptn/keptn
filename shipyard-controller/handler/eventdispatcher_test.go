@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
@@ -13,8 +16,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	modelsv2 "github.com/keptn/keptn/shipyard-controller/models/v2"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
@@ -581,6 +582,25 @@ func TestEventDispatcher_OnSequencePaused(t *testing.T) {
 
 	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
 	require.Equal(t, models.SequencePaused, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
+}
+
+func TestEventDispatcher_OnSequenceWaiting(t *testing.T) {
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
+			return nil
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventQueueRepo: eventQueueRepo,
+	}
+
+	dispatcher.OnSequenceWaiting(models.EventScope{KeptnContext: "my-context"})
+
+	require.Len(t, eventQueueRepo.CreateOrUpdateEventQueueStateCalls(), 1)
+
+	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
+	require.Equal(t, models.SequenceWaitingState, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
 }
 
 func TestEventDispatcher_OnSequenceResumed(t *testing.T) {

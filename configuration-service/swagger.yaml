@@ -770,9 +770,10 @@ paths:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/serviceName'
     post:
+      deprecated: true
       tags:
         - Service Default Resource
-      summary: Create list of default resources for the service used in all stages
+      summary: 'INTERNAL Endpoint: Create list of default resources for the service used in all stages'
       parameters:
         - $ref: '#/parameters/resources'
       responses:

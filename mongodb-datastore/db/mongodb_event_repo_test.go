@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/go-openapi/strfmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/common"
 	"github.com/keptn/keptn/mongodb-datastore/models"
@@ -73,15 +74,13 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 
 	keptnContext := "my-context"
 	testEvent := models.KeptnContextExtendedCE{
-		Event: models.Event{
-			Contenttype: "application/cloudevents+json",
-			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
-			ID:          "my-evaluation-id",
-			Source:      "test-source",
-			Specversion: "1.0",
-			Time:        models.Time{},
-			Type:        models.Type(evaluationEventType),
-		},
+		Contenttype:        "application/cloudevents+json",
+		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+		ID:                 "my-evaluation-id",
+		Source:             stringp("test-source"),
+		Specversion:        "1.0",
+		Time:               strfmt.DateTime{},
+		Type:               stringp(evaluationEventType),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
 		Triggeredid:        "my-triggered-id",
@@ -91,18 +90,16 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	invalidatedEvent := models.KeptnContextExtendedCE{
-		Event: models.Event{
-			Contenttype: "application/cloudevents+json",
-			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
-			ID:          "my-invalidated-id",
-			Source:      "test-source",
-			Specversion: "1.0",
-			Time:        models.Time{},
-			Type:        models.Type(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
-		},
+		Contenttype:        "application/cloudevents+json",
+		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+		ID:                 "my-invalidated-id",
+		Source:             stringp("test-source"),
+		Specversion:        "1.0",
+		Time:               strfmt.DateTime{},
+		Type:               stringp(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
-		Triggeredid:        "my-evaluation-id",
+		Triggeredid:        "my-triggered-id",
 	}
 
 	err = repo.InsertEvent(invalidatedEvent)
@@ -177,15 +174,14 @@ func TestMongoDBEventRepo_DropCollections(t *testing.T) {
 
 	keptnContext := "my-context"
 	testEvent := models.KeptnContextExtendedCE{
-		Event: models.Event{
-			Contenttype: "application/cloudevents+json",
-			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
-			ID:          "my-evaluation-id",
-			Source:      "test-source",
-			Specversion: "1.0",
-			Time:        models.Time{},
-			Type:        models.Type(evaluationEventType),
-		},
+
+		Contenttype:        "application/cloudevents+json",
+		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+		ID:                 "my-evaluation-id",
+		Source:             stringp("test-source"),
+		Specversion:        "1.0",
+		Time:               strfmt.DateTime{},
+		Type:               stringp(evaluationEventType),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
 		Triggeredid:        "my-triggered-id",
@@ -195,15 +191,14 @@ func TestMongoDBEventRepo_DropCollections(t *testing.T) {
 	require.Nil(t, err)
 
 	invalidatedEvent := models.KeptnContextExtendedCE{
-		Event: models.Event{
-			Contenttype: "application/cloudevents+json",
-			Data:        map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
-			ID:          "my-invalidated-id",
-			Source:      "test-source",
-			Specversion: "1.0",
-			Time:        models.Time{},
-			Type:        models.Type(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
-		},
+
+		Contenttype:        "application/cloudevents+json",
+		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
+		ID:                 "my-invalidated-id",
+		Source:             stringp("test-source"),
+		Specversion:        "1.0",
+		Time:               strfmt.DateTime{},
+		Type:               stringp(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
 		Triggeredid:        "my-evaluation-id",
@@ -280,18 +275,16 @@ func Test_getProjectOfEvent(t *testing.T) {
 			name: "Use project property in data object",
 			args: args{
 				event: models.KeptnContextExtendedCE{
-					Event: models.Event{
-						Contenttype: "",
-						Data: map[string]interface{}{
-							"project": "sockshop",
-						},
-						Extensions:  nil,
-						ID:          "",
-						Source:      "",
-						Specversion: "",
-						Time:        models.Time{},
-						Type:        "",
+					Contenttype: "",
+					Data: map[string]interface{}{
+						"project": "sockshop",
 					},
+					Extensions:     nil,
+					ID:             "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           nil,
 					Shkeptncontext: "",
 				},
 			},
@@ -301,16 +294,15 @@ func Test_getProjectOfEvent(t *testing.T) {
 			name: "Use generic events collection",
 			args: args{
 				event: models.KeptnContextExtendedCE{
-					Event: models.Event{
-						Contenttype: "",
-						Data:        nil,
-						Extensions:  nil,
-						ID:          "",
-						Source:      "",
-						Specversion: "",
-						Time:        models.Time{},
-						Type:        "",
-					},
+
+					Contenttype:    "",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           nil,
 					Shkeptncontext: "",
 				},
 			},
@@ -384,14 +376,11 @@ func Test_getSearchOptions(t *testing.T) {
 				},
 			},
 			want: bson.M{
-				"data.project": "sockshop",
-				"data.stage":   "dev",
-				"data.service": "carts",
-				"source":       "test-service",
-				"$or": []bson.M{
-					{"type": keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)},
-					{"type": common.Keptn07EvaluationDoneEventType},
-				},
+				"data.project":   "sockshop",
+				"data.stage":     "dev",
+				"data.service":   "carts",
+				"source":         "test-service",
+				"type":           keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 				"shkeptncontext": "test-context",
 				"time": bson.M{
 					"$gt": "1",
@@ -426,16 +415,15 @@ func Test_transformEventToInterface(t *testing.T) {
 			name: "transform event",
 			args: args{
 				event: &models.KeptnContextExtendedCE{
-					Event: models.Event{
-						Contenttype: "application/json",
-						Data:        "test-content",
-						Extensions:  nil,
-						ID:          "1",
-						Source:      "test-source",
-						Specversion: "0.2",
-						Time:        models.Time{},
-						Type:        "test-type",
-					},
+
+					Contenttype:    "application/json",
+					Data:           "test-content",
+					Extensions:     nil,
+					ID:             "1",
+					Source:         stringp("test-source"),
+					Specversion:    "0.2",
+					Time:           strfmt.DateTime{},
+					Type:           stringp("test-type"),
 					Shkeptncontext: "123",
 				},
 			},
@@ -619,31 +607,10 @@ func Test_getAggregationPipeline(t *testing.T) {
 				},
 				bson.D{
 					{Key: "$lookup", Value: bson.M{
-						"from": "test-collection-invalidatedEvents",
-						"let": bson.M{
-							"event_id":          "$id",
-							"event_triggeredid": "$triggeredid",
-						},
-						"pipeline": []bson.M{
-							{
-								"$match": bson.M{
-									"$expr": bson.M{
-										"$or": []bson.M{
-											{
-												"$eq": []string{"$triggeredid", "$$event_id"},
-											},
-											{
-												"$eq": []string{"$triggeredid", "$$event_triggeredid"},
-											},
-										},
-									},
-								},
-							},
-							{
-								"$limit": 1,
-							},
-						},
-						"as": "invalidated",
+						"from":         "test-collection-invalidatedEvents",
+						"localField":   "triggeredid",
+						"foreignField": "triggeredid",
+						"as":           "invalidated",
 					}},
 				},
 				bson.D{

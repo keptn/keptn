@@ -6,6 +6,7 @@ import (
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
+	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"io/fs"
@@ -16,16 +17,20 @@ import (
 	"time"
 )
 
+const testConfigDir = "/data/config/my-project"
+const testServiceConfigDir = "/data/config/my-project/my-service"
+
 type testResourceManagerFields struct {
 	git              *common_mock.IGitMock
 	credentialReader *common_mock.CredentialReaderMock
 	fileSystem       *common_mock.IFileSystemMock
+	stageContext     *handler_mock.IConfigurationContextMock
 }
 
 func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -49,10 +54,12 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Nil(t, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Nil(t, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
 	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
@@ -62,7 +69,7 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -87,8 +94,10 @@ func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Nil(t, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -100,7 +109,7 @@ func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -126,20 +135,22 @@ func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Equal(t, &models.Service{ServiceName: "my-service"}, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
-	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/file1")
-	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetServiceConfigPath("my-project", "my-service")+"/file2")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, testConfigDir+"/file1")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, testConfigDir+"/file2")
 }
 
 func TestResourceManager_CreateResources_ServiceResource_HelmChart(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -161,16 +172,13 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChart(t *testing.T)
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
-	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, testConfigDir+"/helm/service.tgz")
 
 	require.Len(t, fields.fileSystem.WriteHelmChartCalls(), 1)
-	require.Equal(t, fields.fileSystem.WriteHelmChartCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+	require.Equal(t, fields.fileSystem.WriteHelmChartCalls()[0].Path, testConfigDir+"/helm/service.tgz")
 }
 
 func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *testing.T) {
@@ -180,7 +188,7 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -202,16 +210,13 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChartWriteFails(t *
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 0)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
-	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+	require.Equal(t, testConfigDir+"/helm/service.tgz", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 
 	require.Len(t, fields.fileSystem.WriteHelmChartCalls(), 1)
-	require.Equal(t, fields.fileSystem.WriteHelmChartCalls()[0].Path, common.GetServiceConfigPath("my-project", "my-service")+"/helm/service.tgz")
+	require.Equal(t, testConfigDir+"/helm/service.tgz", fields.fileSystem.WriteHelmChartCalls()[0].Path)
 }
 
 func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *testing.T) {
@@ -220,7 +225,7 @@ func TestResourceManager_CreateResources_ProjectResource_ProjectNotFound(t *test
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -257,7 +262,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t
 	fields.credentialReader.GetCredentialsFunc = func(project string) (*common_models.GitCredentials, error) {
 		return nil, errors2.ErrMalformedCredentials
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -288,13 +293,13 @@ func TestResourceManager_CreateResources_ProjectResource_CannotReadCredentials(t
 	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
 }
 
-func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(t *testing.T) {
+func TestResourceManager_CreateResources_ProjectResource_CannotEstablishContext(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
+	fields.stageContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
 		return "", errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.CreateResources(models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -317,45 +322,6 @@ func TestResourceManager_CreateResources_ProjectResource_CannotGetDefaultBranch(
 	require.NotNil(t, err)
 
 	require.Nil(t, revision)
-
-	require.Empty(t, fields.git.CheckoutBranchCalls())
-
-	require.Empty(t, fields.git.StageAndCommitAllCalls())
-
-	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
-}
-
-func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t *testing.T) {
-	fields := getTestResourceManagerFields()
-
-	fields.git.CheckoutBranchFunc = func(gitContext common_models.GitContext, branch string) error {
-		return errors.New("oops")
-	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
-
-	revision, err := rm.CreateResources(models.CreateResourcesParams{
-		ResourceContext: models.ResourceContext{
-			Project: models.Project{ProjectName: "my-project"},
-		},
-		CreateResourcesPayload: models.CreateResourcesPayload{
-			Resources: []models.Resource{
-				{
-					ResourceContent: "c3RyaW5n",
-					ResourceURI:     "file1",
-				},
-				{
-					ResourceContent: "c3RyaW5n",
-					ResourceURI:     "file2",
-				},
-			},
-		},
-	})
-
-	require.NotNil(t, err)
-
-	require.Nil(t, revision)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
@@ -365,7 +331,7 @@ func TestResourceManager_CreateResources_ProjectResource_CannotCheckoutBranch(t 
 func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -389,14 +355,11 @@ func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
-	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path, common.GetProjectConfigPath("my-project")+"/file1")
-	require.Equal(t, fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path, common.GetProjectConfigPath("my-project")+"/file2")
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file2", fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path)
 }
 
 func TestResourceManager_UpdateResources_ProjectResource_ProjectNotFound(t *testing.T) {
@@ -406,7 +369,7 @@ func TestResourceManager_UpdateResources_ProjectResource_ProjectNotFound(t *test
 		return false
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -444,7 +407,7 @@ func TestResourceManager_UpdateResources_ProjectResource_WritingFileFails(t *tes
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -468,13 +431,10 @@ func TestResourceManager_UpdateResources_ProjectResource_WritingFileFails(t *tes
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 }
 
 func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.T) {
@@ -484,7 +444,7 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.
 		return "", errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -508,14 +468,11 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFails(t *testing.
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file2", fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file2", fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path)
 }
 
 func TestResourceManager_UpdateResources_ProjectResource_PullFails(t *testing.T) {
@@ -525,7 +482,7 @@ func TestResourceManager_UpdateResources_ProjectResource_PullFails(t *testing.T)
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -548,9 +505,6 @@ func TestResourceManager_UpdateResources_ProjectResource_PullFails(t *testing.T)
 	require.NotNil(t, err)
 
 	require.Nil(t, revision)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
 
 	require.Len(t, fields.git.PullCalls(), 1)
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 0)
@@ -570,7 +524,7 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFailsOnFirstTry(t
 		return "my-revision", nil
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResources(models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -594,20 +548,17 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFailsOnFirstTry(t
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 2)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 4)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file2", fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file2", fields.fileSystem.WriteBase64EncodedFileCalls()[1].Path)
 }
 
 func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -623,13 +574,10 @@ func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 }
 
 func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testing.T) {
@@ -639,7 +587,7 @@ func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testi
 		return false
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -655,8 +603,6 @@ func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testi
 
 	require.Nil(t, revision)
 
-	require.Empty(t, fields.git.CheckoutBranchCalls())
-
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
 	require.Empty(t, fields.fileSystem.WriteBase64EncodedFileCalls())
@@ -669,7 +615,7 @@ func TestResourceManager_UpdateResource_ProjectResource_WritingFileFails(t *test
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -685,13 +631,10 @@ func TestResourceManager_UpdateResource_ProjectResource_WritingFileFails(t *test
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 }
 
 func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T) {
@@ -701,7 +644,7 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T
 		return "", errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -717,13 +660,10 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFails(t *testing.T
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 }
 
 func TestResourceManager_UpdateResource_ProjectResource_PullFails(t *testing.T) {
@@ -733,7 +673,7 @@ func TestResourceManager_UpdateResource_ProjectResource_PullFails(t *testing.T) 
 		return errors.New("oops")
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -748,9 +688,6 @@ func TestResourceManager_UpdateResource_ProjectResource_PullFails(t *testing.T) 
 	require.NotNil(t, err)
 
 	require.Nil(t, revision)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
 
 	require.Len(t, fields.git.PullCalls(), 1)
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 0)
@@ -770,7 +707,7 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFailsOnFirstTry(t 
 		return "my-revision", nil
 	}
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.UpdateResource(models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -786,19 +723,16 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFailsOnFirstTry(t 
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 2)
 
 	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 2)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 }
 
 func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -811,13 +745,10 @@ func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
 
 	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
-
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
 	require.Len(t, fields.fileSystem.DeleteFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
 }
 
 func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testing.T) {
@@ -826,7 +757,7 @@ func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testi
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -839,7 +770,7 @@ func TestResourceManager_DeleteResource_ProjectResource_ProjectNotFound(t *testi
 
 	require.Nil(t, revision)
 
-	require.Empty(t, fields.git.CheckoutBranchCalls())
+	require.Empty(t, fields.stageContext.EstablishCalls())
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileSystem.DeleteFileCalls())
 }
@@ -853,7 +784,7 @@ func TestResourceManager_DeleteResource_ProjectResource_ResourceNotFound(t *test
 		}
 		return true
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -866,7 +797,7 @@ func TestResourceManager_DeleteResource_ProjectResource_ResourceNotFound(t *test
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileSystem.DeleteFileCalls())
 }
@@ -877,7 +808,7 @@ func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T
 	fields.fileSystem.DeleteFileFunc = func(path string) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -890,13 +821,12 @@ func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
 	require.Len(t, fields.fileSystem.DeleteFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
 }
 
 func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T) {
@@ -905,7 +835,7 @@ func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T
 	fields.fileSystem.DeleteFileFunc = func(path string) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	revision, err := rm.DeleteResource(models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -918,19 +848,18 @@ func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T
 
 	require.Nil(t, revision)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
 	require.Len(t, fields.fileSystem.DeleteFileCalls(), 1)
-	require.Equal(t, common.GetProjectConfigPath("my-project")+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
 }
 
 func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -952,8 +881,7 @@ func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 		},
 	}, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.PullCalls(), 1)
 
@@ -964,7 +892,7 @@ func TestResourceManager_GetResource_ProjectResource(t *testing.T) {
 func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -989,8 +917,7 @@ func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testi
 		},
 	}, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.GetFileRevisionCalls(), 1)
 	require.Equal(t, "my-commit-id", fields.git.GetFileRevisionCalls()[0].Revision)
@@ -1002,7 +929,7 @@ func TestResourceManager_GetResource_ProjectResource_PullFails(t *testing.T) {
 	fields.git.PullFunc = func(gitContext common_models.GitContext) error {
 		return errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1015,8 +942,7 @@ func TestResourceManager_GetResource_ProjectResource_PullFails(t *testing.T) {
 
 	require.Nil(t, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.PullCalls(), 1)
 
@@ -1030,7 +956,7 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return false
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1046,20 +972,16 @@ func TestResourceManager_GetResource_ProjectResource_ProjectNotFound(t *testing.
 
 	require.Nil(t, result)
 
-	require.Empty(t, fields.git.CheckoutBranchCalls())
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
-func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.T) {
+func TestResourceManager_GetResource_ServiceResource_ServiceNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	fields.fileSystem.FileExistsFunc = func(path string) bool {
-		if strings.Contains(path, "/my-service") {
-			return false
-		}
-		return true
+	fields.stageContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
+		return "", errors2.ErrServiceNotFound
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1077,8 +999,10 @@ func TestResourceManager_GetResource_ProjectResource_ServiceNotFound(t *testing.
 
 	require.Nil(t, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
+	require.Equal(t, &models.Stage{StageName: "my-stage"}, fields.stageContext.EstablishCalls()[0].Params.Stage, 1)
+	require.Equal(t, &models.Service{ServiceName: "my-service"}, fields.stageContext.EstablishCalls()[0].Params.Service, 1)
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
@@ -1088,7 +1012,7 @@ func TestResourceManager_GetResource_ProjectResource_ResourceNotFound(t *testing
 	fields.fileSystem.ReadFileFunc = func(filename string) ([]byte, error) {
 		return nil, errors2.ErrResourceNotFound
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1104,8 +1028,7 @@ func TestResourceManager_GetResource_ProjectResource_ResourceNotFound(t *testing
 
 	require.Nil(t, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
@@ -1115,7 +1038,7 @@ func TestResourceManager_GetResource_ProjectResource_CannotReadFIle(t *testing.T
 	fields.fileSystem.ReadFileFunc = func(filename string) ([]byte, error) {
 		return nil, errors.New("oops")
 	}
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1131,15 +1054,14 @@ func TestResourceManager_GetResource_ProjectResource_CannotReadFIle(t *testing.T
 
 	require.Nil(t, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "my-stage")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
 
 func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResource(models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -1155,8 +1077,7 @@ func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *test
 
 	require.Nil(t, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 }
@@ -1164,7 +1085,7 @@ func TestResourceManager_GetResource_ProjectResource_InvalidResourceName(t *test
 func TestResourceManager_GetResources(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
-	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem)
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
 
 	result, err := rm.GetResources(models.GetResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -1218,8 +1139,7 @@ func TestResourceManager_GetResources(t *testing.T) {
 		TotalCount: 3,
 	}, result)
 
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 
 	require.Empty(t, fields.git.GetFileRevisionCalls())
 
@@ -1334,6 +1254,11 @@ func getTestResourceManagerFields() testResourceManagerFields {
 			},
 			WriteHelmChartFunc: func(path string) error {
 				return nil
+			},
+		},
+		stageContext: &handler_mock.IConfigurationContextMock{
+			EstablishFunc: func(params common_models.ConfigurationContextParams) (string, error) {
+				return testConfigDir, nil
 			},
 		},
 	}

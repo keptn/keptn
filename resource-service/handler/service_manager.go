@@ -20,14 +20,16 @@ type IServiceManager interface {
 type ServiceManager struct {
 	git              common.IGit
 	credentialReader common.CredentialReader
-	fileWriter       common.IFileSystem
+	fileSystem       common.IFileSystem
+	stageContext     IConfigurationContext
 }
 
-func NewServiceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem) *ServiceManager {
+func NewServiceManager(git common.IGit, credentialReader common.CredentialReader, fileWriter common.IFileSystem, stageContext IConfigurationContext) *ServiceManager {
 	serviceManager := &ServiceManager{
 		git:              git,
 		credentialReader: credentialReader,
-		fileWriter:       fileWriter,
+		fileSystem:       fileWriter,
+		stageContext:     stageContext,
 	}
 	return serviceManager
 }
@@ -36,17 +38,15 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := s.establishServiceContext(params.Project, params.Stage)
+	gitContext, servicePath, err := s.establishServiceContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return err
 	}
 
-	servicePath := common.GetServiceConfigPath(params.ProjectName, params.ServiceName)
-
-	if s.fileWriter.FileExists(servicePath) {
+	if s.fileSystem.FileExists(servicePath) {
 		return errors.ErrServiceAlreadyExists
 	}
-	if err := s.fileWriter.MakeDir(servicePath); err != nil {
+	if err := s.fileSystem.MakeDir(servicePath); err != nil {
 		return fmt.Errorf("could not create directory for service %s: %w", params.ServiceName, err)
 	}
 
@@ -56,7 +56,7 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 	}
 
 	metadataString, err := yaml.Marshal(newServiceMetadata)
-	if err = s.fileWriter.WriteFile(servicePath+"/metadata.yaml", metadataString); err != nil {
+	if err = s.fileSystem.WriteFile(servicePath+"/metadata.yaml", metadataString); err != nil {
 		return fmt.Errorf("could not create metadata file for service %s: %w", params.ServiceName, err)
 	}
 
@@ -71,17 +71,15 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	gitContext, err := s.establishServiceContext(params.Project, params.Stage)
+	gitContext, servicePath, err := s.establishServiceContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return err
 	}
 
-	servicePath := common.GetServiceConfigPath(params.ProjectName, params.ServiceName)
-
-	if !s.fileWriter.FileExists(servicePath) {
+	if !s.fileSystem.FileExists(servicePath) {
 		return errors.ErrServiceNotFound
 	}
-	if err := s.fileWriter.DeleteFile(servicePath); err != nil {
+	if err := s.fileSystem.DeleteFile(servicePath); err != nil {
 		return err
 	}
 
@@ -92,10 +90,10 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 	return nil
 }
 
-func (s ServiceManager) establishServiceContext(project models.Project, stage models.Stage) (*common_models.GitContext, error) {
+func (s ServiceManager) establishServiceContext(project models.Project, stage models.Stage, service models.Service) (*common_models.GitContext, string, error) {
 	credentials, err := s.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return nil, fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
+		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
@@ -104,12 +102,19 @@ func (s ServiceManager) establishServiceContext(project models.Project, stage mo
 	}
 
 	if !s.git.ProjectExists(gitContext) {
-		return nil, errors.ErrProjectNotFound
+		return nil, "", errors.ErrProjectNotFound
 	}
 
-	if err := s.git.CheckoutBranch(gitContext, stage.StageName); err != nil {
-		return nil, fmt.Errorf("could not check out branch %s of project %s: %w", stage.StageName, project.ProjectName, err)
+	configPath, err := s.stageContext.Establish(common_models.ConfigurationContextParams{
+		Project:                 project,
+		Stage:                   &stage,
+		Service:                 &service,
+		GitContext:              gitContext,
+		CheckConfigDirAvailable: false,
+	})
+	if err != nil {
+		return nil, "", fmt.Errorf("could not check out branch %s of project %s: %w", stage.StageName, project.ProjectName, err)
 	}
 
-	return &gitContext, nil
+	return &gitContext, configPath, nil
 }

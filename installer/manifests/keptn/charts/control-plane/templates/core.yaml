@@ -10,6 +10,7 @@
 {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
 {{- end -}}
 
+{{- if not .Values.apiService.tokenSecretName }}
 ---
 apiVersion: v1
 kind: Secret
@@ -25,6 +26,7 @@ metadata:
 type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
+{{- end }}
 ---
 {{- if .Values.bridge.secret.enabled }}
 apiVersion: v1
@@ -75,6 +77,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
@@ -112,7 +118,7 @@ spec:
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: keptn-api-token
+                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }} 
                   key: keptn-api-token
             - name: POD_NAMESPACE
               valueFrom:
@@ -129,6 +135,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
@@ -146,6 +153,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
@@ -201,6 +209,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
@@ -211,7 +223,7 @@ spec:
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: keptn-api-token
+                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }} 
                   key: keptn-api-token
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
@@ -231,6 +243,22 @@ spec:
               value: "{{ .Values.bridge.oauth.enabled }}"
             - name: OAUTH_DISCOVERY
               value: "{{ .Values.bridge.oauth.discovery }}"
+            # Base URL e.g. https://example.com/
+            - name: OAUTH_BASE_URL
+              value: "{{ .Values.bridge.oauth.baseUrl }}"
+            - name: OAUTH_CLIENT_ID
+              value: "{{ .Values.bridge.oauth.clientID }}"
+            - name: OAUTH_CLIENT_SECRET
+              value: "{{ .Values.bridge.oauth.clientSecret }}"
+            # Token algorithm which is used for the ID token e.g. "RS256"
+            - name: OAUTH_ID_TOKEN_ALG
+              value: "{{ .Values.bridge.oauth.IDTokenAlg }}"
+            # Additional scopes that should be added to the authentication flow (e.g. "profile email"), separated by space.
+            - name: OAUTH_SCOPE
+              value: "{{ .Values.bridge.oauth.scope }}"
+            # User identifier property inside the ID token e.g. "name" or "email"
+            - name: OAUTH_NAME_PROPERTY
+              value: "{{ .Values.bridge.oauth.userIdentifier }}"
             - name: SECURE_COOKIE
               value: "{{ .Values.bridge.oauth.secureCookie }}"
             # Session cookie timeout in minutes
@@ -264,6 +292,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       serviceAccountName: keptn-default
       volumes:
         - emptyDir: {}
@@ -325,6 +354,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
@@ -391,6 +424,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
@@ -416,6 +450,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
@@ -503,6 +538,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-secret-service
       containers:
         - name: secret-service
@@ -544,6 +583,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: secret-service-configmap-volume
           configMap:
@@ -602,6 +642,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      securityContext:
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
@@ -641,6 +687,12 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: resource-volume
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: resource-volume
           emptyDir: {}
@@ -701,6 +753,10 @@ spec:
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
 {{- if .Values.configurationService.initContainer }}
       initContainers:
         - name: change-user-init
@@ -761,6 +817,7 @@ spec:
             runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
@@ -827,6 +884,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
@@ -883,6 +944,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -907,6 +969,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
@@ -961,6 +1024,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
@@ -999,6 +1066,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -1021,6 +1089,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 
 ---
@@ -1080,6 +1149,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
@@ -1118,6 +1191,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -1142,6 +1216,7 @@ spec:
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            privileged: false
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1

@@ -35,6 +35,7 @@
             [events]="getFilteredSequences(project.sequences)"
             [selectedEvent]="currentSequence"
             (selectedEventChange)="selectSequence($event)"
+            (loadOldSequencesClicked)="loadSequenceMetadata(project.projectName)"
             fxFlex
           ></ktb-root-events-list>
           <div class="mb-3"></div>
@@ -99,7 +100,11 @@
         [selectedStage]="selectedStage"
         (selectedStageChange)="selectStage($event)"
       ></ktb-sequence-timeline>
-      <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
+      <ktb-sequence-tasks-list
+        [tasks]="currentSequence.traces"
+        [stage]="selectedStage"
+        [latestDeployment]="currentLatestDeployedImage"
+      ></ktb-sequence-tasks-list>
       <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag
           >Last time fetched:

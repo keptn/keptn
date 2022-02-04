@@ -18,11 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/go-utils/pkg/common/fileutils"
+	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -59,16 +59,15 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			_, err := apiHandler.SendEvent(apiEvent)
+			_, err := api.APIV1().SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send event was unsuccessful. %s", *err.Message)

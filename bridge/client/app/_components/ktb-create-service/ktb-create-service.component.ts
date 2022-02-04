@@ -71,10 +71,10 @@ export class KtbCreateServiceComponent implements OnDestroy {
           this.dataService.loadProject(this.projectName);
         }
         await this.cancel();
-        this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service successfully created!', 5_000);
+        this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service successfully created!');
       },
       (error: HttpErrorResponse) => {
-        this.notificationsService.addNotification(NotificationType.ERROR, error.error, 5_000);
+        this.notificationsService.addNotification(NotificationType.ERROR, error.error);
         this.isCreating = false;
       }
     );
@@ -89,7 +89,6 @@ export class KtbCreateServiceComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.notificationsService.clearNotifications();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

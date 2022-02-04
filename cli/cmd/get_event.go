@@ -16,14 +16,15 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/spf13/cobra"
 	"net/url"
 	"os"
 	"time"
+
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/spf13/cobra"
 )
 
 type GetEventStruct struct {
@@ -42,7 +43,19 @@ var getEventParams GetEventStruct
 
 // getEventCmd represents the get command
 var getEventCmd = &cobra.Command{
-	Use:     "event [eventType]",
+	Use: "event [eventType]",
+	Args: func(cmd *cobra.Command, args []string) error {
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
+		if len(args) != 1 {
+			cmd.SilenceUsage = false
+			return errors.New("required command EVENTTYPE not set")
+		}
+		return nil
+	},
 	Aliases: []string{"events"},
 	Short:   `Returns the latest Keptn event specified by event type`,
 	Long:    `Returns the latest Keptn event specified by event type. The event type is defined here: https://github.com/keptn/spec/blob/0.1.4/cloudevents.md`,
@@ -52,7 +65,6 @@ var getEventCmd = &cobra.Command{
 }
 
 func getEvent(eventStruct GetEventStruct, args []string) error {
-
 	var eventType = ""
 	var endPoint url.URL
 	var apiToken string
@@ -74,11 +86,6 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		return errors.New(authErrorMsg)
 	}
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
-	}
-
 	filter := &apiutils.EventFilter{
 		KeptnContext:  *eventStruct.KeptnContext,
 		Service:       *eventStruct.Service,
@@ -87,10 +94,13 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		EventType:     eventType,
 		NumberOfPages: *eventStruct.NumOfPages,
 	}
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return err
+	}
 
 	if !*getEventParams.Watch {
-		events, modErr := eventHandler.GetEvents(filter)
+		events, modErr := api.EventsV1().GetEvents(filter)
 
 		if modErr != nil {
 			logging.PrintLog(*modErr.Message, logging.QuietLevel)
@@ -107,7 +117,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			PrintEvents(os.Stdout, *eventStruct.Output, events)
 		}
 	} else {
-		watcher := NewDefaultWatcher(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
+		watcher := NewDefaultWatcher(api.EventsV1(), *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
 		PrintEventWatcher(rootCmd.Context(), watcher, *getEventParams.Output, os.Stdout)
 	}
 	return nil

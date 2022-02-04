@@ -23,6 +23,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_Webhook", Test_Webhook)
 	t.Run("Test_Webhook_OverlappingSubscriptions", Test_Webhook_OverlappingSubscriptions)
 	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledFinishedEvents)
+	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledStartedEvents)
 	t.Run("Test_SequenceTimeout", Test_SequenceTimeout)
 	t.Run("Test_SequenceTimeoutDelayedTask", Test_SequenceTimeoutDelayedTask)
 	t.Run("Test_SequenceControl_Abort", Test_SequenceControl_Abort)
@@ -32,7 +33,6 @@ func Test_K3S(t *testing.T) {
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
-	t.Run("Test_QualityGates_BackwardsCompatibility", Test_QualityGates_BackwardsCompatibility)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)

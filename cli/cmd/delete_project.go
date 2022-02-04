@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/keptn/keptn/cli/internal"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -37,9 +38,12 @@ var delProjectCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument PROJECTNAME not set")
+		} else if len(args) >= 2 {
+			cmd.SilenceUsage = false
+			return errors.New("too many arguments set")
 		}
 
 		return nil
@@ -58,19 +62,16 @@ var delProjectCmd = &cobra.Command{
 			ProjectName: args[0],
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
-
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
 			if deleteProjectParams.KeepServices == nil || !*deleteProjectParams.KeepServices {
-				apiProject, err := projectsHandler.GetProject(project)
+				apiProject, err := api.ProjectsV1().GetProject(project)
 
 				if err != nil {
 					logging.PrintLog("Could not retrieve information about project "+project.ProjectName+": "+*err.Message, logging.InfoLevel)
@@ -85,7 +86,7 @@ var delProjectCmd = &cobra.Command{
 					fmt.Println("Deleting services of project " + project.ProjectName + "...")
 					for _, service := range apiProject.Stages[0].Services {
 						logging.PrintLog("Deleting service "+service.ServiceName, logging.InfoLevel)
-						deleteResp, err := apiHandler.DeleteService(project.ProjectName, service.ServiceName)
+						deleteResp, err := api.APIV1().DeleteService(project.ProjectName, service.ServiceName)
 						if err != nil {
 							logging.PrintLog("Delete service was unsuccessful", logging.InfoLevel)
 							return fmt.Errorf("Delete service was unsuccessful. %s", *err.Message)
@@ -98,7 +99,7 @@ var delProjectCmd = &cobra.Command{
 				}
 			}
 
-			deleteResp, err := apiHandler.DeleteProject(project)
+			deleteResp, err := api.APIV1().DeleteProject(project)
 			if err != nil {
 				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)

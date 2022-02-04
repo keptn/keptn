@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"os"
 	"testing"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -36,7 +36,6 @@ const ce = `{
 func TestSendEvent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	resourceFileName := "ce.json"
 	defer testResource(t, resourceFileName, ce)()

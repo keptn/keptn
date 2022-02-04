@@ -18,7 +18,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -35,6 +37,7 @@ var evaluationDone evaluationDoneStruct
 // getEvaluationFinishedCmd represents the evaluation.finished command
 var getEvaluationFinishedCmd = &cobra.Command{
 	Use:          "evaluation.finished",
+	Args:         cobra.NoArgs,
 	Short:        "Returns the latest Keptn sh.keptn.event.evaluation.finished event from a specific Keptn context",
 	Long:         `Returns the latest Keptn sh.keptn.event.evaluation.finished event from a specific Keptn context.`,
 	Example:      `keptn get event evaluation.finished --keptn-context=1234-5678-90ab-cdef`,
@@ -51,16 +54,15 @@ var getEvaluationFinishedCmd = &cobra.Command{
 
 		logging.PrintLog("Starting to get evaluation.finished event", logging.InfoLevel)
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			evaluationDoneEvts, err := eventHandler.GetEvents(&apiutils.EventFilter{
+			evaluationDoneEvts, err := api.EventsV1().GetEvents(&apiutils.EventFilter{
 				KeptnContext: *evaluationDone.KeptnContext,
 				EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 			})

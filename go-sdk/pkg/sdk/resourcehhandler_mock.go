@@ -5,6 +5,7 @@ package sdk
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"sync"
 )
 
@@ -18,13 +19,13 @@ var _ ResourceHandler = &ResourceHandlerMock{}
 //
 // 		// make and configure a mocked ResourceHandler
 // 		mockedResourceHandler := &ResourceHandlerMock{
-// 			GetProjectResourceFunc: func(project string, resourceURI string) (*models.Resource, error) {
+// 			GetProjectResourceFunc: func(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 // 				panic("mock out the GetProjectResource method")
 // 			},
-// 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+// 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 // 				panic("mock out the GetServiceResource method")
 // 			},
-// 			GetStageResourceFunc: func(project string, stage string, resourceURI string) (*models.Resource, error) {
+// 			GetStageResourceFunc: func(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 // 				panic("mock out the GetStageResource method")
 // 			},
 // 		}
@@ -35,13 +36,13 @@ var _ ResourceHandler = &ResourceHandlerMock{}
 // 	}
 type ResourceHandlerMock struct {
 	// GetProjectResourceFunc mocks the GetProjectResource method.
-	GetProjectResourceFunc func(project string, resourceURI string) (*models.Resource, error)
+	GetProjectResourceFunc func(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
 
 	// GetServiceResourceFunc mocks the GetServiceResource method.
-	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string) (*models.Resource, error)
+	GetServiceResourceFunc func(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
 
 	// GetStageResourceFunc mocks the GetStageResource method.
-	GetStageResourceFunc func(project string, stage string, resourceURI string) (*models.Resource, error)
+	GetStageResourceFunc func(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -51,6 +52,8 @@ type ResourceHandlerMock struct {
 			Project string
 			// ResourceURI is the resourceURI argument value.
 			ResourceURI string
+			// Options is the options argument value.
+			Options []api.GetOption
 		}
 		// GetServiceResource holds details about calls to the GetServiceResource method.
 		GetServiceResource []struct {
@@ -62,6 +65,8 @@ type ResourceHandlerMock struct {
 			Service string
 			// ResourceURI is the resourceURI argument value.
 			ResourceURI string
+			// Options is the options argument value.
+			Options []api.GetOption
 		}
 		// GetStageResource holds details about calls to the GetStageResource method.
 		GetStageResource []struct {
@@ -71,6 +76,8 @@ type ResourceHandlerMock struct {
 			Stage string
 			// ResourceURI is the resourceURI argument value.
 			ResourceURI string
+			// Options is the options argument value.
+			Options []api.GetOption
 		}
 	}
 	lockGetProjectResource sync.RWMutex
@@ -79,21 +86,23 @@ type ResourceHandlerMock struct {
 }
 
 // GetProjectResource calls GetProjectResourceFunc.
-func (mock *ResourceHandlerMock) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (mock *ResourceHandlerMock) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	if mock.GetProjectResourceFunc == nil {
 		panic("ResourceHandlerMock.GetProjectResourceFunc: method is nil but ResourceHandler.GetProjectResource was just called")
 	}
 	callInfo := struct {
 		Project     string
 		ResourceURI string
+		Options     []api.GetOption
 	}{
 		Project:     project,
 		ResourceURI: resourceURI,
+		Options:     options,
 	}
 	mock.lockGetProjectResource.Lock()
 	mock.calls.GetProjectResource = append(mock.calls.GetProjectResource, callInfo)
 	mock.lockGetProjectResource.Unlock()
-	return mock.GetProjectResourceFunc(project, resourceURI)
+	return mock.GetProjectResourceFunc(project, resourceURI, options...)
 }
 
 // GetProjectResourceCalls gets all the calls that were made to GetProjectResource.
@@ -102,10 +111,12 @@ func (mock *ResourceHandlerMock) GetProjectResource(project string, resourceURI 
 func (mock *ResourceHandlerMock) GetProjectResourceCalls() []struct {
 	Project     string
 	ResourceURI string
+	Options     []api.GetOption
 } {
 	var calls []struct {
 		Project     string
 		ResourceURI string
+		Options     []api.GetOption
 	}
 	mock.lockGetProjectResource.RLock()
 	calls = mock.calls.GetProjectResource
@@ -114,7 +125,7 @@ func (mock *ResourceHandlerMock) GetProjectResourceCalls() []struct {
 }
 
 // GetServiceResource calls GetServiceResourceFunc.
-func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	if mock.GetServiceResourceFunc == nil {
 		panic("ResourceHandlerMock.GetServiceResourceFunc: method is nil but ResourceHandler.GetServiceResource was just called")
 	}
@@ -123,16 +134,18 @@ func (mock *ResourceHandlerMock) GetServiceResource(project string, stage string
 		Stage       string
 		Service     string
 		ResourceURI string
+		Options     []api.GetOption
 	}{
 		Project:     project,
 		Stage:       stage,
 		Service:     service,
 		ResourceURI: resourceURI,
+		Options:     options,
 	}
 	mock.lockGetServiceResource.Lock()
 	mock.calls.GetServiceResource = append(mock.calls.GetServiceResource, callInfo)
 	mock.lockGetServiceResource.Unlock()
-	return mock.GetServiceResourceFunc(project, stage, service, resourceURI)
+	return mock.GetServiceResourceFunc(project, stage, service, resourceURI, options...)
 }
 
 // GetServiceResourceCalls gets all the calls that were made to GetServiceResource.
@@ -143,12 +156,14 @@ func (mock *ResourceHandlerMock) GetServiceResourceCalls() []struct {
 	Stage       string
 	Service     string
 	ResourceURI string
+	Options     []api.GetOption
 } {
 	var calls []struct {
 		Project     string
 		Stage       string
 		Service     string
 		ResourceURI string
+		Options     []api.GetOption
 	}
 	mock.lockGetServiceResource.RLock()
 	calls = mock.calls.GetServiceResource
@@ -157,7 +172,7 @@ func (mock *ResourceHandlerMock) GetServiceResourceCalls() []struct {
 }
 
 // GetStageResource calls GetStageResourceFunc.
-func (mock *ResourceHandlerMock) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (mock *ResourceHandlerMock) GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	if mock.GetStageResourceFunc == nil {
 		panic("ResourceHandlerMock.GetStageResourceFunc: method is nil but ResourceHandler.GetStageResource was just called")
 	}
@@ -165,15 +180,17 @@ func (mock *ResourceHandlerMock) GetStageResource(project string, stage string, 
 		Project     string
 		Stage       string
 		ResourceURI string
+		Options     []api.GetOption
 	}{
 		Project:     project,
 		Stage:       stage,
 		ResourceURI: resourceURI,
+		Options:     options,
 	}
 	mock.lockGetStageResource.Lock()
 	mock.calls.GetStageResource = append(mock.calls.GetStageResource, callInfo)
 	mock.lockGetStageResource.Unlock()
-	return mock.GetStageResourceFunc(project, stage, resourceURI)
+	return mock.GetStageResourceFunc(project, stage, resourceURI, options...)
 }
 
 // GetStageResourceCalls gets all the calls that were made to GetStageResource.
@@ -183,11 +200,13 @@ func (mock *ResourceHandlerMock) GetStageResourceCalls() []struct {
 	Project     string
 	Stage       string
 	ResourceURI string
+	Options     []api.GetOption
 } {
 	var calls []struct {
 		Project     string
 		Stage       string
 		ResourceURI string
+		Options     []api.GetOption
 	}
 	mock.lockGetStageResource.RLock()
 	calls = mock.calls.GetStageResource

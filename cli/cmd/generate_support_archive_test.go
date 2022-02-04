@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 package cmd
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -44,4 +46,14 @@ func TestGenerateSupportArchive(t *testing.T) {
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
+}
+
+// TestGenerateSupportArchiveUnknownCommand
+func TestGenerateSupportArchiveUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("generate support-archive someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn generate support-archive\"", t)
+}
+
+// TestGenerateSupportArchiveUnknownParameter
+func TestGenerateSupportArchiveUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("generate support-archive --project=sockshop", "unknown flag: --project", t)
 }

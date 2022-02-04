@@ -1,8 +1,9 @@
 import { init } from '../app';
 import Axios from 'axios';
 import https from 'https';
+import { Express } from 'express';
 
-const setup = async (): Promise<void> => {
+const setupServer = async (token = process.env.API_TOKEN): Promise<Express> => {
   global.baseUrl = 'http://localhost/api/';
 
   global.axiosInstance = Axios.create({
@@ -11,12 +12,12 @@ const setup = async (): Promise<void> => {
       rejectUnauthorized: false,
     }),
     headers: {
-      'x-token': process.env.API_TOKEN ?? '',
+      ...(token && { 'x-token': token }),
       'Content-Type': 'application/json',
     },
   });
 
-  global.app = await init();
+  return init();
 };
 
-export default setup();
+export { setupServer };

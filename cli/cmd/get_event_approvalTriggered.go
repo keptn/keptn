@@ -18,9 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"os"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -40,6 +42,7 @@ var approvalTriggered approvalTriggeredStruct
 // approvalTriggeredCmd represents the approval.triggered command
 var approvalTriggeredCmd = &cobra.Command{
 	Use:          "approval.triggered",
+	Args:         cobra.NoArgs,
 	Short:        "Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service",
 	Long:         `Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service.`,
 	Example:      `keptn get event approval.triggered --project=sockshop --stage=staging --service=carts`,
@@ -66,23 +69,20 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 
 	logging.PrintLog("Starting to get approval.triggered events", logging.InfoLevel)
 
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-			endPointErr)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return err
 	}
-
-	scHandler := apiutils.NewAuthenticatedShipyardControllerHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
-		return getAllApprovalEventsInStage(approvalTriggered, scHandler, eventHandler)
+		return getAllApprovalEventsInStage(approvalTriggered, api.ShipyardControlHandlerV1(), api.EventsV1())
 	}
-	return getAllApprovalEventsInService(approvalTriggered, scHandler, eventHandler)
+	return getAllApprovalEventsInService(approvalTriggered, api.ShipyardControlHandlerV1(), api.EventsV1())
 }
 
-func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler apiutils.EventsV1Interface) error {
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
 		Stage:     *approvalTriggered.Stage,
 		Project:   *approvalTriggered.Project,
@@ -97,7 +97,7 @@ func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, sc
 	return nil
 }
 
-func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler apiutils.EventsV1Interface) error {
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
 		Project:   *approvalTriggered.Project,
 		Stage:     *approvalTriggered.Stage,

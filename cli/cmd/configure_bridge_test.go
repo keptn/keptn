@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_getReplaceSecretCommand(t *testing.T) {
@@ -39,4 +40,14 @@ func Test_getReplaceSecretCommand(t *testing.T) {
 			require.Contains(t, got, tt.want)
 		})
 	}
+}
+
+// TestConfigureBridgeUnknownCommand
+func TestConfigureBridgeUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("configure bridge someUnknownCommand --user=user --password=pass", "unknown command \"someUnknownCommand\" for \"keptn configure bridge\"", t)
+}
+
+// TestConfigureBridgeUnknownParameter
+func TestConfigureBridgeUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("configure bridge --userr=user --password=pass", "unknown flag: --userr", t)
 }

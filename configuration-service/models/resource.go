@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -49,6 +47,7 @@ func (m *Resource) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Resource) validateMetadata(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Metadata) { // not required
 		return nil
 	}
@@ -57,8 +56,6 @@ func (m *Resource) validateMetadata(formats strfmt.Registry) error {
 		if err := m.Metadata.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metadata")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("metadata")
 			}
 			return err
 		}
@@ -71,36 +68,6 @@ func (m *Resource) validateResourceURI(formats strfmt.Registry) error {
 
 	if err := validate.Required("resourceURI", "body", m.ResourceURI); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this resource based on the context it is used
-func (m *Resource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateMetadata(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *Resource) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Metadata != nil {
-		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("metadata")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("metadata")
-			}
-			return err
-		}
 	}
 
 	return nil

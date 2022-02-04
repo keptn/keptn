@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostBinding,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, HostBinding, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Trace } from '../../_models/trace';
@@ -21,7 +12,6 @@ import { Subject } from 'rxjs';
   styleUrls: ['./ktb-sequence-tasks-list.component.scss'],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   @HostBinding('class') cls = 'ktb-sequence-tasks-list';
@@ -38,7 +28,6 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   set tasks(value: Trace[]) {
     if (this._tasks !== value) {
       this._tasks = value;
-      this._changeDetectorRef.markForCheck();
       this.focusLastSequence();
     }
   }
@@ -50,7 +39,6 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   set stage(value: string | undefined) {
     if (this._stage !== value) {
       this._stage = value;
-      this._changeDetectorRef.markForCheck();
       this.focusLastSequence();
     }
   }
@@ -62,14 +50,14 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   set focusedEventId(value: string | undefined) {
     if (this._focusedEventId !== value) {
       this._focusedEventId = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
+
+  @Input() latestDeployment: string | undefined;
 
   constructor(
     private router: Router,
     private location: Location,
-    private _changeDetectorRef: ChangeDetectorRef,
     public dateUtil: DateUtil,
     private route: ActivatedRoute
   ) {}

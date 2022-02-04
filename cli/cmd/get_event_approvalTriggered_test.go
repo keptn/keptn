@@ -59,8 +59,6 @@ const eventsResponse = `{
 }`
 
 func Test_getApprovalTriggeredEvents(t *testing.T) {
-
-	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -117,4 +115,14 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestGetEventApprovalTriggeredUnknownCommand
+func TestGetEventApprovalTriggeredUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("get event approval.triggered someUnknownCommand --project=sockshop", "unknown command \"someUnknownCommand\" for \"keptn get event approval.triggered\"", t)
+}
+
+// TestGetEventApprovalTriggeredUnknownParameter
+func TestGetEventApprovalTriggeredUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("get event approval.triggered --projectt=sockshop", "unknown flag: --projectt", t)
 }

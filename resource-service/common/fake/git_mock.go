@@ -32,6 +32,9 @@ import (
 // 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 // 				panic("mock out the GetFileRevision method")
 // 			},
+// 			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
+// 				panic("mock out the MigrateProject method")
+// 			},
 // 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 // 				panic("mock out the ProjectExists method")
 // 			},
@@ -71,6 +74,9 @@ type IGitMock struct {
 
 	// GetFileRevisionFunc mocks the GetFileRevision method.
 	GetFileRevisionFunc func(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
+
+	// MigrateProjectFunc mocks the MigrateProject method.
+	MigrateProjectFunc func(gitContext common_models.GitContext, newMetadatacontent []byte) error
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common_models.GitContext) bool
@@ -129,6 +135,13 @@ type IGitMock struct {
 			// File is the file argument value.
 			File string
 		}
+		// MigrateProject holds details about calls to the MigrateProject method.
+		MigrateProject []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
+			// NewMetadatacontent is the newMetadatacontent argument value.
+			NewMetadatacontent []byte
+		}
 		// ProjectExists holds details about calls to the ProjectExists method.
 		ProjectExists []struct {
 			// GitContext is the gitContext argument value.
@@ -163,6 +176,7 @@ type IGitMock struct {
 	lockGetCurrentRevision sync.RWMutex
 	lockGetDefaultBranch   sync.RWMutex
 	lockGetFileRevision    sync.RWMutex
+	lockMigrateProject     sync.RWMutex
 	lockProjectExists      sync.RWMutex
 	lockProjectRepoExists  sync.RWMutex
 	lockPull               sync.RWMutex
@@ -373,6 +387,41 @@ func (mock *IGitMock) GetFileRevisionCalls() []struct {
 	mock.lockGetFileRevision.RLock()
 	calls = mock.calls.GetFileRevision
 	mock.lockGetFileRevision.RUnlock()
+	return calls
+}
+
+// MigrateProject calls MigrateProjectFunc.
+func (mock *IGitMock) MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error {
+	if mock.MigrateProjectFunc == nil {
+		panic("IGitMock.MigrateProjectFunc: method is nil but IGit.MigrateProject was just called")
+	}
+	callInfo := struct {
+		GitContext         common_models.GitContext
+		NewMetadatacontent []byte
+	}{
+		GitContext:         gitContext,
+		NewMetadatacontent: newMetadatacontent,
+	}
+	mock.lockMigrateProject.Lock()
+	mock.calls.MigrateProject = append(mock.calls.MigrateProject, callInfo)
+	mock.lockMigrateProject.Unlock()
+	return mock.MigrateProjectFunc(gitContext, newMetadatacontent)
+}
+
+// MigrateProjectCalls gets all the calls that were made to MigrateProject.
+// Check the length with:
+//     len(mockedIGit.MigrateProjectCalls())
+func (mock *IGitMock) MigrateProjectCalls() []struct {
+	GitContext         common_models.GitContext
+	NewMetadatacontent []byte
+} {
+	var calls []struct {
+		GitContext         common_models.GitContext
+		NewMetadatacontent []byte
+	}
+	mock.lockMigrateProject.RLock()
+	calls = mock.calls.MigrateProject
+	mock.lockMigrateProject.RUnlock()
 	return calls
 }
 

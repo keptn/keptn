@@ -77,7 +77,7 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location {{ .Values.prefixPath }}/bridge {
+    location ~* {{ .Values.prefixPath }}/bridge {
       rewrite {{ .Values.prefixPath }}/bridge(/.*) $1 break;
       proxy_pass http://bridge:8080;
       proxy_http_version 1.1;
@@ -112,6 +112,27 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # block writing calls to /api/mongodb-datastore/event
+    location = {{ .Values.prefixPath }}/api/mongodb-datastore/event {
+      limit_except GET HEAD OPTIONS {
+        deny all;
+      }
+      auth_request               /api/v1/auth;
+      rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
+      proxy_pass         http://mongodb-datastore:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # block all calls to /api/mongodb-datastore/health
+    location = {{ .Values.prefixPath }}/api/mongodb-datastore/health {
+      deny all;
+    }
+
     location  {{ .Values.prefixPath }}/api/mongodb-datastore {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
@@ -132,6 +153,23 @@ data:
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
+
+      rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
+      proxy_pass         http://shipyard-controller:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # block DELETE calls to /api/controlplane/v1/log
+    location ~* {{ .Values.prefixPath }}/api/controlPlane/v1/log {
+      limit_except GET POST PUT PATCH OPTIONS HEAD {
+        deny all;
+      }
+      auth_request               /api/v1/auth;
 
       rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
@@ -205,6 +243,11 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # block all calls to /api/statistics/v1/event
+    location ~* {{ .Values.prefixPath }}/api/statistics/v1/event {
+      deny all;
+    }
+
     location  {{ .Values.prefixPath }}/api/statistics {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
@@ -236,11 +279,51 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  {{ .Values.prefixPath }}/api/configuration-service {
+    # block /api/configuration-service/v1/project/*
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)/service/([^/]*)/resource/([^/]*)$ {
+      deny all;
+    }
+
+    # block /api/configuration-service/v1/project/*
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)/service/([^/]*)/resource$ {
+      deny all;
+    }
+
+    # block all calls to /project/*/stage/*/service/*
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)/stage/([^/]*)/service/([^/]*)$ {
+      deny all;
+    }
+
+    # block all calls to /project/*/stage/*/service
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)/stage/([^/]*)/service$ {
+      deny all;
+    }
+
+    # block all calls to /project/*/stage/*
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)/stage/([^/]*)$ {
+      deny all;
+    }
+
+    # block all calls to /project/*/stage
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)/stage$ {
+      deny all;
+    }
+
+    # block all calls to /project/*
+    location ~* {{ .Values.prefixPath }}/api/configuration-service/v1/project/([^/]*)$ {
+      deny all;
+    }
+
+    # block all calls to /project
+    location = {{ .Values.prefixPath }}/api/configuration-service/v1/project {
+      deny all;
+    }
+
+    location {{ .Values.prefixPath }}/api/configuration-service/  {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+      auth_request               /api/v1/auth;
 
       rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*) /$1  break;
       proxy_pass         http://configuration-service:8080;
@@ -302,6 +385,10 @@ spec:
     spec:
       securityContext:
         fsGroup: 101
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
@@ -346,8 +433,9 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 101
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: false # we need it for caching. It is used to create /var/cache/nginx/client_temp
             allowPrivilegeEscalation: false
+            privileged: false
       volumes:
         - name: api-nginx-config
           configMap:
@@ -365,7 +453,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}       
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:

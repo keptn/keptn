@@ -68,7 +68,7 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -135,7 +135,7 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -167,7 +167,7 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceTriggeredState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceWaitingState})
 
 	// abort the queued sequence
 	t.Log("aborting sequence")
@@ -193,7 +193,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -311,7 +311,7 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

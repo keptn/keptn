@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Inspired by `hugo gen doc`  - see https://github.com/gohugoio/hugo/blob/release-0.69.0/commands/gendoc.go
@@ -19,13 +20,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/keptn/keptn/cli/pkg/common"
 
 	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -78,6 +80,7 @@ type metaData struct {
 // generateSupportArchiveCmd implements the generate support-archive command
 var generateSupportArchiveCmd = &cobra.Command{
 	Use:   "support-archive",
+	Args:  cobra.NoArgs,
 	Short: "Generates a support archive containing all logs",
 	Long:  `Generates a support archive containing information of the Keptn installation and logs from the services`,
 	Example: `keptn generate support-archive
@@ -543,8 +546,11 @@ func getProjects() *errorableProjectResult {
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
-	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	return newErrorableProjectResult(projectHandler.GetAllProjects())
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return nil
+	}
+	return newErrorableProjectResult(api.ProjectsV1().GetAllProjects())
 }
 
 func writeKeptnInstallerLog(logFileName string, dir string) {
@@ -566,8 +572,12 @@ func getKeptnMetadata() *errorableMetadataResult {
 	if err != nil {
 		return newErrorableMetadataResult(nil, err)
 	}
-	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	metadataData, errMetadata := metadataHandler.GetMetadata()
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
+	if err != nil {
+		return nil
+	}
+
+	metadataData, errMetadata := api.APIV1().GetMetadata()
 	if errMetadata != nil {
 		err = errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
 	}

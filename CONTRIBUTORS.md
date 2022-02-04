@@ -75,4 +75,6 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Kolla](https://github.com/krkolla)
 * [Alasdair Patton](https://github.com/alipatton10)
 * [Brad McCoy](https://github.com/bradmccoydev)
+* [Luis Marsano](https://github.com/lmmarsano)
 * [Oleg Nenashev](https://github.com/oleg-nenashev)
+* [Stuart Blackler](https://github.com/Im5tu)

@@ -51,7 +51,7 @@ apiGatewayNginx:
   nodePort: 31090
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.21.4-alpine
+    tag: 1.21.5-alpine
 
 remediationService:
   image:
@@ -59,6 +59,7 @@ remediationService:
     tag: ""
 
 apiService:
+  tokenSecretName:
   image:
     repository: docker.io/keptn/api
     tag: ""
@@ -86,6 +87,12 @@ bridge:
     secureCookie: false
     trustProxy: ""
     sessionTimeoutMin: ""
+    baseUrl: ""
+    clientID: ""
+    clientSecret: ""
+    IDTokenAlg: ""
+    scope: ""
+    userIdentifier: ""
 
 distributor:
   metadata:
@@ -133,6 +140,7 @@ resourceService:
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+    DIRECTORY_STAGE_STRUCTURE: "false"
 
 mongodbDatastore:
   image:

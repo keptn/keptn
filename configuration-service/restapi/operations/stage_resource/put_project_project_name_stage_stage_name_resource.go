@@ -6,7 +6,6 @@ package stage_resource
 // Editing this file might prove futile when you re-run the generate command
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
@@ -36,7 +35,7 @@ func NewPutProjectProjectNameStageStageNameResource(ctx *middleware.Context, han
 	return &PutProjectProjectNameStageStageNameResource{Context: ctx, Handler: handler}
 }
 
-/* PutProjectProjectNameStageStageNameResource swagger:route PUT /project/{projectName}/stage/{stageName}/resource Stage Resource putProjectProjectNameStageStageNameResource
+/*PutProjectProjectNameStageStageNameResource swagger:route PUT /project/{projectName}/stage/{stageName}/resource Stage Resource putProjectProjectNameStageStageNameResource
 
 Update list of stage resources
 
@@ -49,15 +48,17 @@ type PutProjectProjectNameStageStageNameResource struct {
 func (o *PutProjectProjectNameStageStageNameResource) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		*r = *rCtx
+		r = rCtx
 	}
 	var Params = NewPutProjectProjectNameStageStageNameResourceParams()
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
+
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -86,6 +87,7 @@ func (o *PutProjectProjectNameStageStageNameResourceBody) Validate(formats strfm
 }
 
 func (o *PutProjectProjectNameStageStageNameResourceBody) validateResources(formats strfmt.Registry) error {
+
 	if swag.IsZero(o.Resources) { // not required
 		return nil
 	}
@@ -99,42 +101,6 @@ func (o *PutProjectProjectNameStageStageNameResourceBody) validateResources(form
 			if err := o.Resources[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// ContextValidate validate this put project project name stage stage name resource body based on the context it is used
-func (o *PutProjectProjectNameStageStageNameResourceBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateResources(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *PutProjectProjectNameStageStageNameResourceBody) contextValidateResources(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(o.Resources); i++ {
-
-		if o.Resources[i] != nil {
-			if err := o.Resources[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("resources" + "." + "resources" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

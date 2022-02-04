@@ -1,9 +1,10 @@
 package common
 
 import (
+	"time"
+
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
-	"time"
 )
 
 type RollbackFunc func() error

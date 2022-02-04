@@ -1,112 +1,119 @@
-<ktb-notification-bar></ktb-notification-bar>
 <div class="container">
-  <ng-container *ngIf="data$ | async as data; else loading">
-    <h2>{{ editMode ? 'Edit' : 'Create' }} subscription</h2>
-    <form [formGroup]="subscriptionForm">
-      <div class="settings-section">
-        <dt-form-field *ngIf="!isWebhookService" uitestid="edit-subscription-field-isGlobal">
-          <ng-container [ngTemplateOutlet]="data.subscription.hasFilter() ? showOverlay : isGlobalCheckbox">
-          </ng-container>
+  <ng-container *ngIf="errorMessage">
+    <button class="mt-2" dt-button (click)="reloadPage()" uitestid="ktb-modify-subscription-reload-button">
+      <dt-icon name="refresh"></dt-icon>
+      Reload
+    </button>
+  </ng-container>
+  <ng-container *ngIf="!errorMessage">
+    <ng-container *ngIf="data$ | async as data; else loading">
+      <h2>{{ editMode ? 'Edit' : 'Create' }} subscription</h2>
+      <form [formGroup]="subscriptionForm">
+        <div class="settings-section">
+          <dt-form-field *ngIf="!isWebhookService" uitestid="edit-subscription-field-isGlobal">
+            <ng-container [ngTemplateOutlet]="data.subscription.hasFilter() ? showOverlay : isGlobalCheckbox">
+            </ng-container>
 
-          <ng-template #showOverlay>
-            <div [dtOverlay]="projectFilterOverlay" class="checkbox-container">
-              <ng-container *ngTemplateOutlet="isGlobalCheckbox"></ng-container>
-            </div>
-            <ng-template #projectFilterOverlay>
-              It is not allowed to have filters for a subscription that is active for all projects
+            <ng-template #showOverlay>
+              <div [dtOverlay]="projectFilterOverlay" class="checkbox-container">
+                <ng-container *ngTemplateOutlet="isGlobalCheckbox"></ng-container>
+              </div>
+              <ng-template #projectFilterOverlay>
+                It is not allowed to have filters for a subscription that is active for all projects
+              </ng-template>
             </ng-template>
-          </ng-template>
-          <ng-template #isGlobalCheckbox>
-            <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox"
-              >Use for all projects</dt-checkbox
+            <ng-template #isGlobalCheckbox>
+              <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox"
+                >Use for all projects</dt-checkbox
+              >
+            </ng-template>
+          </dt-form-field>
+        </div>
+        <div class="settings-section column-2" fxLayout="row">
+          <dt-form-field uitestid="edit-subscription-field-task" class="mr-2">
+            <dt-label class="required">Task</dt-label>
+            <dt-select
+              formControlName="taskPrefix"
+              class="mr-2 item"
+              placeholder="Choose your task"
+              aria-label="Choose your task"
+              (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
             >
-          </ng-template>
-        </dt-form-field>
-      </div>
-      <div class="settings-section column-2" fxLayout="row">
-        <dt-form-field uitestid="edit-subscription-field-task" class="mr-2">
-          <dt-label class="required">Task</dt-label>
-          <dt-select
-            formControlName="taskPrefix"
-            class="mr-2 item"
-            placeholder="Choose your task"
-            aria-label="Choose your task"
-            (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
+              <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
+            </dt-select>
+          </dt-form-field>
+          <dt-form-field uitestid="edit-subscription-field-suffix">
+            <dt-label class="required">Task suffix</dt-label>
+            <dt-select
+              formControlName="taskSuffix"
+              class="mr-2 item"
+              placeholder="Choose your task suffix"
+              aria-label="Choose your task suffix"
+              (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
+            >
+              <dt-option
+                *ngFor="let suffix of suffixes"
+                [value]="suffix.value"
+                [textContent]="suffix.displayValue"
+              ></dt-option>
+            </dt-select>
+          </dt-form-field>
+        </div>
+        <div class="settings-section">
+          <label>Filter by stages and services</label>
+          <dt-filter-field
+            [dataSource]="_dataSource"
+            [filters]="
+              data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)
+            "
+            (filterChanges)="
+              data.subscription.filterChanged($event, data.project.projectName);
+              subscriptionFilterChanged(data.subscription, data.project.projectName)
+            "
+            aria-label="Filter by stage and service"
+            clearAllLabel="Clear all"
+            uitestid="edit-subscription-field-filterStageService"
+          ></dt-filter-field>
+          <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length"
+            >If you add a service you must add a stage</dt-error
           >
-            <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
-          </dt-select>
-        </dt-form-field>
-        <dt-form-field uitestid="edit-subscription-field-suffix">
-          <dt-label class="required">Task suffix</dt-label>
-          <dt-select
-            formControlName="taskSuffix"
-            class="mr-2 item"
-            placeholder="Choose your task suffix"
-            aria-label="Choose your task suffix"
-            (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
+        </div>
+        <ktb-payload-viewer
+          [buttonTitle]="'Show example payload'"
+          [type]="getSelectedTask()"
+          [project]="data.project.projectName"
+          [stage]="data.subscription.getFirstStage()"
+          [service]="data.subscription.getFirstService()"
+        ></ktb-payload-viewer>
+        <ktb-webhook-settings
+          *ngIf="isWebhookService"
+          [(webhook)]="data.webhook"
+          [secrets]="data.webhookSecrets"
+          [eventPayload]="eventPayload"
+          [eventType]="taskSuffixControl.value"
+          (validityChanged)="webhookFormValidityChanged($event)"
+        ></ktb-webhook-settings>
+        <div>
+          <button
+            class="mr-2"
+            uitestid="updateSubscriptionButton"
+            [disabled]="!isFormValid(data.subscription)"
+            (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)"
+            dt-button
           >
-            <dt-option
-              *ngFor="let suffix of suffixes"
-              [value]="suffix.value"
-              [textContent]="suffix.displayValue"
-            ></dt-option>
-          </dt-select>
-        </dt-form-field>
-      </div>
-      <div class="settings-section">
-        <label>Filter by stages and services</label>
-        <dt-filter-field
-          [dataSource]="_dataSource"
-          [filters]="
-            data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)
-          "
-          (filterChanges)="
-            data.subscription.filterChanged($event, data.project.projectName);
-            subscriptionFilterChanged(data.subscription, data.project.projectName)
-          "
-          aria-label="Filter by stage and service"
-          clearAllLabel="Clear all"
-          uitestid="edit-subscription-field-filterStageService"
-        ></dt-filter-field>
-        <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length"
-          >If you add a service you must add a stage</dt-error
-        >
-      </div>
-      <ktb-payload-viewer
-        [buttonTitle]="'Show example payload'"
-        [type]="getSelectedTask()"
-        [project]="data.project.projectName"
-        [stage]="data.subscription.getFirstStage()"
-        [service]="data.subscription.getFirstService()"
-      ></ktb-payload-viewer>
-      <ktb-webhook-settings
-        *ngIf="isWebhookService"
-        [(webhook)]="data.webhook"
-        [secrets]="data.webhookSecrets"
-        [eventPayload]="eventPayload"
-        [eventType]="taskSuffixControl.value"
-        (validityChanged)="webhookFormValidityChanged($event)"
-      ></ktb-webhook-settings>
-      <div>
-        <button
-          class="mr-2"
-          uitestid="updateSubscriptionButton"
-          [disabled]="!isFormValid(data.subscription)"
-          (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)"
-          dt-button
-        >
-          <dt-loading-spinner
-            *ngIf="updating"
-            aria-label="{{ editMode ? 'Updating' : 'Creating' }} subscription"
-          ></dt-loading-spinner>
-          {{ editMode ? 'Update' : 'Create' }} subscription
-        </button>
-        <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
-          Cancel
-        </button>
-      </div>
-    </form>
-    <div class="mt-2 required-info">fields are required</div>
+            <dt-loading-spinner
+              *ngIf="updating"
+              aria-label="{{ editMode ? 'Updating' : 'Creating' }} subscription"
+            ></dt-loading-spinner>
+            {{ editMode ? 'Update' : 'Create' }} subscription
+          </button>
+          <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
+            Cancel
+          </button>
+        </div>
+      </form>
+      <div class="mt-2 required-info">fields are required</div>
+    </ng-container>
   </ng-container>
   <ng-template #loading>
     <dt-loading-spinner></dt-loading-spinner>

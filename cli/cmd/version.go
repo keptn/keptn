@@ -22,10 +22,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/spf13/cobra"
 
 	versionCheck "github.com/hashicorp/go-version"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -55,6 +56,7 @@ var versionCmd = NewVersionCommand(version.NewVersionChecker())
 func NewVersionCommand(vChecker *version.VersionChecker) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:     "version",
+		Args:    cobra.NoArgs,
 		Short:   "Shows the version of Keptn and Keptn CLI",
 		Long:    `Shows the version of Keptn and Keptn CLI, and a note when a new version is available.`,
 		Example: `keptn version`,
@@ -178,11 +180,13 @@ func getKeptnServerVersion() (string, error) {
 	if err != nil {
 		return "", errors.New(authErrorMsg)
 	}
-	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
+
+	api, err := internal.APIProvider(endPoint.String(), apiToken, nil)
+	if err != nil {
+		return "", err
 	}
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	metadataData, errMetadata := apiHandler.GetMetadata()
+
+	metadataData, errMetadata := api.APIV1().GetMetadata()
 	if errMetadata != nil {
 		if errMetadata.Message != nil {
 			return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)

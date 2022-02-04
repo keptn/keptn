@@ -29,11 +29,17 @@ type KeptnContextExtendedCE struct {
 	// extensions
 	Extensions interface{} `json:"extensions,omitempty"`
 
+	// gitcommitid
+	Gitcommitid string `json:"gitcommitid,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
 
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+	// shkeptnversion
+	Shkeptnversion string `json:"shkeptnversion,omitempty"`
 
 	// source
 	// Required: true

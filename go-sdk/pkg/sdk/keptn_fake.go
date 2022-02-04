@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"io/ioutil"
 	"path/filepath"
 
@@ -146,15 +147,15 @@ type TestResourceHandler struct {
 	Resource models.Resource
 }
 
-func (t TestResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (t TestResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s/%s/%s", project, stage, service, resourceURI)), nil
 }
 
-func (t TestResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (t TestResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s/%s", project, stage, resourceURI)), nil
 }
 
-func (t TestResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (t TestResourceHandler) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s", project, resourceURI)), nil
 }
 
@@ -176,25 +177,25 @@ type StringResourceHandler struct {
 	ResourceContent string
 }
 
-func (s StringResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (s StringResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return &models.Resource{
-		Metadata:        nil,
+		Metadata:        &models.Version{Version: "CommitID"},
 		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
 
-func (s StringResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (s StringResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return &models.Resource{
-		Metadata:        nil,
+		Metadata:        &models.Version{Version: "CommitID"},
 		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
 }
 
-func (s StringResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (s StringResourceHandler) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return &models.Resource{
-		Metadata:        nil,
+		Metadata:        &models.Version{Version: "CommitID"},
 		ResourceContent: s.ResourceContent,
 		ResourceURI:     nil,
 	}, nil
@@ -203,14 +204,14 @@ func (s StringResourceHandler) GetProjectResource(project string, resourceURI st
 type FailingResourceHandler struct {
 }
 
-func (f FailingResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (f FailingResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return nil, errors.New("unable to get resource")
 }
 
-func (f FailingResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (f FailingResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return nil, errors.New("unable to get resource")
 }
 
-func (f FailingResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (f FailingResourceHandler) GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error) {
 	return nil, errors.New("unable to get resource")
 }

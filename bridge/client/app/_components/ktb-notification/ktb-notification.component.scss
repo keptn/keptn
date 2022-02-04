@@ -1,0 +1,32 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+dt-alert {
+  width: 600px;
+}
+
+.pin-icon {
+  fill: red;
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+}
+
+.close-button:hover:not([disabled]) {
+  background-color: transparent;
+}
+
+::ng-deep {
+  dt-alert.dt-alert-success{
+    .dt-alert-text-container {
+      border-color: $cta-color;
+    }
+    .dt-alert-icon-container {
+      background-color: $cta-color;
+    }
+  }
+
+  .dt-alert-text-container {
+    padding: 5px 5px !important;
+  }
+}

@@ -16,7 +16,6 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   public tableEntries: DtTableDataSource<Secret> = new DtTableDataSource();
   public currentSecret?: Secret;
   public SecretClass = Secret;
-  public deleteSecretDialogState: DeleteDialogState = null;
   public deleteState: DeleteDialogState = null;
 
   constructor(

@@ -28,6 +28,8 @@ import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
+import { EndSessionData } from '../../../shared/interfaces/end-session-data';
+import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 
 @Injectable({
   providedIn: 'root',
@@ -47,7 +49,6 @@ export class DataService {
   protected _hasUnreadUniformRegistrationLogs = new BehaviorSubject<boolean>(false);
   protected readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   protected readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
-  private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   protected _evaluationResults = new Subject<EvaluationHistory>();
@@ -406,6 +407,10 @@ export class DataService {
     );
   }
 
+  public getSequenceMetadata(projectName: string): Observable<ISequencesMetadata> {
+    return this.apiService.getSequencesMetadata(projectName);
+  }
+
   protected addNewSequences(
     project: Project,
     newSequences: Sequence[],
@@ -741,5 +746,9 @@ export class DataService {
     services: string[]
   ): Observable<Record<string, unknown>> {
     return this.apiService.getIntersectedEvent(event, eventSuffix, projectName, stages, services);
+  }
+
+  public logout(): Observable<EndSessionData | null> {
+    return this.apiService.logout();
   }
 }

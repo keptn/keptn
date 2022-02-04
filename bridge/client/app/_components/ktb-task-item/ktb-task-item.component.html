@@ -41,6 +41,9 @@
             [overlayDisabled]="true"
           ></ktb-evaluation-info>
         </div>
+        <div *ngIf="task.traces.length === 0 && !isSubtask" class="mt-2">
+          No events are available for this sequence.
+        </div>
         <div *ngIf="task.data.canary">
           <p class="m-0 nobreak">
             <span class="bold">Action: </span><span [textContent]="task.data.canary.action"></span>
@@ -129,6 +132,8 @@
     <ktb-task-item
       *ngIf="subTask.isTriggered(); else taskLine"
       [task]="subTask"
+      [latestDeployment]="latestDeployment"
+      [isSubtask]="true"
       (itemClicked)="onClick($event)"
       (click)="$event.stopPropagation(); onClick(subTask)"
     ></ktb-task-item>
@@ -173,18 +178,7 @@
       <tr>
         <td><p class="m-0">Currently deployed artifact:</p></td>
         <td>
-          <p
-            class="m-0"
-            *ngIf="task.data.stage && task.data.service"
-            [textContent]="
-              project
-                .getLatestDeploymentTraceOfSequence(
-                  project.getService(task.data.service),
-                  project.getStage(task.data.stage)
-                )
-                ?.getShortImageName() || 'N/A'
-            "
-          ></p>
+          <p class="m-0" *ngIf="task.data.stage && task.data.service" [textContent]="latestDeployment || 'N/A'"></p>
         </td>
       </tr>
       <tr>

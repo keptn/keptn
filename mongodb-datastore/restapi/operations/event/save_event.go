@@ -29,9 +29,9 @@ func NewSaveEvent(ctx *middleware.Context, handler SaveEventHandler) *SaveEvent 
 	return &SaveEvent{Context: ctx, Handler: handler}
 }
 
-/*SaveEvent swagger:route POST /event event saveEvent
+/* SaveEvent swagger:route POST /event event saveEvent
 
-Saves an event to the datastore
+INTERNAL Endpoint: Saves an event to the datastore
 
 */
 type SaveEvent struct {
@@ -42,17 +42,15 @@ type SaveEvent struct {
 func (o *SaveEvent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewSaveEventParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -20,7 +20,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
 )
@@ -62,14 +63,13 @@ staging        2020-04-06T14:37:45.210Z
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
 
-		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		if !mocking {
-			stages, err := stagesHandler.GetAllStages(*stageParameter.project)
+			stages, err := api.StagesV1().GetAllStages(*stageParameter.project)
 			if err != nil {
 				return fmt.Errorf("Failed to retrieve stages for project %s: %v", *stageParameter.project, err)
 			}

@@ -142,10 +142,16 @@ func init() {
         "extensions": {
           "type": "object"
         },
+        "gitcommitid": {
+          "type": "string"
+        },
         "id": {
           "type": "string"
         },
         "shkeptncontext": {
+          "type": "string"
+        },
+        "shkeptnversion": {
           "type": "string"
         },
         "source": {
@@ -329,10 +335,16 @@ func init() {
         "extensions": {
           "type": "object"
         },
+        "gitcommitid": {
+          "type": "string"
+        },
         "id": {
           "type": "string"
         },
         "shkeptncontext": {
+          "type": "string"
+        },
+        "shkeptnversion": {
           "type": "string"
         },
         "source": {

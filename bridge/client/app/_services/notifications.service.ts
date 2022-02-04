@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Notification, NotificationType } from '../_models/notification';
+import { ComponentInfo, Notification, NotificationType } from '../_models/notification';
+import { isEqual } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root',
@@ -12,39 +13,24 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  addNotification(
+  public addNotification<T>(
     type: NotificationType,
-    message: string,
-    time?: number,
-    isTemplateRendered = false,
-    data?: unknown
+    message?: string,
+    componentInfo?: ComponentInfo<T>,
+    time?: number
   ): void {
-    const notification = new Notification(type, message);
-    notification.isTemplateRendered = isTemplateRendered;
-    notification.data = data || null;
-
-    if (time) {
-      setTimeout(() => {
-        this.removeNotification(notification);
-      }, time);
-    }
-
+    const notification = new Notification(type, message, componentInfo, time);
+    const notifications = this._notifications.getValue();
     // Check if the notification to add already exists
-    const duplicateNotifications = this._notifications
-      .getValue()
-      .filter((n) => n.type === notification.type && n.message === notification.message);
+    const duplicateNotifications = notifications.filter((n) => isEqual(n, notification));
 
     // Only show notification if it is not shown yet to prevent duplicates (issue #3896 - https://github.com/keptn/keptn/issues/3896)
     if (duplicateNotifications.length === 0) {
-      this._notifications.next([...this._notifications.getValue(), notification]);
+      this._notifications.next([...notifications, notification]);
     }
   }
 
-  removeNotification(notification: Notification): void {
+  public removeNotification(notification: Notification): void {
     this._notifications.next(this._notifications.getValue().filter((n) => n !== notification));
-  }
-
-  public clearNotifications(): void {
-    this._notifications.next([]);
   }
 }

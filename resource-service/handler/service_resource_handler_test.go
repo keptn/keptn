@@ -557,11 +557,12 @@ func TestServiceResourceHandler_GetServiceResource(t *testing.T) {
 			fields: fields{
 				ResourceManager: &handler_mock.IResourceManagerMock{
 					GetResourceFunc: func(params models.GetResourceParams) (*models.GetResourceResponse, error) {
+						testGetResourceResponse.Metadata.Version = params.GitCommitID
 						return &testGetResourceResponse, nil
 					},
 				},
 			},
-			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/service/my-service/resource/my-resource.yaml?gitCommitID=commit-id", nil),
+			request: httptest.NewRequest(http.MethodGet, "/project/my-project/stage/my-stage/service/my-service/resource/my-resource.yaml?gitCommitID=my-amazing-commit-id", nil),
 			wantParams: &models.GetResourceParams{
 				ResourceContext: models.ResourceContext{
 					Project: models.Project{ProjectName: "my-project"},
@@ -570,10 +571,10 @@ func TestServiceResourceHandler_GetServiceResource(t *testing.T) {
 				},
 				ResourceURI: "my-resource.yaml",
 				GetResourceQuery: models.GetResourceQuery{
-					GitCommitID: "commit-id",
+					GitCommitID: "my-amazing-commit-id",
 				},
 			},
-			wantResult: &testGetResourceResponse,
+			wantResult: &testGetResourceCommitResponse,
 			wantStatus: http.StatusOK,
 		},
 		{

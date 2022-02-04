@@ -32,7 +32,8 @@
                 "tags": [
                     "Events"
                 ],
-                "summary": "Handle event",
+                "summary": "INTERNAL Endpoint: Handle event",
+                "deprecated": true,
                 "parameters": [
                     {
                         "description": "Event type",

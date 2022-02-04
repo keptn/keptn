@@ -3,12 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
 
+	"github.com/keptn/keptn/cli/internal"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -77,11 +78,9 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			},
 		}
 
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
-		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Resource %s could not be uploaded: %s"+endPointErrorReasons,
-				*addResourceCmdParams.Resource, endPointErr)
+		api, err := internal.APIProvider(endPoint.String(), apiToken)
+		if err != nil {
+			return err
 		}
 
 		// Handle different cases of adding resource to a projects default branch, stage branch, and/or service sub-directory
@@ -105,9 +104,12 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			if addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages {
 				// Upload to all stages
 				// get stages
-				stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+				api, err := internal.APIProvider(endPoint.String(), apiToken)
+				if err != nil {
+					return err
+				}
 
-				stages, err := stagesHandler.GetAllStages(*addResourceCmdParams.Project)
+				stages, err := api.StagesV1().GetAllStages(*addResourceCmdParams.Project)
 				if err != nil {
 					return fmt.Errorf("Failed to retrieve stages for project %s: %v", *addResourceCmdParams.Project, err)
 				}
@@ -117,14 +119,14 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 				}
 
 				for _, stage := range stages {
-					_, errorObj := resourceHandler.CreateResources(*addResourceCmdParams.Project, stage.StageName, *addResourceCmdParams.Service, resources)
+					_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, stage.StageName, *addResourceCmdParams.Service, resources)
 					if errorObj != nil {
 						return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
 					}
 				}
 			} else {
 				// upload to specific project/service/stage
-				_, errorObj := resourceHandler.CreateResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
+				_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 				if errorObj != nil {
 					return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
 				}

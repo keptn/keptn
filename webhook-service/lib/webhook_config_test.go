@@ -138,3 +138,102 @@ spec:
 		})
 	}
 }
+
+func TestWebhook_ShouldSendStartedEvent(t *testing.T) {
+	doSendStarted := true
+	doNotSendStarted := false
+	type fields struct {
+		Type           string
+		SubscriptionID string
+		SendFinished   bool
+		SendStarted    *bool
+		EnvFrom        []EnvFrom
+		Requests       []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "return default value",
+			fields: fields{
+				SendStarted: nil,
+			},
+			want: true,
+		},
+		{
+			name: "return set value",
+			fields: fields{
+				SendStarted: &doSendStarted,
+			},
+			want: true,
+		},
+		{
+			name: "return set value",
+			fields: fields{
+				SendStarted: &doNotSendStarted,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			wh := Webhook{
+				Type:           tt.fields.Type,
+				SubscriptionID: tt.fields.SubscriptionID,
+				SendFinished:   tt.fields.SendFinished,
+				SendStarted:    tt.fields.SendStarted,
+				EnvFrom:        tt.fields.EnvFrom,
+				Requests:       tt.fields.Requests,
+			}
+			if got := wh.ShouldSendStartedEvent(); got != tt.want {
+				t.Errorf("ShouldSendStartedEvent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWebhook_ShouldSendFinishedEvent(t *testing.T) {
+	type fields struct {
+		Type           string
+		SubscriptionID string
+		SendFinished   bool
+		SendStarted    *bool
+		EnvFrom        []EnvFrom
+		Requests       []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name:   "false",
+			fields: fields{},
+			want:   false,
+		},
+		{
+			name: "true",
+			fields: fields{
+				SendFinished: true,
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			wh := Webhook{
+				Type:           tt.fields.Type,
+				SubscriptionID: tt.fields.SubscriptionID,
+				SendFinished:   tt.fields.SendFinished,
+				SendStarted:    tt.fields.SendStarted,
+				EnvFrom:        tt.fields.EnvFrom,
+				Requests:       tt.fields.Requests,
+			}
+			if got := wh.ShouldSendFinishedEvent(); got != tt.want {
+				t.Errorf("ShouldSendFinishedEvent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

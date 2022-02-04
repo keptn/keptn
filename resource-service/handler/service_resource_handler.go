@@ -204,7 +204,6 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
-
 	resource, err := ph.ServiceResourceManager.GetResource(*params)
 	if err != nil {
 		OnAPIError(c, err)

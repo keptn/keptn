@@ -6,9 +6,12 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Event event
@@ -27,15 +30,15 @@ type Event struct {
 
 	// id
 	// Required: true
-	ID ID `json:"id"`
+	ID *ID `json:"id"`
 
 	// source
 	// Required: true
-	Source Source `json:"source"`
+	Source *Source `json:"source"`
 
 	// specversion
 	// Required: true
-	Specversion Specversion `json:"specversion"`
+	Specversion *Specversion `json:"specversion"`
 
 	// time
 	// Format: date-time
@@ -43,7 +46,7 @@ type Event struct {
 
 	// type
 	// Required: true
-	Type Type `json:"type"`
+	Type *Type `json:"type"`
 }
 
 // Validate validates this event
@@ -81,7 +84,6 @@ func (m *Event) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Event) validateContenttype(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Contenttype) { // not required
 		return nil
 	}
@@ -89,6 +91,8 @@ func (m *Event) validateContenttype(formats strfmt.Registry) error {
 	if err := m.Contenttype.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("contenttype")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("contenttype")
 		}
 		return err
 	}
@@ -98,11 +102,23 @@ func (m *Event) validateContenttype(formats strfmt.Registry) error {
 
 func (m *Event) validateID(formats strfmt.Registry) error {
 
-	if err := m.ID.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("id")
-		}
+	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
+	}
+
+	if err := validate.Required("id", "body", m.ID); err != nil {
+		return err
+	}
+
+	if m.ID != nil {
+		if err := m.ID.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("id")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("id")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -110,11 +126,23 @@ func (m *Event) validateID(formats strfmt.Registry) error {
 
 func (m *Event) validateSource(formats strfmt.Registry) error {
 
-	if err := m.Source.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("source")
-		}
+	if err := validate.Required("source", "body", m.Source); err != nil {
 		return err
+	}
+
+	if err := validate.Required("source", "body", m.Source); err != nil {
+		return err
+	}
+
+	if m.Source != nil {
+		if err := m.Source.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("source")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("source")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -122,18 +150,29 @@ func (m *Event) validateSource(formats strfmt.Registry) error {
 
 func (m *Event) validateSpecversion(formats strfmt.Registry) error {
 
-	if err := m.Specversion.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("specversion")
-		}
+	if err := validate.Required("specversion", "body", m.Specversion); err != nil {
 		return err
+	}
+
+	if err := validate.Required("specversion", "body", m.Specversion); err != nil {
+		return err
+	}
+
+	if m.Specversion != nil {
+		if err := m.Specversion.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("specversion")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("specversion")
+			}
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (m *Event) validateTime(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Time) { // not required
 		return nil
 	}
@@ -141,6 +180,8 @@ func (m *Event) validateTime(formats strfmt.Registry) error {
 	if err := m.Time.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("time")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("time")
 		}
 		return err
 	}
@@ -150,11 +191,149 @@ func (m *Event) validateTime(formats strfmt.Registry) error {
 
 func (m *Event) validateType(formats strfmt.Registry) error {
 
-	if err := m.Type.Validate(formats); err != nil {
+	if err := validate.Required("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	if err := validate.Required("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	if m.Type != nil {
+		if err := m.Type.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("type")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("type")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this event based on the context it is used
+func (m *Event) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateContenttype(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSource(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpecversion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Event) contextValidateContenttype(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Contenttype.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("type")
+			return ve.ValidateName("contenttype")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("contenttype")
 		}
 		return err
+	}
+
+	return nil
+}
+
+func (m *Event) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ID != nil {
+		if err := m.ID.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("id")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("id")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Event) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Source != nil {
+		if err := m.Source.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("source")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("source")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Event) contextValidateSpecversion(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Specversion != nil {
+		if err := m.Specversion.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("specversion")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("specversion")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Event) contextValidateTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Time.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("time")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("time")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *Event) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Type != nil {
+		if err := m.Type.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("type")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("type")
+			}
+			return err
+		}
 	}
 
 	return nil

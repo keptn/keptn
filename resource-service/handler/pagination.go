@@ -69,6 +69,9 @@ func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, write
 			// don't expose the internal directory structure of the container
 			cutPrefix := strings.TrimPrefix(strings.TrimPrefix(dir, "./"), "/")
 			path = strings.Replace(path, cutPrefix, "", 1)
+			if strings.Contains(path, common.StageDirectoryName) {
+				return nil
+			}
 			if !info.IsDir() {
 				files = append(files, strings.TrimPrefix(path, "/"))
 			}

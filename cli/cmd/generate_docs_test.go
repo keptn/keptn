@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,4 +42,14 @@ func TestGenerateDocs(t *testing.T) {
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
+}
+
+// TestGenerateDocsUnknownCommand
+func TestGenerateDocsUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("generate docs someUnknownCommand", "unknown command \"someUnknownCommand\" for \"keptn generate docs\"", t)
+}
+
+// TestGenerateDocsUnknownParameter
+func TestGenerateDocsUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("generate docs --project=sockshop", "unknown flag: --project", t)
 }

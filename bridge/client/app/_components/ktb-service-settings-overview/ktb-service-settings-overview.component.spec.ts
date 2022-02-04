@@ -38,6 +38,6 @@ describe('KtbServiceSettingsOverviewComponent', () => {
     // given
     const createButton = fixture.debugElement.query(By.css('button'));
     expect(createButton).toBeTruthy();
-    expect(createButton.nativeElement.textContent).toEqual('Create service');
+    expect(createButton.nativeElement.textContent.trim()).toEqual('Create service');
   });
 });

@@ -24,6 +24,8 @@ import { KeptnService } from '../../../shared/models/keptn-service';
 import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
+import { EndSessionData } from '../../../shared/interfaces/end-session-data';
+import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 
 @Injectable({
   providedIn: 'root',
@@ -475,5 +477,13 @@ export class ApiService {
       stages,
       services,
     });
+  }
+
+  public logout(): Observable<EndSessionData | null> {
+    return this.http.post<EndSessionData | null>(`./logout`, {});
+  }
+
+  public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
+    return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
   }
 }

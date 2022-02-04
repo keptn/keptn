@@ -198,6 +198,7 @@ func main() {
 	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(createStateRepo())
 	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceStartedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceWaitingHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(projectMVRepo)
 	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)

@@ -12,19 +12,21 @@ produces:
 paths:
   /health:
     get:
+      deprecated: true
       tags:
         - health
       operationId: getHealth
-      summary: Health endpoint
+      summary: 'INTERNAL Endpoint: Health endpoint'
       responses:
         200:
           description: healthy
   /event:
     post:
+      deprecated: true
       tags:
         - event
       operationId: saveEvent
-      summary: Saves an event to the datastore
+      summary: 'INTERNAL Endpoint: Saves an event to the datastore'
       parameters:
         - name: body
           in: body
@@ -41,7 +43,7 @@ paths:
       tags:
         - event
       operationId: getEvents
-      summary: Gets events from the data store
+      summary: Gets events from the data store, either keptnContext or project must be specified
       parameters:
         - name: keptnContext
           in: query
@@ -129,7 +131,7 @@ paths:
       tags:
         - event
       operationId: getEventsByType
-      summary: Gets events by their type from the mongodb
+      summary: Gets events by their type from the mongodb, required filter are either 'data.project:<project-name>' or 'shkeptncontext:<keptn-context-id>'
       parameters:
         - name: filter
           in: query
@@ -184,17 +186,40 @@ parameters:
     required: false
     description: Key of the page to be returned
 definitions:
+
   KeptnContextExtendedCE:
-    allOf:
-      - "$ref": https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event
-      - type: object
-        properties:
-          shkeptncontext:
-            type: string
-          triggeredid:
-            type: string
-          shkeptnspecversion:
-            type: string
+    type: object
+    properties: # CloudEvents v1.0 properties (https://raw.githubusercontent.com/cloudevents/spec/v1.0/spec.json#/definitions/event)
+      shkeptncontext:
+        type: string
+      triggeredid:
+        type: string
+      gitcommitid:
+        type: string
+      shkeptnspecversion:
+        type: string
+      specversion:
+        type: string
+      contenttype:
+        type: string
+      data:
+        type: object
+      id:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+      extensions:
+        type: object
+      source:
+        format: uri-reference
+        type: string
+    required:
+      - data
+      - source
+      - type
   error:
     type: object
     required:
