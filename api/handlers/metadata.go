@@ -10,7 +10,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -72,26 +72,37 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
 
-	if h.k8sClient != nil {
-		deploymentsClient := h.k8sClient.AppsV1().Deployments(namespace)
+	if bridgeVersion, err := h.getBridgeVersion(namespace); err == nil {
+		payload.Bridgeversion = bridgeVersion
+	} else {
+		logger.WithError(err).Error("Error getting brdige version")
+	}
 
-		if bridgeDeployment, err := deploymentsClient.Get(context.TODO(), "bridge", metav1.GetOptions{}); err == nil {
-			v := strings.Split(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, ":")
-			if len(v) >= 2 {
-				payload.Bridgeversion = v[1]
-			}
-		} else {
-			logger.WithError(err).Error("Error getting deployment info")
-		}
-
-		if keptnVersion, err := h.getSwaggerKeptnVersion(); err == nil {
-			payload.Keptnversion = keptnVersion
-		} else {
-			logger.WithError(err).Error("Error getting swagger info")
-		}
+	if keptnVersion, err := h.getSwaggerKeptnVersion(); err == nil {
+		payload.Keptnversion = keptnVersion
+	} else {
+		logger.WithError(err).Error("Error getting swagger info")
 	}
 
 	return metadata.NewMetadataOK().WithPayload(&payload)
+}
+
+func (h *metadataHandler) getBridgeVersion(namespace string) (string, error) {
+
+	if h.k8sClient == nil {
+		return "", fmt.Errorf("unable to get bridge version")
+	}
+	bridgeDeployment, err := h.k8sClient.AppsV1().Deployments(namespace).Get(context.TODO(), "bridge", metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("unable to get bridge version %w", err)
+	}
+
+	v := strings.Split(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, ":")
+	if len(v) >= 2 {
+		return v[1], nil
+	}
+
+	return "", fmt.Errorf("unable to get bridge version")
 }
 
 func (h *metadataHandler) getSwaggerKeptnVersion() (string, error) {
