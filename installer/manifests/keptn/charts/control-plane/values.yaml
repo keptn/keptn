@@ -34,7 +34,7 @@ apiGatewayNginx:
   nodePort: 31090
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.21.4-alpine
+    tag: 1.21.5-alpine
 
 remediationService:
   image:
