@@ -393,6 +393,7 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 		log.Infof("no active task execution for context %s found.", cancel.KeptnContext)
 		return nil
 	}
+	// TODO check state and remove from dispatcher if sequence is currently in queue, i.e. waiting or triggered
 
 	// delete all open .triggered events for the task sequence
 	for _, sequenceExecution := range sequenceExecutions {
