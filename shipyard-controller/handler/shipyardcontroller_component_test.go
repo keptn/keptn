@@ -874,16 +874,30 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	sc.taskSequenceRepo.CreateTaskExecution("my-project", models.TaskExecution{
-		TaskSequenceName: "delivery",
-		TriggeredEventID: "my-task-triggered-id",
-		Task:             models.Task{},
-		Stage:            "my-stage",
-		KeptnContext:     "my-keptn-context-id",
+	err := sc.taskSequenceV2Repo.Upsert(modelsv2.TaskSequence{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: modelsv2.TaskSequenceStatus{
+			State: models.SequenceStartedState,
+			CurrentTask: modelsv2.TaskExecution{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: modelsv2.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			Project:      "my-project",
+			Stage:        "my-stage",
+			Service:      "my-service",
+		},
 	})
 
+	require.Nil(t, err)
+
 	// invoke the CancelSequence function
-	err := sc.timeoutSequence(models.SequenceTimeout{
+	err = sc.timeoutSequence(models.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
 		LastEvent: models.Event{
 			Data: keptnv2.EventData{
@@ -892,7 +906,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 				Service: "my-service",
 			},
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-task")),
-			ID:             "my-task-triggered-id",
+			ID:             "my-deployment-triggered-id",
 			Shkeptncontext: "my-keptn-context-id",
 		},
 	})
@@ -934,17 +948,29 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	taskSequenceMapping := models.TaskExecution{
-		TaskSequenceName: "delivery",
-		TriggeredEventID: "my-deployment-triggered-id",
-		Task:             models.Task{},
-		Stage:            "my-stage",
-		KeptnContext:     "my-keptn-context-id",
-	}
-	sc.taskSequenceRepo.CreateTaskExecution("my-project", taskSequenceMapping)
+	err := sc.taskSequenceV2Repo.Upsert(modelsv2.TaskSequence{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: modelsv2.TaskSequenceStatus{
+			State: models.SequenceStartedState,
+			CurrentTask: modelsv2.TaskExecution{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: modelsv2.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			Project:      "my-project",
+			Stage:        "my-stage",
+			Service:      "my-service",
+		},
+	})
+	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -984,8 +1010,29 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
 	}, common.TriggeredEvent)
 
+	err := sc.taskSequenceV2Repo.Upsert(modelsv2.TaskSequence{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: modelsv2.TaskSequenceStatus{
+			State: models.SequenceTriggeredState,
+			CurrentTask: modelsv2.TaskExecution{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: modelsv2.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			Project:      "my-project",
+			Stage:        "my-stage",
+			Service:      "my-service",
+		},
+	})
+	require.Nil(t, err)
+
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",

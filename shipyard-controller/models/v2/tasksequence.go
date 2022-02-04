@@ -5,7 +5,7 @@ import (
 )
 
 type TaskSequence struct {
-	ID       string             `json:"id" bson:"_id"`
+	ID       string             `json:"_id" bson:"_id"`
 	Sequence keptnv2.Sequence   `json:"sequence" bson:"sequence"`
 	Status   TaskSequenceStatus `json:"status" bson:"status"`
 	Scope    EventScope         `json:"scope" bson:"scope"`

@@ -66,7 +66,7 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*modelsv2.TaskS
 	if err := json.Unmarshal(data, sequenceExecution); err != nil {
 		return nil, err
 	}
-	sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
+	//sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
 	return sequenceExecution, nil
 }
 

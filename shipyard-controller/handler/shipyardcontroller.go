@@ -309,14 +309,25 @@ func (sc *shipyardController) handleTaskEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecution modelsv2.TaskSequence, eventScope *models.EventScope) error {
-	updatedSequenceExecution, err := sc.taskSequenceV2Repo.AppendTaskEvent(sequenceExecution, modelsv2.TaskEvent{
+	taskEvent := modelsv2.TaskEvent{
 		EventType: *event.Type,
 		Source:    *event.Source,
 		Result:    string(eventScope.Result),
 		Status:    string(eventScope.Status),
 		Time:      event.Time,
-		//Properties: eventScope., // TODO fill
-	})
+	}
+	if keptnv2.IsFinishedEventType(taskEvent.EventType) {
+		// TODO this will need refactoring
+		eventData := map[string]interface{}{}
+		err := keptnv2.Decode(event.Data, &eventData)
+		if err != nil {
+			return err
+		}
+		if taskProperties, ok := eventData[sequenceExecution.Status.CurrentTask.Name]; ok {
+			taskEvent.Properties = taskProperties.(map[string]interface{})
+		}
+	}
+	updatedSequenceExecution, err := sc.taskSequenceV2Repo.AppendTaskEvent(sequenceExecution, taskEvent)
 	if err != nil {
 		return err
 	}
