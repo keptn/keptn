@@ -159,7 +159,7 @@ func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
 		}
 		return keptnapi.New(config.Global.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
 	}
-	return keptnapi.NewInternal(config.DefaultShipyardControllerBaseURL, keptnapi.WithHTTPClient(httpClient))
+	return keptnapi.New(config.DefaultShipyardControllerBaseURL, keptnapi.WithHTTPClient(httpClient), keptnapi.Internal())
 }
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {
