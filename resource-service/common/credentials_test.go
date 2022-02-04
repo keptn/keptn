@@ -2,6 +2,9 @@ package common
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/stretchr/testify/require"
@@ -10,8 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
-	"os"
-	"testing"
 )
 
 func TestK8sCredentialReader_ReadSecret(t *testing.T) {
@@ -60,25 +61,25 @@ func TestK8sCredentialReader_ReadSecretWrongFormat(t *testing.T) {
 	require.Nil(t, secret)
 }
 
-func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
-	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
-		&corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "git-credentials-my-project",
-				Namespace: "keptn",
-			},
-			Data: map[string][]byte{
-				"git-credentials": []byte(`{"user":"user","token":"","remoteURI":"uri"}`)},
-			Type: corev1.SecretTypeOpaque,
-		},
-	))
+// func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
+// 	_ = os.Setenv("POD_NAMESPACE", "keptn")
+// 	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
+// 		&corev1.Secret{
+// 			ObjectMeta: metav1.ObjectMeta{
+// 				Name:      "git-credentials-my-project",
+// 				Namespace: "keptn",
+// 			},
+// 			Data: map[string][]byte{
+// 				"git-credentials": []byte(`{"user":"user","token":"","remoteURI":"uri"}`)},
+// 			Type: corev1.SecretTypeOpaque,
+// 		},
+// 	))
 
-	secret, err := secretReader.GetCredentials("my-project")
+// 	secret, err := secretReader.GetCredentials("my-project")
 
-	require.ErrorIs(t, err, errors.ErrCredentialsTokenMustNotBeEmpty)
-	require.Nil(t, secret)
-}
+// 	require.ErrorIs(t, err, errors.ErrCredentialsTokenMustNotBeEmpty)
+// 	require.Nil(t, secret)
+// }
 
 func TestK8sCredentialReader_ReadSecretError(t *testing.T) {
 	_ = os.Setenv("POD_NAMESPACE", "keptn")

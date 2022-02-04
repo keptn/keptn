@@ -594,7 +594,7 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 
 func (g *Git) ProjectRepoExists(project string) bool {
 	path := GetProjectConfigPath(project)
-	logger.Info("v projectrepoexists path je %s", path)
+	//logger.Info("v projectrepoexists path je %s", path)
 	_, err := os.Stat(path)
 	if err == nil {
 		// path exists
