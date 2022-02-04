@@ -559,7 +559,7 @@ func (sc *shipyardController) getOpenTaskExecution(eventScope models.EventScope)
 }
 
 func (sc *shipyardController) getFinishedEventData(eventScope models.EventScope) ([]interface{}, error) {
-	// TODO: make use of event data in sequenceExecution?
+	// TODO: make use of event data in sequenceExecution!
 	allFinishedEventsForTask, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 		Type:         "",
 		Stage:        &eventScope.Stage,
