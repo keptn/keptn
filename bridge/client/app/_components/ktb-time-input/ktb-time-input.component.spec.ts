@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbTimeframeInputComponent } from './ktb-timeframe-input.component';
+import { KtbTimeInputComponent } from './ktb-time-input.component';
 import { AppModule } from '../../app.module';
 
-describe('KtbTimeframeInputComponent', () => {
-  let component: KtbTimeframeInputComponent;
-  let fixture: ComponentFixture<KtbTimeframeInputComponent>;
+describe('KtbTimeInputComponent', () => {
+  let component: KtbTimeInputComponent;
+  let fixture: ComponentFixture<KtbTimeInputComponent>;
 
   const formControlNames = ['hours', 'minutes', 'seconds', 'millis', 'micros'];
 
@@ -14,7 +14,7 @@ describe('KtbTimeframeInputComponent', () => {
       imports: [AppModule],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(KtbTimeframeInputComponent);
+    fixture = TestBed.createComponent(KtbTimeInputComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -26,47 +26,47 @@ describe('KtbTimeframeInputComponent', () => {
   it('should validate input for formControls with a min value and set appropriate value to formControl', () => {
     for (const control of formControlNames) {
       // given
-      component.timeframeForm.controls[control].setValue(-1);
+      component.timeForm.controls[control].setValue(-1);
 
       // when
       component.validateInput(control, 0, 24);
 
       // then
-      expect(component.timeframeForm.controls[control].value).toEqual(0);
+      expect(component.timeForm.controls[control].value).toEqual(0);
     }
   });
 
   it('should validate input for formControls with a max value and set appropriate value to formControl', () => {
     for (const control of formControlNames) {
       // given
-      component.timeframeForm.controls[control].setValue(25);
+      component.timeForm.controls[control].setValue(25);
 
       // when
       component.validateInput(control, 0, 24);
 
       // then
-      expect(component.timeframeForm.controls[control].value).toEqual(24);
+      expect(component.timeForm.controls[control].value).toEqual(24);
     }
   });
 
   it('should validate input for formControls, round input and set appropriate value to formControl', () => {
     for (const control of formControlNames) {
       // given
-      component.timeframeForm.controls[control].setValue(1.25);
+      component.timeForm.controls[control].setValue(1.25);
 
       // when
       component.validateInput(control, 0, 24);
 
       // then
-      expect(component.timeframeForm.controls[control].value).toEqual(1);
+      expect(component.timeForm.controls[control].value).toEqual(1);
     }
   });
 
   it('should emit given values', () => {
-    const spy = jest.spyOn(component.timeframe, 'emit');
+    const spy = jest.spyOn(component.timeChanged, 'emit');
     for (const control of formControlNames) {
       // given
-      component.timeframeForm.controls[control].setValue(1);
+      component.timeForm.controls[control].setValue(1);
 
       // when
       component.validateInput(control, 0, 24);

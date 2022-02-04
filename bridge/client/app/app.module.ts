@@ -146,7 +146,12 @@ import { KtbNotificationComponent } from './_components/ktb-notification/ktb-not
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { ArrayToStringPipe } from './_pipes/array-to-string';
-import { KtbTimeframeInputComponent } from './_components/ktb-timeframe-input/ktb-timeframe-input.component';
+import { KtbTimeInputComponent } from './_components/ktb-time-input/ktb-time-input.component';
+import {
+  KtbDatetimePickerComponent,
+  KtbDatetimePickerDirective,
+} from './_components/ktb-datetime-picker/ktb-datetime-picker.component';
+import { DtDatepickerModule } from '@dynatrace/barista-components/experimental/datepicker';
 
 registerLocaleData(localeEn, 'en');
 
@@ -237,7 +242,9 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     ArrayToStringPipe,
     KtbNotificationComponent,
     KtbProjectCreateMessageComponent,
-    KtbTimeframeInputComponent,
+    KtbTimeInputComponent,
+    KtbDatetimePickerComponent,
+    KtbDatetimePickerDirective,
   ],
   imports: [
     BrowserModule,
@@ -291,6 +298,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtAlertModule,
     DtTreeTableModule,
     OverlayModule,
+    DtDatepickerModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [
