@@ -1,0 +1,43 @@
+<dt-label class="dt-form-field-label" [ngClass]="{ required: required }">Timeframe</dt-label>
+<div class="timeframe-input" [ngClass]="{ focused: isFocused }" (click)="hourInput.focus()" (focus)="hourInput.focus()">
+  <form [formGroup]="timeframeForm">
+    <input
+      #hourInput
+      dtInput
+      placeholder="hh"
+      type="number"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      formControlName="hours"
+      (input)="validateInput('hours', 0, 24)"
+    />:<input
+      dtInput
+      placeholder="mm"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      formControlName="minutes"
+      (input)="validateInput('minutes', 0, 60)"
+    />:<input
+      dtInput
+      placeholder="ss"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      formControlName="seconds"
+      (input)="validateInput('seconds', 0, 60)"
+    />:<input
+      dtInput
+      placeholder="ms"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      formControlName="millis"
+      (input)="validateInput('millis', 0, 1000)"
+    />:<input
+      dtInput
+      placeholder="µs"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      formControlName="micros"
+      (input)="validateInput('micros', 0, 1000)"
+    />
+  </form>
+</div>

@@ -146,6 +146,7 @@ import { KtbNotificationComponent } from './_components/ktb-notification/ktb-not
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { ArrayToStringPipe } from './_pipes/array-to-string';
+import { KtbTimeframeInputComponent } from './_components/ktb-timeframe-input/ktb-timeframe-input.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -236,6 +237,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     ArrayToStringPipe,
     KtbNotificationComponent,
     KtbProjectCreateMessageComponent,
+    KtbTimeframeInputComponent,
   ],
   imports: [
     BrowserModule,
