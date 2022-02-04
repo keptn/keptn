@@ -73,7 +73,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Shipyardversion = "0.2.0"
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
-		logger.WithError(err).Error("Error getting brdige version")
+		logger.WithError(err).Error("Error getting bridge version")
 	} else {
 		payload.Bridgeversion = bridgeVersion
 	}
