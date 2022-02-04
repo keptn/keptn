@@ -93,7 +93,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 			},
 			want: &metadata.MetadataOK{
 				Payload: &models.Metadata{
-					Bridgeversion:   "bridge:0.8.0",
+					Bridgeversion:   "0.8.0",
 					Keptnlabel:      "keptn",
 					Keptnservices:   nil,
 					Keptnversion:    "develop",
