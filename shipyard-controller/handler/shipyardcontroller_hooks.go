@@ -14,7 +14,7 @@ func (sc *shipyardController) AddSequenceStartedHook(hook sequencehooks.ISequenc
 }
 
 func (sc *shipyardController) AddSequenceWaitingHook(hook sequencehooks.ISequenceWaitingHook) {
-	sc.sequenceWaitingHooks = append(sc.sequenceWaitingHooks, hook)
+	//sc.sequenceWaitingHooks = append(sc.sequenceWaitingHooks, hook)
 }
 
 func (sc *shipyardController) AddSequenceTaskTriggeredHook(hook sequencehooks.ISequenceTaskTriggeredHook) {
@@ -66,9 +66,9 @@ func (sc *shipyardController) onSequenceStarted(event models.Event) {
 }
 
 func (sc *shipyardController) onSequenceWaiting(event models.Event) {
-	for _, hook := range sc.sequenceWaitingHooks {
-		hook.OnSequenceWaiting(event)
-	}
+	//for _, hook := range sc.sequenceWaitingHooks {
+	//	hook.OnSequenceWaiting(event)
+	//}
 }
 
 func (sc *shipyardController) onSequenceTaskStarted(event models.Event) {
