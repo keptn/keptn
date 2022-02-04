@@ -72,16 +72,16 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
 
-	if bridgeVersion, err := h.getBridgeVersion(namespace); err == nil {
-		payload.Bridgeversion = bridgeVersion
-	} else {
+	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
 		logger.WithError(err).Error("Error getting brdige version")
+	} else {
+		payload.Bridgeversion = bridgeVersion
 	}
 
-	if keptnVersion, err := h.getSwaggerKeptnVersion(); err == nil {
-		payload.Keptnversion = keptnVersion
-	} else {
+	if keptnVersion, err := h.getSwaggerKeptnVersion(); err != nil {
 		logger.WithError(err).Error("Error getting swagger info")
+	} else {
+		payload.Keptnversion = keptnVersion
 	}
 
 	return metadata.NewMetadataOK().WithPayload(&payload)
