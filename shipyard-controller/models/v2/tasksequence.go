@@ -13,6 +13,7 @@ type TaskSequence struct {
 
 type EventScope struct {
 	KeptnContext string `json:"keptnContext" bson:"keptnContext"`
+	GitCommitID  string `json:"gitCommitID" bson:"gitCommitID"`
 	Project      string `json:"project" bson:"project"`
 	Stage        string `json:"stage" bson:"stage"`
 	Service      string `json:"service" bson:"service"`
