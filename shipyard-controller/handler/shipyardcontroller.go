@@ -303,6 +303,8 @@ func (sc *shipyardController) handleTaskEvent(event models.Event) error {
 		if err != nil {
 			log.Errorf("unable to store %s event: %v ", eventScope.EventType, err.Error())
 		}
+	} else if keptnv2.IsStartedEventType(*event.Type) {
+		sc.onSequenceTaskStarted(eventScope.WrappedEvent)
 	}
 
 	return sc.onTaskProgress(event, *sequenceExecution, eventScope)

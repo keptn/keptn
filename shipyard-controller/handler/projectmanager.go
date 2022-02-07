@@ -367,6 +367,8 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 	}); err != nil {
 		log.Errorf("could not delete queued events: %s", err.Error())
 	}
+
+	// TODO delete taskSequenceExecutions
 }
 
 func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
