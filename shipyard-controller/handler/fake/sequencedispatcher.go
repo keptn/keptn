@@ -24,6 +24,9 @@ import (
 // 			RunFunc: func(ctx context.Context, startSequenceFunc func(event models.Event) error)  {
 // 				panic("mock out the Run method")
 // 			},
+// 			SetStartSequenceCallbackFunc: func(startSequenceFunc func(event models.Event) error)  {
+// 				panic("mock out the SetStartSequenceCallback method")
+// 			},
 // 		}
 //
 // 		// use mockedISequenceDispatcher in code that requires handler.ISequenceDispatcher
@@ -39,6 +42,9 @@ type ISequenceDispatcherMock struct {
 
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context, startSequenceFunc func(event models.Event) error)
+
+	// SetStartSequenceCallbackFunc mocks the SetStartSequenceCallback method.
+	SetStartSequenceCallbackFunc func(startSequenceFunc func(event models.Event) error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -59,10 +65,16 @@ type ISequenceDispatcherMock struct {
 			// StartSequenceFunc is the startSequenceFunc argument value.
 			StartSequenceFunc func(event models.Event) error
 		}
+		// SetStartSequenceCallback holds details about calls to the SetStartSequenceCallback method.
+		SetStartSequenceCallback []struct {
+			// StartSequenceFunc is the startSequenceFunc argument value.
+			StartSequenceFunc func(event models.Event) error
+		}
 	}
-	lockAdd    sync.RWMutex
-	lockRemove sync.RWMutex
-	lockRun    sync.RWMutex
+	lockAdd                      sync.RWMutex
+	lockRemove                   sync.RWMutex
+	lockRun                      sync.RWMutex
+	lockSetStartSequenceCallback sync.RWMutex
 }
 
 // Add calls AddFunc.
@@ -159,5 +171,36 @@ func (mock *ISequenceDispatcherMock) RunCalls() []struct {
 	mock.lockRun.RLock()
 	calls = mock.calls.Run
 	mock.lockRun.RUnlock()
+	return calls
+}
+
+// SetStartSequenceCallback calls SetStartSequenceCallbackFunc.
+func (mock *ISequenceDispatcherMock) SetStartSequenceCallback(startSequenceFunc func(event models.Event) error) {
+	if mock.SetStartSequenceCallbackFunc == nil {
+		panic("ISequenceDispatcherMock.SetStartSequenceCallbackFunc: method is nil but ISequenceDispatcher.SetStartSequenceCallback was just called")
+	}
+	callInfo := struct {
+		StartSequenceFunc func(event models.Event) error
+	}{
+		StartSequenceFunc: startSequenceFunc,
+	}
+	mock.lockSetStartSequenceCallback.Lock()
+	mock.calls.SetStartSequenceCallback = append(mock.calls.SetStartSequenceCallback, callInfo)
+	mock.lockSetStartSequenceCallback.Unlock()
+	mock.SetStartSequenceCallbackFunc(startSequenceFunc)
+}
+
+// SetStartSequenceCallbackCalls gets all the calls that were made to SetStartSequenceCallback.
+// Check the length with:
+//     len(mockedISequenceDispatcher.SetStartSequenceCallbackCalls())
+func (mock *ISequenceDispatcherMock) SetStartSequenceCallbackCalls() []struct {
+	StartSequenceFunc func(event models.Event) error
+} {
+	var calls []struct {
+		StartSequenceFunc func(event models.Event) error
+	}
+	mock.lockSetStartSequenceCallback.RLock()
+	calls = mock.calls.SetStartSequenceCallback
+	mock.lockSetStartSequenceCallback.RUnlock()
 	return calls
 }

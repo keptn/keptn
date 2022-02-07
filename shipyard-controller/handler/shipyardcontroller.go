@@ -74,6 +74,7 @@ func GetShipyardControllerInstance(
 			sequenceTimeoutChan: sequenceTimeoutChannel,
 			shipyardRetriever:   shipyardRetriever,
 		}
+		sequenceDispatcher.SetStartSequenceCallback(shipyardControllerInstance.StartTaskSequence)
 		shipyardControllerInstance.run(ctx)
 	}
 	return shipyardControllerInstance

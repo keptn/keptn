@@ -21,6 +21,7 @@ type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
 	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
 	Remove(eventScope models.EventScope) error
+	SetStartSequenceCallback(startSequenceFunc func(event models.Event) error) // TODO: not pretty, but for simplicity let's do it this way for now
 }
 
 type SequenceDispatcher struct {
@@ -87,6 +88,10 @@ func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
 	return sd.sequenceQueue.DeleteQueuedSequences(models.QueueItem{
 		Scope: eventScope,
 	})
+}
+
+func (sd *SequenceDispatcher) SetStartSequenceCallback(startSequenceFunc func(event models.Event) error) {
+	sd.startSequenceFunc = startSequenceFunc
 }
 
 func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
