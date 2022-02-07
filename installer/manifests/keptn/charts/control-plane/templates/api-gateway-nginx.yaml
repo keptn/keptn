@@ -459,7 +459,7 @@ spec:
   ports:
     - port: {{ .Values.apiGatewayNginx.port }}
       name: http
-      targetPort: 8080
+      targetPort: {{ .Values.apiGatewayNginx.targetPort }}
       {{ if eq .Values.apiGatewayNginx.type "NodePort" }}nodePort: {{ .Values.apiGatewayNginx.nodePort }}{{ end }}
       protocol: TCP
   selector:
