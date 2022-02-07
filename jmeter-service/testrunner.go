@@ -257,6 +257,7 @@ func (tr *TestRunner) sendTestsStartedEvent(testInfo TestInfo) error {
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", testInfo.Context)
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
+	event.SetExtension("gitcommitid", testInfo.CommitID)
 	if err := event.SetData(cloudevents.ApplicationJSON, testStartedEventData); err != nil {
 		return err
 	}
@@ -283,6 +284,7 @@ func (tr *TestRunner) sendTestsFinishedEvent(testInfo TestInfo, startedAt time.T
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", testInfo.Context)
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
+	event.SetExtension("gitcommitid", testInfo.CommitID)
 	if err := event.SetData(cloudevents.ApplicationJSON, testFinishedData); err != nil {
 		return err
 	}
@@ -309,6 +311,7 @@ func (tr *TestRunner) sendErroredTestsFinishedEvent(testInfo TestInfo, startedAt
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", testInfo.Context)
 	event.SetExtension("triggeredid", testInfo.TriggeredID)
+	event.SetExtension("gitcommitid", testInfo.CommitID)
 	if err := event.SetData(cloudevents.ApplicationJSON, testFinishedData); err != nil {
 		return err
 	}

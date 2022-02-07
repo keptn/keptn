@@ -88,7 +88,9 @@ func (h *HandlerBase) getUserChart(e keptnv2.EventData, commitID string) (*chart
 
 func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData, commitID string) (*keptnv2.Endpoints, error) {
 	commitOption := url.Values{}
-	commitOption.Add("commitID", commitID)
+	if commitID != "" {
+		commitOption.Add("commitID", commitID)
+	}
 	resourceScope := *keptnapi.NewResourceScope().Project(event.Project).Stage(event.Stage).Service(event.Service).Resource("helm/endpoints.yaml")
 	endpointsResource, err := h.getKeptnHandler().ResourceHandler.GetResource(resourceScope, keptnapi.AppendQuery(commitOption))
 	if err != nil {
@@ -127,7 +129,6 @@ func (h *HandlerBase) sendEvent(triggerID, ceType string, data interface{}) erro
 	event.SetType(ceType)
 	event.SetSource("helm-service")
 	event.SetDataContentType(cloudevents.ApplicationJSON)
-
 	event.SetExtension("triggeredid", triggerID)
 	event.SetExtension("shkeptncontext", h.keptnHandler.KeptnContext)
 	event.SetData(cloudevents.ApplicationJSON, data)
