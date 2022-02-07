@@ -2,12 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/common/retry"
-	commontime "github.com/keptn/go-utils/pkg/common/timeutils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	logger "github.com/sirupsen/logrus"
 	"net"
 	"net/url"
 	"os"
@@ -15,6 +11,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/keptn/go-utils/pkg/common/retry"
+	commontime "github.com/keptn/go-utils/pkg/common/timeutils"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	logger "github.com/sirupsen/logrus"
 )
 
 // TestRunner is responsible for executing healtch checks the JMeter workloads
@@ -87,6 +89,7 @@ func (tr *TestRunner) sendTestResult(ctx context.Context, testInfo TestInfo, res
 			if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, result.err.Error()); err != nil {
 				logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 			}
+			return
 		}
 		msg := fmt.Sprintf("Tests for %s with status = %s. %v", testInfo.TestStrategy, strconv.FormatBool(result.res), testInfo)
 		if !result.res {
@@ -149,7 +152,7 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
 			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
-		return nil
+		return errors.New(msg)
 	}
 	res, err := tr.runWorkload(testInfo, healthCheckWorkload)
 	if err != nil {
@@ -158,14 +161,14 @@ func (tr *TestRunner) runHealthCheck(testInfo TestInfo, testStartedAt time.Time,
 		if err := tr.sendErroredTestsFinishedEvent(testInfo, testStartedAt, msg); err != nil {
 			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
-		return nil
+		return err
 	}
 	if !res {
 		msg := fmt.Sprintf("Tests for %s with status = %s. %v", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo)
 		if err := tr.sendTestsFinishedEvent(testInfo, testStartedAt, msg, keptnv2.ResultFailed); err != nil {
 			logger.Errorf(errMsgSendFinishedEvent, err, testInfo)
 		}
-		return nil
+		return errors.New(msg)
 	}
 	logger.Infof("Health Check test passed=%s. %v", strconv.FormatBool(res), testInfo)
 	return nil
