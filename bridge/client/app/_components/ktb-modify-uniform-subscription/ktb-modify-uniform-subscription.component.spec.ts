@@ -375,8 +375,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       '/',
       'project',
       'sockshop',
+      'settings',
       'uniform',
-      'services',
+      'integrations',
       UniformRegistrationsMock[1].id,
     ]);
     expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual(

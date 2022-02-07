@@ -51,7 +51,7 @@ describe('KtbKeptnServicesListComponent', () => {
   it('should show error event indicator', () => {
     // given
     const firstCell = fixture.nativeElement.querySelector('dt-cell');
-    const indicator = firstCell.querySelector('.notification-indicator');
+    const indicator = firstCell.querySelector('.notification-indicator-text');
 
     // then
     expect(indicator).toBeTruthy();
@@ -64,7 +64,7 @@ describe('KtbKeptnServicesListComponent', () => {
 
     // then
     for (let i = 1; i < firstColumn.length; ++i) {
-      const indicator = firstColumn[i].querySelector('.notification-indicator');
+      const indicator = firstColumn[i].querySelector('.notification-indicator-text');
       expect(indicator).toBeFalsy();
     }
   });
@@ -80,7 +80,7 @@ describe('KtbKeptnServicesListComponent', () => {
     // when
     firstRow.click();
     fixture.detectChanges();
-    let indicator = firstCell.querySelector('.notification-indicator');
+    let indicator = firstCell.querySelector('.notification-indicator-text');
     const registration = component.selectedUniformRegistration;
     expect(indicator).toBeTruthy();
     expect(registration?.unreadEventsCount).toEqual(10);
@@ -91,7 +91,7 @@ describe('KtbKeptnServicesListComponent', () => {
     fixture.detectChanges();
 
     // then
-    indicator = firstCell.querySelector('.notification-indicator');
+    indicator = firstCell.querySelector('.notification-indicator-text');
     expect(indicator).toBeFalsy();
     expect(registration?.unreadEventsCount).toEqual(0);
   });
