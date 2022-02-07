@@ -11,7 +11,7 @@
 {{- end -}}
 
 {{- $bridgeSessionSecret := (randAlphaNum 45) | b64enc | quote }}
-{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32)  | b64enc | quote }}
+{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) | b64enc | quote }}
 {{- $bridgeOAuth := (lookup "v1" "Secret" .Release.Namespace "bridge-oauth") }}
 {{- if $bridgeOAuth }}
   {{- $bridgeSessionSecret = index $bridgeOAuth.data "session_secret" }}
