@@ -2,7 +2,7 @@
 
 class UniformPage {
   UNIFORM_NAME_LOC = 'span.ng-star-inserted';
-  UNIFORM_SUBMENU_LOC = 'uniform-submenu';
+  UNIFORM_SUBMENU_LOC = 'integration-submenu';
   UNIFORM_INTEGRATION_TABLE_LOC = 'keptn-uniform-integrations-table';
   SUBSCRIPTION_EXP_HEADER_LOC = 'ktb-expandable-tile h3';
   SUBSCRIPTION_DETAILS_LOC = 'ktb-expandable-tile dt-expandable-panel ktb-subscription-item';

@@ -1,8 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { filter, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs/internal/Subject';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'ktb-not-found',

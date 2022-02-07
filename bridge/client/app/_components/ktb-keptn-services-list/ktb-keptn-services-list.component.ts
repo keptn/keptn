@@ -56,8 +56,9 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
           const routeUrl = this.router.createUrlTree([
             '/project',
             this.projectName,
+            'settings',
             'uniform',
-            'services',
+            'integrations',
             uniformRegistrationId,
           ]);
           this.location.go(routeUrl.toString());

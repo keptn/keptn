@@ -1,12 +1,39 @@
 <div fxFlexFill>
   <div fxFlex fxLayout="row">
     <dt-menu class="submenu" aria-label="Keptn Settings Submenu" fxFlex="0 0 200px">
-      <dt-menu-group label="Settings">
+      <dt-menu-group label="Project configuration">
         <button dtMenuItem aria-label="Open project settings" routerLinkActive="active" routerLink="project">
           Project
         </button>
         <button dtMenuItem aria-label="Open services settings" routerLinkActive="active" routerLink="services">
           Services
+        </button>
+      </dt-menu-group>
+      <dt-menu-group label="Uniform">
+        <button
+          dtMenuItem
+          aria-label="Open integrations settings"
+          routerLinkActive="active"
+          routerLink="uniform/integrations"
+          uitestid="integration-submenu"
+        >
+          <div class="notification-menu-container">
+            <div *ngIf="hasUnreadLogs$ | async" class="notification-indicator"></div>
+            Integrations
+          </div>
+        </button>
+        <button dtMenuItem aria-label="Open secrets settings" routerLinkActive="active" routerLink="uniform/secrets">
+          Secrets
+        </button>
+      </dt-menu-group>
+      <dt-menu-group label="Support">
+        <button
+          dtMenuItem
+          aria-label="Open common use cases"
+          routerLinkActive="active"
+          routerLink="support/common-use-cases"
+        >
+          Common use cases
         </button>
       </dt-menu-group>
     </dt-menu>

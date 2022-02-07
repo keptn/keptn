@@ -6,11 +6,11 @@ describe('Integrations', () => {
 
   beforeEach(() => {
     interceptIntegrations();
-    cy.visit('/project/sockshop/uniform/services');
+    cy.visit('/project/sockshop/settings/uniform/integrations');
   });
 
   it('should be on page uniform', () => {
-    const buttons = cy.byTestId(uniformPage.UNIFORM_SUBMENU_LOC).find('button');
+    const buttons = cy.byTestId(uniformPage.UNIFORM_SUBMENU_LOC);
     buttons.first().should('have.class', 'active');
   });
 
@@ -62,7 +62,7 @@ describe('Integrations', () => {
     // It should redirect after successfully sending the subscription
     cy.location('pathname').should(
       'eq',
-      '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscriptions/add'
+      '/project/sockshop/settings/uniform/integrations/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscriptions/add'
     );
   });
 
@@ -124,7 +124,7 @@ describe('Integrations', () => {
     // It should redirect after successfully sending the subscription
     cy.location('pathname').should(
       'eq',
-      '/project/sockshop/uniform/services/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscriptions/add'
+      '/project/sockshop/settings/uniform/integrations/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscriptions/add'
     );
   });
 
@@ -166,7 +166,10 @@ describe('Integrations', () => {
     cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
 
     // It should redirect to overview if edited successfully
-    cy.location('pathname').should('eq', '/project/sockshop/uniform/services/355311a7bec3f35bf3abc2484ab09bcba8e2b297');
+    cy.location('pathname').should(
+      'eq',
+      '/project/sockshop/settings/uniform/integrations/355311a7bec3f35bf3abc2484ab09bcba8e2b297'
+    );
   });
 
   xit('should show an error message if can not parse shipyard.yaml', () => {

@@ -6,30 +6,7 @@
   height: 100%;
 }
 
-.relative {
-  position: relative;
-}
-
 ::ng-deep {
-  .notification-indicator {
-    min-width: 18px;
-    height: 18px;
-    border-radius: 10px;
-    padding: 0 5px;
-    background-color: $red-500;
-    color: $white;
-    font-size: 11px;
-    text-align: center;
-    pointer-events: none;
-  }
-
-  .notification-indicator-absolute {
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 1;
-  }
-
   .dt-button-nested,
   .dt-button-nested:hover:not([disabled]) {
     .dt-button-icon .dt-icon.error svg {
@@ -84,11 +61,6 @@
     margin-top: 0;
     height: 30px;
     width: 30px;
-  }
-
-  .dt-menu-group.bottom-menu {
-    position: absolute;
-    bottom: 0;
   }
 
   .ktb-expandable-tile .dt-show-more-icon {
