@@ -59,5 +59,3 @@ tolerations: []                              # Tolerations for the pods
 affinity: {}                                 # Affinity rules
 
 logLevel: info
-
-commitEnabled: 'false'

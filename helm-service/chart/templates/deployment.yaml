@@ -78,7 +78,7 @@ spec:
           - name: LOG_LEVEL
             value: {{ .Values.logLevel | default "info" }}
           - name: USE_COMMITID
-            value: {{ .Values.commitEnabled }}
+            value: "false"
           livenessProbe:
             httpGet:
               path: /health
