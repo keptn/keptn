@@ -10,8 +10,8 @@
   {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
 {{- end -}}
 
-{{- $bridgeSessionSecret := (randAlphaNum 45) }}
-{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) }}
+{{- $bridgeSessionSecret := (randAlphaNum 45) | b64enc | quote }}
+{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32)  | b64enc | quote }}
 {{- $bridgeOAuth := (lookup "v1" "Secret" .Release.Namespace "bridge-oauth") }}
 {{- if $bridgeOAuth }}
   {{- $bridgeSessionSecret = index $bridgeOAuth.data "session_secret" }}
@@ -66,7 +66,8 @@ metadata:
     helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
-  oauth.json: {{ printf "{ \"session_secret\": %s, \"database_encrypt_secret\": %s }" ($bridgeSessionSecret | toJson) ($bridgeDatabaseEncryptSecret | toJson ) | b64enc | quote }}
+  session_secret: {{ $bridgeSessionSecret }}
+  database_encrypt_secret: {{ $bridgeDatabaseEncryptSecret }}
 ---
 # bridge
 apiVersion: apps/v1
@@ -196,8 +197,10 @@ spec:
               memory: "256Mi"
               cpu: "200m"
           volumeMounts:
-            - mountPath: /usr/src/app/dist/assets/branding
-              name: assets
+            - name: assets
+              mountPath: /usr/src/app/dist/assets/branding
+            - name: bridge-oauth
+              mountPath: /config/oauth
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -208,3 +211,7 @@ spec:
       volumes:
         - emptyDir: {}
           name: assets
+        - name: bridge-oauth
+          secret:
+            secretName: bridge-oauth
+            defaultMode: 0400
