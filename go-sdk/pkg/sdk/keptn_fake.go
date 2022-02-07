@@ -148,7 +148,7 @@ type TestResourceHandler struct {
 }
 
 func (t TestResourceHandler) GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
-	return newResourceFromFile(fmt.Sprintf("test/keptn/resources%s%s%s%s", scope.GetProjectPath(), scope.GetStagePath(), scope.GetServicePath(), scope.GetResourcePath())), nil
+	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s%s%s%s", scope.GetProjectPath(), scope.GetStagePath(), scope.GetServicePath(), scope.GetResourcePath())), nil
 }
 
 func newResourceFromFile(filename string) *models.Resource {
