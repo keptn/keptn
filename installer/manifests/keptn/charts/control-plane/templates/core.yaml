@@ -201,6 +201,7 @@ spec:
               mountPath: /usr/src/app/dist/assets/branding
             - name: bridge-oauth
               mountPath: /config/oauth
+              readOnly: true
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
