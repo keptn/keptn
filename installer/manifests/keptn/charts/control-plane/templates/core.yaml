@@ -10,12 +10,12 @@
   {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
 {{- end -}}
 
-{{- $bridgeSessionSecret := (randAlphaNum 45) | b64enc | quote }}
-{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) | b64enc | quote }}
+{{- $bridgeSessionSecret := (randAlphaNum 45) }}
+{{- $bridgeDatabaseEncryptSecret := (randAlphaNum 32) }}
 {{- $bridgeOAuth := (lookup "v1" "Secret" .Release.Namespace "bridge-oauth") }}
 {{- if $bridgeOAuth }}
-  {{- $bridgeSessionSecret = index $bridgeOAuth.data "OAUTH_SESSION_SECRET" }}
-  {{- $bridgeDatabaseEncryptSecret = index $bridgeOAuth.data "OAUTH_DATABASE_ENCRYPT_SECRET" }}
+  {{- $bridgeSessionSecret = index $bridgeOAuth.data "session_secret" }}
+  {{- $bridgeDatabaseEncryptSecret = index $bridgeOAuth.data "database_encrypt_secret" }}
 {{- end -}}
 {{- if not .Values.apiService.tokenSecretName }}
 ---
@@ -66,8 +66,7 @@ metadata:
     helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
-  OAUTH_SESSION_SECRET: {{ $bridgeSessionSecret }}
-  OAUTH_DATABASE_ENCRYPT_SECRET: {{ $bridgeDatabaseEncryptSecret }}
+  oauth.json: {{ printf "{ \"session_secret\": %s, \"database_encrypt_secret\": %s }" ($bridgeSessionSecret | toJson) ($bridgeDatabaseEncryptSecret | toJson ) | b64enc | quote }}
 ---
 # bridge
 apiVersion: apps/v1
