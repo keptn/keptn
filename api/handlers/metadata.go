@@ -3,10 +3,11 @@ package handlers
 import (
 	"context"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
 	"gopkg.in/yaml.v2"
@@ -17,6 +18,8 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
+
+const defaultVersion = "N/A"
 
 // Swagger Structure
 
@@ -60,45 +63,65 @@ type metadataHandler struct {
 func (h *metadataHandler) getMetadata() middleware.Responder {
 	logger.Info("API received a GET metadata event")
 
-	var namespace string
-	namespace = os.Getenv("POD_NAMESPACE")
+	namespace := os.Getenv("POD_NAMESPACE")
 
 	var payload models.Metadata
 	payload.Namespace = namespace
-	payload.Keptnversion = "N/A"
+	payload.Keptnversion = defaultVersion
 	payload.Keptnlabel = "keptn"
-	payload.Bridgeversion = "N/A"
+	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
 
-	if h.k8sClient != nil {
-		deploymentsClient := h.k8sClient.AppsV1().Deployments(namespace)
-		bridgeDeployment, err := deploymentsClient.Get(context.TODO(), "bridge", metav1.GetOptions{})
-		if err != nil {
-			// log the error, but continue
-			logger.WithError(err).Error("Error getting deployment info")
-		} else {
-			payload.Bridgeversion = strings.TrimPrefix(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, "keptn/")
-		}
+	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
+		logger.WithError(err).Error("Error getting bridge version")
+	} else {
+		payload.Bridgeversion = bridgeVersion
+	}
 
-		// Load swagger.yaml from /swagger-ui/swagger.yaml
-		mapSwagger := make(map[interface{}]interface{})
-		yamlFile, err := ioutil.ReadFile(h.swaggerFilePath)
-
-		if err != nil {
-			fmt.Printf("yamlFile.Get err   #%v ", err)
-		}
-		err = yaml.Unmarshal(yamlFile, &mapSwagger)
-		if err != nil {
-			fmt.Printf("Unmarshal: %v", err)
-		}
-		info := mapSwagger["info"].(map[interface{}]interface{})
-
-		for k, v := range info {
-			if k == "version" {
-				payload.Keptnversion = fmt.Sprintf("%v", v)
-			}
-		}
+	if keptnVersion, err := h.getSwaggerKeptnVersion(); err != nil {
+		logger.WithError(err).Error("Error getting swagger info")
+	} else {
+		payload.Keptnversion = keptnVersion
 	}
 
 	return metadata.NewMetadataOK().WithPayload(&payload)
+}
+
+func (h *metadataHandler) getBridgeVersion(namespace string) (string, error) {
+
+	if h.k8sClient == nil {
+		return "", fmt.Errorf("unable to get bridge version")
+	}
+	bridgeDeployment, err := h.k8sClient.AppsV1().Deployments(namespace).Get(context.TODO(), "bridge", metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("unable to get bridge version %w", err)
+	}
+
+	v := strings.Split(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, ":")
+	if len(v) >= 2 {
+		return v[1], nil
+	}
+
+	return "", fmt.Errorf("unable to get bridge version")
+}
+
+func (h *metadataHandler) getSwaggerKeptnVersion() (string, error) {
+	// Load swagger.yaml from /swagger-ui/swagger.yaml
+	mapSwagger := make(map[interface{}]interface{})
+	yamlFile, err := ioutil.ReadFile(h.swaggerFilePath)
+
+	if err != nil {
+		return defaultVersion, err
+	}
+	err = yaml.Unmarshal(yamlFile, &mapSwagger)
+	if err != nil {
+		return defaultVersion, err
+	}
+	info := mapSwagger["info"].(map[interface{}]interface{})
+	for k, v := range info {
+		if k == "version" {
+			return fmt.Sprintf("%v", v), nil
+		}
+	}
+	return defaultVersion, nil
 }
