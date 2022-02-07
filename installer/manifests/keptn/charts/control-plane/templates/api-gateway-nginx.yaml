@@ -460,7 +460,9 @@ spec:
     - port: {{ .Values.apiGatewayNginx.port }}
       name: http
       targetPort: {{ .Values.apiGatewayNginx.targetPort }}
-      {{ if eq .Values.apiGatewayNginx.type "NodePort" }}nodePort: {{ .Values.apiGatewayNginx.nodePort }}{{ end }}
+      {{- if eq .Values.apiGatewayNginx.type "NodePort" }}
+      nodePort: {{ .Values.apiGatewayNginx.nodePort }}
+      {{- end }}
       protocol: TCP
   selector:
     app.kubernetes.io/name: api-gateway-nginx
