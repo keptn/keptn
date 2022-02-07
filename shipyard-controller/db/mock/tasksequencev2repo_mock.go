@@ -17,7 +17,10 @@ import (
 // 			AppendTaskEventFunc: func(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) (*modelsv2.TaskSequence, error) {
 // 				panic("mock out the AppendTaskEvent method")
 // 			},
-// 			GetFunc: func(filter db.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
+// 			ClearFunc: func(projectName string) error {
+// 				panic("mock out the Clear method")
+// 			},
+// 			GetFunc: func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error) {
 // 				panic("mock out the Get method")
 // 			},
 // 			UpsertFunc: func(item modelsv2.TaskSequence) error {
@@ -32,6 +35,9 @@ import (
 type TaskSequenceV2RepoMock struct {
 	// AppendTaskEventFunc mocks the AppendTaskEvent method.
 	AppendTaskEventFunc func(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) (*modelsv2.TaskSequence, error)
+
+	// ClearFunc mocks the Clear method.
+	ClearFunc func(projectName string) error
 
 	// GetFunc mocks the Get method.
 	GetFunc func(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error)
@@ -48,6 +54,11 @@ type TaskSequenceV2RepoMock struct {
 			// Event is the event argument value.
 			Event modelsv2.TaskEvent
 		}
+		// Clear holds details about calls to the Clear method.
+		Clear []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+		}
 		// Get holds details about calls to the Get method.
 		Get []struct {
 			// Filter is the filter argument value.
@@ -60,6 +71,7 @@ type TaskSequenceV2RepoMock struct {
 		}
 	}
 	lockAppendTaskEvent sync.RWMutex
+	lockClear           sync.RWMutex
 	lockGet             sync.RWMutex
 	lockUpsert          sync.RWMutex
 }
@@ -96,6 +108,37 @@ func (mock *TaskSequenceV2RepoMock) AppendTaskEventCalls() []struct {
 	mock.lockAppendTaskEvent.RLock()
 	calls = mock.calls.AppendTaskEvent
 	mock.lockAppendTaskEvent.RUnlock()
+	return calls
+}
+
+// Clear calls ClearFunc.
+func (mock *TaskSequenceV2RepoMock) Clear(projectName string) error {
+	if mock.ClearFunc == nil {
+		panic("TaskSequenceV2RepoMock.ClearFunc: method is nil but TaskSequenceV2Repo.Clear was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+	}{
+		ProjectName: projectName,
+	}
+	mock.lockClear.Lock()
+	mock.calls.Clear = append(mock.calls.Clear, callInfo)
+	mock.lockClear.Unlock()
+	return mock.ClearFunc(projectName)
+}
+
+// ClearCalls gets all the calls that were made to Clear.
+// Check the length with:
+//     len(mockedTaskSequenceV2Repo.ClearCalls())
+func (mock *TaskSequenceV2RepoMock) ClearCalls() []struct {
+	ProjectName string
+} {
+	var calls []struct {
+		ProjectName string
+	}
+	mock.lockClear.RLock()
+	calls = mock.calls.Clear
+	mock.lockClear.RUnlock()
 	return calls
 }
 

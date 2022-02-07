@@ -129,6 +129,17 @@ func (mdbrepo *MongoDBTaskSequenceV2Repo) AppendTaskEvent(taskSequence modelsv2.
 	return sequenceExecution, nil
 }
 
+func (mdbrepo *MongoDBTaskSequenceV2Repo) Clear(projectName string) error {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(projectName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	_, err = collection.DeleteMany(ctx, bson.D{})
+	return err
+}
+
 func (mdbrepo *MongoDBTaskSequenceV2Repo) getCollectionAndContext(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
 	collectionName := fmt.Sprintf("%s-%s", project, taskSequenceV2CollectionNameSuffix)
 	err := mdbrepo.DbConnection.EnsureDBConnection()

@@ -95,4 +95,5 @@ type TaskSequenceV2Repo interface {
 	Get(filter modelsv2.GetTaskSequenceFilter) ([]modelsv2.TaskSequence, error)
 	Upsert(item modelsv2.TaskSequence) error
 	AppendTaskEvent(taskSequence modelsv2.TaskSequence, event modelsv2.TaskEvent) (*modelsv2.TaskSequence, error)
+	Clear(projectName string) error
 }
