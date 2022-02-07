@@ -63,7 +63,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: api-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
@@ -195,7 +195,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: bridge
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
@@ -337,7 +337,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: shipyard-controller
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -521,7 +521,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: secret-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -867,7 +867,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: statistics-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -1010,7 +1010,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: approval-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
@@ -1132,7 +1132,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: webhook-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate

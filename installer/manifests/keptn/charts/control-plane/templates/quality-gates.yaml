@@ -17,7 +17,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: lighthouse-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
