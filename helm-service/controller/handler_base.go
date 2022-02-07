@@ -89,7 +89,8 @@ func (h *HandlerBase) getUserChart(e keptnv2.EventData, commitID string) (*chart
 func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData, commitID string) (*keptnv2.Endpoints, error) {
 	commitOption := url.Values{}
 	commitOption.Add("commitID", commitID)
-	endpointsResource, err := h.getKeptnHandler().ResourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, "helm/endpoints.yaml", keptnapi.AppendQuery(commitOption))
+	resourceScope := *keptnapi.NewResourceScope().Project(event.Project).Stage(event.Stage).Service(event.Service).Resource("helm/endpoints.yaml")
+	endpointsResource, err := h.getKeptnHandler().ResourceHandler.GetResource(resourceScope, keptnapi.AppendQuery(commitOption))
 	if err != nil {
 		// do not fail if the resource is not available
 		if err == keptnapi.ResourceNotFoundError {

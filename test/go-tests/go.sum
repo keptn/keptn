@@ -480,10 +480,11 @@ github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfV
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
-github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c h1:K2POShv4cf/AOSPHlah132D1La0ufF5QTvKUQaE6U4c=
-github.com/keptn/go-utils v0.11.1-0.20220118084854-b7470c0a2a7c/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
-github.com/keptn/kubernetes-utils v0.10.1-0.20220207131634-829336595fc2 h1:pNcTWVZdVmVa9cTjvCymlaRPpWA371IeCcQMrT8J4NE=
-github.com/keptn/kubernetes-utils v0.10.1-0.20220207131634-829336595fc2/go.mod h1:mHmU+coj5llduKa6nddXis/7Qg1TTA2q56w8+RIO1eU=
+github.com/keptn/go-utils v0.11.1-0.20220117092643-ba5397b5d46f/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
+github.com/keptn/go-utils v0.11.1-0.20220203155416-fe3160f51eff h1:VHGqzVcJJcQ1HPZc7kxgfUZBbq+0hqsHB3XcUPV/dLU=
+github.com/keptn/go-utils v0.11.1-0.20220203155416-fe3160f51eff/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
+github.com/keptn/kubernetes-utils v0.10.1-0.20220117093824-13c9844676df h1:51EWWbZEUpW9ncs7Jk5AU57bKzBlKJWBdB3RqjIc/e8=
+github.com/keptn/kubernetes-utils v0.10.1-0.20220117093824-13c9844676df/go.mod h1:pR1ZjmWJOk2pf14l6U3bu0IEIus1uTV8FRZPrCafgy8=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
