@@ -4,72 +4,65 @@ kind: ServiceAccount
 metadata:
   name: keptn-default
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-default
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-configuration-service
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-configuration-service
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-shipyard-controller
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-shipyard-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-secret-service
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-secret-service
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-lighthouse-service
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-lighthouse-service
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-api-service
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-api-service
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 {{- if .Values.webhookService.enabled }}
 apiVersion: v1
@@ -77,12 +70,11 @@ kind: ServiceAccount
 metadata:
   name: keptn-webhook-service
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-api-service
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 {{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -90,12 +82,11 @@ kind: Role
 metadata:
   name: keptn-manage-secrets
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-manage-secrets
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - ""
@@ -114,12 +105,11 @@ kind: Role
 metadata:
   name: keptn-get-secrets
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-get-secrets
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - ""
@@ -134,12 +124,11 @@ kind: Role
 metadata:
   name: keptn-manage-roles
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-manage-roles
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - rbac.authorization.k8s.io
@@ -157,12 +146,11 @@ kind: Role
 metadata:
   name: keptn-manage-rolebindings
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-manage-rolebindings
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - rbac.authorization.k8s.io
@@ -180,12 +168,11 @@ kind: Role
 metadata:
   name: keptn-read-metadata
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-read-metadata
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - extensions
@@ -202,12 +189,11 @@ kind: Role
 metadata:
   name: keptn-manage-configmaps
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-manage-configmaps
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - ""
@@ -224,12 +210,11 @@ kind: Role
 metadata:
   name: keptn-delete-bridge-pod
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-delete-bridge-pod
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - ""
@@ -246,12 +231,11 @@ kind: RoleBinding
 metadata:
   name: keptn-lighthouse-service
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-lighthouse-service
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -266,12 +250,11 @@ kind: RoleBinding
 metadata:
   name: keptn-api-service-metadata
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-api-service-metadata
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -286,12 +269,10 @@ kind: RoleBinding
 metadata:
   name: keptn-configuration-service-get-secrets
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-configuration-service-get-secrets
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -306,12 +287,11 @@ kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-manage-secrets
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-shipyard-controller-manage-secrets
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -326,12 +306,11 @@ kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-secrets
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-secret-service-manage-secrets
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -346,12 +325,11 @@ kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-roles
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-secret-service-manage-roles
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -365,12 +343,11 @@ kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-rolebindings
   labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-secret-service-manage-secrets
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
