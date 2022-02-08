@@ -97,6 +97,8 @@ jobs:
           fi
 
           # build the binary using makefile
+          ./make-scripts/build/build-cli.sh
+          cp cli/$(OUTPUT_EXECUTABLE_NAME) $(GOBIN)/
           make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
           # verify output file exists
           ls bin/${OUTPUT_EXECUTABLE_NAME}
