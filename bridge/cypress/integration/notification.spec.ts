@@ -55,6 +55,8 @@ describe('Test notifications', () => {
       .trigger('mouseleave')
       .wait(8200)
       .should('not.exist');
+
+    throw new Error('this is here for testing');
   });
 
   it('should test notification close', () => {
