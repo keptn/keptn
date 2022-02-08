@@ -342,10 +342,10 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return nil
 	}
 
-	if sequenceExecution.Status.CurrentTask.IsFailed() {
+	if updatedSequenceExecution.Status.CurrentTask.IsFailed() {
 		eventScope.Result = keptnv2.ResultFailed
 	}
-	if sequenceExecution.Status.CurrentTask.IsErrored() {
+	if updatedSequenceExecution.Status.CurrentTask.IsErrored() {
 		eventScope.Status = keptnv2.StatusErrored
 	}
 	// TODO provide completeCurrentTask method in sequenceExecution struct
@@ -356,6 +356,7 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 			TriggeredID: sequenceExecution.Status.CurrentTask.TriggeredID,
 			Result:      string(eventScope.Result),
 			Status:      string(eventScope.Status),
+			TaskIndex:   len(sequenceExecution.Status.PreviousTasks),
 			Properties:  nil,
 		},
 	)
@@ -655,11 +656,9 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 			return err
 		}
 
-		lastTaskName := ""
-		if lastTask := sequenceExecution.GetLastTaskExecutionResult(); lastTask != nil {
-			lastTaskName = lastTask.Name
-		}
-		return sc.triggerNextTaskSequences(eventScope, sequenceExecution.Sequence, eventHistory, inputEvent, lastTaskName)
+		lastTask := sequenceExecution.GetLastTaskExecutionResult()
+
+		return sc.triggerNextTaskSequences(eventScope, sequenceExecution.Sequence, eventHistory, inputEvent, lastTask.Name)
 	}
 	//return sc.sendTaskTriggeredEvent(eventScope, sequenceExecution.Sequence.Name, *task, eventHistory)
 	return sc.triggerTask(eventScope, sequenceExecution, *task, eventHistory)
@@ -698,6 +697,7 @@ func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventSc
 	if err != nil {
 		return err
 	}
+	log.Infof("getting next task sequences that are triggered by task: %s", previousTask)
 	nextSequences := GetTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard, previousTask)
 
 	if len(nextSequences) == 0 {

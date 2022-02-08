@@ -30,6 +30,7 @@ type TaskExecutionResult struct {
 	TriggeredID string                 `json:"triggeredID" bson:"triggeredID"`
 	Result      string                 `json:"result" bson:"result"`
 	Status      string                 `json:"status" bson:"status"`
+	TaskIndex   int                    `json:"taskIndex" bson:"taskIndex"`
 	Properties  map[string]interface{} `json:"properties" bson:"properties"`
 }
 
@@ -54,11 +55,16 @@ func (e TaskSequence) GetNextTaskOfSequence() *keptnv2.Task {
 	return nil
 }
 
-func (e TaskSequence) GetLastTaskExecutionResult() *TaskExecutionResult {
+func (e TaskSequence) GetLastTaskExecutionResult() TaskExecutionResult {
 	if len(e.Status.PreviousTasks) == 0 {
-		return nil
+		return TaskExecutionResult{}
 	}
-	return &e.Status.PreviousTasks[len(e.Status.PreviousTasks)-1]
+	for _, task := range e.Status.PreviousTasks {
+		if task.TaskIndex == len(e.Status.PreviousTasks)-1 {
+			return task
+		}
+	}
+	return TaskExecutionResult{}
 }
 
 // IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
