@@ -55,7 +55,7 @@ func main() {
 
 	controlPlane := controlplane.NewControlPlane(apiset.UniformV1(), config.PubSubConnectionType())
 	uniformWatch := setupUniformWatch(controlPlane)
-	forwarder := events.NewForwarder(apiset.APIV1(), apiset.ProxyV1())
+	forwarder := events.NewForwarder(apiset.APIV1(), httpClient)
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
@@ -159,7 +159,15 @@ func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
 		}
 		return keptnapi.New(config.Global.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
 	}
-	return keptnapi.New(config.DefaultShipyardControllerBaseURL, keptnapi.WithHTTPClient(httpClient), keptnapi.Internal())
+
+	apiMappings := keptnapi.InClusterAPIMappings{
+		keptnapi.ShipyardController:   "shipyard-controller:8080",
+		keptnapi.ConfigurationService: "configuration-service:8080",
+	}
+	//TODO: remove
+	pathToHostProxyMappings := map[string]string{}
+
+	return keptnapi.NewInternal(apiMappings, pathToHostProxyMappings, httpClient)
 }
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {

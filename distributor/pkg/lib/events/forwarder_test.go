@@ -58,7 +58,7 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
 		keptnEventAPI:     apiset.APIV1(),
-		keptnProxyAPI:     apiset.ProxyV1(),
+		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 
@@ -92,8 +92,8 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		keptnProxyAPI:     apiset.ProxyV1(),
 		keptnEventAPI:     apiset.APIV1(),
+		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -127,8 +127,8 @@ func Test_APIProxy(t *testing.T) {
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		keptnProxyAPI:     apiset.ProxyV1(),
 		keptnEventAPI:     apiset.APIV1(),
+		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 	ctx, cancel := context.WithCancel(context.Background())

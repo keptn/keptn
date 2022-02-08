@@ -43,7 +43,7 @@ func (p *Poller) Start(ctx *ExecutionContext) error {
 		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
 
-	eventEndpoint := p.env.PollingEndpoint()
+	eventEndpoint := p.env.HTTPPollingEndpoint()
 	apiToken := p.env.KeptnAPIToken
 
 	pollingInterval, err := strconv.ParseInt(p.env.HTTPPollingInterval, 10, 64)
