@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: keptn
-  replicas: 1
+  replicas: 5
   strategy:
     type: Recreate
   template:
@@ -44,6 +44,8 @@ spec:
         #   periodSeconds: 5
         image: keptn/resource-service:latest
         env:
+          - name: LOG_LEVEL
+            value: "debug"
           - name: PREFIX_PATH
             value: ""
           - name: POD_NAMESPACE

@@ -122,10 +122,37 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 	if err != nil {
 		return nil, err
 	}
-
 	resourcePath := configPath + "/" + params.ResourceURI
 
-	return p.deleteResource(gitContext, resourcePath)
+	//try deleting first
+	resultCommit, err := p.deleteResource(gitContext, resourcePath)
+
+	var resultErr error
+	// if there are conflicting changes first pull then try again
+	if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+		_ = retry.Retry(func() error {
+			err := p.git.Pull(*gitContext)
+			if err != nil {
+				resultErr = err
+				// return nil at this point because retry does not make sense in that case
+				return nil
+			}
+
+			response, err := p.deleteResource(gitContext, resourcePath)
+			if err != nil {
+				if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+					return err
+				}
+				resultErr = err
+				// return nil at this point because retry does not make sense in that case
+				return nil
+			}
+			resultCommit = response
+			return nil
+		}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	}
+	return resultCommit, resultErr
+
 }
 
 func (p ResourceManager) establishContext(project models.Project, stage *models.Stage, service *models.Service) (*common_models.GitContext, string, error) {
@@ -291,6 +318,5 @@ func (p ResourceManager) deleteResource(gitContext *common_models.GitContext, re
 	if err := p.fileSystem.DeleteFile(resourcePath); err != nil {
 		return nil, err
 	}
-
 	return p.stageAndCommit(gitContext, "Deleted resources")
 }

@@ -122,15 +122,15 @@ spec:
 
 func Test_ContinuousDelivery(t *testing.T) {
 
-	repoLocalDir, err := filepath.Abs("../")
+	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
-	projectName := "podtato-head"
+	projectName := "pod2"
 	serviceName := "helloservice"
 	serviceChartLocalDir := repoLocalDir + "/helm-charts/helloservice.tgz"
 	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 
-	t.Logf("Creating a new project %s without a GIT Upstream", projectName)
+	t.Logf("Creating a new project %s with a GITEA Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(onboardServiceShipyard)
 	require.Nil(t, err)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
