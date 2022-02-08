@@ -66,6 +66,9 @@ const envVarTaskStartedWaitDurationDefault = "10m"
 func main() {
 	log.SetLevel(log.InfoLevel)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
 		if err != nil {
@@ -270,14 +273,11 @@ func main() {
 		}
 	}()
 
-	connectionHandler := handler.NewNatsConnectionHandler("nats://keptn-nats", shipyardController.HandleIncomingEvent, context.TODO())
+	connectionHandler := handler.NewNatsConnectionHandler("nats://keptn-nats", shipyardController.HandleIncomingEvent, ctx)
 
 	if err := connectionHandler.QueueSubscribeToTopics([]string{"sh.keptn.>"}, "shipyard-controller"); err != nil {
-		log.Fatalf("Could not subscripe to nats: %v", err)
+		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	myID := uuid.New().String()
 	// we use the Lease lock type since edits to Leases are less common

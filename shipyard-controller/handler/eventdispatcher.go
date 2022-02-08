@@ -147,6 +147,9 @@ func (e *EventDispatcher) Run(ctx context.Context) {
 }
 
 func (e *EventDispatcher) Stop() {
+	if e.ticker == nil {
+		return
+	}
 	e.ticker.Stop()
 }
 

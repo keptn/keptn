@@ -114,6 +114,9 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 }
 
 func (sd *SequenceDispatcher) Stop() {
+	if sd.ticker == nil {
+		return
+	}
 	sd.ticker.Stop()
 }
 
