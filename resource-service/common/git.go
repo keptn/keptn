@@ -1,10 +1,13 @@
 package common
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	nethttp "net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -14,6 +17,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -103,9 +107,47 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		logger.Info("publickey vyslo")
 		gitCloneOptions.Auth = publicKey
 	} else if gitContext.Credentials.Token != "" {
-		gitCloneOptions.Auth = &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
+		logger.Info("!!!!!som v token vetve")
+		if gitContext.Credentials.GitProxyUrl != "" {
+			logger.Info("!!!!!som v proxy vetve")
+			customClient := &nethttp.Client{
+				Transport: &nethttp.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+					Proxy: nethttp.ProxyURL(&url.URL{
+						Scheme: gitContext.Credentials.GitProxyScheme,
+						//User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
+						Host: gitContext.Credentials.GitProxyUrl,
+					}),
+				},
+
+				// 15 second timeout
+				Timeout: 15 * time.Second,
+
+				// don't follow redirect
+				CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
+					return nethttp.ErrUseLastResponse
+				},
+			}
+
+			newclient := http.NewClient(customClient)
+			if newclient == nil {
+				logger.Info("!!!!!newclient zlyhal")
+			}
+
+			logger.Info("!!!!!idem instalovat protokol")
+			client.InstallProtocol("https", newclient)
+			logger.Info("!!!!!nainstaloval som protokol")
+
+			gitCloneOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
+		} else {
+			logger.Info("!!!!!som v jednoduchej token vetve vedla proxy")
+			gitCloneOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
 		}
 	}
 
@@ -282,9 +324,47 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		logger.Info("publickey v push vyslo")
 		gitPushOptions.Auth = publicKey
 	} else if gitContext.Credentials.Token != "" {
-		gitPushOptions.Auth = &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
+		logger.Info("!!!!!som v token push vetve")
+		if gitContext.Credentials.GitProxyUrl != "" {
+			logger.Info("!!!!!som v proxy push vetve")
+			customClient := &nethttp.Client{
+				Transport: &nethttp.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+					Proxy: nethttp.ProxyURL(&url.URL{
+						Scheme: gitContext.Credentials.GitProxyScheme,
+						//User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
+						Host: gitContext.Credentials.GitProxyUrl,
+					}),
+				},
+
+				// 15 second timeout
+				Timeout: 15 * time.Second,
+
+				// don't follow redirect
+				CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
+					return nethttp.ErrUseLastResponse
+				},
+			}
+
+			newclient := http.NewClient(customClient)
+			if newclient == nil {
+				logger.Info("!!!!!newclient push zlyhal")
+			}
+
+			logger.Info("!!!!!idem instalovat push protokol")
+			client.InstallProtocol("https", newclient)
+			logger.Info("!!!!!nainstaloval push som protokol")
+
+			gitPushOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
+		} else {
+			logger.Info("!!!!!som v jednoduchej token push vetve vedla proxy")
+			gitPushOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
 		}
 	}
 
@@ -325,9 +405,47 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			logger.Info("publickey v pull vyslo")
 			gitPullOptions.Auth = publicKey
 		} else if gitContext.Credentials.Token != "" {
-			gitPullOptions.Auth = &http.BasicAuth{
-				Username: gitContext.Credentials.User,
-				Password: gitContext.Credentials.Token,
+			logger.Info("!!!!!som v token pull vetve")
+			if gitContext.Credentials.GitProxyUrl != "" {
+				logger.Info("!!!!!som v proxy pull vetve")
+				customClient := &nethttp.Client{
+					Transport: &nethttp.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+						Proxy: nethttp.ProxyURL(&url.URL{
+							Scheme: gitContext.Credentials.GitProxyScheme,
+							//User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
+							Host: gitContext.Credentials.GitProxyUrl,
+						}),
+					},
+
+					// 15 second timeout
+					Timeout: 15 * time.Second,
+
+					// don't follow redirect
+					CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
+						return nethttp.ErrUseLastResponse
+					},
+				}
+
+				newclient := http.NewClient(customClient)
+				if newclient == nil {
+					logger.Info("!!!!!newclient pull zlyhal")
+				}
+
+				logger.Info("!!!!!idem instalovat pull protokol")
+				client.InstallProtocol("https", newclient)
+				logger.Info("!!!!!nainstaloval pull som protokol")
+
+				gitPullOptions.Auth = &http.BasicAuth{
+					Username: gitContext.Credentials.User,
+					Password: gitContext.Credentials.Token,
+				}
+			} else {
+				logger.Info("!!!!!som v jednoduchej token pull vetve vedla proxy")
+				gitPullOptions.Auth = &http.BasicAuth{
+					Username: gitContext.Credentials.User,
+					Password: gitContext.Credentials.Token,
+				}
 			}
 		}
 
@@ -503,9 +621,47 @@ func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) erro
 		logger.Info("publickey v fetch vyslo")
 		gitFetchOptions.Auth = publicKey
 	} else if gitContext.Credentials.Token != "" {
-		gitFetchOptions.Auth = &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
+		logger.Info("!!!!!som v token fetch vetve")
+		if gitContext.Credentials.GitProxyUrl != "" {
+			logger.Info("!!!!!som v proxy fetch vetve")
+			customClient := &nethttp.Client{
+				Transport: &nethttp.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+					Proxy: nethttp.ProxyURL(&url.URL{
+						Scheme: gitContext.Credentials.GitProxyScheme,
+						//User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
+						Host: gitContext.Credentials.GitProxyUrl,
+					}),
+				},
+
+				// 15 second timeout
+				Timeout: 45 * time.Second,
+
+				// don't follow redirect
+				CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
+					return nethttp.ErrUseLastResponse
+				},
+			}
+
+			newclient := http.NewClient(customClient)
+			if newclient == nil {
+				logger.Info("!!!!!newclient fetch zlyhal")
+			}
+
+			logger.Info("!!!!!idem instalovat fetch protokol")
+			client.InstallProtocol("https", newclient)
+			logger.Info("!!!!!nainstaloval fetch som protokol")
+
+			gitFetchOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
+		} else {
+			logger.Info("!!!!!som v jednoduchej token fetch vetve vedla proxy")
+			gitFetchOptions.Auth = &http.BasicAuth{
+				Username: gitContext.Credentials.User,
+				Password: gitContext.Credentials.Token,
+			}
 		}
 	}
 

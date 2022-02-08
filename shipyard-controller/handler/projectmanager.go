@@ -95,10 +95,14 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 	}
 
 	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-		User:       params.GitUser,
-		Token:      params.GitToken,
-		RemoteURI:  params.GitRemoteURL,
-		PrivateKey: params.GitPrivateKey,
+		User:             params.GitUser,
+		Token:            params.GitToken,
+		RemoteURI:        params.GitRemoteURL,
+		PrivateKey:       params.GitPrivateKey,
+		GitProxyUrl:      params.GitProxyUrl,
+		GitProxyScheme:   params.GitProxyScheme,
+		GitProxyUser:     params.GitProxyUser,
+		GitProxyPassword: params.GitProxyPassword,
 	})
 	if err != nil {
 		return err, nilRollback
@@ -552,8 +556,12 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *mode
 }
 
 type gitCredentials struct {
-	User       string `json:"user,omitempty"`
-	Token      string `json:"token,omitempty"`
-	RemoteURI  string `json:"remoteURI,omitempty"`
-	PrivateKey string `json:"privateKey,omitempty"`
+	User             string `json:"user,omitempty"`
+	Token            string `json:"token,omitempty"`
+	RemoteURI        string `json:"remoteURI,omitempty"`
+	PrivateKey       string `json:"privateKey,omitempty"`
+	GitProxyUrl      string `json:"gitProxyUrl,omitempty"`
+	GitProxyScheme   string `json:"gitProxyScheme,omitempty"`
+	GitProxyUser     string `json:"gitProxyUser,omitempty"`
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 }

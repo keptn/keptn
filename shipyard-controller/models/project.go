@@ -22,6 +22,18 @@ type UpdateProjectParams struct {
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
+	// git proxy
+	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
 
@@ -42,6 +54,18 @@ type CreateProjectParams struct {
 
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
+	// git proxy
+	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
 	// git user
 	GitUser string `json:"gitUser,omitempty"`

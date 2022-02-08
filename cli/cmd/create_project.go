@@ -19,11 +19,15 @@ import (
 )
 
 type createProjectCmdParams struct {
-	Shipyard      *string
-	GitUser       *string
-	GitToken      *string
-	RemoteURL     *string
-	GitPrivateKey *string
+	Shipyard         *string
+	GitUser          *string
+	GitToken         *string
+	RemoteURL        *string
+	GitPrivateKey    *string
+	GitProxyUrl      *string
+	GitProxyScheme   *string
+	GitProxyUser     *string
+	GitProxyPassword *string
 }
 
 var createProjectParams *createProjectCmdParams
@@ -92,6 +96,10 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			project.GitUser = *createProjectParams.GitUser
 			project.GitRemoteURL = *createProjectParams.RemoteURL
 			project.GitToken = *createProjectParams.GitToken
+			project.GitProxyUrl = *createProjectParams.GitProxyUrl
+			project.GitProxyScheme = *createProjectParams.GitProxyScheme
+			project.GitProxyUser = *createProjectParams.GitProxyUser
+			project.GitProxyPassword = *createProjectParams.GitProxyPassword
 			content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
 			if err != nil {
 				fmt.Errorf("PrivateKey read unsuccessful.\n%s", err.Error())
@@ -157,5 +165,9 @@ func init() {
 	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
 	createProjectParams.GitPrivateKey = crProjectCmd.Flags().StringP("git-private-key", "k", "", "The git private key of the git user")
+	createProjectParams.GitProxyUrl = crProjectCmd.Flags().StringP("git-proxy-url", "p", "", "Uses proxy")
+	createProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "Uses proxy")
+	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "Uses proxy")
+	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "Uses proxy")
 	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
 }
