@@ -96,7 +96,6 @@ jobs:
             export CGO_ENABLED=1
           fi
 
-          # build the binary using makefile
           ./gh-actions-scripts/build-cli.sh
           # verify output file exists
           ls bin/${OUTPUT_EXECUTABLE_NAME}
