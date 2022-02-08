@@ -32,7 +32,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   public project?: Project;
   public _events: Sequence[] = [];
   public _selectedEvent?: Sequence;
-  public loading = true;
+  public loading = false;
 
   @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence; stage?: string }>();
   @Output() readonly loadOldSequencesClicked = new EventEmitter<void>();

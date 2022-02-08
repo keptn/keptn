@@ -64,10 +64,8 @@ func (g *GetActionEventHandler) getRemediationResource(keptn sdk.IKeptn, eventDa
 	if commitID != "" {
 		commitOption.Add("commitID", commitID)
 	}
-	if eventData.Service == "" {
-		return keptn.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, remediationResourceFileName, utils.AppendQuery(commitOption))
-	}
-	return keptn.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, remediationResourceFileName, utils.AppendQuery(commitOption))
+	resourceScope := *utils.NewResourceScope().Project(eventData.Project).Stage(eventData.Stage).Service(eventData.Service).Resource(remediationResourceFileName)
+	return keptn.GetResourceHandler().GetResource(resourceScope, utils.AppendQuery(commitOption))
 }
 
 // ParseRemediationResource returns the in-memory representation of a keptn resource.

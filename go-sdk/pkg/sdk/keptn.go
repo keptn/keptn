@@ -19,11 +19,9 @@ const KeptnContextCEExtension = "shkeptncontext"
 const TriggeredIDCEExtension = "triggeredid"
 const GitCommitIDCEExtension = "gitcommitid"
 
-//go:generate moq  -out ./resourcehhandler_mock.go . ResourceHandler
+//go:generate moq  -out ./resourcehandler_mock.go . ResourceHandler
 type ResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
-	GetStageResource(project string, stage string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
-	GetProjectResource(project string, resourceURI string, options ...api.GetOption) (*models.Resource, error)
+	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
 }
 
 //go:generate moq  -out ./eventsender_mock.go . EventSender

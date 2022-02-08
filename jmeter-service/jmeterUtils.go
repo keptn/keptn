@@ -27,6 +27,7 @@ type TestInfo struct {
 	TestStrategy      string
 	Context           string
 	TriggeredID       string
+	CommitID          string
 	TestTriggeredData v0_2_0.TestTriggeredEventData
 	ServiceURL        *url.URL
 }
@@ -139,7 +140,7 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	if err := createDir(localTempDir); err != nil {
 		return false, err
 	}
-	primaryScriptDownloaded, downloadedFileCount, err := DownloadAndStoreResources(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfigDirectory, workload.Script, localTempDir)
+	primaryScriptDownloaded, downloadedFileCount, err := DownloadAndStoreResources(testInfo.CommitID, testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfigDirectory, workload.Script, localTempDir)
 	if err != nil {
 		if errors.Is(err, ErrPrimaryFileNotAvailable) {
 			// if no .jmx file is available -> skip the tests

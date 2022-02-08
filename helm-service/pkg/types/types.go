@@ -44,7 +44,7 @@ type IChartRetriever interface {
 
 // IResourceHandler defines operations to retrieve keptn resources
 type IResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string, options ...utils.GetOption) (*models.Resource, error)
+	GetResource(scope utils.ResourceScope, options ...utils.URIOption) (*models.Resource, error)
 }
 
 // IChartPackager defines the operation to package a helm chart
