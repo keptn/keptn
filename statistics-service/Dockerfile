@@ -1,9 +1,9 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.16.13-alpine as builder-base
+FROM golang:1.16.13 as builder-base
 
 # install additional dependencies
-RUN apk add --no-cache gcc libc-dev git
+RUN apt-get install -y gcc libc-dev git
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
