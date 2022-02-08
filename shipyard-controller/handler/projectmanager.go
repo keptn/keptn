@@ -31,13 +31,14 @@ type IProjectManager interface {
 }
 
 type ProjectManager struct {
-	ConfigurationStore      common.ConfigurationStore
-	SecretStore             common.SecretStore
-	ProjectMaterializedView db.ProjectMVRepo
-	TaskSequenceRepository  db.TaskSequenceRepo
-	EventRepository         db.EventRepo
-	SequenceQueueRepo       db.SequenceQueueRepo
-	EventQueueRepo          db.EventQueueRepo
+	ConfigurationStore       common.ConfigurationStore
+	SecretStore              common.SecretStore
+	ProjectMaterializedView  db.ProjectMVRepo
+	TaskSequenceRepository   db.TaskSequenceRepo
+	TaskSequenceV2Repository db.TaskSequenceV2Repo
+	EventRepository          db.EventRepo
+	SequenceQueueRepo        db.SequenceQueueRepo
+	EventQueueRepo           db.EventQueueRepo
 }
 
 var nilRollback = func() error {
@@ -51,15 +52,17 @@ func NewProjectManager(
 	taskSequenceRepo db.TaskSequenceRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
-	eventQueueRepo db.EventQueueRepo) *ProjectManager {
+	eventQueueRepo db.EventQueueRepo,
+	taskSequenceV2Repository db.TaskSequenceV2Repo) *ProjectManager {
 	projectUpdater := &ProjectManager{
-		ConfigurationStore:      configurationStore,
-		SecretStore:             secretStore,
-		ProjectMaterializedView: projectMVrepo,
-		TaskSequenceRepository:  taskSequenceRepo,
-		EventRepository:         eventRepo,
-		SequenceQueueRepo:       sequenceQueueRepo,
-		EventQueueRepo:          eventQueueRepo,
+		ConfigurationStore:       configurationStore,
+		SecretStore:              secretStore,
+		ProjectMaterializedView:  projectMVrepo,
+		TaskSequenceRepository:   taskSequenceRepo,
+		EventRepository:          eventRepo,
+		SequenceQueueRepo:        sequenceQueueRepo,
+		EventQueueRepo:           eventQueueRepo,
+		TaskSequenceV2Repository: taskSequenceV2Repository,
 	}
 	return projectUpdater
 }
@@ -368,7 +371,9 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 		log.Errorf("could not delete queued events: %s", err.Error())
 	}
 
-	// TODO delete taskSequenceExecutions
+	if err := pm.TaskSequenceV2Repository.Clear(projectName); err != nil {
+		log.Errorf("could not delete task sequence executions: %s", err.Error())
+	}
 }
 
 func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {

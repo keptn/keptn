@@ -20,6 +20,7 @@ import (
 type IEventDispatcher interface {
 	Add(event models.DispatcherEvent, skipQueue bool) error
 	Run(ctx context.Context)
+	Stop()
 }
 
 // EventDispatcher is an implementation of IEventDispatcher
@@ -33,6 +34,7 @@ type EventDispatcher struct {
 	eventSender        keptncommon.EventSender
 	theClock           clock.Clock
 	syncInterval       time.Duration
+	ticker             *clock.Ticker
 }
 
 // NewEventDispatcher creates a new EventDispatcher
@@ -129,19 +131,23 @@ func (e *EventDispatcher) OnSequenceResumed(resume models.EventScope) {
 // from the database and eventually forward/send them to the event broker
 // The fetch interval is configured when creating a EventDispatcher using the "syncInterval" field
 func (e *EventDispatcher) Run(ctx context.Context) {
-	ticker := e.theClock.Ticker(e.syncInterval)
+	e.ticker = e.theClock.Ticker(e.syncInterval)
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				log.Info("cancelling event dispatcher loop")
 				return
-			case <-ticker.C:
+			case <-e.ticker.C:
 				log.Debugf("%.2f seconds have passed. Dispatching events", e.syncInterval.Seconds())
 				e.dispatchEvents()
 			}
 		}
 	}()
+}
+
+func (e *EventDispatcher) Stop() {
+	e.ticker.Stop()
 }
 
 func (e *EventDispatcher) dispatchEvents() {

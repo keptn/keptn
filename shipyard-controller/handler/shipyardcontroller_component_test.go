@@ -1181,7 +1181,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		eventRepo:        eventRepo,
 		taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance()),
 		eventDispatcher: &fake.IEventDispatcherMock{
-			AddFunc: func(event models.DispatcherEvent) error {
+			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {
 				return nil
 			},
 			RunFunc: func(ctx context.Context) {
@@ -1202,7 +1202,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		},
 		taskSequenceV2Repo: db.NewMongoDBTaskSequenceV2Repo(db.GetMongoDBConnectionInstance()),
 	}
-	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
+	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent, skipQueue bool) error {
 		ev := &models.Event{}
 		err := keptnv2.Decode(&event.Event, ev)
 		if err != nil {

@@ -101,6 +101,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	taskSequenceV2Repo := db.NewMongoDBTaskSequenceV2Repo(db.GetMongoDBConnectionInstance())
+
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
@@ -109,7 +111,9 @@ func main() {
 		createTaskSequenceRepo(),
 		createEventsRepo(),
 		createSequenceQueueRepo(),
-		createEventQueueRepo())
+		createEventQueueRepo(),
+		taskSequenceV2Repo,
+	)
 
 	uniformRepo := createUniformRepo()
 	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
@@ -124,8 +128,6 @@ func main() {
 	)
 
 	stageManager := handler.NewStageManager(projectMVRepo)
-
-	taskSequenceV2Repo := db.NewMongoDBTaskSequenceV2Repo(db.GetMongoDBConnectionInstance())
 
 	eventDispatcher := handler.NewEventDispatcher(
 		createEventsRepo(),
@@ -308,13 +310,12 @@ func main() {
 			OnStartedLeading: func(ctx context.Context) {
 				// we're notified when we start - this is where you would
 				// usually put your code
-				// TODO leader election -> only leader gets to run dispatchers
 				shipyardController.StartDispatchers(ctx)
 			},
 			OnStoppedLeading: func() {
 				// we can do cleanup here
 				log.Infof("leader lost: %s", myID)
-				os.Exit(0)
+				shipyardController.StopDispatchers()
 			},
 			OnNewLeader: func(identity string) {
 				// we're notified when new leader elected
@@ -323,6 +324,7 @@ func main() {
 					return
 				}
 				log.Infof("new leader elected: %s", identity)
+				shipyardController.StopDispatchers()
 			},
 		},
 	})

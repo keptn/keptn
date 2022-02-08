@@ -104,10 +104,10 @@ func (sc shipyardController) StartDispatchers(ctx context.Context) {
 	sc.sequenceDispatcher.Run(ctx, sc.StartTaskSequence)
 }
 
-//func (sc shipyardController) StopDispatchers() {
-//	sc.eventDispatcher.
-//	sc.sequenceDispatcher.Run(context.Background(), sc.StartTaskSequence)
-//}
+func (sc shipyardController) StopDispatchers() {
+	sc.eventDispatcher.Stop()
+	sc.sequenceDispatcher.Stop()
+}
 
 func (sc *shipyardController) ControlSequence(controlSequence models.SequenceControl) error {
 	switch controlSequence.State {
