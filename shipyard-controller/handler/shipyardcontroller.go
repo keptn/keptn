@@ -342,6 +342,13 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return nil
 	}
 
+	if sequenceExecution.Status.CurrentTask.IsFailed() {
+		eventScope.Result = keptnv2.ResultFailed
+	}
+	if sequenceExecution.Status.CurrentTask.IsErrored() {
+		eventScope.Status = keptnv2.StatusErrored
+	}
+	// TODO provide completeCurrentTask method in sequenceExecution struct
 	updatedSequenceExecution.Status.PreviousTasks = append(
 		sequenceExecution.Status.PreviousTasks,
 		modelsv2.TaskExecutionResult{
@@ -640,12 +647,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 
 	task := sequenceExecution.GetNextTaskOfSequence()
 	if task == nil {
-		if sequenceExecution.Status.CurrentTask.IsFailed() {
-			eventScope.Result = keptnv2.ResultFailed
-		}
-		if sequenceExecution.Status.CurrentTask.IsErrored() {
-			eventScope.Status = keptnv2.StatusErrored
-		}
+
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(eventScope, sequenceExecution, inputEvent.ID, models.SequenceFinished)
 		if err != nil {
