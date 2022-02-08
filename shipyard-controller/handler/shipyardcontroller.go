@@ -342,6 +342,17 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return nil
 	}
 
+	updatedSequenceExecution.Status.PreviousTasks = append(
+		sequenceExecution.Status.PreviousTasks,
+		modelsv2.TaskExecutionResult{
+			Name:        sequenceExecution.Status.CurrentTask.Name,
+			TriggeredID: sequenceExecution.Status.CurrentTask.TriggeredID,
+			Result:      string(eventScope.Result),
+			Status:      string(eventScope.Status),
+			Properties:  nil,
+		},
+	)
+
 	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.TriggeredEvent))
 	if err != nil {
 		return err
@@ -825,17 +836,6 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 	}
 
 	sc.onSequenceTaskTriggered(*storeEvent)
-
-	sequenceExecution.Status.PreviousTasks = append(
-		sequenceExecution.Status.PreviousTasks,
-		modelsv2.TaskExecutionResult{
-			Name:        sequenceExecution.Status.CurrentTask.Name,
-			TriggeredID: sequenceExecution.Status.CurrentTask.TriggeredID,
-			Result:      string(eventScope.Result),
-			Status:      string(eventScope.Status),
-			Properties:  nil,
-		},
-	)
 
 	sequenceExecution.Status.CurrentTask = modelsv2.TaskExecution{
 		Name:        task.Name,
