@@ -1,9 +1,9 @@
 FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test-ui
 WORKDIR /usr/src/app
-COPY package.json yarn.lock /usr/src/app/
+COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
-COPY . /usr/src/app
-CMD yarn test:ui; mv ./dist/cypress/screenshots /shared/screenshots
+COPY ./ ./
+CMD ./cypress/run-tests.sh
 
 FROM node:14-alpine3.14 as builder-test-base
 WORKDIR /usr/src/app
