@@ -18,12 +18,12 @@ type IControlPlane interface {
 
 type ControlPlane struct {
 	sync.Mutex
-	uniformHandler api.UniformV1Interface
+	uniformHandler *api.UniformHandler
 	connectionType config.ConnectionType
 	currentID      string
 }
 
-func NewControlPlane(uniformHandler api.UniformV1Interface, connectionType config.ConnectionType) *ControlPlane {
+func NewControlPlane(uniformHandler *api.UniformHandler, connectionType config.ConnectionType) *ControlPlane {
 	return &ControlPlane{
 		uniformHandler: uniformHandler,
 		connectionType: connectionType,

@@ -52,6 +52,11 @@ func _main(env config.EnvConfig) int {
 	httpClient := createHTTPClient(env)
 
 	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType, httpClient)
+	// restrict the timeout for the http handlers to 5s
+	// otherwise, retry mechanisms of these components will be blocked for too long
+	uniformHandler.HTTPClient.Timeout = 5 * time.Second
+	uniformLogHandler.HTTPClient.Timeout = 5 * time.Second
+
 	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType)
 	uniformWatch := setupUniformWatch(controlPlane)
 	forwarder := events.NewForwarder(httpClient)
@@ -147,19 +152,16 @@ func isOneOfFilteredServices(serviceName string) bool {
 	return false
 }
 
-func getUniformHandlers(connectionType config.ConnectionType, httpClient *http.Client) (keptnapi.UniformV1Interface, keptnapi.ILogHandler) {
+func getUniformHandlers(connectionType config.ConnectionType, httpClient *http.Client) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
 		scheme := "http" // default
 		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-
-		api, err := keptnapi.New(config.Global.KeptnAPIEndpoint, keptnapi.WithAuthToken(config.Global.KeptnAPIToken), keptnapi.WithHTTPClient(httpClient), keptnapi.WithScheme(scheme))
-		if err != nil {
-			return nil, nil
-		}
-		return api.UniformV1(), api.LogsV1()
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", httpClient, scheme)
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", httpClient, scheme)
+		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
 }
