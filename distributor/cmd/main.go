@@ -23,6 +23,8 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
 	logger "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 	"net/http"
 	"net/url"
 	"os"
@@ -47,9 +49,9 @@ func _main(env config.EnvConfig) int {
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize event sender.")
 	}
-	httpClient := setupHTTPClient()
+	httpClient := createHTTPClient(env)
 
-	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
+	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType, httpClient)
 	// restrict the timeout for the http handlers to 5s
 	// otherwise, retry mechanisms of these components will be blocked for too long
 	uniformHandler.HTTPClient.Timeout = 5 * time.Second
@@ -150,15 +152,15 @@ func isOneOfFilteredServices(serviceName string) bool {
 	return false
 }
 
-func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
+func getUniformHandlers(connectionType config.ConnectionType, httpClient *http.Client) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
 		scheme := "http" // default
 		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
-		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", httpClient, scheme)
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", httpClient, scheme)
 		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
@@ -168,12 +170,27 @@ func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformW
 	return events.NewUniformWatch(controlPlane)
 }
 
-func setupHTTPClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
+func createHTTPClient(envConfig config.EnvConfig) *http.Client {
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
+		},
+		Timeout: 5 * time.Second,
 	}
-	client := &http.Client{Transport: tr}
-	return client
+
+	if envConfig.UseSSO() {
+		logger.Infof("Creating http client with SSO support for client ID %s", envConfig.SSOClientID)
+		conf := clientcredentials.Config{
+			ClientID:     envConfig.SSOClientID,
+			ClientSecret: envConfig.SSOClientSecret,
+			Scopes:       envConfig.SSOScopes,
+			TokenURL:     envConfig.SSOTokenURL,
+		}
+
+		client := conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
+		return client
+	}
+	return c
 }
 
 func setupEventSender(env config.EnvConfig) (events.EventSender, error) {

@@ -20,8 +20,7 @@ type EventReceiver interface {
 	Start(ctx *ExecutionContext)
 }
 
-// NATSEventReceiver receives events directly from the NATS broker and sends the cloud event to the
-// the keptn service
+// NATSEventReceiver receives events directly from the NATS broker and sends the cloud event to the keptn service
 type NATSEventReceiver struct {
 	env                   config.EnvConfig
 	eventSender           EventSender
