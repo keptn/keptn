@@ -181,6 +181,7 @@ func createHTTPClient(envConfig config.EnvConfig) *http.Client {
 	}
 
 	if envConfig.UseSSO() {
+		logger.Info("Creating http client with SSO suport for client ID %s", envConfig.SSOClientID)
 		conf := clientcredentials.Config{
 			ClientID:     envConfig.SSOClientID,
 			ClientSecret: envConfig.SSOClientSecret,
