@@ -55,12 +55,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/distributor/distributor /dist
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
 
-
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
-#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
-
 RUN adduser -D nonroot -u 65532
 USER nonroot
 
