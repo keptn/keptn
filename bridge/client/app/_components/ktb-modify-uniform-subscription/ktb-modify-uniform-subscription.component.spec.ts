@@ -49,209 +49,13 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have disabled button if first and second control is invalid', async () => {
-    // given
-    fixture.detectChanges();
-
-    // then
-    assertIsUpdateButtonEnabled(false);
-  });
-
-  it('should have disabled button if first control is valid and second control is invalid', async () => {
-    // given
-    fixture.detectChanges();
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('deployment');
-    fixture.detectChanges();
-    // then
-    assertIsUpdateButtonEnabled(false);
-  });
-
-  it('should have disabled button if first control is invalid and second control is valid', async () => {
-    // given
-    fixture.detectChanges();
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('');
-    const taskSuffixControl = getTaskSuffix();
-    taskSuffixControl.setValue('triggered');
-    fixture.detectChanges();
-    // then
-    assertIsUpdateButtonEnabled(false);
-  });
-
-  it('should have disabled button if filter contains service but not a stage', async () => {
-    // given
-    const data = await component.data$.toPromise();
-    fixture.detectChanges();
-
-    // when
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('deployment');
-    data.subscription.filter = {
-      projects: ['sockshop'],
-      stages: [],
-      services: ['carts'],
-    };
-    fixture.detectChanges();
-    // then
-    expect(component.isFormValid(data.subscription)).toBe(false);
-  });
-
-  it('should have disabled button if loading', () => {
-    // given
-    fixture.detectChanges();
-    // when
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('deployment');
-    const taskSuffixControl = getTaskSuffix();
-    taskSuffixControl.setValue('triggered');
-    component.updating = true;
-    fixture.detectChanges();
-
-    // then
-    assertIsUpdateButtonEnabled(false);
-  });
-
-  it('should have enabled button if task is valid', () => {
-    // given
-    fixture.detectChanges();
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('deployment');
-    const taskSuffixControl = getTaskSuffix();
-    taskSuffixControl.setValue('triggered');
-    fixture.detectChanges();
-
-    // then
-    assertIsUpdateButtonEnabled(true);
-  });
-
-  it('should have enabled button if filter contains a stage and a service', async () => {
-    // given
-    const data = await component.data$.toPromise();
-    fixture.detectChanges();
-    // when
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('deployment');
-    const taskSuffixControl = getTaskSuffix();
-    taskSuffixControl.setValue('triggered');
-
-    data.subscription.filter = {
-      projects: ['sockshop'],
-      stages: ['staging'],
-      services: ['carts'],
-    };
-    fixture.detectChanges();
-
-    // then
-    expect(component.isFormValid(data.subscription)).toBe(true);
-  });
-
-  it('should have enabled button if filter contains just a stages', async () => {
-    // given
-    const data = await component.data$.toPromise();
-    fixture.detectChanges();
-    // when
-    const taskControl = getTaskPrefix();
-    taskControl.setValue('deployment');
-    const taskSuffixControl = getTaskSuffix();
-    taskSuffixControl.setValue('triggered');
-
-    // when
-    data.subscription.filter = {
-      projects: ['sockshop'],
-      stages: ['staging'],
-      services: [],
-    };
-    fixture.detectChanges();
-
-    // then
-    expect(component.isFormValid(data.subscription)).toBe(true);
-  });
-
-  it('should have a disabled button if the webhook form is invalid', () => {
-    // given
-    setSubscription(10);
-    fixture.detectChanges();
-    component.isWebhookFormValid = false;
-    fixture.detectChanges();
-
-    // then
-    assertIsUpdateButtonEnabled(false);
-  });
-
-  it('should have a enabled button if the webhook form is valid', () => {
-    // given
-    setSubscription(10, 0);
-    fixture.detectChanges();
-    component.isWebhookFormValid = true;
-    fixture.detectChanges();
-
-    // then
-    assertIsUpdateButtonEnabled(true);
-  });
-
-  it('should set the right properties and enable the button when a global subscription is set', () => {
-    // given
-    setSubscription(1, 0);
-    fixture.detectChanges();
-
-    // then
-    const isGlobalControl = getIsGlobalControl();
-    expect(isGlobalControl.value).toEqual(true);
-    const taskControl = getTaskPrefix();
-    expect(taskControl.value).toEqual('deployment');
-    const taskSuffixControl = getTaskSuffix();
-    expect(taskSuffixControl.value).toEqual('triggered');
-
-    const filterPairs: HTMLElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container')
-    );
-    expect(filterPairs.length).toEqual(0);
-    assertIsUpdateButtonEnabled(true);
-  });
-
-  it('should set the right properties and enable the button when a subscription is set', () => {
-    // given
-    const subscription = setSubscription(2, 0);
-    fixture.detectChanges();
-
-    // then
-    const isGlobalControl = getIsGlobalControl();
-    expect(isGlobalControl.value).toEqual(false);
-    const taskControl = getTaskPrefix();
-    expect(taskControl.value).toEqual('test');
-    const taskSuffixControl = getTaskSuffix();
-    expect(taskSuffixControl.value).toEqual('triggered');
-
-    const filterPairs: HTMLElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll('.dt-filter-field-tag-container')
-    );
-    expect(
-      subscription.filter.stages?.every((stage) => filterPairs.some((pair) => pair.textContent === `Stage${stage}`))
-    ).toEqual(true);
-    expect(
-      subscription.filter.services?.every((service) =>
-        filterPairs.some((pair) => pair.textContent === `Service${service}`)
-      )
-    ).toEqual(true);
-    expect(filterPairs.length).toEqual(
-      (subscription.filter.stages?.length ?? 0) + (subscription.filter.services?.length ?? 0)
-    );
-    assertIsUpdateButtonEnabled(true);
-  });
-
   it('should update subscription', () => {
     // given
     const subscription = setSubscription(2, 0);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual(
-      'Update subscription'
-    );
     const dataService = TestBed.inject(DataService);
     const updateSpy = jest.spyOn(dataService, 'updateUniformSubscription');
-    // when
-    fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').click();
-    fixture.detectChanges();
+    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription);
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[2].id, subscription, undefined);
@@ -261,14 +65,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   it('should update subscription for all keptn events with keptn.sh.>', () => {
     // given
     const subscription = setSubscription(2, 0);
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    // @ts-ignore //Ignore private property
-    component.taskControl.setValue('sh.keptn');
-    component.taskSuffixControl.setValue('>');
-    // @ts-ignore //Ignore private property
-    component.isGlobalControl.setValue(true);
+    getTaskPrefix().setValue('sh.keptn');
+    getTaskSuffix().setValue('>');
+    getIsGlobalControl().setValue(true);
     component.editMode = true;
-    /* eslint-enable */
 
     // when
     component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
@@ -280,14 +80,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   it('should update subscription for deplyoment keptn wildcard events with keptn.sh.event.approval.>', () => {
     // given
     const subscription = setSubscription(2, 0);
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    // @ts-ignore //Ignore private property
-    component.taskControl.setValue('deployment');
-    component.taskSuffixControl.setValue('>');
-    // @ts-ignore //Ignore private property
-    component.isGlobalControl.setValue(true);
+    getTaskPrefix().setValue('deployment');
+    getTaskSuffix().setValue('>');
+    getIsGlobalControl().setValue(true);
     component.editMode = true;
-    /* eslint-enable */
 
     // when
     component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
@@ -353,9 +149,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     taskSuffixControl.setValue('triggered');
     const isGlobalControl = getIsGlobalControl();
     isGlobalControl.setValue(true);
-    fixture.detectChanges();
-    fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').click();
-    fixture.detectChanges();
+    component.updateSubscription('sockshop', UniformRegistrationsMock[1].id, subscription);
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(
@@ -380,9 +174,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       'integrations',
       UniformRegistrationsMock[1].id,
     ]);
-    expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual(
-      'Create subscription'
-    );
   });
 
   it('should only have triggered suffix', () => {
@@ -418,70 +209,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     ]);
   });
 
-  it('should show webhook form', () => {
-    // given
-    setSubscription(10, 0);
-    fixture.detectChanges();
-
-    // then
-    const webhookForm = fixture.nativeElement.querySelector('ktb-webhook-settings');
-    expect(webhookForm).toBeTruthy();
-  });
-
-  it('should not show webhook form', () => {
-    // given
-    setSubscription(1, 0);
-    fixture.detectChanges();
-
-    // then
-    const webhookForm = fixture.nativeElement.querySelector('ktb-webhook-settings');
-    expect(webhookForm).toBeFalsy();
-  });
-
-  it('should show project checkbox', () => {
-    // given
-    setSubscription(1, 0);
-    fixture.detectChanges();
-    const checkbox = fixture.nativeElement.querySelector('[uitestid=ktb-modify-subscription-project-checkbox]');
-
-    // then
-    expect(checkbox).toBeTruthy();
-  });
-
-  it('should not show project checkbox', () => {
-    // given
-    setSubscription(10, 0);
-    fixture.detectChanges();
-    const checkbox = fixture.nativeElement.querySelector('[uitestid=ktb-modify-subscription-project-checkbox]');
-
-    // then
-    expect(checkbox).toBeFalsy();
-  });
-
-  it('it should enable "use for all projects" checkbox if filter is cleared', () => {
-    // given
-    setSubscription(2, 0);
-    fixture.detectChanges();
-
-    // when
-    fixture.nativeElement.querySelector('.dt-filter-field-clear-all-button').click();
-    fixture.detectChanges();
-    // then
-    const isGlobalControl = getIsGlobalControl();
-    expect(isGlobalControl.enabled).toEqual(true);
-  });
-
-  it('it should disable "use for all projects" checkbox and set to false if filter is set', () => {
-    // given
-    setSubscription(3, 0);
-    fixture.detectChanges();
-
-    // then
-    const isGlobalControl = getIsGlobalControl();
-    expect(isGlobalControl.disabled).toEqual(true);
-    expect(isGlobalControl.value).toEqual(false);
-  });
-
   it('should initially load intersected events', () => {
     const eventPayload = { data: {} };
     const dataService = TestBed.inject(DataService);
@@ -490,13 +217,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
     expect(component.eventPayload).toEqual(eventPayload);
   });
-
-  function assertIsUpdateButtonEnabled(isEnabled: boolean): void {
-    const element = expect(
-      fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').getAttribute('disabled')
-    );
-    (isEnabled ? element : element.not).toBeNull();
-  }
 
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
     const dataService = TestBed.inject(DataService);

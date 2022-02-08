@@ -1,9 +1,11 @@
 import { interceptIntegrations } from '../support/intercept';
 import UniformPage from '../support/pageobjects/UniformPage';
 
-describe('Integrations', () => {
-  const uniformPage = new UniformPage();
+const uniformPage = new UniformPage();
+const webhookID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
+const integrationID = '355311a7bec3f35bf3abc2484ab09bcba8e2b297'; // not webhook, is in control plane
 
+describe('Integrations', () => {
   beforeEach(() => {
     interceptIntegrations();
     cy.visit('/project/sockshop/settings/uniform/integrations');
@@ -46,24 +48,20 @@ describe('Integrations', () => {
       .click();
 
     // Fill in all form fields
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID)
-      .click()
-      .find('dt-checkbox')
-      .should('have.class', 'dt-checkbox-checked');
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_TASK_ID).find('dt-select').focus().type('dep');
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type('fin');
-    cy.byTestId('edit-subscription-field-filterStageService')
-      .find('input')
-      .focus()
-      .type('St{enter}de{enter}Ser{enter}cart{enter}');
-    cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
+    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).click();
+
+    uniformPage
+      .isCreateButton()
+      .isGlobalChecked(true)
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('finished')
+      .appendStages('dev')
+      .appendServices('carts')
+      .update();
 
     // then
     // It should redirect after successfully sending the subscription
-    cy.location('pathname').should(
-      'eq',
-      '/project/sockshop/settings/uniform/integrations/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscriptions/add'
-    );
+    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/integrations/${integrationID}`);
   });
 
   it('should add a webhook subscription', () => {
@@ -78,54 +76,52 @@ describe('Integrations', () => {
     cy.get('h2').eq(1).should('have.text', 'Webhook configuration');
     cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).should('not.exist');
 
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_TASK_ID).find('dt-select').focus().type('dep');
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type('fin');
-    cy.byTestId('edit-webhook-field-method').find('dt-select').focus().type('GET');
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('finished')
+      .setWebhookMethod('GET')
+      .appendURL('https://example.com?secret=')
+      .openSecretSelectorURL()
+      .selectFirstItemOfVariableSelector()
+      .openEventSelectorURL()
+      .selectFirstItemOfVariableSelector()
+      .appendPayload(`{id: '123456789', secret: `)
+      .openSecretSelectorPayload()
+      .selectFirstItemOfVariableSelector()
+      .openEventSelectorPayload()
+      .selectFirstItemOfVariableSelector()
+      .appendPayload('}')
+      .appendProxy('https://proxy.com');
 
-    // URL: insert text, add secret and add event variable
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID).find('textarea').focus().type('https://example.com?secret=');
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_URL).find('button').click();
-    selectFirstItemOfVariableSelector();
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_URL).find('button').click();
-    selectFirstItemOfVariableSelector();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID)
       .find('textarea')
       .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}{{.data.project}}');
 
-    // Payload: insert text, add secret and add event variable
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').focus().type("{id: '123456789', secret: ");
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_PAYLOAD).find('button').click();
-    selectFirstItemOfVariableSelector();
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_PAYLOAD).find('button').click();
-    selectFirstItemOfVariableSelector();
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').focus().type('}');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID)
       .find('textarea')
       .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}{{.data.project}}}");
-
-    cy.byTestId('edit-webhook-field-proxy').find('input').focus().type('https://proxy.com');
 
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_NAME_ID).should('not.exist');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).should('not.exist');
     cy.byTestId('ktb-webhook-settings-add-header-button').click();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_NAME_ID).should('exist');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).should('exist');
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_NAME_ID).find('input').focus().type('x-token');
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('input').focus().type('Bearer: ');
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_SECRET_SELECTOR_HEADER).find('button').click();
-    selectFirstItemOfVariableSelector();
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_EVENT_SELECTOR_HEADER).find('button').click();
-    selectFirstItemOfVariableSelector();
+
+    uniformPage
+      .appendHeaderName('x-token')
+      .appendHeaderValue('Bearer: ')
+      .openSecretSelectorHeader()
+      .selectFirstItemOfVariableSelector()
+      .openEventSelectorHeader()
+      .selectFirstItemOfVariableSelector();
+
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID)
       .find('input')
       .should('have.value', 'Bearer: {{.secret.SecretA.key1}}{{.data.project}}');
 
-    cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
+    uniformPage.update();
     // It should redirect after successfully sending the subscription
-    cy.location('pathname').should(
-      'eq',
-      '/project/sockshop/settings/uniform/integrations/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscriptions/add'
-    );
+    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/integrations/${webhookID}`);
   });
 
   it('should delete a subscription', () => {
@@ -157,19 +153,123 @@ describe('Integrations', () => {
       .byTestId('subscriptionEditButton')
       .click();
 
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_TASK_ID).find('dt-select').focus().type('eval');
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type('fin');
-    cy.byTestId('edit-subscription-field-filterStageService')
-      .find('input')
-      .focus()
-      .type('St{enter}de{enter}Ser{enter}cart{enter}');
-    cy.byTestId(uniformPage.UPDATE_SUBSCRIPTION_BUTTON_ID).click();
+    uniformPage
+      .isUpdateButton()
+      .setTaskPrefix('evaluation')
+      .setTaskSuffix('finished')
+      .appendStages('dev')
+      .appendServices('cart')
+      .update();
 
     // It should redirect to overview if edited successfully
-    cy.location('pathname').should(
-      'eq',
-      '/project/sockshop/settings/uniform/integrations/355311a7bec3f35bf3abc2484ab09bcba8e2b297'
-    );
+    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/integrations/${integrationID}`);
+  });
+});
+
+describe('Add webhook subscriptions', () => {
+  beforeEach(() => {
+    interceptIntegrations();
+    uniformPage.visitAdd(webhookID);
+  });
+  it('should have disabled button if first and second control is invalid', () => {
+    uniformPage.assertIsUpdateButtonEnabled(false).assertIsUpdateButtonEnabled(false);
+  });
+
+  it('should have disabled button if first control is valid and second control is invalid', () => {
+    uniformPage.setTaskPrefix('deployment').assertIsUpdateButtonEnabled(false);
+  });
+
+  it('should have disabled button if first control is invalid and second control is valid', () => {
+    uniformPage.setTaskSuffix('triggered').assertIsUpdateButtonEnabled(false);
+  });
+
+  it('should have disabled button if filter contains service but not a stage', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .appendServices('carts')
+      .setWebhookMethod('GET')
+      .appendURL('https://example.com')
+      .assertIsUpdateButtonEnabled(false);
+  });
+
+  it('should have a disabled button if the webhook form is empty', () => {
+    uniformPage.setTaskPrefix('deployment').setTaskSuffix('triggered').assertIsUpdateButtonEnabled(false);
+  });
+
+  it('should have an enabled button if the webhook form is valid', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .setWebhookMethod('GET')
+      .appendURL('https://example.com')
+      .assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should show all suffixes', () => {
+    uniformPage.shouldHaveTaskSuffixes(['*', 'triggered', 'started', 'finished']);
+  });
+
+  it('should show webhook form', () => {
+    cy.get('ktb-webhook-settings').should('exist');
+  });
+
+  it('should not show project checkbox', () => {
+    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).should('not.exist');
+  });
+});
+
+describe('Add control plane subscription', () => {
+  beforeEach(() => {
+    interceptIntegrations();
+    uniformPage.visitAdd(integrationID);
+    interceptIntegrations();
+  });
+
+  it('should have disabled button if updating', () => {
+    cy.intercept(`/api/uniform/registration/${integrationID}/subscription`, {
+      body: {
+        id: '0b77c90e-282d-4a7e-a96d-e23027265868',
+      },
+      delay: 5000,
+    });
+    uniformPage.setTaskPrefix('deployment').setTaskSuffix('triggered').update().assertIsUpdateButtonEnabled(false);
+  });
+
+  it('should have enabled button if task is valid', () => {
+    uniformPage.setTaskPrefix('deployment').setTaskSuffix('triggered').assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should have enabled button if filter contains a stage and a service', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .appendServices('carts')
+      .appendStages('dev')
+      .assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should have enabled button if filter contains just a stage', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .appendStages('dev')
+      .assertIsUpdateButtonEnabled(true);
+  });
+
+  it('it should enable "use for all projects" checkbox if filter is cleared', () => {
+    uniformPage.appendStages('dev').isGlobalEnabled(false).clearFilter().isGlobalEnabled(true);
+  });
+
+  it('it should disable "use for all projects" checkbox and set to false if filter is set', () => {
+    uniformPage.appendStages('dev').isGlobalEnabled(false);
+  });
+
+  it('should show project checkbox', () => {
+    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).should('exist');
+  });
+
+  it('should not show webhook form', () => {
+    cy.get('ktb-webhook-settings').should('not.exist');
   });
 
   xit('should show an error message if can not parse shipyard.yaml', () => {
@@ -219,9 +319,79 @@ describe('Integrations', () => {
     cy.byTestId('ktb-modify-subscription-reload-button').should('not.exist');
     cy.get('h2').first().should('have.text', 'Create subscription');
   });
+});
 
-  function selectFirstItemOfVariableSelector(): void {
-    cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').first().find('button').click();
-    cy.get('ktb-tree-list-select dt-tree-table-toggle-cell').eq(1).click();
-  }
+describe('Add execution plane subscription', () => {
+  const executionPlaneIntegrationID = 'myIntegrationID';
+
+  beforeEach(() => {
+    interceptIntegrations();
+    uniformPage.visitAdd(executionPlaneIntegrationID);
+  });
+
+  it('should only have triggered suffix', () => {
+    cy.intercept(`/api/uniform/registration/${executionPlaneIntegrationID}/info`, {
+      body: {
+        isControlPlane: false,
+        isWebhookService: false,
+      },
+    });
+    uniformPage.shouldHaveTaskSuffixes(['triggered']);
+  });
+});
+
+describe('Edit subscriptions', () => {
+  const subscriptionID = 'mySubscriptionID';
+  beforeEach(() => {
+    interceptIntegrations();
+    uniformPage.visitEdit(integrationID, subscriptionID);
+  });
+
+  it('should set the right properties and enable the button when a global subscription is set', () => {
+    cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
+      body: {
+        event: 'sh.keptn.event.deployment.triggered',
+        filter: {
+          projects: [],
+          services: [],
+          stages: [],
+          id: subscriptionID,
+        },
+      },
+    });
+
+    uniformPage
+      .isGlobalChecked(true)
+      .taskPrefixEquals('deployment')
+      .taskSuffixEquals('triggered')
+      .filterTagsLengthEquals(0)
+      .assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should set the right properties and enable the button when a subscription is set', () => {
+    const service = 'carts';
+    const stage = 'dev';
+    const projectName = 'sockshop';
+
+    cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
+      body: {
+        event: 'sh.keptn.event.test.finished',
+        filter: {
+          projects: [projectName],
+          services: [service],
+          stages: [stage],
+          id: subscriptionID,
+        },
+      },
+    });
+
+    uniformPage
+      .isGlobalChecked(false)
+      .taskPrefixEquals('test')
+      .taskSuffixEquals('finished')
+      .filterTagsLengthEquals(2)
+      .shouldHaveStages([stage])
+      .shouldHaveServices([service])
+      .assertIsUpdateButtonEnabled(true);
+  });
 });

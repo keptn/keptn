@@ -27,12 +27,12 @@ export function interceptIntegrations(): void {
       isWebhookService: true,
     },
   });
-  cy.intercept('/api/controlPlane/v1/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription', {
+  cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription', {
     body: {
       id: '0b77c90e-282d-4a7e-a96d-e23027265868',
     },
   });
-  cy.intercept('/api/controlPlane/v1/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscription', {
+  cy.intercept('/api/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscription', {
     body: {
       id: 'b5111b1c-446a-410d-bb6c-e1dcd409c890',
     },
