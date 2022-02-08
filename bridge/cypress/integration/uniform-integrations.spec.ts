@@ -16,6 +16,41 @@ describe('Integrations', () => {
     buttons.first().should('have.class', 'active');
   });
 
+  it('should show 8 registrations', () => {
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').should('have.length', 8);
+  });
+
+  it('should show error event indicator', () => {
+    const indicator = cy
+      .byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC)
+      .contains('dt-cell', 'webhook-service')
+      .find('.notification-indicator-text');
+
+    indicator.should('have.text', 10);
+    cy.get('.notification-indicator-text').should('have.length', 1);
+  });
+
+  it('should remove error event indicator on selection change', () => {
+    // given
+    const firstRow = cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').eq(0);
+    const firstCell = firstRow.find('dt-cell').eq(0);
+
+    // when
+    firstRow.click();
+    firstCell.find('.notification-indicator-text').should('exist');
+
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').eq(1).click();
+
+    // then
+    firstCell.find('.notification-indicator-text').should('not.exist');
+  });
+
+  it('should show error events list', () => {
+    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').first().click();
+    cy.get('ktb-uniform-registration-logs').should('exist');
+    cy.contains('h3', 'webhook-service');
+  });
+
   it('should select an integration and show related subscriptions', () => {
     // given, when
     cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').first().click();
