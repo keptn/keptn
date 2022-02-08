@@ -338,7 +338,7 @@ jobs:
     name: Build Keptn CLI
     needs: [prepare_ci_run, unit-tests-cli]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    uses: keptn/keptn/.github/workflows/build-cli.yml@refactor/remove-makefile
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
