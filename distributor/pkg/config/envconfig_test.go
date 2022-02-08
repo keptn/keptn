@@ -115,7 +115,7 @@ func Test_getHTTPPollingEndpoint(t *testing.T) {
 			env := EnvConfig{
 				KeptnAPIEndpoint: tt.apiEndpointEnvVar,
 			}
-			if got := env.PollingEndpoint(); got != tt.want {
+			if got := env.HTTPPollingEndpoint(); got != tt.want {
 				t.Errorf("PollingEndpoint() = %v, want %v", got, tt.want)
 			}
 		})
