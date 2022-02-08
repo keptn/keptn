@@ -97,7 +97,7 @@ jobs:
           fi
 
           # build the binary using makefile
-          ./make-scripts/build/build-cli.sh
+          ./gh-actions-scripts/build-cli.sh
           # verify output file exists
           ls bin/${OUTPUT_EXECUTABLE_NAME}
 
