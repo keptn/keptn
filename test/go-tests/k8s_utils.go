@@ -163,9 +163,10 @@ func WaitForPodOfDeployment(deploymentName string) error {
 }
 
 type K8SEvent struct {
-	Reason  string `json:"reason"`
-	Type    string `json:"type"`
-	Message string `json:"message"`
+	Reason        string    `json:"reason"`
+	Type          string    `json:"type"`
+	Message       string    `json:"message"`
+	LastTimestamp time.Time `json:"lastTimestamp"`
 }
 
 type K8SEventArray struct {
@@ -173,8 +174,8 @@ type K8SEventArray struct {
 }
 
 func GetOOMEvents() (K8SEventArray, error) {
-	events, err := keptnkubeutils.ExecuteCommand(kubectlExecutable, []string{"get", "events", "-n=default", "-o=json"})
-
+	events, err := keptnkubeutils.ExecuteCommand(kubectlExecutable, []string{"get", "events", "--sort-by=’.lastTimestamp’", "-n=default", "-o=json"})
+	TimeInterval := time.Now().Add(-1 * time.Hour)
 	if err != nil {
 		return K8SEventArray{}, err
 	}
@@ -182,17 +183,20 @@ func GetOOMEvents() (K8SEventArray, error) {
 	eventArray := K8SEventArray{}
 	err = json.Unmarshal([]byte(events), &eventArray)
 
+	if err != nil {
+		return K8SEventArray{}, err
+	}
+
 	oomEvents := K8SEventArray{
 		Items: []K8SEvent{},
 	}
 	for _, event := range eventArray.Items {
+		if event.LastTimestamp.Before(TimeInterval) {
+			break
+		}
 		if strings.Contains(event.Reason, "OOM") {
 			oomEvents.Items = append(oomEvents.Items, event)
 		}
-	}
-
-	if err != nil {
-		return K8SEventArray{}, err
 	}
 	return oomEvents, err
 }
