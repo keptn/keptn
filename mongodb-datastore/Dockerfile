@@ -46,8 +46,10 @@ RUN go mod download
 
 # Copy local code to the container image.
 COPY . .
+ENV GOTESTSUM_FORMAT=testname
 
-CMD go test -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
+RUN go get gotest.tools/gotestsum@v1.7.0
+CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 ARG version=develop
