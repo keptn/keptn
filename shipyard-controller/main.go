@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/common/retry"
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
@@ -271,13 +270,8 @@ func main() {
 
 	connectionHandler := handler.NewNatsConnectionHandler("nats://keptn-nats", shipyardController.HandleIncomingEvent, context.TODO())
 
-	if err := retry.Retry(func() error {
-		if err := connectionHandler.QueueSubscribeToTopics([]string{"sh.keptn.>"}, "shipyard-controller"); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		log.Errorf("Could not subscripe to nats: %v", err)
+	if err := connectionHandler.QueueSubscribeToTopics([]string{"sh.keptn.>"}, "shipyard-controller"); err != nil {
+		log.Fatalf("Could not subscripe to nats: %v", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
