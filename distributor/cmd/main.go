@@ -160,12 +160,7 @@ func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
 		return keptnapi.New(config.Global.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
 	}
 
-	apiMappings := keptnapi.InClusterAPIMappings{
-		keptnapi.ShipyardController:   "shipyard-controller:8080",
-		keptnapi.ConfigurationService: "configuration-service:8080",
-	}
-
-	return keptnapi.NewInternal(apiMappings, httpClient)
+	return keptnapi.NewInternal(httpClient)
 }
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {
