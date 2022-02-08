@@ -3,6 +3,8 @@ package handler
 import (
 	"errors"
 	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/api/utils"
+	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -42,7 +44,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		logger.Infof("will not handle event: %s", err.Error())
 		return nil, nil
 	}
-	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID)
+	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID, event.Gitcommitid)
 	if err != nil {
 		return th.onPreExecutionError(keptnHandler, event, eventAdapter, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
 	}
@@ -230,10 +232,14 @@ func sdkError(msg string, err error) *sdk.Error {
 	}
 }
 
-//TODO gitcommit here too?
-func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *lib.EventDataAdapter, subscriptionID string) (*lib.Webhook, error) {
+func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *lib.EventDataAdapter, subscriptionID string, commitID string) (*lib.Webhook, error) {
 	// first try to retrieve the webhook config at the service level
-	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(eventAdapter.Project(), eventAdapter.Stage(), eventAdapter.Service(), webhookConfigFileName)
+	commitOption := url.Values{}
+	if commitID != "" {
+		commitOption.Add("commitID", commitID)
+	}
+	resourceScope := *keptn.NewResourceScope().Project(eventAdapter.Project()).Stage(eventAdapter.Stage()).Service(eventAdapter.Service()).Resource(webhookConfigFileName)
+	resource, err := keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -241,7 +247,8 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	}
 
 	// if we didn't find a config in the service directory, look at the stage
-	resource, err = keptnHandler.GetResourceHandler().GetStageResource(eventAdapter.Project(), eventAdapter.Stage(), webhookConfigFileName)
+	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Stage(eventAdapter.Stage()).Resource(webhookConfigFileName)
+	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -249,7 +256,8 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	}
 
 	// finally, look at project level
-	resource, err = keptnHandler.GetResourceHandler().GetProjectResource(eventAdapter.Project(), webhookConfigFileName)
+	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Service(eventAdapter.Service()).Resource(webhookConfigFileName)
+	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil

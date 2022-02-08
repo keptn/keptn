@@ -63,8 +63,6 @@ func _main(args []string, env envConfig) int {
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
-	var shkeptncontext string
-	_ = event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	handler, err := event_handler.NewEventHandler(event)
 

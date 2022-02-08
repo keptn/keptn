@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
 	"net/url"
@@ -16,10 +17,15 @@ type EventHandler struct {
 }
 
 func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event) error {
-	var shkeptncontext string
-	if err := event.Context.ExtensionAs("shkeptncontext", &shkeptncontext); err != nil {
+
+	extensions := event.Context.GetExtensions()
+	shkeptncontext, err := types.ToString(extensions["shkeptncontext"])
+	if err != nil {
 		return err
 	}
+
+	var commitID string
+	event.ExtensionAs("gitcommitid", &commitID)
 
 	if event.Type() != keptnv2.GetTriggeredEventType(keptnv2.TestTaskName) {
 		logger.Warnf("Received unexpected keptn event: %s", event.Type())
@@ -34,7 +40,7 @@ func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event)
 		logger.Infof("Received '%s' test strategy, hence no tests are triggered", TestStrategy_RealUser)
 		return nil
 	}
-	testInfo, err := createTestInfo(*data, shkeptncontext, event.ID())
+	testInfo, err := createTestInfo(*data, shkeptncontext, event.ID(), commitID)
 	if err != nil {
 		logger.Errorf("Unable to create test info: %v", err)
 		return nil
@@ -47,7 +53,7 @@ func (e *EventHandler) handleEvent(ctx context.Context, event cloudevents.Event)
 	return nil
 }
 
-func createTestInfo(data keptnv2.TestTriggeredEventData, shkeptncontext string, triggeredID string) (*TestInfo, error) {
+func createTestInfo(data keptnv2.TestTriggeredEventData, shkeptncontext string, triggeredID string, commitID string) (*TestInfo, error) {
 	serviceURL, err := getServiceURL(data)
 	if err != nil {
 		return nil, err
@@ -59,6 +65,7 @@ func createTestInfo(data keptnv2.TestTriggeredEventData, shkeptncontext string, 
 		TestStrategy:      data.Test.TestStrategy,
 		Context:           shkeptncontext,
 		TriggeredID:       triggeredID,
+		CommitID:          commitID,
 		TestTriggeredData: data,
 		ServiceURL:        serviceURL,
 	}, nil

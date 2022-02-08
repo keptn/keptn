@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	logger "github.com/sirupsen/logrus"
+	"net/url"
 	"os"
 	"strings"
 
@@ -41,16 +42,25 @@ func GetConfigurationServiceURL() string {
 // returns:
 // - fileContent if found or "" if no file found at all
 // - error: in case there was an error
-func GetKeptnResource(project string, stage string, service string, resourceURI string) (string, error) {
+func GetKeptnResource(commitID string, project string, stage string, service string, resourceURI string) (string, error) {
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
-	resource, err := resourceHandler.GetServiceResource(project, stage, service, resourceURI)
+
+	commitOption := url.Values{}
+	if commitID != "" {
+		commitOption.Add("commitID", commitID)
+	}
+	resourceScope := *configutils.NewResourceScope().Project(project).Stage(stage).Service(service).Resource(resourceURI)
+	resource, err := resourceHandler.GetResource(resourceScope, configutils.AppendQuery(commitOption))
+
 	if err != nil && errors.Is(err, configutils.ResourceNotFoundError) {
 		// if not found on service level - lets try it on stage level
-		resource, err = resourceHandler.GetStageResource(project, stage, resourceURI)
+		resourceScope = *configutils.NewResourceScope().Project(project).Stage(stage).Resource(resourceURI)
+		resource, err = resourceHandler.GetResource(resourceScope, configutils.AppendQuery(commitOption))
 
 		if err != nil && errors.Is(err, configutils.ResourceNotFoundError) {
 			// if not found on stage level we try project level
-			resource, err = resourceHandler.GetProjectResource(project, resourceURI)
+			resourceScope = *configutils.NewResourceScope().Project(project).Resource(resourceURI)
+			resource, err = resourceHandler.GetResource(resourceScope, configutils.AppendQuery(commitOption))
 
 			if err != nil && errors.Is(err, configutils.ResourceNotFoundError) {
 				return "", nil
@@ -80,15 +90,16 @@ func GetKeptnResource(project string, stage string, service string, resourceURI 
 // foundPrimaryFile: true if it was downloaded
 // number of resources: total number of downloaded resources
 // error: any error that occurred
-func DownloadAndStoreResources(project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
-	foundPrimaryFile, fileCount, err := getAllKeptnResources(project, stage, resourceURIFolderOfInterest, primaryTestFileName, localDirectory)
+func DownloadAndStoreResources(commitId string, project string, stage string, service string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
+	foundPrimaryFile, fileCount, err := getAllKeptnResources(commitId, project, stage, resourceURIFolderOfInterest, primaryTestFileName, localDirectory)
 	if err != nil {
 		return foundPrimaryFile, fileCount, err
 	}
 	// Fallback if primary file wasn't loaded yet
 	// last effort - if we couldn't download the specific test file because, e.g: limitations of our current API - then simply go back to download this specific file
 	if !foundPrimaryFile {
-		primaryTestFileContent, err := GetKeptnResource(project, stage, service, primaryTestFileName)
+
+		primaryTestFileContent, err := GetKeptnResource(commitId, project, stage, service, primaryTestFileName)
 		if err != nil {
 			return false, fileCount, err
 		}
@@ -105,7 +116,7 @@ func DownloadAndStoreResources(project string, stage string, service string, res
 	return foundPrimaryFile, fileCount, nil
 }
 
-func getAllKeptnResources(project string, stage string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
+func getAllKeptnResources(commitID string, project string, stage string, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string) (bool, int, error) {
 	// NOTE: we should also implement and use missing configutils.GetAllProjectResources(project) & configutils.GetAllServiceResources(project,service)
 	// and merge them into the resource list
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
@@ -133,7 +144,14 @@ func getAllKeptnResources(project string, stage string, resourceURIFolderOfInter
 		// only store it if we really know whether and where we have to store it to!
 		if targetFileName != "" {
 			// now we have to download that resource first as so far we only have the resourceURI
-			downloadedResource, err := resourceHandler.GetStageResource(project, stage, strings.TrimPrefix(*resource.ResourceURI, "/"))
+
+			commitOption := url.Values{}
+			if commitID != "" {
+				commitOption.Add("commitID", commitID)
+			}
+			resourceScope := *configutils.NewResourceScope().Project(project).Stage(stage).Resource(strings.TrimPrefix(*resource.ResourceURI, "/"))
+			downloadedResource, err := resourceHandler.GetResource(resourceScope, configutils.AppendQuery(commitOption))
+
 			if err != nil {
 				return false, fileCount, err
 			}
@@ -200,7 +218,8 @@ func getJMeterConf(testInfo TestInfo) (*JMeterConf, error) {
 	var fileContent []byte
 	var err error
 	logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, testInfo.Project, testInfo.Stage, testInfo.Service))
-	keptnResourceContent, err := GetKeptnResource(testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfFilename)
+
+	keptnResourceContent, err := GetKeptnResource(testInfo.CommitID, testInfo.Project, testInfo.Stage, testInfo.Service, JMeterConfFilename)
 
 	if err != nil {
 		logMessage := fmt.Sprintf("error when trying to load %s file for service %s on stage %s or project-level %s", JMeterConfFilename, testInfo.Service, testInfo.Stage, testInfo.Project)
