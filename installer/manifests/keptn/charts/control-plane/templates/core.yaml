@@ -96,7 +96,7 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -140,7 +140,7 @@ spec:
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
@@ -216,7 +216,7 @@ spec:
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           env:
             - name: API_URL
               value: "http://api-gateway-nginx{{ .Values.prefixPath }}/api"
@@ -372,7 +372,7 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           env:
             - name: CONFIGURATION_SERVICE
               value: "http://configuration-service:8080"
@@ -430,7 +430,7 @@ spec:
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
@@ -558,7 +558,7 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAMESPACE
               valueFrom:
@@ -661,7 +661,7 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
@@ -784,7 +784,7 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
@@ -902,7 +902,7 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           env:
             - name: AGGREGATION_INTERVAL_SECONDS
               value: '1800'
@@ -950,7 +950,7 @@ spec:
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
@@ -1044,7 +1044,7 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -1072,7 +1072,7 @@ spec:
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
@@ -1169,7 +1169,7 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -1197,7 +1197,7 @@ spec:
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
