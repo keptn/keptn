@@ -100,8 +100,8 @@ export class KtbSliBreakdownComponent implements OnInit {
       if (comparedValue) {
         compared.comparedValue = AppUtils.formatNumber(comparedValue);
         compared.calculatedChanges = {
-          absolute: AppUtils.formatNumber(comparedValue - indicatorResult.value.value),
-          relative: AppUtils.formatNumber((comparedValue / (indicatorResult.value.value || 1)) * 100 - 100),
+          absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
+          relative: AppUtils.formatNumber((indicatorResult.value.value / (comparedValue || 1)) * 100 - 100),
         };
       }
 
