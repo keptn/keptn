@@ -3,7 +3,7 @@ import expressSession, { MemoryStore } from 'express-session';
 import random from 'crypto-random-string';
 import { IdTokenClaims, TokenSet, TokenSetParameters } from 'openid-client';
 import MongoStore from 'connect-mongo';
-import { Collection, MongoClient } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
 import { Crypto } from './crypto';
 import { getRootLocation } from './oauth-routes';
 import { getOAuthSecrets } from './secrets';
@@ -40,6 +40,8 @@ export class SessionService {
   private readonly sessionSecret: string;
   private readonly SESSION_VALIDATING_DATA_SECONDS;
   private readonly databaseSecret: string;
+  private readonly validationCollectionName = 'validation';
+  private readonly sessionCollectionName = 'sessions';
 
   constructor() {
     this.SESSION_TIME_SECONDS = this.getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
@@ -111,8 +113,10 @@ export class SessionService {
       `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}/${mongoCredentials.database}`
     );
     await mongoClient.connect();
+    const db = mongoClient.db(mongoCredentials.database);
+    await this.initCollections(db);
 
-    this.validationCollection = mongoClient.db(mongoCredentials.database).collection('validation');
+    this.validationCollection = mongoClient.db(mongoCredentials.database).collection(this.validationCollectionName);
 
     const indexName = 'validation_index';
     const indexes = await this.validationCollection.indexes();
@@ -139,12 +143,34 @@ export class SessionService {
       client: mongoClient,
       ttl: this.SESSION_TIME_SECONDS, // if inactive for $SESSION_TIME_SECONDS seconds, session is destroyed
       dbName: mongoCredentials.database,
-      collectionName: 'sessions',
+      collectionName: this.sessionCollectionName,
       crypto: {
         secret: this.databaseSecret,
       },
       touchAfter: this.SESSION_TIME_SECONDS / 2, // session is only updated every {this.SESSION_TIME_SECONDS / 2} seconds
     });
+  }
+
+  private async initCollections(db: Db): Promise<void> {
+    const createCollections = [this.validationCollectionName, this.sessionCollectionName];
+    const collections = await db
+      .listCollections(
+        { name: { $in: createCollections } },
+        {
+          nameOnly: true,
+          authorizedCollections: true,
+        }
+      )
+      .toArray();
+    if (collections.length === createCollections.length) {
+      return;
+    }
+    const newCollections = createCollections.filter(
+      (col) => !collections.some((collection) => collection.name === col)
+    );
+    for (const createCollection of newCollections) {
+      await db.createCollection(createCollection);
+    }
   }
 
   /**
