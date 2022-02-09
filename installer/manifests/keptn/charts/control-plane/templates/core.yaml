@@ -372,7 +372,7 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always # TODO should be removed, this is just to ensure we have the latest version of the image for PRs
           env:
             - name: CONFIGURATION_SERVICE
               value: "http://configuration-service:8080"
