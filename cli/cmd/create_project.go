@@ -111,7 +111,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			project.GitProxyScheme = *createProjectParams.GitProxyScheme
 			project.GitProxyUser = *createProjectParams.GitProxyUser
 			project.GitProxyPassword = *createProjectParams.GitProxyPassword
-			project.GitProxySecure = *createProjectParams.GitProxySecure
+			project.GitProxySecure = !(*createProjectParams.GitProxySecure)
 
 			content, err = ioutil.ReadFile(*createProjectParams.GitPublicCert)
 			if err != nil {

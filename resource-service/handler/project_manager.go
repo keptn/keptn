@@ -46,29 +46,19 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
-	//logger.Info("mam credentials a vytvaram project")
-
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
 	}
 
-	//logger.Info("mam git context a vytvaram project")
-
 	if p.git.ProjectExists(gitContext) && p.isProjectInitialized(project.ProjectName) {
-		//logger.Info("projekt existuje")
 		return errors.ErrProjectAlreadyExists
 	}
 
-	//logger.Info(" pozeram ci repo existuje")
-
 	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
 	if !p.git.ProjectRepoExists(project.ProjectName) {
-		//logger.Info("nemozem sitit existujuce repo")
 		return errors.ErrRepositoryNotFound
 	}
-
-	//logger.Info("repo existuje")
 
 	rollbackFunc := func() {
 		logger.Infof("Rollback: try to delete created directory for project %s", project.ProjectName)
@@ -76,8 +66,6 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
 		}
 	}
-
-	//logger.Info("projectmetadata robim")
 
 	newProjectMetadata := &common.ProjectMetadata{
 		ProjectName:               project.ProjectName,
@@ -87,25 +75,18 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	metadataString, err := yaml.Marshal(newProjectMetadata)
 
-	//logger.Info("projectmetadata pisem")
-
 	err = p.fileSystem.WriteFile(common.GetProjectMetadataFilePath(project.ProjectName), metadataString)
 	if err != nil {
 		rollbackFunc()
-		//logger.Info("nemozem zapisat %s", err.Error())
 		return fmt.Errorf("could not write metadata.yaml during creating project %s: %w", project, err)
 	}
-
-	//logger.Info("idem commitovat")
 
 	_, err = p.git.StageAndCommitAll(gitContext, "initialized project")
 	if err != nil {
 		rollbackFunc()
-		//logger.Info("nemozem commitnut %s", err.Error())
 		return fmt.Errorf("could not complete initial commit for project %s: %w", project.ProjectName, err)
 	}
 
-	//logger.Info("vsetko uspesne, vraciam sa z projectmanageru")
 	return nil
 }
 

@@ -29,32 +29,26 @@ func NewK8sCredentialReader(k8sClient kubernetes.Interface) *K8sCredentialReader
 
 func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
 	secretName := fmt.Sprintf("git-credentials-%s", project)
-	//logger.Info("!!!!!!!Som v getCredentials: ")
 
 	secret, err := kr.k8sClient.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
 		logger.Debug("Could not retrieve credentials named: ", secretName)
-		//logger.Info("!!!!!!!Som v getCredentials: prvy if")
 		return nil, errors2.ErrCredentialsNotFound
 	}
 	if err != nil {
 		logger.Debug("Could not retrieve credentials named: ", secretName)
-		//logger.Info("!!!!!!Som v getCredentials: druhy if")
 		return nil, err
 	}
 
 	// secret found -> unmarshal it
 	credentials := &common_models.GitCredentials{}
 	if err := json.Unmarshal(secret.Data["git-credentials"], credentials); err != nil {
-		//logger.Info("!!!!!!Som v getCredentials: treti if")
 		return nil, errors2.ErrMalformedCredentials
 	}
 	if err := credentials.Validate(); err != nil {
-		//logger.Info("!!!!!!Som v getCredentials: stvrty if")
 		logger.Debug("Issue with credentials : ", err)
 		return nil, err
 	}
-	//logger.Info("nasiel som credentials a vraciam")
 	return credentials, nil
 }
 
