@@ -167,7 +167,7 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
-	//	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceWaitingState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceTriggeredState, scmodels.SequenceWaitingState})
 
 	// abort the queued sequence
 	t.Log("aborting sequence")
