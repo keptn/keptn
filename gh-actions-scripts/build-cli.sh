@@ -7,7 +7,7 @@ OUTPUT_EXECUTABLE_NAME=${OUTPUT_EXECUTABLE_NAME:-"keptn"}
 cd ./cli/ || return
 
 
-echo "Building Keptn CLI"
+echo "Building Keptn CLI with filename $OUTPUT_EXECUTABLE_NAME"
 env go mod download
 env go build -v -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTABLE_NAME}"
 
