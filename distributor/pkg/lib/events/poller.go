@@ -118,69 +118,6 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	p.ceCache.Keep(subscription.ID, ToIDs(events))
 }
 
-//func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
-//	logger.Debugf("Retrieving events of type %s", subscription.Event)
-//	events := make([]*keptnmodels.KeptnContextExtendedCE, 0)
-//	nextPageKey := ""
-//
-//	endpoint = strings.TrimSuffix(endpoint, "/")
-//	endpointURL, err := url.Parse(endpoint)
-//	if err != nil {
-//		return nil, err
-//	}
-//	endpointURL.Path = endpointURL.Path + "/" + subscription.Event
-//
-//	for {
-//		q := endpointURL.Query()
-//		if nextPageKey != "" {
-//			q.Set("nextPageKey", nextPageKey)
-//			endpointURL.RawQuery = q.Encode()
-//		}
-//		req, err := http.NewRequest("GET", endpointURL.String(), nil)
-//		if err != nil {
-//			return nil, err
-//		}
-//		req.Header.Set("Content-Type", "application/json")
-//		if token != "" {
-//			req.Header.Add("x-token", token)
-//		}
-//
-//		resp, err := p.httpClient.Do(req)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		body, err := ioutil.ReadAll(resp.Body)
-//		if err != nil {
-//			return nil, err
-//		}
-//		_ = resp.Body.Close()
-//
-//		if resp.StatusCode == 200 {
-//			received := &keptnmodels.Events{}
-//			err = json.Unmarshal(body, received)
-//			if err != nil {
-//				return nil, err
-//			}
-//			events = append(events, received.Events...)
-//
-//			if received.NextPageKey == "" || received.NextPageKey == "0" {
-//				break
-//			}
-//
-//			nextPageKey = received.NextPageKey
-//		} else {
-//			var respErr keptnmodels.Error
-//			err = json.Unmarshal(body, &respErr)
-//			if err != nil {
-//				return nil, err
-//			}
-//			return nil, errors.New(*respErr.Message)
-//		}
-//	}
-//	return events, nil
-//}
-
 func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription keptnmodels.EventSubscription) error {
 	event := v0_2_0.ToCloudEvent(e)
 	matcher := NewEventMatcherFromSubscription(subscription)
