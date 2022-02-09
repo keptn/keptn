@@ -16,6 +16,8 @@ func TestMain(m *testing.M) {
 	}
 	code := m.Run()
 
+	//TODO we must make a proper chek for OOM derived from specific keptn pod and test instance
+	// to avoid triggering false positives
 	//events, err := GetOOMEvents()
 	//if code == 0 && (len(events.Items) != 0 || err != nil) {
 	//	println("There were some out of memory Errors! The error messages will be printed below:")
