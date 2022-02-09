@@ -50,7 +50,7 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - containerPort: 8080
           resources:
@@ -86,7 +86,7 @@ spec:
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
