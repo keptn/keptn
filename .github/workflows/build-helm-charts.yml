@@ -42,7 +42,7 @@ jobs:
       - name: Build Helm Charts
         id: build_helm_charts
         run: |
-          if [[ "$BRANCH" == "master" ]] && [[ "$RELEASE_BUILD" == 'false' ]] && [[ $DATETIME != "" ]]; then
+          if [[ "$RELEASE_BUILD" == "false" ]] && [[ $DATETIME != "" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
             ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
           else
