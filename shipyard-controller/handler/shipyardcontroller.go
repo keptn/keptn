@@ -148,7 +148,11 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 	if err != nil {
 		return err
 	}
-	done := make(chan error)
+
+	var done chan error
+	if waitForCompletion {
+		done = make(chan error)
+	}
 
 	log.Infof("Received event of type %s from %s", *event.Type, *event.Source)
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
@@ -160,7 +164,9 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle sequence '.triggered' event")
 			}
-			done <- err
+			if waitForCompletion {
+				done <- err
+			}
 		}()
 	case string(common.StartedEvent):
 		go func() {
@@ -168,7 +174,9 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle task '.started' event")
 			}
-			done <- err
+			if waitForCompletion {
+				done <- err
+			}
 		}()
 	case string(common.FinishedEvent):
 		go func() {
@@ -176,7 +184,9 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle task '.finished' event")
 			}
-			done <- err
+			if waitForCompletion {
+				done <- err
+			}
 		}()
 	default:
 		return nil
@@ -342,13 +352,20 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return nil
 	}
 
+	// TODO provide completeCurrentTask method in sequenceExecution struct
 	if updatedSequenceExecution.Status.CurrentTask.IsFailed() {
 		eventScope.Result = keptnv2.ResultFailed
+	} else if updatedSequenceExecution.Status.CurrentTask.IsWarning() {
+		eventScope.Result = keptnv2.ResultWarning
+	} else {
+		eventScope.Result = keptnv2.ResultPass
 	}
 	if updatedSequenceExecution.Status.CurrentTask.IsErrored() {
 		eventScope.Status = keptnv2.StatusErrored
+	} else {
+		eventScope.Status = keptnv2.StatusSucceeded
 	}
-	// TODO provide completeCurrentTask method in sequenceExecution struct
+
 	updatedSequenceExecution.Status.PreviousTasks = append(
 		sequenceExecution.Status.PreviousTasks,
 		modelsv2.TaskExecutionResult{

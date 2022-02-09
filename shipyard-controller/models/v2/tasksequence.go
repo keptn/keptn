@@ -99,6 +99,28 @@ func (e TaskExecution) IsFailed() bool {
 	return false
 }
 
+func (e TaskExecution) IsWarning() bool {
+	for _, event := range e.Events {
+		if keptnv2.IsFinishedEventType(event.EventType) {
+			if event.Result == string(keptnv2.ResultWarning) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (e TaskExecution) IsPassed() bool {
+	for _, event := range e.Events {
+		if keptnv2.IsFinishedEventType(event.EventType) {
+			if event.Result == string(keptnv2.ResultFailed) || event.Result == string(keptnv2.ResultWarning) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (e TaskExecution) IsErrored() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
