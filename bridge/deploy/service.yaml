@@ -103,9 +103,6 @@ spec:
             - secretRef:
                 name: bridge-credentials
                 optional: true
-            - secretRef:
-                name: bridge-oauth
-                optional: true
           ports:
             - containerPort: 3000
           resources:
@@ -116,11 +113,18 @@ spec:
               memory: '128Mi'
               cpu: '200m'
           volumeMounts:
-            - mountPath: /usr/src/app/dist/assets/branding
-              name: assets
+            - name: assets
+              mountPath: /usr/src/app/dist/assets/branding
+            - name: bridge-oauth
+              mountPath: /config/oauth
+              readOnly: true
       volumes:
         - emptyDir: {}
           name: assets
+        - name: bridge-oauth
+          secret:
+            secretName: bridge-oauth
+            defaultMode: 0400
 ---
 apiVersion: v1
 kind: Service

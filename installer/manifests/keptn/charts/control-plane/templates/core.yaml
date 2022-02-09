@@ -184,9 +184,6 @@ spec:
             - secretRef:
                 name: bridge-credentials
                 optional: true
-            - secretRef:
-                name: bridge-oauth
-                optional: true
           ports:
             - containerPort: 3000
           resources:
