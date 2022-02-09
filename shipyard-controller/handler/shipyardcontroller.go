@@ -352,7 +352,7 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return nil
 	}
 
-	// TODO provide completeCurrentTask method in sequenceExecution struct
+	// TODO provide CompleteCurrentTask method in sequenceExecution struct
 	if updatedSequenceExecution.Status.CurrentTask.IsFailed() {
 		eventScope.Result = keptnv2.ResultFailed
 	} else if updatedSequenceExecution.Status.CurrentTask.IsWarning() {
