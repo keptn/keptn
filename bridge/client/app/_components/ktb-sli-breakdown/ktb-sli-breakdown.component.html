@@ -15,9 +15,11 @@
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
     <dt-cell *dtCellDef="let row">
       <div fxLayout="column" *ngIf="row | toType: SliResultClass as result" [class.bold]="result.keySli">
-        <span class="truncate" [title]="result.name" [textContent]="result.name"></span>
+        <p class="truncate m-0" [title]="result.name" [textContent]="result.name"></p>
         <ng-container *ngIf="result.expanded">
-          <span class="small">compared with</span>
+          <p class="small m-0">Absolute change:</p>
+          <p class="small m-0">Relative change:</p>
+          <p class="small mt-1">Compared with:</p>
         </ng-container>
       </div>
     </dt-cell>
@@ -27,27 +29,34 @@
     <dt-header-cell *dtHeaderCellDef>Value</dt-header-cell>
     <dt-cell *dtCellDef="let row">
       <div fxLayout="column" *ngIf="row | toType: SliResultClass as result">
-        <span *ngIf="result.success" [textContent]="result.value"></span>
+        <p class="m-0" *ngIf="result.success">
+          <span [textContent]="result.value"></span>
+          <span
+            *ngIf="!result.expanded && result.calculatedChanges as changes"
+            class="small m-0"
+            [class.success]="changes.relative > 0"
+            [class.error]="changes.relative < 0"
+          >
+            (<span *ngIf="changes.relative > 0">+</span> <span [textContent]="changes.relative"></span>%)
+          </span>
+        </p>
         <ng-container *ngIf="!result.success">
           <dt-icon class="event-icon error" [dtOverlay]="errorOverlay" [name]="'criticalevent'"></dt-icon>
           <ng-template #errorOverlay>
-            <span class="error small" [textContent]="result.value"></span>
+            <p class="error small" [textContent]="result.value"></p>
           </ng-template>
         </ng-container>
 
         <ng-container *ngIf="result.expanded && result.calculatedChanges as changes">
-          <span
-            >{{ result.comparedValue }} (<span
-              *ngIf="changes.absolute < 0"
-              class="error"
-              [textContent]="changes.absolute"
-            ></span>
-            <span *ngIf="changes.absolute >= 0" [class.success]="changes.absolute !== 0">+{{ changes.absolute }}</span
-            >,
-            <span *ngIf="changes.relative < 0" class="error">{{ changes.relative }}%</span>
-            <span *ngIf="changes.relative >= 0" [class.success]="changes.relative !== 0">+{{ changes.relative }}%</span>
-            )
-          </span>
+          <p class="small m-0" [class.success]="changes.absolute > 0" [class.error]="changes.absolute < 0">
+            <span *ngIf="changes.absolute > 0">+</span>
+            <span [textContent]="changes.absolute"></span>
+          </p>
+          <p class="small m-0" [class.success]="changes.relative > 0" [class.error]="changes.relative < 0">
+            <span *ngIf="changes.relative > 0">+</span>
+            <span [textContent]="changes.relative"></span>%
+          </p>
+          <p class="small mt-1" [textContent]="result.comparedValue"></p>
         </ng-container>
       </div>
     </dt-cell>
