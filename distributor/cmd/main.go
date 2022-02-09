@@ -19,6 +19,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/lib/client"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
 	logger "github.com/sirupsen/logrus"
@@ -38,12 +39,16 @@ func main() {
 	}
 
 	executionContext := createExecutionContext()
-	eventSender, err := setupEventSender(env)
+	eventSender, err := createEventSender(env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize event sender.")
 	}
 
-	httpClient := env.HTTPClient()
+	httpClient, err := client.CreateClientGetter(env).Get()
+	if err != nil {
+		logger.WithError(err).Fatal("Could not initialize http client.")
+	}
+
 	apiset, err := createKeptnAPI(httpClient, env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize API set.")
@@ -129,7 +134,7 @@ func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformW
 	return events.NewUniformWatch(controlPlane)
 }
 
-func setupEventSender(env config.EnvConfig) (events.EventSender, error) {
+func createEventSender(env config.EnvConfig) (events.EventSender, error) {
 	eventSender, err := keptnv2.NewHTTPEventSender(env.PubSubRecipientURL())
 	if err != nil {
 		return nil, err
