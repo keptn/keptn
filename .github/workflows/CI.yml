@@ -348,7 +348,7 @@ jobs:
     name: Build Helm Charts
     needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@fix/image-pull-policy-dev-charts
+    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
