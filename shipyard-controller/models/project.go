@@ -22,23 +22,29 @@ type UpdateProjectParams struct {
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
-	// git private key
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
+	// git public certificate
 	GitPublicCert string `json:"gitPublicCert,omitempty"`
 
-	// git proxy
-	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
+	// Git User
+	GitUser string `json:"gitUser,omitempty"`
 
-	// git proxy
+	// git proxy URL
+	GitProxyURL string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy scheme
 	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
 
-	// git proxy
+	// git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
-	// git proxy
+	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
-	// git user
-	GitUser string `json:"gitUser,omitempty"`
+	// git proxy secure
+	GitProxySecure bool `json:"gitProxySecure,omitempty"`
 
 	// name
 	Name *string `json:"name"`
@@ -58,23 +64,29 @@ type CreateProjectParams struct {
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
-	// git private key
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
+	// git public certificate
 	GitPublicCert string `json:"gitPublicCert,omitempty"`
 
-	// git proxy
-	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
+	// Git User
+	GitUser string `json:"gitUser,omitempty"`
 
-	// git proxy
+	// git proxy URL
+	GitProxyURL string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy scheme
 	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
 
-	// git proxy
+	// git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
-	// git proxy
+	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
-	// git user
-	GitUser string `json:"gitUser,omitempty"`
+	// git proxy secure
+	GitProxySecure bool `json:"gitProxySecure,omitempty"`
 
 	// name
 	Name *string `json:"name"`
