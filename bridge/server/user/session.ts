@@ -108,7 +108,7 @@ export class SessionService {
     }
 
     const mongoClient = new MongoClient(
-      `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}`
+      `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}/${mongoCredentials.database}`
     );
     await mongoClient.connect();
 
