@@ -12,7 +12,16 @@ export function interceptIntegrations(): void {
   });
   cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
     body: {
-      logs: [],
+      logs: [
+        {
+          integrationid: '19e6753651cdeede8a13176cbb1afdc3d6844683',
+          message: 'my error',
+          shkeptncontext: ' 7394b5b3-2fb3-4cb7-b435-d0e9d6f0cb87',
+          task: 'my task',
+          time: '2022-02-09T16:27:02.678Z',
+          triggeredid: 'bd3bc477-6d0f-4d71-b15d-c33e953a74ba',
+        },
+      ],
     },
   });
   cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/info', {

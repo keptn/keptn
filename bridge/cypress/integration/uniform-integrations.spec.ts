@@ -20,40 +20,53 @@ describe('Integrations', () => {
     cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').should('have.length', 8);
   });
 
-  it('should show error event indicator', () => {
-    const indicator = cy
-      .byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC)
-      .contains('dt-cell', 'webhook-service')
-      .find('.notification-indicator-text');
+  it('should show error event indicators', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
 
-    indicator.should('have.text', 10);
-    cy.get('.notification-indicator-text').should('have.length', 1);
+    uniformPage
+      .assertIntegrationErrorCount('webhook-service', 10)
+      .assertIndicatorsShowing(2)
+      .assertIndicatorsTextShowing(1)
+      .selectIntegration('webhook-service')
+      .assertErrorEventsShowing(1);
   });
 
-  it('should remove error event indicator on selection change', () => {
-    // given
-    const firstRow = cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').eq(0);
-    const firstCell = firstRow.find('dt-cell').eq(0);
+  it('should remove error event indicator on selection', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
 
-    // when
-    firstRow.click();
-    firstCell.find('.notification-indicator-text').should('exist');
+    uniformPage
+      .assertHasIntegrationErrorIndicator('webhook-service', true)
+      .selectIntegration('webhook-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(1) // 1 unread error log
+      .assertHasIntegrationErrorIndicator('webhook-service', false)
+      .selectIntegration('jmeter-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(0)
+      .selectIntegration('webhook-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(0); // now error log is read
+  });
 
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').eq(1).click();
+  it('should not remove error event indicator if integration without logs is selected', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
 
-    // then
-    firstCell.find('.notification-indicator-text').should('not.exist');
+    uniformPage
+      .selectIntegration('jmeter-service')
+      .assertHasIntegrationErrorIndicator('webhook-service', true)
+      .assertIndicatorsShowing(2)
+      .assertIndicatorsTextShowing(1);
   });
 
   it('should show error events list', () => {
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').first().click();
+    uniformPage.selectIntegration('webhook-service');
     cy.get('ktb-uniform-registration-logs').should('exist');
     cy.contains('h3', 'webhook-service');
   });
 
   it('should select an integration and show related subscriptions', () => {
     // given, when
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).get('dt-row').first().click();
+    uniformPage.selectIntegration('webhook-service');
 
     // then
     cy.get(uniformPage.SUBSCRIPTION_EXP_HEADER_LOC).first().should('have.text', 'Subscriptions');
@@ -63,7 +76,7 @@ describe('Integrations', () => {
   it('should have disabled buttons for a subscription, when subscription id is not given', () => {
     // given, when
     cy.intercept('/api/uniform/registration', { fixture: 'registration-old-format.mock' });
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    uniformPage.selectIntegration('jmeter-service');
     const editButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionEditButton');
     const deleteButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionDeleteButton');
 
@@ -74,7 +87,7 @@ describe('Integrations', () => {
 
   it('should add a simple subscription', () => {
     // given, when
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    uniformPage.selectIntegration('jmeter-service');
     cy.get(uniformPage.SUBSCRIPTION_DETAILS_LOC).should('have.length', 1);
     cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
       .first()
@@ -100,7 +113,7 @@ describe('Integrations', () => {
   });
 
   it('should add a webhook subscription', () => {
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(0).click();
+    uniformPage.selectIntegration('webhook-service');
     cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
       .first()
       .find('dt-expandable-panel')
@@ -160,7 +173,7 @@ describe('Integrations', () => {
   });
 
   it('should delete a subscription', () => {
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    uniformPage.selectIntegration('jmeter-service');
     cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
       .first()
       .find('dt-expandable-panel')
@@ -181,7 +194,7 @@ describe('Integrations', () => {
 
   it('should edit a subscription', () => {
     // given
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    uniformPage.selectIntegration('jmeter-service');
     cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
       .first()
       .find('dt-expandable-panel')
@@ -313,7 +326,7 @@ describe('Add control plane subscription', () => {
       statusCode: 500,
       body: 'Could not parse shipyard.yaml',
     }).as('tasksResult');
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    uniformPage.selectIntegration('jmeter-service');
     cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
       .first()
       .find('dt-expandable-panel')
@@ -335,7 +348,7 @@ describe('Add control plane subscription', () => {
       statusCode: 500,
       body: 'Could not parse shipyard.yaml',
     }).as('tasksResult');
-    cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').eq(1).click();
+    uniformPage.selectIntegration('jmeter-service');
     cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
       .first()
       .find('dt-expandable-panel')

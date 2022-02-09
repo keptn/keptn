@@ -1,6 +1,11 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
+.notification-indicator-text-cell {
+  position: relative;
+  top: 5px;
+}
+
 .uniform-registration-error-log > div:nth-of-type(even) {
   background-color: $gray-100;
 }

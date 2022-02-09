@@ -12,7 +12,7 @@ $fonts-dir: '^./assets/fonts';
   position: relative;
 }
 .notification-indicator, .notification-indicator-text {
-  border-radius: 10px;
+  border-radius: 11px;
   background-color: $red-500;
   pointer-events: none;
   border: 2px solid $white;
@@ -28,6 +28,7 @@ $fonts-dir: '^./assets/fonts';
 }
 
 .notification-indicator-text {
+  min-width: 22px;
   height: 22px;
   padding: 0 5px;
   color: $white;

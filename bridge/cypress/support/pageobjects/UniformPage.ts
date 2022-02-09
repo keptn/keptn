@@ -216,5 +216,41 @@ class UniformPage {
     cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should('contain.text', 'Update subscription');
     return this;
   }
+
+  public selectIntegration(name: string): this {
+    cy.byTestId(this.UNIFORM_INTEGRATION_TABLE_LOC).contains('dt-cell', name).click();
+    return this;
+  }
+
+  public assertHasIntegrationErrorIndicator(name: string, status: boolean): this {
+    cy.byTestId(this.UNIFORM_INTEGRATION_TABLE_LOC)
+      .contains('dt-cell', name)
+      .find('.notification-indicator-text')
+      .should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertIndicatorsShowing(count: number): this {
+    cy.get('.notification-indicator').should('have.length', count);
+    return this;
+  }
+
+  public assertIndicatorsTextShowing(count: number): this {
+    cy.get('.notification-indicator-text').should('have.length', count);
+    return this;
+  }
+
+  public assertErrorEventsShowing(count: number): this {
+    cy.get('ktb-uniform-registration-logs .notification-indicator-text').should('have.length', count);
+    return this;
+  }
+
+  public assertIntegrationErrorCount(name: string, count: number): this {
+    cy.byTestId(this.UNIFORM_INTEGRATION_TABLE_LOC)
+      .contains('dt-cell', name)
+      .find('.notification-indicator-text')
+      .should('have.text', count);
+    return this;
+  }
 }
 export default UniformPage;
