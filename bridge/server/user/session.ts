@@ -6,6 +6,7 @@ import MongoStore from 'connect-mongo';
 import { Collection, MongoClient } from 'mongodb';
 import { Crypto } from './crypto';
 import { getRootLocation } from './oauth-routes';
+import { getOAuthSecrets } from './secrets';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -44,19 +45,19 @@ export class SessionService {
     this.SESSION_TIME_SECONDS = this.getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
     this.SESSION_VALIDATING_DATA_SECONDS = this.getOrDefaultValidatingDataTimeout(60);
     const errorSuffix =
-      'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' +
-      ' Please check your environment variables.';
-    if (!process.env.OAUTH_SESSION_SECRET) {
-      throw Error(`OAUTH_SESSION_SECRET ${errorSuffix}`);
+      'must be defined when OAuth based login (OAUTH_ENABLED) is activated. Please check your bridge-oauth secret.';
+    const secrets = getOAuthSecrets();
+    if (!secrets.sessionSecret) {
+      throw Error(`session_secret ${errorSuffix}`);
     }
 
-    if (!process.env.OAUTH_DATABASE_ENCRYPT_SECRET) {
-      throw Error(`OAUTH_DATABASE_ENCRYPT_SECRET ${errorSuffix}`);
-    } else if (process.env.OAUTH_DATABASE_ENCRYPT_SECRET.length !== 32) {
-      throw Error('The length of the env variable "OAUTH_DATABASE_ENCRYPT_SECRET" must be 32');
+    if (!secrets.databaseEncryptSecret) {
+      throw Error(`database_encrypt_secret ${errorSuffix}`);
+    } else if (secrets.databaseEncryptSecret.length !== 32) {
+      throw Error(`The length of the secret "database_encrypt_secret" must be 32`);
     }
-    this.sessionSecret = process.env.OAUTH_SESSION_SECRET;
-    this.databaseSecret = process.env.OAUTH_DATABASE_ENCRYPT_SECRET;
+    this.sessionSecret = secrets.sessionSecret;
+    this.databaseSecret = secrets.databaseEncryptSecret;
     this.crypto = new Crypto(this.databaseSecret);
   }
 
