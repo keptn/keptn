@@ -10,6 +10,7 @@ type GitCredentials struct {
 	GitProxyScheme   string `json:"gitProxyScheme,omitempty"`
 	GitProxyUser     string `json:"gitProxyUser,omitempty"`
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+	GitPublicCert    string `json:"gitPublicCert,omitempty"`
 }
 
 type GitContext struct {

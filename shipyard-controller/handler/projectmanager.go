@@ -103,6 +103,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		GitProxyScheme:   params.GitProxyScheme,
 		GitProxyUser:     params.GitProxyUser,
 		GitProxyPassword: params.GitProxyPassword,
+		GitPublicCert:    params.GitPublicCert,
 	})
 	if err != nil {
 		return err, nilRollback
@@ -564,4 +565,5 @@ type gitCredentials struct {
 	GitProxyScheme   string `json:"gitProxyScheme,omitempty"`
 	GitProxyUser     string `json:"gitProxyUser,omitempty"`
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+	GitPublicCert    string `json:"gitPublicCert,omitempty"`
 }

@@ -28,6 +28,7 @@ type createProjectCmdParams struct {
 	GitProxyScheme   *string
 	GitProxyUser     *string
 	GitProxyPassword *string
+	GitPublicCert    *string
 }
 
 var createProjectParams *createProjectCmdParams
@@ -105,6 +106,11 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 				fmt.Errorf("PrivateKey read unsuccessful.\n%s", err.Error())
 			}
 			project.GitPrivateKey = string(content)
+			content, err = ioutil.ReadFile(*createProjectParams.GitPublicCert)
+			if err != nil {
+				fmt.Errorf("PrivateKey read unsuccessful.\n%s", err.Error())
+			}
+			project.GitPublicCert = string(content)
 		}
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
@@ -170,4 +176,5 @@ func init() {
 	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "Uses proxy")
 	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "Uses proxy")
 	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
+	createProjectParams.GitPublicCert = crProjectCmd.Flags().StringP("git-public-cert", "c", "", "The remote url of the upstream target")
 }

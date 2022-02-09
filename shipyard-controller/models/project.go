@@ -22,6 +22,9 @@ type UpdateProjectParams struct {
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
+	// git private key
+	GitPublicCert string `json:"gitPublicCert,omitempty"`
+
 	// git proxy
 	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
 
@@ -54,6 +57,9 @@ type CreateProjectParams struct {
 
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
+	// git private key
+	GitPublicCert string `json:"gitPublicCert,omitempty"`
 
 	// git proxy
 	GitProxyUrl string `json:"gitProxyUrl,omitempty"`

@@ -144,6 +144,10 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 			}
 		} else {
 			logger.Info("!!!!!som v jednoduchej token vetve vedla proxy")
+			if gitContext.Credentials.GitPublicCert != "" {
+				logger.Info("!!!!!som v jednoduchej token v CA bundle")
+				gitCloneOptions.CABundle = []byte(gitContext.Credentials.GitPublicCert)
+			}
 			gitCloneOptions.Auth = &http.BasicAuth{
 				Username: gitContext.Credentials.User,
 				Password: gitContext.Credentials.Token,
@@ -361,6 +365,10 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 			}
 		} else {
 			logger.Info("!!!!!som v jednoduchej token push vetve vedla proxy")
+			if gitContext.Credentials.GitPublicCert != "" {
+				logger.Info("!!!!!som v jednoduchej token push v CA bundle")
+				gitPushOptions.CABundle = []byte(gitContext.Credentials.GitPublicCert)
+			}
 			gitPushOptions.Auth = &http.BasicAuth{
 				Username: gitContext.Credentials.User,
 				Password: gitContext.Credentials.Token,
@@ -442,6 +450,10 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 				}
 			} else {
 				logger.Info("!!!!!som v jednoduchej token pull vetve vedla proxy")
+				if gitContext.Credentials.GitPublicCert != "" {
+					logger.Info("!!!!!som v jednoduchej token pull v CA bundle")
+					gitPullOptions.CABundle = []byte(gitContext.Credentials.GitPublicCert)
+				}
 				gitPullOptions.Auth = &http.BasicAuth{
 					Username: gitContext.Credentials.User,
 					Password: gitContext.Credentials.Token,
@@ -658,6 +670,10 @@ func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) erro
 			}
 		} else {
 			logger.Info("!!!!!som v jednoduchej token fetch vetve vedla proxy")
+			if gitContext.Credentials.GitPublicCert != "" {
+				logger.Info("!!!!!som v jednoduchej token fetch v CA bundle")
+				gitFetchOptions.CABundle = []byte(gitContext.Credentials.GitPublicCert)
+			}
 			gitFetchOptions.Auth = &http.BasicAuth{
 				Username: gitContext.Credentials.User,
 				Password: gitContext.Credentials.Token,
