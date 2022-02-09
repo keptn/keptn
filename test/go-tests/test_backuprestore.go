@@ -3,12 +3,11 @@ package go_tests
 import (
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/require"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -78,7 +77,7 @@ func Test_BackupRestore(t *testing.T) {
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
 
-	t.Logf("Creating a new project %s without a GIT Upstream", projectName)
+	t.Logf("Creating a new project %s with a GITEA Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
 	require.Nil(t, err)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
@@ -146,7 +145,7 @@ func Test_BackupRestore(t *testing.T) {
 	require.Nil(t, err)
 
 	defer func() {
-		err = resetTestPath("../../go-tests")
+		err = resetTestPath("../../../go-tests")
 		require.Nil(t, err)
 	}()
 
