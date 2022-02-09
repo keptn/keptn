@@ -15,7 +15,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -23,23 +22,20 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
 	logger "github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
 func main() {
-	if err := envconfig.Process("", &config.Global); err != nil {
+	env := config.EnvConfig{}
+	if err := envconfig.Process("", &env); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
-	env := config.Global
 
 	executionContext := createExecutionContext()
 	eventSender, err := setupEventSender(env)
@@ -47,23 +43,22 @@ func main() {
 		logger.WithError(err).Fatal("Could not initialize event sender.")
 	}
 
-	httpClient := createHTTPClient(env)
-	apiset, err := createKeptnAPI(httpClient)
+	httpClient := env.HTTPClient()
+	apiset, err := createKeptnAPI(httpClient, env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize API set.")
 	}
 
-	controlPlane := controlplane.NewControlPlane(apiset.UniformV1(), config.PubSubConnectionType())
+	controlPlane := controlplane.NewControlPlane(apiset.UniformV1(), env.PubSubConnectionType(), env)
 	uniformWatch := setupUniformWatch(controlPlane)
-	forwarder := events.NewForwarder(apiset.APIV1(), httpClient)
+	forwarder := events.NewForwarder(apiset.APIV1(), httpClient, env)
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
 	forwarder.Start(executionContext)
 
 	// Eventually start registration process
-	register := shallRegister()
-	if register {
+	if env.ValidateRegistrationConstraints() {
 		id := uniformWatch.Start(executionContext)
 		if id == "" {
 			logger.Fatal("Could not register Uniform")
@@ -72,8 +67,8 @@ func main() {
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
 	}
 
-	logger.Infof("Connection type: %s", config.PubSubConnectionType())
-	if config.PubSubConnectionType() == config.ConnectionTypeHTTP {
+	logger.Infof("Connection type: %s", env.PubSubConnectionType())
+	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		err := env.ValidateKeptnAPIEndpointURL()
 		if err != nil {
 			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
@@ -86,7 +81,7 @@ func main() {
 		}
 	} else {
 		logger.Info("Starting NATS event Receiver")
-		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender, register)
+		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender, env.ValidateRegistrationConstraints())
 		uniformWatch.RegisterListener(natsEventReceiver)
 		if err := natsEventReceiver.Start(executionContext); err != nil {
 			logger.Fatalf("Could not start NATS event receiver: %v", err)
@@ -114,50 +109,17 @@ func createExecutionContext() *events.ExecutionContext {
 	return &executionContext
 }
 
-func shallRegister() bool {
-	if config.Global.DisableRegistration {
-		logger.Infof("Registration to Keptn's control plane disabled")
-		return false
-	}
-
-	if config.Global.K8sNamespace == "" || config.Global.K8sDeploymentName == "" {
-		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
-		return false
-	}
-
-	if isOneOfFilteredServices(config.Global.K8sDeploymentName) {
-		logger.Infof("Skipping Registration because service name %s is actively filtered", config.Global.K8sDeploymentName)
-		return false
-	}
-
-	return true
-}
-
-func isOneOfFilteredServices(serviceName string) bool {
-	switch serviceName {
-	case
-		"statistics-service",
-		"api-service",
-		"mongodb-datastore",
-		"configuration-service",
-		"secret-service",
-		"shipyard-controller":
-		return true
-	}
-	return false
-}
-
-func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
+func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	if config.PubSubConnectionType() == config.ConnectionTypeHTTP {
+	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		scheme := "http"
-		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
+		parsed, _ := url.Parse(env.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-		return keptnapi.New(config.Global.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(config.Global.KeptnAPIToken))
+		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
 	}
 
 	return keptnapi.NewInternal(httpClient)
@@ -165,29 +127,6 @@ func createKeptnAPI(httpClient *http.Client) (keptnapi.KeptnInterface, error) {
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {
 	return events.NewUniformWatch(controlPlane)
-}
-
-func createHTTPClient(envConfig config.EnvConfig) *http.Client {
-	c := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
-		},
-		Timeout: 5 * time.Second,
-	}
-
-	if envConfig.UseSSO() {
-		logger.Infof("Creating http client with SSO support for client ID %s", envConfig.SSOClientID)
-		conf := clientcredentials.Config{
-			ClientID:     envConfig.SSOClientID,
-			ClientSecret: envConfig.SSOClientSecret,
-			Scopes:       envConfig.SSOScopes,
-			TokenURL:     envConfig.SSOTokenURL,
-		}
-
-		client := conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
-		return client
-	}
-	return c
 }
 
 func setupEventSender(env config.EnvConfig) (events.EventSender, error) {

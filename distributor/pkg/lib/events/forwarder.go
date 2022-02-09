@@ -23,23 +23,25 @@ type Forwarder struct {
 	keptnEventAPI     api.APIV1Interface
 	httpClient        *http.Client
 	pubSubConnections map[string]*cenats.Sender
+	env               config.EnvConfig
 }
 
-func NewForwarder(keptnEventAPI api.APIV1Interface, client *http.Client) *Forwarder {
+func NewForwarder(keptnEventAPI api.APIV1Interface, client *http.Client, env config.EnvConfig) *Forwarder {
 	return &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
 		keptnEventAPI:     keptnEventAPI,
 		httpClient:        client,
 		pubSubConnections: map[string]*cenats.Sender{},
+		env:               env,
 	}
 }
 
 func (f *Forwarder) Start(executionContext *ExecutionContext) {
 	mux := http.NewServeMux()
 	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
-	mux.Handle(config.Global.EventForwardingPath, http.HandlerFunc(f.handleEvent))
-	mux.Handle(config.Global.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
-	serverURL := fmt.Sprintf("localhost:%d", config.Global.APIProxyPort)
+	mux.Handle(f.env.EventForwardingPath, http.HandlerFunc(f.handleEvent))
+	mux.Handle(f.env.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
+	serverURL := fmt.Sprintf("localhost:%d", f.env.APIProxyPort)
 
 	svr := &http.Server{
 		Addr:    serverURL,
@@ -103,7 +105,7 @@ func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
 	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
 		return nil
 	}
-	if config.Global.KeptnAPIEndpoint == "" {
+	if f.env.KeptnAPIEndpoint == "" {
 		logger.Debug("No external API endpoint defined. Forwarding directly to NATS server")
 		return f.forwardEventToNATSServer(event)
 	}
@@ -151,7 +153,7 @@ func (f *Forwarder) createPubSubConnection(topic string) (*cenats.Sender, error)
 	}
 
 	if f.pubSubConnections[topic] == nil {
-		p, err := cenats.NewSender(config.Global.PubSubURL, topic, cenats.NatsOptions())
+		p, err := cenats.NewSender(f.env.PubSubURL, topic, cenats.NatsOptions())
 		if err != nil {
 			logger.Errorf("Failed to create nats protocol, %v", err)
 		}
@@ -169,7 +171,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		path = req.URL.Path
 	}
 	logger.Debugf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
-	proxyScheme, proxyHost, proxyPath := config.Global.ProxyHost(path)
+	proxyScheme, proxyHost, proxyPath := f.env.ProxyHost(path)
 
 	if proxyScheme == "" || proxyHost == "" {
 		logger.Error("Could not get proxy Host URL - got empty values of 'proxyScheme' or 'proxyHost'")
@@ -197,9 +199,9 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	forwardReq.URL.RawQuery = req.URL.RawQuery
 	logger.Debugf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String())
 
-	if config.Global.KeptnAPIToken != "" {
+	if f.env.KeptnAPIToken != "" {
 		logger.Debug("Adding x-token header to HTTP request")
-		forwardReq.Header.Add("x-token", config.Global.KeptnAPIToken)
+		forwardReq.Header.Add("x-token", f.env.KeptnAPIToken)
 	}
 
 	client := f.httpClient

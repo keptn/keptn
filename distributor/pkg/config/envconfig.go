@@ -1,13 +1,16 @@
 package config
 
 import (
+	"context"
+	"crypto/tls"
 	logger "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
 )
-
-var Global EnvConfig
 
 type EnvConfig struct {
 	KeptnAPIEndpoint     string   `envconfig:"KEPTN_API_ENDPOINT" default:""`
@@ -41,17 +44,8 @@ type EnvConfig struct {
 	SSOTokenURL          string   `envconfig:"SSO_TOKEN_URL" default:""`
 }
 
-func RegistrationInterval(env EnvConfig) time.Duration {
-	duration, err := time.ParseDuration(env.RegistrationInterval)
-	if err != nil {
-		logger.Warnf("Could not parse REGISTRATION_INTERVAL environment variable as duration: %s", env.RegistrationInterval)
-		return 10 * time.Second
-	}
-	return duration
-}
-
-func PubSubConnectionType() ConnectionType {
-	if Global.KeptnAPIEndpoint == "" {
+func (env *EnvConfig) PubSubConnectionType() ConnectionType {
+	if env.KeptnAPIEndpoint == "" {
 		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
 		return ConnectionTypeNATS
 	}
@@ -68,6 +62,26 @@ func (env *EnvConfig) ValidateKeptnAPIEndpointURL() error {
 	}
 	return nil
 }
+
+func (env *EnvConfig) ValidateRegistrationConstraints() bool {
+	if env.DisableRegistration {
+		logger.Infof("Registration to Keptn's control plane disabled")
+		return false
+	}
+
+	if env.K8sNamespace == "" || env.K8sDeploymentName == "" {
+		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
+		return false
+	}
+
+	if isOneOfFilteredServices(env.K8sDeploymentName) {
+		logger.Infof("Skipping Registration because service name %s is actively filtered", env.K8sDeploymentName)
+		return false
+	}
+
+	return true
+}
+
 func (env *EnvConfig) ProxyHost(path string) (string, string, string) {
 	// if the endpoint is empty, redirect to the internal services
 	if env.KeptnAPIEndpoint == "" {
@@ -112,7 +126,7 @@ func (env *EnvConfig) ProxyHost(path string) (string, string, string) {
 	return "", "", ""
 }
 
-func (env *EnvConfig) UseSSO() bool {
+func (env *EnvConfig) SSOEnabled() bool {
 	return env.SSOClientID != "" && env.SSOClientSecret != "" && env.SSOTokenURL != "" && len(env.SSOScopes) > 0
 }
 
@@ -157,4 +171,39 @@ func (env *EnvConfig) PubSubTopics() []string {
 		return []string{}
 	}
 	return strings.Split(env.PubSubTopic, ",")
+}
+
+func (env *EnvConfig) HTTPClient() *http.Client {
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL}, //nolint:gosec
+		},
+		Timeout: 5 * time.Second,
+	}
+
+	if env.SSOEnabled() {
+		conf := clientcredentials.Config{
+			ClientID:     env.SSOClientID,
+			ClientSecret: env.SSOClientSecret,
+			Scopes:       env.SSOScopes,
+			TokenURL:     env.SSOTokenURL,
+		}
+		client := conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
+		return client
+	}
+	return c
+}
+
+func isOneOfFilteredServices(serviceName string) bool {
+	switch serviceName {
+	case
+		"statistics-service",
+		"api-service",
+		"mongodb-datastore",
+		"configuration-service",
+		"secret-service",
+		"shipyard-controller":
+		return true
+	}
+	return false
 }

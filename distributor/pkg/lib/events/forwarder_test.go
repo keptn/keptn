@@ -42,8 +42,9 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	_, shutdownNats := RunServerOnPort(TEST_PORT)
 	defer shutdownNats()
 
-	envconfig.Process("", &config.Global)
-	config.Global.PubSubURL = natsURL
+	cfg := config.EnvConfig{}
+	envconfig.Process("", &cfg)
+	cfg.PubSubURL = natsURL
 
 	natsClient, err := nats.Connect(natsURL)
 	if err != nil {
@@ -60,6 +61,7 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 		keptnEventAPI:     apiset.APIV1(),
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
+		env:               cfg,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -86,8 +88,9 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) { receivedMessageCount++ }))
 
-	envconfig.Process("", &config.Global)
-	config.Global.KeptnAPIEndpoint = ts.URL
+	cfg := config.EnvConfig{}
+	envconfig.Process("", &cfg)
+	cfg.KeptnAPIEndpoint = ts.URL
 	apiset, _ := keptnapi.New(ts.URL)
 
 	f := &Forwarder{
@@ -95,6 +98,7 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 		keptnEventAPI:     apiset.APIV1(),
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
+		env:               cfg,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
@@ -119,8 +123,9 @@ func Test_APIProxy(t *testing.T) {
 			proxyEndpointCalled++
 		}))
 
-	envconfig.Process("", &config.Global)
-	config.Global.KeptnAPIEndpoint = ""
+	cfg := config.EnvConfig{}
+	envconfig.Process("", &cfg)
+	cfg.KeptnAPIEndpoint = ""
 	config.InClusterAPIProxyMappings["/testpath"] = strings.TrimPrefix(ts.URL, "http://")
 
 	apiset, _ := keptnapi.New(ts.URL)
@@ -130,6 +135,7 @@ func Test_APIProxy(t *testing.T) {
 		keptnEventAPI:     apiset.APIV1(),
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
+		env:               cfg,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := NewExecutionContext(ctx, 1)
