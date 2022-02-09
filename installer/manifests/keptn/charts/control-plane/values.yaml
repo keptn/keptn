@@ -164,4 +164,4 @@ logLevel: info
 
 gracePeriod: 40
 
-imagePullPolicy: {{ .Values.imagePullPolicy }}
+imagePullPolicy: IfNotPresent
