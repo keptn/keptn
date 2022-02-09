@@ -117,26 +117,7 @@ export class SessionService {
     await this.initCollections(db);
 
     this.validationCollection = mongoClient.db(mongoCredentials.database).collection(this.validationCollectionName);
-
-    const indexName = 'validation_index';
-    const indexes = await this.validationCollection.indexes();
-    let validationIndex = indexes.find((index) => index.name === indexName);
-
-    if (validationIndex && validationIndex.expireAfterSeconds !== this.SESSION_VALIDATING_DATA_SECONDS) {
-      await this.validationCollection.dropIndex(indexName);
-      validationIndex = undefined;
-    }
-    if (!validationIndex) {
-      await this.validationCollection.createIndex(
-        {
-          creationDate: 1,
-        },
-        {
-          name: indexName,
-          expireAfterSeconds: this.SESSION_VALIDATING_DATA_SECONDS,
-        }
-      );
-    }
+    await this.initValidationTTLIndex(this.validationCollection);
     console.log('Successfully connected to database');
 
     return MongoStore.create({
@@ -149,6 +130,28 @@ export class SessionService {
       },
       touchAfter: this.SESSION_TIME_SECONDS / 2, // session is only updated every {this.SESSION_TIME_SECONDS / 2} seconds
     });
+  }
+
+  private async initValidationTTLIndex(collection: Collection<ValidationType>): Promise<void> {
+    const indexName = 'validation_index';
+    const indexes = await collection.indexes();
+    let validationIndex = indexes.find((index) => index.name === indexName);
+
+    if (validationIndex && validationIndex.expireAfterSeconds !== this.SESSION_VALIDATING_DATA_SECONDS) {
+      await collection.dropIndex(indexName);
+      validationIndex = undefined;
+    }
+    if (!validationIndex) {
+      await collection.createIndex(
+        {
+          creationDate: 1,
+        },
+        {
+          name: indexName,
+          expireAfterSeconds: this.SESSION_VALIDATING_DATA_SECONDS,
+        }
+      );
+    }
   }
 
   private async initCollections(db: Db): Promise<void> {
