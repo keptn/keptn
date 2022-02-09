@@ -60,4 +60,4 @@ affinity: {}                                 # Affinity rules
 
 logLevel: info
 
-commitEnabled: 'false'
+useCommitID: "false"

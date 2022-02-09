@@ -3313,7 +3313,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+						GetResourceFunc: func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*models.Resource, error) {
 							return nil, nil
 						},
 					},
@@ -3354,7 +3354,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+						GetResourceFunc: func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*models.Resource, error) {
 							return nil, errors.New("Could not check out branch containing stage config")
 						},
 					},
@@ -3399,7 +3399,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 				KeptnHandler: keptn,
 				SLOFileRetriever: SLOFileRetriever{
 					ResourceHandler: &event_handler_mock.ResourceHandlerMock{
-						GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string, options ...keptnapi.GetOption) (*models.Resource, error) {
+						GetResourceFunc: func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*models.Resource, error) {
 							commitID = strings.TrimPrefix(options[0](commitID), "?gitCommitID=")
 							myres := models.Resource{Metadata: &models.Version{Version: commitID}}
 							return &myres, nil

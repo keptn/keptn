@@ -52,7 +52,7 @@ var ErrConfigService = errors.New("could not checkout the SLO")
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
 type ResourceHandler interface {
-	GetServiceResource(project string, stage string, service string, resourceURI string, options ...utils.GetOption) (*keptnapimodels.Resource, error)
+	GetResource(scope utils.ResourceScope, options ...utils.URIOption) (*keptnapimodels.Resource, error)
 }
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/service_handler_mock.go . ServiceHandler
@@ -75,7 +75,8 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*
 	if commitID != "" {
 		commitOption.Add("gitCommitID", commitID)
 	}
-	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml", utils.AppendQuery(commitOption))
+	resourceScope := *utils.NewResourceScope().Project(project).Stage(stage).Service(service).Resource("slo.yaml")
+	sloFile, err := sr.ResourceHandler.GetResource(resourceScope, utils.AppendQuery(commitOption))
 	if err != nil {
 		_, serviceErr := sr.ServiceHandler.GetService(project, stage, service)
 		if serviceErr != nil {

@@ -118,7 +118,8 @@ func DoesChartExist(event keptnv2.EventData, chartName string, configServiceURL 
 
 	commitOption := url.Values{}
 	commitOption.Add("commitID", commitID)
-	_, err := resourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, helmChartURI, utils.AppendQuery(commitOption))
+	resourceScope := *utils.NewResourceScope().Project(event.Project).Stage(event.Stage).Service(event.Service).Resource(helmChartURI)
+	_, err := resourceHandler.GetResource(resourceScope, utils.AppendQuery(commitOption))
 	if err == utils.ResourceNotFoundError {
 		return false, nil
 	} else if err == nil {
