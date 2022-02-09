@@ -111,7 +111,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			project.GitProxyScheme = *createProjectParams.GitProxyScheme
 			project.GitProxyUser = *createProjectParams.GitProxyUser
 			project.GitProxyPassword = *createProjectParams.GitProxyPassword
-			project.GitProxySecure = !(*createProjectParams.GitProxySecure)
+			project.GitProxySecure = *createProjectParams.GitProxySecure
 
 			content, err = ioutil.ReadFile(*createProjectParams.GitPublicCert)
 			if err != nil {
@@ -188,7 +188,7 @@ func init() {
 	createProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
 	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
-	createProjectParams.GitProxySecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "e", true, "The git proxy secure TLS connection")
+	createProjectParams.GitProxySecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
 
 	createProjectParams.GitPublicCert = crProjectCmd.Flags().StringP("git-public-cert", "c", "", "The TLS git public certificate")
 }

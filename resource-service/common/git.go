@@ -139,34 +139,26 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	clone, err := g.git.PlainClone(projectPath, false, gitCloneOptions)
 
 	if err != nil {
-		logger.Info("plainclone nevyslo")
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
-			logger.Info("plainclone nevyslo222")
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
-				logger.Info("plainclone1 nevyslo, error je ", err)
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, err)
 			}
 		} else {
-			logger.Info("plainclone2 nevyslo, error je ", err)
 			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
 		}
 	}
 
-	logger.Info("plainclone vyslo2")
-
 	err = configureGitUser(clone)
 	if err != nil {
-		logger.Info("plainclone nevyslo3333")
 		return false, err
 	}
 
 	_, err = clone.Head()
 	if err != nil {
-		logger.Info("plainclone nevyslo333344444")
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
 	}
-	logger.Info("plainclone vyslo az dokonca")
+
 	return true, nil
 }
 
@@ -244,44 +236,35 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
-	//os.Setenv("SSH_AUTH_SOCK", "/run/user/1000/keyring/ssh")
-	logger.Info("som v stage and commit all")
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
-		logger.Info("som v stage and commit all error1", err)
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
 	rollbackFunc := func() {
 		err := g.resetHard(gitContext)
 		if err != nil {
-			logger.Info("som v stage and commit all error2", err)
 			logger.WithError(err).Warn("could not reset")
 		}
 	}
 	err = g.Pull(gitContext)
 	if err != nil {
-		logger.Info("som v stage and commit all error3333333 ", err) //tu to pada
 		rollbackFunc()
 		return "", err
 	}
 
 	err = g.Push(gitContext)
 	if err != nil {
-		logger.Info("som v stage and commit all error4", err)
 		rollbackFunc()
 		return "", err
 	}
 
 	id, updated, err := g.getCurrentRemoteRevision(gitContext)
 	if err != nil {
-		logger.Info("som v stage and commit all error5", err)
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
 	if !updated {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
 	}
-
-	logger.Info("vsetko ok v stageandcommit")
 
 	return id, nil
 }
@@ -479,10 +462,8 @@ func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (str
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 	// move head to sourceBranch
-	logger.Info("idem vytvarat brach ")
 	err := g.CheckoutBranch(gitContext, sourceBranch)
 	if err != nil {
-		logger.Info("idem vytvarat brach error1 ", err)
 		return err
 	}
 	b := plumbing.NewBranchReferenceName(branch)
@@ -493,20 +474,17 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	}
 	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
-		logger.Info("idem vytvarat brach error2 ", err)
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
 
 	// First try to check out branch
 	err = w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
 	if err == nil {
-		logger.Info("idem vytvarat brach error3 ", err)
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, kerrors.ErrBranchExists)
 	}
 
 	if err != nil {
 		// got an error  - try to create it
-		logger.Info("idem vytvarat brach error4 ", err)
 		if err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b}); err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 		}
@@ -514,11 +492,8 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 
 	err = r.CreateBranch(newBranch)
 	if err != nil {
-		logger.Info("idem vytvarat brach error5 ", err)
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
 	}
-
-	logger.Info("vsetko vyslo v branchi, ideme prec")
 
 	return nil
 }
@@ -686,26 +661,21 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 	}
 	clone, err := g.CloneRepo(gitContext)
 	if err != nil {
-		logger.Info("clonoval som repository a error je ", err)
 	}
 	return clone
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
 	path := GetProjectConfigPath(project)
-	//logger.Info("v projectrepoexists path je %s", path)
 	_, err := os.Stat(path)
 	if err == nil {
 		// path exists
-		logger.Info("idem do plainopen")
 		_, err = g.git.PlainOpen(path)
-		logger.Info("error z plaininfo je ", err)
 		if err == nil {
-			logger.Info("plainopen dobre")
 			return true
 		}
 	}
-	logger.Info("plainopen zle")
+
 	return false
 }
 
