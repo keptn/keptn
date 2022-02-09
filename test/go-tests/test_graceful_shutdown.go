@@ -33,7 +33,7 @@ spec:
             - name: "release"`
 
 func Test_GracefulShutdown(t *testing.T) {
-	repoLocalDir, err := filepath.Abs("../")
+	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
 	t.Log("Current local dir is : ", repoLocalDir)
 
