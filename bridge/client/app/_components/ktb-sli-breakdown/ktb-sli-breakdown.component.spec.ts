@@ -45,16 +45,16 @@ describe('KtbSliBreakdownComponent', () => {
     expect(rows.length).toBe(1);
     expect(fixture.nativeElement.querySelector('dt-table')).toBeTruthy();
     expect(cells[0].querySelector('button')).toBeTruthy();
-    expect(firstCell.textContent).not.toContain('compared with');
+    expect(firstCell.textContent).not.toContain('Compared with:');
     expect(firstCell.textContent).toContain('response_time_p95');
 
     rows[0].click();
     fixture.detectChanges();
-    expect(firstCell.textContent).toContain('compared with');
+    expect(firstCell.textContent).toContain('Compared with:');
 
     rows[0].click();
     fixture.detectChanges();
-    expect(firstCell.textContent).not.toContain('compared with');
+    expect(firstCell.textContent).not.toContain('Compared with:');
     expect(rowBefore).toBe(rows[0].textContent);
   });
 
@@ -77,7 +77,7 @@ describe('KtbSliBreakdownComponent', () => {
 
   it('should have success values', () => {
     // given
-    initEvaluation(7, 5);
+    initEvaluation(5, 4);
 
     // when
     fixture.detectChanges();
@@ -91,10 +91,10 @@ describe('KtbSliBreakdownComponent', () => {
       cells,
       true,
       '370.2',
-      '334.5',
+      '339.8',
       '1',
-      '+35.65',
-      '+10.65%',
+      '+30.33',
+      '+8.92%',
       '<=+10% and <600',
       '<=800',
       'passed',
@@ -106,7 +106,7 @@ describe('KtbSliBreakdownComponent', () => {
 
   it('should have error values', () => {
     // given
-    initEvaluation(6, 5);
+    initEvaluation(8, 6);
 
     // when
     fixture.detectChanges();
@@ -119,11 +119,11 @@ describe('KtbSliBreakdownComponent', () => {
     validateIndicatorResult(
       cells,
       false,
-      '370.2',
+      '1077',
       '1082',
       '1',
-      '-712.42',
-      '-65.805%',
+      '-5.12',
+      '-0.473%',
       '<=+10% and <600',
       '<=800',
       'failed',
@@ -150,12 +150,12 @@ describe('KtbSliBreakdownComponent', () => {
     const cells = firstRow.querySelectorAll('dt-cell');
     validateIndicatorResult(
       cells,
-      false,
+      true,
       '370.2',
       '1082',
       '1',
-      '-712.42',
-      '-65.805%',
+      '+712.4',
+      '+192.4%',
       '<=+10% and <600',
       '<=800',
       'failed',
@@ -270,7 +270,7 @@ describe('KtbSliBreakdownComponent', () => {
 
   function validateIndicatorResult(
     cells: HTMLElement[],
-    isSuccess: boolean,
+    isPositive: boolean,
     firstValue: string,
     secondValue: string,
     weight: string,
@@ -282,15 +282,15 @@ describe('KtbSliBreakdownComponent', () => {
     score: string
   ): void {
     const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(
-      `span.${isSuccess ? 'success' : 'error'}`
+      `p.${isPositive ? 'success' : 'error'}`
     );
 
     expect(calculatedValues.length).toBe(2);
-    expect(cells[Column.VALUE].textContent).toContain(firstValue);
-    expect(cells[Column.VALUE].textContent).toContain(secondValue);
-    expect(cells[Column.WEIGHT].textContent).toContain(weight);
-    expect(calculatedValues[0].textContent).toBe(comparedValueAbsolute);
-    expect(calculatedValues[1].textContent).toBe(comparedValueRelative);
+    expect(cells[Column.VALUE].textContent?.trim()).toContain(firstValue);
+    expect(cells[Column.VALUE].textContent?.trim()).toContain(secondValue);
+    expect(cells[Column.WEIGHT].textContent?.trim()).toContain(weight);
+    expect(calculatedValues[0].textContent?.trim()).toBe(comparedValueAbsolute);
+    expect(calculatedValues[1].textContent?.trim()).toBe(comparedValueRelative);
     expect(cells[Column.PASS_CRITERIA].textContent?.replace(/\s/g, '')).toBe(passCriteria.replace(/\s/g, ''));
     expect(cells[Column.WARNING_CRITERIA].textContent?.replace(/\s/g, '')).toBe(warningCriteria.replace(/\s/g, ''));
     expect(cells[Column.RESULT].textContent).toBe(result);
