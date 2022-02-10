@@ -802,6 +802,10 @@ func checkResourceInResponse(resources models.Resources, resourceName string) er
 	return fmt.Errorf("Resource %s not found in received response.", resourceName)
 }
 
-func resetTestPath(path string) error {
-	return os.Chdir(path)
+func resetTestPath(t *testing.T, path string) {
+	defer func() {
+		err := os.Chdir(path)
+		require.Nil(t, err)
+	}()
+
 }
