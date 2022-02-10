@@ -25,30 +25,53 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 	commitID := event.Gitcommitid
 	getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
 	// retrieve commitId from sequence
+	finishedEventData := keptnv2.GetActionFinishedEventData{}
+
+	k.SendStartedEvent(event)
 
 	if err := keptnv2.Decode(event.Data, getActionTriggeredData); err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not decode input event data"}
+		finishedEventData.Status = keptnv2.StatusErrored
+		finishedEventData.Result = keptnv2.ResultFailed
+		finishedEventData.Message = "Could not decode input event data"
+		k.SendFinishedEvent(event, finishedEventData)
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed}
+	}
+
+	finishedEventData = keptnv2.GetActionFinishedEventData{
+		EventData: getActionTriggeredData.EventData,
 	}
 
 	// get remediation.yaml resource
 	resource, err := g.getRemediationResource(k, getActionTriggeredData, commitID)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not get remediation.yaml file for services " + getActionTriggeredData.Service + " in stage " + getActionTriggeredData.Stage + "."}
+		finishedEventData.Status = keptnv2.StatusErrored
+		finishedEventData.Result = keptnv2.ResultFailed
+		finishedEventData.Message = "Could not get remediation.yaml file for services " + getActionTriggeredData.Service + " in stage " + getActionTriggeredData.Stage + "."
+		k.SendFinishedEvent(event, finishedEventData)
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed}
 	}
 
 	// parse remediation.yaml resource
 	remediation, err := ParseRemediationResource(resource)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not parse remediation.yaml file. Please validate it against the specification."}
+		finishedEventData.Status = keptnv2.StatusErrored
+		finishedEventData.Result = keptnv2.ResultFailed
+		finishedEventData.Message = "Could not parse remediation.yaml file. Please validate it against the specification."
+		k.SendFinishedEvent(event, finishedEventData)
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed}
 	}
 
 	// determine next action
 	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.GetAction.ActionIndex)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: err.Error()}
+		finishedEventData.Status = keptnv2.StatusSucceeded
+		finishedEventData.Result = keptnv2.ResultFailed
+		finishedEventData.Message = err.Error()
+		k.SendFinishedEvent(event, finishedEventData)
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed}
 	}
 
-	finishedEventData := keptnv2.GetActionFinishedEventData{
+	finishedEventData = keptnv2.GetActionFinishedEventData{
 		EventData: getActionTriggeredData.EventData,
 		Action:    *action,
 		GetAction: keptnv2.GetActionData{
@@ -56,6 +79,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (int
 		},
 	}
 
+	k.SendFinishedEvent(event, finishedEventData)
 	return finishedEventData, nil
 }
 
