@@ -108,12 +108,20 @@
                       </ng-container>
                     </div>
                   </dt-info-group-title>
-                  <a
-                    [routerLink]="getServiceLink(service)"
-                    class="m-0 mt-1"
-                    *ngIf="service.deployedImage; else noDeployment"
-                    [textContent]="service.getImageName()"
-                  ></a>
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                    <a
+                      [routerLink]="getServiceLink(service)"
+                      class="m-0 mt-1"
+                      *ngIf="service.deployedImage; else noDeployment"
+                      [textContent]="service.getImageName()"
+                    ></a>
+                    <div fxFlex fxLayoutAlign="end">
+                      <ktb-evaluation-info
+                        [evaluation]="service.latestSequence?.getEvaluationTrace(selectedStage.stageName)"
+                      ></ktb-evaluation-info>
+                    </div>
+                  </div>
+
                   <ng-template #noDeployment>
                     <p class="m-0" *ngIf="isQualityGatesOnly">
                       Use
@@ -161,63 +169,42 @@
                   >
                     <dt-loading-spinner aria-label="Action is running..."></dt-loading-spinner>
                   </button>
-                  <dt-tag-list
-                    aria-label="evaluation-info"
+                  <ng-container
                     *ngIf="remediationSequence.getEvaluationTrace(service.stage)?.getFinishedEvent() as evaluation"
                   >
-                    <dt-tag
-                      class="justify-content-center"
-                      [dtOverlay]="evaluationOverlay"
-                      [dtOverlayConfig]="overlayConfig"
-                      [class.error]="evaluation.isFaulty()"
-                      [class.warning]="evaluation.isWarning()"
-                      [class.success]="evaluation.isSuccessful()"
-                      [textContent]="evaluation.data.evaluation?.score | number: '1.0-0'"
-                    ></dt-tag>
-                    <ng-template #evaluationOverlay>
-                      <ktb-evaluation-details
-                        [evaluationData]="evaluation.getFinishedEvent()"
-                        [showChart]="false"
-                      ></ktb-evaluation-details>
-                    </ng-template>
-                  </dt-tag-list>
+                    <ktb-evaluation-info [evaluation]="evaluation"></ktb-evaluation-info>
+                  </ng-container>
                 </div>
               </ng-container>
               <ng-container *ngIf="service.getFailedEvaluationSequence() as failedRootEvent">
                 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                  <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
+                  <dt-icon fxFlex="none" class="stage-state-icon event-icon error mr-2" name="traffic-light"></dt-icon>
                   <p class="m-0">
                     Quality gate
                     <span *ngIf="failedRootEvent.getShortImageName()"
                       >of <span [textContent]="failedRootEvent.getShortImageName()"></span
                     ></span>
                     failed with a score of
+                    <ng-container
+                      *ngIf="
+                        failedRootEvent
+                          .getEvaluationTrace(selectedStage.stageName)
+                          ?.getEvaluationFinishedEvent() as evaluation
+                      "
+                    >
+                      <ktb-evaluation-info
+                        class="display-inline-block"
+                        [evaluation]="evaluation"
+                      ></ktb-evaluation-info> </ng-container
+                    >.
+                    <span class="m-0" *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                      Rollback to <span [textContent]="deployment.image"></span> performed.
+                    </span>
                   </p>
-                  <dt-tag-list
-                    aria-label="evaluation-info"
-                    *ngIf="
-                      failedRootEvent.getEvaluationTrace(selectedStage.stageName)?.getFinishedEvent() as evaluation
-                    "
-                  >
-                    <dt-tag
-                      class="justify-content-center"
-                      [dtOverlay]="overlay"
-                      [dtOverlayConfig]="overlayConfig"
-                      [class.error]="evaluation.isFaulty()"
-                      [class.warning]="evaluation.isWarning()"
-                      [class.success]="evaluation.isSuccessful()"
-                      [textContent]="evaluation.data.evaluation?.score | number: '1.0-0'"
-                    ></dt-tag>
-                    <ng-template #overlay>
-                      <ktb-evaluation-details
-                        [evaluationData]="evaluation.getFinishedEvent()"
-                        [showChart]="false"
-                      ></ktb-evaluation-details>
-                    </ng-template>
-                  </dt-tag-list>
                 </div>
                 <button
                   dt-button
+                  class="mt-2"
                   variant="secondary"
                   [routerLink]="[
                     '/project',
@@ -232,9 +219,6 @@
                 >
                   View evaluation result
                 </button>
-                <p class="m-0" *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
-                  Rollback to <span [textContent]="deployment.image"></span> performed.
-                </p>
               </ng-container>
               <div *ngIf="service.getOpenApprovals().length > 0; else noOutOfSyncDeployments">
                 <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
