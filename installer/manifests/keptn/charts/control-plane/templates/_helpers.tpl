@@ -93,6 +93,8 @@ lifecycle:
 
 
 {{- define "control-plane.dist.common.env.vars" -}}
+- name: PUBSUB_URL
+  value: 'nats://keptn-nats'
 - name: VERSION
   valueFrom:
     fieldRef:

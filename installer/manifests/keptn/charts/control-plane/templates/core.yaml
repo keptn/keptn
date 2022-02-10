@@ -145,8 +145,6 @@ spec:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
@@ -436,9 +434,7 @@ spec:
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.>'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
@@ -955,8 +951,6 @@ spec:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
@@ -1077,8 +1071,6 @@ spec:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
@@ -1202,8 +1194,6 @@ spec:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
               value: ''
             - name: PUBSUB_RECIPIENT
