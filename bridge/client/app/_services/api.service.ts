@@ -332,13 +332,14 @@ export class ApiService {
     projectName: string,
     serviceName: string,
     stageName: string,
-    fromTime?: string
+    fromTime?: string,
+    limit?: number
   ): Observable<EventResult> {
     const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
     const params = {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
       excludeInvalidated: 'true',
-      limit: '50',
+      limit: limit?.toString() || '50',
       ...(fromTime && { fromTime }),
     };
     return this.http.get<EventResult>(url, { params });

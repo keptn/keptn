@@ -118,6 +118,7 @@
                     <div fxFlex fxLayoutAlign="end">
                       <ktb-evaluation-info
                         [evaluation]="service.latestSequence?.getEvaluationTrace(selectedStage.stageName)"
+                        [showHistory]="true"
                       ></ktb-evaluation-info>
                     </div>
                   </div>

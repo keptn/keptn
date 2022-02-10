@@ -551,7 +551,7 @@ export class DataService {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
 
-  public loadEvaluationResults(event: Trace): void {
+  public loadEvaluationResults(event: Trace, limit?: number): void {
     let fromTime: Date | undefined;
     const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
     if (time) {
@@ -559,7 +559,7 @@ export class DataService {
     }
     if (event.data.project && event.data.service && event.data.stage) {
       this.apiService
-        .getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString())
+        .getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString(), limit)
         .pipe(
           map((result) => result.events || []),
           map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
