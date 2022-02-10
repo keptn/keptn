@@ -19,7 +19,7 @@ export class AppUtils {
   }
 
   public static formatNumber(value: number): number {
-    let n = value;
+    let n = Math.abs(value);
     if (n < 1) {
       n = Math.floor(n * 1000) / 1000;
     } else if (n < 100) {
