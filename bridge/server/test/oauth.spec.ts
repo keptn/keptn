@@ -11,6 +11,9 @@ const fakeGetOAuthSecrets = jest.fn();
 jest.unstable_mockModule('../user/secrets', () => {
   return {
     getOAuthSecrets: fakeGetOAuthSecrets,
+    getOAuthMongoExternalConnectionString(): string {
+      return '';
+    },
   };
 });
 // has to be imported after secrets mock
