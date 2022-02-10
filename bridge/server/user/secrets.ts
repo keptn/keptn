@@ -5,10 +5,13 @@ import { fileURLToPath } from 'url';
 const configFolder = join(
   dirname(fileURLToPath(import.meta.url)),
   process.env.NODE_ENV === 'development' ? '../../../../' : '../../../../../../..',
-  'config/oauth'
+  'config'
 );
-const sessionSecretPath = join(configFolder, 'session_secret');
-const databaseEncryptSecretPath = join(configFolder, 'database_encrypt_secret');
+const oauthFolder = join(configFolder, 'oauth');
+const mongodbFolder = join(configFolder, 'oauth_mongodb');
+const sessionSecretPath = join(oauthFolder, 'session_secret');
+const databaseEncryptSecretPath = join(oauthFolder, 'database_encrypt_secret');
+const mongoSecretPath = join(mongodbFolder, 'external_connection_string');
 
 function getOAuthSecrets(): { sessionSecret: string; databaseEncryptSecret: string } {
   const secrets = {
@@ -25,4 +28,12 @@ function getOAuthSecrets(): { sessionSecret: string; databaseEncryptSecret: stri
   return secrets;
 }
 
-export { getOAuthSecrets };
+function getOAuthMongoExternalConnectionString(): string {
+  let externalConnection = '';
+  if (existsSync(mongoSecretPath)) {
+    externalConnection = readFileSync(mongoSecretPath, { encoding: 'utf8', flag: 'r' });
+  }
+  return externalConnection;
+}
+
+export { getOAuthSecrets, getOAuthMongoExternalConnectionString };

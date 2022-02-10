@@ -17,6 +17,19 @@
   {{- $bridgeSessionSecret = index $bridgeOAuth.data "session_secret" }}
   {{- $bridgeDatabaseEncryptSecret = index $bridgeOAuth.data "database_encrypt_secret" }}
 {{- end -}}
+
+{{- $bridgeOAuthMongo := (lookup "v1" "Secret" .Release.Namespace "bridge-oauth-mongodb-credentials") }}
+{{- $bridgeMongoConnectionString := "" | b64enc | quote -}}
+{{- if $bridgeOAuthMongo -}}
+  {{- if index $bridgeOAuthMongo.data "external_connection_string" -}}
+    {{- $bridgeMongoConnectionString = index $bridgeOAuthMongo.data "external_connection_string" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if .Values.bridge.oauth.mongoConnectionString -}}
+  {{- $bridgeMongoConnectionString = .Values.bridge.oauth.mongoConnectionString | b64enc | quote -}}
+{{- end -}}
+
 {{- if not .Values.apiService.tokenSecretName }}
 ---
 apiVersion: v1
@@ -68,6 +81,21 @@ type: Opaque
 data:
   session_secret: {{ $bridgeSessionSecret }}
   database_encrypt_secret: {{ $bridgeDatabaseEncryptSecret }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bridge-oauth-mongodb-credentials
+  labels:
+    app.kubernetes.io/name: bridge-oauth-mongodb-credentials
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+type: Opaque
+data:
+  external_connection_string: {{ $bridgeMongoConnectionString }}
 ---
 # bridge
 apiVersion: apps/v1
@@ -199,6 +227,8 @@ spec:
             - name: bridge-oauth
               mountPath: /config/oauth
               readOnly: true
+            - name: bridge-oauth-mongodb-credentials
+              mountPath: /config/oauth_mongodb
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -212,4 +242,8 @@ spec:
         - name: bridge-oauth
           secret:
             secretName: bridge-oauth
+            defaultMode: 0400
+        - name: bridge-oauth-mongodb-credentials
+          secret:
+            secretName: bridge-oauth-mongodb-credentials
             defaultMode: 0400

@@ -79,6 +79,7 @@ bridge:
     IDTokenAlg: ""
     scope: ""
     userIdentifier: ""
+    mongoConnectionString: ""
 
 distributor:
   metadata:

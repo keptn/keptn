@@ -6,7 +6,7 @@ import MongoStore from 'connect-mongo';
 import { Collection, Db, MongoClient } from 'mongodb';
 import { Crypto } from './crypto';
 import { getRootLocation } from './oauth-routes';
-import { getOAuthSecrets } from './secrets';
+import { getOAuthMongoExternalConnectionString, getOAuthSecrets } from './secrets';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -101,8 +101,9 @@ export class SessionService {
       host: process.env.MONGODB_HOST,
       database: process.env.MONGODB_DATABASE || 'openid',
     };
+    const externalConnectionString = getOAuthMongoExternalConnectionString();
 
-    if (!mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
+    if (!externalConnectionString && !mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
       console.error(
         'could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set'
       );
@@ -110,20 +111,20 @@ export class SessionService {
     }
 
     const mongoClient = new MongoClient(
-      `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}/${mongoCredentials.database}`
+      externalConnectionString ||
+        `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}/${mongoCredentials.database}`
     );
     await mongoClient.connect();
-    const db = mongoClient.db(mongoCredentials.database);
+    const db = mongoClient.db();
     await this.initCollections(db);
 
-    this.validationCollection = mongoClient.db(mongoCredentials.database).collection(this.validationCollectionName);
+    this.validationCollection = db.collection(this.validationCollectionName);
     await this.initValidationTTLIndex(this.validationCollection);
     console.log('Successfully connected to database');
 
     return MongoStore.create({
       client: mongoClient,
       ttl: this.SESSION_TIME_SECONDS, // if inactive for $SESSION_TIME_SECONDS seconds, session is destroyed
-      dbName: mongoCredentials.database,
       collectionName: this.sessionCollectionName,
       crypto: {
         secret: this.databaseSecret,
