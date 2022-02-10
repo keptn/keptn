@@ -1,0 +1,16 @@
+Scopes:
+      keptn-default:
+        Capabilities:
+          keptn-secrets-default-read:
+            Permissions:
+              - get
+      keptn-webhook-service:
+        Capabilities:
+          keptn-webhook-svc-read:
+            Permissions:
+              - get
+      dynatrace-service:
+        Capabilities:
+          keptn-dynatrace-svc-read:
+            Permissions:
+              - get
