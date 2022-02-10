@@ -12,7 +12,7 @@ mongo:
     password: null
     rootUser: 'admin'
     rootPassword: null
-    bridgeAuthDatabase: 'openid'
+    bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
 
