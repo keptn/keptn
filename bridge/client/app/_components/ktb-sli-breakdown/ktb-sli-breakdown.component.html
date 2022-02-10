@@ -49,7 +49,7 @@
 
         <ng-container *ngIf="result.expanded && result.calculatedChanges as changes">
           <p
-            class="small m-0"
+            class="change-indicator small m-0"
             [class.error]="result.result === ResultTypes.FAILED"
             [class.warning]="result.result === ResultTypes.WARNING"
           >
@@ -57,7 +57,7 @@
             <span [textContent]="changes.absolute"></span>
           </p>
           <p
-            class="small m-0"
+            class="change-indicator small m-0"
             [class.error]="result.result === ResultTypes.FAILED"
             [class.warning]="result.result === ResultTypes.WARNING"
           >

@@ -106,7 +106,7 @@ describe('KtbSliBreakdownComponent', () => {
 
   it('should have error values', () => {
     // given
-    initEvaluation(8, 6);
+    initEvaluation(6, 5);
 
     // when
     fixture.detectChanges();
@@ -119,11 +119,11 @@ describe('KtbSliBreakdownComponent', () => {
     validateIndicatorResult(
       cells,
       false,
-      '1077',
       '1082',
+      '370.2',
       '1',
-      '-5.12',
-      '-0.473%',
+      '+712.4',
+      '+192.4%',
       '<=+10% and <600',
       '<=800',
       'failed',
@@ -270,7 +270,7 @@ describe('KtbSliBreakdownComponent', () => {
 
   function validateIndicatorResult(
     cells: HTMLElement[],
-    isPositive: boolean,
+    isSuccess: boolean,
     firstValue: string,
     secondValue: string,
     weight: string,
@@ -282,7 +282,7 @@ describe('KtbSliBreakdownComponent', () => {
     score: string
   ): void {
     const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(
-      `p.${isPositive ? 'success' : 'error'}`
+      `p.change-indicator${isSuccess ? '' : '.error'}`
     );
 
     expect(calculatedValues.length).toBe(2);
