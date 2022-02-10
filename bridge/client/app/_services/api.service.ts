@@ -269,6 +269,16 @@ export class ApiService {
     return this.http.get<string[]>(url);
   }
 
+  public getStageNames(projectName: string): Observable<string[]> {
+    const url = `${this._baseUrl}/project/${projectName}/stages`;
+    return this.http.get<string[]>(url);
+  }
+
+  public getCustomSequenceNames(projectName: string): Observable<string[]> {
+    const url = `${this._baseUrl}/project/${projectName}/customSequences`;
+    return this.http.get<string[]>(url);
+  }
+
   public getSequences(
     projectName: string,
     pageSize: number,

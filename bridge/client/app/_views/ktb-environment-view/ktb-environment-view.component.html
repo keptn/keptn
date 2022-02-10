@@ -1,15 +1,10 @@
 <div fxFlexFill *ngIf="project$ | async as project; else loading">
-  <div fxFlex="70" fxLayout="column">
-    <ktb-stage-overview
-      fxFlex
-      fxLayout="column"
-      (selectedStageChange)="stageDetails.selectStage($event)"
-      (filteredServicesChange)="stageDetails.filteredServices = $event"
-    ></ktb-stage-overview>
-  </div>
-  <div fxFlex="30" fxLayout="column">
-    <ktb-stage-details fxFlex fxLayout="column" #stageDetails [project]="project"></ktb-stage-details>
-  </div>
+  <ktb-stage-overview
+    fxFlex="70"
+    (selectedStageChange)="stageDetails.selectStage($event)"
+    (filteredServicesChange)="stageDetails.filteredServices = $event"
+  ></ktb-stage-overview>
+  <ktb-stage-details fxFlex="30" #stageDetails [project]="project"></ktb-stage-details>
 </div>
 <ng-template #loading>
   <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">

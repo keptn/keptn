@@ -1,0 +1,33 @@
+.ktb-trigger-sequence {
+  > div > div > dt-form-field,
+  > div > div > ktb-time-input {
+    width: 50%;
+  }
+
+  > div > div.full-width > dt-form-field {
+    width: 100%;
+  }
+}
+
+.overlay-origin {
+  position: relative;
+}
+
+.radio-button-overlay {
+  height: 30px;
+  width: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.input-overlay {
+  height: 30px;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  cursor: text;
+}

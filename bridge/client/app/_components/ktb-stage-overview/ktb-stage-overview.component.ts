@@ -22,6 +22,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
+  public isTriggerSequenceOpen = false;
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private unsubscribe$: Subject<void> = new Subject<void>();

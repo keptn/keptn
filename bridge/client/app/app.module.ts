@@ -146,6 +146,7 @@ import { KtbNotificationComponent } from './_components/ktb-notification/ktb-not
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { ArrayToStringPipe } from './_pipes/array-to-string';
+import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
 import { KtbTimeInputComponent } from './_components/ktb-time-input/ktb-time-input.component';
 import {
   KtbDatetimePickerComponent,
@@ -242,6 +243,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     ArrayToStringPipe,
     KtbNotificationComponent,
     KtbProjectCreateMessageComponent,
+    KtbTriggerSequenceComponent,
     KtbTimeInputComponent,
     KtbDatetimePickerComponent,
     KtbDatetimePickerDirective,

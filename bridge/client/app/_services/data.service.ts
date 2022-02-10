@@ -650,10 +650,18 @@ export class DataService {
       .pipe(map((taskNames) => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))));
   }
 
+  public getStageNames(projectName: string): Observable<string[]> {
+    return this.apiService.getStageNames(projectName);
+  }
+
   public getServiceNames(projectName: string): Observable<string[]> {
     return this.apiService
       .getServiceNames(projectName)
       .pipe(map((serviceNames) => serviceNames.sort((serviceA, serviceB) => serviceA.localeCompare(serviceB))));
+  }
+
+  public getCustomSequenceNames(projectName: string): Observable<string[]> {
+    return this.apiService.getCustomSequenceNames(projectName);
   }
 
   public getWebhookConfig(

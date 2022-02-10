@@ -186,6 +186,27 @@ const apiRouter = (params: {
     }
   });
 
+  router.get('/project/:projectName/stages', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const services = await dataService.getStageNames(req.session?.tokenSet?.access_token, req.params.projectName);
+      return res.json(services);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get('/project/:projectName/customSequences', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const services = await dataService.getCustomSequenceNames(
+        req.session?.tokenSet?.access_token,
+        req.params.projectName
+      );
+      return res.json(services);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.get('/project/:projectName/sequences/metadata', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await dataService.getSequencesMetadata(req.session?.tokenSet?.access_token, req.params.projectName);

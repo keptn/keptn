@@ -1,9 +1,6 @@
 @import '~@dynatrace/barista-components/style/main';
 
 .ktb-stage-overview {
-  overflow: hidden;
-  position: relative;
-
   &::after {
     content: '';
     position: absolute;
@@ -20,8 +17,6 @@
 }
 
 .stage-list {
-  padding: 1rem;
-
   &.scrollable {
     .stage-group {
       min-width: 30%;

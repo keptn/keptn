@@ -618,6 +618,34 @@ export class DataService {
     return this.reduceServiceNames(stages);
   }
 
+  public async getStageNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
+    const resp = await this.apiService.getStages(accessToken, projectName);
+    const stageResp = resp.data.stages;
+    const stages = [];
+
+    for (const stage of stageResp) {
+      stages.push(stage.stageName);
+    }
+
+    return stages;
+  }
+
+  public async getCustomSequenceNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
+    const shipyard = await this.getShipyard(accessToken, projectName);
+    const sequenceSet = new Set<string>();
+
+    for (const stage of shipyard.spec.stages) {
+      if (stage.sequences) {
+        for (const seq of stage.sequences) {
+          if (seq.name !== 'delivery' && seq.name !== 'evaluation') {
+            sequenceSet.add(seq.name);
+          }
+        }
+      }
+    }
+    return Array.from(sequenceSet);
+  }
+
   private reduceServiceNames(stages: IStage[]): string[] {
     const services: { [serviceName: string]: boolean | undefined } = {};
 

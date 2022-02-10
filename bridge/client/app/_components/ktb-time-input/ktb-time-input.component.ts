@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Timeframe } from '../../_models/timeframe';
 import { FormControl, FormGroup } from '@angular/forms';
 
@@ -7,12 +7,13 @@ import { FormControl, FormGroup } from '@angular/forms';
   templateUrl: './ktb-time-input.component.html',
   styleUrls: ['./ktb-time-input.component.scss'],
 })
-export class KtbTimeInputComponent {
+export class KtbTimeInputComponent implements OnInit {
   @Input() required: boolean | undefined;
   @Input() label = '';
   @Input() secondsEnabled = true;
   @Input() millisEnabled = true;
   @Input() microsEnabled = true;
+  @Input() timeframe: Timeframe | undefined;
   @Output()
   timeChanged: EventEmitter<Timeframe> = new EventEmitter<Timeframe>();
 
@@ -20,13 +21,23 @@ export class KtbTimeInputComponent {
 
   public console = console;
 
-  timeForm = new FormGroup({
+  public timeForm = new FormGroup({
     hours: new FormControl(''),
     minutes: new FormControl(''),
     seconds: new FormControl(''),
     millis: new FormControl(''),
     micros: new FormControl(''),
   });
+
+  public ngOnInit(): void {
+    if (this.timeframe) {
+      this.timeForm.controls.hours.setValue(this.timeframe.hours ? this.timeframe.hours : '');
+      this.timeForm.controls.minutes.setValue(this.timeframe.minutes ? this.timeframe.minutes : '');
+      this.timeForm.controls.seconds.setValue(this.timeframe.seconds ? this.timeframe.seconds : '');
+      this.timeForm.controls.millis.setValue(this.timeframe.millis ? this.timeframe.millis : '');
+      this.timeForm.controls.micros.setValue(this.timeframe.micros ? this.timeframe.micros : '');
+    }
+  }
 
   public validateInput(formControlName: string, min: number, max: number): void {
     if (this.timeForm.controls[formControlName].value) {

@@ -1,0 +1,266 @@
+<div class="ktb-trigger-sequence" fxFlex="66">
+  <div fxLayout="column" *ngIf="state === 'ENTRY'">
+    <h2>Trigger a new sequence for project {{ projectName }}</h2>
+    <dt-label class="mb-1 mt-3 dt-form-field-label">Sequence type</dt-label>
+    <dt-radio-group class="mb-3" name="sequenceType" fxLayout="row" fxLayoutGap="15px" [(ngModel)]="sequenceType">
+      <dt-radio-button [value]="TRIGGER_SEQUENCE.DELIVERY">Delivery</dt-radio-button>
+      <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION">Evaluation</dt-radio-button>
+      <dt-radio-button
+        class="overlay-origin"
+        [value]="TRIGGER_SEQUENCE.CUSTOM"
+        [disabled]="!customSequences || customSequences?.length === 0"
+      >
+        Custom
+        <div
+          *ngIf="customSequences?.length === 0"
+          class="radio-button-overlay"
+          [dtOverlay]="noCustomSequencesOverlay"
+        ></div
+      ></dt-radio-button>
+      <ng-template #noCustomSequencesOverlay>
+        There are no custom sequences available in the shipyard.yaml file
+      </ng-template>
+    </dt-radio-group>
+    <div class="mb-3" fxLayout="row" fxLayoutGap="15px">
+      <dt-form-field>
+        <dt-label class="required">Service</dt-label>
+        <dt-select
+          [disabled]="!services || services.length === 0"
+          [(ngModel)]="selectedService"
+          placeholder="Select ..."
+        >
+          <ng-container *ngIf="services">
+            <dt-option *ngFor="let service of services" [value]="service">{{ service }}</dt-option>
+          </ng-container>
+        </dt-select>
+      </dt-form-field>
+
+      <dt-form-field>
+        <dt-label class="required">Stage</dt-label>
+        <dt-select [disabled]="!stages || stages.length === 0" [(ngModel)]="selectedStage" placeholder="Select ...">
+          <ng-container *ngIf="stages">
+            <dt-option *ngFor="let stage of stages" [value]="stage">{{ stage }}</dt-option>
+          </ng-container>
+        </dt-select>
+      </dt-form-field>
+    </div>
+    <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
+      <button dt-button variant="secondary" [disabled]="!selectedService || !selectedStage" (click)="setFormState()">
+        Next<dt-icon name="right"></dt-icon>
+      </button>
+      <button dt-button variant="secondary" (click)="formClosed.emit()">Cancel and close</button>
+    </div>
+  </div>
+
+  <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.DELIVERY">
+    <h2>Trigger a delivery for {{ selectedService }} in {{ selectedStage }}</h2>
+    <div class="mb-3 mt-3" fxLayout="row" fxLayoutGap="15px">
+      <dt-form-field>
+        <dt-label class="required">Image</dt-label>
+        <input [(ngModel)]="deliveryFormData.image" dtInput placeholder="docker.io/keptnexamples/carts" />
+      </dt-form-field>
+      <dt-form-field>
+        <dt-label class="required">Tag</dt-label>
+        <input [(ngModel)]="deliveryFormData.tag" dtInput placeholder="0.12.3" />
+      </dt-form-field>
+    </div>
+    <div class="mb-3" fxLayout="row" fxLayoutGap="15px">
+      <dt-form-field>
+        <dt-label>Labels</dt-label>
+        <input [(ngModel)]="deliveryFormData.labels" dtInput placeholder="e.g. key1=value1,value2,key2=value3" />
+        <dt-hint>Comma separated. Allowed: key=value or value</dt-hint>
+      </dt-form-field>
+
+      <dt-form-field>
+        <dt-label>Values</dt-label>
+        <input [(ngModel)]="deliveryFormData.values" dtInput placeholder="e.g. key1=value1,key1.p1.etc=value2" />
+        <dt-hint>Comma separated. Allowed: key=value or key.p1.etc=value</dt-hint>
+      </dt-form-field>
+    </div>
+
+    <ng-container
+      [ngTemplateOutlet]="triggerActions"
+      [ngTemplateOutletContext]="{
+        isValid: isValidString(deliveryFormData.image) && isValidString(deliveryFormData.tag)
+      }"
+    ></ng-container>
+  </div>
+
+  <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.EVALUATION">
+    <h2>Trigger an evaluation for {{ selectedService }} in {{ selectedStage }}</h2>
+    <dt-radio-group
+      class="mb-3 mt-3"
+      name="evaluationTimeSelect"
+      fxLayout="row"
+      fxLayoutGap="15px"
+      [(ngModel)]="evaluationFormData.evaluationType"
+    >
+      <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.TIMEFRAME">Use timeframe</dt-radio-button>
+      <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.START_END">Use start / end time</dt-radio-button>
+    </dt-radio-group>
+    <div
+      fxLayout="row"
+      class="mb-2"
+      fxLayoutGap="15px"
+      *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
+    >
+      <ktb-time-input
+        [required]="true"
+        [label]="'Timeframe'"
+        [timeframe]="evaluationFormData.timeframe"
+        (timeChanged)="evaluationFormData.timeframe = $event"
+      ></ktb-time-input>
+      <dt-form-field class="overlay-origin">
+        <dt-label>Start at</dt-label>
+        <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
+        <input dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
+        <dt-hint>Defaults to now if not filled in</dt-hint>
+        <button
+          dt-icon-button
+          dtSuffix
+          variant="nested"
+          [disabled]="!evaluationFormData.timeframeStart"
+          (click)="evaluationFormData.timeframeStart = undefined"
+        >
+          <dt-icon name="abort"></dt-icon>
+        </button>
+        <button
+          #timeframeStartButton
+          dt-icon-button
+          dtSuffix
+          ktbDatetimePicker
+          [timeEnabled]="true"
+          [secondsEnabled]="true"
+          (selectedDateTime)="evaluationFormData.timeframeStart = $event"
+        >
+          <dt-icon name="calendar"></dt-icon>
+        </button>
+      </dt-form-field>
+    </div>
+
+    <div
+      fxLayout="row"
+      class="mb-3"
+      fxLayoutGap="15px"
+      *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END"
+    >
+      <dt-form-field class="overlay-origin">
+        <dt-label class="required">Start at</dt-label>
+        <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
+        <input dtInput [(ngModel)]="evaluationFormData.startDatetime" [errorStateMatcher]="showErrorStateMatcher" />
+        <button
+          dt-icon-button
+          dtSuffix
+          variant="nested"
+          [disabled]="!evaluationFormData.startDatetime"
+          (click)="evaluationFormData.startDatetime = undefined"
+        >
+          <dt-icon name="abort"></dt-icon>
+        </button>
+        <button
+          #startDateButton
+          dt-icon-button
+          dtSuffix
+          ktbDatetimePicker
+          [timeEnabled]="true"
+          [secondsEnabled]="true"
+          (selectedDateTime)="evaluationFormData.startDatetime = $event"
+        >
+          <dt-icon name="calendar"></dt-icon>
+        </button>
+        <dt-hint>Has to be before End at</dt-hint>
+      </dt-form-field>
+      <dt-form-field class="overlay-origin">
+        <dt-label class="required">End at</dt-label>
+        <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
+        <input dtInput [(ngModel)]="evaluationFormData.endDatetime" [errorStateMatcher]="showErrorStateMatcher" />
+        <button
+          dt-icon-button
+          dtSuffix
+          variant="nested"
+          [disabled]="!evaluationFormData.endDatetime"
+          (click)="evaluationFormData.endDatetime = undefined"
+        >
+          <dt-icon name="abort"></dt-icon>
+        </button>
+        <button
+          #endDateButton
+          dt-icon-button
+          dtSuffix
+          ktbDatetimePicker
+          [timeEnabled]="true"
+          [secondsEnabled]="true"
+          (selectedDateTime)="evaluationFormData.endDatetime = $event"
+        >
+          <dt-icon name="calendar"></dt-icon>
+        </button>
+        <dt-hint>Has to be after Start at</dt-hint>
+        <dt-error
+          *ngIf="
+            evaluationFormData.startDatetime &&
+            evaluationFormData.endDatetime &&
+            !checkStartEndValidity(evaluationFormData.startDatetime, evaluationFormData.endDatetime)
+          "
+          >Start date must be before end date and vice versa.</dt-error
+        >
+      </dt-form-field>
+    </div>
+
+    <div class="mb-3 full-width" fxLayout="row">
+      <dt-form-field>
+        <dt-label>Labels</dt-label>
+        <input [(ngModel)]="evaluationFormData.labels" dtInput placeholder="e.g. key1=value1,value2,key2=value3" />
+        <dt-hint>Comma separated. Allowed: key=value or value</dt-hint>
+      </dt-form-field>
+    </div>
+
+    <ng-container
+      [ngTemplateOutlet]="triggerActions"
+      [ngTemplateOutletContext]="{
+        isValid:
+          (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME &&
+            isValidTimeframe(evaluationFormData.timeframe)) ||
+          (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END &&
+            isValidStartEndTime(evaluationFormData.startDatetime, evaluationFormData.endDatetime))
+      }"
+    ></ng-container>
+  </div>
+
+  <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.CUSTOM">
+    <h2>Trigger a custom sequence for {{ selectedService }} in {{ selectedStage }}</h2>
+    <dt-form-field class="mb-3 mt-3 full-width">
+      <dt-label class="required">Sequence</dt-label>
+      <dt-select
+        [disabled]="!customSequences || customSequences.length === 0"
+        [(ngModel)]="customFormData.sequence"
+        name="customSequence"
+        placeholder="Select ..."
+      >
+        <ng-container *ngFor="let sequence of customSequences">
+          <dt-option [value]="sequence">{{ sequence }}</dt-option>
+        </ng-container>
+      </dt-select>
+    </dt-form-field>
+
+    <dt-form-field class="mb-3 full-width">
+      <dt-label>Labels</dt-label>
+      <input [(ngModel)]="customFormData.labels" dtInput placeholder="e.g. key1=value1,value2,key2=value3" />
+      <dt-hint>Comma separated. Allowed: key=value or value</dt-hint>
+    </dt-form-field>
+
+    <ng-container
+      [ngTemplateOutlet]="triggerActions"
+      [ngTemplateOutletContext]="{ isValid: customFormData.sequence }"
+    ></ng-container>
+  </div>
+</div>
+
+<ng-template #triggerActions let-isValid="isValid">
+  <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
+    <div fxLayoutGap="15px">
+      <button dt-button variant="secondary" (click)="state = 'ENTRY'"><dt-icon name="left"></dt-icon>Back</button>
+      <button dt-button [disabled]="!isValid"><dt-icon name="flash"></dt-icon>Trigger sequence</button>
+    </div>
+    <button dt-button variant="secondary" (click)="formClosed.emit()">Cancel and close</button>
+  </div>
+</ng-template>
