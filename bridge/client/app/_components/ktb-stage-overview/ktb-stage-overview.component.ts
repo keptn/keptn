@@ -7,7 +7,7 @@ import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.component';
@@ -30,7 +30,12 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
+  constructor(
+    private dataService: DataService,
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   public ngOnInit(): void {
     // needs to be in init because of emitter
@@ -40,6 +45,19 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
       switchMap((projectName) => this.dataService.getProject(projectName)),
       takeUntil(this.unsubscribe$)
     );
+
+    this.route.queryParamMap.subscribe((paramMap) => {
+      if (paramMap.has('triggerSequence')) {
+        this.isTriggerSequenceOpen = true;
+
+        // Remove query param
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { triggerSequence: null },
+          queryParamsHandling: 'merge',
+        });
+      }
+    });
     project$.subscribe((project) => {
       const differentProject = project?.projectName !== this.project?.projectName;
       this.project = project;
