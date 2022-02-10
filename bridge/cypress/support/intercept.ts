@@ -5,16 +5,24 @@ export function interceptIntegrations(): void {
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
+  // jmeter-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
     body: {
       logs: [],
     },
   });
+  // approval-service
+  cy.intercept('/api/controlPlane/v1/log?integrationId=4d57b2af3cdd66bce06625daafa9c5cbb474a6b8&pageSize=100', {
+    body: {
+      logs: [],
+    },
+  });
+  // webhook-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
     body: {
       logs: [
         {
-          integrationid: '19e6753651cdeede8a13176cbb1afdc3d6844683',
+          integrationid: '0f2d35875bbaa72b972157260a7bd4af4f2826df',
           message: 'my error',
           shkeptncontext: ' 7394b5b3-2fb3-4cb7-b435-d0e9d6f0cb87',
           task: 'my task',

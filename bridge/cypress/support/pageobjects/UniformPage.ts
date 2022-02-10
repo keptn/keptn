@@ -35,8 +35,28 @@ class UniformPage {
     return this;
   }
 
+  public addSubscription(): this {
+    cy.byTestId('addSubscriptionButton').click();
+    return this;
+  }
+
+  public editSubscription(index: number): this {
+    cy.byTestId('subscriptionEditButton').eq(index).click();
+    return this;
+  }
+
+  public deleteSubscription(index: number): this {
+    cy.byTestId('subscriptionDeleteButton').eq(index).click();
+    return this;
+  }
+
   public assertIsUpdateButtonEnabled(isEnabled: boolean): this {
     cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    return this;
+  }
+
+  public switchIsGlobalState(): this {
+    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).click();
     return this;
   }
 
@@ -140,7 +160,7 @@ class UniformPage {
     return this;
   }
 
-  public isGlobalChecked(status: boolean): this {
+  public assertIsGlobalChecked(status: boolean): this {
     cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID)
       .find('dt-checkbox')
       .should(status ? 'have.class' : 'not.have.class', 'dt-checkbox-checked');
@@ -250,6 +270,26 @@ class UniformPage {
       .contains('dt-cell', name)
       .find('.notification-indicator-text')
       .should('have.text', count);
+    return this;
+  }
+
+  public addHeader(): this {
+    cy.byTestId('ktb-webhook-settings-add-header-button').click();
+    return this;
+  }
+
+  public assertURL(content: string): this {
+    cy.byTestId(this.EDIT_WEBHOOK_FIELD_URL_ID).find('textarea').should('have.value', content);
+    return this;
+  }
+
+  public assertPayload(content: string): this {
+    cy.byTestId(this.EDIT_WEBHOOK_PAYLOAD_ID).find('textarea').should('have.value', content);
+    return this;
+  }
+
+  public assertHeaderValue(index: number, content: string): this {
+    cy.byTestId(this.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('input').eq(index).should('have.value', content);
     return this;
   }
 }

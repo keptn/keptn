@@ -64,6 +64,56 @@ describe('Integrations', () => {
     cy.contains('h3', 'webhook-service');
   });
 
+  it('should not show logs', () => {
+    uniformPage.selectIntegration('approval-service');
+    cy.get('.uniform-registration-error-log').should('not.exist');
+    cy.get('ktb-uniform-registration-logs').contains('No events for this integration available');
+  });
+
+  it('should have 1 log', () => {
+    uniformPage.selectIntegration('webhook-service');
+    cy.get('.uniform-registration-error-log>div').should('have.length', 1);
+  });
+
+  it('should show first 2 rows as unread', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
+
+    uniformPage
+      .assertHasIntegrationErrorIndicator('webhook-service', true)
+      .selectIntegration('webhook-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(1) // 1 unread error log
+      .assertHasIntegrationErrorIndicator('webhook-service', false)
+      .selectIntegration('jmeter-service');
+
+    cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
+      body: {
+        logs: [
+          {
+            integrationid: '0f2d35875bbaa72b972157260a7bd4af4f2826df',
+            message: 'my error2',
+            shkeptncontext: ' 7394b5b3-2fb3-4cb7-b435-d0e9d6f0cb87',
+            task: 'my task2',
+            time: new Date(Date.now() + 60_000),
+            triggeredid: 'bd3bc477-6d0f-4d71-b15d-c33e953a74ba',
+          },
+          {
+            integrationid: '0f2d35875bbaa72b972157260a7bd4af4f2826df',
+            message: 'my error3',
+            shkeptncontext: ' 7394b5b3-2fb3-4cb7-b435-d0e9d6f0cb87',
+            task: 'my task3',
+            time: new Date(Date.now() + 60_000),
+            triggeredid: 'bd3bc477-6d0f-4d71-b15d-c33e953a74ba',
+          },
+        ],
+      },
+    });
+    uniformPage
+      .selectIntegration('webhook-service')
+      .assertIndicatorsTextShowing(2) // 1 unread error log
+      .assertHasIntegrationErrorIndicator('webhook-service', false);
+  });
+
   it('should select an integration and show related subscriptions', () => {
     // given, when
     uniformPage.selectIntegration('webhook-service');
@@ -89,18 +139,11 @@ describe('Integrations', () => {
     // given, when
     uniformPage.selectIntegration('jmeter-service');
     cy.get(uniformPage.SUBSCRIPTION_DETAILS_LOC).should('have.length', 1);
-    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
-      .first()
-      .find('dt-expandable-panel')
-      .byTestId('addSubscriptionButton')
-      .click();
-
-    // Fill in all form fields
-    cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).click();
-
     uniformPage
+      .addSubscription()
+      .switchIsGlobalState()
       .isCreateButton()
-      .isGlobalChecked(true)
+      .assertIsGlobalChecked(true)
       .setTaskPrefix('deployment')
       .setTaskSuffix('finished')
       .appendStages('dev')
@@ -113,12 +156,7 @@ describe('Integrations', () => {
   });
 
   it('should add a webhook subscription', () => {
-    uniformPage.selectIntegration('webhook-service');
-    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
-      .first()
-      .find('dt-expandable-panel')
-      .byTestId('addSubscriptionButton')
-      .click();
+    uniformPage.selectIntegration('webhook-service').addSubscription();
 
     // then
     cy.get('h2').eq(1).should('have.text', 'Webhook configuration');
@@ -139,19 +177,13 @@ describe('Integrations', () => {
       .openEventSelectorPayload()
       .selectFirstItemOfVariableSelector()
       .appendPayload('}')
-      .appendProxy('https://proxy.com');
-
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_URL_ID)
-      .find('textarea')
-      .should('have.value', 'https://example.com?secret={{.secret.SecretA.key1}}{{.data.project}}');
-
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_PAYLOAD_ID)
-      .find('textarea')
-      .should('have.value', "{id: '123456789', secret: {{.secret.SecretA.key1}}{{.data.project}}}");
+      .appendProxy('https://proxy.com')
+      .assertURL('https://example.com?secret={{.secret.SecretA.key1}}{{.data.project}}')
+      .assertPayload(`{id: '123456789', secret: {{.secret.SecretA.key1}}{{.data.project}}}`);
 
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_NAME_ID).should('not.exist');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).should('not.exist');
-    cy.byTestId('ktb-webhook-settings-add-header-button').click();
+    uniformPage.addHeader();
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_NAME_ID).should('exist');
     cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).should('exist');
 
@@ -161,24 +193,16 @@ describe('Integrations', () => {
       .openSecretSelectorHeader()
       .selectFirstItemOfVariableSelector()
       .openEventSelectorHeader()
-      .selectFirstItemOfVariableSelector();
+      .selectFirstItemOfVariableSelector()
+      .assertHeaderValue(0, 'Bearer: {{.secret.SecretA.key1}}{{.data.project}}')
+      .update();
 
-    cy.byTestId(uniformPage.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID)
-      .find('input')
-      .should('have.value', 'Bearer: {{.secret.SecretA.key1}}{{.data.project}}');
-
-    uniformPage.update();
     // It should redirect after successfully sending the subscription
     cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/integrations/${webhookID}`);
   });
 
   it('should delete a subscription', () => {
-    uniformPage.selectIntegration('jmeter-service');
-    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
-      .first()
-      .find('dt-expandable-panel')
-      .byTestId('subscriptionDeleteButton')
-      .click();
+    uniformPage.selectIntegration('jmeter-service').deleteSubscription(0);
 
     // Check if confirmation dialog pops up
     cy.byTestId('dialogWarningMessage').should(
@@ -194,14 +218,9 @@ describe('Integrations', () => {
 
   it('should edit a subscription', () => {
     // given
-    uniformPage.selectIntegration('jmeter-service');
-    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
-      .first()
-      .find('dt-expandable-panel')
-      .byTestId('subscriptionEditButton')
-      .click();
-
     uniformPage
+      .selectIntegration('jmeter-service')
+      .editSubscription(0)
       .isUpdateButton()
       .setTaskPrefix('evaluation')
       .setTaskSuffix('finished')
@@ -270,7 +289,6 @@ describe('Add control plane subscription', () => {
   beforeEach(() => {
     interceptIntegrations();
     uniformPage.visitAdd(integrationID);
-    interceptIntegrations();
   });
 
   it('should have disabled button if updating', () => {
@@ -326,12 +344,7 @@ describe('Add control plane subscription', () => {
       statusCode: 500,
       body: 'Could not parse shipyard.yaml',
     }).as('tasksResult');
-    uniformPage.selectIntegration('jmeter-service');
-    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
-      .first()
-      .find('dt-expandable-panel')
-      .byTestId('addSubscriptionButton')
-      .click();
+    uniformPage.selectIntegration('jmeter-service').addSubscription();
 
     cy.wait('@tasksResult');
     cy.wait('@tasksResult');
@@ -348,12 +361,7 @@ describe('Add control plane subscription', () => {
       statusCode: 500,
       body: 'Could not parse shipyard.yaml',
     }).as('tasksResult');
-    uniformPage.selectIntegration('jmeter-service');
-    cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC)
-      .first()
-      .find('dt-expandable-panel')
-      .byTestId('addSubscriptionButton')
-      .click();
+    uniformPage.selectIntegration('jmeter-service').addSubscription();
 
     cy.wait('@tasksResult');
     cy.wait('@tasksResult');
@@ -409,7 +417,7 @@ describe('Edit subscriptions', () => {
     });
 
     uniformPage
-      .isGlobalChecked(true)
+      .assertIsGlobalChecked(true)
       .taskPrefixEquals('deployment')
       .taskSuffixEquals('triggered')
       .filterTagsLengthEquals(0)
@@ -434,7 +442,7 @@ describe('Edit subscriptions', () => {
     });
 
     uniformPage
-      .isGlobalChecked(false)
+      .assertIsGlobalChecked(false)
       .taskPrefixEquals('test')
       .taskSuffixEquals('finished')
       .filterTagsLengthEquals(2)
