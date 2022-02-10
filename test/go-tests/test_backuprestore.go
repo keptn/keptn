@@ -144,7 +144,7 @@ func Test_BackupRestore(t *testing.T) {
 	err = os.MkdirAll("config-svc-backup", os.ModePerm)
 	require.Nil(t, err)
 
-	resetTestPath(t, "../../../go-tests")
+	defer resetTestPath(t, "../../../go-tests")
 
 	t.Logf("Executing backup of configuration-service")
 	configServicePod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)

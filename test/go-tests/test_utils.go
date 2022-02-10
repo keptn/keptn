@@ -803,9 +803,6 @@ func checkResourceInResponse(resources models.Resources, resourceName string) er
 }
 
 func resetTestPath(t *testing.T, path string) {
-	defer func() {
-		err := os.Chdir(path)
-		require.Nil(t, err)
-	}()
-
+	err := os.Chdir(path)
+	require.Nil(t, err)
 }
