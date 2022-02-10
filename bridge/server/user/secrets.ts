@@ -2,11 +2,7 @@ import { dirname, join } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
-const configFolder = join(
-  dirname(fileURLToPath(import.meta.url)),
-  process.env.NODE_ENV === 'development' ? '../../../../' : '../../../../../../..',
-  'config'
-);
+const configFolder = process.env.CONFIG_DIR || join(dirname(fileURLToPath(import.meta.url)), '../../../../config');
 const oauthFolder = join(configFolder, 'oauth');
 const mongodbFolder = join(configFolder, 'oauth_mongodb');
 const sessionSecretPath = join(oauthFolder, 'session_secret');

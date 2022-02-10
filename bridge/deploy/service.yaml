@@ -99,6 +99,8 @@ spec:
                   key: mongodb-password
             - name: MONGODB_DATABASE
               value: openid
+            - name: CONFIG_DIR
+              value: "/config"
           envFrom:
             - secretRef:
                 name: bridge-credentials
