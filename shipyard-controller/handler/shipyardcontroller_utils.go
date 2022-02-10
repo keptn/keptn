@@ -15,6 +15,9 @@ func GetTaskSequenceInStage(stageName, taskSequenceName string, shipyard *keptnv
 			for _, taskSequence := range stage.Sequences {
 				if taskSequence.Name == taskSequenceName {
 					log.Infof("Found matching task sequence %s in stage %s", taskSequence.Name, stage.Name)
+					if len(taskSequence.Tasks) == 0 {
+						return nil, fmt.Errorf("task sequence %s does not contain any tasks", taskSequenceName)
+					}
 					return &taskSequence, nil
 				}
 			}
