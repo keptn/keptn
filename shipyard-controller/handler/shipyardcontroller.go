@@ -365,6 +365,10 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
+	sc.onSequenceAborted(models.EventScope{
+		KeptnContext: cancel.KeptnContext,
+		EventData:    keptnv2.EventData{Project: cancel.Project, Stage: cancel.Stage},
+	})
 	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(cancel.Project,
 		models.TaskExecution{
 			KeptnContext: cancel.KeptnContext,
@@ -406,7 +410,6 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 }
 
 func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, taskSequenceName string) error {
-	sc.onSequenceAborted(sequenceTriggeredEvent)
 	scope, err := models.NewEventScope(sequenceTriggeredEvent)
 	if err != nil {
 		return err
