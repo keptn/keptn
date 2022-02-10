@@ -24,15 +24,8 @@ class BasePage {
   }
 
   // go to Uniform page
-
-  goToUniformPage(): this {
-    cy.get(this.NAVIGATION_MENU_LOCATOR.replace('page_pattern', 'uniform')).click();
-    return this;
-  }
-
-  // go to Secrets page
-  goToSecretsPage(): void {
-    cy.get('[aria-label="Open uniform secrets"]').click();
+  goToUniformPage(): SettingsPage {
+    return this.gotoSettingsPage().goToUniformPage();
   }
 
   // go to Services page
