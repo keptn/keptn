@@ -97,7 +97,7 @@ export class KtbSliBreakdownComponent implements OnInit {
     return indicatorResults.map((indicatorResult) => {
       const comparedValue = this.calculateComparedValue(indicatorResult);
       const compared: Partial<SliResult> = {};
-      if (!isNaN(comparedValue)) {
+      if (!!comparedValue) {
         compared.comparedValue = AppUtils.formatNumber(comparedValue);
         compared.calculatedChanges = {
           absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
