@@ -244,3 +244,75 @@ func Test_GetPubSubTopics(t *testing.T) {
 	config = EnvConfig{}
 	assert.Equal(t, 0, len(config.PubSubTopics()))
 }
+
+func Test_SSOEnabled(t *testing.T) {
+	tests := []struct {
+		input EnvConfig
+		want  bool
+	}{
+		{
+			input: EnvConfig{},
+			want:  false,
+		},
+		{
+			input: EnvConfig{
+				SSOClientID: "sso-client-id",
+			},
+			want: false,
+		},
+		{
+			input: EnvConfig{
+				SSOClientID:     "sso-client-id",
+				SSOClientSecret: "sso-client-secret",
+				SSOScopes:       nil,
+				SSODiscovery:    "",
+				SSOTokenURL:     "",
+			},
+			want: false,
+		},
+		{
+			input: EnvConfig{
+				SSOClientID:     "sso-client-id",
+				SSOClientSecret: "sso-client-secret",
+				SSOScopes:       []string{"scope"},
+				SSODiscovery:    "",
+				SSOTokenURL:     "",
+			},
+			want: false,
+		},
+		{
+			input: EnvConfig{
+				SSOClientID:     "sso-client-id",
+				SSOClientSecret: "sso-client-secret",
+				SSOScopes:       []string{"scope"},
+				SSODiscovery:    "http://some-url.com",
+				SSOTokenURL:     "",
+			},
+			want: true,
+		},
+		{
+			input: EnvConfig{
+				SSOClientID:     "sso-client-id",
+				SSOClientSecret: "sso-client-secret",
+				SSOScopes:       []string{"scope"},
+				SSODiscovery:    "",
+				SSOTokenURL:     "http://some-url.com",
+			},
+			want: true,
+		},
+		{
+			input: EnvConfig{
+				SSOClientID:     "sso-client-id",
+				SSOClientSecret: "sso-client-secret",
+				SSOScopes:       []string{"scope"},
+				SSODiscovery:    "http://some-url.com",
+				SSOTokenURL:     "http://some-url.com",
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range tests {
+		assert.Equal(t, tc.want, tc.input.SSOEnabled())
+	}
+}

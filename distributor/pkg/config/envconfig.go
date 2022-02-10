@@ -41,6 +41,7 @@ type EnvConfig struct {
 	SSOClientID          string   `envconfig:"SSO_CLIENT_ID" default:""`
 	SSOClientSecret      string   `envconfig:"SSO_CLIENT_SECRET" default:""`
 	SSOScopes            []string `envconfig:"SSO_SCOPES" default:""`
+	SSODiscovery         string   `envconfig:"SSO_DISCOVERY" default:""`
 	SSOTokenURL          string   `envconfig:"SSO_TOKEN_URL" default:""`
 }
 
@@ -127,7 +128,10 @@ func (env *EnvConfig) ProxyHost(path string) (string, string, string) {
 }
 
 func (env *EnvConfig) SSOEnabled() bool {
-	return env.SSOClientID != "" && env.SSOClientSecret != "" && env.SSOTokenURL != "" && len(env.SSOScopes) > 0
+	clientIDAndSecretSet := env.SSOClientID != "" && env.SSOClientSecret != ""
+	tokenURLOrDiscoverySet := env.SSOTokenURL != "" || env.SSODiscovery != ""
+	scopesSet := len(env.SSOScopes) > 0
+	return clientIDAndSecretSet && tokenURLOrDiscoverySet && scopesSet
 }
 
 func (env *EnvConfig) HTTPPollingEndpoint() string {
@@ -188,8 +192,7 @@ func (env *EnvConfig) HTTPClient() *http.Client {
 			Scopes:       env.SSOScopes,
 			TokenURL:     env.SSOTokenURL,
 		}
-		client := conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
-		return client
+		return conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
 	}
 	return c
 }
