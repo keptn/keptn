@@ -34,8 +34,8 @@
           <span
             *ngIf="!result.expanded && result.calculatedChanges as changes"
             class="small m-0"
-            [class.success]="changes.relative > 0"
-            [class.error]="changes.relative < 0"
+            [class.error]="result.result === ResultTypes.FAILED"
+            [class.warning]="result.result === ResultTypes.WARNING"
           >
             (<span *ngIf="changes.relative > 0">+</span> <span [textContent]="changes.relative"></span>%)
           </span>
@@ -48,11 +48,19 @@
         </ng-container>
 
         <ng-container *ngIf="result.expanded && result.calculatedChanges as changes">
-          <p class="small m-0" [class.success]="changes.absolute > 0" [class.error]="changes.absolute < 0">
+          <p
+            class="small m-0"
+            [class.error]="result.result === ResultTypes.FAILED"
+            [class.warning]="result.result === ResultTypes.WARNING"
+          >
             <span *ngIf="changes.absolute > 0">+</span>
             <span [textContent]="changes.absolute"></span>
           </p>
-          <p class="small m-0" [class.success]="changes.relative > 0" [class.error]="changes.relative < 0">
+          <p
+            class="small m-0"
+            [class.error]="result.result === ResultTypes.FAILED"
+            [class.warning]="result.result === ResultTypes.WARNING"
+          >
             <span *ngIf="changes.relative > 0">+</span>
             <span [textContent]="changes.relative"></span>%
           </p>
