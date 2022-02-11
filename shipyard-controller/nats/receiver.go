@@ -8,23 +8,46 @@ import (
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
+	"time"
 )
 
-const streamName = "shipyard"
+const streamName = "shipyard-controller"
+const queueGroup = "shipyard-controller"
 const consumerName = "shipyard-controller:all-events"
 const streamTopics = "sh.keptn.>"
 
+//go:generate moq --skip-ensure -pkg nats_mock -out ./mock/keptn_nats_handler_mock.go . IKeptnNatsMessageHandler
+type IKeptnNatsMessageHandler interface {
+	Process(event models.Event, sync bool) error
+}
+
+type processFunc func(event models.Event, sync bool) error
+
+type keptnNatsMessageHandler struct {
+	f processFunc
+}
+
+func NewKeptnNatsMessageHandler(f processFunc) *keptnNatsMessageHandler {
+	return &keptnNatsMessageHandler{
+		f: f,
+	}
+}
+
+func (nmh *keptnNatsMessageHandler) Process(event models.Event, sync bool) error {
+	return nmh.f(event, sync)
+}
+
 type NatsConnectionHandler struct {
 	natsConnection *nats.Conn
-	subscriptions  []*PullSubscription // TODO should be an interface
+	subscriptions  []*PullSubscription
 	topics         []string
 	natsURL        string
-	messageHandler func(event models.Event, sync bool) error
+	messageHandler IKeptnNatsMessageHandler
 	ctx            context.Context
 	jetStream      nats.JetStreamContext
 }
 
-func NewNatsConnectionHandler(ctx context.Context, natsURL string, messageHandler func(event models.Event, sync bool) error) *NatsConnectionHandler {
+func NewNatsConnectionHandler(ctx context.Context, natsURL string, messageHandler IKeptnNatsMessageHandler) *NatsConnectionHandler {
 	return &NatsConnectionHandler{natsURL: natsURL, messageHandler: messageHandler, ctx: ctx}
 }
 
@@ -38,14 +61,6 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 
 // SubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
 func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
-	return nch.QueueSubscribeToTopics(topics, "default")
-}
-
-// QueueSubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
-// The queueGroup parameter defines a NATS queue group to join when subscribing to the topic(s).
-// Only one member of a queue group will be able to receive a published message via NATS.
-// Note, that passing queueGroup = "" is equivalent to not using any queue group at all.
-func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueGroup string) error {
 	if nch.natsURL == "" {
 		return errors.New("no PubSub URL defined")
 	}
@@ -62,7 +77,7 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 			return errors.New("failed to create NATS connection: " + err.Error())
 		}
 
-		err = nch.setupJetStreamContext()
+		err = nch.setupJetStreamContext(topics)
 		if err != nil {
 			return err
 		}
@@ -73,7 +88,7 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			subscription := NewPullSubscription(nch.ctx, queueGroup, topic, nch.jetStream, nch.messageHandler)
+			subscription := NewPullSubscription(nch.ctx, queueGroup, topic, nch.jetStream, nch.messageHandler.Process)
 			if err := subscription.Activate(); err != nil {
 				return fmt.Errorf("could not start subscription: %s", err.Error())
 			}
@@ -83,8 +98,8 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 	return nil
 }
 
-func (nch *NatsConnectionHandler) setupJetStreamContext() error {
-	js, err := nch.natsConnection.JetStream()
+func (nch *NatsConnectionHandler) setupJetStreamContext(topics []string) error {
+	js, err := nch.natsConnection.JetStream(nats.MaxWait(10 * time.Second))
 	if err != nil {
 		return fmt.Errorf("failed to create nats jetStream context: %s", err.Error())
 	}
@@ -95,12 +110,12 @@ func (nch *NatsConnectionHandler) setupJetStreamContext() error {
 	}
 	if stream == nil {
 		logger.Infof("creating stream %q", streamName)
-		_, err = js.AddStream(getShipyardStreamConfig())
+		_, err = js.AddStream(getShipyardStreamConfig(topics))
 		if err != nil {
 			return fmt.Errorf("failed to add stream: %s", err.Error())
 		}
 	} else {
-		_, err = js.UpdateStream(getShipyardStreamConfig())
+		_, err = js.UpdateStream(getShipyardStreamConfig(topics))
 		if err != nil {
 			return fmt.Errorf("failed to update stream: %s", err.Error())
 		}
@@ -109,10 +124,10 @@ func (nch *NatsConnectionHandler) setupJetStreamContext() error {
 	return nil
 }
 
-func getShipyardStreamConfig() *nats.StreamConfig {
+func getShipyardStreamConfig(topics []string) *nats.StreamConfig {
 	return &nats.StreamConfig{
 		Name:     streamName,
-		Subjects: []string{streamTopics},
+		Subjects: topics,
 	}
 }
 

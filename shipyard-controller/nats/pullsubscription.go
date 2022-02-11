@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -62,8 +63,8 @@ func (ps *PullSubscription) Activate() error {
 				}
 			}
 			for _, msg := range msgs {
-				event, err := models.ConvertToEvent(msg.Data)
-				if err != nil {
+				event := &models.Event{}
+				if err := json.Unmarshal(msg.Data, event); err != nil {
 					logger.WithError(err).Error("could not unmarshal message")
 					// ACK the message to avoid re-sending it
 					if err := msg.Ack(); err != nil {
