@@ -245,7 +245,7 @@ func Test_GetPubSubTopics(t *testing.T) {
 	assert.Equal(t, 0, len(config.PubSubTopics()))
 }
 
-func Test_SSOEnabled(t *testing.T) {
+func Test_OAuthEnabled(t *testing.T) {
 	tests := []struct {
 		input EnvConfig
 		want  bool
@@ -256,63 +256,63 @@ func Test_SSOEnabled(t *testing.T) {
 		},
 		{
 			input: EnvConfig{
-				SSOClientID: "sso-client-id",
+				OAuthClientID: "sso-client-id",
 			},
 			want: false,
 		},
 		{
 			input: EnvConfig{
-				SSOClientID:     "sso-client-id",
-				SSOClientSecret: "sso-client-secret",
-				SSOScopes:       nil,
-				SSODiscovery:    "",
-				SSOTokenURL:     "",
+				OAuthClientID:     "sso-client-id",
+				OAuthClientSecret: "sso-client-secret",
+				OAuthScopes:       nil,
+				OAuthDiscovery:    "",
+				OauthTokenURL:     "",
 			},
 			want: false,
 		},
 		{
 			input: EnvConfig{
-				SSOClientID:     "sso-client-id",
-				SSOClientSecret: "sso-client-secret",
-				SSOScopes:       []string{"scope"},
-				SSODiscovery:    "",
-				SSOTokenURL:     "",
+				OAuthClientID:     "sso-client-id",
+				OAuthClientSecret: "sso-client-secret",
+				OAuthScopes:       []string{"scope"},
+				OAuthDiscovery:    "",
+				OauthTokenURL:     "",
 			},
 			want: false,
 		},
 		{
 			input: EnvConfig{
-				SSOClientID:     "sso-client-id",
-				SSOClientSecret: "sso-client-secret",
-				SSOScopes:       []string{"scope"},
-				SSODiscovery:    "http://some-url.com",
-				SSOTokenURL:     "",
+				OAuthClientID:     "sso-client-id",
+				OAuthClientSecret: "sso-client-secret",
+				OAuthScopes:       []string{"scope"},
+				OAuthDiscovery:    "http://some-url.com",
+				OauthTokenURL:     "",
 			},
 			want: true,
 		},
 		{
 			input: EnvConfig{
-				SSOClientID:     "sso-client-id",
-				SSOClientSecret: "sso-client-secret",
-				SSOScopes:       []string{"scope"},
-				SSODiscovery:    "",
-				SSOTokenURL:     "http://some-url.com",
+				OAuthClientID:     "sso-client-id",
+				OAuthClientSecret: "sso-client-secret",
+				OAuthScopes:       []string{"scope"},
+				OAuthDiscovery:    "",
+				OauthTokenURL:     "http://some-url.com",
 			},
 			want: true,
 		},
 		{
 			input: EnvConfig{
-				SSOClientID:     "sso-client-id",
-				SSOClientSecret: "sso-client-secret",
-				SSOScopes:       []string{"scope"},
-				SSODiscovery:    "http://some-url.com",
-				SSOTokenURL:     "http://some-url.com",
+				OAuthClientID:     "sso-client-id",
+				OAuthClientSecret: "sso-client-secret",
+				OAuthScopes:       []string{"scope"},
+				OAuthDiscovery:    "http://some-url.com",
+				OauthTokenURL:     "http://some-url.com",
 			},
 			want: true,
 		},
 	}
 
 	for _, tc := range tests {
-		assert.Equal(t, tc.want, tc.input.SSOEnabled())
+		assert.Equal(t, tc.want, tc.input.OAuthEnabled())
 	}
 }

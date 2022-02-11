@@ -137,14 +137,14 @@ lifecycle:
     fieldRef:
       fieldPath: metadata.labels['app.kubernetes.io/name']
 {{- end }}
-- name: SSO_CLIENT_ID
+- name: OAUTH_CLIENT_ID
   value: "{{ .Values.distributor.config.oauth.clientID }}"
-- name: SSO_CLIENT_SECRET
+- name: OAUTH_CLIENT_SECRET
   value: "{{ .Values.distributor.config.oauth.clientSecret }}"
-- name: SSO_DISCOVERY
+- name: OAUTH_DISCOVERY
   value: "{{ .Values.distributor.config.oauth.discovery }}"
-- name: SSO_TOKEN_URL
+- name: OAUTH_TOKEN_URL
   value: "{{ .Values.distributor.config.oauth.tokenURL }}"
-- name: SSO_SCOPES
+- name: OAUTH_SCOPES
   value: "{{ .Values.distributor.config.oauth.scopes }}"
 {{- end }}

@@ -16,9 +16,9 @@ import (
 // CreateClientGetter returns a HTTPClientGetter implementation based on the values certain properties
 // inside the given env configuration
 func CreateClientGetter(envConfig config.EnvConfig) HTTPClientGetter {
-	if envConfig.SSOEnabled() {
-		logger.Infof("Using Oauth to connect to Keptn wth client ID %s and scopes %v", envConfig.SSOClientID, envConfig.SSOScopes)
-		return NewSSOClientGetter(envConfig, auth.NewOauthDiscovery(&http.Client{}))
+	if envConfig.OAuthEnabled() {
+		logger.Infof("Using Oauth to connect to Keptn wth client ID %s and scopes %v", envConfig.OAuthClientID, envConfig.OAuthScopes)
+		return NewOauthClientGetter(envConfig, auth.NewOauthDiscovery(&http.Client{}))
 	}
 	return New(envConfig)
 }
@@ -29,55 +29,55 @@ type HTTPClientGetter interface {
 	Get() (*http.Client, error)
 }
 
-// SSOClientGetter creates an HTTP client configured for use with SSO/Oauth
-type SSOClientGetter struct {
+// OAuthClientGetter creates an HTTP client configured for use with SSO/Oauth
+type OAuthClientGetter struct {
 	*SimpleClientGetter
 	envConfig      config.EnvConfig
 	oauthDiscovery auth.OauthLocationGetter
 }
 
-// NewSSOClientGetter creates a new instance of a SSOClientGetter
-func NewSSOClientGetter(envConfig config.EnvConfig, oauthDiscovery auth.OauthLocationGetter) *SSOClientGetter {
-	return &SSOClientGetter{
+// NewOauthClientGetter creates a new instance of a OAuthClientGetter
+func NewOauthClientGetter(envConfig config.EnvConfig, oauthDiscovery auth.OauthLocationGetter) *OAuthClientGetter {
+	return &OAuthClientGetter{
 		SimpleClientGetter: &SimpleClientGetter{envConfig: envConfig},
 		envConfig:          envConfig,
 		oauthDiscovery:     oauthDiscovery,
 	}
 }
 
-func (g *SSOClientGetter) Get() (*http.Client, error) {
+func (g *OAuthClientGetter) Get() (*http.Client, error) {
 	c, err := g.SimpleClientGetter.Get()
 	if err != nil {
 		return nil, err
 	}
-	if g.envConfig.SSOClientID == "" || g.envConfig.SSOClientSecret == "" || len(g.envConfig.SSOScopes) == 0 {
+	if g.envConfig.OAuthClientID == "" || g.envConfig.OAuthClientSecret == "" || len(g.envConfig.OAuthScopes) == 0 {
 		return nil, fmt.Errorf("client id or client secret or scopes missing")
 	}
 
-	if g.envConfig.SSOTokenURL != "" {
-		logger.Infof("Using Token URL for Oauth flow: %s", g.envConfig.SSOTokenURL)
+	if g.envConfig.OauthTokenURL != "" {
+		logger.Infof("Using Token URL for Oauth flow: %s", g.envConfig.OauthTokenURL)
 		conf := clientcredentials.Config{
-			ClientID:     g.envConfig.SSOClientID,
-			ClientSecret: g.envConfig.SSOClientSecret,
-			Scopes:       g.envConfig.SSOScopes,
-			TokenURL:     g.envConfig.SSOTokenURL,
+			ClientID:     g.envConfig.OAuthClientID,
+			ClientSecret: g.envConfig.OAuthClientSecret,
+			Scopes:       g.envConfig.OAuthScopes,
+			TokenURL:     g.envConfig.OauthTokenURL,
 		}
 		return conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c)), nil
 	}
 
-	if g.envConfig.SSODiscovery != "" {
-		logger.Infof("Using Discovery URL for Oauth flow: %s", g.envConfig.SSODiscovery)
+	if g.envConfig.OAuthDiscovery != "" {
+		logger.Infof("Using Discovery URL for Oauth flow: %s", g.envConfig.OAuthDiscovery)
 		ctx, cancel := context.WithTimeout(context.TODO(), time.Second*10)
 		defer cancel()
-		discoveryRes, err := g.oauthDiscovery.Discover(ctx, g.envConfig.SSODiscovery)
+		discoveryRes, err := g.oauthDiscovery.Discover(ctx, g.envConfig.OAuthDiscovery)
 		if err != nil {
 			return nil, err
 		}
 
 		conf := clientcredentials.Config{
-			ClientID:     g.envConfig.SSOClientID,
-			ClientSecret: g.envConfig.SSOClientSecret,
-			Scopes:       g.envConfig.SSOScopes,
+			ClientID:     g.envConfig.OAuthClientID,
+			ClientSecret: g.envConfig.OAuthClientSecret,
+			Scopes:       g.envConfig.OAuthScopes,
 			TokenURL:     discoveryRes.TokenEndpoint,
 		}
 		return conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c)), nil

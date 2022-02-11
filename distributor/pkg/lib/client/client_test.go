@@ -19,85 +19,84 @@ func TestSimpleClientGetter_Get(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestSSOClientGetter_Get(t *testing.T) {
+func TestOAuthClientGetter_Get(t *testing.T) {
 	t.Run("Get - No Discovery, nor Token URL given", func(t *testing.T) {
 		cfg := config.EnvConfig{
-			SSOClientID:     "client-id",
-			SSOClientSecret: "client-secret",
-			SSOScopes:       []string{"scope"},
+			OAuthClientID:     "client-id",
+			OAuthClientSecret: "client-secret",
+			OAuthScopes:       []string{"scope"},
 		}
 		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
 
-		c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
 		assert.NotNil(t, err)
 	})
 	t.Run("Get - With Discovery URL", func(t *testing.T) {
 		cfg := config.EnvConfig{
-			SSOClientID:     "client-id",
-			SSOClientSecret: "client-secret",
-			SSOScopes:       []string{"scope"},
-			SSODiscovery:    "http://some-url.com",
+			OAuthClientID:     "client-id",
+			OAuthClientSecret: "client-secret",
+			OAuthScopes:       []string{"scope"},
+			OAuthDiscovery:    "http://some-url.com",
 		}
 		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
 
-		c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.NotNil(t, c)
 		assert.Nil(t, err)
 	})
 	t.Run("Get - With Token URL", func(t *testing.T) {
 		cfg := config.EnvConfig{
-			SSOClientID:     "client-id",
-			SSOClientSecret: "client-secret",
-			SSOScopes:       []string{"scope"},
-			SSOTokenURL:     "http://some-url.com",
+			OAuthClientID:     "client-id",
+			OAuthClientSecret: "client-secret",
+			OAuthScopes:       []string{"scope"},
+			OauthTokenURL:     "http://some-url.com",
 		}
 		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
 
-		c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.NotNil(t, c)
 		assert.Nil(t, err)
 	})
 	t.Run("Get - missing scopes", func(t *testing.T) {
 		cfg := config.EnvConfig{
-			SSOClientID:     "client-id",
-			SSOClientSecret: "client-secret",
-			SSODiscovery:    "http://some-url.com",
+			OAuthClientID:     "client-id",
+			OAuthClientSecret: "client-secret",
+			OAuthDiscovery:    "http://some-url.com",
 		}
 		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
 
-		c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
 		assert.NotNil(t, err)
 	})
 	t.Run("Get - missing client id", func(t *testing.T) {
 		cfg := config.EnvConfig{
-			SSOClientSecret: "client-secret",
-			SSOScopes:       []string{"scope"},
-			SSODiscovery:    "http://some-url.com",
+			OAuthClientSecret: "client-secret",
+			OAuthScopes:       []string{"scope"},
+			OAuthDiscovery:    "http://some-url.com",
 		}
 		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
 
-		c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
 		assert.NotNil(t, err)
 	})
 	t.Run("Get - missing client secret", func(t *testing.T) {
 		cfg := config.EnvConfig{
-			SSOClientID:  "client-id",
-			SSOScopes:    []string{"scope"},
-			SSODiscovery: "http://some-url.com",
+			OAuthClientID:  "client-id",
+			OAuthScopes:    []string{"scope"},
+			OAuthDiscovery: "http://some-url.com",
 		}
 		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
 
-		c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
 		assert.NotNil(t, err)
 	})
-
 }
 
-func TestSSOClientGetter_Get_TokenEndpointIsCalled(t *testing.T) {
+func TestOAuthClientGetter_Get_TokenEndpointIsCalled(t *testing.T) {
 	tokenURLCalled := false
 	tokenURLSrv := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		tokenURLCalled = true
@@ -106,16 +105,16 @@ func TestSSOClientGetter_Get_TokenEndpointIsCalled(t *testing.T) {
 	defer tokenURLSrv.Close()
 
 	cfg := config.EnvConfig{
-		SSOClientID:     "client-id",
-		SSOClientSecret: "client-secret",
-		SSOScopes:       []string{"scope"},
-		SSODiscovery:    "http://some-wellknown-url.com",
+		OAuthClientID:     "client-id",
+		OAuthClientSecret: "client-secret",
+		OAuthScopes:       []string{"scope"},
+		OAuthDiscovery:    "http://some-wellknown-url.com",
 	}
 	oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{
 		TokenEndpoint: tokenURLSrv.URL,
 	}}
 
-	c, err := NewSSOClientGetter(cfg, oauthDiscovery).Get()
+	c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 	assert.NotNil(t, c)
 	assert.Nil(t, err)
 

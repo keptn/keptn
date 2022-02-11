@@ -38,11 +38,11 @@ type EnvConfig struct {
 	K8sNamespace         string   `envconfig:"K8S_NAMESPACE" default:""`
 	K8sPodName           string   `envconfig:"K8S_POD_NAME" default:""`
 	K8sNodeName          string   `envconfig:"K8S_NODE_NAME" default:""`
-	SSOClientID          string   `envconfig:"SSO_CLIENT_ID" default:""`
-	SSOClientSecret      string   `envconfig:"SSO_CLIENT_SECRET" default:""`
-	SSOScopes            []string `envconfig:"SSO_SCOPES" default:""`
-	SSODiscovery         string   `envconfig:"SSO_DISCOVERY" default:""`
-	SSOTokenURL          string   `envconfig:"SSO_TOKEN_URL" default:""`
+	OAuthClientID        string   `envconfig:"OAUTH_CLIENT_ID" default:""`
+	OAuthClientSecret    string   `envconfig:"OAUTH_CLIENT_SECRET" default:""`
+	OAuthScopes          []string `envconfig:"OAUTH_SCOPES" default:""`
+	OAuthDiscovery       string   `envconfig:"OAUTH_DISCOVERY" default:""`
+	OauthTokenURL        string   `envconfig:"OAUTH_TOKEN_URL" default:""`
 }
 
 func (env *EnvConfig) PubSubConnectionType() ConnectionType {
@@ -127,10 +127,10 @@ func (env *EnvConfig) ProxyHost(path string) (string, string, string) {
 	return "", "", ""
 }
 
-func (env *EnvConfig) SSOEnabled() bool {
-	clientIDAndSecretSet := env.SSOClientID != "" && env.SSOClientSecret != ""
-	tokenURLOrDiscoverySet := env.SSOTokenURL != "" || env.SSODiscovery != ""
-	scopesSet := len(env.SSOScopes) > 0
+func (env *EnvConfig) OAuthEnabled() bool {
+	clientIDAndSecretSet := env.OAuthClientID != "" && env.OAuthClientSecret != ""
+	tokenURLOrDiscoverySet := env.OauthTokenURL != "" || env.OAuthDiscovery != ""
+	scopesSet := len(env.OAuthScopes) > 0
 	return clientIDAndSecretSet && tokenURLOrDiscoverySet && scopesSet
 }
 
@@ -185,12 +185,12 @@ func (env *EnvConfig) HTTPClient() *http.Client {
 		Timeout: 5 * time.Second,
 	}
 
-	if env.SSOEnabled() {
+	if env.OAuthEnabled() {
 		conf := clientcredentials.Config{
-			ClientID:     env.SSOClientID,
-			ClientSecret: env.SSOClientSecret,
-			Scopes:       env.SSOScopes,
-			TokenURL:     env.SSOTokenURL,
+			ClientID:     env.OAuthClientID,
+			ClientSecret: env.OAuthClientSecret,
+			Scopes:       env.OAuthScopes,
+			TokenURL:     env.OauthTokenURL,
 		}
 		return conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
 	}
