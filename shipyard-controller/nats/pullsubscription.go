@@ -70,23 +70,30 @@ func (ps *PullSubscription) pullMessages() {
 			}
 		}
 		for _, msg := range msgs {
-			event := &models.Event{}
-			if err := json.Unmarshal(msg.Data, event); err != nil {
-				logger.WithError(err).Error("could not unmarshal message")
-				// ACK the message to avoid re-sending it
-				if err := msg.Ack(); err != nil {
-					logger.WithError(err).Error("could not ack message")
-				}
+			if ps.processMessage(msg) {
 				return
-			}
-			if err := ps.messageHandler(*event, false); err != nil {
-				logger.WithError(err).Error("could not process message")
-			}
-			if err := msg.Ack(); err != nil {
-				logger.WithError(err).Error("could not ack message")
 			}
 		}
 	}
+}
+
+func (ps *PullSubscription) processMessage(msg *nats.Msg) bool {
+	event := &models.Event{}
+	if err := json.Unmarshal(msg.Data, event); err != nil {
+		logger.WithError(err).Error("could not unmarshal message")
+		// ACK the message to avoid re-sending it
+		if err := msg.Ack(); err != nil {
+			logger.WithError(err).Error("could not ack message")
+		}
+		return true
+	}
+	if err := ps.messageHandler(*event, false); err != nil {
+		logger.WithError(err).Error("could not process message")
+	}
+	if err := msg.Ack(); err != nil {
+		logger.WithError(err).Error("could not ack message")
+	}
+	return false
 }
 
 func (ps *PullSubscription) Unsubscribe() error {
