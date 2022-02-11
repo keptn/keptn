@@ -38,18 +38,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: keptn-secret-service
-  labels:
-    app.kubernetes.io/name: keptn-secret-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
   name: keptn-lighthouse-service
   labels:
     app.kubernetes.io/name: keptn-lighthouse-service
@@ -338,7 +326,7 @@ roleRef:
   name: keptn-manage-secrets
 subjects:
   - kind: ServiceAccount
-    name: keptn-secret-service
+    name: keptn-api-service
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -358,7 +346,7 @@ roleRef:
   name: keptn-manage-roles
 subjects:
   - kind: ServiceAccount
-    name: keptn-secret-service
+    name: keptn-api-service
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -377,4 +365,4 @@ roleRef:
   name: keptn-manage-rolebindings
 subjects:
   - kind: ServiceAccount
-    name: keptn-secret-service
+    name: keptn-api-service

@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
+	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	"github.com/keptn/keptn/api-service/backend"
@@ -50,14 +52,14 @@ func main() {
 		}
 	}
 
-	// requestsPerSecond, err := strconv.ParseFloat(os.Getenv(authRequestsPerSecond), 32)
-	// if err != nil {
-	// 	log.WithError(err).Error("could not parse max auth requests per second provided by 'MAX_AUTH_REQUESTS_PER_SECOND' env var")
-	// }
-	// requestsMaxBurst, err := strconv.Atoi(os.Getenv(authRequestsPerSecond))
-	// if err != nil {
-	// 	log.WithError(err).Error("could not parse max auth requests burst provided by 'MAX_AUTH_REQUESTS_BURST' env var")
-	// }
+	requestsPerSecond, err := strconv.ParseFloat(os.Getenv(authRequestsPerSecond), 32)
+	if err != nil {
+		log.WithError(err).Error("could not parse max auth requests per second provided by 'MAX_AUTH_REQUESTS_PER_SECOND' env var")
+	}
+	requestsMaxBurst, err := strconv.Atoi(os.Getenv(authRequestMaxBurst))
+	if err != nil {
+		log.WithError(err).Error("could not parse max auth requests burst provided by 'MAX_AUTH_REQUESTS_BURST' env var")
+	}
 
 	if _, err := os.Stat(repository.ScopesConfigurationFile); os.IsNotExist(err) {
 		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)
@@ -82,7 +84,7 @@ func main() {
 	metadataController := controller.NewMetadataController(handler.NewMetadataHandler())
 	metadataController.Inject(apiV1)
 
-	authController := controller.NewAuthController(handler.NewAuthHandler( /*requestsPerSecond, requestsMaxBurst, clock.New()*/ ))
+	authController := controller.NewAuthController(handler.NewAuthHandler(requestsPerSecond, requestsMaxBurst, clock.New()))
 	authController.Inject(apiV1)
 
 	eventController := controller.NewEventController(handler.NewEventHandler())

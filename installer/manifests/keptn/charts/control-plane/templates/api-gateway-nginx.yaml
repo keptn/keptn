@@ -203,7 +203,7 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
       rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
-      proxy_pass         http://secret-service:8080;
+      proxy_pass         http://api-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
       proxy_http_version 1.1;
@@ -219,7 +219,7 @@ data:
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
 
       rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
-      proxy_pass         http://secret-service:8080;
+      proxy_pass         http://api-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
       proxy_http_version 1.1;
