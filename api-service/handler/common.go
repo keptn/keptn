@@ -41,6 +41,22 @@ func SetNotFoundErrorResponse(err error, c *gin.Context, message ...string) {
 	})
 }
 
+func SetUnauthorizedErrorResponse(err error, c *gin.Context, message ...string) {
+	msg := errMsg(err, message)
+	c.JSON(http.StatusUnauthorized, model.Error{
+		Code:    http.StatusUnauthorized,
+		Message: &msg,
+	})
+}
+
+func SetTooManyRequestsErrorResponse(err error, c *gin.Context, message ...string) {
+	msg := errMsg(err, message)
+	c.JSON(http.StatusTooManyRequests, model.Error{
+		Code:    http.StatusTooManyRequests,
+		Message: &msg,
+	})
+}
+
 func errMsg(err error, message []string) string {
 	var sb strings.Builder
 

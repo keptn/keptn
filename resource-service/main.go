@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/keptn/keptn/resource-service/common"
 	"io/ioutil"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/kelseyhightower/envconfig"
+	"github.com/keptn/keptn/resource-service/common"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"

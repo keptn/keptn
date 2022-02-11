@@ -77,7 +77,6 @@ func (eh *MetadataHandler) GetMetadata(c *gin.Context) {
 		payload.Keptnversion = keptnVersion
 	}
 
-	logger.Info("!!!!aom na konci a payload je ", payload)
 	c.Status(http.StatusOK)
 	c.JSON(http.StatusOK, payload)
 }

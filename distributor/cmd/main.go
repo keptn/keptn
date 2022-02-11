@@ -16,13 +16,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"github.com/kelseyhightower/envconfig"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/distributor/pkg/config"
-	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
-	"github.com/keptn/keptn/distributor/pkg/lib/events"
-	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,6 +23,14 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
+	"github.com/keptn/keptn/distributor/pkg/lib/events"
+	logger "github.com/sirupsen/logrus"
 )
 
 func main() {

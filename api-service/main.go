@@ -35,6 +35,8 @@ import (
 // @BasePath /v1
 
 const envVarLogLevel = "LOG_LEVEL"
+const authRequestsPerSecond = "MAX_AUTH_REQUESTS_PER_SECOND"
+const authRequestMaxBurst = "MAX_AUTH_REQUESTS_BURST"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -47,6 +49,15 @@ func main() {
 			log.SetLevel(logLevel)
 		}
 	}
+
+	// requestsPerSecond, err := strconv.ParseFloat(os.Getenv(authRequestsPerSecond), 32)
+	// if err != nil {
+	// 	log.WithError(err).Error("could not parse max auth requests per second provided by 'MAX_AUTH_REQUESTS_PER_SECOND' env var")
+	// }
+	// requestsMaxBurst, err := strconv.Atoi(os.Getenv(authRequestsPerSecond))
+	// if err != nil {
+	// 	log.WithError(err).Error("could not parse max auth requests burst provided by 'MAX_AUTH_REQUESTS_BURST' env var")
+	// }
 
 	if _, err := os.Stat(repository.ScopesConfigurationFile); os.IsNotExist(err) {
 		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)
@@ -71,13 +82,15 @@ func main() {
 	metadataController := controller.NewMetadataController(handler.NewMetadataHandler())
 	metadataController.Inject(apiV1)
 
+	authController := controller.NewAuthController(handler.NewAuthHandler( /*requestsPerSecond, requestsMaxBurst, clock.New()*/ ))
+	authController.Inject(apiV1)
+
 	eventController := controller.NewEventController(handler.NewEventHandler())
 	eventController.Inject(apiV1)
 
 	engine.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	engine.Static("/swagger-ui", "./swagger-ui")
-
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: engine,
