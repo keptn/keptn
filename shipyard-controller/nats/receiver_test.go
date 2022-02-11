@@ -37,7 +37,9 @@ func TestNatsConnectionHandler(t *testing.T) {
 			return nil
 		},
 	}
-	nh := NewNatsConnectionHandler(context.TODO(), natsURL(), mockNatsEventHandler)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	nh := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
 
 	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
 
@@ -56,6 +58,14 @@ func TestNatsConnectionHandler(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) > 0
+	}, 15*time.Second, 5*time.Second)
+
+	// call cancel() and wait for the consumer to shut down
+	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
+	cancel()
+
+	require.Eventually(t, func() bool {
+		return nh.subscriptions[0].isActive == false
 	}, 15*time.Second, 5*time.Second)
 }
 
@@ -77,7 +87,8 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 			return nil
 		},
 	}
-	nh := NewNatsConnectionHandler(context.TODO(), natsURL(), mockNatsEventHandler)
+	ctx, cancel := context.WithCancel(context.TODO())
+	nh := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
 
 	err = nh.SubscribeToTopics([]string{"sh.keptn.>"})
 
@@ -85,6 +96,14 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) > 0
+	}, 15*time.Second, 5*time.Second)
+
+	// call cancel() and wait for the consumer to shut down
+	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
+	cancel()
+	// wait for the consumer to shut down
+	require.Eventually(t, func() bool {
+		return nh.subscriptions[0].isActive == false
 	}, 15*time.Second, 5*time.Second)
 }
 
@@ -112,7 +131,9 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 			return nil
 		},
 	}
-	nh := NewNatsConnectionHandler(context.TODO(), natsURL(), mockNatsEventHandler)
+	ctx, cancel := context.WithCancel(context.TODO())
+
+	nh := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
 
 	err = nh.SubscribeToTopics([]string{"sh.keptn.>"})
 
@@ -130,6 +151,14 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) > 0
 	}, 15*time.Second, 5*time.Second)
+
+	// call cancel() and wait for the consumer to shut down
+	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
+	cancel()
+	// wait for the consumer to shut down
+	require.Eventually(t, func() bool {
+		return nh.subscriptions[0].isActive == false
+	}, 15*time.Second, 5*time.Second)
 }
 
 func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
@@ -138,8 +167,10 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 			return nil
 		},
 	}
-	nh1 := NewNatsConnectionHandler(context.TODO(), natsURL(), mockNatsEventHandler)
-	nh2 := NewNatsConnectionHandler(context.TODO(), natsURL(), mockNatsEventHandler)
+	ctx, cancel := context.WithCancel(context.TODO())
+
+	nh1 := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
+	nh2 := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
 
 	err := nh1.SubscribeToTopics([]string{"sh.keptn.>"})
 	require.Nil(t, err)
@@ -163,6 +194,14 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 	}, 15*time.Second, 5*time.Second)
 
 	require.Len(t, mockNatsEventHandler.ProcessCalls(), 1)
+
+	// call cancel() and wait for the consumer to shut down
+	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
+	cancel()
+	// wait for the consumers to shut down
+	require.Eventually(t, func() bool {
+		return nh1.subscriptions[0].isActive == false && nh2.subscriptions[0].isActive == false
+	}, 15*time.Second, 5*time.Second)
 }
 
 func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {

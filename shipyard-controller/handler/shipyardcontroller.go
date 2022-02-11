@@ -125,14 +125,7 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
-	eventData := &keptnv2.EventData{}
-	err := keptnv2.Decode(event.Data, eventData)
-	if err != nil {
-		log.Errorf("Could not parse event data: %v", err)
-		return err
-	}
-
-	statusType, err := keptnv2.ParseEventKind(*event.Type)
+	statusType, err := ExtractEventKind(event)
 	if err != nil {
 		return err
 	}

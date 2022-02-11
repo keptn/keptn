@@ -17,6 +17,7 @@ type PullSubscription struct {
 	ctx            context.Context
 	jetStream      nats.JetStreamContext
 	messageHandler func(event models.Event, sync bool) error
+	isActive       bool
 }
 
 func NewPullSubscription(ctx context.Context, queueGroup, topic string, js nats.JetStreamContext, messageHandler func(event models.Event, sync bool) error) *PullSubscription {
@@ -30,6 +31,7 @@ func NewPullSubscription(ctx context.Context, queueGroup, topic string, js nats.
 }
 
 func (ps *PullSubscription) Activate() error {
+	ps.isActive = true
 	consumerInfo, _ := ps.jetStream.ConsumerInfo(streamName, consumerName)
 	if consumerInfo == nil {
 		_, err := ps.jetStream.AddConsumer(streamName, &nats.ConsumerConfig{
@@ -48,40 +50,43 @@ func (ps *PullSubscription) Activate() error {
 		return fmt.Errorf("failed to subscribe to topic: %s", err.Error())
 	}
 	ps.subscription = sub
-	go func() {
-		for {
-			select {
-			case <-ps.ctx.Done():
-				return
-			default:
+	go ps.pullMessages()
+	return nil
+}
+
+func (ps *PullSubscription) pullMessages() {
+	for {
+		select {
+		case <-ps.ctx.Done():
+			ps.isActive = false
+			return
+		default:
+		}
+		msgs, err := ps.subscription.Fetch(10)
+		if err != nil {
+			// timeout is not a problem since that simple means that no event for that topic has been sent
+			if !errors.Is(err, nats.ErrTimeout) {
+				logger.WithError(err).Errorf("could not fetch messages for topic %s", ps.subscription.Subject)
 			}
-			msgs, err := ps.subscription.Fetch(10)
-			if err != nil {
-				// timeout is not a problem since that simple means that no event for that topic has been sent
-				if !errors.Is(err, nats.ErrTimeout) {
-					logger.WithError(err).Errorf("could not fetch messages for topic %s", ps.subscription.Subject)
-				}
-			}
-			for _, msg := range msgs {
-				event := &models.Event{}
-				if err := json.Unmarshal(msg.Data, event); err != nil {
-					logger.WithError(err).Error("could not unmarshal message")
-					// ACK the message to avoid re-sending it
-					if err := msg.Ack(); err != nil {
-						logger.WithError(err).Error("could not ack message")
-					}
-					return
-				}
-				if err := ps.messageHandler(*event, false); err != nil {
-					logger.WithError(err).Error("could not process message")
-				}
+		}
+		for _, msg := range msgs {
+			event := &models.Event{}
+			if err := json.Unmarshal(msg.Data, event); err != nil {
+				logger.WithError(err).Error("could not unmarshal message")
+				// ACK the message to avoid re-sending it
 				if err := msg.Ack(); err != nil {
 					logger.WithError(err).Error("could not ack message")
 				}
+				return
+			}
+			if err := ps.messageHandler(*event, false); err != nil {
+				logger.WithError(err).Error("could not process message")
+			}
+			if err := msg.Ack(); err != nil {
+				logger.WithError(err).Error("could not ack message")
 			}
 		}
-	}()
-	return nil
+	}
 }
 
 func (ps *PullSubscription) Unsubscribe() error {

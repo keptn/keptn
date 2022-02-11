@@ -144,3 +144,18 @@ func ObjToJSON(obj interface{}) string {
 	}
 	return string(indent)
 }
+
+func ExtractEventKind(event models.Event) (string, error) {
+	eventData := &keptnv2.EventData{}
+	err := keptnv2.Decode(event.Data, eventData)
+	if err != nil {
+		log.Errorf("Could not parse event data: %v", err)
+		return "", err
+	}
+
+	statusType, err := keptnv2.ParseEventKind(*event.Type)
+	if err != nil {
+		return "", err
+	}
+	return statusType, nil
+}
