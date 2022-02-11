@@ -10,10 +10,10 @@ import (
 	"os"
 )
 
-// Oauthinfo is a wrapper for oauth related information that is
+// OauthInfo is a wrapper for oauth related information that is
 // managed by the OauthStore
 type OauthInfo struct {
-	// DiscoveryInfo holds information about Oauth location and capabilites
+	// DiscoveryInfo holds information about Oauth location and capabilities
 	DiscoveryInfo *OauthDiscoveryResult
 	// ClientValues holds information about information needed from the user/client
 	ClientValues *OauthClientValues
