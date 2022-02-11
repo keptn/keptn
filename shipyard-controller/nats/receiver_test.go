@@ -6,7 +6,7 @@ import (
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	nats_mock "github.com/keptn/keptn/shipyard-controller/nats/mock"
+	natsmock "github.com/keptn/keptn/shipyard-controller/nats/mock"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const NATS_TEST_PORT = 8369
+const natsTestPort = 8369
 
 func RunServerOnPort(port int) *server.Server {
 	opts := natsserver.DefaultTestOptions
@@ -26,13 +26,13 @@ func RunServerOnPort(port int) *server.Server {
 }
 
 func TestMain(m *testing.M) {
-	natsServer := RunServerOnPort(NATS_TEST_PORT)
+	natsServer := RunServerOnPort(natsTestPort)
 	defer natsServer.Shutdown()
 	m.Run()
 }
 
 func TestNatsConnectionHandler(t *testing.T) {
-	mockNatsEventHandler := &nats_mock.IKeptnNatsMessageHandlerMock{
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event models.Event, sync bool) error {
 			return nil
 		},
@@ -82,7 +82,7 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 	marshal, _ := json.Marshal(event)
 	_ = publisherConn.Publish(keptnv2.GetTriggeredEventType("test"), marshal)
 
-	mockNatsEventHandler := &nats_mock.IKeptnNatsMessageHandlerMock{
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event models.Event, sync bool) error {
 			return nil
 		},
@@ -126,7 +126,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 		_, _ = js.UpdateStream(wrongStreamConfig)
 	}
 
-	mockNatsEventHandler := &nats_mock.IKeptnNatsMessageHandlerMock{
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event models.Event, sync bool) error {
 			return nil
 		},
@@ -162,7 +162,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 }
 
 func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
-	mockNatsEventHandler := &nats_mock.IKeptnNatsMessageHandlerMock{
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event models.Event, sync bool) error {
 			return nil
 		},
@@ -205,7 +205,7 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 }
 
 func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
-	mockNatsEventHandler := &nats_mock.IKeptnNatsMessageHandlerMock{
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event models.Event, sync bool) error {
 			return nil
 		},
@@ -219,5 +219,5 @@ func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
 }
 
 func natsURL() string {
-	return fmt.Sprintf("nats://127.0.0.1:%d", NATS_TEST_PORT)
+	return fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
 }
