@@ -210,6 +210,7 @@ func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
 			return nil
 		},
 	}
+
 	nh := NewNatsConnectionHandler(context.TODO(), "nats://wrong-url", mockNatsEventHandler)
 
 	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
