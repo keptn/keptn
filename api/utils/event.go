@@ -1,9 +1,11 @@
 package utils
 
 import (
-	logger "github.com/sirupsen/logrus"
 	"os"
+	"strings"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -36,7 +38,7 @@ func SendEvent(keptnContext, triggeredID, gitCommitID, eventType, source string,
 	ev.SetTime(time.Now().UTC())
 	ev.SetSource(source)
 	ev.SetDataContentType(cloudevents.ApplicationJSON)
-	ev.SetExtension("shkeptncontext", keptnContext)
+	ev.SetExtension("shkeptncontext", strings.TrimSpace(keptnContext))
 	ev.SetExtension("triggeredid", triggeredID)
 	ev.SetExtension("gitcommitid", gitCommitID)
 	ev.SetData(cloudevents.ApplicationJSON, data)
