@@ -39,7 +39,7 @@ func SendEvent(keptnContext, triggeredID, gitCommitID, eventType, source string,
 	ev.SetSource(source)
 	ev.SetDataContentType(cloudevents.ApplicationJSON)
 	ev.SetExtension("shkeptncontext", strings.TrimSpace(keptnContext))
-	ev.SetExtension("triggeredid", triggeredID)
+	ev.SetExtension("triggeredid", strings.TrimSpace(triggeredID))
 	ev.SetExtension("gitcommitid", gitCommitID)
 	ev.SetData(cloudevents.ApplicationJSON, data)
 
