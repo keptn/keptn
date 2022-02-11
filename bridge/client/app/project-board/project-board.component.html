@@ -118,51 +118,24 @@
       >
         <dt-icon name="hops"></dt-icon>
       </button>
+
       <div class="relative">
-        <div *ngIf="hasUnreadLogs$ | async" class="notification-indicator notification-indicator-absolute"></div>
+        <div *ngIf="hasUnreadLogs$ | async" class="notification-indicator"></div>
         <button
+          *ngIf="!isCreateMode"
           dt-icon-button
           dtMenuItem
           variant="nested"
-          aria-label="Open uniform view"
-          [disabled]="isCreateMode"
+          aria-label="Open settings view"
           [dtOverlay]="overlay"
-          [dtOverlayConfig]="{ data: { text: 'Uniform' } }"
+          [dtOverlayConfig]="{ data: { text: 'Settings' } }"
           routerLinkActive="active"
-          routerLink="uniform"
+          routerLink="settings"
         >
-          <dt-icon name="infrastructure"></dt-icon>
+          <dt-icon name="options-menu"></dt-icon>
         </button>
       </div>
 
-      <button
-        dt-icon-button
-        dtMenuItem
-        variant="nested"
-        aria-label="Open integration view"
-        [disabled]="isCreateMode"
-        [dtOverlay]="overlay"
-        [dtOverlayConfig]="{ data: { text: 'Integration' } }"
-        routerLinkActive="active"
-        routerLink="integration"
-      >
-        <dt-icon name="plugin-connection"></dt-icon>
-      </button>
-    </dt-menu-group>
-    <dt-menu-group class="bottom-menu">
-      <button
-        *ngIf="!isCreateMode"
-        dt-icon-button
-        dtMenuItem
-        variant="nested"
-        aria-label="Open settings view"
-        [dtOverlay]="overlay"
-        [dtOverlayConfig]="{ data: { text: 'Settings' } }"
-        routerLinkActive="active"
-        routerLink="settings"
-      >
-        <dt-icon name="options-menu"></dt-icon>
-      </button>
       <button
         *ngIf="isCreateMode"
         dt-icon-button

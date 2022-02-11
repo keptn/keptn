@@ -2462,10 +2462,10 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
-"@types/lodash-es@4.17.5":
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/@types/lodash-es/-/lodash-es-4.17.5.tgz#1c3fdd16849d84aea43890b1c60da379fb501353"
-  integrity sha512-SHBoI8/0aoMQWAgUHMQ599VM6ZiSKg8sh/0cFqqlQQMyY9uEplc0ULU5yQNzcvdR4ZKa0ey8+vFmahuRbOCT1A==
+"@types/lodash-es@4.17.6":
+  version "4.17.6"
+  resolved "https://registry.yarnpkg.com/@types/lodash-es/-/lodash-es-4.17.6.tgz#c2ed4c8320ffa6f11b43eb89e9eaeec65966a0a0"
+  integrity sha512-R+zTeVUKDdfoRxpAryaQNRKk3105Rrgx2CFRClIgRGaqDTdjsm8h6IYA8ir584W3ePzkZfst5xIgDwYrlh9HLg==
   dependencies:
     "@types/lodash" "*"
 
@@ -5830,10 +5830,10 @@ eslint-plugin-import@2.25.4, eslint-plugin-import@^2.25.3:
     resolve "^1.20.0"
     tsconfig-paths "^3.12.0"
 
-eslint-plugin-jsdoc@37.7.0:
-  version "37.7.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-37.7.0.tgz#975d9f18cb0520dde7a2b0db5f4421dfee3fdd17"
-  integrity sha512-vzy3/ltXoGtabRnjLogaEmhGxxIv5B8HK5MJLIrdxFJUvhBppZjuVuLr71DjIBi0jg6bFomwkYKjojt29cN8PA==
+eslint-plugin-jsdoc@37.7.1:
+  version "37.7.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-37.7.1.tgz#faf2cd2c56df11f77063aef3abbe4a1932af308f"
+  integrity sha512-ySxDTedl6qKXT/VeTwcZlhsRtvNQZGPklyVnaL5+ge20vowzFA9CKvrY0NXRqvdIz6JBVMFpxX9DSmS3OyAUOQ==
   dependencies:
     "@es-joy/jsdoccomment" "~0.18.0"
     comment-parser "1.3.0"

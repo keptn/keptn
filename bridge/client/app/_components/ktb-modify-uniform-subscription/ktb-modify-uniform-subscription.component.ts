@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { forkJoin, Observable, of, Subject, throwError } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil, tap, catchError } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { Project } from '../../_models/project';
@@ -281,7 +281,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       () => {
         this.updating = false;
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
-        this.router.navigate(['/', 'project', projectName, 'uniform', 'services', integrationId]);
+        this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
       },
       () => {
         this.notificationsService.addNotification(NotificationType.ERROR, 'The subscription could not be updated');

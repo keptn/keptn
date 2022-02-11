@@ -41,6 +41,11 @@ describe('Keptn Secrets adding deleting test', () => {
       statusCode: 200,
     }).as('getApproval');
 
+    cy.intercept('GET', 'api/project/dynatrace', {
+      statusCode: 200,
+      fixture: 'get.approval.json',
+    });
+
     cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
       statusCode: 200,
     }).as('hasUnreadUniformRegistrationLogs');

@@ -10,7 +10,6 @@ on:
     branches:
       - 'master'
       - '[0-9]+.[1-9][0-9]*.x'
-  workflow_dispatch: # run CI when triggered manually
 env:
   GO_VERSION: "^1.16"
   KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"

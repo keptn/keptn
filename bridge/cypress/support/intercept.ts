@@ -5,14 +5,31 @@ export function interceptIntegrations(): void {
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
+  // jmeter-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
     body: {
       logs: [],
     },
   });
-  cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
+  // approval-service
+  cy.intercept('/api/controlPlane/v1/log?integrationId=4d57b2af3cdd66bce06625daafa9c5cbb474a6b8&pageSize=100', {
     body: {
       logs: [],
+    },
+  });
+  // webhook-service
+  cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
+    body: {
+      logs: [
+        {
+          integrationid: '0f2d35875bbaa72b972157260a7bd4af4f2826df',
+          message: 'my error',
+          shkeptncontext: ' 7394b5b3-2fb3-4cb7-b435-d0e9d6f0cb87',
+          task: 'my task',
+          time: '2022-02-09T16:27:02.678Z',
+          triggeredid: 'bd3bc477-6d0f-4d71-b15d-c33e953a74ba',
+        },
+      ],
     },
   });
   cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/info', {
@@ -27,12 +44,12 @@ export function interceptIntegrations(): void {
       isWebhookService: true,
     },
   });
-  cy.intercept('/api/controlPlane/v1/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription', {
+  cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription', {
     body: {
       id: '0b77c90e-282d-4a7e-a96d-e23027265868',
     },
   });
-  cy.intercept('/api/controlPlane/v1/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscription', {
+  cy.intercept('/api/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscription', {
     body: {
       id: 'b5111b1c-446a-410d-bb6c-e1dcd409c890',
     },
