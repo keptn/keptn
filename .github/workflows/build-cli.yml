@@ -101,7 +101,7 @@ jobs:
           echo "Building Keptn CLI with filename $OUTPUT_EXECUTABLE_NAME"
           
           go mod download
-          go build -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
+          go build -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
           
           # shellcheck disable=SC2181
           if [ $? -ne 0 ]; then
