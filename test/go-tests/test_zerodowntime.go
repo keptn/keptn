@@ -27,7 +27,7 @@ spec:
 // Test_ZeroDownTimeTriggerSequence tests wether a sequence is started event though the shipyard controller is down at the moment where the sequence.triggered event is sent to the API.
 // This is for testing the at least once delivery guarantee achieved by using JetStream for the shipyard controller (see http://github.com/keptn/keptn/issue/6685).
 func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
-	projectName := "state"
+	projectName := "zero-downtime"
 	serviceName := "my-service"
 	stageName := "dev"
 	sequenceName := "delivery"
