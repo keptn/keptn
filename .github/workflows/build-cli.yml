@@ -104,6 +104,8 @@ jobs:
           go mod download
           go build -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
           
+          ls -la "${OUTPUT_EXECUTABLE_NAME}"
+          
           # create a .tar.gz archive of the binary
           mkdir dist
           tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTABLE_NAME}
