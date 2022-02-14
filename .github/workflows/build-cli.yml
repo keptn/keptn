@@ -102,13 +102,13 @@ jobs:
           echo "Building Keptn CLI with filename $OUTPUT_EXECUTABLE_NAME"
           
           go mod download
-          go build -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
+          go build -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "bin/${OUTPUT_EXECUTABLE_NAME}"
           
-          ls -la "${OUTPUT_EXECUTABLE_NAME}"
+          ls "bin/${OUTPUT_EXECUTABLE_NAME}"
           
           # create a .tar.gz archive of the binary
           mkdir dist
-          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTABLE_NAME}
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
 
       - name: Upload Keptn CLI as an artifact
         uses: actions/upload-artifact@v2
