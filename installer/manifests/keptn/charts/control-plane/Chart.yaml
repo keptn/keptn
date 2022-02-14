@@ -13,7 +13,7 @@ description: A Helm chart for Kubernetes
 type: application
 
 # This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
+# to the chart and its templates, including the app version.testytest
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.1.0
 
