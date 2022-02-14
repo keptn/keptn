@@ -102,7 +102,7 @@ jobs:
           echo "Building Keptn CLI with filename $OUTPUT_EXECUTABLE_NAME"
           
           go mod download
-          go build -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
+          go build -v -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
           
           # verify output file exists
           ls -la
