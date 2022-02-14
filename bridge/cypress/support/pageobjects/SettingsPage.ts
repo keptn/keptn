@@ -1,8 +1,23 @@
 /// <reference types="cypress" />
+type subSettings = 'Integration' | 'Project' | 'Services' | 'Secrets' | 'Common use cases';
 
 class SettingsPage {
   GIT_USER_LOC = 'input[formcontrolname="gitUser"]';
   GIT_URL_INPUT_LOC = 'input[formcontrolname="gitUrl"]';
+
+  public goToUniformPage(): this {
+    return this.goToSubSettings('Integration');
+  }
+
+  // go to Secrets page
+  public goToSecretsPage(): this {
+    return this.goToSubSettings('Secrets');
+  }
+
+  private goToSubSettings(subPage: subSettings): this {
+    cy.get('dt-menu-group button[role=menuitem]').contains(subPage).click();
+    return this;
+  }
 
   inputGitUrl(GIT_URL: string): this {
     cy.get('input[formcontrolname="gitUrl"]').type(GIT_URL);

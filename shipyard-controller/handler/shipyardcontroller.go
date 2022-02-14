@@ -367,6 +367,10 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
+	sc.onSequenceAborted(models.EventScope{
+		KeptnContext: cancel.KeptnContext,
+		EventData:    keptnv2.EventData{Project: cancel.Project, Stage: cancel.Stage},
+	})
 	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(cancel.Project,
 		models.TaskExecution{
 			KeptnContext: cancel.KeptnContext,
@@ -408,7 +412,6 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 }
 
 func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, taskSequenceName string) error {
-	sc.onSequenceAborted(sequenceTriggeredEvent)
 	scope, err := models.NewEventScope(sequenceTriggeredEvent)
 	if err != nil {
 		return err
@@ -442,8 +445,10 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 		common.TriggeredEvent,
 	)
 	if err != nil {
+		// if the sequence.triggered event is not available anymore, we cannot send a referencing .finished event
 		if err == db.ErrNoEventFound {
-			return ErrSequenceNotFound
+			log.Infof("No sequence.triggered event for sequence %s available anymore.", cancel.KeptnContext)
+			return nil
 		}
 		return err
 	} else if len(events) == 0 {
@@ -452,7 +457,9 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 	// the first event of the context should be a task sequence event that contains the sequence name
 	sequenceTriggeredEvent := events[0]
 	if !keptnv2.IsSequenceEventType(*sequenceTriggeredEvent.Type) {
-		return ErrSequenceNotFound
+		// if the sequence.triggered event is not available anymore, we cannot send a referencing .finished event
+		log.Infof("No sequence.triggered event for sequence %s available anymore.", cancel.KeptnContext)
+		return nil
 	}
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*sequenceTriggeredEvent.Type)
 	if err != nil {

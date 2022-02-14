@@ -12,6 +12,7 @@ mongo:
     password: null
     rootUser: 'admin'
     rootPassword: null
+    bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
 
@@ -50,6 +51,7 @@ nats:
 apiGatewayNginx:
   type: ClusterIP
   port: 80
+  targetPort: 8080
   nodePort: 31090
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
@@ -89,12 +91,14 @@ bridge:
     secureCookie: false
     trustProxy: ""
     sessionTimeoutMin: ""
+    sessionValidatingTimeoutMin: ""
     baseUrl: ""
     clientID: ""
     clientSecret: ""
     IDTokenAlg: ""
     scope: ""
     userIdentifier: ""
+    mongoConnectionString: ""
 
 distributor:
   metadata:

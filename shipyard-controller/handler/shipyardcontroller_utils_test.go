@@ -118,6 +118,38 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "empty sequence should result in an error",
+			fields: fields{
+				projectRepo:      nil,
+				eventRepo:        nil,
+				taskSequenceRepo: nil,
+			},
+			args: args{
+				stageName:        "dev",
+				taskSequenceName: "my-sequence",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: "0.2.0",
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "my-sequence",
+										TriggeredOn: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

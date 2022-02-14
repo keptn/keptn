@@ -1,12 +1,10 @@
 import { Request, Response, Router } from 'express';
-import { authenticateSession, getLogoutHint, isAuthenticated, removeSession } from './session';
 import oClient, { BaseClient, errors, TokenSet } from 'openid-client';
 import { EndSessionData } from '../../shared/interfaces/end-session-data';
+import { SessionService } from './session';
 
 const generators = oClient.generators; // else jest isn't working
 const prefixPath = process.env.PREFIX_PATH;
-const codeVerifiers: { [state: string]: { codeVerifier: string; nonce: string; expiresAt: number } } = {};
-const stateExpireMilliSeconds = 60 * 60_000; // expires in 60 minutes
 
 /**
  * Build the root path. The exact path depends on the deployment & PREFIX_PATH value
@@ -26,7 +24,8 @@ function oauthRouter(
   client: BaseClient,
   redirectUri: string,
   logoutUri: string,
-  reduceRefreshDateSeconds: number
+  reduceRefreshDateSeconds: number,
+  session: SessionService
 ): Router {
   const router = Router();
   const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
@@ -35,22 +34,25 @@ function oauthRouter(
   /**
    * Router level middleware for login
    */
-  router.get('/login', async (req: Request, res: Response) => {
+  router.get('/oauth/login', async (req: Request, res: Response) => {
     const codeVerifier = generators.codeVerifier();
     const codeChallenge = generators.codeChallenge(codeVerifier);
     const nonce = generators.nonce();
     const state = generators.state();
-    codeVerifiers[state] = { codeVerifier, nonce, expiresAt: new Date().getTime() + stateExpireMilliSeconds };
+    try {
+      await session.saveValidationData(state, codeVerifier, nonce);
 
-    const authorizationUrl = client.authorizationUrl({
-      scope,
-      state,
-      nonce,
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-    });
-
-    res.redirect(authorizationUrl);
+      const authorizationUrl = client.authorizationUrl({
+        scope,
+        state,
+        nonce,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+      });
+      res.redirect(authorizationUrl);
+    } catch (e) {
+      console.log(e);
+    }
     return res;
   });
 
@@ -59,30 +61,30 @@ function oauthRouter(
    */
   router.get('/oauth/redirect', async (req: Request, res: Response) => {
     const params = client.callbackParams(req);
+    const invalidRequest = {
+      title: 'Internal error',
+      message: 'Error while handling the redirect. Please retry and check whether the problem still exists.',
+      location: getRootLocation(),
+    };
 
     if (!params.code || !params.state) {
-      return res.redirect(getRootLocation());
-    }
-
-    const verifiers = codeVerifiers[params.state];
-    if (verifiers) {
-      delete codeVerifiers[params.state];
-      params.state = undefined;
-    } else {
-      return res.render('error', {
-        title: 'Permission denied',
-        message: 'Forbidden',
-      });
+      return res.render('error', invalidRequest);
     }
 
     try {
+      const validationData = await session.getAndRemoveValidationData(params.state);
+      if (!validationData) {
+        return res.render('error', invalidRequest);
+      }
+
       const tokenSet = await client.callback(redirectUri, params, {
-        code_verifier: verifiers.codeVerifier,
-        nonce: verifiers.nonce,
+        code_verifier: validationData.codeVerifier,
+        nonce: validationData.nonce,
+        state: validationData._id,
         scope,
       });
       reduceRefreshDateBy(tokenSet, reduceRefreshDateSeconds);
-      await authenticateSession(req, tokenSet);
+      await session.authenticateSession(req, tokenSet);
       res.redirect(getRootLocation());
     } catch (error) {
       const err = error as errors.OPError | errors.RPError;
@@ -95,11 +97,7 @@ function oauthRouter(
             (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.',
         });
       } else {
-        return res.render('error', {
-          title: 'Internal error',
-          message: 'Error while handling the redirect. Please retry and check whether the problem exists.',
-          location: getRootLocation(),
-        });
+        return res.render('error', invalidRequest);
       }
     }
   });
@@ -107,17 +105,17 @@ function oauthRouter(
   /**
    * Router level middleware for logout
    */
-  router.post('/logout', async (req: Request, res: Response) => {
-    if (!isAuthenticated(req.session)) {
+  router.post('/oauth/logout', async (req: Request, res: Response) => {
+    if (!session.isAuthenticated(req.session)) {
       // Session is not authenticated, redirect to root
       return res.json();
     }
 
-    const hint = getLogoutHint(req) ?? '';
+    const hint = session.getLogoutHint(req) ?? '';
     if (req.session.tokenSet.access_token && client.issuer.metadata.revocation_endpoint) {
       client.revoke(req.session.tokenSet.access_token);
     }
-    removeSession(req);
+    session.removeSession(req);
 
     if (client.issuer.metadata.end_session_endpoint) {
       const params: EndSessionData = {
@@ -132,6 +130,7 @@ function oauthRouter(
     }
   });
 
+  // exception for this endpoint (not "/oauth/" before) because this will be moved to the client in future
   router.get('/logoutsession', (req: Request, res: Response) => {
     return res.render('logout', { location: getRootLocation() });
   });
@@ -146,21 +145,6 @@ function oauthRouter(
  */
 function reduceRefreshDateBy(tokenSet: TokenSet, seconds: number): void {
   tokenSet.expires_at = tokenSet.expires_at ? tokenSet.expires_at - seconds : undefined; // token should be refreshed x seconds earlier
-}
-
-/**
- * Delete states created by the authentication-flow if expiry is reached
- */
-function validateStateTimes(): void {
-  for (const key of Object.keys(codeVerifiers)) {
-    if (new Date().getTime() > codeVerifiers[key]?.expiresAt) {
-      delete codeVerifiers[key];
-    }
-  }
-}
-
-if (process.env.NODE_ENV !== 'test') {
-  setInterval(validateStateTimes, 5_000); // could lead to missing exit of jest without using fakeTimers
 }
 
 export { oauthRouter, getRootLocation, reduceRefreshDateBy };

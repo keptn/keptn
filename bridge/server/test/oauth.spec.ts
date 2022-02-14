@@ -2,8 +2,49 @@ import { CallbackParamsType, TokenSet } from 'openid-client';
 import request from 'supertest';
 import { Express, Request } from 'express';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { init } from '../app';
-import { TestUtils } from '../.jest/test.utils';
+import { Jest } from '@jest/environment';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { jest } from '@jest/globals';
+
+let store: CachedStore = {};
+const fakeGetOAuthSecrets = jest.fn();
+jest.unstable_mockModule('../user/secrets', () => {
+  return {
+    getOAuthSecrets: fakeGetOAuthSecrets,
+    getOAuthMongoExternalConnectionString(): string {
+      return '';
+    },
+  };
+});
+// has to be imported after secrets mock
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { SessionService } = await import('../user/session');
+
+jest.unstable_mockModule('../user/session', () => {
+  return {
+    SessionService: jest.fn().mockImplementation(() => {
+      return Object.assign(new SessionService(), {
+        async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
+          store[state] = {
+            _id: state,
+            codeVerifier,
+            nonce,
+          };
+        },
+        async getAndRemoveValidationData(state: string): Promise<unknown | undefined> {
+          const value = store[state];
+          delete store[state];
+          return value ? { value } : undefined;
+        },
+      });
+    }),
+  };
+});
+
+// has to be imported after jest mocked
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { TestUtils } = await import('../.jest/test.utils');
+const { init } = await import('../app');
 
 // import { jest } from '@jest/globals';
 
@@ -13,8 +54,13 @@ interface OAuthParameters {
   OAUTH_DISCOVERY: string | undefined;
 }
 
+interface CachedStore {
+  [state: string]: { _id: string; codeVerifier: string; nonce: string };
+}
+
 const authorizationUrl = `http://localhost/authorization`;
 const endSessionEndpoint = 'http://localhost/end_session';
+let sessionMock: Jest | undefined;
 const idToken =
   'myHeader.' +
   Buffer.from(
@@ -24,6 +70,10 @@ const idToken =
   ).toString('base64');
 
 describe('Test OAuth env variables', () => {
+  beforeEach(() => {
+    mockSecrets();
+  });
+
   it('should exit if insufficient parameters', async () => {
     const parameters: OAuthParameters[] = [
       {
@@ -52,20 +102,67 @@ describe('Test OAuth env variables', () => {
     }
   });
 
+  it('should throw errors if session secret is not provided', async () => {
+    process.env.OAUTH_ENABLED = 'true';
+    process.env.OAUTH_CLIENT_ID = 'myClientID';
+    process.env.OAUTH_BASE_URL = 'http://localhost';
+    process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
+    fakeGetOAuthSecrets.mockImplementation(() => {
+      return {
+        sessionSecret: '',
+        databaseEncryptSecret: 'database_secret_'.repeat(2),
+      };
+    });
+    await expect(init()).rejects.toThrowError();
+  });
+
+  it('should throw errors if database encrypt secret is not provided', async () => {
+    process.env.OAUTH_ENABLED = 'true';
+    process.env.OAUTH_CLIENT_ID = 'myClientID';
+    process.env.OAUTH_BASE_URL = 'http://localhost';
+    process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
+    fakeGetOAuthSecrets.mockImplementation(() => {
+      return {
+        sessionSecret: 'abcd',
+        databaseEncryptSecret: '',
+      };
+    });
+    await expect(init()).rejects.toThrowError();
+  });
+
+  it('should throw errors if database encrypt secret length is invalid', async () => {
+    process.env.OAUTH_ENABLED = 'true';
+    process.env.OAUTH_CLIENT_ID = 'myClientID';
+    process.env.OAUTH_BASE_URL = 'http://localhost';
+    process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
+    fakeGetOAuthSecrets.mockImplementation(() => {
+      return {
+        sessionSecret: 'abcd',
+        databaseEncryptSecret: 'mySecret',
+      };
+    });
+    await expect(init()).rejects.toThrowError();
+  });
+
   it('should not register OAuth endpoints if OAuth is not enabled', async () => {
     delete process.env.OAUTH_ENABLED;
     process.env.OAUTH_CLIENT_ID = 'myClientID';
     process.env.OAUTH_BASE_URL = 'http://localhost';
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
-    for (const endpoint of ['/login', '/oauth/redirect', '/logoutsession']) {
+    // if not found, index.html is sent
+    for (const endpoint of ['/oauth/login', '/oauth/redirect', '/logoutsession']) {
       const response = await request(app).get(endpoint);
-      expect(response.status).toBe(500);
+      expect(response.text).not.toBeUndefined();
     }
-    for (const endpoint of ['/logout']) {
+    for (const endpoint of ['/oauth/logout']) {
       const response = await request(app).post(endpoint);
-      expect(response.status).toBe(500);
+      expect(response.text).not.toBeUndefined();
     }
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
@@ -73,51 +170,59 @@ describe('Test OAuth', () => {
   let app: Express;
   beforeAll(async () => {
     mockOpenId(true);
-    app = await TestUtils.setupOAuthTest();
+    app = await setupOAuth();
+  });
+
+  beforeEach(() => {
+    store = {};
   });
 
   it('should redirect to authorizationUrl', async () => {
-    const response = await request(app).get('/login');
+    const response = await request(app).get('/oauth/login/');
     const state = response.headers.location?.split('state=').pop();
     expect(response.redirect).toBe(true);
+    expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
     expect(response.headers.location).toEqual(`${authorizationUrl}?state=${state}`);
   });
 
   it('should reject token gain if state is not provided', async () => {
-    await request(app).get('/login');
+    await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?code=someCode`);
-    expect(response.headers.location).toEqual('/');
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.text).not.toBeUndefined(); // error view is rendered
   });
 
   it('should reject token gain if code is not provided', async () => {
-    await request(app).get('/login');
+    await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?state=someState`);
-    expect(response.headers.location).toEqual('/');
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.text).not.toBeUndefined();
   });
 
   it('should reject token gain if state is invalid', async () => {
-    await request(app).get('/login');
+    await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?state=invalidState?code=someCode`);
-    expect(response.headers.location).toEqual('/');
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.text).not.toBeUndefined();
   });
 
   it('should authenticate successfully', async () => {
-    const { response } = await login(app);
-    expect(response.headers['set-cookie']?.[0]?.split('=')[0]).toBe('KTSESSION');
+    const { response, cookies } = await login(app);
+    expect(cookies?.[0]?.split('=')[0]).toBe('KTSESSION');
+    expect(response.headers.location).toBe('/');
+    expect(response.status).toBe(302);
   });
 
   it('should not be successful if state already used', async () => {
     const { state } = await login(app);
     const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.text).not.toBeUndefined();
   });
 
   it('should logout and return end session data', async () => {
-    const { response } = await login(app);
-    const logoutResponse = await request(app).post(`/logout`).set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const logoutResponse = await request(app).post(`/oauth/logout`).set('Cookie', cookies);
     const { state, ...data } = logoutResponse.body;
     expect(state).not.toBeUndefined();
     expect(data).toEqual({
@@ -128,8 +233,7 @@ describe('Test OAuth', () => {
   });
 
   it('should return nothing on logout if not authenticated', async () => {
-    await login(app);
-    const response = await request(app).post(`/logout`);
+    const response = await request(app).post(`/oauth/logout`);
     expect(response.body).toBe('');
   });
 
@@ -139,18 +243,27 @@ describe('Test OAuth', () => {
   });
 
   it('should be able to fetch data if authenticated', async () => {
-    const { response } = await login(app);
-    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
     expect(dataResponse.status).not.toBe(401);
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
 describe('Test expired token', () => {
+  beforeEach(() => {
+    store = {};
+  });
+
   it('should fail refresh of token and remove session', async () => {
     mockOpenId(true, true, true);
-    const app = await TestUtils.setupOAuthTest();
-    const { response } = await login(app);
-    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    const app = await setupOAuth();
+    const { cookies } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
+
     expect(dataResponse.status).toBe(302);
     expect(dataResponse.redirect).toBe(true);
     expect(dataResponse.headers['set-cookie']?.length ?? 0).toBe(0);
@@ -158,10 +271,15 @@ describe('Test expired token', () => {
 
   it('should refresh token if expired', async () => {
     mockOpenId(true, true);
-    const app = await TestUtils.setupOAuthTest();
-    const { response } = await login(app);
-    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', response.headers['set-cookie']);
+    const app = await setupOAuth();
+    const { cookies } = await login(app);
+    const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
+
     expect(dataResponse.status).not.toBe(401);
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
@@ -170,13 +288,21 @@ describe('Test OAuth logout without end session endpoint', () => {
 
   beforeAll(async () => {
     mockOpenId(false);
-    app = await TestUtils.setupOAuthTest();
+    app = await setupOAuth();
+  });
+
+  beforeEach(() => {
+    store = {};
   });
 
   it('should logout and not return nothing', async () => {
-    const { response } = await login(app);
-    const logoutResponse = await request(app).post(`/logout`).set('Cookie', response.headers['set-cookie']);
+    const { cookies } = await login(app);
+    const logoutResponse = await request(app).post(`/oauth/logout`).set('Cookie', cookies);
     expect(logoutResponse.body).toBe('');
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
   });
 });
 
@@ -245,9 +371,29 @@ function setOrDeleteProperty(
   }
 }
 
-async function login(app: Express): Promise<{ state: string; response: request.Response }> {
-  const authUrlResponse = await request(app).get('/login');
+async function login(app: Express): Promise<{ state: string; response: request.Response; cookies: string[] }> {
+  const authUrlResponse = await request(app).get('/oauth/login/');
   const state = authUrlResponse.headers.location?.split('state=').pop();
   const response = await request(app).get(`/oauth/redirect?state=${state}&code=someCode`);
-  return { state, response };
+  return { state, response, cookies: response.headers['set-cookie'] };
+}
+
+async function setupOAuth(): Promise<Express> {
+  mockSecrets();
+  await mockSavingValidationData();
+  return TestUtils.setupOAuthTest();
+}
+
+async function mockSavingValidationData(): Promise<void> {
+  process.env.OAUTH_SESSION_SECRET = 'mySessionSecret';
+  process.env.OAUTH_DATABASE_ENCRYPT_SECRET = 'database_secret_'.repeat(2); // length of 32
+}
+
+function mockSecrets(): void {
+  fakeGetOAuthSecrets.mockImplementation(() => {
+    return {
+      sessionSecret: 'abc',
+      databaseEncryptSecret: 'database_secret_'.repeat(2),
+    };
+  });
 }

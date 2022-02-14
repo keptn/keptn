@@ -8,6 +8,34 @@ $fonts-dir: '^./assets/fonts';
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
+.relative {
+  position: relative;
+}
+.notification-indicator, .notification-indicator-text {
+  border-radius: 11px;
+  background-color: $red-500;
+  pointer-events: none;
+  border: 2px solid $white;
+}
+
+.notification-indicator {
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  z-index: 1;
+}
+
+.notification-indicator-text {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  color: $white;
+  font-size: 11px;
+  text-align: center;
+}
+
 pre,
 code {
   font-family: monospace;
