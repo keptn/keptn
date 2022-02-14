@@ -129,7 +129,7 @@ func Test_ContinuousDelivery(t *testing.T) {
 	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 
-	t.Logf("Creating a new project %s with a GITEA Upstream", projectName)
+	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(onboardServiceShipyard)
 	require.Nil(t, err)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)

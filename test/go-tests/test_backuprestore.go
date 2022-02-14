@@ -77,7 +77,7 @@ func Test_BackupRestore(t *testing.T) {
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
 
-	t.Logf("Creating a new project %s with a GITEA Upstream", projectName)
+	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
 	require.Nil(t, err)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
