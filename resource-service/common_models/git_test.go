@@ -18,15 +18,6 @@ func TestGitCredentials_Validate(t *testing.T) {
 			fields: fields{
 				User:      "my-user",
 				Token:     "my-token",
-				RemoteURI: "my-repo",
-			},
-			wantErr: false,
-		},
-		{
-			name: "valid credentials 2",
-			fields: fields{
-				User:      "my-user",
-				Token:     "my-token",
 				RemoteURI: "https://my-repo",
 			},
 			wantErr: false,
