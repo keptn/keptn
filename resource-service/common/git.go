@@ -74,6 +74,24 @@ func getGitKeptnEmail() string {
 	return gitKeptnEmailDefault
 }
 
+func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, error) {
+	if gitContext.Credentials.GitPrivateKey != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "ssh://") {
+		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.GitPrivateKey), gitContext.Credentials.GitPrivateKeyPass)
+		if err != nil {
+			return nil, err
+		}
+		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+		return publicKey, nil
+
+	} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
+		return &http.BasicAuth{
+			Username: gitContext.Credentials.User,
+			Password: gitContext.Credentials.Token,
+		}, nil
+	}
+	return nil, nil
+}
+
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if (gitContext == common_models.GitContext{}) || (*gitContext.Credentials == common_models.GitCredentials{}) {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", "project", kerrors.ErrInvalidGitContext)
@@ -88,24 +106,16 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
-	gitCloneOptions := &git.CloneOptions{
-		URL: gitContext.Credentials.RemoteURI,
+	auth, err := getAuthMethod(gitContext)
+	if err != nil {
+		return false, err
 	}
-	if gitContext.Credentials.GitPrivateKey != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "ssh://") {
-		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.GitPrivateKey), gitContext.Credentials.GitPrivateKeyPass)
-		if err != nil {
-			return false, err
-		}
-		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-		gitCloneOptions.Auth = publicKey
-
-	} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
-		gitCloneOptions.Auth = &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
-		}
-	}
-	clone, err := g.git.PlainClone(projectPath, false, gitCloneOptions)
+	clone, err := g.git.PlainClone(projectPath, false,
+		&git.CloneOptions{
+			URL:  gitContext.Credentials.RemoteURI,
+			Auth: auth,
+		},
+	)
 
 	if err != nil {
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
@@ -247,25 +257,14 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
 	}
-
-	gitPushOptions := &git.PushOptions{
+	auth, err := getAuthMethod(gitContext)
+	if err != nil {
+		return err
+	}
+	err = repo.Push(&git.PushOptions{
 		RemoteName: "origin",
-	}
-	if gitContext.Credentials.GitPrivateKey != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "ssh://") {
-		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.GitPrivateKey), gitContext.Credentials.GitPrivateKeyPass)
-		if err != nil {
-			return err
-		}
-		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-		gitPushOptions.Auth = publicKey
-
-	} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
-		gitPushOptions.Auth = &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
-		}
-	}
-	err = repo.Push(gitPushOptions)
+		Auth:       auth,
+	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, git.ErrForceNeeded) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, kerrors.ErrForceNeeded)
@@ -286,29 +285,19 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		if err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		gitPullOptions := &git.PullOptions{
+		auth, err := getAuthMethod(gitContext)
+		if err != nil {
+			return err
+		}
+		err = w.Pull(&git.PullOptions{
 			RemoteName:    "origin",
 			Force:         true,
 			ReferenceName: head.Name(),
-		}
-		if gitContext.Credentials.GitPrivateKey != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "ssh://") {
-			publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.GitPrivateKey), gitContext.Credentials.GitPrivateKeyPass)
-			if err != nil {
-				return err
-			}
-			publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-			gitPullOptions.Auth = publicKey
-
-		} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
-			gitPullOptions.Auth = &http.BasicAuth{
-				Username: gitContext.Credentials.User,
-				Password: gitContext.Credentials.Token,
-			}
-		}
-		err = w.Pull(gitPullOptions)
+			Auth:          auth,
+		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitPullOptions.Auth})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth})
 		}
 		if err != nil {
 			if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
@@ -450,29 +439,19 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 }
 
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
-	gitFetchOptions := &git.FetchOptions{
+	auth, err := getAuthMethod(gitContext)
+	if err != nil {
+		return err
+	}
+	if err = r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
 		//// take all branch from remote and put them in the local repo as origin branches and as branches
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
 		Force: true,
-	}
-	if gitContext.Credentials.GitPrivateKey != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "ssh://") {
-		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.GitPrivateKey), gitContext.Credentials.GitPrivateKeyPass)
-		if err != nil {
-			return err
-		}
-		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-		gitFetchOptions.Auth = publicKey
-
-	} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
-		gitFetchOptions.Auth = &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
-		}
-	}
-	if err := r.Fetch(gitFetchOptions); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		Auth:  auth,
+	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}
 	return nil
