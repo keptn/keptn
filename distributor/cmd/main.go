@@ -18,6 +18,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/distributor/pkg/api"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/lib/client"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
@@ -127,7 +128,7 @@ func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.Kep
 		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
 	}
 
-	return keptnapi.NewInternal(httpClient)
+	return api.NewInternal(httpClient)
 }
 
 func setupUniformWatch(controlPlane controlplane.IControlPlane) *events.UniformWatch {
