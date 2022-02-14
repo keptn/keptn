@@ -6,7 +6,7 @@ IMAGE_TAG=$2
 KEPTN_SPEC_VERSION=$3
 DOCKER_ORG=$4
 
-if [ $# -ge 3 ]; then
+if [ $# -lt 3 ]; then
   echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION"
   exit
 fi
