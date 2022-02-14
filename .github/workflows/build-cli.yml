@@ -103,12 +103,6 @@ jobs:
           go mod download
           go build -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
           
-          # shellcheck disable=SC2181
-          if [ $? -ne 0 ]; then
-            echo "Error compiling Keptn CLI, exiting ..."
-            exit 1
-          fi
-          
           # verify output file exists
           ls -la
 
