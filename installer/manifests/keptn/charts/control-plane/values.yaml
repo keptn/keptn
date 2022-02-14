@@ -26,6 +26,9 @@ nats:
     replicas: 3
     name: nats
   nats:
+    healthcheck:
+      startup:
+        enabled: false
     jetstream:
       enabled: true
 
