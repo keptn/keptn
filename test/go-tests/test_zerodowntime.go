@@ -31,32 +31,18 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 	serviceName := "my-service"
 	stageName := "dev"
 	sequenceName := "delivery"
-	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(zeroDownTimeShipyard)
+	shipyardFile, err := CreateTmpShipyardFile(zeroDownTimeShipyard)
 	require.Nil(t, err)
 	defer func() {
-		err := os.Remove(sequenceStateShipyardFilePath)
+		err := os.Remove(shipyardFile)
 		if err != nil {
-			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
-		}
-	}()
-
-	uniform := []string{"lighthouse-service"}
-
-	// scale down the services that are usually involved in the sequence defined in the shipyard above.
-	// this way we can control the events sent during this sequence and check whether the state is updated appropriately
-	if err := ScaleDownUniform(uniform); err != nil {
-		t.Errorf("scaling down uniform failed: %s", err.Error())
-	}
-
-	defer func() {
-		if err := ScaleUpUniform(uniform, 1); err != nil {
-			t.Errorf("could not scale up uniform: " + err.Error())
+			t.Logf("Could not delete file: %s: %v", shipyardFile, err)
 		}
 	}()
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
-	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFile, true)
 	require.Nil(t, err)
 
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
@@ -66,6 +52,10 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 
 	// scale down the shipyard controller
 	err = ScaleDownUniform([]string{"shipyard-controller"})
+
+	require.Nil(t, err)
+
+	err = WaitForDeploymentToBeScaledDown("shipyard-controller")
 
 	require.Nil(t, err)
 

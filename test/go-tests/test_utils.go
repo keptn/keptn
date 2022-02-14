@@ -792,6 +792,30 @@ func RecreateGitUpstreamRepository(project string) error {
 	return nil
 }
 
+func WaitForDeploymentToBeScaledDown(deploymentName string) error {
+	// if the token is set as an env var, return that
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+
+	err = retry.Retry(func() error {
+		pods, err := clientset.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{})
+		if err != nil {
+			return err
+		}
+
+		for _, pod := range pods.Items {
+			if strings.HasPrefix(pod.Name, deploymentName) {
+				return fmt.Errorf("Pod for deployment %s still present", deploymentName)
+			}
+		}
+		return nil
+	})
+
+	return err
+}
+
 func checkResourceInResponse(resources models.Resources, resourceName string) error {
 	for _, resource := range resources.Resources {
 		if *resource.ResourceURI == resourceName {
