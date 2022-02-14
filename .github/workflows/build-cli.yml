@@ -22,7 +22,6 @@ defaults:
     shell: bash
 env:
   GO_VERSION: "^1.16"
-  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
 jobs:
   build-cli:
     name: Build Keptn CLI
@@ -102,7 +101,7 @@ jobs:
           echo "Building Keptn CLI with filename $OUTPUT_EXECUTABLE_NAME"
           
           go mod download
-          go build -v -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTABLE_NAME}"
+          go build -v -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION'" -o "${OUTPUT_EXECUTABLE_NAME}"
           
           # shellcheck disable=SC2181
           if [ $? -ne 0 ]; then

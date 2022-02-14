@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/hashicorp/go-version"
 	"os"
 
 	"github.com/keptn/keptn/cli/cmd"
@@ -14,9 +13,6 @@ var (
 
 	// DefaultKubeServerVersionConstraints is used when no version is passed by ldflags
 	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.21"
-
-	//KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
-	KubeServerVersionConstraints = ""
 )
 
 func init() {
@@ -24,15 +20,6 @@ func init() {
 }
 
 func main() {
-	if len(KubeServerVersionConstraints) > 0 {
-		if _, err := version.NewConstraint(KubeServerVersionConstraints); err != nil {
-			cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints
-		} else {
-			cmd.KubeServerVersionConstraints = KubeServerVersionConstraints
-		}
-	} else {
-		cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints
-	}
-
+	cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints
 	cmd.Execute()
 }
