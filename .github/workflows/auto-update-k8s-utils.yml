@@ -16,6 +16,7 @@ jobs:
         uses: actions/setup-go@v2.2.0
         with:
           go-version: 1.16.x
+          check-latest: true
 
       - name: Checkout code
         uses: actions/checkout@v2.4.0
