@@ -110,7 +110,7 @@ jobs:
           fi
           
           # verify output file exists
-          ls ${OUTPUT_EXECUTABLE_NAME}
+          ls -la
 
           # create a .tar.gz archive of the binary
           mkdir dist
