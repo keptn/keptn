@@ -10,7 +10,9 @@ import (
 var (
 	// Version information which is passed by ldflags
 	Version = "develop"
+)
 
+const (
 	// DefaultKubeServerVersionConstraints is used when no version is passed by ldflags
 	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.21"
 )
