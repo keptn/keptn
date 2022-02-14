@@ -39,7 +39,7 @@ func TestNatsConnectionHandler(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
-	nh := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
+	nh := NewNatsConnectionHandler(ctx, natsURL(), NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
 
 	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
 
@@ -67,6 +67,22 @@ func TestNatsConnectionHandler(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return nh.subscriptions[0].isActive == false
 	}, 15*time.Second, 5*time.Second)
+}
+
+func TestNatsConnectionHandler_EmptyURL(t *testing.T) {
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
+		ProcessFunc: func(event models.Event, sync bool) error {
+			return nil
+		},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	nh := NewNatsConnectionHandler(ctx, "", NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
+
+	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
+
+	require.Error(t, err)
 }
 
 func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {

@@ -14,7 +14,6 @@ import (
 const streamName = "shipyard-controller"
 const queueGroup = "shipyard-controller"
 const consumerName = "shipyard-controller:all-events"
-const streamTopics = "sh.keptn.>"
 
 //go:generate moq --skip-ensure -pkg nats_mock -out ./mock/keptn_nats_handler_mock.go . IKeptnNatsMessageHandler
 type IKeptnNatsMessageHandler interface {

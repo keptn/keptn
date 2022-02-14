@@ -30,6 +30,7 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_SequenceControl_AbortQueuedSequence", Test_SequenceControl_AbortQueuedSequence)
 	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
+	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests
 }
