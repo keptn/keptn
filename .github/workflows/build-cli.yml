@@ -22,6 +22,7 @@ defaults:
     shell: bash
 env:
   GO_VERSION: "^1.16"
+  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
 jobs:
   build-cli:
     name: Build Keptn CLI
@@ -62,7 +63,9 @@ jobs:
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-cli
+
       - name: Build CLI
+        working-directory: cli
         env:
           GOARCH: ${{ matrix.GOARCH }}
           GOOS: ${{ matrix.GOOS }}
@@ -76,27 +79,37 @@ jobs:
           if [[ "$GOOS" == "windows" ]]; then
             FILE_ENDING=".exe"
           fi
-
+          
           # determine output file name based on version, go os, architecture
           OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
-
+          
           if [[ "$BRANCH" == "master" ]] && [[ "$RELEASE_BUILD" == 'false' ]] && [[ "$DATETIME" != '' ]]; then
             # use VERSION.DATETIME for the cli version (e.g., nightly build)
             VERSION=${VERSION}.${DATETIME}
           fi
-
+          
           if [[ "$GOOS" == "linux" ]]; then
             # enable static build for linux
             export CGO_ENABLED=0
           fi
-
+          
           if [[ "$GOOS" == "darwin" ]]; then
             # enable CGO for compiling docker credential helper natively
             export CGO_ENABLED=1
           fi
-
-          ./gh-actions-scripts/build-cli.sh
+          
+          echo "Building Keptn CLI with filename $OUTPUT_EXECUTABLE_NAME"
+          
+          go mod download
+          go build -v -x -ldflags="-X 'github.com/keptn/keptn/cli/cmd.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTABLE_NAME}"
+          
+          # shellcheck disable=SC2181
+          if [ $? -ne 0 ]; then
+            echo "Error compiling Keptn CLI, exiting ..."
+            exit 1
+          fi
+          
           # verify output file exists
           ls bin/${OUTPUT_EXECUTABLE_NAME}
 

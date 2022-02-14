@@ -13,7 +13,6 @@ on:
   workflow_dispatch: # run CI when triggered manually
 env:
   GO_VERSION: "^1.16"
-  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
   CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
   
@@ -343,6 +342,7 @@ jobs:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
       datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+      kube-constraints: ${{ env.KUBE_CONSTRAINTS }}
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)                   #
