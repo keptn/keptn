@@ -26,7 +26,6 @@ jobs:
   build-cli:
     name: Build Keptn CLI
     strategy:
-      fail-fast: false
       matrix:
         include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
           - platform: "ubuntu-20.04"

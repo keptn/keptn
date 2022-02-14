@@ -1,7 +1,7 @@
 # Keptn CLI
 
 The `keptn` cli is a command line interface for running commands against a Keptn installation.
-# testitest
+
 ## Development
 
 Using Go 1.12 (or newer), ensure that you have GO Modules enabled by executing
