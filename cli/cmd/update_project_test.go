@@ -47,3 +47,13 @@ func TestUpdateProjectUnknownCommand(t *testing.T) {
 func TestUpdateProjectUnknownParmeter(t *testing.T) {
 	testInvalidInputHelper("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "unknown flag: --git-userr", t)
 }
+
+// TestUpdateProjectCmdMissingTokenAndKey
+func TestUpdateProjectCmdMissingTokenAndKey(t *testing.T) {
+	testInvalidInputHelper("update project sockshop --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL", "Access token or private key must be set", t)
+}
+
+// TestUpdateProjectCmdMissingTokenAndKey
+func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
+	testInvalidInputHelper("update project sockshop --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=GIT_TOKEN --git-token=GIT_PRIVATE_KEY_PATH", "Access token or private key cannot be set together", t)
+}
