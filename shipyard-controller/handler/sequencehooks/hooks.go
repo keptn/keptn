@@ -46,7 +46,7 @@ type ISequenceFinishedHook interface {
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequenceaborted.go . ISequenceAbortedHook
 type ISequenceAbortedHook interface {
-	OnSequenceAborted(event models.Event)
+	OnSequenceAborted(event models.EventScope)
 }
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetimeout.go . ISequenceTimeoutHook
