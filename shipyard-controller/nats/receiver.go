@@ -8,7 +8,6 @@ import (
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"sort"
-	"time"
 )
 
 const streamName = "shipyard-controller"
@@ -98,7 +97,7 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 }
 
 func (nch *NatsConnectionHandler) setupJetStreamContext(topics []string) error {
-	js, err := nch.natsConnection.JetStream(nats.MaxWait(10 * time.Second))
+	js, err := nch.natsConnection.JetStream()
 	if err != nil {
 		return fmt.Errorf("failed to create nats jetStream context: %s", err.Error())
 	}
