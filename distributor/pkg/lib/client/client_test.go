@@ -2,8 +2,8 @@ package client
 
 import (
 	"fmt"
-	auth "github.com/keptn/go-utils/pkg/common/oauth"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	auth "github.com/keptn/keptn/distributor/pkg/oauth"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
