@@ -4,9 +4,10 @@ import "testing"
 
 func TestGitCredentials_Validate(t *testing.T) {
 	type fields struct {
-		User      string
-		Token     string
-		RemoteURI string
+		User       string
+		Token      string
+		PrivateKey string
+		RemoteURI  string
 	}
 	tests := []struct {
 		name    string
@@ -40,13 +41,50 @@ func TestGitCredentials_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "empty PrivateKey",
+			fields: fields{
+				User:       "my-user",
+				PrivateKey: "",
+				RemoteURI:  "ssh://my:repo",
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid PrivateKey",
+			fields: fields{
+				User:       "my-user",
+				PrivateKey: "privatekey",
+				RemoteURI:  "ssh://my:repo",
+			},
+			wantErr: false,
+		},
+		{
+			name: "PrivateKey with https",
+			fields: fields{
+				User:       "my-user",
+				PrivateKey: "",
+				RemoteURI:  "https://my:repo",
+			},
+			wantErr: true,
+		},
+		{
+			name: "token with ssh",
+			fields: fields{
+				User:      "my-user",
+				Token:     "token",
+				RemoteURI: "ssh://my-repo",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := GitCredentials{
-				User:      tt.fields.User,
-				Token:     tt.fields.Token,
-				RemoteURI: tt.fields.RemoteURI,
+				User:          tt.fields.User,
+				Token:         tt.fields.Token,
+				GitPrivateKey: tt.fields.PrivateKey,
+				RemoteURI:     tt.fields.RemoteURI,
 			}
 			if err := g.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
