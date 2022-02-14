@@ -342,7 +342,6 @@ jobs:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
       datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-      kube-constraints: ${{ env.KUBE_CONSTRAINTS }}
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)                   #
