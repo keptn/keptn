@@ -14,7 +14,7 @@ type Event struct {
 	Contenttype Contenttype `json:"contenttype,omitempty"`
 
 	// data
-	Data Data `json:"data,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 
 	// extensions
 	Extensions Extensions `json:"extensions,omitempty"`

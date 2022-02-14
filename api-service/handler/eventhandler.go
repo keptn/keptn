@@ -29,6 +29,8 @@ type EventHandler struct {
 }
 
 func (eh *EventHandler) ForwardEvent(c *gin.Context) {
+	logger.Info("API received a keptn event")
+
 	event := model.Event{}
 	if err := c.ShouldBindJSON(&event); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
@@ -36,8 +38,6 @@ func (eh *EventHandler) ForwardEvent(c *gin.Context) {
 	}
 
 	keptnContext := createOrApplyKeptnContext(event.ShkeptnContext)
-
-	logger.Info("API received a keptn event")
 
 	var source *url.URL
 	var err error
