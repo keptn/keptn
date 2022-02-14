@@ -20,7 +20,7 @@ describe('Test crypto.ts', () => {
     expect(() => crypto2.decrypt(encrypted)).toThrowError();
   });
 
-  it('should throw exception if iv is invalid', () => {
+  it('should throw exception if initialization vector is invalid', () => {
     const text = 'myText';
     const crypto = new Crypto('secret__'.repeat(4)); // length of 32
     const encrypted = crypto.encrypt(text);

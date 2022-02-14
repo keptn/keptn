@@ -63,7 +63,7 @@ function oauthRouter(
     const params = client.callbackParams(req);
     const invalidRequest = {
       title: 'Internal error',
-      message: 'Error while handling the redirect. Please retry and check whether the problem exists.',
+      message: 'Error while handling the redirect. Please retry and check whether the problem still exists.',
       location: getRootLocation(),
     };
 

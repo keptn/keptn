@@ -178,7 +178,7 @@ export class SessionService {
   }
 
   /**
-   * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
+   * Filter for authenticated sessions. Must be enforced by endpoints that require session authentication.
    */
   public isAuthenticated(
     session: expressSession.Session & Partial<expressSession.SessionData>
