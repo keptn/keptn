@@ -157,7 +157,7 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 				return false, false
 			}
 			if newVersions.stable.newestCompatible == nil && newVersions.prerelease.newestCompatible == nil {
-				fmt.Printf("Keptn CLI and Keptn cluster version are already on the latest version ( %v )! \n", cliVersion)
+				fmt.Printf("Keptn CLI is already on the latest version ( %v )! \n", cliVersion)
 				return false, true
 			}
 			if newVersions.stable.newestCompatible != nil {
