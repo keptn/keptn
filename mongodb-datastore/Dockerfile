@@ -1,7 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.16.13-alpine as builder-base
+FROM golang:1.16.14-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
@@ -22,7 +22,7 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
-FROM golang:1.16.13 as builder-test
+FROM golang:1.16.14 as builder-test
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
