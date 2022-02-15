@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
+func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
 	scope := models.EventScope{
 		KeptnContext: "my-context",
 		EventData: keptnv2.EventData{
@@ -98,4 +98,16 @@ func TestMongoDBTaskSequenceV2Repo_Upsert(t *testing.T) {
 
 	require.Len(t, get, 1)
 	require.Len(t, get[0].Status.CurrentTask.Events, nrConcurrentWrites+1)
+
+	err = mdbrepo.Clear("my-project")
+	require.Nil(t, err)
+
+	get, err = mdbrepo.Get(models.SequenceExecutionFilter{
+		Scope: scope,
+		Name:  "delivery",
+	})
+
+	require.Nil(t, err)
+
+	require.Empty(t, get)
 }

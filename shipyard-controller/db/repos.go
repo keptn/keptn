@@ -88,3 +88,11 @@ type SequenceQueueRepo interface {
 	GetQueuedSequences() ([]models.QueueItem, error)
 	DeleteQueuedSequences(itemFilter models.QueueItem) error
 }
+
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/sequenceexecution_mock.go . SequenceExecutionRepo
+type SequenceExecutionRepo interface {
+	Get(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error)
+	Upsert(item models.SequenceExecution) error
+	AppendTaskEvent(taskSequence models.SequenceExecution, event models.TaskEvent) (*models.SequenceExecution, error)
+	Clear(projectName string) error
+}

@@ -25,29 +25,30 @@ type IEventDispatcher interface {
 // It regularly fetches (queued) events from the database and eventually
 // forwards them to the event broker
 type EventDispatcher struct {
-	eventRepo      db.EventRepo
-	eventQueueRepo db.EventQueueRepo
-	sequenceRepo   db.TaskSequenceRepo
-	eventSender    keptncommon.EventSender
-	theClock       clock.Clock
-	syncInterval   time.Duration
+	eventRepo             db.EventRepo
+	eventQueueRepo        db.EventQueueRepo
+	sequenceExecutionRepo db.SequenceExecutionRepo
+	eventSender           keptncommon.EventSender
+	theClock              clock.Clock
+	syncInterval          time.Duration
+	ticker                *clock.Ticker
 }
 
 // NewEventDispatcher creates a new EventDispatcher
 func NewEventDispatcher(
 	eventRepo db.EventRepo,
 	eventQueueRepo db.EventQueueRepo,
-	sequenceRepo db.TaskSequenceRepo,
+	sequenceExecutionRepo db.SequenceExecutionRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
 ) *EventDispatcher {
 	return &EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		eventSender:    eventSender,
-		theClock:       clock.New(),
-		syncInterval:   syncInterval,
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+		eventSender:           eventSender,
+		theClock:              clock.New(),
+		syncInterval:          syncInterval,
 	}
 }
 
@@ -63,7 +64,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 	}
 
 	if skipQueue {
-		return e.eventSender.SendEvent(event.Event)
+		return e.eventSender.Send(context.TODO(), event.Event)
 	}
 	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
 		// try to send event immediately
@@ -200,49 +201,35 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
 		return ErrSequencePaused
 	}
-	taskExecutions, err := e.sequenceRepo.GetTaskExecutions(eventScope.Project, models.TaskExecution{
-		Stage:   eventScope.Stage,
-		Service: eventScope.Service,
-	})
-	if err != nil {
-		return err
-	}
-	if e.isCurrentEventBlockedByOtherTasks(eventScope, taskExecutions, event) {
-		return ErrOtherActiveSequencesRunning
-	}
 
-	return e.eventSender.SendEvent(event.Event)
-}
-
-func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskExecution, queuedEvent models.DispatcherEvent) bool {
-	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
-	// if there is another sequence running in the stage, we cannot send the event
-	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
-
-	for otherKeptnContext, tasksOfContext := range tasksGroupedByContext {
-		// if the other sequence is currently paused, it should not block the current event
-		if e.eventQueueRepo.IsSequenceOfEventPaused(models.EventScope{
-			KeptnContext: otherKeptnContext,
+	startedSequenceExecutions, err := e.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
 				Stage:   eventScope.Stage,
 			},
-		}) {
-			continue
-		}
-		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
-		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
-			if e.isCurrentEventOverrulingOtherEvent(lastTaskOfSequence, queuedEvent) {
-				continue
+		},
+		Status: []string{models.SequenceStartedState},
+	})
+	if err != nil {
+		return err
+	}
+
+	if startedSequenceExecutions != nil && len(startedSequenceExecutions) > 0 {
+		// if there is another sequence with the state 'started'
+		for _, otherSequence := range startedSequenceExecutions {
+			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
+				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
+					return ErrOtherActiveSequencesRunning
+				}
 			}
-			log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s - blocked by event %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service, lastTaskOfSequence.TriggeredEventID)
-			return true
 		}
 	}
-	return false
+
+	return e.eventSender.Send(context.TODO(), event.Event)
 }
 
-func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence models.TaskExecution, queuedEvent models.DispatcherEvent) bool {
+func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(otherSequence models.SequenceExecution, queuedEvent models.DispatcherEvent) bool {
 	otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 	if err != nil {
 		log.Debugf("could not fetch event queue: %s", err.Error())
@@ -251,7 +238,7 @@ func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence 
 		return false
 	}
 	for _, otherEvent := range otherQueuedEvents {
-		if otherEvent.EventID == lastTaskOfSequence.TriggeredEventID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
+		if otherEvent.EventID == otherSequence.Status.CurrentTask.TriggeredID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
 			return true
 		}
 	}
@@ -269,14 +256,4 @@ func (e *EventDispatcher) cleanupQueueOfSequence(eventScope models.EventScope) {
 	if err != nil {
 		log.WithError(err).Errorf("could not clear event queue for context %s", eventScope.KeptnContext)
 	}
-}
-
-func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskExecution) []models.TaskExecution {
-	result := []models.TaskExecution{}
-	for index := range sequenceTasks {
-		if sequenceTasks[index].KeptnContext != keptnContext {
-			result = append(result, sequenceTasks[index])
-		}
-	}
-	return result
 }

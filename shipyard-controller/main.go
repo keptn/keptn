@@ -96,6 +96,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	sequenceExecutionRepo := createSequenceExecutionRepo()
+
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
@@ -120,7 +122,7 @@ func main() {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -293,6 +295,10 @@ func createProjectRepo() *db.MongoDBKeyEncodingProjectsRepo {
 
 func createEventsRepo() *db.MongoDBEventsRepo {
 	return db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+}
+
+func createSequenceExecutionRepo() *db.MongoDBSequenceExecutionRepo {
+	return db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createSequenceQueueRepo() *db.MongoDBSequenceQueueRepo {
