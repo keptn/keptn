@@ -117,8 +117,10 @@
                     ></a>
                     <div fxFlex fxLayoutAlign="end">
                       <ktb-evaluation-info
-                        [evaluation]="service.latestSequence?.getEvaluationTrace(selectedStage.stageName)"
-                        [showHistory]="true"
+                        [evaluationInfo]="{
+                          trace: service.latestSequence?.getEvaluationTrace(selectedStage.stageName),
+                          showHistory: true
+                        }"
                       ></ktb-evaluation-info>
                     </div>
                   </div>
@@ -198,9 +200,6 @@
                         [evaluation]="evaluation"
                       ></ktb-evaluation-info> </ng-container
                     >.
-                    <span class="m-0" *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
-                      Rollback to <span [textContent]="deployment.image"></span> performed.
-                    </span>
                   </p>
                 </div>
                 <button
@@ -220,6 +219,9 @@
                 >
                   View evaluation result
                 </button>
+                <p class="m-0" *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                  Rollback to <span [textContent]="deployment.image"></span> performed.
+                </p>
               </ng-container>
               <div *ngIf="service.getOpenApprovals().length > 0; else noOutOfSyncDeployments">
                 <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>

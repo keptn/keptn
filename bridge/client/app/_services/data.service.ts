@@ -550,28 +550,34 @@ export class DataService {
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
-
-  public loadEvaluationResults(event: Trace, limit?: number): void {
+  public getEvaluationResults(event: Trace, limit?: number, useFromTime = true): Observable<Trace[]> {
     let fromTime: Date | undefined;
     const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
-    if (time) {
+    if (time && useFromTime) {
       fromTime = new Date(time);
     }
     if (event.data.project && event.data.service && event.data.stage) {
-      this.apiService
+      return this.apiService
         .getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString(), limit)
         .pipe(
           map((result) => result.events || []),
           map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
-        )
-        .subscribe((traces: Trace[]) => {
-          this._evaluationResults.next({
-            type: 'evaluationHistory',
-            triggerEvent: event,
-            traces,
-          });
-        });
+        );
+    } else {
+      return of([]);
     }
+  }
+
+  public loadEvaluationResults(event: Trace): void {
+    this.getEvaluationResults(event).subscribe((traces: Trace[]) => {
+      if (traces.length) {
+        this._evaluationResults.next({
+          type: 'evaluationHistory',
+          triggerEvent: event,
+          traces,
+        });
+      }
+    });
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {

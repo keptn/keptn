@@ -8,8 +8,15 @@
   >
     <dt-tag-list aria-label="evaluation-info" *ngIf="showHistory">
       <dt-tag
+        *ngFor="let i of !evaluationsLoaded ? [].constructor(this.evaluationHistoryCount) : []"
+        [class.border]="true"
+        class="m-0 justify-content-center"
+      >
+        <dt-loading-spinner aria-label="Loading evaluation"></dt-loading-spinner>
+      </dt-tag>
+      <dt-tag
         *ngFor="let evaluation of evaluation.data?.evaluationHistory"
-        class="m-0 justify-content-center border"
+        class="m-0 mr-1 justify-content-center border"
         [dtOverlay]="overlay"
         [dtOverlayConfig]="overlayConfig"
         [disabled]="overlayDisabled"
