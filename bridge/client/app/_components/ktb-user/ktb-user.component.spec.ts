@@ -33,7 +33,7 @@ describe('ktbUserComponentTest', () => {
     const submitForm = { target: { submit: (): void => {} } };
     const submitSpy = jest.spyOn(submitForm.target, 'submit');
     component.logout(submitForm);
-    httpMock.expectOne('./logout').flush({
+    httpMock.expectOne('./oauth/logout').flush({
       id_token_hint: '',
       end_session_endpoint: '',
       post_logout_redirect_uri: '',
@@ -45,7 +45,7 @@ describe('ktbUserComponentTest', () => {
   it('should redirect to root if no data for logout is returned', () => {
     const submitForm = { target: { submit: (): void => {} } };
     component.logout(submitForm);
-    httpMock.expectOne('./logout').flush(null);
+    httpMock.expectOne('./oauth/logout').flush(null);
     expect(locationAssignMock).toBeCalledWith('/logoutsession');
   });
 });

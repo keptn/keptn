@@ -10,30 +10,43 @@ import (
 )
 
 func GetTaskSequenceInStage(stageName, taskSequenceName string, shipyard *keptnv2.Shipyard) (*keptnv2.Sequence, error) {
-	for _, stage := range shipyard.Spec.Stages {
-		if stage.Name == stageName {
-			for _, taskSequence := range stage.Sequences {
-				if taskSequence.Name == taskSequenceName {
-					log.Infof("Found matching task sequence %s in stage %s", taskSequence.Name, stage.Name)
-					return &taskSequence, nil
-				}
+	stage := GetStageFromShipyard(stageName, shipyard)
+	if stage == nil {
+		return nil, fmt.Errorf("no stage with name %s", stageName)
+	}
+
+	for _, taskSequence := range stage.Sequences {
+		if taskSequence.Name == taskSequenceName {
+			log.Infof("Found matching task sequence %s in stage %s", taskSequence.Name, stage.Name)
+			if len(taskSequence.Tasks) == 0 {
+				return nil, fmt.Errorf("task sequence %s does not contain any tasks", taskSequenceName)
 			}
-			// provide built-int task sequence for evaluation
-			if taskSequenceName == keptnv2.EvaluationTaskName {
-				return &keptnv2.Sequence{
-					Name:        "evaluation",
-					TriggeredOn: nil,
-					Tasks: []keptnv2.Task{
-						{
-							Name: keptnv2.EvaluationTaskName,
-						},
-					},
-				}, nil
-			}
-			return nil, fmt.Errorf("no task sequence with name %s found in stage %s", taskSequenceName, stageName)
+			return &taskSequence, nil
 		}
 	}
-	return nil, fmt.Errorf("no stage with name %s", stageName)
+	// provide built-int task sequence for evaluation
+	if taskSequenceName == keptnv2.EvaluationTaskName {
+		return &keptnv2.Sequence{
+			Name:        "evaluation",
+			TriggeredOn: nil,
+			Tasks: []keptnv2.Task{
+				{
+					Name: keptnv2.EvaluationTaskName,
+				},
+			},
+		}, nil
+	}
+	return nil, fmt.Errorf("no task sequence with name %s found in stage %s", taskSequenceName, stageName)
+
+}
+
+func GetStageFromShipyard(stageName string, shipyard *keptnv2.Shipyard) *keptnv2.Stage {
+	for _, stage := range shipyard.Spec.Stages {
+		if stage.Name == stageName {
+			return &stage
+		}
+	}
+	return nil
 }
 
 func GetNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask *models.TaskExecution, eventScope *models.EventScope, eventHistory []interface{}) *models.Task {

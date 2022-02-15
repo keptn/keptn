@@ -2,16 +2,17 @@ package credentialmanager
 
 import (
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"path/filepath"
+
 	"github.com/docker/docker-credential-helpers/credentials"
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"gopkg.in/yaml.v3"
-	"log"
-	"net/url"
-	"os"
-	"path/filepath"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
