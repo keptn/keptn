@@ -9,7 +9,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.4.0
-	github.com/keptn/go-utils v0.11.1-0.20220214121919-1a4de746b2f2
+	github.com/keptn/go-utils v0.11.1-0.20220215120415-2761644286fd
 	github.com/keptn/kubernetes-utils v0.10.1-0.20220207100409-737f87e5f035
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.3
