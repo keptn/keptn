@@ -61,3 +61,18 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Check for enabling the queueGroup of the service's distributor
+*/}}
+{{- define "jmeter-service.queueGroupEnabled" -}}
+{{- if .Values.distributor.config }}
+{{- if .Values.distributor.config.queueGroup.enabled }}
+{{- printf "true" }}
+{{- else -}}
+{{- printf "false" }}
+{{- end -}}
+{{- else -}}
+{{- printf "false" }}
+{{- end -}}
+{{- end }}
