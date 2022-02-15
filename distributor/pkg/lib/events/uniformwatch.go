@@ -38,7 +38,7 @@ func (sw *UniformWatch) Start(ctx context.Context) string {
 		logger.Infof("Registered Keptn Integration with id %s", integrationID)
 		id = integrationID
 		return nil
-	})
+	}, retry.NumberOfRetries(5))
 	if err != nil {
 		return ""
 	}
