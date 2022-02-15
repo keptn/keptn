@@ -134,7 +134,7 @@ func init() {
 	authParams.oauthLogout = authCmd.Flags().Bool("oauth-logout", false, "Disable Oauth access")
 	authParams.oauthDiscovery = authCmd.Flags().String("oauth-discovery", "", "Well known discovery URL used for OAuth")
 	authParams.oauthClientID = authCmd.Flags().String("oauth-client-id", "", "Oauth Client ID used for OAuth")
-	authParams.oauthScopes = authCmd.Flags().StringArray("oauth-scopes", []string{}, "Oauth scopes used for OAuth")
+	authParams.oauthScopes = authCmd.Flags().StringSlice("oauth-scopes", []string{}, "Oauth scopes used for OAuth")
 	authParams.oauthClientSecret = authCmd.Flags().String("oauth-client-secret", "", "Oauth Client Secret used for OAuth")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
