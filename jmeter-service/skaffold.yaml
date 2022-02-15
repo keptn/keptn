@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/jmeter-service
+    - image: keptndev/jmeter-service
       docker:
         dockerfile: Dockerfile
         target: production
@@ -20,7 +20,7 @@ deploy:
         # upgradeOnChange: true
         # recreatePods: false # don't recreate all pods
         artifactOverrides:
-          image: keptn/jmeter-service
+          image: keptndev/jmeter-service
         overrides:
           distributor:
             image:

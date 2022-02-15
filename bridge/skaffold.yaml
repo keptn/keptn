@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/bridge2
+    - image: keptndev/bridge2
       docker: # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         target: production
