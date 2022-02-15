@@ -108,6 +108,11 @@ func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials
 // CheckoutBranch checks out the given branch
 func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync bool) error {
 	projectConfigPath := config.ConfigDir + "/" + project
+
+	// first, ensure that we don't have any uncommitted changes
+	if err := g.Reset(project); err != nil {
+		return err
+	}
 	_, err := g.Executor.ExecuteCommand("git", []string{"checkout", branch}, projectConfigPath)
 	if err != nil {
 		return fmt.Errorf("failed to checkout requested branch '%s' in project '%s'", branch, project)
@@ -254,6 +259,10 @@ func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath s
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
 func (g *Git) StageAndCommitAll(project string, message string, withPull bool) error {
+	// ensure that the git user and email are set at this point
+	if err := ConfigureGitUser(project); err != nil {
+		return err
+	}
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := g.Executor.ExecuteCommand("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {

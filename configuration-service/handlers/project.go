@@ -113,6 +113,12 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 		common.LockProject(projectName)
 		defer common.UnlockProject(projectName)
 
+		err := common.ConfigureGitUser(params.Project.ProjectName)
+		if err != nil {
+			logger.WithError(err).Errorf("Could not configure git during creating project %s", params.Project.ProjectName)
+			return project.NewPostProjectDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String("Could not configure git in project repo")})
+		}
+
 		gitCredentials, err := common.GetCredentials(projectName)
 		if err == nil && gitCredentials != nil {
 			logger.Infof("Storing Git credentials for project %s", projectName)
