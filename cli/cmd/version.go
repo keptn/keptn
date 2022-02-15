@@ -188,7 +188,7 @@ func getKeptnServerVersion() (string, error) {
 
 	metadataData, errMetadata := api.APIV1().GetMetadata()
 	if errMetadata != nil {
-		if errMetadata.Message != nil {
+		if errMetadata.Message != nil && errMetadata.Code != int64(0) {
 			return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
 		}
 		return "", errors.New("received invalid response from Keptn API")
