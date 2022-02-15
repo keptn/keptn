@@ -324,7 +324,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 		for i := 0; i < retries; i = i + 1 {
 			out, err := g.Executor.ExecuteCommand("git", []string{"remote", "show", "origin"}, projectConfigPath)
 			if err != nil {
-				return "", fmt.Errorf("failed to show remote origin for project '%s'", project)
+				return "", fmt.Errorf("failed to show remote origin for project '%s': %w", project, err)
 			}
 			lines := strings.Split(out, "\n")
 
