@@ -141,7 +141,7 @@ spec:
               {{- $apiValidateTls := .Values.remoteControlPlane.api.apiValidateTls | ternary "true" "false" }}
               value: "{{ $apiValidateTls }}"
             {{- end }}
-            {{- if .Values.distributor.config.queueGroup.enabled }}
+            {{- if (((.Values.distributor).config).queueGroup).enabled | default true }}
             - name: PUBSUB_GROUP
               valueFrom:
                 fieldRef:
