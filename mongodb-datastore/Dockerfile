@@ -66,8 +66,8 @@ RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=e
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.15 as production
 ARG version=develop
-LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
-    org.opencontainers.image.url = "https://keptn.sh" \
+LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
+    org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn MongoDB Datastore" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
