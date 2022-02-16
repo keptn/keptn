@@ -47,7 +47,7 @@
         [textContent]="evaluationResult.score | number: '1.0-0'"
       ></dt-tag>
     </dt-tag-list>
-    <dt-tag-list *ngIf="!evaluation?.isFinished() && !evaluationResult">
+    <dt-tag-list *ngIf="!evaluation?.isFinished() && !evaluationResult" aria-label="evaluation-info">
       <dt-tag class="m-0 justify-content-center" [class.fill]="fill" [textContent]="'-'"></dt-tag>
     </dt-tag-list>
   </div>
