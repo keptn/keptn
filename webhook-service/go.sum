@@ -162,8 +162,8 @@ github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/X
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.11.1-0.20211215105940-5626bf92b8c6/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
-github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949 h1:RPaapqPzdP0lyREsV0nh3HpcDW1Z4A8/D2FQZ2kDSGg=
-github.com/keptn/go-utils v0.11.1-0.20220112143111-544c27052949/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
+github.com/keptn/go-utils v0.12.0 h1:iB/2qDJLt0V2OwkSAD4rH0lKEGlKyYNLzS/ZZ6HKZfY=
+github.com/keptn/go-utils v0.12.0/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
 github.com/keptn/keptn/go-sdk v0.0.0-20211215141221-491a19a96c50 h1:3dTotOli68r2lIEWkppclvEt8YBQn6ctz7mlFi5eS3Q=
 github.com/keptn/keptn/go-sdk v0.0.0-20211215141221-491a19a96c50/go.mod h1:4ElHs+iaN7wZ7mA5Ico4/wBL0o0QMIClEtl30f1t90s=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
