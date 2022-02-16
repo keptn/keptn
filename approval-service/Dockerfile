@@ -40,8 +40,8 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o approval
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.15 as production
 ARG version=develop
-LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
-    org.opencontainers.image.url = "https://keptn.sh" \
+LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
+    org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Approval Service" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
