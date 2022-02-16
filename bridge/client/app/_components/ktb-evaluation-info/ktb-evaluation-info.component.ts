@@ -12,9 +12,16 @@ import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { DateUtil } from '../../_utils/date.utils';
 
+export interface EventData {
+  project: string;
+  stage: string;
+  service: string;
+}
+
 interface EvaluationInfo {
   trace: Trace | undefined;
   showHistory: boolean;
+  data: EventData;
 }
 
 @Component({
@@ -24,13 +31,15 @@ interface EvaluationInfo {
 })
 export class KtbEvaluationInfoComponent implements OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public readonly evaluationHistoryCount = 5;
   private _evaluationResult?: EvaluationResult;
+  private eventData?: EventData;
+  private _evaluationHistory?: Trace[];
+  public readonly evaluationHistoryCount = 5;
+  public TraceClass = Trace;
   public isError = false;
   public isWarning = false;
   public isSuccess = false;
   public showHistory = false;
-  public evaluationHistory?: Trace[];
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
   };
@@ -59,10 +68,21 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     this.evaluation = evaluation?.trace;
     this.evaluationsLoaded = !!evaluation?.trace?.data.evaluationHistory?.length;
     this.showHistory = evaluation?.showHistory ?? false;
+    this.eventData = evaluation?.data;
 
-    if (idBefore !== evaluation?.trace?.id) {
+    if (idBefore !== evaluation?.trace?.id || (!evaluation?.trace && evaluation?.data)) {
       this.fetchEvaluationHistory();
     }
+  }
+
+  get evaluationHistory(): Trace[] {
+    return (
+      this._evaluationHistory ||
+      this.evaluation?.data?.evaluationHistory
+        ?.filter((evaluation) => evaluation.id !== this.evaluation?.id)
+        .slice(0, this.evaluationHistoryCount) ||
+      []
+    );
   }
 
   constructor(private dataService: DataService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {}
@@ -70,7 +90,17 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
   private fetchEvaluationHistory(): void {
     this.historyPolling$.unsubscribe();
     const evaluation = this.evaluation;
-    if (this.showHistory && evaluation) {
+    let _eventData = this.eventData;
+    if (this.evaluation && this.evaluation.data.project && this.evaluation.data.stage && this.evaluation.data.service) {
+      _eventData = {
+        project: this.evaluation.data.project,
+        service: this.evaluation.data.service,
+        stage: this.evaluation.data.stage,
+      };
+    }
+
+    if (this.showHistory && _eventData) {
+      const eventData = _eventData;
       this.historyPolling$ = AppUtils.createTimer(0, this.initialDelayMillis)
         .pipe(
           takeUntil(this.unsubscribe$),
@@ -78,13 +108,23 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
             // currently the event endpoint does not support skipping entries
             // the other endpoint we have does not support excluding invalidated evaluations
             // we can't use fromTime here if we have a limit. 10 new evaluations and limit to 5 would not pull the new ones
-            return this.dataService.getEvaluationResults(evaluation, this.evaluationHistoryCount + 1, false);
+            return this.dataService.getEvaluationResults(
+              eventData,
+              this.evaluationHistoryCount + (this.evaluation ? 1 : 0),
+              false
+            );
           })
         )
         .subscribe((traces: Trace[]) => {
+          traces.sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
           this.evaluationsLoaded = true;
-          //TODO: use another place to save the evaluations or change the implementation inside the evaluation-details
-          evaluation.data.evaluationHistory = traces.slice(1).sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
+          // we don't have an evaluation trace if the sequence is currently running or it just doesn't have an evaluation task
+          if (evaluation) {
+            this._evaluationHistory = undefined;
+            evaluation.data.evaluationHistory = traces;
+          } else {
+            this._evaluationHistory = traces;
+          }
         });
     }
   }

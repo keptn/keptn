@@ -26,3 +26,9 @@ dt-loading-spinner {
   width: 20px;
   vertical-align: bottom;
 }
+
+/* fix incorrect height and width of the overlay */
+::ng-deep .cdk-overlay-connected-position-bounding-box {
+  height: 100% !important;
+  width: 100% !important;
+}

@@ -30,6 +30,7 @@ import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 
 @Injectable({
   providedIn: 'root',
@@ -550,15 +551,27 @@ export class DataService {
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
-  public getEvaluationResults(event: Trace, limit?: number, useFromTime = true): Observable<Trace[]> {
+  public getEvaluationResults(event: Trace | EventData, limit?: number, useFromTime = true): Observable<Trace[]> {
     let fromTime: Date | undefined;
-    const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
-    if (time && useFromTime) {
-      fromTime = new Date(time);
+    let eventData: EventData | undefined;
+    if (event instanceof Trace) {
+      const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
+      if (time && useFromTime) {
+        fromTime = new Date(time);
+      }
+      if (event.data.project && event.data.service && event.data.stage) {
+        eventData = {
+          project: event.data.project,
+          service: event.data.service,
+          stage: event.data.stage,
+        };
+      }
+    } else {
+      eventData = event;
     }
-    if (event.data.project && event.data.service && event.data.stage) {
+    if (eventData) {
       return this.apiService
-        .getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString(), limit)
+        .getEvaluationResults(eventData.project, eventData.service, eventData.stage, fromTime?.toISOString(), limit)
         .pipe(
           map((result) => result.events || []),
           map((traces) => traces.map((trace) => Trace.fromJSON(trace)))

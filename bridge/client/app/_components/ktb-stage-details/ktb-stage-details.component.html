@@ -119,7 +119,12 @@
                       <ktb-evaluation-info
                         [evaluationInfo]="{
                           trace: service.latestSequence?.getEvaluationTrace(selectedStage.stageName),
-                          showHistory: true
+                          showHistory: true,
+                          data: {
+                            project: project.projectName,
+                            stage: selectedStage.stageName,
+                            service: service.serviceName
+                          }
                         }"
                       ></ktb-evaluation-info>
                     </div>
