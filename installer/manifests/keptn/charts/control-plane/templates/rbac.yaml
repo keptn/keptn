@@ -226,7 +226,11 @@ metadata:
     helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
+      {{- if ge .Capabilities.KubeVersion.Minor "14" }}
+      - "coordination.k8s.io/v1beta1"
+      {{ else }}
       - "coordination.k8s.io"
+      {{- end }}
     resources:
       - leases
     verbs:
