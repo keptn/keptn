@@ -67,7 +67,7 @@ func Test_DeliveryAssistant(t *testing.T) {
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true, false)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
