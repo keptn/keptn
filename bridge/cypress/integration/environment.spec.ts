@@ -34,9 +34,13 @@ describe('Environment Screen', () => {
   it('should show evaluations in history if sequence does not have an evaluation task', () => {
     const service = 'carts-db';
     cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 5), {
-      fixture: 'get.environment.evaluation.history.mock',
+      fixture: 'get.environment.evaluation.history.carts-db.mock',
     });
-    environmentPage.selectStage(stage).assertEvaluationHistoryCount(service, 5).assertEvaluationInDetails(service, '-');
+    environmentPage
+      .selectStage(stage)
+      .assertEvaluationHistoryLoadingCount(service, 0)
+      .assertEvaluationHistoryCount(service, 5)
+      .assertEvaluationInDetails(service, '-');
   });
 
   it('should show 2 evaluations in history and should not show current evaluation in history', () => {

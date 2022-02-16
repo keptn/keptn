@@ -8,36 +8,6 @@
           "result": "pass",
           "score": 0,
           "sloFileContent": "",
-          "timeEnd": "2022-02-16T08:59:02.155Z",
-          "timeStart": "2022-02-16T08:54:02.155Z"
-        },
-        "labels": {
-          "DtCreds": "dynatrace"
-        },
-        "message": "no evaluation performed by lighthouse because SLI failed with message Dynatrace Metrics API returned zero data points",
-        "project": "sockshop",
-        "result": "fail",
-        "service": "carts",
-        "stage": "dev",
-        "status": "succeeded"
-      },
-      "id": "f666151c-57f6-4bf0-9fc6-0ae9d16a3a52",
-      "source": "lighthouse-service",
-      "specversion": "1.0",
-      "time": "2022-02-16T08:59:21.839Z",
-      "type": "sh.keptn.event.evaluation.finished",
-      "shkeptncontext": "235504d8-4c45-40a3-ad78-fa4664f964a1",
-      "shkeptnspecversion": "0.2.3",
-      "triggeredid": "7ee1b930-6af0-4fcc-9b8e-9054dc1b5351"
-    },
-    {
-      "data": {
-        "evaluation": {
-          "gitCommit": "",
-          "indicatorResults": null,
-          "result": "pass",
-          "score": 0,
-          "sloFileContent": "",
           "timeEnd": "2022-02-16T08:36:21.007Z",
           "timeStart": "2022-02-16T08:31:21.007Z"
         },
@@ -47,7 +17,7 @@
         "message": "no evaluation performed by lighthouse because SLI failed with message Dynatrace Metrics API returned zero data points",
         "project": "sockshop",
         "result": "fail",
-        "service": "carts",
+        "service": "carts-db",
         "stage": "dev",
         "status": "succeeded"
       },
@@ -77,7 +47,7 @@
         "message": "no evaluation performed by lighthouse because SLI failed with message Dynatrace Metrics API returned zero data points",
         "project": "sockshop",
         "result": "fail",
-        "service": "carts",
+        "service": "carts-db",
         "stage": "dev",
         "status": "succeeded"
       },
@@ -107,7 +77,7 @@
         "message": "no evaluation performed by lighthouse because SLI failed with message Dynatrace Metrics API returned zero data points",
         "project": "sockshop",
         "result": "fail",
-        "service": "carts",
+        "service": "carts-db",
         "stage": "dev",
         "status": "succeeded"
       },
@@ -170,7 +140,7 @@
         "message": "Evaluation failed since the calculated score of 50 is below the warning value of 75",
         "project": "sockshop",
         "result": "fail",
-        "service": "carts",
+        "service": "carts-db",
         "stage": "dev",
         "status": "succeeded"
       },
@@ -232,7 +202,7 @@
         },
         "project": "sockshop",
         "result": "pass",
-        "service": "carts",
+        "service": "carts-db",
         "stage": "dev",
         "status": "succeeded"
       },
