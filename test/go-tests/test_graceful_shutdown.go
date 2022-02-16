@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 )
@@ -104,7 +103,6 @@ func Test_GracefulLeader(t *testing.T) {
 	setup.Project = "leader_election"
 	keptnContext := startDelivery(t, setup)
 
-	var deploymentStartedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		t.Log("checking if evaluation.finished event is available")
 		event, err := GetLatestEventOfType(keptnContext, setup.Project, "dev", keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName))
@@ -112,7 +110,6 @@ func Test_GracefulLeader(t *testing.T) {
 			return false
 		}
 		waitAndKill(t, shipyardPod, 0)
-		deploymentStartedEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
