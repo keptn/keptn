@@ -12,7 +12,7 @@ require (
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.20.3
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/keptn/go-utils v0.11.1-0.20220207171637-b2495d8b022d // indirect
+	github.com/keptn/go-utils v0.12.0 // indirect
 	// indirect
 	github.com/keptn/kubernetes-utils v0.10.1-0.20220207100409-737f87e5f035
 	github.com/mholt/archiver/v3 v3.5.1
