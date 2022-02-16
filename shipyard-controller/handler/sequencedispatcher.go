@@ -21,6 +21,7 @@ type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
 	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
 	Remove(eventScope models.EventScope) error
+	Stop()
 }
 
 type SequenceDispatcher struct {
@@ -33,6 +34,7 @@ type SequenceDispatcher struct {
 	startSequenceFunc  func(event models.Event) error
 	shipyardController shipyardController
 	mutex              sync.Mutex
+	ticker             *clock.Ticker
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -87,7 +89,7 @@ func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
 }
 
 func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
-	ticker := sd.theClock.Ticker(sd.syncInterval)
+	sd.ticker = sd.theClock.Ticker(sd.syncInterval)
 	sd.startSequenceFunc = startSequenceFunc
 	go func() {
 		for {
@@ -95,12 +97,19 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 			case <-ctx.Done():
 				log.Info("Cancelling sequence dispatcher loop")
 				return
-			case <-ticker.C:
+			case <-sd.ticker.C:
 				log.Debugf("%.2f seconds have passed. Dispatching sequences", sd.syncInterval.Seconds())
 				sd.dispatchSequences()
 			}
 		}
 	}()
+}
+
+func (sd *SequenceDispatcher) Stop() {
+	if sd.ticker == nil {
+		return
+	}
+	sd.ticker.Stop()
 }
 
 func (sd *SequenceDispatcher) dispatchSequences() {

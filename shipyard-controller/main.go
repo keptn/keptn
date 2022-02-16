@@ -2,7 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"net/http"
 	"os"
 	"os/signal"
@@ -60,6 +65,8 @@ const envVarTaskStartedWaitDurationDefault = "10m"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
@@ -253,20 +260,72 @@ func main() {
 		}
 	}()
 
-	GracefulShutdown(wg, srv)
+	LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+
+	GracefulShutdown(ctx, wg, srv)
 
 }
 
-func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrupt signal to gracefully shutdown the server
+func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context), stop func()) {
+	myID := uuid.New().String()
+	// we use the Lease lock type since edits to Leases are less common
+	// and fewer objects in the cluster watch "all Leases".
+	lock := &resourcelock.LeaseLock{
+		LeaseMeta: metav1.ObjectMeta{
+			Name:      "shipyard-controller-dispatcher",
+			Namespace: common.GetKeptnNamespace(),
+		},
+		Client: client,
+		LockConfig: resourcelock.ResourceLockConfig{
+			Identity: myID,
+		},
+	}
+
+	// start the leader election code loop
+	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
+		Lock: lock,
+		// IMPORTANT: you MUST ensure that any code you have that
+		// is protected by the lease must terminate **before**
+		// you call cancel. Otherwise, you could have a background
+		// loop still running and another process could
+		// get elected before your background loop finished, violating
+		// the stated goal of the lease.
+		ReleaseOnCancel: true,
+		LeaseDuration:   60 * time.Second,
+		RenewDeadline:   15 * time.Second,
+		RetryPeriod:     5 * time.Second,
+		Callbacks: leaderelection.LeaderCallbacks{
+			OnStartedLeading: func(ctx context.Context) {
+				// we're notified when we start - this is where you would
+				// usually put your code
+				start(ctx)
+			},
+			OnStoppedLeading: func() {
+				// we can do cleanup here
+				log.Infof("leader lost: %s", myID)
+				stop()
+			},
+			OnNewLeader: func(identity string) {
+				// we're notified when a new leader is elected
+				if identity == myID {
+					// I just got the lock
+					return
+				}
+				log.Infof("new leader elected: %s", identity)
+				stop()
+			},
+		},
+	})
+}
+
+func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
+	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	wg.Wait()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
