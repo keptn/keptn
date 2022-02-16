@@ -182,6 +182,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
     env:
       BRANCH: ${{ needs.prepare.outputs.branch }}
