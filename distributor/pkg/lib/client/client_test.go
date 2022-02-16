@@ -2,8 +2,8 @@ package client
 
 import (
 	"fmt"
+	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
 	"github.com/keptn/keptn/distributor/pkg/config"
-	auth "github.com/keptn/keptn/distributor/pkg/oauth"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -26,7 +26,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 			OAuthClientSecret: "client-secret",
 			OAuthScopes:       []string{"scope"},
 		}
-		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
+		oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{}}
 
 		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
@@ -39,7 +39,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 			OAuthScopes:       []string{"scope"},
 			OAuthDiscovery:    "http://some-url.com",
 		}
-		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
+		oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{}}
 
 		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.NotNil(t, c)
@@ -52,7 +52,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 			OAuthScopes:       []string{"scope"},
 			OauthTokenURL:     "http://some-url.com",
 		}
-		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
+		oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{}}
 
 		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.NotNil(t, c)
@@ -64,7 +64,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 			OAuthClientSecret: "client-secret",
 			OAuthDiscovery:    "http://some-url.com",
 		}
-		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
+		oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{}}
 
 		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
@@ -76,7 +76,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 			OAuthScopes:       []string{"scope"},
 			OAuthDiscovery:    "http://some-url.com",
 		}
-		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
+		oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{}}
 
 		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
@@ -88,7 +88,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 			OAuthScopes:    []string{"scope"},
 			OAuthDiscovery: "http://some-url.com",
 		}
-		oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{}}
+		oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{}}
 
 		c, err := NewOauthClientGetter(cfg, oauthDiscovery).Get()
 		assert.Nil(t, c)
@@ -110,7 +110,7 @@ func TestOAuthClientGetter_Get_TokenEndpointIsCalled(t *testing.T) {
 		OAuthScopes:       []string{"scope"},
 		OAuthDiscovery:    "http://some-wellknown-url.com",
 	}
-	oauthDiscovery := &auth.StaticOauthDiscovery{DiscoveryValues: &auth.OauthDiscoveryResult{
+	oauthDiscovery := &oauthutils.StaticOauthDiscovery{DiscoveryValues: &oauthutils.OauthDiscoveryResult{
 		TokenEndpoint: tokenURLSrv.URL,
 	}}
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/oauth2"
 	"github.com/keptn/keptn/distributor/pkg/config"
-	auth "github.com/keptn/keptn/distributor/pkg/oauth"
 	logger "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
@@ -18,7 +18,7 @@ import (
 func CreateClientGetter(envConfig config.EnvConfig) HTTPClientGetter {
 	if envConfig.OAuthEnabled() {
 		logger.Infof("Using Oauth to connect to Keptn wth client ID %s and scopes %v", envConfig.OAuthClientID, envConfig.OAuthScopes)
-		return NewOauthClientGetter(envConfig, auth.NewOauthDiscovery(&http.Client{}))
+		return NewOauthClientGetter(envConfig, oauthutils.NewOauthDiscovery(&http.Client{}))
 	}
 	return New(envConfig)
 }
@@ -33,11 +33,11 @@ type HTTPClientGetter interface {
 type OAuthClientGetter struct {
 	*SimpleClientGetter
 	envConfig      config.EnvConfig
-	oauthDiscovery auth.OauthLocationGetter
+	oauthDiscovery oauthutils.OauthLocationGetter
 }
 
 // NewOauthClientGetter creates a new instance of a OAuthClientGetter
-func NewOauthClientGetter(envConfig config.EnvConfig, oauthDiscovery auth.OauthLocationGetter) *OAuthClientGetter {
+func NewOauthClientGetter(envConfig config.EnvConfig, oauthDiscovery oauthutils.OauthLocationGetter) *OAuthClientGetter {
 	return &OAuthClientGetter{
 		SimpleClientGetter: &SimpleClientGetter{envConfig: envConfig},
 		envConfig:          envConfig,
