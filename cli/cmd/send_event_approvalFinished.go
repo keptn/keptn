@@ -97,7 +97,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(api.EventsV1(), sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
 		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(api.EventsV1(),
-			api.ShipyardControlHandlerV1(), sendApprovalFinishedOptions)
+			api.ShipyardControlV1(), sendApprovalFinishedOptions)
 	}
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEven
 	return responseEvent, nil
 }
 
-func getApprovalFinishedForService(eventHandler apiutils.EventsV1Interface, scHandler *apiutils.ShipyardControllerHandler,
+func getApprovalFinishedForService(eventHandler apiutils.EventsV1Interface, scHandler apiutils.ShipyardControlV1Interface,
 	approvalFinishedOptions sendApprovalFinishedStruct) (string, string, *keptnv2.ApprovalFinishedEventData, error) {
 
 	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
