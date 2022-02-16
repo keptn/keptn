@@ -37,7 +37,7 @@ func NewSequenceWatcher(cancelSequenceChannel chan models.SequenceTimeout, event
 }
 
 func (sw *SequenceWatcher) Run(ctx context.Context) {
-	ticker := sw.theClock.Ticker(sw.syncInterval)
+	ticker := sw.theClock.Ticker(sw.syncInterval) //TODO is it really needed to only watch sequences in one replica?
 	go func() {
 		sw.cleanUpOrphanedTasks()
 		for {

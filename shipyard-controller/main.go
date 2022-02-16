@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/keptn/keptn/shipyard-controller/nats"
+	"github.com/google/uuid"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"net/http"
 	"os"
 	"os/signal"
@@ -51,7 +55,6 @@ const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarSequenceDispatchIntervalSec = "SEQUENCE_DISPATCH_INTERVAL_SEC"
 const envVarTaskStartedWaitDuration = "TASK_STARTED_WAIT_DURATION"
 const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
-const envVarNatsURL = "NATS_URL"
 const envVarLogTTL = "LOG_TTL"
 const envVarLogLevel = "LOG_LEVEL"
 const envVarEventDispatchIntervalSecDefault = "10"
@@ -59,13 +62,11 @@ const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
-const envVarNatsURLDefault = "nats://keptn-nats"
 
 func main() {
+	log.SetLevel(log.InfoLevel)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	log.SetLevel(log.InfoLevel)
 
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
@@ -143,7 +144,7 @@ func main() {
 		projectMVRepo,
 	)
 	shipyardController := handler.GetShipyardControllerInstance(
-		ctx,
+		context.Background(),
 		eventDispatcher,
 		sequenceDispatcher,
 		sequenceTimeoutChannel,
@@ -218,7 +219,7 @@ func main() {
 		clock.New(),
 	)
 
-	watcher.Run(ctx)
+	watcher.Run(context.Background())
 
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformRepo)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
@@ -259,22 +260,66 @@ func main() {
 		}
 	}()
 
-	connectionHandler := nats.NewNatsConnectionHandler(
-		ctx,
-		getNatsURLFromEnvVar(),
-		nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent),
-	)
-
-	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}); err != nil {
-		log.Fatalf("Could not subscribe to nats: %v", err)
-	}
+	LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 
 	GracefulShutdown(ctx, wg, srv)
 
 }
 
+func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context), stop func()) {
+	myID := uuid.New().String()
+	// we use the Lease lock type since edits to Leases are less common
+	// and fewer objects in the cluster watch "all Leases".
+	lock := &resourcelock.LeaseLock{
+		LeaseMeta: metav1.ObjectMeta{
+			Name:      "shipyard-controller-dispatcher",
+			Namespace: common.GetKeptnNamespace(),
+		},
+		Client: client,
+		LockConfig: resourcelock.ResourceLockConfig{
+			Identity: myID,
+		},
+	}
+
+	// start the leader election code loop
+	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
+		Lock: lock,
+		// IMPORTANT: you MUST ensure that any code you have that
+		// is protected by the lease must terminate **before**
+		// you call cancel. Otherwise, you could have a background
+		// loop still running and another process could
+		// get elected before your background loop finished, violating
+		// the stated goal of the lease.
+		ReleaseOnCancel: true,
+		LeaseDuration:   60 * time.Second,
+		RenewDeadline:   15 * time.Second,
+		RetryPeriod:     5 * time.Second,
+		Callbacks: leaderelection.LeaderCallbacks{
+			OnStartedLeading: func(ctx context.Context) {
+				// we're notified when we start - this is where you would
+				// usually put your code
+				start(ctx)
+			},
+			OnStoppedLeading: func() {
+				// we can do cleanup here
+				log.Infof("leader lost: %s", myID)
+				stop()
+			},
+			OnNewLeader: func(identity string) {
+				// we're notified when a new leader is elected
+				if identity == myID {
+					// I just got the lock
+					return
+				}
+				log.Infof("new leader elected: %s", identity)
+				stop()
+			},
+		},
+	})
+}
+
 func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrupt signal to gracefully shutdown the server
+	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -343,13 +388,6 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
-}
-
-func getNatsURLFromEnvVar() string {
-	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
-		return natsURL
-	}
-	return envVarNatsURLDefault
 }
 
 func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
