@@ -79,13 +79,10 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 		EventType: subscription.Event,
 	})
 	if err != nil {
+		logger.Errorf("Could not retrieve events of type %s", subscription.Event)
 		return
 	}
-	//events, err := p.getEventsFromEndpoint(endpoint, token, subscription)
-	//if err != nil {
-	//	logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", subscription.Event, endpoint, err)
-	//	return
-	//}
+
 	logger.Debugf("Received %d new .triggered events", len(events))
 	// iterate over all events, discard the event if it has already been sent
 	for index := range events {
