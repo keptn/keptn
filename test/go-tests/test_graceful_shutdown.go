@@ -1,12 +1,12 @@
 package go_tests
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 	"path/filepath"
 	"testing"
 	"time"
-
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
 )
 
 const tinyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -43,8 +43,7 @@ type Setup struct {
 }
 
 func newSetup(t *testing.T) *Setup {
-	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
-	repoLocalDir = filepath.ToSlash(repoLocalDir)
+	repoLocalDir, err := filepath.Abs("../")
 	require.Nil(t, err)
 	return &Setup{
 		Project:        "tinypodtato",
@@ -101,16 +100,18 @@ func Test_GracefulLeader(t *testing.T) {
 
 	shipyardPod := "shipyard-controller"
 	setup := newSetup(t)
-	setup.Project = "leader-electionp"
+	setup.Project = "leader_election"
 	keptnContext := startDelivery(t, setup)
 
+	var deploymentStartedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if deployment.started event is available")
+		t.Log("checking if evaluation.finished event is available")
 		event, err := GetLatestEventOfType(keptnContext, setup.Project, "dev", keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName))
 		if err != nil || event == nil {
 			return false
 		}
 		waitAndKill(t, shipyardPod, 0)
+		deploymentStartedEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
@@ -118,11 +119,9 @@ func Test_GracefulLeader(t *testing.T) {
 
 }
 
-func startDelivery(t *testing.T, setup *Setup) string {
+func startDelivery(t *testing.T, setup *Setup) (string) {
 	t.Logf("Creating a new project %s", setup.Project)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
-	require.Nil(t, err)
-	shipyardFilePath = filepath.ToSlash(shipyardFilePath)
 	require.Nil(t, err)
 	setup.Project, err = CreateProject(setup.Project, shipyardFilePath, true)
 	require.Nil(t, err)
