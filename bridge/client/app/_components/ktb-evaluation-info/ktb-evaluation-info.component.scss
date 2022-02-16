@@ -2,8 +2,8 @@
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
 .border {
-  background-color: $gray-200;
-  color: black;
+  background-color: $gray-200 !important;
+  color: black !important;
 
   &.success {
     border: 1px solid $cta-color !important;
