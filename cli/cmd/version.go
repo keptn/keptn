@@ -181,7 +181,7 @@ func getKeptnServerVersion() (string, error) {
 		return "", errors.New(authErrorMsg)
 	}
 
-	api, err := internal.APIProvider(endPoint.String(), apiToken, nil)
+	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
 		return "", err
 	}
