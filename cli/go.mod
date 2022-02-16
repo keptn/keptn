@@ -3,7 +3,7 @@ module github.com/keptn/keptn/cli
 go 1.16
 
 require (
-	github.com/alecthomas/jsonschema v0.0.0-20220203024042-cc89723c9db0
+	github.com/alecthomas/jsonschema v0.0.0-20220216202328-9eeeec9d044b
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/docker/docker-credential-helpers v0.6.4
