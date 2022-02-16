@@ -95,8 +95,6 @@ func (sc *shipyardController) run(ctx context.Context) {
 			}
 		}
 	}()
-	sc.eventDispatcher.Run(context.Background())
-	sc.sequenceDispatcher.Run(context.Background(), sc.StartTaskSequence)
 }
 
 func (sc *shipyardController) ControlSequence(controlSequence models.SequenceControl) error {
