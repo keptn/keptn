@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.2](https://github.com/keptn/keptn/compare/0.12.1...0.12.2) (2022-02-16)
+
+
+### Bug Fixes
+
+* **configuration-service:** Adapt to different response from git CLI when upstream branch is not there yet ([#6876](https://github.com/keptn/keptn/issues/6876)) ([c0f30f2](https://github.com/keptn/keptn/commit/c0f30f209575f6575e14fccf24029d2f6764ea2f))
+
 ### [0.12.1](https://github.com/keptn/keptn/compare/0.12.0...0.12.1) (2022-02-15)
 
 
