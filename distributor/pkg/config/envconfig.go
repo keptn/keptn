@@ -107,17 +107,7 @@ func (env *EnvConfig) ProxyHost(path string) (string, string, string) {
 			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
 			join := strings.Join(split[1:], "/")
 			path = value + "/" + join
-			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
-			if value == "/configuration-service" {
-				splitPath := strings.Split(path, "/resource/")
-				if len(splitPath) > 1 {
-					path = ""
-					for i := 0; i < len(splitPath)-1; i++ {
-						path = splitPath[i] + "/resource/"
-					}
-					path += url.QueryEscape(splitPath[len(splitPath)-1])
-				}
-			}
+			path = queryEscapeConfigurationServiceURI(path, value)
 			if parsedKeptnURL.Path != "" {
 				path = strings.TrimSuffix(parsedKeptnURL.Path, "/") + path
 			}
@@ -197,6 +187,20 @@ func (env *EnvConfig) HTTPClient() *http.Client {
 	return c
 }
 
+func queryEscapeConfigurationServiceURI(path string, value string) string {
+	// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
+	if value == "/configuration-service" {
+		splitPath := strings.Split(path, "/resource/")
+		if len(splitPath) > 1 {
+			path = ""
+			for i := 0; i < len(splitPath)-1; i++ {
+				path = splitPath[i] + "/resource/"
+			}
+			path += url.QueryEscape(splitPath[len(splitPath)-1])
+		}
+	}
+	return path
+}
 func isOneOfFilteredServices(serviceName string) bool {
 	switch serviceName {
 	case
