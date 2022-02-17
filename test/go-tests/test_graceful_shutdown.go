@@ -43,6 +43,7 @@ type Setup struct {
 
 func newSetup(t *testing.T) *Setup {
 	repoLocalDir, err := filepath.Abs("../")
+	repoLocalDir = filepath.ToSlash(repoLocalDir)
 	require.Nil(t, err)
 	return &Setup{
 		Project:        "tinypodtato",
@@ -99,7 +100,7 @@ func Test_GracefulLeader(t *testing.T) {
 
 	shipyardPod := "shipyard-controller"
 	setup := newSetup(t)
-	setup.Project = "leader_election"
+	setup.Project = "leader_election2"
 	keptnContext := startDelivery(t, setup)
 
 	require.Eventually(t, func() bool {
@@ -119,6 +120,8 @@ func Test_GracefulLeader(t *testing.T) {
 func startDelivery(t *testing.T, setup *Setup) string {
 	t.Logf("Creating a new project %s", setup.Project)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
+	require.Nil(t, err)
+	shipyardFilePath = filepath.ToSlash(shipyardFilePath)
 	require.Nil(t, err)
 	setup.Project, err = CreateProject(setup.Project, shipyardFilePath, true)
 	require.Nil(t, err)
