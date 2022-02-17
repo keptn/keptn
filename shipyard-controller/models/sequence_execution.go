@@ -9,6 +9,8 @@ type SequenceExecution struct {
 	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    EventScope              `json:"scope" bson:"scope"`
+	// InputProperties contains properties of the event which triggered the task sequence
+	InputProperties interface{} `json:"inputProperties" bson:"inputProperties"`
 }
 
 type SequenceExecutionStatus struct {
@@ -61,8 +63,30 @@ func (e *SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	return TaskExecutionResult{}
 }
 
-func (e *SequenceExecution) GetNextTriggeredEvent() (*Event, error) {
-	return nil, nil
+func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
+
+	nextTask := e.GetNextTaskOfSequence()
+	if nextTask == nil {
+		return nil
+	}
+	eventPayload := map[string]interface{}{}
+
+	eventPayload["project"] = e.Scope.Project
+	eventPayload["stage"] = e.Scope.Stage
+	eventPayload["service"] = e.Scope.Service
+
+	eventPayload[nextTask.Name] = nextTask.Properties
+
+	if len(e.Status.PreviousTasks) > 0 {
+		for _, previousTask := range e.Status.PreviousTasks {
+			eventPayload[previousTask.Name] = previousTask.Properties
+		}
+		lastTaskIndex := len(e.Status.PreviousTasks) - 1
+		eventPayload["result"] = e.Status.PreviousTasks[lastTaskIndex].Result
+		eventPayload["status"] = e.Status.PreviousTasks[lastTaskIndex].Status
+	}
+
+	return eventPayload
 }
 
 func (e *SequenceExecution) IsPaused() bool {

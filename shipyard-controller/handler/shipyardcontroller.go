@@ -224,7 +224,8 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 			State:         models.SequenceTriggeredState,
 			PreviousTasks: []models.TaskExecutionResult{},
 		},
-		Scope: *eventScope,
+		InputProperties: event.Data,
+		Scope:           *eventScope,
 	}
 	sequenceExecution.Scope.TriggeredID = event.ID
 
