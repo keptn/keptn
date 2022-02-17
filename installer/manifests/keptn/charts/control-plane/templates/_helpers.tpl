@@ -36,19 +36,11 @@ Common labels
 */}}
 {{- define "control-plane.labels" -}}
 helm.sh/chart: {{ include "control-plane.chart" . }}
-{{ include "control-plane.selectorLabels" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "control-plane.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "control-plane.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
