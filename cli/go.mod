@@ -9,8 +9,8 @@ require (
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.4.0
-	github.com/keptn/go-utils v0.13.0
-	github.com/keptn/kubernetes-utils v0.13.0
+	github.com/keptn/go-utils v0.12.1-0.20220217095024-beadea48bf52
+	github.com/keptn/kubernetes-utils v0.10.1-0.20220207100409-737f87e5f035
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.3.0
