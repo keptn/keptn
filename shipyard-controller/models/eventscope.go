@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
