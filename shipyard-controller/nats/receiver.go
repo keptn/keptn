@@ -64,19 +64,7 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 	}
 
 	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
-		var err error
-		nch.RemoveAllSubscriptions()
-
-		nch.natsConnection.Close()
-		logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
-		nch.natsConnection, err = nats.Connect(nch.natsURL)
-
-		if err != nil {
-			return errors.New("failed to create NATS connection: " + err.Error())
-		}
-
-		err = nch.setupJetStreamContext(topics)
-		if err != nil {
+		if err := nch.renewNatsConnection(topics); err != nil {
 			return err
 		}
 	}
@@ -92,6 +80,25 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 			}
 			nch.subscriptions = append(nch.subscriptions, subscription)
 		}
+	}
+	return nil
+}
+
+func (nch *NatsConnectionHandler) renewNatsConnection(topics []string) error {
+	var err error
+	nch.RemoveAllSubscriptions()
+
+	nch.natsConnection.Close()
+	logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
+	nch.natsConnection, err = nats.Connect(nch.natsURL)
+
+	if err != nil {
+		return errors.New("failed to create NATS connection: " + err.Error())
+	}
+
+	err = nch.setupJetStreamContext(topics)
+	if err != nil {
+		return err
 	}
 	return nil
 }

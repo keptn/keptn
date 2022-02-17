@@ -64,7 +64,7 @@ func (ps *PullSubscription) pullMessages() {
 		}
 		msgs, err := ps.subscription.Fetch(10)
 		if err != nil {
-			// timeout is not a problem since that simple means that no event for that topic has been sent
+			// timeout is not a problem since that simply means that no event for that topic has been sent
 			if !errors.Is(err, nats.ErrTimeout) {
 				logger.WithError(err).Errorf("could not fetch messages for topic %s", ps.subscription.Subject)
 			}
