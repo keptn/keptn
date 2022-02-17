@@ -3,7 +3,6 @@ package go_tests
 import (
 	"path"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -97,17 +96,5 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
-	require.Nil(t, err)
-
-	t.Logf("Sleeping for 60s...")
-	time.Sleep(60 * time.Second)
-	t.Logf("Continue to work...")
-
-	t.Logf("Verify Direct delivery of %s in stage dev", serviceName)
-	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	require.Nil(t, err)
-
-	t.Logf("Verify Direct delivery of %s in stage prod", serviceName)
-	err = VerifyDirectDeployment(serviceName, projectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
 	require.Nil(t, err)
 }
