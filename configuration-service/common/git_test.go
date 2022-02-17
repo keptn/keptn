@@ -311,7 +311,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 			},
 		},
 		{
-			name: "push to upstream - error when pulling changes",
+			name: "push to upstream - no remote ref HEAD found, should continue",
 			fields: fields{
 				Executor: &common_mock.CommandExecutorMock{ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
 					if args[0] == "for-each-ref" {
@@ -327,10 +327,8 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 							release-0.8.0 merges with remote release-0.8.0
 						  Local ref configured for 'git push':
 							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
-					} else if args[0] == "checkout" {
-						return "", nil
-					} else if args[0] == "pull" {
-						return "", errors.New("oops")
+					} else if args[0] == "pull" && args[1] == "-s" {
+						return "", errors.New("Couldn't find remote ref HEAD")
 					}
 					return "", nil
 				}},
@@ -340,7 +338,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 				project: "my-project",
 				repoURI: "https://my-repo.git",
 			},
-			wantErr: true,
+			wantErr: false,
 			expectedCommands: []struct {
 				Command   string
 				Args      []string
@@ -371,10 +369,15 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 					Args:      []string{"pull", "-s", "recursive", "-X", "theirs", "https://my-repo.git"},
 					Directory: "./debug/config/my-project",
 				},
+				{
+					Command:   "git",
+					Args:      []string{"push", "--set-upstream", "https://my-repo.git", "master"},
+					Directory: "./debug/config/my-project",
+				},
 			},
 		},
 		{
-			name: "push to upstream - no remote ref HEAD found, should continue",
+			name: "push to upstream - unexpected error during pull, should continue",
 			fields: fields{
 				Executor: &common_mock.CommandExecutorMock{ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
 					if args[0] == "for-each-ref" {
@@ -391,7 +394,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 						  Local ref configured for 'git push':
 							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
 					} else if args[0] == "pull" && args[1] == "-s" {
-						return "", errors.New("Couldn't find remote ref HEAD")
+						return "", errors.New("unexpected error")
 					}
 					return "", nil
 				}},
