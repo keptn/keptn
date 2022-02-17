@@ -20,12 +20,13 @@ var statusCmd = &cobra.Command{
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		credentialManager := credentialmanager.NewCredentialManager(assumeYes)
-		authenticator := NewAuthenticator(namespace, credentialManager)
 
-		err := authenticator.Auth(AuthenticatorOptions{})
-		if err != nil {
-			return err
-		}
+		// Check for better possibility
+		//authenticator := NewAuthenticator(namespace, credentialManager)
+		//err := authenticator.Auth(AuthenticatorOptions{})
+		//if err != nil {
+		//	return err
+		//}
 
 		endpoint, _, err := credentialManager.GetCreds(namespace)
 		if err != nil {
