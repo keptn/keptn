@@ -188,23 +188,7 @@ func TestCreateProjectUnknownParmeter(t *testing.T) {
 	testInvalidInputHelper("create project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
 }
 
-// TestCreateProjectCmdMissingTokenAndKey
-func TestCreateProjectCmdMissingTokenAndKey(t *testing.T) {
-	credentialmanager.MockAuthCreds = true
-
-	shipyardFilePath := "./shipyard.yaml"
-	defer testShipyard(t, shipyardFilePath, "")()
-
-	cmd := fmt.Sprintf("create project sockshop --mock --shipyard=%s --git-user=user --git-remote-url=https://someurl.com",
-		shipyardFilePath)
-	_, err := executeActionCommandC(cmd)
-
-	if !errorContains(err, gitErrMsg) {
-		t.Errorf("missing expected error, but got %v", err)
-	}
-}
-
-// TestCreateProjectCmdMissingTokenAndKey
+// TestCreateProjectCmdTokenAndKey
 func TestCreateProjectCmdTokenAndKey(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
