@@ -26,10 +26,10 @@ import (
 // 			GetByTriggeredIDFunc: func(project string, triggeredID string) (*models.SequenceExecution, error) {
 // 				panic("mock out the GetByTriggeredID method")
 // 			},
-// 			UpdateStatusFunc: func(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error) {
+// 			UpdateStatusFunc: func(taskSequence models.SequenceExecution) (*models.SequenceExecution, error) {
 // 				panic("mock out the UpdateStatus method")
 // 			},
-// 			UpsertFunc: func(item models.SequenceExecution) error {
+// 			UpsertFunc: func(item models.SequenceExecution, options *models.SequenceExecutionUpsertOptions) error {
 // 				panic("mock out the Upsert method")
 // 			},
 // 		}
@@ -52,10 +52,10 @@ type SequenceExecutionRepoMock struct {
 	GetByTriggeredIDFunc func(project string, triggeredID string) (*models.SequenceExecution, error)
 
 	// UpdateStatusFunc mocks the UpdateStatus method.
-	UpdateStatusFunc func(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error)
+	UpdateStatusFunc func(taskSequence models.SequenceExecution) (*models.SequenceExecution, error)
 
 	// UpsertFunc mocks the Upsert method.
-	UpsertFunc func(item models.SequenceExecution) error
+	UpsertFunc func(item models.SequenceExecution, options *models.SequenceExecutionUpsertOptions) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -87,13 +87,13 @@ type SequenceExecutionRepoMock struct {
 		UpdateStatus []struct {
 			// TaskSequence is the taskSequence argument value.
 			TaskSequence models.SequenceExecution
-			// State is the state argument value.
-			State string
 		}
 		// Upsert holds details about calls to the Upsert method.
 		Upsert []struct {
 			// Item is the item argument value.
 			Item models.SequenceExecution
+			// Options is the options argument value.
+			Options *models.SequenceExecutionUpsertOptions
 		}
 	}
 	lockAppendTaskEvent  sync.RWMutex
@@ -237,21 +237,19 @@ func (mock *SequenceExecutionRepoMock) GetByTriggeredIDCalls() []struct {
 }
 
 // UpdateStatus calls UpdateStatusFunc.
-func (mock *SequenceExecutionRepoMock) UpdateStatus(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error) {
+func (mock *SequenceExecutionRepoMock) UpdateStatus(taskSequence models.SequenceExecution) (*models.SequenceExecution, error) {
 	if mock.UpdateStatusFunc == nil {
 		panic("SequenceExecutionRepoMock.UpdateStatusFunc: method is nil but SequenceExecutionRepo.UpdateStatus was just called")
 	}
 	callInfo := struct {
 		TaskSequence models.SequenceExecution
-		State        string
 	}{
 		TaskSequence: taskSequence,
-		State:        state,
 	}
 	mock.lockUpdateStatus.Lock()
 	mock.calls.UpdateStatus = append(mock.calls.UpdateStatus, callInfo)
 	mock.lockUpdateStatus.Unlock()
-	return mock.UpdateStatusFunc(taskSequence, state)
+	return mock.UpdateStatusFunc(taskSequence)
 }
 
 // UpdateStatusCalls gets all the calls that were made to UpdateStatus.
@@ -259,11 +257,9 @@ func (mock *SequenceExecutionRepoMock) UpdateStatus(taskSequence models.Sequence
 //     len(mockedSequenceExecutionRepo.UpdateStatusCalls())
 func (mock *SequenceExecutionRepoMock) UpdateStatusCalls() []struct {
 	TaskSequence models.SequenceExecution
-	State        string
 } {
 	var calls []struct {
 		TaskSequence models.SequenceExecution
-		State        string
 	}
 	mock.lockUpdateStatus.RLock()
 	calls = mock.calls.UpdateStatus
@@ -277,24 +273,28 @@ func (mock *SequenceExecutionRepoMock) Upsert(item models.SequenceExecution, opt
 		panic("SequenceExecutionRepoMock.UpsertFunc: method is nil but SequenceExecutionRepo.Upsert was just called")
 	}
 	callInfo := struct {
-		Item models.SequenceExecution
+		Item    models.SequenceExecution
+		Options *models.SequenceExecutionUpsertOptions
 	}{
-		Item: item,
+		Item:    item,
+		Options: options,
 	}
 	mock.lockUpsert.Lock()
 	mock.calls.Upsert = append(mock.calls.Upsert, callInfo)
 	mock.lockUpsert.Unlock()
-	return mock.UpsertFunc(item)
+	return mock.UpsertFunc(item, options)
 }
 
 // UpsertCalls gets all the calls that were made to Upsert.
 // Check the length with:
 //     len(mockedSequenceExecutionRepo.UpsertCalls())
 func (mock *SequenceExecutionRepoMock) UpsertCalls() []struct {
-	Item models.SequenceExecution
+	Item    models.SequenceExecution
+	Options *models.SequenceExecutionUpsertOptions
 } {
 	var calls []struct {
-		Item models.SequenceExecution
+		Item    models.SequenceExecution
+		Options *models.SequenceExecutionUpsertOptions
 	}
 	mock.lockUpsert.RLock()
 	calls = mock.calls.Upsert

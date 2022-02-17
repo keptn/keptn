@@ -111,6 +111,6 @@ type SequenceExecutionRepo interface {
 	GetByTriggeredID(project, triggeredID string) (*models.SequenceExecution, error)
 	Upsert(item models.SequenceExecution, options *models.SequenceExecutionUpsertOptions) error
 	AppendTaskEvent(taskSequence models.SequenceExecution, event models.TaskEvent) (*models.SequenceExecution, error)
-	UpdateStatus(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error)
+	UpdateStatus(taskSequence models.SequenceExecution) (*models.SequenceExecution, error)
 	Clear(projectName string) error
 }

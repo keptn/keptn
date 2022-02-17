@@ -12,9 +12,11 @@ type SequenceExecution struct {
 }
 
 type SequenceExecutionStatus struct {
-	State         string                `json:"state" bson:"state"` // triggered, waiting, suspended (approval in progress), paused, finished, cancelled, timedOut
-	PreviousTasks []TaskExecutionResult `json:"previousTasks" bson:"previousTasks"`
-	CurrentTask   TaskExecutionState    `json:"currentTask" bson:"currentTask"`
+	State string `json:"state" bson:"state"` // triggered, waiting, suspended (approval in progress), paused, finished, cancelled, timedOut
+	// StateBeforePause is needed to keep track of the state before a sequence has been paused. Example: when a sequence has been paused while being queued, and then resumed, it should not be set to started immediately, but to the state it had before
+	StateBeforePause string                `json:"stateBeforePause" bson:"stateBeforePause"`
+	PreviousTasks    []TaskExecutionResult `json:"previousTasks" bson:"previousTasks"`
+	CurrentTask      TaskExecutionState    `json:"currentTask" bson:"currentTask"`
 }
 
 type TaskExecutionResult struct {
@@ -32,7 +34,7 @@ type TaskExecutionState struct {
 	Events      []TaskEvent `json:"events" bson:"events"`
 }
 
-func (e SequenceExecution) GetNextTaskOfSequence() *keptnv2.Task {
+func (e *SequenceExecution) GetNextTaskOfSequence() *keptnv2.Task {
 	if e.Status.CurrentTask.IsFailed() {
 		return nil
 	}
@@ -47,7 +49,7 @@ func (e SequenceExecution) GetNextTaskOfSequence() *keptnv2.Task {
 	return nil
 }
 
-func (e SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
+func (e *SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	if len(e.Status.PreviousTasks) == 0 {
 		return TaskExecutionResult{}
 	}
@@ -59,12 +61,39 @@ func (e SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	return TaskExecutionResult{}
 }
 
-func (e SequenceExecution) IsPaused() bool {
+func (e *SequenceExecution) GetNextTriggeredEvent() (*Event, error) {
+	return nil, nil
+}
+
+func (e *SequenceExecution) IsPaused() bool {
 	return e.Status.State == SequencePaused
 }
 
+// CanBePaused determines whether a sequence can be paused, based on its current state. E.g. a finished sequence cannot be paused
+func (e *SequenceExecution) CanBePaused() bool {
+	return e.Status.State == SequenceStartedState || e.Status.State == SequenceWaitingState || e.Status.State == SequenceTriggeredState
+}
+
+// Pause tries to pause the sequence execution, based on its current state. If it was successful, returns true. If it could not be paused, false is returned
+func (e *SequenceExecution) Pause() bool {
+	if !e.CanBePaused() {
+		return false
+	}
+	e.Status.StateBeforePause = e.Status.State
+	return true
+}
+
+// Resume tries to resume the sequence execution, based on its current state. If it was successful, returns true. If it could not be paused, false is returned
+func (e *SequenceExecution) Resume() bool {
+	if !e.IsPaused() {
+		return false
+	}
+	e.Status.State = e.Status.StateBeforePause
+	return true
+}
+
 // IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
-func (e TaskExecutionState) IsFinished() bool {
+func (e *TaskExecutionState) IsFinished() bool {
 	if len(e.Events) == 0 {
 		return false
 	}
@@ -84,7 +113,7 @@ func (e TaskExecutionState) IsFinished() bool {
 	return false
 }
 
-func (e TaskExecutionState) IsFailed() bool {
+func (e *TaskExecutionState) IsFailed() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
 			if event.Result == string(keptnv2.ResultFailed) {
@@ -95,7 +124,7 @@ func (e TaskExecutionState) IsFailed() bool {
 	return false
 }
 
-func (e TaskExecutionState) IsWarning() bool {
+func (e *TaskExecutionState) IsWarning() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
 			if event.Result == string(keptnv2.ResultWarning) {
@@ -106,7 +135,7 @@ func (e TaskExecutionState) IsWarning() bool {
 	return false
 }
 
-func (e TaskExecutionState) IsPassed() bool {
+func (e *TaskExecutionState) IsPassed() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
 			if event.Result == string(keptnv2.ResultFailed) || event.Result == string(keptnv2.ResultWarning) {
@@ -117,7 +146,7 @@ func (e TaskExecutionState) IsPassed() bool {
 	return true
 }
 
-func (e TaskExecutionState) IsErrored() bool {
+func (e *TaskExecutionState) IsErrored() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
 			if event.Status == string(keptnv2.StatusErrored) {

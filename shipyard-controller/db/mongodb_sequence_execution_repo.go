@@ -167,7 +167,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 	return sequenceExecution, nil
 }
 
-func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error) {
+func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.SequenceExecution) (*models.SequenceExecution, error) {
 	if taskSequence.Scope.Project == "" {
 		return nil, errors.New("project must be set")
 	}
@@ -185,7 +185,10 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.Se
 
 	filter := bson.D{{"_id", taskSequence.ID}}
 
-	update := bson.M{"$set": bson.M{"status.state": state}}
+	update := bson.M{"$set": bson.M{
+		"status.state":            taskSequence.Status.State,
+		"status.stateBeforePause": taskSequence.Status.StateBeforePause,
+	}}
 
 	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
 	if res.Err() != nil {

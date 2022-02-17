@@ -52,6 +52,7 @@ func NewSequenceDispatcher(
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
+	// TODO can we also get rid of sequenceQueue?
 	// try to dispatch the sequence immediately
 	if err := sd.dispatchSequence(queueItem); err != nil {
 		if err == ErrSequenceBlocked {

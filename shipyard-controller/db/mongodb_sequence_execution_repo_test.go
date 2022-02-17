@@ -83,10 +83,13 @@ func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, sequenceByTriggeredID)
 
-	updatedSequence, err := mdbrepo.UpdateStatus(*sequenceByTriggeredID, "paused")
+	sequenceByTriggeredID.Status.State = models.SequencePaused
+	sequenceByTriggeredID.Status.StateBeforePause = models.SequenceTriggeredState
+	updatedSequence, err := mdbrepo.UpdateStatus(*sequenceByTriggeredID)
 
 	require.Nil(t, err)
 	require.Equal(t, "paused", updatedSequence.Status.State)
+	require.Equal(t, "triggered", updatedSequence.Status.StateBeforePause)
 
 	// ensure that multiple writers can append data to a shared sequence and all inserts are persisted
 	nrConcurrentWrites := 100
