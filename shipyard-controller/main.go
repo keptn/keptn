@@ -62,6 +62,7 @@ const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
+const envVarDisableLeaderElection = "true"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -260,7 +261,13 @@ func main() {
 		}
 	}()
 
-	LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+	if os.Getenv(envVarDisableLeaderElection) == "true" {
+		// single shipyard
+		shipyardController.StartDispatchers(ctx)
+	} else {
+		// multiple shipyards
+		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+	}
 
 	GracefulShutdown(ctx, wg, srv)
 
