@@ -100,7 +100,7 @@ func Test_GracefulLeader(t *testing.T) {
 
 	shipyardPod := "shipyard-controller"
 	setup := newSetup(t)
-	setup.Project = "leader_election2"
+	setup.Project = "leaderElection2"
 	keptnContext := startDelivery(t, setup)
 
 	require.Eventually(t, func() bool {
