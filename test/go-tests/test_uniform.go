@@ -88,10 +88,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
-            - name: DISTRIBUTOR_VERSION
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/version']
             - name: LOCATION
               valueFrom:
                 fieldRef:

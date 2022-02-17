@@ -1,0 +1,9 @@
+dependencies:
+- name: control-plane
+  repository: ""
+  version: 0.1.0
+- name: continuous-delivery
+  repository: ""
+  version: 0.1.0
+digest: sha256:f7746691659003114761bab211aef951277135f984ad5f69f483d3f1245b21ea
+generated: "2022-01-28T11:33:08.630951442+01:00"

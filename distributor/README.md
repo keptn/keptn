@@ -22,7 +22,6 @@ Thus, each service has its own distributor that is configured by the two environ
 - `DISABLE_REGISTRATION` - Disables automatic registration of the Keptn integration to the control plane. default = `false`
 - `REGISTRATION_INTERVAL` - Time duration between trying to re-register to the Keptn control plane. default =`10s`
 - `LOCATION` - Location the distributor is running on, e.g. "executionPlane-A". default = `""`
-- `DISTRIBUTOR_VERSION` - The software version of the distributor. default = `""`
 - `VERSION` - The version of the Keptn integration. default = `""`
 - `K8S_DEPLOYMENT_NAME` - Kubernetes deployment name of the Keptn integration. default = `""`
 - `K8S_POD_NAME` -  Kubernetes deployment name of the Keptn integration. default = `""`

@@ -55,6 +55,8 @@ RUN apk add --no-cache ca-certificates libc6-compat
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/distributor/distributor /distributor
 
+ENV DISTRIBUTOR_VERSION=${version}
+
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
 
