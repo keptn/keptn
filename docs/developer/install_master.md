@@ -7,15 +7,15 @@
 1. Create a new cluster (e.g., using k3s)
 2. - Build Keptn CLI from master:
       - download source, 
-      - go to /keptn/cli ``` go build  -o keptn main.go```
-   - Or use an older CLI from a previous release: ```curl -sL https://get.keptn.sh | KEPTN_VERSION=0.12.0 bash```
-4. Save the Keptn developer helm repo :
+      - go to `/keptn/cli` and run `go build  -o keptn main.go`
+   - Or use an older CLI from a previous release, e.g., `curl -sL https://get.keptn.sh | KEPTN_VERSION=0.12.0 bash`
+4. Add the Keptn developer helm repository:
 ```
 helm repo add keptn-dev https://charts-dev.keptn.sh
 ```
-5. Do ```helm repo update```
-6. Show all developer images tag with ```helm search repo keptn-dev --devel -l ```
-7. For current master use ``<current_version>-dev`` images, for images built in a PR add ``-PR-<PR_#>`` to the tag,
+5. Run `helm repo update`
+6. Show all developer images tag with `helm search repo keptn-dev --devel -l `
+7. For current master use `<current_version>-dev` images, for images built in a PR add `-PR-<PR_#>` to the tag,
 8. To install version 0.13.0-dev-PR-1234 
 ``` 
 helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=continuous-delivery.enabled=true --wait --version 0.13.0-dev-PR-1234
