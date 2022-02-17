@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: bridge
-          image: keptn/bridge2:latest
+          image: keptndev/bridge2:latest
           imagePullPolicy: Always
           env:
             - name: API_URL
