@@ -396,8 +396,8 @@ jobs:
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
           build-args: |
             version=${{ env.VERSION }}
           push: ${{ matrix.config.should-push-image && ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) }}

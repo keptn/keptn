@@ -4,8 +4,9 @@
 VERSION=$1
 IMAGE_TAG=$2
 KEPTN_SPEC_VERSION=$3
+DOCKER_ORG=$4
 
-if [ $# -ne 3 ]; then
+if [ $# -lt 3 ]; then
   echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION"
   exit
 fi
@@ -20,12 +21,18 @@ if [ -z "$IMAGE_TAG" ]; then
   IMAGE_TAG=$VERSION
 fi
 
+if [ -z "$DOCKER_ORG" ]; then
+  echo "No Docker organisation set, defaulting to keptn"
+  DOCKER_ORG='keptn'
+fi
+
 
 # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
 find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${IMAGE_TAG}/g" {} \;
 find . -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
 # replace "keptnSpecVersion: latest" with "keptnSpecVersion: $KEPTN_SPEC_VERSION" in all values.yaml files
 find . -name values.yaml -exec sed -i -- "s/keptnSpecVersion: latest/keptnSpecVersion: ${KEPTN_SPEC_VERSION}/g" {} \;
+find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${DOCKER_ORG}\//g" {} \;
 
 mkdir keptn-charts/
 
