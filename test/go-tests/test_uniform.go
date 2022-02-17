@@ -88,6 +88,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
+            - name: DISTRIBUTOR_VERSION
+              value: "0.1.2"
             - name: LOCATION
               valueFrom:
                 fieldRef:
@@ -465,7 +467,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
 	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
-	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
+	require.Equal(t, "0.1.2", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
 
 	// update the subscription to only receive "echo.triggered" events for a given project/stage/service combination
