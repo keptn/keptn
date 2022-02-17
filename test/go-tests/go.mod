@@ -8,7 +8,7 @@ require (
 	github.com/imroc/req v0.3.2
 	github.com/keptn/go-utils v0.11.1-0.20220207171637-b2495d8b022d
 	github.com/keptn/keptn/shipyard-controller v0.0.0-00010101000000-000000000000
-	github.com/keptn/kubernetes-utils v0.10.1-0.20220207091837-be14968ce18a
+	github.com/keptn/kubernetes-utils v0.12.1-0.20220217091902-54ff8fda1f37
 	github.com/stretchr/testify v1.7.0
 	k8s.io/api v0.22.6
 	k8s.io/apimachinery v0.22.6
