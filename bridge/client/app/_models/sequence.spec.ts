@@ -286,6 +286,11 @@ describe('Sequence', () => {
     expect(sequence.isSuccessful()).toBe(false);
   });
 
+  it('should not be successful if stage succeeded but has failed', () => {
+    const sequence = getSucceededFailedSequence();
+    expect(sequence.isSuccessful()).toBe(false);
+  });
+
   it('should not be successful in stage', () => {
     const sequence = getLoadingSequence();
     expect(sequence.isSuccessful('staging')).toBe(false);
@@ -642,6 +647,30 @@ describe('Sequence', () => {
             type: EventTypes.DEPLOYMENT_FINISHED,
           },
           latestFailedEvent: undefined,
+        },
+      ],
+    };
+    return Sequence.fromJSON(sequence);
+  }
+
+  function getSucceededFailedSequence(): Sequence {
+    const sequence = {
+      ...SequenceResponseMock[0],
+      state: SequenceState.FINISHED,
+      stages: [
+        {
+          ...SequenceResponseMock[0].stages[0],
+          state: SequenceState.SUCCEEDED,
+          latestEvent: {
+            id: 'my Id',
+            time: '',
+            type: EventTypes.DEPLOYMENT_FINISHED,
+          },
+          latestFailedEvent: {
+            id: 'my Id',
+            time: '',
+            type: EventTypes.DEPLOYMENT_FINISHED,
+          },
         },
       ],
     };
