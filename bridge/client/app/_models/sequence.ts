@@ -124,10 +124,6 @@ export class Sequence extends sq {
     );
   }
 
-  private isSucceeded(stageName?: string): boolean {
-    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.SUCCEEDED; // succeeded is actually finished
-  }
-
   public isWarning(stageName?: string): boolean {
     return (
       !this.isFaulty(stageName) &&
