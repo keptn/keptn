@@ -1,6 +1,5 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-# https://hub.docker.com/_/golang
 FROM golang:1.16.13-alpine as builder-base
 
 ARG debugBuild
@@ -13,8 +12,6 @@ ENV GOPROXY=https://proxy.golang.org
 
 RUN apk add --no-cache gcc libc-dev git
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -24,8 +21,10 @@ RUN go mod download
 COPY . .
 
 FROM builder-base as builder-test
+ENV GOTESTSUM_FORMAT=testname
 
-CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
+RUN go get gotest.tools/gotestsum@v1.7.0
+CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 
@@ -38,8 +37,6 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o distributor ./cmd/
 
-# Use a Docker multi-stage build to create a lean production image.
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.15 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
@@ -57,12 +54,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/distributor/distributor /dist
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
-
-
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
-#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 RUN adduser -D nonroot -u 65532
 USER nonroot

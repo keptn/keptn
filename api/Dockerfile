@@ -22,8 +22,10 @@ RUN go mod download
 COPY . .
 
 FROM builder-base as builder-test
+ENV GOTESTSUM_FORMAT=testname
 
-CMD go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
+RUN go get gotest.tools/gotestsum@v1.7.0
+CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 ARG version=develop
@@ -34,10 +36,8 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 
-
 # Build the command inside the container.
-# (You may fetch or manage dependencies here,
-# either manually or with a tool like "godep".)
+# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 
@@ -50,7 +50,6 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
     org.opencontainers.image.licenses="Apache-2.0" \
     org.opencontainers.image.version="${version}"
-
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
@@ -66,11 +65,6 @@ EXPOSE 8080
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
-
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
-#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 RUN adduser -D nonroot -u 65532
 USER nonroot
