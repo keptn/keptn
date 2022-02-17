@@ -2,7 +2,7 @@ apiVersion: skaffold/v2beta25
 kind: Config
 build:
   artifacts:
-  - image: keptn/api
+  - image: keptndev/api
     docker:
       dockerfile: Dockerfile
       target: production

@@ -133,7 +133,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptndev/distributor:latest
           ports:
             - containerPort: 8080
           resources:

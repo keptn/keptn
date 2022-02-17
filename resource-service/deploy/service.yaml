@@ -42,7 +42,7 @@ spec:
         #     port: 8080
         #   initialDelaySeconds: 10
         #   periodSeconds: 5
-        image: keptn/resource-service:latest
+        image: keptndev/resource-service:latest
         env:
           - name: PREFIX_PATH
             value: ""

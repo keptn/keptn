@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/statistics-service
+    - image: keptndev/statistics-service
       docker:
         dockerfile: Dockerfile
         target: production
