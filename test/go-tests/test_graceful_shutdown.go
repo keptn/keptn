@@ -2,7 +2,7 @@ package go_tests
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"go
+	"github.com/stretchr/testify/require"
 	"path/filepath"
 	"testing"
 	"time"
