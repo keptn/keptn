@@ -27,7 +27,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: approval-service
-        image: keptn/approval-service:latest
+        image: keptndev/approval-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -45,7 +45,7 @@ spec:
         - name: DATASTORE
           value: 'http://mongodb-datastore:8080'
       - name: distributor
-        image: keptn/distributor:0.8.4
+        image: keptndev/distributor:0.8.4
         ports:
           - containerPort: 8081
         resources:

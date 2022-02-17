@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/helm-service
+    - image: keptndev/helm-service
       docker:
         dockerfile: Dockerfile
         target: production
@@ -20,7 +20,7 @@ deploy:
         # upgradeOnChange: true
         # recreatePods: false # don't recreate all pods
         artifactOverrides:
-          image: keptn/helm-service
+          image: keptndev/helm-service
         overrides:
           distributor:
             image:
