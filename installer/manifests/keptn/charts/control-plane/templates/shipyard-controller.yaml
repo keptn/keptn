@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: shipyard-controller
       app.kubernetes.io/instance: {{ .Release.Name }}
-  {{- if ge .Capabilities.KubeVersion.Minor "14" }}
+  {{- if or (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
   {{ else }}
   replicas: 3
@@ -87,6 +87,8 @@ spec:
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
+            - name: DISABLE_LEADER_ELECTION
+              value: {{ .Values.shipyardController.config.disableLeaderElection | default true | quote }}
           ports:
             - containerPort: 8080
           resources:
