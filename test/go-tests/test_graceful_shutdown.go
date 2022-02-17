@@ -2,7 +2,7 @@ package go_tests
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"go
 	"path/filepath"
 	"testing"
 	"time"
@@ -42,7 +42,7 @@ type Setup struct {
 }
 
 func newSetup(t *testing.T) *Setup {
-	repoLocalDir, err := filepath.Abs("../")
+	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	repoLocalDir = filepath.ToSlash(repoLocalDir)
 	require.Nil(t, err)
 	return &Setup{

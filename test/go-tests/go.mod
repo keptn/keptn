@@ -10,9 +10,9 @@ require (
 	github.com/keptn/keptn/shipyard-controller v0.0.0-00010101000000-000000000000
 	github.com/keptn/kubernetes-utils v0.13.0
 	github.com/stretchr/testify v1.7.0
-	k8s.io/api v0.22.6
-	k8s.io/apimachinery v0.22.6
-	k8s.io/client-go v0.22.6
+	k8s.io/api v0.23.3
+	k8s.io/apimachinery v0.23.3
+	k8s.io/client-go v0.23.3
 )
 
 replace github.com/keptn/keptn/shipyard-controller => ../../shipyard-controller
