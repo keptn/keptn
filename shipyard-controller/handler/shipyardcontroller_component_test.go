@@ -1183,6 +1183,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		return nil
 	}
 	sc.run(context.Background())
+	sc.StartDispatchers(context.Background())
 	return sc
 }
 
