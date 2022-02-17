@@ -391,21 +391,21 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 		}
 	}
 
-	lastTaskOfSequence := getLastTaskOfSequence(taskExecutions)
-	sequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(models.EventScope{
-		EventData: keptnv2.EventData{
-			Project: cancel.Project,
-			Stage:   lastTaskOfSequence.Stage,
-		},
-		KeptnContext: cancel.KeptnContext,
-	}, lastTaskOfSequence.TaskSequenceName)
-	if err != nil {
-		return err
-	}
-
-	if sequenceTriggeredEvent != nil {
-		return sc.forceTaskSequenceCompletion(*sequenceTriggeredEvent, lastTaskOfSequence.TaskSequenceName)
-	}
+	//lastTaskOfSequence := getLastTaskOfSequence(taskExecutions)
+	//sequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(models.EventScope{
+	//	EventData: keptnv2.EventData{
+	//		Project: cancel.Project,
+	//		Stage:   lastTaskOfSequence.Stage,
+	//	},
+	//	KeptnContext: cancel.KeptnContext,
+	//}, lastTaskOfSequence.TaskSequenceName)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if sequenceTriggeredEvent != nil {
+	//	return sc.forceTaskSequenceCompletion(*sequenceTriggeredEvent, lastTaskOfSequence.TaskSequenceName)
+	//}
 	return nil
 }
 

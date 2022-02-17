@@ -99,36 +99,6 @@ func (e *EventDispatcher) OnSequenceTimeout(event models.Event) {
 	e.cleanupQueueOfSequence(models.EventScope{KeptnContext: event.Shkeptncontext})
 }
 
-func (e *EventDispatcher) OnSequencePaused(pause models.EventScope) {
-	err := e.eventQueueRepo.CreateOrUpdateEventQueueState(models.EventQueueSequenceState{
-		State: models.SequencePaused,
-		Scope: pause,
-	})
-	if err != nil {
-		log.WithError(err).Error("could not set sequence state to 'paused'")
-	}
-}
-
-func (e *EventDispatcher) OnSequenceWaiting(wait models.EventScope) {
-	err := e.eventQueueRepo.CreateOrUpdateEventQueueState(models.EventQueueSequenceState{
-		State: models.SequenceWaitingState,
-		Scope: wait,
-	})
-	if err != nil {
-		log.WithError(err).Error("could not set sequence state to 'waiting'")
-	}
-}
-
-func (e *EventDispatcher) OnSequenceResumed(resume models.EventScope) {
-	err := e.eventQueueRepo.CreateOrUpdateEventQueueState(models.EventQueueSequenceState{
-		State: models.SequenceStartedState,
-		Scope: resume,
-	})
-	if err != nil {
-		log.WithError(err).Error("could not set sequence state to 'started'")
-	}
-}
-
 // Run starts the event dispatcher loop which will periodically fetch (queued) events
 // from the database and eventually forward/send them to the event broker
 // The fetch interval is configured when creating a EventDispatcher using the "syncInterval" field
@@ -197,8 +167,20 @@ func (e *EventDispatcher) dispatchEvents() {
 }
 
 func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
-	if e.eventQueueRepo.IsSequenceOfEventPaused(eventScope) {
-		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
+	sequenceExecutions, err := e.sequenceExecutionRepo.Get(
+		models.SequenceExecutionFilter{
+			Scope:              eventScope,
+			CurrentTriggeredID: event.Event.ID(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if len(sequenceExecutions) == 0 {
+		return ErrSequenceNotFound
+	}
+	sequenceExecution := sequenceExecutions[0]
+	if sequenceExecution.IsPaused() {
 		return ErrSequencePaused
 	}
 

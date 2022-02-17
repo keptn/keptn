@@ -23,6 +23,12 @@ import (
 // 			GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
 // 				panic("mock out the Get method")
 // 			},
+// 			GetByTriggeredIDFunc: func(project string, triggeredID string) (*models.SequenceExecution, error) {
+// 				panic("mock out the GetByTriggeredID method")
+// 			},
+// 			UpdateStatusFunc: func(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error) {
+// 				panic("mock out the UpdateStatus method")
+// 			},
 // 			UpsertFunc: func(item models.SequenceExecution) error {
 // 				panic("mock out the Upsert method")
 // 			},
@@ -41,6 +47,12 @@ type SequenceExecutionRepoMock struct {
 
 	// GetFunc mocks the Get method.
 	GetFunc func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error)
+
+	// GetByTriggeredIDFunc mocks the GetByTriggeredID method.
+	GetByTriggeredIDFunc func(project string, triggeredID string) (*models.SequenceExecution, error)
+
+	// UpdateStatusFunc mocks the UpdateStatus method.
+	UpdateStatusFunc func(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error)
 
 	// UpsertFunc mocks the Upsert method.
 	UpsertFunc func(item models.SequenceExecution) error
@@ -64,16 +76,32 @@ type SequenceExecutionRepoMock struct {
 			// Filter is the filter argument value.
 			Filter models.SequenceExecutionFilter
 		}
+		// GetByTriggeredID holds details about calls to the GetByTriggeredID method.
+		GetByTriggeredID []struct {
+			// Project is the project argument value.
+			Project string
+			// TriggeredID is the triggeredID argument value.
+			TriggeredID string
+		}
+		// UpdateStatus holds details about calls to the UpdateStatus method.
+		UpdateStatus []struct {
+			// TaskSequence is the taskSequence argument value.
+			TaskSequence models.SequenceExecution
+			// State is the state argument value.
+			State string
+		}
 		// Upsert holds details about calls to the Upsert method.
 		Upsert []struct {
 			// Item is the item argument value.
 			Item models.SequenceExecution
 		}
 	}
-	lockAppendTaskEvent sync.RWMutex
-	lockClear           sync.RWMutex
-	lockGet             sync.RWMutex
-	lockUpsert          sync.RWMutex
+	lockAppendTaskEvent  sync.RWMutex
+	lockClear            sync.RWMutex
+	lockGet              sync.RWMutex
+	lockGetByTriggeredID sync.RWMutex
+	lockUpdateStatus     sync.RWMutex
+	lockUpsert           sync.RWMutex
 }
 
 // AppendTaskEvent calls AppendTaskEventFunc.
@@ -173,8 +201,78 @@ func (mock *SequenceExecutionRepoMock) GetCalls() []struct {
 	return calls
 }
 
+// GetByTriggeredID calls GetByTriggeredIDFunc.
+func (mock *SequenceExecutionRepoMock) GetByTriggeredID(project string, triggeredID string) (*models.SequenceExecution, error) {
+	if mock.GetByTriggeredIDFunc == nil {
+		panic("SequenceExecutionRepoMock.GetByTriggeredIDFunc: method is nil but SequenceExecutionRepo.GetByTriggeredID was just called")
+	}
+	callInfo := struct {
+		Project     string
+		TriggeredID string
+	}{
+		Project:     project,
+		TriggeredID: triggeredID,
+	}
+	mock.lockGetByTriggeredID.Lock()
+	mock.calls.GetByTriggeredID = append(mock.calls.GetByTriggeredID, callInfo)
+	mock.lockGetByTriggeredID.Unlock()
+	return mock.GetByTriggeredIDFunc(project, triggeredID)
+}
+
+// GetByTriggeredIDCalls gets all the calls that were made to GetByTriggeredID.
+// Check the length with:
+//     len(mockedSequenceExecutionRepo.GetByTriggeredIDCalls())
+func (mock *SequenceExecutionRepoMock) GetByTriggeredIDCalls() []struct {
+	Project     string
+	TriggeredID string
+} {
+	var calls []struct {
+		Project     string
+		TriggeredID string
+	}
+	mock.lockGetByTriggeredID.RLock()
+	calls = mock.calls.GetByTriggeredID
+	mock.lockGetByTriggeredID.RUnlock()
+	return calls
+}
+
+// UpdateStatus calls UpdateStatusFunc.
+func (mock *SequenceExecutionRepoMock) UpdateStatus(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error) {
+	if mock.UpdateStatusFunc == nil {
+		panic("SequenceExecutionRepoMock.UpdateStatusFunc: method is nil but SequenceExecutionRepo.UpdateStatus was just called")
+	}
+	callInfo := struct {
+		TaskSequence models.SequenceExecution
+		State        string
+	}{
+		TaskSequence: taskSequence,
+		State:        state,
+	}
+	mock.lockUpdateStatus.Lock()
+	mock.calls.UpdateStatus = append(mock.calls.UpdateStatus, callInfo)
+	mock.lockUpdateStatus.Unlock()
+	return mock.UpdateStatusFunc(taskSequence, state)
+}
+
+// UpdateStatusCalls gets all the calls that were made to UpdateStatus.
+// Check the length with:
+//     len(mockedSequenceExecutionRepo.UpdateStatusCalls())
+func (mock *SequenceExecutionRepoMock) UpdateStatusCalls() []struct {
+	TaskSequence models.SequenceExecution
+	State        string
+} {
+	var calls []struct {
+		TaskSequence models.SequenceExecution
+		State        string
+	}
+	mock.lockUpdateStatus.RLock()
+	calls = mock.calls.UpdateStatus
+	mock.lockUpdateStatus.RUnlock()
+	return calls
+}
+
 // Upsert calls UpsertFunc.
-func (mock *SequenceExecutionRepoMock) Upsert(item models.SequenceExecution) error {
+func (mock *SequenceExecutionRepoMock) Upsert(item models.SequenceExecution, options *models.SequenceExecutionUpsertOptions) error {
 	if mock.UpsertFunc == nil {
 		panic("SequenceExecutionRepoMock.UpsertFunc: method is nil but SequenceExecutionRepo.Upsert was just called")
 	}

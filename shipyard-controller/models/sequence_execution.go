@@ -59,6 +59,10 @@ func (e SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	return TaskExecutionResult{}
 }
 
+func (e SequenceExecution) IsPaused() bool {
+	return e.Status.State == SequencePaused
+}
+
 // IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
 func (e TaskExecutionState) IsFinished() bool {
 	if len(e.Events) == 0 {
@@ -138,4 +142,8 @@ type SequenceExecutionFilter struct {
 	Status             []string
 	Name               string
 	CurrentTriggeredID string
+}
+
+type SequenceExecutionUpsertOptions struct {
+	CheckUniqueTriggeredID bool
 }

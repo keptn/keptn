@@ -12,6 +12,7 @@ import (
 )
 
 func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
+	// TODO split up into multiple test cases
 	scope := models.EventScope{
 		KeptnContext: "my-context",
 		EventData: keptnv2.EventData{
@@ -19,6 +20,7 @@ func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
 			Stage:   "my-stage",
 			Service: "my-service",
 		},
+		TriggeredID: "my-triggered-id",
 	}
 	sequence := models.SequenceExecution{
 		ID: "my-sequence-id",
@@ -44,7 +46,7 @@ func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
 
-	err := mdbrepo.Upsert(sequence)
+	err := mdbrepo.Upsert(sequence, nil)
 
 	require.Nil(t, err)
 
@@ -59,6 +61,11 @@ func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
 	require.Len(t, get, 1)
 	require.Equal(t, sequence, get[0])
 
+	// try to insert the same sequence again, but with check for already existing triggeredID - this should return an error
+	err = mdbrepo.Upsert(sequence, &models.SequenceExecutionUpsertOptions{CheckUniqueTriggeredID: true})
+
+	require.ErrorIs(t, err, ErrSequenceWithTriggeredIDAlreadyExists)
+
 	triggeredEvent := models.TaskEvent{
 		EventType: "deploy.triggered",
 		Source:    "my-source",
@@ -70,6 +77,16 @@ func TestMongoDBTaskSequenceV2Repo(t *testing.T) {
 
 	require.Len(t, result.Status.CurrentTask.Events, 1)
 	require.Equal(t, triggeredEvent, result.Status.CurrentTask.Events[0])
+
+	sequenceByTriggeredID, err := mdbrepo.GetByTriggeredID("my-project", "my-triggered-id")
+
+	require.Nil(t, err)
+	require.NotNil(t, sequenceByTriggeredID)
+
+	updatedSequence, err := mdbrepo.UpdateStatus(*sequenceByTriggeredID, "paused")
+
+	require.Nil(t, err)
+	require.Equal(t, "paused", updatedSequence.Status.State)
 
 	// ensure that multiple writers can append data to a shared sequence and all inserts are persisted
 	nrConcurrentWrites := 100

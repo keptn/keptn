@@ -54,6 +54,35 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 	return result, nil
 }
 
+func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggeredID string) (*models.SequenceExecution, error) {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(project)
+	if err != nil {
+		return nil, err
+	}
+	defer cancel()
+
+	searchOptions := bson.M{}
+	searchOptions = appendFilterAs(searchOptions, triggeredID, "scope.triggeredId")
+
+	item := collection.FindOne(ctx, searchOptions)
+	if item.Err() != nil && item.Err() != mongo.ErrNoDocuments {
+		return nil, err
+	} else if item.Err() == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+
+	var outInterface interface{}
+	if err := item.Decode(&outInterface); err != nil {
+		return nil, err
+	}
+	sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+	if err != nil {
+		return nil, err
+	}
+
+	return sequenceExecution, nil
+}
+
 func transformBSONToSequenceExecution(outInterface interface{}) (*models.SequenceExecution, error) {
 	outInterface, err := flattenRecursively(outInterface)
 	if err != nil {
@@ -70,7 +99,7 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 	return sequenceExecution, nil
 }
 
-func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecution) error {
+func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecution, upsertOptions *models.SequenceExecutionUpsertOptions) error {
 	if item.Scope.Project == "" {
 		return errors.New("project must be set")
 	}
@@ -80,6 +109,15 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	}
 	defer cancel()
 
+	if upsertOptions != nil && upsertOptions.CheckUniqueTriggeredID {
+		existingSequence, err := mdbrepo.GetByTriggeredID(item.Scope.Project, item.Scope.TriggeredID)
+		if err != nil {
+			return fmt.Errorf("could not check for existing sequence with same triggeredID: %w", err)
+		}
+		if existingSequence != nil {
+			return ErrSequenceWithTriggeredIDAlreadyExists
+		}
+	}
 	opts := options.Update().SetUpsert(true)
 
 	filter := bson.D{{"_id", item.ID}}
@@ -129,6 +167,43 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 	return sequenceExecution, nil
 }
 
+func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.SequenceExecution, state string) (*models.SequenceExecution, error) {
+	if taskSequence.Scope.Project == "" {
+		return nil, errors.New("project must be set")
+	}
+	if taskSequence.ID == "" {
+		return nil, errors.New("id of sequenceExecution must be set")
+	}
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
+	if err != nil {
+		return nil, err
+	}
+	defer cancel()
+
+	// return the resulting document after the update
+	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+
+	filter := bson.D{{"_id", taskSequence.ID}}
+
+	update := bson.M{"$set": bson.M{"status.state": state}}
+
+	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
+	if res.Err() != nil {
+		return nil, err
+	}
+
+	outInterface := map[string]interface{}{}
+	err = res.Decode(outInterface)
+	if err != nil {
+		return nil, err
+	}
+	sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+	if err != nil {
+		return nil, err
+	}
+	return sequenceExecution, nil
+}
+
 func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(projectName)
 	if err != nil {
@@ -156,6 +231,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) getSearchOptions(filter models.Sequ
 	searchOptions := bson.M{}
 
 	searchOptions = appendFilterAs(searchOptions, filter.Name, "sequence.name")
+	searchOptions = appendFilterAs(searchOptions, filter.Scope.TriggeredID, "scope.triggeredId")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.KeptnContext, "scope.keptnContext")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.Project, "scope.project")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.Stage, "scope.stage")
