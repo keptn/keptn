@@ -36,19 +36,11 @@ Common labels
 */}}
 {{- define "control-plane.labels" -}}
 helm.sh/chart: {{ include "control-plane.chart" . }}
-{{ include "control-plane.selectorLabels" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "control-plane.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "control-plane.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
@@ -139,4 +131,14 @@ lifecycle:
     fieldRef:
       fieldPath: metadata.labels['app.kubernetes.io/name']
 {{- end }}
+- name: OAUTH_CLIENT_ID
+  value: "{{ (((.Values.distributor).config).oauth).clientID }}"
+- name: OAUTH_CLIENT_SECRET
+  value: "{{ (((.Values.distributor).config).oauth).clientSecret }}"
+- name: OAUTH_DISCOVERY
+  value: "{{ (((.Values.distributor).config).oauth).discovery }}"
+- name: OAUTH_TOKEN_URL
+  value: "{{ (((.Values.distributor).config).oauth).tokenURL }}"
+- name: OAUTH_SCOPES
+  value: "{{ (((.Values.distributor).config).oauth).scopes }}"
 {{- end }}

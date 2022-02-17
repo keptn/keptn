@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/distributor
+    - image: keptndev/distributor
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         target: production

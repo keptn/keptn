@@ -110,6 +110,12 @@ distributor:
   config:
     queueGroup:
       enabled: true
+    oauth:
+      clientID: ""
+      clientSecret: ""
+      discovery: ""
+      tokenURL: ""
+      scopes: ""
 
 shipyardController:
   image:

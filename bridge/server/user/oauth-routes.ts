@@ -30,6 +30,7 @@ function oauthRouter(
   const router = Router();
   const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
   const scope = `openid${additionalScopes}`;
+  console.log('Using scope:', scope);
 
   /**
    * Router level middleware for login

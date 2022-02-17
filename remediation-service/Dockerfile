@@ -23,8 +23,10 @@ RUN go mod download
 COPY . .
 
 FROM builder-base as builder-test
+ENV GOTESTSUM_FORMAT=testname
 
-CMD go test -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
+RUN go get gotest.tools/gotestsum@v1.7.0
+CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 
@@ -39,8 +41,8 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.15 as production
 ARG version=develop
-LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
-    org.opencontainers.image.url = "https://keptn.sh" \
+LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
+    org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Remediation Service" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
@@ -57,11 +59,6 @@ EXPOSE 8080
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
-
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
-#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 RUN adduser -D nonroot -u 65532
 USER nonroot

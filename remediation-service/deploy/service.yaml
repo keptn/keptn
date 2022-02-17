@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: remediation-service
-        image: keptn/remediation-service:latest
+        image: keptndev/remediation-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -47,7 +47,7 @@ spec:
           - name: ENVIRONMENT
             value: 'production'
       - name: distributor
-        image: keptn/distributor:0.8.4
+        image: keptndev/distributor:0.8.4
         imagePullPolicy: Always
         ports:
           - containerPort: 8080

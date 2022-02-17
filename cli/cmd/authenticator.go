@@ -35,7 +35,7 @@ type Authenticator struct {
 type AuthenticatorOptions struct {
 	Endpoint string
 	APIToken string
-	SSO      bool
+	OAuth    bool
 }
 
 func NewAuthenticator(namespace string, credentialManager CredentialGetSetter) *Authenticator {
@@ -108,8 +108,8 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	if !authenticated {
-		if authenticatorOptions.SSO {
-			fmt.Println("WARNING: You are using the SSO integration feature without a Keptn API Token. Please verify that your configuration allows it")
+		if authenticatorOptions.OAuth && apiToken == "" {
+			fmt.Println("WARNING: You are using the OAuth integration feature without a Keptn API Token. Please verify that your configuration allows it")
 		} else {
 			return fmt.Errorf(errMsg)
 		}

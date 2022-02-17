@@ -2,19 +2,15 @@ package events
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
 
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -24,21 +20,21 @@ type EventSender interface {
 
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
+	shipyardControlAPI   api.ShipyardControlV1Interface
 	eventSender          EventSender
 	ceCache              *Cache
 	env                  config.EnvConfig
-	httpClient           *http.Client
 	eventMatcher         *EventMatcher
 	currentSubscriptions []keptnmodels.EventSubscription
 }
 
-func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
+func NewPoller(envConfig config.EnvConfig, shipyardControlAPI api.ShipyardControlV1Interface, eventSender EventSender) *Poller {
 	return &Poller{
-		eventSender:  eventSender,
-		ceCache:      NewCache(),
-		env:          envConfig,
-		httpClient:   httpClient,
-		eventMatcher: NewEventMatcherFromEnv(envConfig),
+		shipyardControlAPI: shipyardControlAPI,
+		eventSender:        eventSender,
+		ceCache:            NewCache(),
+		env:                envConfig,
+		eventMatcher:       NewEventMatcherFromEnv(envConfig),
 	}
 }
 
@@ -47,7 +43,7 @@ func (p *Poller) Start(ctx *ExecutionContext) error {
 		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
 
-	eventEndpoint := p.env.GetHTTPPollingEndpoint()
+	eventEndpoint := p.env.HTTPPollingEndpoint()
 	apiToken := p.env.KeptnAPIToken
 
 	pollingInterval, err := strconv.ParseInt(p.env.HTTPPollingInterval, 10, 64)
@@ -79,11 +75,14 @@ func (p *Poller) doPollEvents(endpoint, token string) {
 }
 
 func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription, endpoint, token string) {
-	events, err := p.getEventsFromEndpoint(endpoint, token, subscription)
+	events, err := p.shipyardControlAPI.GetOpenTriggeredEvents(api.EventFilter{
+		EventType: subscription.Event,
+	})
 	if err != nil {
-		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", subscription.Event, endpoint, err)
+		logger.Errorf("Could not retrieve events of type %s", subscription.Event)
 		return
 	}
+
 	logger.Debugf("Received %d new .triggered events", len(events))
 	// iterate over all events, discard the event if it has already been sent
 	for index := range events {
@@ -114,69 +113,6 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 
 	logger.Debugf("Cleaning up list of sent events for topic %s", subscription.Event)
 	p.ceCache.Keep(subscription.ID, ToIDs(events))
-}
-
-func (p *Poller) getEventsFromEndpoint(endpoint string, token string, subscription keptnmodels.EventSubscription) ([]*keptnmodels.KeptnContextExtendedCE, error) {
-	logger.Debugf("Retrieving events of type %s", subscription.Event)
-	events := make([]*keptnmodels.KeptnContextExtendedCE, 0)
-	nextPageKey := ""
-
-	endpoint = strings.TrimSuffix(endpoint, "/")
-	endpointURL, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-	endpointURL.Path = endpointURL.Path + "/" + subscription.Event
-
-	for {
-		q := endpointURL.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			endpointURL.RawQuery = q.Encode()
-		}
-		req, err := http.NewRequest("GET", endpointURL.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		if token != "" {
-			req.Header.Add("x-token", token)
-		}
-
-		resp, err := p.httpClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		_ = resp.Body.Close()
-
-		if resp.StatusCode == 200 {
-			received := &keptnmodels.Events{}
-			err = json.Unmarshal(body, received)
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, received.Events...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-
-			nextPageKey = received.NextPageKey
-		} else {
-			var respErr keptnmodels.Error
-			err = json.Unmarshal(body, &respErr)
-			if err != nil {
-				return nil, err
-			}
-			return nil, errors.New(*respErr.Message)
-		}
-	}
-	return events, nil
 }
 
 func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription keptnmodels.EventSubscription) error {

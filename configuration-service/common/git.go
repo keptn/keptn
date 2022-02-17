@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"os"
 	"strings"
@@ -221,7 +222,10 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	if err != nil {
 		// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 		if !isNoRemoteHeadFoundError(err) {
-			return fmt.Errorf(setUpstreamFail, project)
+			// log the error but try to continue with the next operation
+			// This is because recently we discovered a case where we did not get a 'divergent branches' error message,
+			// but a 'hint: You have divergent branches and need to specify how to reconcile them.' from an upstream repo where the branch was not there yet
+			logger.Warnf("encountered an unexpected error when trying to pull from upstream. Will try to proceed with pushing the %s branch", defaultBranch)
 		}
 	}
 	_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
@@ -241,7 +245,7 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 		if err != nil {
 			// continue if the error indicated that no remote ref HEAD has been found (e.g. in an uninitialized repo)
 			if !isNoRemoteHeadFoundError(err) {
-				return fmt.Errorf(setUpstreamFail, project)
+				logger.Warnf("encountered an unexpected error when trying to pull from upstream. Will try to proceed with pushing the %s branch", branch)
 			}
 		}
 		_, err = g.Executor.ExecuteCommand("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)

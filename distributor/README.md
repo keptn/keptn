@@ -28,6 +28,11 @@ Thus, each service has its own distributor that is configured by the two environ
 - `K8S_POD_NAME` -  Kubernetes deployment name of the Keptn integration. default = `""`
 - `K8S_NAMESPACE` - Kubernetes namespace of the Keptn integration. default = `""`
 - `K8S_NODE_NAME` - Kubernetes node name the Keptn integration is running on. default = `""`
+- `OAUTH_CLIENT_ID` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
+- `OAUTH_CLIENT_SECRET` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
+- `OAUTH_DISCOVERY` - Discovery URL called by the distributor to obtain further information for the OAuth Client Credentials Flow, e.g. the token URL. default = `""`
+- `OAUTH_TOKEN_URL` - Url to obtain the access token. If set, this will override `OAUTH_DISCOVERY` meaning, that no discovery will happen. default = `""`
+- `OAUTH_SCOPES` - Comma separated list of tokens to be used during the OAuth Client Credentials Flow. =`""`
 
 All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 
@@ -128,7 +133,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptndev/distributor:latest
           ports:
             - containerPort: 8080
           resources:

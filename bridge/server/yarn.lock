@@ -1475,7 +1475,7 @@ configstore@^5.0.1:
     write-file-atomic "^3.0.0"
     xdg-basedir "^4.0.0"
 
-connect-mongo@^4.6.0:
+connect-mongo@4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/connect-mongo/-/connect-mongo-4.6.0.tgz#1bf62868efc9f28ecf1459ae9a9d6caaf90ae8a6"
   integrity sha512-8new4Z7NLP3CGP65Aw6ls3xDBeKVvHRSh39CXuDZTQsvpeeU9oNMzfFgvqmHqZ6gWpxIl663RyoVEmCAGf1yOg==
@@ -1947,9 +1947,9 @@ find-up@^4.0.0, find-up@^4.1.0:
     path-exists "^4.0.0"
 
 follow-redirects@^1.14.7:
-  version "1.14.7"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.7.tgz#2004c02eb9436eee9a21446a6477debf17e81685"
-  integrity sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==
+  version "1.14.8"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.8.tgz#016996fb9a11a100566398b1c6839337d7bfa8fc"
+  integrity sha512-1x0S9UVJHsQprFcEC/qnNzBLcIxsjAV905f/UkQxbclCsoTWlacCNOpQa/anodLl2uaEKFhfWOvM2Qg77+15zA==
 
 form-data@^3.0.0:
   version "3.0.1"
@@ -3158,7 +3158,7 @@ mongodb-connection-string-url@^2.4.1:
     "@types/whatwg-url" "^8.2.1"
     whatwg-url "^11.0.0"
 
-mongodb@^4.3.1:
+mongodb@4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.3.1.tgz#e346f76e421ec6f47ddea5c8f5140e6181aaeb94"
   integrity sha512-sNa8APSIk+r4x31ZwctKjuPSaeKuvUeNb/fu/3B6dRM02HpEgig7hTHM8A/PJQTlxuC/KFWlDlQjhsk/S43tBg==

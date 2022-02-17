@@ -489,7 +489,7 @@ jobs:
 
       - name: Integration Tests
         id: test_aggregated
-        timeout-minutes: 65
+        timeout-minutes: 90
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           DO_AUTH: "true"
@@ -510,7 +510,7 @@ jobs:
             TESTSUITE="Test_K3D"
           fi
           
-          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 65m
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 90m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
