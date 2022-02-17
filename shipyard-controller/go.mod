@@ -24,4 +24,5 @@ require (
 	k8s.io/api v0.23.3
 	k8s.io/apimachinery v0.23.3
 	k8s.io/client-go v0.23.3
+	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 )
