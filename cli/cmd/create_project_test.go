@@ -195,7 +195,7 @@ func TestCreateProjectCmdMissingTokenAndKey(t *testing.T) {
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
 
-	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL",
+	cmd := fmt.Sprintf("create project sockshop --mock --shipyard=%s --git-user=user --git-remote-url=https://someurl.com",
 		shipyardFilePath)
 	_, err := executeActionCommandC(cmd)
 
@@ -211,7 +211,7 @@ func TestCreateProjectCmdTokenAndKey(t *testing.T) {
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
 
-	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=GIT_TOKEN --git-token=GIT_PRIVATE_KEY_PATH", shipyardFilePath)
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=user--git-remote-url=https://someurl.com --git-private-key=key --git-token=token", shipyardFilePath)
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, gitErrMsg) {

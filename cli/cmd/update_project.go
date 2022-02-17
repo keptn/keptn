@@ -82,10 +82,6 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 		}
 
 		if *updateProjectParams.GitUser != "" && *updateProjectParams.RemoteURL != "" {
-			project.GitUser = *updateProjectParams.GitUser
-			project.GitToken = *updateProjectParams.GitToken
-			project.GitRemoteURL = *updateProjectParams.RemoteURL
-
 			if *updateProjectParams.GitToken == "" && *updateProjectParams.GitPrivateKey == "" {
 				return errors.New("Access token or private key must be set")
 			}
@@ -93,6 +89,10 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			if *updateProjectParams.GitToken != "" && *updateProjectParams.GitPrivateKey != "" {
 				return errors.New("Access token or private key cannot be set together")
 			}
+
+			project.GitUser = *updateProjectParams.GitUser
+			project.GitToken = *updateProjectParams.GitToken
+			project.GitRemoteURL = *updateProjectParams.RemoteURL
 
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)

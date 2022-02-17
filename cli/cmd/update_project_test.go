@@ -50,10 +50,24 @@ func TestUpdateProjectUnknownParmeter(t *testing.T) {
 
 // TestUpdateProjectCmdMissingTokenAndKey
 func TestUpdateProjectCmdMissingTokenAndKey(t *testing.T) {
-	testInvalidInputHelper("update project sockshop --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL", "Access token or private key must be set", t)
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock")
+	_, err := executeActionCommandC(cmd)
+
+	if !errorContains(err, "Access token or private key must be set") {
+		t.Errorf("missing expected error, but got %v", err)
+	}
 }
 
 // TestUpdateProjectCmdMissingTokenAndKey
 func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
-	testInvalidInputHelper("update project sockshop --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=GIT_TOKEN --git-token=GIT_PRIVATE_KEY_PATH", "Access token or private key cannot be set together", t)
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-private-key=key --git-token=token")
+	_, err := executeActionCommandC(cmd)
+
+	if !errorContains(err, "Access token or private key cannot be set together") {
+		t.Errorf("missing expected error, but got %v", err)
+	}
 }
