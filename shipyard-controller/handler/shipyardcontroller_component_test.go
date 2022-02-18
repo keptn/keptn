@@ -169,10 +169,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -205,10 +202,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 4
 	// send test.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 5
 	// send test.finished event
@@ -236,10 +230,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 6
 	// send evaluation.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 7
 	// send evaluation.finished event -> result = warning should not abort the task sequence
@@ -253,10 +244,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 8
 	// send release.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.ReleaseTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.ReleaseTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 9
 	// send release.finished event
@@ -311,17 +299,11 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 9.1
 	// send deployment.started event 1 with ID 1
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-1")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-1")
 
 	// STEP 9.2
 	// send deployment.started event 2 with ID 2
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-2")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-2")
 
 	// STEP 10.1
 	// send deployment.finished event 1 with ID 1
@@ -383,7 +365,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	// send deployment.started event
 	go func() {
 		<-time.After(2 * time.Second)
-		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+		sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	}()
 
 	// STEP 3
@@ -449,7 +431,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	// send deployment.started event
 	go func() {
 		<-time.After(2 * time.Second)
-		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+		sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	}()
 
 	// STEP 3
@@ -523,10 +505,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -547,10 +526,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 4
 	// send test.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 5
 	// send test.finished event
@@ -570,10 +546,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), verifyEvent.Event.Type())
 	// STEP 6
 	// send evaluation.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 7
 	// send evaluation.finished event with result=fail
@@ -643,15 +616,9 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started events
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "another-test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "another-test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -720,10 +687,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -809,10 +773,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done := sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredKeptnEvent.ID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredKeptnEvent.ID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -830,10 +791,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 4
 	// send deployment.started event (for the second deployment task)
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 5
 	// send deployment.finished event for the second deployment task -> now we want an evaluation.triggered event as the next task
@@ -1561,20 +1519,9 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 	return done
 }
 
-func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) bool {
+func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) {
 	err := sc.HandleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource), true)
-	if err != nil {
-		t.Errorf("STEP failed: HandleIncomingEvent(%s.started) returned %v", taskName, err)
-		return true
-	}
-	// check startedEvent collection -> should contain <taskName>.started event
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
-		Type:        keptnv2.GetStartedEventType(taskName),
-		Stage:       common.Stringp(stage),
-		Service:     common.Stringp("carts"),
-		TriggeredID: common.Stringp(triggeredID),
-	}, common.StartedEvent)
-	return fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
+	require.Nil(t, err)
 }
 
 func getArtifactDeliveryTriggeredEvent(stage string, commitID string) models.Event {

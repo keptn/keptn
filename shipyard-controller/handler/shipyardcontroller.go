@@ -227,6 +227,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		Scope:           *eventScope,
 	}
 	sequenceExecution.Scope.TriggeredID = event.ID
+	sequenceExecution.Scope.GitCommitID = eventScope.WrappedEvent.GitCommitID
 
 	// insert the sequence execution, but only if there is no sequence with the same triggeredID already there
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, &models.SequenceExecutionUpsertOptions{CheckUniqueTriggeredID: true}); err != nil {
@@ -269,7 +270,7 @@ func (sc *shipyardController) handleTaskEvent(event models.Event) error {
 		return nil
 	}
 
-	sequenceExecution, err := sc.getOpenTaskExecution(*eventScope)
+	sequenceExecution, err := sc.getOpenSequenceExecution(*eventScope)
 	if err != nil {
 		return fmt.Errorf("unable to handle %s event: %w", eventScope.EventType, err)
 	}
@@ -351,7 +352,7 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 }
 
 func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bool, error) {
-	taskContext, err := sc.getOpenTaskExecution(eventScope)
+	taskContext, err := sc.getOpenSequenceExecution(eventScope)
 	if err != nil {
 		return false, err
 	}
@@ -594,9 +595,12 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	return sc.proceedTaskSequence(*eventScope, sequenceExecution)
 }
 
-func (sc *shipyardController) getOpenTaskExecution(eventScope models.EventScope) (*models.SequenceExecution, error) {
+func (sc *shipyardController) getOpenSequenceExecution(eventScope models.EventScope) (*models.SequenceExecution, error) {
 	sequenceExecutions, err := sc.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
-		Scope:              eventScope,
+		Scope: models.EventScope{
+			EventData:    keptnv2.EventData{Project: eventScope.Project},
+			KeptnContext: eventScope.KeptnContext,
+		},
 		CurrentTriggeredID: eventScope.TriggeredID,
 	})
 	if err != nil {
@@ -750,6 +754,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 	eventPayload := sequenceExecution.GetNextTriggeredEventData()
 
 	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
+	event.SetExtension("gitcommitid", sequenceExecution.Scope.GitCommitID)
 
 	storeEvent := &models.Event{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {

@@ -125,9 +125,8 @@ func main() {
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
-		createEventQueueRepo(),
 		createSequenceQueueRepo(),
-		createTaskSequenceRepo(),
+		sequenceExecutionRepo,
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		clock.New(),
 	)
@@ -198,9 +197,7 @@ func main() {
 	shipyardController.AddSequenceAbortedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequencePausedHook(eventDispatcher)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceResumedHook(eventDispatcher)
 
 	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 

@@ -2,6 +2,7 @@ package models
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 )
 
 type SequenceExecution struct {
@@ -73,6 +74,14 @@ func (e *SequenceExecution) CompleteCurrentTask() {
 		status = keptnv2.StatusSucceeded
 	}
 
+	var mergedProperties interface{}
+
+	for _, taskEvent := range e.Status.CurrentTask.Events {
+		if keptnv2.IsFinishedEventType(taskEvent.EventType) && taskEvent.Properties != nil {
+			mergedProperties = common.Merge(mergedProperties, taskEvent.Properties)
+		}
+	}
+
 	e.Status.PreviousTasks = append(
 		e.Status.PreviousTasks,
 		TaskExecutionResult{
@@ -80,7 +89,7 @@ func (e *SequenceExecution) CompleteCurrentTask() {
 			TriggeredID: e.Status.CurrentTask.TriggeredID,
 			Result:      string(result),
 			Status:      string(status),
-			Properties:  nil,
+			Properties:  mergedProperties.(map[string]interface{}),
 		},
 	)
 	e.Status.CurrentTask = TaskExecutionState{}
@@ -90,25 +99,25 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
 	if inputMap, ok := e.InputProperties.(map[string]interface{}); ok {
-		eventPayload = inputMap
+		eventPayload = common.CopyMap(eventPayload)
 	}
 
 	eventPayload["project"] = e.Scope.Project
 	eventPayload["stage"] = e.Scope.Stage
 	eventPayload["service"] = e.Scope.Service
 
-	nextTask := e.GetNextTaskOfSequence()
-	if nextTask != nil && nextTask.Properties != nil {
-		eventPayload[nextTask.Name] = nextTask.Properties
-	}
-
 	if len(e.Status.PreviousTasks) > 0 {
 		for _, previousTask := range e.Status.PreviousTasks {
-			eventPayload[previousTask.Name] = previousTask.Properties
+			eventPayload[previousTask.Name] = common.Merge(eventPayload[previousTask.Name], previousTask.Properties)
 		}
 		lastTaskIndex := len(e.Status.PreviousTasks) - 1
 		eventPayload["result"] = e.Status.PreviousTasks[lastTaskIndex].Result
 		eventPayload["status"] = e.Status.PreviousTasks[lastTaskIndex].Status
+	}
+
+	nextTask := e.GetNextTaskOfSequence()
+	if nextTask != nil && nextTask.Properties != nil {
+		eventPayload[nextTask.Name] = common.Merge(eventPayload[nextTask.Name], nextTask.Properties)
 	}
 
 	return eventPayload
