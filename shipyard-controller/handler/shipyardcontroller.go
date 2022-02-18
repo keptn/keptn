@@ -216,6 +216,11 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
 
+	inputProperties := map[string]interface{}{}
+
+	if err := keptnv2.Decode(event.Data, &inputProperties); err != nil {
+		return err
+	}
 	sequenceExecution := models.SequenceExecution{
 		ID:       uuid.New().String(),
 		Sequence: *sequence,
@@ -223,7 +228,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 			State:         models.SequenceTriggeredState,
 			PreviousTasks: []models.TaskExecutionResult{},
 		},
-		InputProperties: event.Data,
+		InputProperties: inputProperties,
 		Scope:           *eventScope,
 	}
 	sequenceExecution.Scope.TriggeredID = event.ID
@@ -806,6 +811,8 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.EventScope, taskSequenceName string, completedSequence models.SequenceExecution) error {
 
 	mergedPayload := completedSequence.GetNextTriggeredEventData()
+
+	mergedPayload["stage"] = eventScope.Stage
 
 	eventType := eventScope.Stage + "." + taskSequenceName
 

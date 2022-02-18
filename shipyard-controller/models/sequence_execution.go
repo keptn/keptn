@@ -11,7 +11,7 @@ type SequenceExecution struct {
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    EventScope              `json:"scope" bson:"scope"`
 	// InputProperties contains properties of the event which triggered the task sequence
-	InputProperties interface{} `json:"inputProperties" bson:"inputProperties"`
+	InputProperties map[string]interface{} `json:"inputProperties" bson:"inputProperties"`
 }
 
 type SequenceExecutionStatus struct {
@@ -30,6 +30,14 @@ type TaskExecutionResult struct {
 	Properties  map[string]interface{} `json:"properties" bson:"properties"`
 }
 
+func (r TaskExecutionResult) IsFailed() bool {
+	return r.Result == string(keptnv2.ResultFailed)
+}
+
+func (r TaskExecutionResult) IsErrored() bool {
+	return r.Status == string(keptnv2.StatusErrored)
+}
+
 type TaskExecutionState struct {
 	Name        string      `json:"name" bson:"name"`
 	TriggeredID string      `json:"triggeredID" bson:"triggeredID"`
@@ -37,7 +45,7 @@ type TaskExecutionState struct {
 }
 
 func (e *SequenceExecution) GetNextTaskOfSequence() *keptnv2.Task {
-	if e.Status.CurrentTask.IsFailed() {
+	if e.GetLastTaskExecutionResult().IsFailed() || e.GetLastTaskExecutionResult().IsErrored() {
 		return nil
 	}
 	nextTaskIndex := 0
@@ -98,8 +106,8 @@ func (e *SequenceExecution) CompleteCurrentTask() {
 func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
-	if inputMap, ok := e.InputProperties.(map[string]interface{}); ok {
-		eventPayload = common.CopyMap(eventPayload)
+	if e.InputProperties != nil {
+		eventPayload = common.CopyMap(e.InputProperties)
 	}
 
 	eventPayload["project"] = e.Scope.Project

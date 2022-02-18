@@ -12,7 +12,7 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 		Sequence        v0_2_0.Sequence
 		Status          SequenceExecutionStatus
 		Scope           EventScope
-		InputProperties interface{}
+		InputProperties map[string]interface{}
 	}
 	tests := []struct {
 		name   string

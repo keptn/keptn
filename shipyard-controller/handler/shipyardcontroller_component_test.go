@@ -1414,6 +1414,8 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 
+	require.NotEmpty(t, triggeredEvents)
+
 	triggeredID := triggeredEvents[0].ID
 	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
 	if done {
@@ -1504,19 +1506,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		return true
 	}
 
-	// check startedEvent collection -> should still contain one <eventType>.started event
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
-		Type:        keptnv2.GetStartedEventType(eventType),
-		Stage:       &scope.Stage,
-		Service:     common.Stringp("carts"),
-		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
-	}, common.StartedEvent)
-	if len(startedEvents) != 1 {
-		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
-		return true
-	}
-	done = fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage, nil)
-	return done
+	return false
 }
 
 func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) {

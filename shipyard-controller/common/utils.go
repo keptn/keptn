@@ -42,7 +42,7 @@ func Merge(in1, in2 interface{}) interface{} {
 			return in1
 		}
 		for k, v2 := range in2 {
-			if v1, ok := in1[k]; ok {
+			if v1, ok := in1[k]; ok && v1 != nil {
 				in1[k] = Merge(v1, v2)
 			} else {
 				in1[k] = v2
