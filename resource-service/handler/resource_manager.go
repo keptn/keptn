@@ -164,7 +164,7 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	if params.GitCommitID != "" && params.GitCommitID != "\"\"" {
 		// if commit ID is set, path needs to be relative to the project directory
 		configPath = strings.TrimPrefix(configPath, common.GetProjectConfigPath(params.ProjectName))
-		resourcePath := configPath + "/" + resourceName
+		resourcePath := strings.TrimPrefix(configPath+"/"+resourceName, "/")
 		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {
