@@ -26,7 +26,6 @@ type TaskExecutionResult struct {
 	TriggeredID string                 `json:"triggeredID" bson:"triggeredID"`
 	Result      string                 `json:"result" bson:"result"`
 	Status      string                 `json:"status" bson:"status"`
-	TaskIndex   int                    `json:"taskIndex" bson:"taskIndex"`
 	Properties  map[string]interface{} `json:"properties" bson:"properties"`
 }
 
@@ -55,27 +54,53 @@ func (e *SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	if len(e.Status.PreviousTasks) == 0 {
 		return TaskExecutionResult{}
 	}
-	for _, task := range e.Status.PreviousTasks {
-		if task.TaskIndex == len(e.Status.PreviousTasks)-1 {
-			return task
-		}
+	return e.Status.PreviousTasks[len(e.Status.PreviousTasks)-1]
+}
+
+func (e *SequenceExecution) CompleteCurrentTask() {
+	var result keptnv2.ResultType
+	var status keptnv2.StatusType
+	if e.Status.CurrentTask.IsFailed() {
+		result = keptnv2.ResultFailed
+	} else if e.Status.CurrentTask.IsWarning() {
+		result = keptnv2.ResultWarning
+	} else {
+		result = keptnv2.ResultPass
 	}
-	return TaskExecutionResult{}
+	if e.Status.CurrentTask.IsErrored() {
+		status = keptnv2.StatusErrored
+	} else {
+		status = keptnv2.StatusSucceeded
+	}
+
+	e.Status.PreviousTasks = append(
+		e.Status.PreviousTasks,
+		TaskExecutionResult{
+			Name:        e.Status.CurrentTask.Name,
+			TriggeredID: e.Status.CurrentTask.TriggeredID,
+			Result:      string(result),
+			Status:      string(status),
+			Properties:  nil,
+		},
+	)
+	e.Status.CurrentTask = TaskExecutionState{}
 }
 
 func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
-
-	nextTask := e.GetNextTaskOfSequence()
-	if nextTask == nil {
-		return nil
-	}
 	eventPayload := map[string]interface{}{}
+
+	if inputMap, ok := e.InputProperties.(map[string]interface{}); ok {
+		eventPayload = inputMap
+	}
 
 	eventPayload["project"] = e.Scope.Project
 	eventPayload["stage"] = e.Scope.Stage
 	eventPayload["service"] = e.Scope.Service
 
-	eventPayload[nextTask.Name] = nextTask.Properties
+	nextTask := e.GetNextTaskOfSequence()
+	if nextTask != nil && nextTask.Properties != nil {
+		eventPayload[nextTask.Name] = nextTask.Properties
+	}
 
 	if len(e.Status.PreviousTasks) > 0 {
 		for _, previousTask := range e.Status.PreviousTasks {
