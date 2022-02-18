@@ -512,7 +512,7 @@ func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) er
 	})
 
 	if err != nil {
-		return fmt.Errorf("Could not retrieve task executions associated to eventID %s: %s", timeout.LastEvent.ID, err.Error())
+		return fmt.Errorf("could not sequence executions associated to eventID %s: %w", timeout.LastEvent.ID, err)
 	}
 
 	if len(sequenceExecutions) == 0 {
@@ -666,23 +666,20 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 }
 
 func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, sequenceExecution models.SequenceExecution) error {
-
 	// get the input for the .triggered event that triggered the previous sequence and append it to the list of previous events to gather all required data for the next stage
-	inputEvent, err := sc.appendTriggerEventProperties(sequenceExecution)
+	inputEvent, err := sc.getSequenceTriggeredEvent(sequenceExecution)
 	if err != nil {
 		return err
 	}
 
 	task := sequenceExecution.GetNextTaskOfSequence()
 	if task == nil {
-
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(eventScope, sequenceExecution, models.SequenceFinished)
 		if err != nil {
 			log.Errorf("Could not complete task sequence %s.%s with KeptnContext %s: %s", eventScope.Stage, sequenceExecution.Sequence.Name, eventScope.KeptnContext, err.Error())
 			return err
 		}
-
 		return sc.triggerNextTaskSequences(eventScope, inputEvent, sequenceExecution)
 	}
 
@@ -691,7 +688,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 
 // this function retrieves the .triggered event for the task sequence and appends its properties to the existing .finished events
 // this ensures that all parameters set in the .triggered event are received by all execution plane services, instead of just the first one
-func (sc *shipyardController) appendTriggerEventProperties(sequenceExecution models.SequenceExecution) (*models.Event, error) {
+func (sc *shipyardController) getSequenceTriggeredEvent(sequenceExecution models.SequenceExecution) (*models.Event, error) {
 	triggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(
 		sequenceExecution.Scope,
 		sequenceExecution.Sequence.Name,
