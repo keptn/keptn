@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/internal/auth"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -33,7 +34,7 @@ func TestAuthenticate(t *testing.T) {
 			},
 		}
 
-		instance := NewAuthenticator("keptn", &credentialManagerMock)
+		instance := NewAuthenticator("keptn", &credentialManagerMock, &auth.TokenStoreMock{})
 		err := instance.Auth(AuthenticatorOptions{})
 		assert.Nil(t, err)
 	})
@@ -51,7 +52,7 @@ func TestAuthenticate(t *testing.T) {
 				return *tsURL, "", nil
 			},
 		}
-		instance := NewAuthenticator("keptn", &credentialManagerMock)
+		instance := NewAuthenticator("keptn", &credentialManagerMock, &auth.TokenStoreMock{})
 		err := instance.Auth(AuthenticatorOptions{Endpoint: ts.URL})
 		assert.Nil(t, err)
 	})
@@ -66,7 +67,7 @@ func TestAuthenticate(t *testing.T) {
 				return *tsURL, "TOKEN", fmt.Errorf("whoops")
 			},
 		}
-		instance := NewAuthenticator("keptn", &credentialManagerMock)
+		instance := NewAuthenticator("keptn", &credentialManagerMock, &auth.TokenStoreMock{})
 		err := instance.Auth(AuthenticatorOptions{})
 		assert.NotNil(t, err)
 	})
@@ -82,7 +83,7 @@ func TestAuthenticate(t *testing.T) {
 				return *tsURL, "TOKEN", nil
 			},
 		}
-		instance := NewAuthenticator("keptn", &credentialManagerMock)
+		instance := NewAuthenticator("keptn", &credentialManagerMock, &auth.TokenStoreMock{})
 		err := instance.Auth(AuthenticatorOptions{})
 		assert.NotNil(t, err)
 	})

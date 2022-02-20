@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
-	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/internal/auth"
 	"net"
 	"net/url"
 	"time"
@@ -30,31 +29,24 @@ type CredentialGetSetter interface {
 type Authenticator struct {
 	Namespace         string
 	CredentialManager CredentialGetSetter
+	OauthStore        auth.OauthStore
 }
 
 type AuthenticatorOptions struct {
 	Endpoint string
 	APIToken string
-	OAuth    bool
 }
 
-func NewAuthenticator(namespace string, credentialManager CredentialGetSetter) *Authenticator {
+func NewAuthenticator(namespace string, credentialManager CredentialGetSetter, oauthStore auth.OauthStore) *Authenticator {
 	return &Authenticator{
 		Namespace:         namespace,
 		CredentialManager: credentialManager,
+		OauthStore:        oauthStore,
 	}
 }
 
 func (a *Authenticator) GetCredentials() (url.URL, string, error) {
 	return a.CredentialManager.GetCreds(a.Namespace)
-}
-
-func (a *Authenticator) GetAPISet() (*api.APISet, error) {
-	endpoint, apiToken, err := a.CredentialManager.GetCreds(a.Namespace)
-	if err != nil {
-		return nil, err
-	}
-	return internal.APIProvider(endpoint.String(), apiToken)
 }
 
 func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
@@ -74,7 +66,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		apiToken = authenticatorOptions.APIToken
 	}
 
-	logging.PrintLog("Starting to authenticate", logging.InfoLevel)
+	fmt.Println("Starting to authenticate")
 
 	if endpoint.Path == "" || endpoint.Path == "/" {
 		endpoint.Path = "/api"
@@ -89,13 +81,19 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 	}
 
-	// Try to call the /auth endpoint of Keptn
-	// NOTE: We expect that some component is setting the api token using the
-	// "x-token" HTTP header. This could've either be done via the CLI
-	// by using the `--api-token` flag or some other component (e.g. load balancer, ...)
+	// Skip usual auth call if we use OAuth
+	if a.OauthStore.Created() {
+		fmt.Printf("Successfully authenticated against the Keptn cluster %s\n", endpoint.String())
+		fmt.Printf("Bridge URL: %s\n", getBridgeURLFromAPIURL(endpoint))
+		if apiToken == "" {
+			fmt.Println("WARNING: You are using the OAuth integration feature without a Keptn API Token. Please verify that your configuration allows it")
+		}
+		return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
+	}
+
+	// Try to call Keptn Auth endpoint
 	authenticated := false
 	errMsg := ""
-	// try to authenticate (and retry it)
 	for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
 		_, err := api.AuthV1().Authenticate()
 		if err != nil {
@@ -107,16 +105,14 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		}
 	}
 
+	// Authentication failed
 	if !authenticated {
-		if authenticatorOptions.OAuth && apiToken == "" {
-			fmt.Println("WARNING: You are using the OAuth integration feature without a Keptn API Token. Please verify that your configuration allows it")
-		} else {
-			return fmt.Errorf(errMsg)
-		}
-	} else {
-		logging.PrintLog("Successfully authenticated against the Keptn cluster "+endpoint.String(), logging.InfoLevel)
+		return fmt.Errorf(errMsg)
 	}
 
+	// Authentication succeeded
+	fmt.Println("Successfully authenticated against the Keptn cluster " + endpoint.String())
+	fmt.Println("Bridge URL: " + getBridgeURLFromAPIURL(endpoint))
 	return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 }
 

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/keptn/keptn/cli/internal/auth"
 	"net/url"
 	"strings"
 
@@ -20,20 +20,7 @@ var statusCmd = &cobra.Command{
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		credentialManager := credentialmanager.NewCredentialManager(assumeYes)
-
-		// Check for better possibility
-		//authenticator := NewAuthenticator(namespace, credentialManager)
-		//err := authenticator.Auth(AuthenticatorOptions{})
-		//if err != nil {
-		//	return err
-		//}
-
-		endpoint, _, err := credentialManager.GetCreds(namespace)
-		if err != nil {
-			return err
-		}
-		fmt.Println("Bridge URL: " + getBridgeURLFromAPIURL(endpoint))
-		return nil
+		return NewAuthenticator(namespace, credentialManager, auth.NewLocalFileOauthStore()).Auth(AuthenticatorOptions{})
 	},
 }
 
