@@ -103,7 +103,7 @@ spec:
           - name: PUBSUB_RECIPIENT_PATH
             value: '/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
-        {{ include "control-plane.common.pod-security-context" . | nindent 8 }}
+        {{ include "control-plane.common.container-security-context" . | nindent 8 }}
 ---
 apiVersion: v1
 kind: Service

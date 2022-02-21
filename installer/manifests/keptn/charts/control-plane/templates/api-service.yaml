@@ -77,7 +77,7 @@ spec:
               value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-          {{ include "control-plane.common.pod-security-context" . | nindent 10 }}
+          {{ include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
@@ -90,7 +90,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-          {{ include "control-plane.common.pod-security-context" . | nindent 10 }}
+          {{ include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
