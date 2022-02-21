@@ -32,6 +32,7 @@ type OauthStore interface {
 	StoreClientInfo(*OauthClientValues) error
 	GetClientInfo() (*OauthClientValues, error)
 	Wipe() error
+	Created() bool
 }
 
 // TokenFileName is the name of the file containing the oauth token data
