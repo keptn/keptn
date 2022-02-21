@@ -252,6 +252,19 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
 		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.Scope.KeptnContext == "my-context-id" {
+				return []models.SequenceExecution{
+					{
+						ID:       "",
+						Sequence: keptnv2.Sequence{},
+						Status: models.SequenceExecutionStatus{
+							State: models.SequenceStartedState,
+						},
+						Scope:           models.EventScope{},
+						InputProperties: nil,
+					},
+				}, nil
+			}
 			return nil, nil
 		},
 	}
@@ -337,11 +350,11 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		Service: "my-service",
 	}
 
-	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
+	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).WithKeptnContext("my-context").Build()
 	dispatcherEvent1 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event1), TimeStamp: timeAfter1}
-	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).Build()
+	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).WithKeptnContext("my-context").Build()
 	dispatcherEvent2 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event2), TimeStamp: timeAfter2}
-	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).Build()
+	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).WithKeptnContext("my-context").Build()
 	dispatcherEvent3 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event3), TimeStamp: timeAfter3}
 
 	eventRepo := &dbmock.EventRepoMock{}
@@ -377,7 +390,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	}
 
 	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-		return []models.Event{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
+		return []models.Event{{Shkeptncontext: "my-context", ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
 			Service: "my-service",
@@ -386,6 +399,15 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
 		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.Scope.KeptnContext == "my-context" {
+				return []models.SequenceExecution{
+					{
+						Status: models.SequenceExecutionStatus{
+							State: models.SequenceStartedState,
+						},
+					},
+				}, nil
+			}
 			return nil, nil
 		},
 	}
@@ -487,7 +509,16 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
 		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-			return nil, nil
+			if filter.CurrentTriggeredID == "" {
+				return nil, nil
+			}
+			return []models.SequenceExecution{
+				{
+					Status: models.SequenceExecutionStatus{
+						State: models.SequenceStartedState,
+					},
+				},
+			}, nil
 		},
 	}
 
