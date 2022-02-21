@@ -80,7 +80,6 @@ func (ph *StageResourceHandler) CreateStageResources(c *gin.Context) {
 // @Produce  json
 // @Param	projectName					path	string	true	"The name of the project"
 // @Param	stageName					path	string	true	"The name of the stage"
-// @Param gitCommitID              query string false "The commit ID to be checked out"
 // @Param pageSize              query int false "The number of items to return"
 // @Param nextPageKey              query string false "Pointer to the next set of items"
 // @Success 200 {object} models.GetResourcesResponse
