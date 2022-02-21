@@ -3,10 +3,11 @@ package go_tests
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/retry"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/common/retry"
 )
 
 func TestMain(m *testing.M) {
