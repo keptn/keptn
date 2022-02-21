@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/secret-service
+    - image: keptndev/secret-service
       docker:
         dockerfile: Dockerfile
         target: production
