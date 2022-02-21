@@ -58,7 +58,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.>'
+              value: 'sh.keptn.event.action.triggered'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
             - name: VERSION
@@ -195,6 +195,12 @@ func Test_SelfHealing(t *testing.T) {
 
 	err = WaitForPodOfDeployment("unleash-service")
 	require.Nil(t, err)
+
+	var uniformServiceIntegration models.Integration
+	require.Eventually(t, func() bool {
+		uniformServiceIntegration, err = GetIntegrationWithName("unleash-service")
+		return err == nil
+	}, time.Second*20, time.Second*3)
 
 	t.Log("remediation.yaml and unleash-service are ready. let's trigger another remediation")
 	remediationFinishedEvent = performRemediation(t, projectName, serviceName)
