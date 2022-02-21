@@ -1,66 +1,104 @@
-import { Component } from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Secret } from '../../_models/secret';
-import { SecretScope } from '../../../../shared/interfaces/secret-scope';
 import { NotificationType } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { switchMap, takeUntil, takeWhile, tap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
-  styleUrls: [],
+  styleUrls: ['./ktb-create-secret-form.component.scss'],
 })
-export class KtbCreateSecretFormComponent {
-  public isLoading = false;
-
+export class KtbCreateSecretFormComponent implements OnDestroy {
   private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
   private secretKeyPattern = '[-._a-zA-Z0-9]+';
+  private _isLoading = false;
+  private unsubscribe$ = new Subject<void>();
+  public FormGroupClass = FormGroup;
+  public scopeControl = new FormControl(undefined, [Validators.required]);
+  public nameControl = new FormControl('', [
+    Validators.required,
+    Validators.pattern(this.secretNamePattern),
+    Validators.maxLength(253),
+  ]);
+  public dataControl = this.fb.array([
+    this.fb.group({
+      key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
+      value: ['', [Validators.required]],
+    }),
+  ]);
 
-  public scopes: SecretScope[] = Object.values(SecretScope);
-
+  public isUpdating = false;
+  public scopes?: string[];
   public createSecretForm = this.fb.group({
-    name: ['', [Validators.required, Validators.pattern(this.secretNamePattern), Validators.maxLength(253)]],
-    scope: [this.scopes[0], [Validators.required]],
-    data: this.fb.array([
-      this.fb.group({
-        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
-        value: ['', [Validators.required]],
-      }),
-    ]),
+    name: this.nameControl,
+    scope: this.scopeControl,
+    data: this.dataControl,
   });
+
+  public get isLoading(): boolean {
+    return this._isLoading;
+  }
+  public set isLoading(isLoading: boolean) {
+    this._isLoading = isLoading;
+    if (isLoading) {
+      this.scopeControl.disable();
+    } else {
+      this.scopeControl.enable();
+    }
+  }
 
   constructor(
     private dataService: DataService,
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private notificationService: NotificationsService
-  ) {}
-
-  get data(): FormArray | null {
-    return this.createSecretForm.get('data') as FormArray;
+    private notificationService: NotificationsService,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
+  ) {
+    this.getSecretScopes();
   }
 
-  get dataControls(): FormGroup[] {
-    return (this.data?.controls as FormGroup[]) || [];
+  private getSecretScopes(): void {
+    AppUtils.createTimer(0, this.initialDelayMillis) // interval if it fails to fetch scopes
+      .pipe(
+        takeWhile(() => !this.scopes),
+        tap(() => {
+          this.isLoading = true;
+        }),
+        switchMap(() => this.dataService.getSecretScopes()),
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe(
+        (scopes) => {
+          this.scopes = scopes;
+          this.isLoading = false;
+        },
+        () => {
+          this.isLoading = false;
+        }
+      );
   }
 
   public createSecret(): void {
     if (this.createSecretForm.valid) {
-      this.isLoading = true;
+      this.isUpdating = true;
 
       const secret: Secret = new Secret();
-      secret.setName(this.createSecretForm.get('name')?.value);
-      secret.setScope(this.createSecretForm.get('scope')?.value);
-      for (const dataGroup of this.data?.controls || []) {
+      secret.setName(this.nameControl.value);
+      secret.setScope(this.scopeControl.value);
+      for (const dataGroup of this.dataControl.controls) {
         secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
       }
 
       this.dataService.addSecret(secret).subscribe(
         () => {
-          this.isLoading = false;
+          this.isUpdating = false;
           this.router.navigate(['../'], { relativeTo: this.route });
         },
         (err) => {
@@ -70,14 +108,14 @@ export class KtbCreateSecretFormComponent {
               `A secret with the name ${secret.name} already exists. Please use another name for this secret to continue.`
             );
           }
-          this.isLoading = false;
+          this.isUpdating = false;
         }
       );
     }
   }
 
   public addPair(): void {
-    this.data?.push(
+    this.dataControl.push(
       this.fb.group({
         key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
         value: ['', [Validators.required]],
@@ -86,10 +124,15 @@ export class KtbCreateSecretFormComponent {
   }
 
   public removePair(index: number): void {
-    this.data?.removeAt(index);
+    this.dataControl.removeAt(index);
   }
 
-  public getFormControl(controlName: string): AbstractControl | null {
-    return this.createSecretForm.get(controlName);
+  public isFormValid(): boolean {
+    return this.createSecretForm.valid && !this.isUpdating && !this.isLoading;
+  }
+
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }

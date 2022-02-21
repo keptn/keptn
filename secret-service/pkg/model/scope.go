@@ -11,3 +11,7 @@ type Scope struct {
 type Capability struct {
 	Permissions []string `yaml:"permissions"`
 }
+
+type GetScopesResponse struct {
+	Scopes []string `json:"scopes"`
+}

@@ -15,7 +15,7 @@ const secrets = {
     }),
     Secret.fromJSON({
       name: 'dynatrace',
-      scope: SecretScope.DYNATRACE,
+      scope: 'dynatrace-service',
       keys: ['DT_TOKEN', 'DT_TENANT'],
     }),
   ],

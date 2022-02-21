@@ -22,7 +22,6 @@ import { SequenceState } from '../../../shared/models/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
-import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
 import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
@@ -192,7 +191,7 @@ export class DataService {
     );
   }
 
-  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+  public getSecretsForScope(scope: string): Observable<Secret[]> {
     return this.apiService.getSecretsForScope(scope);
   }
 
@@ -750,5 +749,9 @@ export class DataService {
 
   public logout(): Observable<EndSessionData | null> {
     return this.apiService.logout();
+  }
+
+  public getSecretScopes(): Observable<string[]> {
+    return this.apiService.getSecretScopes().pipe(map((result) => result.scopes));
   }
 }

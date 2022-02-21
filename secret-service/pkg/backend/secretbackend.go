@@ -12,4 +12,6 @@ type SecretBackend interface {
 	UpdateSecret(model.Secret) error
 	DeleteSecret(model.Secret) error
 	GetSecrets() ([]model.GetSecretResponseItem, error)
+
+	ScopeBackend
 }

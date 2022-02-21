@@ -1,9 +1,8 @@
 import { Secret as scrt, SecretKeyValuePair } from '../../shared/interfaces/secret';
-import { SecretScope } from '../../shared/interfaces/secret-scope';
 
 export class Secret implements scrt {
   name!: string;
-  scope!: SecretScope;
+  scope!: string;
   data?: SecretKeyValuePair[];
   keys?: string[];
 

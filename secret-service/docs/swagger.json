@@ -15,6 +15,34 @@
     },
     "basePath": "/v1",
     "paths": {
+        "/scope": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get scopes",
+                "tags": [
+                    "Scopes"
+                ],
+                "summary": "Get scopes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.GetScopesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/secret": {
             "get": {
                 "security": [
@@ -202,6 +230,17 @@
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GetScopesResponse": {
+            "type": "object",
+            "properties": {
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
