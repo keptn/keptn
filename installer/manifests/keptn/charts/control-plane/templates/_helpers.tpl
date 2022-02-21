@@ -210,7 +210,7 @@ securityContext:
 {{- end }}
 {{- else }}
 securityContext:
-  fsGroup: 65532
+  fsGroup: 101
 {{- include "control-plane.common.security-context-seccomp" . }}
 {{- end }}
 {{- end }}
