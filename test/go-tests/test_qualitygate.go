@@ -96,15 +96,11 @@ func Test_QualityGates(t *testing.T) {
 
 	source := "golang-test"
 
-	resp, err := ExecuteCommand(fmt.Sprintf("kubectl get configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	if !strings.Contains(resp, "not found") && err != nil {
-		_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-		require.Nil(t, err)
-	}
-	t.Logf("creating project %s", projectName)
-
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
+
+	_, _ = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	t.Logf("creating project %s", projectName)
 
 	t.Logf("creating service %s", serviceName)
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
@@ -367,6 +363,9 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
 	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
 	require.NotEmpty(t, getSLIPayload.GetSLI.End)
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
 
 	//SLI uses a different commitID
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
