@@ -96,11 +96,12 @@ func Test_QualityGates(t *testing.T) {
 
 	source := "golang-test"
 
+	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
+	t.Log("deleting lighthouse configmap from previous test run")
 	_, _ = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	t.Logf("creating project %s", projectName)
 
 	t.Logf("creating service %s", serviceName)
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
