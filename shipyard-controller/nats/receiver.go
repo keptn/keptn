@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
+	"reflect"
 	"sort"
 )
 
@@ -139,14 +140,5 @@ func getShipyardStreamConfig(topics []string) *nats.StreamConfig {
 func IsEqual(a1 []string, a2 []string) bool {
 	sort.Strings(a1)
 	sort.Strings(a2)
-	if len(a1) == len(a2) {
-		for i, v := range a1 {
-			if v != a2[i] {
-				return false
-			}
-		}
-	} else {
-		return false
-	}
-	return true
+	return reflect.DeepEqual(a1, a2)
 }
