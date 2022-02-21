@@ -75,4 +75,38 @@ describe('KtbTimeInputComponent', () => {
     // then
     expect(spy).toHaveBeenCalledWith({ hours: 1, minutes: 1, seconds: 1, millis: 1, micros: 1 });
   });
+
+  it('should emit 0 as values', () => {
+    const spy = jest.spyOn(component.timeChanged, 'emit');
+    for (const control of formControlNames) {
+      // given
+      component.timeForm.controls[control].setValue(0);
+
+      // when
+      component.validateInput(control, 0, 24);
+    }
+
+    // then
+    expect(spy).toHaveBeenCalledWith({ hours: 0, minutes: 0, seconds: 0, millis: 0, micros: 0 });
+  });
+
+  it('should emit undefined for not given values', () => {
+    const spy = jest.spyOn(component.timeChanged, 'emit');
+    for (const control of formControlNames) {
+      // given
+      component.timeForm.controls[control].setValue(null);
+
+      // when
+      component.validateInput(control, 0, 24);
+    }
+
+    // then
+    expect(spy).toHaveBeenCalledWith({
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    });
+  });
 });

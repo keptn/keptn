@@ -22,20 +22,20 @@ export class KtbTimeInputComponent implements OnInit {
   public console = console;
 
   public timeForm = new FormGroup({
-    hours: new FormControl(''),
-    minutes: new FormControl(''),
-    seconds: new FormControl(''),
-    millis: new FormControl(''),
-    micros: new FormControl(''),
+    hours: new FormControl(),
+    minutes: new FormControl(),
+    seconds: new FormControl(),
+    millis: new FormControl(),
+    micros: new FormControl(),
   });
 
   public ngOnInit(): void {
     if (this.timeframe) {
-      this.timeForm.controls.hours.setValue(this.timeframe.hours ? this.timeframe.hours : '');
-      this.timeForm.controls.minutes.setValue(this.timeframe.minutes ? this.timeframe.minutes : '');
-      this.timeForm.controls.seconds.setValue(this.timeframe.seconds ? this.timeframe.seconds : '');
-      this.timeForm.controls.millis.setValue(this.timeframe.millis ? this.timeframe.millis : '');
-      this.timeForm.controls.micros.setValue(this.timeframe.micros ? this.timeframe.micros : '');
+      this.timeForm.controls.hours.setValue(this.timeframe.hours !== undefined ? this.timeframe.hours : null);
+      this.timeForm.controls.minutes.setValue(this.timeframe.minutes !== undefined ? this.timeframe.minutes : null);
+      this.timeForm.controls.seconds.setValue(this.timeframe.seconds !== undefined ? this.timeframe.seconds : null);
+      this.timeForm.controls.millis.setValue(this.timeframe.millis !== undefined ? this.timeframe.millis : null);
+      this.timeForm.controls.micros.setValue(this.timeframe.micros !== undefined ? this.timeframe.micros : null);
     }
   }
 
@@ -58,11 +58,11 @@ export class KtbTimeInputComponent implements OnInit {
 
   private emitChangedValues(): void {
     this.timeChanged.emit({
-      hours: this.timeForm.controls.hours.value ? this.timeForm.controls.hours.value : undefined,
-      minutes: this.timeForm.controls.minutes.value ? this.timeForm.controls.minutes.value : undefined,
-      seconds: this.timeForm.controls.seconds.value ? this.timeForm.controls.seconds.value : undefined,
-      millis: this.timeForm.controls.millis.value ? this.timeForm.controls.millis.value : undefined,
-      micros: this.timeForm.controls.micros.value ? this.timeForm.controls.micros.value : undefined,
+      hours: this.timeForm.controls.hours.value !== null ? this.timeForm.controls.hours.value : undefined,
+      minutes: this.timeForm.controls.minutes.value !== null ? this.timeForm.controls.minutes.value : undefined,
+      seconds: this.timeForm.controls.seconds.value !== null ? this.timeForm.controls.seconds.value : undefined,
+      millis: this.timeForm.controls.millis.value !== null ? this.timeForm.controls.millis.value : undefined,
+      micros: this.timeForm.controls.micros.value !== null ? this.timeForm.controls.micros.value : undefined,
     });
   }
 }
