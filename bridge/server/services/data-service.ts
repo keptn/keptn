@@ -869,7 +869,7 @@ export class DataService {
     accessToken: string | undefined,
     webhookConfig: WebhookConfig
   ): Promise<WebhookSecret[]> {
-    const webhookScopeSecrets = await this.getSecretsForScope(accessToken, SecretScope.WEBHOOK); //TODO: clarify what we do here
+    const webhookScopeSecrets = await this.getSecretsForScope(accessToken, SecretScope.WEBHOOK);
     const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
 
     const secrets: WebhookSecret[] = [];
