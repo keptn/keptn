@@ -30,6 +30,9 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SequenceControl_AbortQueuedSequence", Test_SequenceControl_AbortQueuedSequence)
 	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
+	if res, err := CompareServiceWithDeployment("configuration-service", "resource-service"); err == nil && res {
+		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
+	}
 
 	// Platform-specific Tests
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)

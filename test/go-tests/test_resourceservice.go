@@ -632,25 +632,13 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	require.Equal(t, resourceUri, *resource.ResourceURI)
 	require.Equal(t, resourceContent, resource.ResourceContent)
 
-	t.Logf("Checking all resources with commit ID")
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource?gitCommitID="+commitID, 3)
-	require.Nil(t, err)
-	require.Equal(t, 200, resp.Response().StatusCode)
-
-	t.Logf("Checking body of the received response")
-	resources := models.Resources{}
-	err = resp.ToJSON(&resources)
-	require.Nil(t, err)
-	require.Equal(t, float64(2), resources.TotalCount)
-	require.Nil(t, checkResourceInResponse(resources, resourceUriPath))
-
 	t.Logf("Checking all resources without commit ID")
 	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource", 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
 	t.Logf("Checking body of the received response")
-	resources = models.Resources{}
+	resources := models.Resources{}
 	err = resp.ToJSON(&resources)
 	require.Nil(t, err)
 	require.Equal(t, float64(2), resources.TotalCount)
