@@ -212,8 +212,11 @@ func CreateProject(projectName string, shipyardFilePath string, recreateIfAlread
 		}
 
 		// apply the k8s job for creating the git upstream
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
+		if !strings.Contains(out, "created successfully") {
+			return "", fmt.Errorf("unable to create project: %s", out)
+		}
 		if err == nil {
 			return newProjectName, nil
 		}
