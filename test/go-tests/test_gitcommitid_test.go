@@ -1,14 +1,17 @@
 package go_tests
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
-	"os"
-	"strings"
-	"testing"
 )
 
 const commitIDShipyard = `--- 
@@ -20,6 +23,32 @@ spec:
   stages: 
     - 
       name: hardening`
+
+const commitIDDeliveryShipyard = `--- 
+apiVersion: "spec.keptn.sh/0.2.3"
+kind: "Shipyard"
+metadata:
+  name: "shipyard-podtato-ohead"
+spec:
+  stages:
+    - name: "dev"
+      sequences:
+        - name: "delivery"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "test"
+              properties:
+                teststrategy: "functional"
+            - name: "evaluation"
+            - name: "release"
+        - name: "delivery-direct"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "release"`
 
 const gitCommitIDSLO = `---
 spec_version: "0.1.1"
@@ -51,23 +80,138 @@ total_score:
   pass: "90%"
   warning: "75%"`
 
-func Test_GitCommitID(t *testing.T) {
+func createResourceWithCommit(t *testing.T, projectName, stage, serviceName, content, uri string) string {
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
+	require.Nil(t, err)
+	resp, err := internalKeptnAPI.Put(basePath+"/"+projectName+"/stage/"+stage+"/service/"+serviceName+"/resource", models.Resources{
+		Resources: []*models.Resource{
+			{
+				ResourceContent: content,
+				ResourceURI:     strutils.Stringp(uri),
+			},
+		},
+	}, 3)
+	require.Nil(t, err)
 
-	projectName := "commit-id"
+	t.Logf("Received response %s", resp.String())
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	response := struct {
+		CommitID string `json:"commitID"`
+	}{}
+	resp.ToJSON(&response)
+	t.Log("Saved with commitID", response.CommitID)
+	return response.CommitID
+}
+
+func Test_DeliveryGitCommitID(t *testing.T) {
+	//repoLocalDir := "../assets/podtato-head"
+	projectName := "commit-id-delivery3"
+	serviceName := "helloservice"
+	commitID := ""
+	uri := "helm/helloservice.tgz"
+	content := "H4sIAAAAAAAAA+2YzY7aMBDHOecp5gUIMQHSza3alVqpPSBttXeTTIlbJ45shwqt9t3rQMgmfIgeomVXnR8HlBl/jLHnPw7+JEMplUG9QT25z7i2/pbncjQggWOxmNXfLJoH3e8dLJyO2Mx9WBRGARsFbBYt2AiCIYO4RGUs1wAjlVYr/utyu2v+DwovxRNqI1QRw4Z5KZpEi9Lunj/DV5Q5JPWhgJ9Kw7dqhbpAi8YreI4xtGdHJOhtDuMEPvMD79YrI/4Fv5f/FvNScre/kyHnqHM8iuYX899xlP/zIFyMYD5kEJf4z/P/0v6nWEq1zbEYoBxc0X8WzsL+/k8DFoSk/29BV/95WZqJKwK/RZHG8NCeAC9Hy1NueewBnBF+U2JSu7TrIRJuYnh+Bv+JywqN3xjvVVVYeHlxzQxKTKzSdReAnNsk+85XKM3eAHUcRzMAHE5m06kTUI3s9T8/gpu4ibMmUYXlonBLP1jGzdL2qdAOJXK+xt6KdpbdSjotlpWUS+VWunV1U/7hW9P6S6VtJ7bx69xL54nhzuVA65VigwUas9Rqha+dADJryy9ouyY3NLdZDJO+7XRQF2MhrODyASXfPqILIHW7FHYalKiFSs+6rMhRVbb1zVufRp6Kdx/trVPsXXNJ/5u8GeRd4Nr9PwyP638Uzhek/2/B0f1/L/2PjWhe0f2+7p5q7kFvOwI4bhL+0yHdm2GdXDQGtxtrtCfKWGplVaJkDD/ulydF5HTuW/+uH4V+/m/2FW7gPwCuvv+f3v+nbEr5/xY015t1lmhfqEmpUsutGmeush8e9mcj3tSv9VOve5+Lgd06foIgCIIgCIIgCIIgCIIgCOI8fwFteWwzACgAAA=="
+	//serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
+
+	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
+	shipyardFilePath, err := CreateTmpShipyardFile(commitIDDeliveryShipyard)
+	require.Nil(t, err)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("Creating service %s in project %s", serviceName, projectName)
+	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, projectName)
+	require.Nil(t, err)
+
+	commitID = createResourceWithCommit(t, projectName, "dev", serviceName, content, uri)
+
+	t.Logf("Trigger delivery of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("./../../cli/cli trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s --git-commit-id=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery", commitID)
+	require.Nil(t, err)
+
+	var getDeliveryTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", "", " event is available")
+		event, err := GetLatestEventOfType("", projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getDeliveryTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got triggered event, checking commitid")
+	keptnContext := getDeliveryTriggeredEvent.Shkeptncontext
+
+	require.Equal(t, commitID, getDeliveryTriggeredEvent.GitCommitID)
+
+	// wait for the evaluation.finished event to be available and evaluate it
+	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if evaluation.finished event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "dev", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		evaluationFinishedEvent = event
+		return true
+	}, 2*time.Minute, 10*time.Second)
+
+	t.Log("got finished event, checking commitid")
+	require.Equal(t, commitID, evaluationFinishedEvent.GitCommitID)
+
+	//druha cast
+
+	commitID1 := createResourceWithCommit(t, projectName, "dev", serviceName, content, uri)
+	t.Logf("new commitID is %s", commitID1)
+
+	t.Logf("Trigger delivery of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("./../../cli/cli trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s --git-commit-id=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery", commitID)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", "", " event is available")
+		event, err := GetLatestEventOfType("", projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getDeliveryTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got triggered event, checking commitid")
+	keptnContext = getDeliveryTriggeredEvent.Shkeptncontext
+
+	require.Equal(t, commitID, getDeliveryTriggeredEvent.GitCommitID)
+
+	// wait for the evaluation.finished event to be available and evaluate it
+	require.Eventually(t, func() bool {
+		t.Log("checking if evaluation.finished event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "dev", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		evaluationFinishedEvent = event
+		return true
+	}, 2*time.Minute, 10*time.Second)
+
+	t.Log("got finished event, checking commitid")
+	require.Equal(t, commitID, evaluationFinishedEvent.GitCommitID)
+
+}
+
+func Test_EvaluationGitCommitID(t *testing.T) {
+
+	projectName := "commit-id-evaluation"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(commitIDShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	source := "golang-test"
-
-	t.Log("Checking for existence of configMap")
-	resp, err := ExecuteCommand(fmt.Sprintf("kubectl get configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	if !strings.Contains(resp, "not found") {
-		t.Log("ConfigMap exists, deleting...")
-		_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName))
-		require.Nil(t, err)
-	}
+	t.Log("deleting lighthouse configmap from previous test run")
+	_, _ = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName))
 
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
@@ -76,6 +220,8 @@ func Test_GitCommitID(t *testing.T) {
 	t.Logf("creating service %s", serviceName)
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
+	t.Log("Testing the evaluation...")
+
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
@@ -83,102 +229,161 @@ func Test_GitCommitID(t *testing.T) {
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName))
 	require.Nil(t, err)
 
-	t.Logf("adding SLO file")
-	sloFilePath, err := CreateTmpFile("slo-*.yaml", gitCommitIDSLO)
-	require.Nil(t, err)
-	defer os.Remove(sloFilePath)
-
-	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --all-stages --service=%s --resource=%s --resourceUri=slo.yaml", projectName, serviceName, sloFilePath))
-	require.Nil(t, err)
-
-	// t.Log("triggering evaluation")
-	// keptnContext, err := triggerEvaluation(projectName, "hardening", serviceName)
-	// require.Nil(t, err)
-	// require.NotEmpty(t, keptnContext)
-
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	evaluationFinishedPayload := &keptnv2.EvaluationFinishedEventData{}
-	// // wait for the evaluation.finished event to be available and evaluate it
-	// require.Eventually(t, func() bool {
-	// 	t.Log("checking if evaluation.finished event is available")
-	// 	event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
-	// 	if err != nil || event == nil {
-	// 		return false
-	// 	}
-	// 	evaluationFinishedEvent = event
-	// 	return true
-	// }, 1*time.Minute, 10*time.Second)
 
-	// err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
-	// require.Nil(t, err)
+	//first part
 
-	// require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.Result)
-	// require.NotEmpty(t, evaluationFinishedPayload.Message)
+	t.Log("storing SLO file")
+	commitID := storeWithCommit(t, projectName, "hardening", serviceName, gitCommitIDSLO, "slo.yaml")
+	t.Logf("commitID is %s", commitID)
 
-	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", projectName, "hardening", serviceName, sloFilePath))
-	require.Nil(t, err)
+	t.Log("triggering the evaluation")
+	_, evaluationFinishedEvent = performResourceServiceEvaluationTest(t, projectName, serviceName, commitID)
 
-	t.Log("triggering the evaluation again")
-	_, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, true)
-
+	t.Log("checking the finished event")
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
 
-	require.Len(t, evaluationFinishedPayload.Evaluation.IndicatorResults, 3)
-	require.Equal(t, &keptnv2.SLIEvaluationResult{
-		Score: 1,
-		Value: &keptnv2.SLIResult{
-			Metric:  "response_time_p95",
-			Value:   200,
-			Success: true,
-			Message: "",
-		},
-		DisplayName: "",
-		PassTargets: []*keptnv2.SLITarget{
-			{
-				Criteria:    "<=+75%",
-				TargetValue: 0,
-				Violated:    false,
-			},
-			{
-				Criteria:    "<800",
-				TargetValue: 800,
-				Violated:    false,
-			},
-		},
-		WarningTargets: []*keptnv2.SLITarget{
-			{
-				Criteria:    "<=1000",
-				TargetValue: 1000,
-				Violated:    false,
-			},
-			{
-				Criteria:    "<=+100%",
-				TargetValue: 0,
-				Violated:    false,
-			},
-		},
-		Status: "pass",
-		KeySLI: false,
-	}, evaluationFinishedPayload.Evaluation.IndicatorResults[0])
+	require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID)
 
-	// send an evaluation.finished event for this evaluation
-	evaluationInvalidatedEventType := "sh.keptn.event.evaluation.invalidated"
+	//second part
+
+	t.Log("storing second invalid SLO file")
+	commitID1 := storeWithCommit(t, projectName, "hardening", serviceName, "gitCommitIDSLO", "slo.yaml")
+	t.Logf("new commitID is %s", commitID1)
+
+	t.Log("triggering the evaluation again with the old commitID")
+	_, evaluationFinishedEvent = performResourceServiceEvaluationTest(t, projectName, serviceName, commitID)
+
+	t.Log("checking the finished event again with the old commitID")
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+
+	require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID)
+}
+
+func performResourceServiceEvaluationTest(t *testing.T, projectName string, serviceName string, commitID string) (string, *models.KeptnContextExtendedCE) {
+	keptnContext := ""
+	source := "golang-test"
+
+	t.Log("sent evaluation.hardening.triggered with commitid: ", commitID)
+	_, err := ExecuteCommand(fmt.Sprintf("./../../cli/cli trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z --git-commit-id=%s", projectName, serviceName, commitID))
+	require.Nil(t, err)
+
+	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", keptnContext, " event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getSLITriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+	t.Log("got SLI triggered event, checking commitid")
+
+	require.Equal(t, commitID, getSLITriggeredEvent.GitCommitID)
+
+	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
+	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
+	require.Nil(t, err)
+	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
+	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
+	require.NotEmpty(t, getSLIPayload.GetSLI.End)
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
+
+	//SLI uses a different commitID
 	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
-		Data: keptnv2.EventData{
-			Project: projectName,
-			Stage:   "hardening",
-			Service: serviceName,
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
 		},
 		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: KeptnSpecVersion,
 		Source:             &source,
 		Specversion:        "1.0",
-		Shkeptncontext:     evaluationFinishedEvent.Shkeptncontext,
-		Triggeredid:        evaluationFinishedEvent.Triggeredid,
-		Type:               &evaluationInvalidatedEventType,
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		GitCommitID:        commitID,
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Labels:  nil,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+			GetSLI: keptnv2.GetSLIFinished{
+				Start: getSLIPayload.GetSLI.Start,
+				End:   getSLIPayload.GetSLI.End,
+				IndicatorValues: []*keptnv2.SLIResult{
+					{
+						Metric:        "response_time_p95",
+						Value:         200,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+					{
+						Metric:        "throughput",
+						Value:         200,
+						Success:       true,
+						ComparedValue: 0,
+						Message:       "",
+					},
+					{
+						Metric:        "error_rate",
+						Value:         0,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+				},
+			},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		GitCommitID:        commitID,
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
 	}, 3)
 	require.Nil(t, err)
 
+	// wait for the evaluation.finished event to be available and evaluate it
+	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if evaluation.finished event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		evaluationFinishedEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	return keptnContext, evaluationFinishedEvent
 }
