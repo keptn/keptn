@@ -549,21 +549,53 @@ jobs:
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+          readarray -t clusterroles <<< "$(kubectl get clusterroles | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+          readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
           if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
             for namespace in "${namespaces[@]}"; do
               echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
               kubectl annotate namespace "$namespace" janitor/ttl=3d
             done
+          
+            for cr in "${clusterroles[@]}"; do
+              echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
+              kubectl annotate clusterrole "$cr" janitor/ttl=3d
+            done
+          
+            for crb in "${clusterrolebindings[@]}"; do
+              echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+              kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
+            done
           elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
             for namespace in "${namespaces[@]}"; do
               echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
               kubectl annotate namespace "$namespace" janitor/ttl=6h
             done
+          
+            for cr in "${clusterroles[@]}"; do
+              echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
+              kubectl annotate clusterrole "$cr" janitor/ttl=6h
+            done
+          
+            for crb in "${clusterrolebindings[@]}"; do
+              echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+              kubectl annotate clusterrolebinding "$crb" janitor/ttl=6h
+            done
           else
             for namespace in "${namespaces[@]}"; do
               echo "Deleting namespace $namespace ..."
-              kubectl delete namespace "$namespace" --wait=false
+              kubectl delete namespace "$namespace"
+            done
+          
+            for cr in "${clusterroles[@]}"; do
+              echo "Deleting clusterrole $cr ..."
+              kubectl delete clusterrole "$cr"
+            done
+          
+            for crb in "${clusterrolebindings[@]}"; do
+              echo "Deleting clusterrolebinding $crb ..."
+              kubectl delete clusterrolebindings "$crb"
             done
           fi
 
