@@ -61,9 +61,7 @@ spec:
             - name: ENVIRONMENT
               value: 'production'
             - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: 'keptn'
         - name: distributor
           image: docker.io/keptn/distributor:0.13.0-dev
           ports:
@@ -83,12 +81,13 @@ spec:
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
             - name: K8S_NAMESPACE
-              value: keptn
+              value: 'keptn'
             - name: K8S_DEPLOYMENT_NAME
-              value: lighthouse-service
+              value: 'lighthouse-service'
             - name: K8S_NODE_NAME
               valueFrom:
                 fieldRef:
+                  apiVersion: v1
                   fieldPath: spec.nodeName
 ---
 apiVersion: v1
