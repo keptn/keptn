@@ -226,8 +226,8 @@ securityContext:
 {{- else }}
 securityContext:
   runAsNonRoot: true
-  runAsUser: 65532
-  readOnlyRootFilesystem: true
+  runAsUser: 101
+  readOnlyRootFilesystem: false
   allowPrivilegeEscalation: false
   privileged: false
 {{- end }}
