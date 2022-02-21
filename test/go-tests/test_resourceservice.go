@@ -3,12 +3,14 @@ package go_tests
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
@@ -570,6 +572,121 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	// configuration-service returns 204
 	// resource-service returns 404
 	require.Contains(t, []int{204, 404}, resp.Response().StatusCode)
+}
+
+const resourceServiceCommitIDShipyard = `--- 
+apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata: 
+  name: shipyard-quality-gates
+spec: 
+  stages: 
+    - 
+      name: hardening`
+
+func Test_ResourceServiceGETCommitID(t *testing.T) {
+	projectName := "resource-service-commitid"
+	serviceName := "my-service"
+	resourceUri := "slo.yaml"
+	resourceUriPath := "/" + resourceUri
+	newResourceUri := "sli.yaml"
+	resourceContent := "aW52YWxpZC1jb250ZW50"
+	newResourceContent := "bmV3LWludmFsaWQtY29udGVudA=="
+	shipyardFilePath, err := CreateTmpShipyardFile(resourceServiceCommitIDShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("adding resource %s", resourceUri)
+	commitID := storeWithCommit(t, projectName, "hardening", serviceName, "invalid-content", resourceUri)
+
+	t.Logf("Checking resource with commit ID")
+	resp, err := ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+resourceUri+"?gitCommitID="+commitID, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking body of the received response")
+	resource := models.Resource{}
+	err = resp.ToJSON(&resource)
+	require.Nil(t, err)
+	require.Equal(t, resourceUri, *resource.ResourceURI)
+	require.Equal(t, resourceContent, resource.ResourceContent)
+
+	t.Logf("Checking resource without commit ID")
+	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+resourceUri, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking body of the received response")
+	resource = models.Resource{}
+	err = resp.ToJSON(&resource)
+	require.Nil(t, err)
+	require.Equal(t, resourceUri, *resource.ResourceURI)
+	require.Equal(t, resourceContent, resource.ResourceContent)
+
+	t.Logf("Checking all resources with commit ID")
+	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource?gitCommitID="+commitID, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking body of the received response")
+	resources := models.Resources{}
+	err = resp.ToJSON(&resources)
+	require.Nil(t, err)
+	require.Equal(t, float64(2), resources.TotalCount)
+	require.Nil(t, checkResourceInResponse(resources, resourceUriPath))
+
+	t.Logf("Checking all resources without commit ID")
+	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource", 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking body of the received response")
+	resources = models.Resources{}
+	err = resp.ToJSON(&resources)
+	require.Nil(t, err)
+	require.Equal(t, float64(2), resources.TotalCount)
+	require.Nil(t, checkResourceInResponse(resources, resourceUriPath))
+
+	t.Logf("adding another resource %s", newResourceUri)
+	commitID2 := storeWithCommit(t, projectName, "hardening", serviceName, "new-invalid-content", newResourceUri)
+
+	t.Logf("Checking second resource with commit ID")
+	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID2, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking body of the received response")
+	resource = models.Resource{}
+	err = resp.ToJSON(&resource)
+	require.Nil(t, err)
+	require.Equal(t, newResourceUri, *resource.ResourceURI)
+	require.Equal(t, newResourceContent, resource.ResourceContent)
+
+	t.Logf("Checking second resource without commit ID")
+	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking body of the received response")
+	resource = models.Resource{}
+	err = resp.ToJSON(&resource)
+	require.Nil(t, err)
+	require.Equal(t, newResourceUri, *resource.ResourceURI)
+	require.Equal(t, newResourceContent, resource.ResourceContent)
+
+	t.Logf("Checking second resource with old commit ID")
+	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID, 3)
+	require.Nil(t, err)
+	require.Equal(t, 404, resp.Response().StatusCode)
 }
 
 func createConfigServiceUpstreamRepo(projectName string) (string, string, error) {
