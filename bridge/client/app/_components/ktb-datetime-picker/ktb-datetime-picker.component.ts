@@ -113,22 +113,21 @@ export class KtbDatetimePickerComponent {
 
   public changeTime(time: Timeframe): void {
     this.selectedTime = time;
-    this.disabled = !(
-      (time.hours === undefined && time.minutes === undefined && time.seconds === undefined) ||
-      (time.hours !== undefined && time.minutes !== undefined && time.seconds !== undefined)
-    );
+    this.disabled =
+      time.hours === undefined || time.minutes === undefined || (this.secondsEnabled && time.seconds === undefined);
   }
 
   public setDateTime(): void {
     if (
       this.selectedTime !== undefined &&
       this.selectedTime.hours !== undefined &&
-      this.selectedTime.minutes !== undefined &&
-      this.selectedTime.seconds !== undefined
+      this.selectedTime.minutes !== undefined
     ) {
       this.selectedDate.set('hours', this.selectedTime.hours);
       this.selectedDate.set('minutes', this.selectedTime.minutes);
-      this.selectedDate.set('seconds', this.selectedTime.seconds);
+      if (this.secondsEnabled && this.selectedTime.seconds !== undefined) {
+        this.selectedDate.set('seconds', this.selectedTime.seconds);
+      }
     }
 
     this.selectedDateTime.emit(this.selectedDate.toISOString());

@@ -6,6 +6,8 @@ import { Overlay, OverlayPositionBuilder } from '@angular/cdk/overlay';
 import { ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
+import moment, { Moment } from 'moment';
+import { Timeframe } from '../../_models/timeframe';
 
 export class MockElementRef extends ElementRef {
   nativeElement = {};
@@ -43,4 +45,231 @@ describe('KtbDatetimePickerComponent', () => {
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should set selectedDate to the given date as moment date', () => {
+    // given
+    const date = new Date();
+    const momentDate = moment(date);
+
+    // when
+    component.changeDate(date);
+
+    // then
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(component.selectedDate.toISOString()).toEqual(momentDate.toISOString());
+  });
+
+  it('should set selectedTime to given value', () => {
+    // given
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: 15,
+      seconds: 10,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(component.selectedTime).toEqual(timeframe);
+  });
+
+  it('should be disabled = false if hours and minutes are set and seconds are disabled ', () => {
+    // given
+    component.secondsEnabled = false;
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: 15,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(false);
+  });
+
+  it('should be disabled = true if hours are not set and seconds are disabled', () => {
+    // given
+    component.secondsEnabled = false;
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: 15,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(true);
+  });
+
+  it('should be disabled = true if minutes are not set and seconds are disabled', () => {
+    // given
+    component.secondsEnabled = false;
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(true);
+  });
+
+  it('should be disabled = true if hours and minutes are not set and seconds are disabled', () => {
+    // given
+    component.secondsEnabled = false;
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(true);
+  });
+
+  it('should be disabled = false if hours, minutes and seconds are set ', () => {
+    // given
+    component.secondsEnabled = true;
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: 15,
+      seconds: 0,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(false);
+  });
+
+  it('should be disabled = true if hours are not set', () => {
+    // given
+    component.secondsEnabled = true;
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: 15,
+      seconds: 0,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(true);
+  });
+
+  it('should be disabled = true if minutes are not set', () => {
+    // given
+    component.secondsEnabled = true;
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: undefined,
+      seconds: 0,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(true);
+  });
+
+  it('should be disabled = true if hours, minutes and seconds are not set', () => {
+    // given
+    component.secondsEnabled = true;
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    component.changeTime(timeframe);
+
+    // then
+    expect(component.disabled).toEqual(true);
+  });
+
+  it('should emit the selected dateTime with seconds not set if not enabled', () => {
+    // given
+    const spy = jest.spyOn(component.selectedDateTime, 'emit');
+    component.secondsEnabled = false;
+    const momentDate = moment();
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: 15,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    setDateAndTime(momentDate, timeframe);
+    component.setDateTime();
+
+    // then
+    momentDate.hours(1).minutes(15).seconds(0);
+    expect(spy).toHaveBeenCalledWith(momentDate.toISOString());
+  });
+
+  it('should emit the selected dateTime with seconds set if enabled', () => {
+    // given
+    const spy = jest.spyOn(component.selectedDateTime, 'emit');
+    component.secondsEnabled = true;
+    const momentDate = moment();
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: 15,
+      seconds: 30,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    setDateAndTime(momentDate, timeframe);
+    component.setDateTime();
+
+    // then
+    momentDate.hours(1).minutes(15).seconds(30);
+    expect(spy).toHaveBeenCalledWith(momentDate.toISOString());
+  });
+
+  function setDateAndTime(momentDate: Moment, timeframe: Timeframe): void {
+    momentDate.date(1).month(1).year(2021).hours(0).minutes(0).seconds(0);
+    component.changeDate(momentDate.toDate());
+    component.changeTime(timeframe);
+  }
 });
