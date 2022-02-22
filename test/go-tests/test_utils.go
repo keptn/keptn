@@ -14,9 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keptn/go-utils/pkg/common/retry"
-	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
@@ -692,18 +689,14 @@ func GetGiteaUser() string {
 	return "gitea_admin"
 }
 
-// recreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
+// RecreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
 func RecreateGitUpstreamRepository(project string) error {
-	jobName := "recreate-upstream-repo"
-	clientset, err := keptnkubeutils.GetClientset(false)
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/gitea-http", "3000", "3000")
 
-	// check if the job for recreating the project already exists (e.g. due to a previous run
-	get, err := clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), jobName, v1.GetOptions{})
-	if err == nil && get != nil {
-		err := clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Delete(context.TODO(), jobName, v1.DeleteOptions{})
-		if err != nil {
-			return fmt.Errorf("could not delete previous instance of job %s: %w", project, err)
-		}
+	if err != nil {
+		return err
 	}
 
 	token, err := GetGiteaToken()
@@ -712,84 +705,39 @@ func RecreateGitUpstreamRepository(project string) error {
 	}
 	user := GetGiteaUser()
 
-	deleteCmd := fmt.Sprintf(`curl -X DELETE "http://gitea-http:3000/api/v1/repos/%s/%s?access_token=%s"`, user, project, token)
-	createCmd := fmt.Sprintf(`curl -X POST "http://gitea-http:3000/api/v1/user/repos?access_token=%s" -H "accept: application/json" -H "content-type: application/json" -d "{\"name\":\"%s\", \"description\": \"Sample description\", \"default_branch\": \"main\"}"`, token, project)
-
-	parallelPods := int32(1)
-
-	recreateJob := &batchv1.Job{
-		TypeMeta: v1.TypeMeta{},
-		ObjectMeta: v1.ObjectMeta{
-			Name:      jobName,
-			Namespace: GetKeptnNameSpaceFromEnv(),
-			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "go-tests",
-			},
-		},
-		Spec: batchv1.JobSpec{
-			Parallelism: &parallelPods,
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					RestartPolicy: corev1.RestartPolicyNever,
-					Containers: []corev1.Container{
-						{
-							Name:  "delete-previous",
-							Image: "curlimages/curl:7.80.0",
-							Command: []string{
-								"sh", "-c",
-							},
-							Args: []string{
-								deleteCmd,
-							},
-						},
-						{
-							Name:  "create",
-							Image: "curlimages/curl:7.80.0",
-							Command: []string{
-								"sh", "-c",
-							},
-							Args: []string{
-								createCmd,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	_, err = clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Create(context.TODO(), recreateJob, v1.CreateOptions{})
-
-	if err != nil {
-		return fmt.Errorf("could not create job to create upstream repo: %w", err)
-	}
-
-	defer func() {
-		_ = clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Delete(context.TODO(), jobName, v1.DeleteOptions{})
-	}()
-
-	var jobStatus *batchv1.Job
-	// wait for the job to be completed
-	err = retry.Retry(func() error {
-		get, err := clientset.BatchV1().Jobs(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), jobName, v1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
-		if get.Status.CompletionTime == nil {
-			// job not done yet
-			return errors.New("job not completed")
-		}
-
-		jobStatus = get
-		return nil
-	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(5*time.Second))
+	// first, check if the repository already exists
+	repoAPIPath := fmt.Sprintf("/api/v1/repos/%s/%s?access_token=%s", user, project, token)
+	resp, err := internalKeptnAPI.Get(repoAPIPath, 5)
 	if err != nil {
 		return err
 	}
 
-	if jobStatus.Status.Failed > 1 {
-		return errors.New("could not (re)create upstream repository")
+	if resp.Response().StatusCode >= 200 && resp.Response().StatusCode < 300 {
+		// if yes, delete the existing project
+		resp, err = internalKeptnAPI.Delete(repoAPIPath, 5)
+		if err != nil {
+			return fmt.Errorf("could not delete existing repository for project %s: %w", project, err)
+		}
+	}
+
+	projectPayload := map[string]interface{}{
+		"name":           project,
+		"description":    "Upstream repo for test project",
+		"default_branch": "main",
+	}
+	// now create the repo
+	post, err := internalKeptnAPI.Post(fmt.Sprintf("/api/v1/user/repos?access_token=%s", token), projectPayload, 5)
+
+	if err != nil {
+		return err
+	}
+
+	if post.Response().StatusCode < 200 || post.Response().StatusCode >= 300 {
+		var responsePayload []byte
+		if _, err := post.Response().Body.Read(responsePayload); err != nil {
+			return fmt.Errorf("could not create upstream repo for project %s", project)
+		}
+		return fmt.Errorf("could not create upstream repo for project %s: %s", project, string(responsePayload))
 	}
 
 	return nil
