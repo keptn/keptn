@@ -8,6 +8,7 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -17,6 +18,7 @@ type EnvConfig struct {
 	KeptnAPIToken        string   `envconfig:"KEPTN_API_TOKEN" default:""`
 	APIProxyPort         int      `envconfig:"API_PROXY_PORT" default:"8081"`
 	APIProxyPath         string   `envconfig:"API_PROXY_PATH" default:"/"`
+	APIProxyHTTPTimeout  string   `envconfig:"API_PROXY_HTTP_TIMEOUT" default:"30"`
 	HTTPPollingInterval  string   `envconfig:"HTTP_POLLING_INTERVAL" default:"10"`
 	EventForwardingPath  string   `envconfig:"EVENT_FORWARDING_PATH" default:"/event"`
 	VerifySSL            bool     `envconfig:"HTTP_SSL_VERIFY" default:"true"`
@@ -172,7 +174,7 @@ func (env *EnvConfig) HTTPClient() *http.Client {
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL}, //nolint:gosec
 		},
-		Timeout: 5 * time.Second,
+		Timeout: env.GetAPIProxyHTTPTimeout(),
 	}
 
 	if env.OAuthEnabled() {
@@ -185,6 +187,14 @@ func (env *EnvConfig) HTTPClient() *http.Client {
 		return conf.Client(context.WithValue(context.TODO(), oauth2.HTTPClient, c))
 	}
 	return c
+}
+
+func (env *EnvConfig) GetAPIProxyHTTPTimeout() time.Duration {
+	timeout, err := strconv.ParseInt(env.APIProxyHTTPTimeout, 10, 64)
+	if err != nil {
+		timeout = DefaultAPIProxyHTTPTimeout
+	}
+	return time.Duration(timeout) * time.Second
 }
 
 func queryEscapeConfigurationServiceURI(path string, value string) string {
