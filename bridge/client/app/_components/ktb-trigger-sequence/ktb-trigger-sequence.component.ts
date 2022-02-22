@@ -27,21 +27,6 @@ export class ShowErrorStateMatcher implements ErrorStateMatcher {
   }
 }
 
-export class JsonErrorStateMatcher implements ErrorStateMatcher {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
-    if (control?.value) {
-      try {
-        JSON.parse(control.value);
-        return false;
-      } catch (e) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
 @Component({
   selector: 'ktb-trigger-sequence',
   templateUrl: './ktb-trigger-sequence.component.html',
