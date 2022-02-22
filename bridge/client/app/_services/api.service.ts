@@ -26,6 +26,7 @@ import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 
 @Injectable({
   providedIn: 'root',
@@ -495,5 +496,22 @@ export class ApiService {
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
     return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
+  }
+
+  public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {
+    const body = {
+      contenttype: 'application/json',
+      data,
+      type,
+      source: 'bridge',
+    };
+    return this.http.post<TriggerResponse>(`${this._baseUrl}/v1/event`, JSON.stringify(body));
+  }
+
+  public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
+    return this.http.post<TriggerResponse>(
+      `${this._baseUrl}/controlPlane/v1/project/${data.project}/stage/${data.stage}/service/${data.service}/evaluation`,
+      JSON.stringify(data.evaluation)
+    );
   }
 }

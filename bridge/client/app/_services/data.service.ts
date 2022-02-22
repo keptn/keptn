@@ -30,6 +30,7 @@ import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 
 @Injectable({
   providedIn: 'root',
@@ -758,5 +759,21 @@ export class DataService {
 
   public logout(): Observable<EndSessionData | null> {
     return this.apiService.logout();
+  }
+
+  public triggerDelivery(data: TriggerSequenceData): Observable<TriggerResponse> {
+    const type = EventTypes.PREFIX + data.stage + EventTypes.DELIVERY_TRIGGERED_SUFFIX;
+
+    return this.apiService.triggerSequence(type, data);
+  }
+
+  public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
+    return this.apiService.triggerEvaluation(data);
+  }
+
+  public triggerCustomSequence(data: TriggerSequenceData, sequence: string): Observable<TriggerResponse> {
+    const type = EventTypes.PREFIX + data.stage + '.' + sequence + '.triggered';
+
+    return this.apiService.triggerSequence(type, data);
   }
 }

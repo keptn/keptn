@@ -6,43 +6,37 @@ import { DtButton } from '@dynatrace/barista-components/button';
 import moment from 'moment';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
-
-export enum TRIGGER_SEQUENCE {
-  DELIVERY,
-  EVALUATION,
-  CUSTOM,
-}
-
-export enum TRIGGER_EVALUATION_TIME {
-  TIMEFRAME,
-  START_END,
-}
-
-export type DeliveryFormData = {
-  image: string | undefined;
-  tag: string | undefined;
-  labels: string | undefined;
-  values: string | undefined;
-};
-
-export type EvaluationFormData = {
-  evaluationType: TRIGGER_EVALUATION_TIME;
-  timeframe: Timeframe | undefined;
-  timeframeStart: string | undefined; // ISO 8601
-  startDatetime: string | undefined; // ISO 8601
-  endDatetime: string | undefined; // ISO 8601
-  labels: string | undefined;
-};
-
-export type CustomFormData = {
-  sequence: string | undefined;
-  labels: string | undefined;
-};
+import {
+  CustomSequenceFormData,
+  DeliverySequenceFormData,
+  EvaluationSequenceFormData,
+  TRIGGER_EVALUATION_TIME,
+  TRIGGER_SEQUENCE,
+  TriggerEvaluationData,
+  TriggerResponse,
+  TriggerSequenceData,
+} from '../../_models/trigger-sequence';
+import { Router } from '@angular/router';
 
 export class ShowErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
     return true;
+  }
+}
+
+export class JsonErrorStateMatcher implements ErrorStateMatcher {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+    if (control?.value) {
+      try {
+        JSON.parse(control.value);
+        return false;
+      } catch (e) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -62,15 +56,17 @@ export class KtbTriggerSequenceComponent implements OnInit {
   public selectedService: string | undefined;
   public selectedStage: string | undefined;
   public showErrorStateMatcher = new ShowErrorStateMatcher();
+  public jsonErrorStateMatcher = new JsonErrorStateMatcher();
+  public isLoading = false;
 
-  public deliveryFormData: DeliveryFormData = {
+  public deliveryFormData: DeliverySequenceFormData = {
     image: undefined,
     tag: undefined,
     labels: undefined,
     values: undefined,
   };
 
-  public evaluationFormData: EvaluationFormData = {
+  public evaluationFormData: EvaluationSequenceFormData = {
     evaluationType: TRIGGER_EVALUATION_TIME.TIMEFRAME,
     timeframe: undefined,
     timeframeStart: undefined,
@@ -79,7 +75,7 @@ export class KtbTriggerSequenceComponent implements OnInit {
     labels: undefined,
   };
 
-  public customFormData: CustomFormData = {
+  public customFormData: CustomSequenceFormData = {
     sequence: undefined,
     labels: undefined,
   };
@@ -90,7 +86,11 @@ export class KtbTriggerSequenceComponent implements OnInit {
 
   @ViewChild('timeframeStartButton') timeFrameStartButton?: DtButton;
 
-  constructor(private dataService: DataService, @Inject(POLLING_INTERVAL_MILLIS) private pollingInterval: number) {}
+  constructor(
+    private dataService: DataService,
+    @Inject(POLLING_INTERVAL_MILLIS) private pollingInterval: number,
+    private router: Router
+  ) {}
 
   public ngOnInit(): void {
     if (!this.projectName) {
@@ -143,6 +143,18 @@ export class KtbTriggerSequenceComponent implements OnInit {
     return this.checkStartEndValidity(start, end);
   }
 
+  public isValidJSON(jsonString: string | undefined): boolean {
+    if (!jsonString || jsonString === '') {
+      return true;
+    }
+    try {
+      JSON.parse(jsonString);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   public checkStartEndValidity(start: string | undefined, end: string | undefined): boolean {
     const startMoment = moment(start);
     const endMoment = moment(end);
@@ -151,5 +163,162 @@ export class KtbTriggerSequenceComponent implements OnInit {
     }
 
     return !endMoment.isBefore(startMoment);
+  }
+
+  public triggerSequence(): void {
+    this.isLoading = true;
+
+    if (this.sequenceType === TRIGGER_SEQUENCE.DELIVERY) {
+      this.triggerDelivery();
+    }
+
+    if (this.sequenceType === TRIGGER_SEQUENCE.EVALUATION) {
+      this.triggerEvaluation();
+    }
+
+    if (this.sequenceType === TRIGGER_SEQUENCE.CUSTOM) {
+      this.triggerCustomSequence();
+    }
+  }
+
+  private getImageString(image: string, tag: string): string {
+    return image.replace(/\s/g, '') + ':' + tag.replace(/\s/g, '');
+  }
+
+  private parseTimeframe(timeframe: Timeframe): string {
+    let timeframeString = '';
+    timeframeString += timeframe.hours ? timeframe.hours + 'h' : '';
+    timeframeString += timeframe.minutes ? timeframe.minutes + 'm' : '';
+    timeframeString += timeframe.seconds ? timeframe.seconds + 's' : '';
+    timeframeString += timeframe.millis ? timeframe.millis + 'ms' : '';
+    timeframeString += timeframe.micros ? timeframe.micros + 'us' : '';
+
+    return timeframeString;
+  }
+
+  private parseLabels(labels: string): { [key: string]: string } {
+    const labelObj: { [key: string]: string } = {};
+    const lbls = labels.replace(/\s/g, '').split(',');
+    for (const label of lbls) {
+      const parts = label.split('=');
+      if (parts[1]) {
+        labelObj[parts[0]] = parts[1];
+      }
+    }
+
+    return labelObj;
+  }
+
+  private triggerDelivery(): void {
+    const data: TriggerSequenceData = {
+      project: this.projectName || '',
+      stage: this.selectedStage || '',
+      service: this.selectedService || '',
+    };
+
+    if (this.deliveryFormData.labels && this.deliveryFormData.labels.trim() !== '') {
+      data.labels = this.parseLabels(this.deliveryFormData.labels);
+    }
+
+    if (this.deliveryFormData.values) {
+      const valuesObj = JSON.parse(this.deliveryFormData.values);
+      data.configurationChange = {
+        values: {
+          ...valuesObj,
+          image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
+        },
+      };
+    } else {
+      data.configurationChange = {
+        values: {
+          image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
+        },
+      };
+    }
+
+    this.dataService.triggerDelivery(data).subscribe(
+      (res) => {
+        this.handleResponse(res);
+      },
+      (err) => {
+        this.isLoading = false;
+        console.log(err);
+      }
+    );
+  }
+
+  private triggerEvaluation(): void {
+    const data: TriggerEvaluationData = {
+      project: this.projectName || '',
+      stage: this.selectedStage || '',
+      service: this.selectedService || '',
+      evaluation: {},
+    };
+    if (this.evaluationFormData.labels && this.evaluationFormData.labels.trim() !== '') {
+      data.evaluation.labels = this.parseLabels(this.evaluationFormData.labels);
+    }
+
+    if (
+      this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME &&
+      this.evaluationFormData.timeframe
+    ) {
+      data.evaluation.timeframe = this.parseTimeframe(this.evaluationFormData.timeframe);
+      data.evaluation.start =
+        this.evaluationFormData.timeframeStart && this.evaluationFormData.timeframeStart !== ''
+          ? moment(this.evaluationFormData.timeframeStart).toISOString()
+          : moment().toISOString();
+    }
+
+    if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
+      data.evaluation.start =
+        this.evaluationFormData.startDatetime && this.evaluationFormData.startDatetime !== ''
+          ? moment(this.evaluationFormData.startDatetime).toISOString()
+          : moment().toISOString();
+      data.evaluation.end = moment(this.evaluationFormData.endDatetime).toISOString();
+    }
+
+    this.dataService.triggerEvaluation(data).subscribe(
+      (res) => {
+        this.handleResponse(res);
+      },
+      (err) => {
+        this.isLoading = false;
+        console.log(err);
+      }
+    );
+  }
+
+  private triggerCustomSequence(): void {
+    const data: TriggerSequenceData = {
+      project: this.projectName || '',
+      stage: this.selectedStage || '',
+      service: this.selectedService || '',
+    };
+
+    if (this.customFormData.labels && this.customFormData.labels.trim() !== '') {
+      data.labels = this.parseLabels(this.customFormData.labels);
+    }
+
+    this.dataService.triggerCustomSequence(data, this.customFormData.sequence || '').subscribe(
+      (res) => {
+        this.handleResponse(res);
+      },
+      (err) => {
+        this.isLoading = false;
+        console.log(err);
+      }
+    );
+  }
+
+  private handleResponse(response: TriggerResponse): void {
+    this.isLoading = false;
+    this.router.navigate([
+      '/project',
+      this.projectName,
+      'sequence',
+      response.keptnContext,
+      'stage',
+      this.selectedStage,
+    ]);
   }
 }
