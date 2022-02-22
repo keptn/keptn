@@ -43,19 +43,16 @@ func (p *Poller) Start(ctx *ExecutionContext) error {
 		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
 
-	eventEndpoint := p.env.HTTPPollingEndpoint()
-	apiToken := p.env.KeptnAPIToken
-
 	pollingInterval, err := strconv.ParseInt(p.env.HTTPPollingInterval, 10, 64)
 	if err != nil {
 		pollingInterval = config.DefaultPollingInterval
 	}
 
-	logger.Infof("Polling events from: %s", eventEndpoint)
+	logger.Infof("Polling events from: %s", p.env.HTTPPollingEndpoint())
 	for {
 		select {
 		case <-time.After(time.Duration(pollingInterval) * time.Second):
-			p.doPollEvents(eventEndpoint, apiToken)
+			p.doPollEvents()
 		case <-ctx.Done():
 			logger.Info("Terminating HTTP event poller")
 			ctx.Wg.Done()
@@ -68,18 +65,18 @@ func (p *Poller) UpdateSubscriptions(subscriptions []keptnmodels.EventSubscripti
 	p.currentSubscriptions = subscriptions
 }
 
-func (p *Poller) doPollEvents(endpoint, token string) {
+func (p *Poller) doPollEvents() {
 	for _, sub := range p.currentSubscriptions {
-		p.pollEventsForSubscription(sub, endpoint, token)
+		p.pollEventsForSubscription(sub)
 	}
 }
 
-func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription, endpoint, token string) {
+func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription) {
 	events, err := p.shipyardControlAPI.GetOpenTriggeredEvents(api.EventFilter{
 		EventType: subscription.Event,
 	})
 	if err != nil {
-		logger.Errorf("Could not retrieve events of type %s", subscription.Event)
+		logger.Errorf("Could not retrieve events of type %s: %s", subscription.Event, err)
 		return
 	}
 

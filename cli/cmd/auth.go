@@ -74,8 +74,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		return verifyAuthParams(authParams, smartKeptnAuth)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext))
+		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext), auth.NewLocalFileOauthStore())
 		if *authParams.exportConfig {
 			endpoint, apiToken, err := authenticator.GetCredentials()
 			if err != nil {
@@ -114,12 +113,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				return err
 			}
 		}
-
-		return authenticator.Auth(AuthenticatorOptions{
-			Endpoint: *authParams.endPoint,
-			APIToken: *authParams.apiToken,
-			OAuth:    *authParams.oauth,
-		})
+		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken})
 	},
 }
 
