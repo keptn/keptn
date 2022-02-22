@@ -23,17 +23,13 @@ async function setupOAuth(
   const logoutUri = `${site}logoutsession`;
   // Initialise session middleware
   app.use(session.sessionRouter(app));
-  const client = await setupClient(discoveryEndpoint, clientId, redirectUri, app);
+  const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
+  setEndSessionPolicy(app, client);
   setRoutes(app, client, redirectUri, logoutUri, session);
   return session;
 }
 
-async function setupClient(
-  discoveryEndpoint: string,
-  clientId: string,
-  redirectUri: string,
-  app: Express
-): Promise<BaseClient> {
+async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const ssoIssuer = await (global.issuer ?? Issuer).discover(discoveryEndpoint);
@@ -54,13 +50,6 @@ async function setupClient(
     console.log(
       `RP logout is supported by OAuth service. Using logout endpoint : ${ssoIssuer.metadata.end_session_endpoint}.`
     );
-    if (defaultContentSecurityPolicyOptions.directives) {
-      defaultContentSecurityPolicyOptions.directives['form-action'] = [
-        `'self'`,
-        `${ssoIssuer.metadata.end_session_endpoint}`,
-      ];
-      app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
-    }
   }
 
   return new ssoIssuer.Client({
@@ -71,6 +60,16 @@ async function setupClient(
     token_endpoint_auth_method: clientSecret ? 'client_secret_basic' : 'none',
     id_token_signed_response_alg: process.env.OAUTH_ID_TOKEN_ALG || 'RS256',
   });
+}
+
+function setEndSessionPolicy(app: Express, client: BaseClient): void {
+  if (client.issuer.metadata.end_session_endpoint && defaultContentSecurityPolicyOptions.directives) {
+    defaultContentSecurityPolicyOptions.directives['form-action'] = [
+      `'self'`,
+      `${client.issuer.metadata.end_session_endpoint}`,
+    ];
+    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+  }
 }
 
 function setRoutes(
