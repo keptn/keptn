@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+	"time"
 )
 
 func Test_getProxyRequestURL(t *testing.T) {
@@ -314,5 +315,46 @@ func Test_OAuthEnabled(t *testing.T) {
 
 	for _, tc := range tests {
 		assert.Equal(t, tc.want, tc.input.OAuthEnabled())
+	}
+}
+
+func TestEnvConfig_GetAPIProxyHTTPTimeout(t *testing.T) {
+	type fields struct {
+		APIProxyHTTPTimeout string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   time.Duration
+	}{
+		{
+			name:   "Get default timeout",
+			fields: fields{},
+			want:   30 * time.Second,
+		},
+		{
+			name: "Get configured timeout",
+			fields: fields{
+				APIProxyHTTPTimeout: "5",
+			},
+			want: 5 * time.Second,
+		},
+		{
+			name: "Get default timeout if invalid value",
+			fields: fields{
+				APIProxyHTTPTimeout: "invalid",
+			},
+			want: 30 * time.Second,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := &EnvConfig{
+				APIProxyHTTPTimeout: tt.fields.APIProxyHTTPTimeout,
+			}
+			if got := env.GetAPIProxyHTTPTimeout(); got != tt.want {
+				t.Errorf("GetAPIProxyHTTPTimeout() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

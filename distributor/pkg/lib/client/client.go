@@ -100,7 +100,7 @@ func (g *SimpleClientGetter) Get() (*http.Client, error) {
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: !g.envConfig.VerifySSL}, //nolint:gosec
 		},
-		Timeout: 30 * time.Second,
+		Timeout: g.envConfig.GetAPIProxyHTTPTimeout(),
 	}
 	return c, nil
 }
