@@ -113,16 +113,7 @@ spec:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.>'
-            - name: PUBSUB_RECIPIENT
-              value: '127.0.0.1'
-            - name: PUBSUB_RECIPIENT_PATH
-              value: '/v1/event'
-            - name: DISABLE_REGISTRATION
-              value: "true"
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
