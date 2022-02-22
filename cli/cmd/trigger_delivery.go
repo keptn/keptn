@@ -22,17 +22,18 @@ import (
 )
 
 type deliveryStruct struct {
-	Project   *string            `json:"project"`
-	Service   *string            `json:"service"`
-	Stage     *string            `json:"stage"`
-	Image     *string            `json:"image"`
-	Tag       *string            `json:"tag"`
-	Sequence  *string            `json:"sequence"`
-	Values    *[]string          `json:"values"`
-	Labels    *map[string]string `json:"labels"`
-	Watch     *bool
-	WatchTime *int
-	Output    *string
+	Project     *string            `json:"project"`
+	Service     *string            `json:"service"`
+	Stage       *string            `json:"stage"`
+	Image       *string            `json:"image"`
+	Tag         *string            `json:"tag"`
+	Sequence    *string            `json:"sequence"`
+	Values      *[]string          `json:"values"`
+	Labels      *map[string]string `json:"labels"`
+	GitCommitID *string            `json:"gitcommitid"`
+	Watch       *bool
+	WatchTime   *int
+	Output      *string
 }
 
 var delivery deliveryStruct
@@ -50,7 +51,7 @@ Note: The value provided in the --image flag has to contain the full qualified i
 The only exception is "docker.io", as this is the default in Kubernetes.
 For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 `,
-	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image> --tag=<tag> [--sequence=<sequence>]`,
+	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image> --tag=<tag> [--sequence=<sequence>] [--git-commit-id=<git-commit-id>]`,
 	SilenceUsage: true,
 	Args:         cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -123,10 +124,11 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 
 	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
 		EventData: keptnv2.EventData{
-			Project: *deliveryInputData.Project,
-			Stage:   *deliveryInputData.Stage,
-			Service: *deliveryInputData.Service,
-			Labels:  *deliveryInputData.Labels,
+			Project:     *deliveryInputData.Project,
+			Stage:       *deliveryInputData.Stage,
+			Service:     *deliveryInputData.Service,
+			Labels:      *deliveryInputData.Labels,
+			GitCommitID: *deliveryInputData.GitCommitID,
 		},
 		ConfigurationChange: keptnv2.ConfigurationChange{
 			//Values: map[string]interface{}{
@@ -141,6 +143,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + *deliveryInputData.Sequence))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	sdkEvent.SetExtension("gitcommitid", *deliveryInputData.GitCommitID)
 	sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
 
 	eventByte, err := sdkEvent.MarshalJSON()
@@ -210,5 +213,6 @@ func init() {
 	delivery.Output = AddOutputFormatFlag(triggerDeliveryCmd)
 	delivery.Watch = AddWatchFlag(triggerDeliveryCmd)
 	delivery.WatchTime = AddWatchTimeFlag(triggerDeliveryCmd)
+	delivery.GitCommitID = triggerDeliveryCmd.Flags().StringP("git-commit-id", "", "", "The used commit ID context")
 
 }
