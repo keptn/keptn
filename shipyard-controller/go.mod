@@ -12,6 +12,8 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/keptn/go-utils v0.13.1-0.20220221112829-908349438082
 	github.com/mitchellh/copystructure v1.2.0
+	github.com/nats-io/nats-server/v2 v2.7.2 // indirect
+	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.9
@@ -19,7 +21,6 @@ require (
 	go.mongodb.org/mongo-driver v1.8.3
 	go.uber.org/zap v1.13.0 // indirect
 	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
-	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.22.6
 	k8s.io/apimachinery v0.22.6

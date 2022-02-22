@@ -229,3 +229,39 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 	// assert that only one of the two subscriber has processed/received a message
 	assert.Equal(t, 1, totalNumberOfDeliveries)
 }
+
+func TestIsEqual(t *testing.T) {
+	type args struct {
+		a1 []string
+		a2 []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "same order",
+			args: args{
+				a1: []string{"a", "b"},
+				a2: []string{"a", "b"},
+			},
+			want: true,
+		},
+		{
+			name: "different order",
+			args: args{
+				a1: []string{"a", "b"},
+				a2: []string{"b", "a"},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsEqual(tt.args.a1, tt.args.a2); got != tt.want {
+				t.Errorf("IsEqual() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

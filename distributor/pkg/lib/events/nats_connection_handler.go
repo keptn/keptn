@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
+	"reflect"
 	"sort"
 	"sync"
 )
@@ -97,16 +98,7 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 }
 
 func IsEqual(a1 []string, a2 []string) bool {
-	sort.Strings(a1)
 	sort.Strings(a2)
-	if len(a1) == len(a2) {
-		for i, v := range a1 {
-			if v != a2[i] {
-				return false
-			}
-		}
-	} else {
-		return false
-	}
-	return true
+	sort.Strings(a1)
+	return reflect.DeepEqual(a1, a2)
 }

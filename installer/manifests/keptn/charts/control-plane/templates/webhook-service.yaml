@@ -87,8 +87,6 @@ spec:
             - containerPort: 8080
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
               value: ''
             - name: PUBSUB_RECIPIENT

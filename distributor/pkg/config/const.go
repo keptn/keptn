@@ -29,4 +29,5 @@ const (
 	DefaultShipyardControllerBaseURL = "http://shipyard-controller:8080"
 	DefaultEventsEndpoint            = DefaultShipyardControllerBaseURL + "/v1/event/triggered"
 	DefaultPollingInterval           = 10
+	DefaultAPIProxyHTTPTimeout       = 30
 )

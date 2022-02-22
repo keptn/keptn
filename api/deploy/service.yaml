@@ -78,7 +78,7 @@ spec:
               protocol: TCP
           env:
             - name: PUBSUB_URL
-              value: nats://keptn-nats-cluster
+              value: nats://keptn-nats
             - name: VERSION
               valueFrom:
                 fieldRef:

@@ -139,7 +139,7 @@ func Test_QualityGates(t *testing.T) {
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 
 	require.NotNil(t, evaluationFinishedEvent)
 	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
