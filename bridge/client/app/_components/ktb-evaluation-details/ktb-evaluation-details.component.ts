@@ -785,16 +785,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   highlightHeatmap(): void {
     if (this._selectedEvaluationData && !this.isInvalidated) {
-      this.comparedIndicatorResults = [];
-      const secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation?.comparedEvents?.map(
-        (eventId) => {
-          const eventIndex = this._heatmapSeries[0]?.data.findIndex((e) => e.evaluation?.id === eventId);
-          this.comparedIndicatorResults.push(
-            this._heatmapSeries[0]?.data[eventIndex].evaluation?.data.evaluation?.indicatorResults ?? []
-          );
-          return eventIndex;
-        }
-      );
       const plotBands: NavigatorXAxisPlotBandsOptions[] = [];
       const highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(
         this._selectedEvaluationData.getHeatmapLabel()
@@ -807,9 +797,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           zIndex: 100,
         });
       }
-      if (secondaryHighlightIndexes) {
-        this.setSecondaryHighlight(secondaryHighlightIndexes, plotBands);
-      }
+      this.setSecondaryHighlight(this._selectedEvaluationData?.data.evaluation?.comparedEvents, plotBands);
       this._heatmapOptions.xAxis[0].plotBands = plotBands;
       if (
         this._selectedEvaluationData.data.evaluation?.number_of_missing_comparison_results &&
@@ -830,30 +818,41 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private setSecondaryHighlight(
-    secondaryHighlightIndices: number[],
+    comparedEvents: string[] | undefined,
     plotBands: NavigatorXAxisPlotBandsOptions[]
   ): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
-    for (const secondaryHighlightIndex of secondaryHighlightIndices) {
-      plotBands.push({
-        className: 'highlight-secondary',
-        from: secondaryHighlightIndex - 0.5,
-        to: secondaryHighlightIndex + 0.5,
-        zIndex: 100,
-        events: {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          click(): void {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const idx = this.options.from + 0.5;
-            const evaluation = _this._heatmapSeries[0]?.data[idx]?.evaluation;
-            setTimeout(() => {
-              _this.selectEvaluationData(evaluation);
-            });
-          },
-        },
+    this.comparedIndicatorResults = [];
+    const secondaryHighlightIndices = comparedEvents
+      ?.map((eventId: string) => this._heatmapSeries[0]?.data.findIndex((e) => e.evaluation?.id === eventId))
+      .filter((eventIndex: number) => eventIndex >= 0);
+    if (secondaryHighlightIndices) {
+      secondaryHighlightIndices.forEach((eventIndex: number) => {
+        this.comparedIndicatorResults.push(
+          this._heatmapSeries[0]?.data[eventIndex].evaluation?.data.evaluation?.indicatorResults ?? []
+        );
       });
+      for (const secondaryHighlightIndex of secondaryHighlightIndices) {
+        plotBands.push({
+          className: 'highlight-secondary',
+          from: secondaryHighlightIndex - 0.5,
+          to: secondaryHighlightIndex + 0.5,
+          zIndex: 100,
+          events: {
+            // eslint-disable-next-line @typescript-eslint/no-loop-func
+            click(): void {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              const idx = this.options.from + 0.5;
+              const evaluation = _this._heatmapSeries[0]?.data[idx]?.evaluation;
+              setTimeout(() => {
+                _this.selectEvaluationData(evaluation);
+              });
+            },
+          },
+        });
+      }
     }
   }
 
