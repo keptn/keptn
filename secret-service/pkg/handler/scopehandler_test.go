@@ -14,7 +14,7 @@ import (
 
 func TestHandler_GetScopes(t *testing.T) {
 	type fields struct {
-		Backend backend.ScopeBackend
+		Backend backend.ScopeManager
 	}
 
 	tests := []struct {
