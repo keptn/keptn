@@ -5,7 +5,7 @@
   (click)="focusClick($event, hourInput)"
   (focus)="hourInput.focus()"
 >
-  <form [formGroup]="timeForm">
+  <form [formGroup]="timeForm" uitestid="keptn-time-input">
     <input
       #hourInput
       dtInput
@@ -15,6 +15,7 @@
       (focusout)="isFocused = false"
       formControlName="hours"
       (input)="validateInput('hours', 0, 24)"
+      uitestid="keptn-time-input-hours"
     />:<input
       dtInput
       placeholder="mm"
@@ -22,6 +23,7 @@
       (focusout)="isFocused = false"
       formControlName="minutes"
       (input)="validateInput('minutes', 0, 60)"
+      uitestid="keptn-time-input-minutes"
     /><ng-container *ngIf="secondsEnabled"
       >:<input
         dtInput
@@ -29,7 +31,8 @@
         (focusin)="isFocused = true"
         (focusout)="isFocused = false"
         formControlName="seconds"
-        (input)="validateInput('seconds', 0, 60)" /></ng-container
+        (input)="validateInput('seconds', 0, 60)"
+        uitestid="keptn-time-input-seconds" /></ng-container
     ><ng-container *ngIf="millisEnabled"
       >:<input
         dtInput
@@ -37,7 +40,8 @@
         (focusin)="isFocused = true"
         (focusout)="isFocused = false"
         formControlName="millis"
-        (input)="validateInput('millis', 0, 1000)" /></ng-container
+        (input)="validateInput('millis', 0, 1000)"
+        uitestid="keptn-time-input-millis" /></ng-container
     ><ng-container *ngIf="microsEnabled"
       >:<input
         dtInput
@@ -46,6 +50,7 @@
         (focusout)="isFocused = false"
         formControlName="micros"
         (input)="validateInput('micros', 0, 1000)"
+        uitestid="keptn-time-input-micros"
     /></ng-container>
   </form>
 </div>

@@ -1,5 +1,7 @@
 <dt-calendar [maxDate]="maxDate" (selectedChange)="changeDate($event)"></dt-calendar>
-<div class="mt-3 mb-3">
+<div class="mt-3 mb-3" uitestid="keptn-datetime-picker-time">
   <ktb-time-input [millisEnabled]="false" [microsEnabled]="false" (timeChanged)="changeTime($event)"></ktb-time-input>
 </div>
-<button dt-button class="mt-3" [disabled]="disabled" (click)="setDateTime()">Select date and time</button>
+<button uitestid="keptn-datetime-picker-submit" dt-button class="mt-3" [disabled]="disabled" (click)="setDateTime()">
+  Select date and time
+</button>
