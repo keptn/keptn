@@ -2,6 +2,8 @@ import { Express, NextFunction, Request, Response } from 'express';
 import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 import { SessionService } from './session';
 import { getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
+import { defaultContentSecurityPolicyOptions } from '../app';
+import helmet from 'helmet';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
@@ -21,12 +23,17 @@ async function setupOAuth(
   const logoutUri = `${site}logoutsession`;
   // Initialise session middleware
   app.use(session.sessionRouter(app));
-  const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
+  const client = await setupClient(discoveryEndpoint, clientId, redirectUri, app);
   setRoutes(app, client, redirectUri, logoutUri, session);
   return session;
 }
 
-async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
+async function setupClient(
+  discoveryEndpoint: string,
+  clientId: string,
+  redirectUri: string,
+  app: Express
+): Promise<BaseClient> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const ssoIssuer = await (global.issuer ?? Issuer).discover(discoveryEndpoint);
@@ -47,6 +54,13 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
     console.log(
       `RP logout is supported by OAuth service. Using logout endpoint : ${ssoIssuer.metadata.end_session_endpoint}.`
     );
+    if (defaultContentSecurityPolicyOptions.directives) {
+      defaultContentSecurityPolicyOptions.directives['form-action'] = [
+        `'self'`,
+        `${ssoIssuer.metadata.end_session_endpoint}`,
+      ];
+      app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+    }
   }
 
   return new ssoIssuer.Client({
