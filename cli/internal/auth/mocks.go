@@ -49,6 +49,7 @@ type TokenStoreMock struct {
 	storedToken           *oauth2.Token
 	storedTokenDiscovery  *OauthDiscoveryResult
 	storedClientValues    *OauthClientValues
+	created               bool
 	storeOauthInfoFn      func(*OauthInfo) error
 	getOauthInfoFn        func() (*OauthInfo, error)
 	getTokenFn            func() (*oauth2.Token, error)
@@ -108,6 +109,12 @@ func (t *TokenStoreMock) Wipe() error {
 		return t.deleteTokenFn()
 	}
 	return nil
+}
+
+func (t *TokenStoreMock) Created() bool {
+	t.Lock()
+	defer t.Unlock()
+	return t.created
 }
 
 func (t *TokenStoreMock) GetDiscoveryInfo() (*OauthDiscoveryResult, error) {
