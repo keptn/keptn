@@ -15,6 +15,9 @@ type CreateEvaluationParams struct {
 
 	// timeframe
 	Timeframe string `json:"timeframe" example:"5m"`
+
+	// Evaluation commit ID context
+	GitCommitID string `json:"gitcommitid" example:"asdf123f"`
 }
 
 // CreateEvaluationResponse contains the result of a CreateEvaluation operation
