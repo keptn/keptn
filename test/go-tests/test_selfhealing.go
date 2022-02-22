@@ -202,6 +202,8 @@ func Test_SelfHealing(t *testing.T) {
 		return err == nil
 	}, time.Second*20, time.Second*3)
 
+	require.NotEmpty(t, uniformServiceIntegration.Subscriptions)
+
 	t.Log("remediation.yaml and unleash-service are ready. let's trigger another remediation")
 	remediationFinishedEvent = performRemediation(t, projectName, serviceName)
 
