@@ -143,6 +143,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + *deliveryInputData.Sequence))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	sdkEvent.SetExtension("gitcommitid", *deliveryInputData.GitCommitID)
 	sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
 
 	eventByte, err := sdkEvent.MarshalJSON()
