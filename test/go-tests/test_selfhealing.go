@@ -66,6 +66,10 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+            - name: DISTRIBUTOR_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/version']
             - name: K8S_DEPLOYMENT_NAME
               valueFrom:
                 fieldRef:
@@ -203,6 +207,10 @@ func Test_SelfHealing(t *testing.T) {
 	}, time.Second*20, time.Second*3)
 
 	require.NotEmpty(t, uniformServiceIntegration.Subscriptions)
+
+	// it seems like the unleash service is not immediately ready after the distributor has registered itself
+	// to be safe let's wait a couple of seconds here. This can be removed as soon as we have decoupled our tests from the unleash-service
+	<-time.After(15 * time.Second)
 
 	t.Log("remediation.yaml and unleash-service are ready. let's trigger another remediation")
 	remediationFinishedEvent = performRemediation(t, projectName, serviceName)
