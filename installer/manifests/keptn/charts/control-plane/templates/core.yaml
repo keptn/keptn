@@ -127,12 +127,7 @@ spec:
         app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      securityContext:
-        fsGroup: 65532
-        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
-        seccompProfile:
-          type: RuntimeDefault
-        {{- end }}
+      {{- include "control-plane.bridge.pod-security-context" . | nindent 6 }}
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
@@ -231,12 +226,7 @@ spec:
               readOnly: true
             - name: bridge-oauth-mongodb-credentials
               mountPath: /config/oauth_mongodb
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 65532
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            privileged: false
+        {{- include "control-plane.bridge.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-default
       volumes:
         - emptyDir: {}
