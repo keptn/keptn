@@ -61,9 +61,7 @@ spec:
             - name: ENVIRONMENT
               value: 'production'
             - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: 'keptn'
         - name: distributor
           image: docker.io/keptn/distributor:0.13.0-dev
           ports:
