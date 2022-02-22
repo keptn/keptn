@@ -107,13 +107,13 @@ func createResourceWithCommit(t *testing.T, projectName, stage, serviceName, con
 }
 
 func Test_DeliveryGitCommitID(t *testing.T) {
-	//repoLocalDir := "../assets/podtato-head"
-	projectName := "commit-id-delivery3"
+	projectName := "commit-id-delivery6"
 	serviceName := "helloservice"
+	stageName := "dev"
 	commitID := ""
 	uri := "helm/helloservice.tgz"
+	//newContent := "/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4Bn/An9dADQZSe6OGhIDB9qF4IygZ+qL2Y/tbUkfy7ELAbc+GgCDeMGc4lucq0L6259TFNKlQbo5gkrbuoF2M40Ju7dl5hYdSZ+DQ4q1cs82f5YnJd2U26sLAa38OqBNm6+2Z7Gc+BUb03UkWqexMUxFzpcl2/fM4s1a+3Fo5609/ZDrg8vOD2OTUi0/4VHiGbiUgEvaAgpXGxoTmrD06LHtEnuL/EMjrAWN28xvHQXz5+Ztyp0h/tJNrp6Fk1qwHiXehrivpEVx1M+jzsgVPn0m0VLw37I0rRs87KCq/9g2ZycpPUjNwQl1H81uxu1cWqG1HWBoScv3IZf+tFfM7CscviDEFVO2MaZt7yNi3QOP0hDNv+BtVuSPgOrRWbeM21n6X/DTWXWgWq75LnGVOXDsdpzStat294+NCVTEx/reoyEDSBUW5PbECDDOgOyfovobDPEBbmDnka/ggWazn/P6Pe7UKbG1NaNJsrV5vJA1wqWmaU9oid57PmCGWDAcJp/AFIAihM6Lxa8TUh9dR91QfRMS1AsCIW3jyaefJdEoW13zNMJ1JSoqHJVHJPQgS7tDOVmf9lvr8KSJ61DVo6Wfo4Tz/yMiVcdxo1xLYc+24iS/w3RQa3Of1dUxm+S3IN+fRu15k+39vC2PEWBernL0sXxuZwJsULyU5jSKhLvQPgjoZuQyJ2NzLoO5CB9ahKUct7pH+X17L96e7Ul6KDdyQGOcFM1ZfJ1lKEndv5Fm/zhPN+t+m0PCdVvR4f70kAcqEHQNnpYh0sC+bJbJP1FSLVEWscMIux/5xHk2+Y/i6YAYcKSMqVY+Iw/nHkrRux9mpa31uLySSu1Xx6iCUx2udPOdAAAAQ/wZhn0S0ksAAZsFgDQAAFpGL7KxxGf7AgAAAAAEWVo="
 	content := "H4sIAAAAAAAAA+2YzY7aMBDHOecp5gUIMQHSza3alVqpPSBttXeTTIlbJ45shwqt9t3rQMgmfIgeomVXnR8HlBl/jLHnPw7+JEMplUG9QT25z7i2/pbncjQggWOxmNXfLJoH3e8dLJyO2Mx9WBRGARsFbBYt2AiCIYO4RGUs1wAjlVYr/utyu2v+DwovxRNqI1QRw4Z5KZpEi9Lunj/DV5Q5JPWhgJ9Kw7dqhbpAi8YreI4xtGdHJOhtDuMEPvMD79YrI/4Fv5f/FvNScre/kyHnqHM8iuYX899xlP/zIFyMYD5kEJf4z/P/0v6nWEq1zbEYoBxc0X8WzsL+/k8DFoSk/29BV/95WZqJKwK/RZHG8NCeAC9Hy1NueewBnBF+U2JSu7TrIRJuYnh+Bv+JywqN3xjvVVVYeHlxzQxKTKzSdReAnNsk+85XKM3eAHUcRzMAHE5m06kTUI3s9T8/gpu4ibMmUYXlonBLP1jGzdL2qdAOJXK+xt6KdpbdSjotlpWUS+VWunV1U/7hW9P6S6VtJ7bx69xL54nhzuVA65VigwUas9Rqha+dADJryy9ouyY3NLdZDJO+7XRQF2MhrODyASXfPqILIHW7FHYalKiFSs+6rMhRVbb1zVufRp6Kdx/trVPsXXNJ/5u8GeRd4Nr9PwyP638Uzhek/2/B0f1/L/2PjWhe0f2+7p5q7kFvOwI4bhL+0yHdm2GdXDQGtxtrtCfKWGplVaJkDD/ulydF5HTuW/+uH4V+/m/2FW7gPwCuvv+f3v+nbEr5/xY015t1lmhfqEmpUsutGmeush8e9mcj3tSv9VOve5+Lgd06foIgCIIgCIIgCIIgCIIgCOI8fwFteWwzACgAAA=="
-	//serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(commitIDDeliveryShipyard)
@@ -125,16 +125,21 @@ func Test_DeliveryGitCommitID(t *testing.T) {
 	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, projectName)
 	require.Nil(t, err)
 
-	commitID = createResourceWithCommit(t, projectName, "dev", serviceName, content, uri)
+	//first part
+
+	t.Logf("Adding resource for service %s in project %s", serviceName, projectName)
+	commitID = createResourceWithCommit(t, projectName, stageName, serviceName, content, uri)
+	t.Logf("commitID is %s", commitID)
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("./../../cli/cli trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s --git-commit-id=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery", commitID)
 	require.Nil(t, err)
 
+	// wait for the evaluation.triggered event to be available and check it
 	var getDeliveryTriggeredEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", "", " event is available")
-		event, err := GetLatestEventOfType("", projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		t.Log("checking if evaluation.triggered event is available")
+		event, err := GetLatestEventOfType("", projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
 		}
@@ -142,16 +147,17 @@ func Test_DeliveryGitCommitID(t *testing.T) {
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
-	t.Log("got triggered event, checking commitid")
+	t.Log("got triggered event, checking commitID")
 	keptnContext := getDeliveryTriggeredEvent.Shkeptncontext
 
 	require.Equal(t, commitID, getDeliveryTriggeredEvent.GitCommitID)
+	t.Log("commitID is present and correct")
 
-	// wait for the evaluation.finished event to be available and evaluate it
+	// wait for the evaluation.finished event to be available and check it
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		t.Log("checking if evaluation.finished event is available")
-		event, err := GetLatestEventOfType(keptnContext, projectName, "dev", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		event, err := GetLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
 		}
@@ -161,19 +167,22 @@ func Test_DeliveryGitCommitID(t *testing.T) {
 
 	t.Log("got finished event, checking commitid")
 	require.Equal(t, commitID, evaluationFinishedEvent.GitCommitID)
+	t.Log("commitID is present and correct")
 
-	//druha cast
+	// second part
 
-	commitID1 := createResourceWithCommit(t, projectName, "dev", serviceName, content, uri)
+	t.Logf("Updating invalid resource for service %s in project %s", serviceName, projectName)
+	commitID1 := createResourceWithCommit(t, projectName, stageName, serviceName, content, uri)
 	t.Logf("new commitID is %s", commitID1)
 
-	t.Logf("Trigger delivery of helloservice:v0.1.0")
+	t.Logf("Trigger another delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("./../../cli/cli trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s --git-commit-id=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery", commitID)
 	require.Nil(t, err)
 
+	// wait for the evaluation.triggered event to be available and check it
 	require.Eventually(t, func() bool {
-		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", "", " event is available")
-		event, err := GetLatestEventOfType("", projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		t.Log("checking if evaluation.triggered event is available")
+		event, err := GetLatestEventOfType("", projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
 		}
@@ -185,11 +194,12 @@ func Test_DeliveryGitCommitID(t *testing.T) {
 	keptnContext = getDeliveryTriggeredEvent.Shkeptncontext
 
 	require.Equal(t, commitID, getDeliveryTriggeredEvent.GitCommitID)
+	t.Log("commitID is present and correct")
 
-	// wait for the evaluation.finished event to be available and evaluate it
+	// wait for the evaluation.finished event to be available and check it
 	require.Eventually(t, func() bool {
 		t.Log("checking if evaluation.finished event is available")
-		event, err := GetLatestEventOfType(keptnContext, projectName, "dev", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		event, err := GetLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
 		}
@@ -199,11 +209,11 @@ func Test_DeliveryGitCommitID(t *testing.T) {
 
 	t.Log("got finished event, checking commitid")
 	require.Equal(t, commitID, evaluationFinishedEvent.GitCommitID)
+	t.Log("commitID is present and correct")
 
 }
 
 func Test_EvaluationGitCommitID(t *testing.T) {
-
 	projectName := "commit-id-evaluation"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(commitIDShipyard)
@@ -246,6 +256,7 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID)
+	t.Log("commitID is present and correct")
 
 	//second part
 
@@ -261,6 +272,7 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID)
+	t.Log("commitID is present and correct")
 }
 
 func performResourceServiceEvaluationTest(t *testing.T, projectName string, serviceName string, commitID string) (string, *models.KeptnContextExtendedCE) {
@@ -281,9 +293,10 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 		getSLITriggeredEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
-	t.Log("got SLI triggered event, checking commitid")
 
+	t.Log("got SLI triggered event, checking commitid")
 	require.Equal(t, commitID, getSLITriggeredEvent.GitCommitID)
+	t.Log("commitID is present and correct")
 
 	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
 	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
