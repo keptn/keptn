@@ -184,7 +184,7 @@ func Test_SelfHealing(t *testing.T) {
 	require.Nil(t, err)
 	unleashServiceManifestContent := strings.ReplaceAll(unleashServiceK8sManifest, "${distributor-image}", distributorImage)
 
-	tmpFile, err := CreateTmpFile("echo-service-*.yaml", unleashServiceManifestContent)
+	tmpFile, err := CreateTmpFile("unleash-service-*.yaml", unleashServiceManifestContent)
 	defer func() {
 		if err := os.Remove(tmpFile); err != nil {
 			t.Logf("Could not delete file: %v", err)
