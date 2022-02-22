@@ -26,6 +26,7 @@ import { IServiceRemediationInformation } from '../_interfaces/service-remediati
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 import { IScopesResult } from '../_interfaces/scopes-result';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',
@@ -218,7 +219,7 @@ export class ApiService {
     return this.http.get<{ Secrets: Secret[] }>(url);
   }
 
-  public getSecretsForScope(scope: string): Observable<Secret[]> {
+  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
     const url = `${this._baseUrl}/secrets/scope/${scope}`;
     return this.http.get<Secret[]>(url);
   }

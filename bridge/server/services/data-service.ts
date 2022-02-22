@@ -33,7 +33,7 @@ import { IServiceEvent } from '../../shared/interfaces/service';
 import { Remediation } from '../models/remediation';
 import { IStage } from '../../shared/interfaces/stage';
 import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
-import { SecretScope } from '../../shared/interfaces/secret-scope';
+import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -869,7 +869,7 @@ export class DataService {
     accessToken: string | undefined,
     webhookConfig: WebhookConfig
   ): Promise<WebhookSecret[]> {
-    const webhookScopeSecrets = await this.getSecretsForScope(accessToken, SecretScope.WEBHOOK);
+    const webhookScopeSecrets = await this.getSecretsForScope(accessToken, SecretScopeDefault.WEBHOOK);
     const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
 
     const secrets: WebhookSecret[] = [];
@@ -1021,7 +1021,7 @@ export class DataService {
     await this.apiService.deleteUniformSubscription(accessToken, integrationId, subscriptionId);
   }
 
-  public async getSecretsForScope(accessToken: string | undefined, scope: string): Promise<Secret[]> {
+  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<Secret[]> {
     const response = await this.apiService.getSecrets(accessToken);
     const secrets = response.data.Secrets.map((secret) => Secret.fromJSON(secret));
     return secrets.filter((secret) => secret.scope === scope);

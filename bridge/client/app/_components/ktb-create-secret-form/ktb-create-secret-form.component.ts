@@ -5,8 +5,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Secret } from '../../_models/secret';
 import { NotificationType } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { switchMap, takeUntil, takeWhile, tap } from 'rxjs/operators';
+import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -65,24 +64,16 @@ export class KtbCreateSecretFormComponent implements OnDestroy {
   }
 
   private getSecretScopes(): void {
-    AppUtils.createTimer(0, this.initialDelayMillis) // interval if it fails to fetch scopes
-      .pipe(
-        takeWhile(() => !this.scopes),
-        tap(() => {
-          this.isLoading = true;
-        }),
-        switchMap(() => this.dataService.getSecretScopes()),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe(
-        (scopes) => {
-          this.scopes = scopes;
-          this.isLoading = false;
-        },
-        () => {
-          this.isLoading = false;
-        }
-      );
+    this.isLoading = true;
+    this.dataService.getSecretScopes().subscribe(
+      (scopes) => {
+        this.scopes = scopes;
+        this.isLoading = false;
+      },
+      () => {
+        this.isLoading = false;
+      }
+    );
   }
 
   public createSecret(): void {

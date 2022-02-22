@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbCreateSecretFormComponent } from './ktb-create-secret-form.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
@@ -6,7 +6,7 @@ import { DataService } from '../../_services/data.service';
 import { Secret } from '../../_models/secret';
 import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { SecretScope } from '../../../../shared/interfaces/secret-scope';
+import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 describe('KtbCreateSecretFormComponent with valid scopes', () => {
@@ -29,13 +29,12 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
     router = TestBed.inject(Router);
     httpMock = TestBed.inject(HttpTestingController);
     httpMock.expectOne('./api/secrets/v1/scope').flush({
-      scopes: [SecretScope.WEBHOOK, SecretScope.DEFAULT, 'dynatrace-service'],
+      scopes: [SecretScopeDefault.WEBHOOK, SecretScopeDefault.DEFAULT, SecretScopeDefault.DYNATRACE],
     });
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    component.ngOnDestroy();
   });
 
   it('should create secret with keptn-default scope', () => {
@@ -51,7 +50,6 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
 
     // then
     expect(spy).toHaveBeenCalledWith(secret);
-    component.ngOnDestroy();
   });
 
   it('should create secret with selected scope', () => {
@@ -81,7 +79,6 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
     expect(spy).toHaveBeenCalledWith(secret);
     expect(routerSpy).toHaveBeenCalled();
     expect(component.isLoading).toBe(false);
-    component.ngOnDestroy();
   });
 
   it('should handle failed creating secret', () => {
@@ -111,7 +108,6 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
     expect(spy).toHaveBeenCalledWith(secret);
     expect(routerSpy).not.toHaveBeenCalled();
     expect(component.isLoading).toBe(false);
-    component.ngOnDestroy();
   });
 
   it('should add key/value pair', () => {
@@ -120,7 +116,6 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
 
     // then
     expect(component.dataControl.controls.length).toBe(2);
-    component.ngOnDestroy();
   });
 
   it('should remove key/value pair', () => {
@@ -130,7 +125,6 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
 
     // then
     expect(component.dataControl.controls.length).toBe(1);
-    component.ngOnDestroy();
   });
 });
 describe('KtbCreateSecretFormComponent scopes', () => {
@@ -143,50 +137,36 @@ describe('KtbCreateSecretFormComponent scopes', () => {
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
+    fixture = TestBed.createComponent(KtbCreateSecretFormComponent);
+    component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  it('should have scopes set to undefined and running retry interval', fakeAsync(() => {
-    createComponent(); // has to be inside fakeAsync because the interval is created in the constructor
-    const loadingSpy = jest.spyOn(component, 'isLoading', 'set');
-    tick();
+  it('should have scopes set to undefined', () => {
+    expect(component.isLoading).toBe(true);
     httpMock.expectOne('./api/secrets/v1/scope').error(new ErrorEvent('error'));
     expect(component.isLoading).toBe(false);
-    expect(loadingSpy).toHaveBeenCalledWith(true);
-    expect(loadingSpy).toHaveBeenCalledWith(false);
     expect(component.scopes).toBe(undefined);
-    component.ngOnDestroy();
-  }));
+  });
 
-  it('should have invalid form, if scopes are loading', fakeAsync(() => {
-    createComponent();
-    tick();
+  it('should have invalid form, if scopes are loading', () => {
     expect(component.isLoading).toBe(true);
     insertDefaultSecret(component);
     expect(component.isFormValid()).toBe(false);
-    component.ngOnDestroy();
-  }));
+  });
 
-  it('should have scopes set to array', fakeAsync(() => {
-    createComponent();
-    const scopes = [SecretScope.WEBHOOK];
-    tick();
+  it('should have scopes set to array', () => {
+    const scopes = [SecretScopeDefault.WEBHOOK];
     httpMock.expectOne('./api/secrets/v1/scope').flush({ scopes }, { status: 200, statusText: 'OK' });
     fixture.detectChanges();
     expect(component.scopes).toEqual(scopes);
-    component.ngOnDestroy();
-  }));
-
-  function createComponent(): void {
-    fixture = TestBed.createComponent(KtbCreateSecretFormComponent);
-    component = fixture.componentInstance;
-  }
+  });
 });
 
 function insertDefaultSecret(component: KtbCreateSecretFormComponent): Secret {
   const secret: Secret = new Secret();
   secret.name = 'test';
-  secret.scope = SecretScope.DEFAULT;
+  secret.scope = SecretScopeDefault.DEFAULT;
   secret.data?.push({ key: 'testKey', value: 'testValue' });
 
   // when

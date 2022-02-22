@@ -7,7 +7,7 @@ export interface SecretKeyValuePair {
 
 export interface Secret {
   name: string;
-  scope: SecretScope | string;
+  scope: SecretScope;
   data?: SecretKeyValuePair[];
   keys?: string[];
 }

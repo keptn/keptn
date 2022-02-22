@@ -29,6 +29,7 @@ import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',
@@ -191,7 +192,7 @@ export class DataService {
     );
   }
 
-  public getSecretsForScope(scope: string): Observable<Secret[]> {
+  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
     return this.apiService.getSecretsForScope(scope);
   }
 
