@@ -95,7 +95,7 @@ export class KtbSliBreakdownComponent implements OnInit {
       this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
     }
     return indicatorResults.map((indicatorResult) => {
-      const comparedValue = this.calculateComparedValue(indicatorResult);
+      const comparedValue = indicatorResult.value.comparedValue ?? this.calculateComparedValue(indicatorResult);
       const compared: Partial<SliResult> = {};
       if (!isNaN(comparedValue)) {
         compared.comparedValue = AppUtils.formatNumber(comparedValue);
@@ -122,21 +122,17 @@ export class KtbSliBreakdownComponent implements OnInit {
     });
   }
 
-  private calculateComparedValue(indicatorResult: IndicatorResult): number {
-    if (indicatorResult.value.comparedValue === undefined) {
-      let accSum = 0;
-      let accCount = 0;
-      for (const comparedIndicatorResult of this.comparedIndicatorResults) {
-        const result = comparedIndicatorResult.find((res) => res.value.metric === indicatorResult.value.metric);
-        if (result) {
-          accSum += result.value.value;
-          accCount++;
-        }
+  public calculateComparedValue(indicatorResult: IndicatorResult): number {
+    let accSum = 0;
+    let accCount = 0;
+    for (const comparedIndicatorResult of this.comparedIndicatorResults) {
+      const result = comparedIndicatorResult.find((res) => res.value.metric === indicatorResult.value.metric);
+      if (result) {
+        accSum += result.value.value;
+        accCount++;
       }
-      return accSum / accCount;
-    } else {
-      return indicatorResult.value.comparedValue;
     }
+    return accSum / accCount;
   }
 
   private sortIndicatorResult(resultA: IndicatorResult, resultB: IndicatorResult): number {
