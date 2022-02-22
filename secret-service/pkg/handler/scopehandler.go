@@ -12,10 +12,10 @@ type IScopeHandler interface {
 }
 
 type ScopeHandler struct {
-	ScopeBackend backend.ScopeBackend
+	ScopeBackend backend.ScopeManager
 }
 
-func NewScopeHandler(backend backend.ScopeBackend) *ScopeHandler {
+func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 	return &ScopeHandler{
 		ScopeBackend: backend,
 	}
