@@ -123,7 +123,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   }
 
   private calculateComparedValue(indicatorResult: IndicatorResult): number {
-    if (indicatorResult.value.comparedValue == undefined) {
+    if (indicatorResult.value.comparedValue === undefined) {
       let accSum = 0;
       let accCount = 0;
       for (const comparedIndicatorResult of this.comparedIndicatorResults) {
