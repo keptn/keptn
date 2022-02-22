@@ -5,17 +5,8 @@ import { AppModule } from '../../app.module';
 import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
-
-enum Column {
-  DETAILS = 0,
-  NAME = 1,
-  VALUE = 2,
-  WEIGHT = 3,
-  PASS_CRITERIA = 4,
-  WARNING_CRITERIA = 5,
-  RESULT = 6,
-  SCORE = 7,
-}
+import { SloConfig } from '../../../../shared/interfaces/slo-config';
+import Yaml from 'yaml';
 
 describe('KtbSliBreakdownComponent', () => {
   let component: KtbSliBreakdownComponent;
@@ -31,269 +22,92 @@ describe('KtbSliBreakdownComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should have expandable row', () => {
+  it('should assemble table with all details', () => {
     // given
-    initEvaluation(1, 0);
+    initEvaluation(11);
 
     // then
-    fixture.detectChanges();
-    const rows = fixture.nativeElement.querySelectorAll('dt-row');
-    const rowBefore = rows[0].textContent;
-    const cells = rows[0].querySelectorAll('dt-cell');
-    const firstCell = cells[Column.NAME];
-
-    expect(rows.length).toBe(1);
-    expect(fixture.nativeElement.querySelector('dt-table')).toBeTruthy();
-    expect(cells[0].querySelector('button')).toBeTruthy();
-    expect(firstCell.textContent).not.toContain('Compared with:');
-    expect(firstCell.textContent).toContain('response_time_p95');
-
-    rows[0].click();
-    fixture.detectChanges();
-    expect(firstCell.textContent).toContain('Compared with:');
-
-    rows[0].click();
-    fixture.detectChanges();
-    expect(firstCell.textContent).not.toContain('Compared with:');
-    expect(rowBefore).toBe(rows[0].textContent);
+    expect(component.tableEntries.data.length).toBe(1);
+    expect(component.tableEntries.data[0]).toEqual({
+      name: 'response_time_p95',
+      value: 315.8,
+      result: 'pass',
+      score: 100,
+      passTargets: [
+        {
+          criteria: '<=+10%',
+          targetValue: 392.5944454106811,
+          violated: false,
+        },
+        {
+          criteria: '<600',
+          targetValue: 600,
+          violated: false,
+        },
+      ],
+      warningTargets: [
+        {
+          criteria: '<=800',
+          targetValue: 800,
+          violated: false,
+        },
+      ],
+      keySli: false,
+      success: true,
+      expanded: false,
+      weight: 1,
+      comparedValue: 356.9,
+      calculatedChanges: {
+        absolute: -41.04,
+        relative: -11.5,
+      },
+    });
   });
 
-  it('should not have expandable row', () => {
+  it('should provide compare value from payload', () => {
     // given
-    initEvaluation(1);
+    const spy = jest.spyOn(component, 'calculateComparedValue');
+    initEvaluation(11);
 
     // then
-    fixture.detectChanges();
-    const rows = fixture.nativeElement.querySelectorAll('dt-row');
-    const rowBefore = rows[0].textContent;
-    const cells = rows[0].querySelectorAll('dt-cell');
-
-    expect(cells[Column.DETAILS].querySelector('button')).toBeFalsy();
-
-    rows[0].click();
-    fixture.detectChanges();
-    expect(rowBefore).toBe(rows[0].textContent);
+    expect(spy).not.toHaveBeenCalled();
+    expect(component.tableEntries.data[0].comparedValue).toBe(356.9);
   });
 
-  it('should have success values', () => {
+  it('should retrieve compared value from comparedIndicatorResult if not in payload', () => {
     // given
-    initEvaluation(5, 4);
-
-    // when
-    fixture.detectChanges();
-    const firstRow = fixture.nativeElement.querySelectorAll('dt-row')[0];
-    firstRow.click();
-    fixture.detectChanges();
+    const spy = jest.spyOn(component, 'calculateComparedValue');
+    initEvaluation(10);
 
     // then
-    const cells = firstRow.querySelectorAll('dt-cell');
-    validateIndicatorResult(
-      cells,
-      true,
-      '370.2',
-      '339.8',
-      '1',
-      '+30.33',
-      '+8.92%',
-      '<=+10% and <600',
-      '<=800',
-      'passed',
-      '100'
-    );
-
-    expect(firstRow.querySelector('.error, .error-line')).toBeFalsy();
-  });
-
-  it('should have error values', () => {
-    // given
-    initEvaluation(6, 5);
-
-    // when
-    fixture.detectChanges();
-    const firstRow = fixture.nativeElement.querySelectorAll('dt-row')[0];
-    firstRow.click();
-    fixture.detectChanges();
-
-    // then
-    const cells = firstRow.querySelectorAll('dt-cell');
-    validateIndicatorResult(
-      cells,
-      false,
-      '1082',
-      '370.2',
-      '1',
-      '+712.4',
-      '+192.4%',
-      '<=+10% and <600',
-      '<=800',
-      'failed',
-      '0'
-    );
-
-    expect(cells[Column.PASS_CRITERIA].querySelectorAll('.error.error-line').length).toBe(2);
-    expect(cells[Column.WARNING_CRITERIA].querySelectorAll('.error.error-line').length).toBe(1);
-    expect(cells[Column.SCORE].querySelector('.error')).toBeTruthy();
-    expect(firstRow.querySelector('.success')).toBeFalsy();
+    expect(spy).toHaveBeenCalled();
+    expect(component.tableEntries.data[0].comparedValue).toBe(365.2);
   });
 
   it('should have weight fallback to 1', () => {
     // given
-    initEvaluation(6, 5, false);
-
-    // when
-    fixture.detectChanges();
-    const firstRow = fixture.nativeElement.querySelectorAll('dt-row')[0];
-    firstRow.click();
-    fixture.detectChanges();
+    initEvaluation(0);
 
     // then
-    const cells = firstRow.querySelectorAll('dt-cell');
-    validateIndicatorResult(
-      cells,
-      true,
-      '370.2',
-      '1082',
-      '1',
-      '+712.4',
-      '+192.4%',
-      '<=+10% and <600',
-      '<=800',
-      'failed',
-      '0'
-    );
+    expect(component.objectives?.[0].weight).toBeUndefined();
+    expect(component.tableEntries.data[0].weight).toBe(1);
   });
 
-  it('should sort by weight asc', () => {
-    validateOrder(0, Column.WEIGHT, true, 0, 2, 1);
-  });
-
-  it('should sort by weight desc', () => {
-    validateOrder(0, Column.WEIGHT, false, 1, 2, 0);
-  });
-
-  it('should sort by name asc', () => {
-    validateOrder(0, Column.NAME, true, 2, 1, 0);
-  });
-
-  it('should sort by name desc', () => {
-    validateOrder(0, Column.NAME, false, 0, 1, 2);
-  });
-
-  it('should sort by score asc', () => {
-    validateOrder(0, Column.SCORE, true, 1, 2, 0);
-  });
-
-  it('should sort by score desc', () => {
-    validateOrder(0, Column.SCORE, false, 0, 2, 1);
-  });
-
-  function validateOrder(selectedEvaluationIndex: number, column: Column, isAsc: boolean, ...indices: number[]): void {
-    // given
-    initEvaluation(selectedEvaluationIndex);
-    fixture.detectChanges();
-
-    // when
-    for (let i = isAsc ? 1 : 0; i < 2; ++i) {
-      fixture.nativeElement.querySelectorAll('dt-header-cell')[column].click();
-      fixture.detectChanges();
-    }
-    // then
-    const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
-    const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row > dt-cell:nth-child(${Column.NAME + 1})`);
-    for (let i = 0; i < indices.length; ++i) {
-      expect(indicatorNames[i].textContent).toEqual(
-        selectedEvaluation.data.evaluation?.indicatorResults[indices[i]].value.metric
-      );
-    }
-  }
-
-  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex = -1, includeWeight = true): void {
+  function initEvaluation(selectedEvaluationIndex: number): void {
     const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     component.indicatorResults = selectedEvaluation.data.evaluation?.indicatorResults as IndicatorResult[];
-    component.objectives = [
-      {
-        sli: 'response_time_p95',
-        key_sli: false,
-        pass: [
-          {
-            criteria: ['<=+10%', '<600'],
-          },
-        ],
-        warning: [
-          {
-            criteria: ['<=800'],
-          },
-        ],
-        ...(includeWeight && { weight: 1 }),
-      },
-      {
-        sli: 'response_time_p90',
-        key_sli: false,
-        pass: [
-          {
-            criteria: ['<=+10%', '<600'],
-          },
-        ],
-        warning: [
-          {
-            criteria: ['<=800'],
-          },
-        ],
-        weight: 4,
-      },
-      {
-        sli: 'response_time_p50',
-        key_sli: false,
-        pass: [
-          {
-            criteria: ['<=+10%', '<600'],
-          },
-        ],
-        warning: [
-          {
-            criteria: ['<=800'],
-          },
-        ],
-        weight: 2,
-      },
-    ];
+
+    const sloFileContentParsed = Yaml.parse(
+      atob(selectedEvaluation.data.evaluation?.sloFileContent ?? '')
+    ) as SloConfig;
+    component.objectives = sloFileContentParsed.objectives;
     component.score = selectedEvaluation.data.evaluation?.score as number;
 
     component.comparedIndicatorResults =
-      comparedEvaluationIndex === -1
-        ? []
-        : [
-            EvaluationsMock.data.evaluationHistory?.[comparedEvaluationIndex].data.evaluation
-              ?.indicatorResults as IndicatorResult[],
-          ];
-  }
-
-  function validateIndicatorResult(
-    cells: HTMLElement[],
-    isSuccess: boolean,
-    firstValue: string,
-    secondValue: string,
-    weight: string,
-    comparedValueAbsolute: string,
-    comparedValueRelative: string,
-    passCriteria: string,
-    warningCriteria: string,
-    result: string,
-    score: string
-  ): void {
-    const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(
-      `p.change-indicator${isSuccess ? '' : '.error'}`
-    );
-
-    expect(calculatedValues.length).toBe(2);
-    expect(cells[Column.VALUE].textContent?.trim()).toContain(firstValue);
-    expect(cells[Column.VALUE].textContent?.trim()).toContain(secondValue);
-    expect(cells[Column.WEIGHT].textContent?.trim()).toContain(weight);
-    expect(calculatedValues[0].textContent?.trim()).toBe(comparedValueAbsolute);
-    expect(calculatedValues[1].textContent?.trim()).toBe(comparedValueRelative);
-    expect(cells[Column.PASS_CRITERIA].textContent?.replace(/\s/g, '')).toBe(passCriteria.replace(/\s/g, ''));
-    expect(cells[Column.WARNING_CRITERIA].textContent?.replace(/\s/g, '')).toBe(warningCriteria.replace(/\s/g, ''));
-    expect(cells[Column.RESULT].textContent).toBe(result);
-    expect(cells[Column.SCORE].textContent).toBe(score);
+      EvaluationsMock.data.evaluationHistory
+        ?.filter(
+          (evaluation: Trace) => selectedEvaluation.data.evaluation?.comparedEvents?.indexOf(evaluation.id) !== -1
+        )
+        .map((evaluation: Trace) => evaluation.data.evaluation?.indicatorResults as IndicatorResult[]) ?? [];
   }
 });
