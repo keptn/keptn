@@ -64,10 +64,8 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
 
 function setEndSessionPolicy(app: Express, client: BaseClient): void {
   if (client.issuer.metadata.end_session_endpoint && defaultContentSecurityPolicyOptions.directives) {
-    defaultContentSecurityPolicyOptions.directives['form-action'] = [
-      `'self'`,
-      client.issuer.metadata.end_session_endpoint,
-    ];
+    const url = new URL(client.issuer.metadata.end_session_endpoint);
+    defaultContentSecurityPolicyOptions.directives['form-action'] = [`'self'`, `${url.protocol}//${url.hostname}`];
     app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
   }
 }
