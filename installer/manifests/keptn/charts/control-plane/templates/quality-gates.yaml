@@ -29,7 +29,7 @@ spec:
         app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{ include "control-plane.common.pod-security-context" . | nindent 6 }}
+      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       containers:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
@@ -70,7 +70,7 @@ spec:
                   fieldPath: metadata.namespace
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-          {{ include "control-plane.common.container-security-context" . | nindent 10 }}
+          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
@@ -88,7 +88,7 @@ spec:
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-        {{ include "control-plane.common.container-security-context" . | nindent 10 }}
+        {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-lighthouse-service
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 

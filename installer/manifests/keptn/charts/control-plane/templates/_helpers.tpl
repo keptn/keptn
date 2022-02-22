@@ -152,121 +152,121 @@ lifecycle:
 {{- if ge .Capabilities.KubeVersion.Minor "21" }}
   seccompProfile:
     type: RuntimeDefault
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 {{- define "control-plane.bridge.pod-security-context" -}}
-{{- if .Values.bridge.podSecurityContext }}
-{{- if .Values.bridge.podSecurityContext.enabled }}
+{{- if .Values.bridge.podSecurityContext -}}
+{{- if .Values.bridge.podSecurityContext.enabled -}}
 securityContext:
 {{- range $key, $value := omit .Values.bridge.podSecurityContext "enabled" "defaultSeccompProfile" }}
-  {{ $key }}: {{ $value | toYaml }}
-{{- end }}
+  {{ $key }}: {{- toYaml $value | nindent 4 }}
+{{- end -}}
 {{- if not .Values.bridge.podSecurityContext.seccompProfile }}
-{{- if .Values.bridge.podSecurityContext.defaultSeccompProfile }}
+{{- if .Values.bridge.podSecurityContext.defaultSeccompProfile -}}
 {{- include "control-plane.common.security-context-seccomp" . }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- else }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else -}}
 securityContext:
   fsGroup: 65532
 {{- include "control-plane.common.security-context-seccomp" . }}
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 {{- define "control-plane.bridge.container-security-context" -}}
-{{- if .Values.bridge.containerSecurityContext }}
-{{- if .Values.bridge.containerSecurityContext.enabled }}
+{{- if .Values.bridge.containerSecurityContext -}}
+{{- if .Values.bridge.containerSecurityContext.enabled -}}
 securityContext:
 {{- range $key, $value := omit .Values.bridge.containerSecurityContext "enabled" }}
-  {{ $key }}: {{ $value | toYaml }}
-{{- end }}
-{{- end }}
-{{- else }}
+  {{ $key }}: {{- toYaml $value | nindent 4 }}
+{{- end -}}
+{{- end -}}
+{{- else -}}
 securityContext:
   runAsNonRoot: true
   runAsUser: 65532
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   privileged: false
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 {{- define "control-plane.apiGatewayNginx.pod-security-context" -}}
-{{- if .Values.apiGatewayNginx.podSecurityContext }}
-{{- if .Values.apiGatewayNginx.podSecurityContext.enabled }}
+{{- if .Values.apiGatewayNginx.podSecurityContext -}}
+{{- if .Values.apiGatewayNginx.podSecurityContext.enabled -}}
 securityContext:
 {{- range $key, $value := omit .Values.apiGatewayNginx.podSecurityContext "enabled" "defaultSeccompProfile" }}
-  {{ $key }}: {{ $value | toYaml }}
-{{- end }}
-{{- if not .Values.apiGatewayNginx.podSecurityContext.seccompProfile }}
-{{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile }}
+  {{ $key }}: {{- toYaml $value | nindent 4 }}
+{{- end -}}
+{{- if not .Values.apiGatewayNginx.podSecurityContext.seccompProfile -}}
+{{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "control-plane.common.security-context-seccomp" . }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- else }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else -}}
 securityContext:
   fsGroup: 101
 {{- include "control-plane.common.security-context-seccomp" . }}
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 {{- define "control-plane.apiGatewayNginx.container-security-context" -}}
-{{- if .Values.apiGatewayNginx.containerSecurityContext }}
-{{- if .Values.apiGatewayNginx.containerSecurityContext.enabled }}
+{{- if .Values.apiGatewayNginx.containerSecurityContext -}}
+{{- if .Values.apiGatewayNginx.containerSecurityContext.enabled -}}
 securityContext:
 {{- range $key, $value := omit .Values.apiGatewayNginx.containerSecurityContext "enabled" }}
-  {{ $key }}: {{ $value | toYaml }}
-{{- end }}
-{{- end }}
-{{- else }}
+  {{ $key }}: {{- toYaml $value | nindent 4 }}
+{{- end -}}
+{{- end -}}
+{{- else -}}
 securityContext:
   runAsNonRoot: true
   runAsUser: 101
   readOnlyRootFilesystem: false
   allowPrivilegeEscalation: false
   privileged: false
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 {{- define "control-plane.common.pod-security-context" -}}
-{{- if (.Values.common).podSecurityContext }}
-{{- if .Values.common.podSecurityContext.enabled }}
+{{- if (.Values.common).podSecurityContext -}}
+{{- if .Values.common.podSecurityContext.enabled -}}
 securityContext:
 {{- range $key, $value := omit .Values.common.podSecurityContext "enabled" "defaultSeccompProfile" }}
-  {{ $key }}: {{ $value | toYaml }}
-{{- end }}
-{{- if not .Values.common.podSecurityContext.seccompProfile }}
-{{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile }}
-{{- include "control-plane.common.security-context-seccomp" . }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- else }}
+  {{ $key }}: {{- toYaml $value | nindent 4 }}
+{{- end -}}
+{{- if not .Values.common.podSecurityContext.seccompProfile -}}
+{{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
+{{- include "control-plane.common.security-context-seccomp" . -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else -}}
 securityContext:
   fsGroup: 65532
 {{- include "control-plane.common.security-context-seccomp" . }}
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 {{- define "control-plane.common.container-security-context" -}}
-{{- if (.Values.common).containerSecurityContext }}
-{{- if .Values.common.containerSecurityContext.enabled }}
+{{- if (.Values.common).containerSecurityContext -}}
+{{- if .Values.common.containerSecurityContext.enabled -}}
 securityContext:
 {{- range $key, $value := omit .Values.common.containerSecurityContext "enabled" }}
-  {{ $key }}: {{ $value | toYaml }}
-{{- end }}
-{{- end }}
-{{- else }}
+  {{ $key }}: {{- toYaml $value | nindent 4 }}
+{{- end -}}
+{{- end -}}
+{{- else -}}
 securityContext:
   runAsNonRoot: true
   runAsUser: 65532
   readOnlyRootFilesystem: false
   allowPrivilegeEscalation: false
   privileged: false
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 
 

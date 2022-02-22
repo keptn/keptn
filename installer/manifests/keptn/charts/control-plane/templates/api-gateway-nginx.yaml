@@ -383,7 +383,7 @@ spec:
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      {{ include "control-plane.apiGatewayNginx.pod-security-context" . | nindent 6}}
+      {{- include "control-plane.apiGatewayNginx.pod-security-context" . | nindent 6 }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
@@ -425,7 +425,7 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "100m"
-        {{ include "control-plane.apiGatewayNginx.container-security-context" . | nindent 10}}
+        {{- include "control-plane.apiGatewayNginx.container-security-context" . | nindent 10 }}
       volumes:
         - name: api-nginx-config
           configMap:

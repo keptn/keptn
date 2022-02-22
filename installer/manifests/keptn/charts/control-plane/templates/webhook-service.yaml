@@ -32,7 +32,7 @@ spec:
         app.kubernetes.io/version: {{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      {{ include "control-plane.common.pod-security-context" . | nindent 6 }}
+      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
@@ -66,7 +66,7 @@ spec:
                   fieldPath: metadata.namespace
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-          {{ include "control-plane.common.container-security-context" . | nindent 10 }}
+          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -86,7 +86,7 @@ spec:
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-          {{ include "control-plane.common.container-security-context" . | nindent 10 }}
+          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
