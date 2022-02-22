@@ -23,10 +23,14 @@ describe('evaluations', () => {
 
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
     cy.byTestId('keptn-service-view-service-carts').should('exist');
-    cy.byTestId('keptn-evaluation-details-chartHeatmap').should('exist');
+    cy.byTestId('keptn-sli-breakdown').should('exist');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('have.text', 'go_routines');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).should('have.text', '88 (+1000%) ');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(3).should('have.text', '1');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(7).should('have.text', '33.33');
   });
 
-  it('should truncate score to 2 decimals', () => {
+  it('should show more details when expanding sli breakdown in service screen', () => {
     cy.intercept('GET', '/api/project/sockshop/serviceStates', {
       statusCode: 200,
       fixture: 'get.sockshop.service.states.mock.json',
@@ -42,6 +46,25 @@ describe('evaluations', () => {
 
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
 
-    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', '33.99');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).should('have.text', '88 (+1000%) ');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines')
+      .find('dt-cell')
+      .eq(1)
+      .should('not.contain.text', 'Absolute change:');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines')
+      .find('dt-cell')
+      .eq(1)
+      .should('not.contain.text', 'Relative change:');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines')
+      .find('dt-cell')
+      .eq(1)
+      .should('not.contain.text', 'Compared with:');
+
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(0).find('button').click();
+
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).should('have.text', '88+80+1000% 8');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('contain.text', 'Absolute change:');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('contain.text', 'Relative change:');
+    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('contain.text', 'Compared with:');
   });
 });
