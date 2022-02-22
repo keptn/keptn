@@ -147,5 +147,9 @@
   </ng-container>
 
   <dt-header-row *dtHeaderRowDef="columnNames"></dt-header-row>
-  <dt-row *dtRowDef="let row; columns: columnNames" (click)="setExpanded(row)"> </dt-row>
+  <dt-row
+    *dtRowDef="let row; columns: columnNames"
+    (click)="setExpanded(row)"
+    [attr.uitestid]="'keptn-sli-breakdown-row-' + row.name"
+  ></dt-row>
 </dt-table>
