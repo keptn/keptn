@@ -214,7 +214,7 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 	}
 	// check if install/upgrade worked
 	if err != nil {
-		return fmt.Errorf("Error when installing/upgrading444 Helm Chart %s in namespace %s: %s",
+		return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
 	if newRelease == nil {
