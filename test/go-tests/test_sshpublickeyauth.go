@@ -75,7 +75,7 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	t.Logf("Creating a new project %s without a GIT Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingSSHShipyard)
 	require.Nil(t, err)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true, true)
+	projectName, err = CreateProjectWithSSH(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)

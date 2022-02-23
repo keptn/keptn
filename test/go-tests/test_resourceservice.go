@@ -597,7 +597,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true, false)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

@@ -98,7 +98,7 @@ func Test_QualityGates(t *testing.T) {
 	source := "golang-test"
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true, false)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Log("deleting lighthouse configmap from previous test run")

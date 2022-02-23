@@ -2,15 +2,16 @@ package go_tests
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"os"
-	"testing"
-	"time"
 )
 
 const sequenceTimeoutShipyard = `--- 
@@ -56,7 +57,7 @@ func Test_SequenceTimeout(t *testing.T) {
 	source := "golang-test"
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true, false)
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -117,7 +118,7 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 	defer os.Remove(sequenceStateShipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true, false)
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

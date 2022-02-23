@@ -170,7 +170,7 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 	return keptnInternalAPI, nil
 }
 
-func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool, useSSH bool) (string, error) {
+func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
 
 	retries := 5
 	var err error
@@ -208,37 +208,83 @@ func CreateProject(projectName string, shipyardFilePath string, recreateIfAlread
 
 		user := GetGiteaUser()
 
-		if useSSH {
-			privateKey, passphrase, err := GetPrivateKeyAndPassphrase()
-			if err != nil {
-				return "", err
+		token, err := GetGiteaToken()
+		if err != nil {
+			return "", err
+		}
+
+		// apply the k8s job for creating the git upstream
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+
+		if !strings.Contains(out, "created successfully") {
+			return "", fmt.Errorf("unable to create project: %s", out)
+		}
+
+		if err == nil {
+			return newProjectName, nil
+		}
+	}
+
+	return "", err
+}
+
+func CreateProjectWithSSH(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
+	retries := 5
+	var err error
+	var resp *req.Resp
+
+	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
+	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
+
+	for i := 0; i < retries; i++ {
+		if err != nil {
+			<-time.After(10 * time.Second)
+		}
+		resp, err = ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
+		if err != nil {
+			continue
+		}
+
+		if resp.Response().StatusCode == http.StatusOK {
+			if recreateIfAlreadyThere {
+				// delete project if it exists
+				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
+				if err != nil {
+					continue
+				}
+			} else {
+				return "", errors.New("project already exists")
 			}
+		}
 
-			privateKeyPath := "private-key"
-			err = os.WriteFile(privateKeyPath, []byte(privateKey), 0777)
-			if err != nil {
-				return "could not create private-key file", err
-			}
+		err = RecreateGitUpstreamRepository(newProjectName)
+		if err != nil {
+			// retry if repo creation failed (gitea might not be available)
+			continue
+		}
 
-			defer func() {
-				os.Remove(privateKeyPath)
-			}()
+		user := GetGiteaUser()
 
-			// apply the k8s job for creating the git upstream
-			_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", newProjectName, shipyardFilePath, user, newProjectName, user, privateKeyPath, passphrase))
+		privateKey, passphrase, err := GetPrivateKeyAndPassphrase()
+		if err != nil {
+			return "", err
+		}
 
-		} else {
-			token, err := GetGiteaToken()
-			if err != nil {
-				return "", err
-			}
+		privateKeyPath := "private-key"
+		err = os.WriteFile(privateKeyPath, []byte(privateKey), 0777)
+		if err != nil {
+			return "could not create private-key file", err
+		}
 
-			// apply the k8s job for creating the git upstream
-			out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+		defer func() {
+			os.Remove(privateKeyPath)
+		}()
 
-			if !strings.Contains(out, "created successfully") {
-				return "", fmt.Errorf("unable to create project: %s", out)
-			}
+		// apply the k8s job for creating the git upstream
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", newProjectName, shipyardFilePath, user, newProjectName, user, privateKeyPath, passphrase))
+
+		if !strings.Contains(out, "created successfully") {
+			return "", fmt.Errorf("unable to create project: %s", out)
 		}
 
 		if err == nil {

@@ -2,12 +2,13 @@ package go_tests
 
 import (
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 	"time"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 )
 
 const zeroDownTimeShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
@@ -42,7 +43,7 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
-	projectName, err = CreateProject(projectName, shipyardFile, true, false)
+	projectName, err = CreateProject(projectName, shipyardFile, true)
 	require.Nil(t, err)
 
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
