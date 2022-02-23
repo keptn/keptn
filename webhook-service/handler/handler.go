@@ -3,9 +3,10 @@ package handler
 import (
 	"errors"
 	"fmt"
-	keptn "github.com/keptn/go-utils/pkg/api/utils"
 	"net/url"
 	"strings"
+
+	keptn "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -44,7 +45,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		logger.Infof("will not handle event: %s", err.Error())
 		return nil, nil
 	}
-	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID, event.Gitcommitid)
+	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID, event.GitCommitID)
 	if err != nil {
 		return th.onPreExecutionError(keptnHandler, event, eventAdapter, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
 	}
