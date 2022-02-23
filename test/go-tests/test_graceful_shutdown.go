@@ -101,12 +101,12 @@ func Test_GracefulLeader(t *testing.T) {
 
 	shipyardPod := "shipyard-controller"
 	setup := newSetup(t)
-	setup.Project = "leader-election"
+	setup.Project = "leader-electionp"
 	keptnContext := startDelivery(t, setup)
 
 	require.Eventually(t, func() bool {
 		t.Log("checking if evaluation.finished event is available")
-		event, err := GetLatestEventOfType(keptnContext, setup.Project, "dev", keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName))
+		event, err := GetLatestEventOfType(keptnContext, setup.Project, "dev", keptnv2.GetStartedEventType("dev"+keptnv2.DeploymentTaskName))
 		if err != nil || event == nil {
 			return false
 		}
