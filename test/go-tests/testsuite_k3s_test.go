@@ -32,6 +32,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
 	if res, err := CompareServiceWithDeployment("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
+		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 

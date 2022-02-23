@@ -95,8 +95,9 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
 
-	require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID)
-	t.Log("commitID is present and correct")
+	require.Equal(t, evaluationFinishedPayload.EventData.Result, keptnv2.ResultType("pass"))
+	require.Equal(t, evaluationFinishedPayload.EventData.Status, keptnv2.StatusType("succeeded"))
+	t.Log("evaluation is finished and correct")
 
 	//second part
 
@@ -111,22 +112,41 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
 
-	require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID)
-	t.Log("commitID is present and correct")
+	require.Equal(t, evaluationFinishedPayload.EventData.Result, keptnv2.ResultType("pass"))
+	require.Equal(t, evaluationFinishedPayload.EventData.Status, keptnv2.StatusType("succeeded"))
+	t.Log("evaluation is finished and correct")
 }
 
 func performResourceServiceEvaluationTest(t *testing.T, projectName string, serviceName string, commitID string) (string, *models.KeptnContextExtendedCE) {
 	keptnContext := ""
 	source := "golang-test"
 
-	t.Log("sent evaluation.hardening.triggered with commitid: ", commitID)
+	t.Log("sent hardening.evaluation.triggered with commitid: ", commitID)
 	_, err := ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z --git-commit-id=%s", projectName, serviceName, commitID))
 	require.Nil(t, err)
 
+	var getEvaluationTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("hardening."+keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got hardening.evaluation.triggered event, checking commitid")
+	require.Equal(t, commitID, getEvaluationTriggeredEvent.GitCommitID)
+	t.Log("commitID is present and correct")
+
+	keptnContext = getEvaluationTriggeredEvent.Shkeptncontext
+	t.Logf("Shkeptncontext is %s", keptnContext)
+
 	var getSLITriggeredEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", keptnContext, " event is available")
-		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		t.Log("checking if get-sli.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
 		}
@@ -134,21 +154,11 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
-	t.Log("got SLI triggered event, checking commitid")
+	t.Log("got get-sli.triggered event, checking commitid")
 	require.Equal(t, commitID, getSLITriggeredEvent.GitCommitID)
 	t.Log("commitID is present and correct")
 
-	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
-	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
-	require.Nil(t, err)
-	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
-	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
-	require.NotEmpty(t, getSLIPayload.GetSLI.End)
-	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
-	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
-	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
-
-	//SLI uses a different commitID
+	t.Log("sending get-sli.started event")
 	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIStartedEventData{
@@ -173,6 +183,8 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 	}, 3)
 
 	require.Nil(t, err)
+
+	t.Log("sending get-sli.finished event")
 	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIFinishedEventData{
@@ -186,8 +198,8 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 				Message: "",
 			},
 			GetSLI: keptnv2.GetSLIFinished{
-				Start: getSLIPayload.GetSLI.Start,
-				End:   getSLIPayload.GetSLI.End,
+				Start: "",
+				End:   "",
 				IndicatorValues: []*keptnv2.SLIResult{
 					{
 						Metric:        "response_time_p95",
@@ -224,13 +236,14 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 		GitCommitID:        commitID,
 		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
 	}, 3)
+
 	require.Nil(t, err)
 
-	// wait for the evaluation.finished event to be available and evaluate it
+	// wait for the hardening.evaluation.finished event to be available and evaluate it
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if evaluation.finished event is available")
-		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		t.Log("checking if hardedning.evaluation.finished event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType("hardening."+keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
 		}
