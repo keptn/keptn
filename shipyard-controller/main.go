@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/keptn/keptn/shipyard-controller/nats"
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
@@ -55,6 +56,7 @@ const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarSequenceDispatchIntervalSec = "SEQUENCE_DISPATCH_INTERVAL_SEC"
 const envVarTaskStartedWaitDuration = "TASK_STARTED_WAIT_DURATION"
 const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
+const envVarNatsURL = "NATS_URL"
 const envVarLogTTL = "LOG_TTL"
 const envVarLogLevel = "LOG_LEVEL"
 const envVarEventDispatchIntervalSecDefault = "10"
@@ -62,9 +64,11 @@ const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
+const envVarNatsURLDefault = "nats://keptn-nats"
 const envVarDisableLeaderElection = "true"
 
 func main() {
+
 	log.SetLevel(log.InfoLevel)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -145,7 +149,7 @@ func main() {
 		projectMVRepo,
 	)
 	shipyardController := handler.GetShipyardControllerInstance(
-		context.Background(),
+		ctx,
 		eventDispatcher,
 		sequenceDispatcher,
 		sequenceTimeoutChannel,
@@ -220,7 +224,7 @@ func main() {
 		clock.New(),
 	)
 
-	watcher.Run(context.Background())
+	watcher.Run(ctx)
 
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformRepo)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
@@ -261,6 +265,16 @@ func main() {
 		}
 	}()
 
+	connectionHandler := nats.NewNatsConnectionHandler(
+		ctx,
+		getNatsURLFromEnvVar(),
+		nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent),
+	)
+
+	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}); err != nil {
+		log.Fatalf("Could not subscribe to nats: %v", err)
+	}
+
 	if os.Getenv(envVarDisableLeaderElection) == "true" {
 		// single shipyard
 		shipyardController.StartDispatchers(ctx)
@@ -268,7 +282,6 @@ func main() {
 		// multiple shipyards
 		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 	}
-
 	GracefulShutdown(ctx, wg, srv)
 
 }
@@ -326,13 +339,15 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 }
 
 func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrupt signal to gracefully shut down the server
+	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	wg.Wait()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
@@ -395,6 +410,13 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
+}
+
+func getNatsURLFromEnvVar() string {
+	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
+		return natsURL
+	}
+	return envVarNatsURLDefault
 }
 
 func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
