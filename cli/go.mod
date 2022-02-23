@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.4.0
 	github.com/invopop/jsonschema v0.1.0
-	github.com/keptn/go-utils v0.13.1-0.20220221112829-908349438082
+	github.com/keptn/go-utils v0.13.1-0.20220223090343-45c145b9d499
 	github.com/keptn/kubernetes-utils v0.13.0
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.3

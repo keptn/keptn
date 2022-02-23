@@ -3,9 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
