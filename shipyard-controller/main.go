@@ -65,7 +65,7 @@ const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
 const envVarNatsURLDefault = "nats://keptn-nats"
-const envVarDisableLeaderElection = "true"
+const envVarDisableLeaderElection = "DISABLE_LEADER_ELECTION"
 
 func main() {
 
