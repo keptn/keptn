@@ -2,13 +2,14 @@ package handler
 
 import (
 	"fmt"
+	"net/url"
+
 	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
 	utils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
-	"net/url"
 )
 
 const remediationSpecVersion = "spec.keptn.sh/0.1.4"
@@ -22,7 +23,7 @@ func NewGetActionEventHandler() *GetActionEventHandler {
 }
 
 func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
-	commitID := event.Gitcommitid
+	commitID := event.GitCommitID
 	getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
 	// retrieve commitId from sequence
 
