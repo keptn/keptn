@@ -5,6 +5,7 @@ import (
 	b64 "encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"io/ioutil"
 	"net/http"
