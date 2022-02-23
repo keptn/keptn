@@ -30,7 +30,7 @@ type createProjectCmdParams struct {
 
 var createProjectParams *createProjectCmdParams
 
-const gitErrMsg = `Please specify a 'git-user' and 'git-remote-url' as flags for configuring a Git upstream repository together with 'git-token' or 'git-private-key' depending on auth method. Please be aware that authentification with public/private key is supported only when using resource-service.`
+const gitErrMsg = `Please specify a 'git-user' and 'git-remote-url' as flags for configuring a Git upstream repository together with 'git-token' or 'git-private-key' depending on auth method. Please be aware that authentication with public/private key is supported only when using resource-service.`
 const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended and will not be supported in the future anymore.
 You can configure a Git upstream repository using: 
 
@@ -40,7 +40,7 @@ or (only for resource-service)
 
 keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
 
-Please be aware that authentification with public/private key is supported only when using resource-service.
+Please be aware that authentication with public/private key is supported only when using resource-service.
 `
 
 // crProjectCmd represents the project command
@@ -52,7 +52,7 @@ The shipyard file describes the used stages. These stages are defined by name, a
 
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
 To upstream this internal Git repository to a remote repository, the Git user (*--git-user*) and the remote URL (*--git-remote-url*) are required
-together with private key (*--git-private-key*) or access token (*--git-token*). Please be aware that authentification with public/private key is 
+together with private key (*--git-private-key*) or access token (*--git-token*). Please be aware that authentication with public/private key is 
 supported only when using resource-service.
 
 For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
