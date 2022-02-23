@@ -30,12 +30,7 @@ spec:
         app.kubernetes.io/version: {{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      securityContext:
-        fsGroup: 65532
-        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
-        seccompProfile:
-          type: RuntimeDefault
-        {{- end }}
+      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
@@ -87,12 +82,7 @@ spec:
             limits:
               memory: "64Mi"
               cpu: "100m"
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 65532
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            privileged: false
+          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.prestop" . | nindent 10 }}
@@ -110,12 +100,7 @@ spec:
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 65532
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            privileged: false
+        {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
