@@ -299,12 +299,7 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			// reference not there yet
 			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth})
 		}
-		if err != nil {
-			if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
-				return nil
-			} else if errors.Is(err, git.ErrNonFastForwardUpdate) {
-				return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrNonFastForwardUpdate)
-			}
+		if err != nil && errors.Is(err, git.ErrNonFastForwardUpdate) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
 		return nil
