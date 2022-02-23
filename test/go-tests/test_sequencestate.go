@@ -103,7 +103,7 @@ func Test_SequenceState(t *testing.T) {
 		Shkeptnspecversion: KeptnSpecVersion,
 		Source:             &source,
 		Specversion:        "1.0",
-		Gitcommitid:        commitID,
+		GitCommitID:        commitID,
 		Type:               &eventType,
 	}, 3)
 	require.Nil(t, err)
@@ -166,7 +166,7 @@ func Test_SequenceState(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, deploymentTriggeredEvent)
 
-	require.Equal(t, commitID, deploymentTriggeredEvent.Gitcommitid)
+	require.Equal(t, commitID, deploymentTriggeredEvent.GitCommitID)
 
 	cloudEvent := keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
 
@@ -237,7 +237,7 @@ func Test_SequenceState(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, evaluationTriggeredEvent)
 
-	require.Equal(t, commitID, deploymentTriggeredEvent.Gitcommitid)
+	require.Equal(t, commitID, deploymentTriggeredEvent.GitCommitID)
 
 	cloudEvent = keptnv2.ToCloudEvent(*evaluationTriggeredEvent)
 
@@ -303,7 +303,7 @@ func Test_SequenceState(t *testing.T) {
 
 	require.Nil(t, err)
 	require.NotNil(t, deploymentTriggeredEvent)
-	require.NotEmpty(t, deploymentTriggeredEvent.Gitcommitid)
+	require.NotEmpty(t, deploymentTriggeredEvent.GitCommitID)
 
 	cloudEvent = keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
 
