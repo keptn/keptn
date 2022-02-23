@@ -11,10 +11,11 @@ import {
 } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Overlay, OverlayPositionBuilder, OverlayRef } from '@angular/cdk/overlay';
+import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { OverlayService } from '../../_directives/overlay-service/overlay.service';
 
 export interface SelectTreeNode {
   name: string;
@@ -69,12 +70,7 @@ export class KtbTreeListSelectDirective implements OnInit {
     }
   }
 
-  constructor(
-    private overlay: Overlay,
-    private overlayPositionBuilder: OverlayPositionBuilder,
-    private elementRef: ElementRef,
-    private router: Router
-  ) {
+  constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
     // Close when navigation happens - to keep the overlay on the UI
     this.router.events.pipe(filter((event) => event instanceof NavigationStart)).subscribe(() => {
       this.close();
@@ -82,32 +78,15 @@ export class KtbTreeListSelectDirective implements OnInit {
   }
 
   public ngOnInit(): void {
-    const positionStrategy = this.overlayPositionBuilder.flexibleConnectedTo(this.elementRef).withPositions([
-      {
-        originX: 'start',
-        originY: 'bottom',
-        overlayX: 'start',
-        overlayY: 'top',
-        offsetY: 10,
-        offsetX: -20,
-      },
-    ]);
+    this.overlayRef = this.overlayService.initOverlay('400px', '200px', true, this.elementRef);
 
-    this.overlayRef = this.overlay.create({
-      positionStrategy,
-      width: '400px',
-      height: '200px',
-      hasBackdrop: true,
-      backdropClass: 'cdk-overlay-transparent-backdrop',
-    });
     this.overlayRef.backdropClick().subscribe(() => {
       this.close();
     });
   }
 
   public close(): void {
-    this.elementRef.nativeElement.disabled = false;
-    this.overlayRef?.detach();
+    this.overlayService.closeOverlay(this.overlayRef, this.elementRef);
   }
 }
 
