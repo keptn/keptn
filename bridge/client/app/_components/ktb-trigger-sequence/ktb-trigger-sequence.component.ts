@@ -321,14 +321,31 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   private handleResponse(response: TriggerResponse): void {
-    this.isLoading = false;
-    this.router.navigate([
-      '/project',
-      this.projectName,
-      'sequence',
-      response.keptnContext,
-      'stage',
-      this.selectedStage,
-    ]);
+    AppUtils.createTimer(1000, 200)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.dataService.getEventByContext(response.keptnContext).subscribe(
+          (events) => {
+            if (events.length > 0) {
+              this.isLoading = false;
+              this.unsubscribe$.next();
+              this.router.navigate([
+                '/project',
+                this.projectName,
+                'sequence',
+                response.keptnContext,
+                'stage',
+                this.selectedStage,
+              ]);
+            }
+          },
+          () => {
+            // Gracefully fail - and just navigate to sequences
+            this.isLoading = false;
+            this.unsubscribe$.next();
+            this.router.navigate(['/project', this.projectName]);
+          }
+        );
+      });
   }
 }

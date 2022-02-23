@@ -552,6 +552,14 @@ export class DataService {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
 
+  public getEventByContext(shkeptncontext: string): Observable<Trace[]> {
+    return this.apiService.getTraces(shkeptncontext).pipe(
+      map((response) => response.body),
+      map((result) => result?.events || []),
+      map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
+    );
+  }
+
   public loadEvaluationResults(event: Trace): void {
     let fromTime: Date | undefined;
     const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
