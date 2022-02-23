@@ -1,7 +1,6 @@
 package go_tests
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -61,7 +60,7 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Log("deleting lighthouse configmap from previous test run")
-	_, _ = ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
+	ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
 
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
