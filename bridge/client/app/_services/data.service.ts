@@ -552,7 +552,7 @@ export class DataService {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
 
-  public getEventByContext(shkeptncontext: string): Observable<Trace[]> {
+  public getEventsByContext(shkeptncontext: string): Observable<Trace[]> {
     return this.apiService.getTraces(shkeptncontext).pipe(
       map((response) => response.body),
       map((result) => result?.events || []),

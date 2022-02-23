@@ -321,31 +321,31 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   private handleResponse(response: TriggerResponse): void {
-    AppUtils.createTimer(1000, 200)
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        this.dataService.getEventByContext(response.keptnContext).subscribe(
-          (events) => {
-            if (events.length > 0) {
-              this.isLoading = false;
-              this.unsubscribe$.next();
-              this.router.navigate([
-                '/project',
-                this.projectName,
-                'sequence',
-                response.keptnContext,
-                'stage',
-                this.selectedStage,
-              ]);
-            }
-          },
-          () => {
-            // Gracefully fail - and just navigate to sequences
-            this.isLoading = false;
-            this.unsubscribe$.next();
-            this.router.navigate(['/project', this.projectName]);
+    setTimeout(() => {
+      this.dataService.getEventsByContext(response.keptnContext).subscribe(
+        (events) => {
+          if (events.length > 0) {
+            this.navigateToSequences(response.keptnContext);
+          } else {
+            this.navigateToSequences(undefined);
           }
-        );
-      });
+        },
+        () => {
+          // Gracefully fail - and just navigate to sequences
+          this.navigateToSequences(undefined);
+        }
+      );
+    }, 1500);
+  }
+
+  private navigateToSequences(keptnContext: string | undefined): void {
+    this.isLoading = false;
+    this.unsubscribe$.next();
+
+    if (keptnContext) {
+      this.router.navigate(['/project', this.projectName, 'sequence', keptnContext, 'stage', this.selectedStage]);
+    } else {
+      this.router.navigate(['/project', this.projectName]);
+    }
   }
 }
