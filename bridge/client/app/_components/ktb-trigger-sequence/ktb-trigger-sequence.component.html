@@ -12,7 +12,7 @@
         [(ngModel)]="sequenceType"
         uitestid="keptn-trigger-sequence-selection"
       >
-        <dt-radio-button [value]="TRIGGER_SEQUENCE.DELIVERY">Delivery</dt-radio-button>
+        <dt-radio-button *ngIf="!isQualityGatesOnly" [value]="TRIGGER_SEQUENCE.DELIVERY">Delivery</dt-radio-button>
         <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION">Evaluation</dt-radio-button>
         <dt-radio-button
           class="overlay-origin"

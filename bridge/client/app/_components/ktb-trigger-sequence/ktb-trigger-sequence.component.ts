@@ -60,6 +60,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   public showErrorStateMatcher = new ShowErrorStateMatcher();
   public jsonErrorStateMatcher = new JsonErrorStateMatcher();
   public isLoading = false;
+  public isQualityGatesOnly = false;
   private unsubscribe$: Subject<void> = new Subject<void>();
 
   public deliveryFormData: DeliverySequenceFormData = {
@@ -108,6 +109,10 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     if (this.stage) {
       this.selectedStage = this.stage;
     }
+
+    this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
+      this.isQualityGatesOnly = isQualityGatesOnly;
+    });
 
     AppUtils.createTimer(0, this.pollingInterval)
       .pipe(takeUntil(this.unsubscribe$))
