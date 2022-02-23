@@ -43,6 +43,8 @@ type APICaller struct {
 	token   string
 }
 
+var errProjectAlreadyExists = errors.New("project already exists")
+
 func NewAPICallerWithBaseURL(baseURL string) (*APICaller, error) {
 	token, _, err := GetApiCredentials()
 	if err != nil {
@@ -170,11 +172,35 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 	return keptnInternalAPI, nil
 }
 
-func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
+func RecreateProjectAndUpstream(newProjectName string, recreateIfAlreadyThere bool) error {
+	resp, err := ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
+	if err != nil {
+		return err
+	}
 
+	if resp.Response().StatusCode == http.StatusOK {
+		if recreateIfAlreadyThere {
+			// delete project if it exists
+			_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
+			if err != nil {
+				return err
+			}
+		} else {
+			return errProjectAlreadyExists
+		}
+	}
+
+	err = RecreateGitUpstreamRepository(newProjectName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
 	retries := 5
 	var err error
-	var resp *req.Resp
 
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
@@ -183,26 +209,12 @@ func CreateProject(projectName string, shipyardFilePath string, recreateIfAlread
 		if err != nil {
 			<-time.After(10 * time.Second)
 		}
-		resp, err = ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
-		if err != nil {
-			continue
-		}
 
-		if resp.Response().StatusCode == http.StatusOK {
-			if recreateIfAlreadyThere {
-				// delete project if it exists
-				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
-				if err != nil {
-					continue
-				}
-			} else {
-				return "", errors.New("project already exists")
+		err = RecreateProjectAndUpstream(newProjectName, recreateIfAlreadyThere)
+		if err != nil {
+			if errors.Is(err, errProjectAlreadyExists) {
+				return "", errProjectAlreadyExists
 			}
-		}
-
-		err = RecreateGitUpstreamRepository(newProjectName)
-		if err != nil {
-			// retry if repo creation failed (gitea might not be available)
 			continue
 		}
 
@@ -231,7 +243,6 @@ func CreateProject(projectName string, shipyardFilePath string, recreateIfAlread
 func CreateProjectWithSSH(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
 	retries := 5
 	var err error
-	var resp *req.Resp
 
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
@@ -240,26 +251,12 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string, recreateI
 		if err != nil {
 			<-time.After(10 * time.Second)
 		}
-		resp, err = ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
-		if err != nil {
-			continue
-		}
 
-		if resp.Response().StatusCode == http.StatusOK {
-			if recreateIfAlreadyThere {
-				// delete project if it exists
-				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
-				if err != nil {
-					continue
-				}
-			} else {
-				return "", errors.New("project already exists")
+		err = RecreateProjectAndUpstream(newProjectName, recreateIfAlreadyThere)
+		if err != nil {
+			if errors.Is(err, errProjectAlreadyExists) {
+				return "", errProjectAlreadyExists
 			}
-		}
-
-		err = RecreateGitUpstreamRepository(newProjectName)
-		if err != nil {
-			// retry if repo creation failed (gitea might not be available)
 			continue
 		}
 
