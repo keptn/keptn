@@ -157,7 +157,7 @@ func main() {
 	)
 
 	engine := gin.Default()
-	/// setting up middlewere to handle graceful shutdown
+	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	engine.Use(handler.GracefulShutdownMiddleware(wg))
 
@@ -257,13 +257,13 @@ func main() {
 		Handler: engine,
 	}
 
-	// Initializing the server in a goroutine so that
-	// it won't block the graceful shutdown handling below
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.WithError(err).Error("could not start API server")
-		}
-	}()
+	if os.Getenv(envVarDisableLeaderElection) == "true" {
+		// single shipyard
+		shipyardController.StartDispatchers(ctx)
+	} else {
+		// multiple shipyards
+		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+	}
 
 	connectionHandler := nats.NewNatsConnectionHandler(
 		ctx,
@@ -275,13 +275,14 @@ func main() {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
 
-	if os.Getenv(envVarDisableLeaderElection) == "true" {
-		// single shipyard
-		shipyardController.StartDispatchers(ctx)
-	} else {
-		// multiple shipyards
-		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
-	}
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.WithError(err).Error("could not start API server")
+		}
+	}()
+
 	GracefulShutdown(ctx, wg, srv)
 
 }
