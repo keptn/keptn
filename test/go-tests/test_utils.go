@@ -693,7 +693,7 @@ func GetGiteaUser() string {
 func RecreateGitUpstreamRepository(project string) error {
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()
-	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/gitea-http", "3000", "3000")
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/gitea-http", "3001", "3000")
 
 	if err != nil {
 		return err
