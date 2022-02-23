@@ -116,7 +116,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 // Per default, it only sets the event type of the subscription.
 // If exactly one project, stage or service is specified respectively, they are included in the filter.
 // However, this is only a (very) short term solution for the RBAC use case.
-// In the long term, we should just pass the subscription ID in the request, since the backend knows the required fiters associated with the subscription.
+// In the long term, we should just pass the subscription ID in the request, since the backend knows the required filters associated with the subscription.
 func getEventFilterForSubscription(subscription keptnmodels.EventSubscription) api.EventFilter {
 	eventFilter := api.EventFilter{
 		EventType: subscription.Event,
