@@ -2,12 +2,13 @@ package go_tests
 
 import (
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 	"time"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 )
 
 const zeroDownTimeShipyard = `apiVersion: "spec.keptn.sh/0.2.0"

@@ -2,13 +2,14 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/imroc/req"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/imroc/req"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 )
 
 const logForwardingTestShipyard = `--- 

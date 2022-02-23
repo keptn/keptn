@@ -35,6 +35,7 @@ func Test_K3S(t *testing.T) {
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
+	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
