@@ -1,6 +1,8 @@
 @import '~@dynatrace/barista-components/style/main';
 
 .ktb-stage-overview {
+  position: relative;
+
   &::after {
     content: '';
     position: absolute;
