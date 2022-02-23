@@ -167,7 +167,7 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 	return keptnInternalAPI, nil
 }
 
-func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
+func CreateProject(projectName string, shipyardFilePath string) (string, error) {
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 
@@ -680,7 +680,7 @@ func GetGiteaUser() string {
 	return "gitea_admin"
 }
 
-// RecreateUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
+// RecreateGitUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
 func RecreateGitUpstreamRepository(project string) error {
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()

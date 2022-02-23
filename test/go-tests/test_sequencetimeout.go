@@ -56,7 +56,7 @@ func Test_SequenceTimeout(t *testing.T) {
 	source := "golang-test"
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -117,7 +117,7 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 	defer os.Remove(sequenceStateShipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

@@ -439,7 +439,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	}(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
