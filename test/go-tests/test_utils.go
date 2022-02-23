@@ -168,59 +168,49 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 }
 
 func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
-
-	retries := 5
-	var err error
-	var resp *req.Resp
-
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 
-	for i := 0; i < retries; i++ {
+	err := retry.Retry(func() error {
+		resp, err := ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
 		if err != nil {
-			<-time.After(10 * time.Second)
-		}
-		resp, err = ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
-		if err != nil {
-			continue
+			return err
 		}
 
 		if resp.Response().StatusCode == http.StatusOK {
-			if recreateIfAlreadyThere {
-				// delete project if it exists
-				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
-				if err != nil {
-					continue
-				}
-			} else {
-				return "", errors.New("project already exists")
+			// delete project if it exists
+			_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
+			if err != nil {
+				return err
 			}
 		}
 
 		err = RecreateGitUpstreamRepository(newProjectName)
 		if err != nil {
 			// retry if repo creation failed (gitea might not be available)
-			continue
+			return err
 		}
 
 		user := GetGiteaUser()
 		token, err := GetGiteaToken()
 		if err != nil {
-			return "", err
+			return err
 		}
 
 		// apply the k8s job for creating the git upstream
 		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
 		if !strings.Contains(out, "created successfully") {
-			return "", fmt.Errorf("unable to create project: %s", out)
+			return fmt.Errorf("unable to create project: %s", out)
 		}
-		if err == nil {
-			return newProjectName, nil
-		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
 	}
 
-	return "", err
+	return newProjectName, nil
 }
 
 func TriggerSequence(projectName, serviceName, stageName, sequenceName string, eventData keptncommon.EventProperties) (string, error) {
