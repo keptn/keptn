@@ -13,40 +13,40 @@ describe('Trigger a sequence', () => {
     cy.intercept('POST', '/api/controlPlane/v1/project/sockshop/stage/dev/service/carts/evaluation', {
       body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' },
     });
-    cy.intercept('/api/mongodb-datastore/event?keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a', {
-      body: {
-        events: [
-          {
-            data: {
-              deployment: {
-                deploymentNames: null,
-              },
-              evaluation: {
-                end: '2022-02-23T10:36:47.662Z',
-                start: '2022-02-23T09:36:47.662Z',
-                timeframe: '',
-              },
-              project: 'podtato-head',
-              service: 'helloservice',
-              stage: 'hardening',
-              test: {
-                end: '',
-                start: '',
-              },
+    cy.intercept(
+      '/api/controlPlane/v1/sequence/sockshop?pageSize=1&keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a',
+      {
+        body: {
+          states: [
+            {
+              name: 'delivery',
+              service: 'carts',
+              project: 'sockshop',
+              time: '2022-02-23T14:28:50.504Z',
+              shkeptncontext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a',
+              state: 'finished',
+              stages: [
+                {
+                  name: 'dev',
+                  state: 'finished',
+                  latestEvent: {
+                    type: 'sh.keptn.event.dev.delivery.finished',
+                    id: '1341268c-c899-4314-b87c-9f4ea6566208',
+                    time: '2022-02-23T14:28:51.596Z',
+                  },
+                  latestFailedEvent: {
+                    type: 'sh.keptn.event.dev.delivery.finished',
+                    id: '1341268c-c899-4314-b87c-9f4ea6566208',
+                    time: '2022-02-23T14:28:51.596Z',
+                  },
+                },
+              ],
             },
-            id: 'd792079c-1627-48f1-b66e-1cd6b2002b3c',
-            source: 'https://github.com/keptn/keptn/api',
-            specversion: '1.0',
-            time: '2022-02-23T09:36:46.688Z',
-            type: 'sh.keptn.event.hardening.evaluation.triggered',
-            shkeptncontext: '8e548d83-bb84-4a62-9ea9-4609d0882f97',
-            shkeptnspecversion: '0.2.3',
-          },
-        ],
-        pageSize: 20,
-        totalCount: 1,
-      },
-    });
+          ],
+          totalCount: 1,
+        },
+      }
+    );
 
     // Sequence screen
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' });
@@ -56,10 +56,6 @@ describe('Trigger a sequence', () => {
         states: [],
       },
     });
-    cy.intercept(
-      '/api/controlPlane/v1/sequence/sockshop?pageSize=1&keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a',
-      { body: [] }
-    );
 
     cy.visit('project/sockshop');
   });

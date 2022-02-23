@@ -321,21 +321,28 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   private handleResponse(response: TriggerResponse): void {
-    setTimeout(() => {
-      this.dataService.getEventsByContext(response.keptnContext).subscribe(
-        (events) => {
-          if (events.length > 0) {
-            this.navigateToSequences(response.keptnContext);
-          } else {
-            this.navigateToSequences(undefined);
-          }
-        },
-        () => {
-          // Gracefully fail - and just navigate to sequences
+    let retry = 1;
+    AppUtils.createTimer(500, 1000)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        if (retry === 5) {
+          this.unsubscribe$.next();
           this.navigateToSequences(undefined);
         }
-      );
-    }, 1500);
+        this.dataService.getSequencesByContext(this.projectName || '', response.keptnContext).subscribe(
+          (sequences) => {
+            if (sequences.length > 0) {
+              this.navigateToSequences(response.keptnContext);
+            } else {
+              retry++;
+            }
+          },
+          () => {
+            // Gracefully fail - and just navigate to sequences
+            this.navigateToSequences(undefined);
+          }
+        );
+      });
   }
 
   private navigateToSequences(keptnContext: string | undefined): void {
