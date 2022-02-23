@@ -159,7 +159,7 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 20*time.Second, 2*time.Second)
 
 	// get deployment.triggered event
 	deploymentTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))

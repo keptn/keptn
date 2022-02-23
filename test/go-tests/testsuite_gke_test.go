@@ -33,6 +33,7 @@ func Test_GKE(t *testing.T) {
 	if res, err := CompareServiceWithDeployment("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	}
+	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)

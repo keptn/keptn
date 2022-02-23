@@ -60,3 +60,30 @@ func Test_getDurationFromEnvVar(t *testing.T) {
 		})
 	}
 }
+
+func Test_getNatsURLFromEnvVar(t *testing.T) {
+	tests := []struct {
+		name        string
+		envVarValue string
+		want        string
+	}{
+		{
+			name:        "default url",
+			envVarValue: "",
+			want:        "nats://keptn-nats",
+		},
+		{
+			name:        "get specified value",
+			envVarValue: "nats://keptn-nats-url",
+			want:        "nats://keptn-nats-url",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = os.Setenv(envVarNatsURL, tt.envVarValue)
+			if got := getNatsURLFromEnvVar(); got != tt.want {
+				t.Errorf("getNatsURLFromEnvVar() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
