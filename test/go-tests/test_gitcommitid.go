@@ -61,14 +61,14 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Log("deleting lighthouse configmap from previous test run")
-	_, _ = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName))
+	_, _ = ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
 
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	output, err := ExecuteCommandf("keptn create service %s --project=%s", serviceName, projectName)
 
 	t.Log("Testing the evaluation...")
 
@@ -76,7 +76,7 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	require.Contains(t, output, "created successfully")
 
 	t.Logf("adding an SLI provider")
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName))
+	_, err = ExecuteCommandf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName)
 	require.Nil(t, err)
 
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
@@ -122,7 +122,7 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 	source := "golang-test"
 
 	t.Log("sent hardening.evaluation.triggered with commitid: ", commitID)
-	_, err := ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z --git-commit-id=%s", projectName, serviceName, commitID))
+	_, err := ExecuteCommandf("keptn trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z --git-commit-id=%s", projectName, serviceName, commitID)
 	require.Nil(t, err)
 
 	var getEvaluationTriggeredEvent *models.KeptnContextExtendedCE
