@@ -42,7 +42,7 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
-	projectName, err = CreateProject(projectName, shipyardFile, true)
+	projectName, err = CreateProject(projectName, shipyardFile, true, false)
 	require.Nil(t, err)
 
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
