@@ -346,7 +346,7 @@ jobs:
           SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
-          echo "🚀 Creating release package now..."
+          echo "🚀 Creating pre-release package now..."
 
           if [[ ! -z "$SEMVER_TYPE" ]]; then
             npx standard-version@^9.3.1 \
