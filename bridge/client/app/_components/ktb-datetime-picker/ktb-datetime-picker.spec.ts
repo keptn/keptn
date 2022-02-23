@@ -2,12 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbDatetimePickerComponent, KtbDatetimePickerDirective } from './ktb-datetime-picker.component';
 import { AppModule } from '../../app.module';
-import { Overlay, OverlayPositionBuilder } from '@angular/cdk/overlay';
 import { ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import moment, { Moment } from 'moment';
 import { Timeframe } from '../../_models/timeframe';
+import { OverlayService } from '../../_directives/overlay-service/overlay.service';
 
 export class MockElementRef extends ElementRef {
   nativeElement = {};
@@ -33,10 +33,9 @@ describe('KtbDatetimePickerComponent', () => {
     fixture = TestBed.createComponent(KtbDatetimePickerComponent);
     component = fixture.componentInstance;
     directive = new KtbDatetimePickerDirective(
-      TestBed.inject(Overlay),
-      TestBed.inject(OverlayPositionBuilder),
       TestBed.inject(ElementRef),
-      TestBed.inject(Router)
+      TestBed.inject(Router),
+      TestBed.inject(OverlayService)
     );
     directive.ngOnInit();
     fixture.detectChanges();
