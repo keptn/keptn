@@ -558,6 +558,7 @@ jobs:
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterroles <<< "$(kubectl get clusterroles | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+
           if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
               for namespace in "${namespaces[@]}"; do
                 if [[ ! -z "${namespace// }" ]]; then
@@ -565,14 +566,14 @@ jobs:
                   kubectl annotate namespace "$namespace" janitor/ttl=3d
                 fi
               done
-
+          
               for cr in "${clusterroles[@]}"; do
                 if [[ ! -z "${cr// }" ]]; then
                   echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
                   kubectl annotate clusterrole "$cr" janitor/ttl=3d
                 fi
               done
-
+          
               for crb in "${clusterrolebindings[@]}"; do
                 if [[ ! -z "${crb// }" ]]; then
                   echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
@@ -586,14 +587,14 @@ jobs:
                   kubectl annotate namespace "$namespace" janitor/ttl=6h
                 fi
               done
-
+          
               for cr in "${clusterroles[@]}"; do
                 if [[ ! -z "${cr// }" ]]; then
                   echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
                   kubectl annotate clusterrole "$cr" janitor/ttl=6h
                 fi
               done
-
+          
               for crb in "${clusterrolebindings[@]}"; do
                 if [[ ! -z "${crb// }" ]]; then
                   echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
@@ -607,14 +608,14 @@ jobs:
                   kubectl delete namespace "$namespace"
                 fi
               done
-
+          
               for cr in "${clusterroles[@]}"; do
                 if [[ ! -z "${cr// }" ]]; then
                   echo "Deleting clusterrole $cr ..."
                   kubectl delete clusterrole "$cr"
                 fi
               done
-
+          
               for crb in "${clusterrolebindings[@]}"; do
                 if [[ ! -z "${crb// }" ]]; then
                   echo "Deleting clusterrolebinding $crb ..."
@@ -622,7 +623,7 @@ jobs:
                 fi
               done
           fi
-
+          
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         timeout-minutes: 3
