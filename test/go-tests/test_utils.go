@@ -198,7 +198,7 @@ func CreateProject(projectName string, shipyardFilePath string) (string, error) 
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 
 	err := retry.Retry(func() error {
-		if err := RecreateProjectUpstream(projectName); err != nil {
+		if err := RecreateProjectUpstream(newProjectName); err != nil {
 			return nil
 		}
 
@@ -229,7 +229,7 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 
 	err := retry.Retry(func() error {
-		if err := RecreateProjectUpstream(projectName); err != nil {
+		if err := RecreateProjectUpstream(newProjectName); err != nil {
 			return nil
 		}
 
