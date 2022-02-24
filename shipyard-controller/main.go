@@ -257,14 +257,6 @@ func main() {
 		Handler: engine,
 	}
 
-	if os.Getenv(envVarDisableLeaderElection) == "true" {
-		// single shipyard
-		shipyardController.StartDispatchers(ctx)
-	} else {
-		// multiple shipyards
-		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
-	}
-
 	connectionHandler := nats.NewNatsConnectionHandler(
 		ctx,
 		getNatsURLFromEnvVar(),
@@ -282,6 +274,14 @@ func main() {
 			log.WithError(err).Error("could not start API server")
 		}
 	}()
+
+	if os.Getenv(envVarDisableLeaderElection) == "true" {
+		// single shipyard
+		shipyardController.StartDispatchers(ctx)
+	} else {
+		// multiple shipyards
+		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+	}
 
 	GracefulShutdown(ctx, wg, srv)
 
