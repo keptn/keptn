@@ -63,7 +63,7 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
