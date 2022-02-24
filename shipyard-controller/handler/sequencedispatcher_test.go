@@ -177,7 +177,7 @@ func TestSequenceDispatcher_Remove(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, nil, 10*time.Second, nil)
+	sequenceDispatcher := handler.NewSequenceDispatcher(nil, mockSequenceQueueRepo, nil, 10*time.Second, nil)
 
 	myScope := models.EventScope{
 		EventData:    keptnv2.EventData{Project: "my-project"},

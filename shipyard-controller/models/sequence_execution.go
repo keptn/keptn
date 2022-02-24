@@ -66,7 +66,8 @@ func (e *SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	return e.Status.PreviousTasks[len(e.Status.PreviousTasks)-1]
 }
 
-func (e *SequenceExecution) CompleteCurrentTask() {
+func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.StatusType) {
+	// TODO test
 	var result keptnv2.ResultType
 	var status keptnv2.StatusType
 	if e.Status.CurrentTask.IsFailed() {
@@ -101,6 +102,7 @@ func (e *SequenceExecution) CompleteCurrentTask() {
 		},
 	)
 	e.Status.CurrentTask = TaskExecutionState{}
+	return result, status
 }
 
 func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {

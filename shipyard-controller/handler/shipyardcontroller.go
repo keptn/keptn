@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"time"
@@ -155,19 +156,15 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			}
 			complete(err)
 		}()
-	case string(common.StartedEvent):
+	case string(common.StartedEvent), string(common.FinishedEvent):
 		go func() {
 			err := sc.handleTaskEvent(event)
 			if err != nil {
-				log.WithError(err).Error("Unable to handle task '.started' event")
-			}
-			complete(err)
-		}()
-	case string(common.FinishedEvent):
-		go func() {
-			err := sc.handleTaskEvent(event)
-			if err != nil {
-				log.WithError(err).Error("Unable to handle task '.finished' event")
+				if errors.Is(err, ErrSequenceNotFound) {
+					log.Infof("Unable to handle task '.started' event: %v", err)
+				} else {
+					log.Errorf("Unable to handle task '.started' event: %v", err)
+				}
 			}
 			complete(err)
 		}()
@@ -285,17 +282,10 @@ func (sc *shipyardController) handleTaskEvent(event models.Event) error {
 	if sequenceExecution == nil {
 		log.Infof("The received %s event with keptn context %s is not accociated with a task that was previously triggered",
 			eventScope.EventType, eventScope.KeptnContext)
-		return nil
+		return ErrSequenceNotFound
 	}
 
-	if keptnv2.IsFinishedEventType(*event.Type) {
-		// TODO this should become obsolete by also storing the relevant event data in the sequenceExecution
-		// for now keep it because it's needed for aggregating data for next task.triggered event
-		err = sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.FinishedEvent)
-		if err != nil {
-			log.Errorf("unable to store %s event: %v ", eventScope.EventType, err.Error())
-		}
-	} else if keptnv2.IsStartedEventType(*event.Type) {
+	if keptnv2.IsStartedEventType(*event.Type) {
 		sc.onSequenceTaskStarted(eventScope.WrappedEvent)
 	}
 
@@ -333,7 +323,10 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return nil
 	}
 
-	updatedSequenceExecution.CompleteCurrentTask()
+	result, status := updatedSequenceExecution.CompleteCurrentTask()
+
+	eventScope.Result = result
+	eventScope.Status = status
 
 	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.TriggeredEvent))
 	if err != nil {

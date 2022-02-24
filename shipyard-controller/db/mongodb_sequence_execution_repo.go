@@ -16,6 +16,9 @@ import (
 
 const SequenceExecutionCollectionNameSuffix = "SequenceExecution"
 
+var ErrProjectNameMustNotBeEmpty = errors.New("project name must not be empty")
+var ErrSequenceIDMustNotBeEmpty = errors.New("sequence ID must not be empty")
+
 type MongoDBSequenceExecutionRepo struct {
 	DbConnection *MongoDBConnection
 }
@@ -101,7 +104,7 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecution, upsertOptions *models.SequenceExecutionUpsertOptions) error {
 	if item.Scope.Project == "" {
-		return errors.New("project must be set")
+		return ErrProjectNameMustNotBeEmpty
 	}
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(item.Scope.Project)
 	if err != nil {
@@ -132,10 +135,10 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models.SequenceExecution, event models.TaskEvent) (*models.SequenceExecution, error) {
 	if taskSequence.Scope.Project == "" {
-		return nil, errors.New("project must be set")
+		return nil, ErrProjectNameMustNotBeEmpty
 	}
 	if taskSequence.ID == "" {
-		return nil, errors.New("id of sequenceExecution must be set")
+		return nil, ErrSequenceIDMustNotBeEmpty
 	}
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
 	if err != nil {
@@ -169,10 +172,10 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.SequenceExecution) (*models.SequenceExecution, error) {
 	if taskSequence.Scope.Project == "" {
-		return nil, errors.New("project must be set")
+		return nil, ErrProjectNameMustNotBeEmpty
 	}
 	if taskSequence.ID == "" {
-		return nil, errors.New("id of sequenceExecution must be set")
+		return nil, ErrSequenceIDMustNotBeEmpty
 	}
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
 	if err != nil {

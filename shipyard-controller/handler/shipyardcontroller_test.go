@@ -129,10 +129,10 @@ func Test_GetTriggeredEventsOfProject(t *testing.T) {
 
 func TestHandleTaskEvent(t *testing.T) {
 	type fields struct {
-		projectMvRepo    db.ProjectMVRepo
-		eventRepo        db.EventRepo
-		taskSequenceRepo db.TaskSequenceRepo
-		taskFinishedHook *fakehooks.ISequenceTaskFinishedHookMock
+		projectMvRepo         db.ProjectMVRepo
+		eventRepo             db.EventRepo
+		sequenceExecutionRepo *db_mock.SequenceExecutionRepoMock
+		taskFinishedHook      *fakehooks.ISequenceTaskFinishedHookMock
 	}
 	type args struct {
 		event models.Event
@@ -145,7 +145,7 @@ func TestHandleTaskEvent(t *testing.T) {
 		wantHookCalled bool
 	}{
 		{
-			name: "received finished event with no matching triggered event",
+			name: "received finished event with no matching sequence execution",
 			fields: fields{
 				projectMvRepo: nil,
 				eventRepo: &db_mock.EventRepoMock{
@@ -167,11 +167,11 @@ func TestHandleTaskEvent(t *testing.T) {
 						return nil, nil
 					},
 				},
-				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-					return []models.TaskExecution{
-						{},
-					}, nil
-				}},
+				sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+					GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+						return nil, nil
+					},
+				},
 				taskFinishedHook: &fakehooks.ISequenceTaskFinishedHookMock{OnSequenceTaskFinishedFunc: func(event models.Event) {}},
 			},
 			args: args{
@@ -184,9 +184,9 @@ func TestHandleTaskEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectMvRepo:    tt.fields.projectMvRepo,
-				eventRepo:        tt.fields.eventRepo,
-				taskSequenceRepo: tt.fields.taskSequenceRepo,
+				projectMvRepo:         tt.fields.projectMvRepo,
+				eventRepo:             tt.fields.eventRepo,
+				sequenceExecutionRepo: tt.fields.sequenceExecutionRepo,
 			}
 
 			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
