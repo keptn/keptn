@@ -3,8 +3,11 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
+
+var ErrInvalidEventScope = errors.New("invalid event scope")
 
 // EventScope wraps various properties of an event like EventData containing the project,
 // stage and service name as well as the keptn context. This information is important
@@ -30,16 +33,16 @@ func NewEventScope(event Event) (*EventScope, error) {
 		return nil, err
 	}
 	if data.Project == "" {
-		return nil, errors.New("event does not contain a project")
+		return nil, fmt.Errorf("event does not contain a project: %w", ErrInvalidEventScope)
 	}
 	if data.Stage == "" {
-		return nil, errors.New("event does not contain a stage")
+		return nil, fmt.Errorf("event does not contain a stage: %w", ErrInvalidEventScope)
 	}
 	if data.Service == "" {
-		return nil, errors.New("event does not contain a service")
+		return nil, fmt.Errorf("event does not contain a service: %w", ErrInvalidEventScope)
 	}
 	if event.Type == nil {
-		return nil, errors.New("event does not contain a type")
+		return nil, fmt.Errorf("event does not contain a type: %w", ErrInvalidEventScope)
 	}
 	var eventSource string
 	if event.Source != nil {

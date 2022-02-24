@@ -19,6 +19,9 @@ import (
 
 const maxRepoReadRetries = 5
 
+const couldNotGetActiveSequencesErrMsg = "unable to get active task executions for project %s in stage %s for Keptn context %s: %w"
+const noActiveSequencesErrMsg = "no active task executions for project %s in stage %s for Keptn context %s found"
+
 var shipyardControllerInstance *shipyardController
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
@@ -158,10 +161,10 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 		go func() {
 			err := sc.handleTaskEvent(event)
 			if err != nil {
-				if errors.Is(err, ErrSequenceNotFound) {
-					log.Infof("Unable to handle task '.started' event: %v", err)
+				if errors.Is(err, ErrSequenceNotFound) || errors.Is(err, models.ErrInvalidEventScope) {
+					log.Infof("Unable to handle task event: %v", err)
 				} else {
-					log.Errorf("Unable to handle task '.started' event: %v", err)
+					log.Errorf("Unable to handle task event: %v", err)
 				}
 			}
 			complete(err)
@@ -374,11 +377,11 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 	}})
 
 	if err != nil {
-		return fmt.Errorf("unable to get active task executions for project %s in stage %s for keptn context %s", cancel.Project, cancel.Stage, cancel.KeptnContext)
+		return fmt.Errorf(couldNotGetActiveSequencesErrMsg, cancel.Project, cancel.Stage, cancel.KeptnContext, err)
 	}
 
 	if len(sequenceExecutions) == 0 {
-		log.Infof("no active sequence executions for context %s found.", cancel.KeptnContext)
+		log.Infof(noActiveSequencesErrMsg, cancel.Project, cancel.Stage, cancel.KeptnContext)
 		return nil
 	}
 	// TODO check state and remove from dispatcher if sequence is currently in queue, i.e. waiting or triggered
@@ -432,11 +435,11 @@ func (sc *shipyardController) pauseSequence(pause models.SequenceControl) error 
 	}})
 
 	if err != nil {
-		return fmt.Errorf("unable to get active task executions for project %s in stage %s for keptn context %s", pause.Project, pause.Stage, pause.KeptnContext)
+		return fmt.Errorf(couldNotGetActiveSequencesErrMsg, pause.Project, pause.Stage, pause.KeptnContext, err)
 	}
 
 	if len(sequenceExecutions) == 0 {
-		log.Infof("no active sequence executions for context %s found.", pause.KeptnContext)
+		log.Infof(noActiveSequencesErrMsg, pause.Project, pause.Stage, pause.KeptnContext)
 		return nil
 	}
 
@@ -462,7 +465,7 @@ func (sc *shipyardController) resumeSequence(resume models.SequenceControl) erro
 	}})
 
 	if err != nil {
-		return fmt.Errorf("unable to get active task executions for project %s in stage %s for keptn context %s", resume.Project, resume.Stage, resume.KeptnContext)
+		return fmt.Errorf(noActiveSequencesErrMsg, resume.Project, resume.Stage, resume.KeptnContext)
 	}
 
 	if len(sequenceExecutions) == 0 {

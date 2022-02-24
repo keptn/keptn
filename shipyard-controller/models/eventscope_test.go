@@ -3,6 +3,7 @@ package models
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 )
@@ -60,6 +61,10 @@ func Test_NewEventScope(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := NewEventScope(tt.args.event)
+
+			if tt.wantErr {
+				require.ErrorIs(t, err, ErrInvalidEventScope)
+			}
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getEventScope() error = %v, wantErr %v", err, tt.wantErr)
 				return
