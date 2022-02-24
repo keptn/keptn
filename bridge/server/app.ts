@@ -109,7 +109,10 @@ async function init(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-  app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+  // will be set later
+  if (!serverFeatureFlags.OAUTH_ENABLED) {
+    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+  }
   app.use(helmet.noSniff());
   app.use(helmet.permittedCrossDomainPolicies());
   app.use(helmet.frameguard());
