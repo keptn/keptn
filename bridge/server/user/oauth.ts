@@ -64,10 +64,10 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
 
 function setEndSessionPolicy(app: Express, client: BaseClient): void {
   if (client.issuer.metadata.end_session_endpoint && defaultContentSecurityPolicyOptions.directives) {
-    const url = new URL(client.issuer.metadata.end_session_endpoint);
     defaultContentSecurityPolicyOptions.directives['form-action'] = [
       `'self'`,
-      process.env.OAUTH_CSP_FORM_ACTION || `${url.protocol}//${url.hostname}${url.pathname}`,
+      client.issuer.metadata.end_session_endpoint,
+      process.env.OAUTH_ALLOWED_LOGOUT_URLS || '',
     ];
     app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
   }
