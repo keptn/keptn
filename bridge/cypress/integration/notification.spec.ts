@@ -88,6 +88,7 @@ describe('Test notifications', () => {
     const PROJECT_NAME = 'dynatrace';
     const GIT_REMOTE_URL = 'https://git-repo.com';
     const GIT_TOKEN = 'testtoken';
+    // don't return any projects, to make project creation easier (no duplicates)
     cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
       body: {
         nextPageKey: '0',
@@ -109,6 +110,7 @@ describe('Test notifications', () => {
 
     cy.get('input[id="shipyard-file-input"]').attachFile('shipyard.yaml');
 
+    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'get.projects' });
     newProjectCreatePage.clickCreateProject();
     cy.get('dt-alert a').click();
   }
