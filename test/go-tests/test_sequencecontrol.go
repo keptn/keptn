@@ -69,7 +69,7 @@ func Test_SequenceControl_Abort(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -136,7 +136,7 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -194,7 +194,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -312,7 +312,7 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

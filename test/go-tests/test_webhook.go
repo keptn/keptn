@@ -214,7 +214,7 @@ func Test_Webhook(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -372,7 +372,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -464,7 +464,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -628,7 +628,7 @@ func Test_WebhookWithDisabledStartedEvents(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

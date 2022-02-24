@@ -53,7 +53,7 @@ func KubeCtlPortForwardSvc(ctx context.Context, svcName, localPort string, remot
 	if len(namespace) == 1 {
 		ns = namespace[0]
 	}
-	fmt.Printf("Executing: %s port-forward -n %s %s %s", kubectlExecutable, ns, svcName, localPort+":"+remotePort)
+	fmt.Printf("Executing: %s port-forward -n %s %s %s\n", kubectlExecutable, ns, svcName, localPort+":"+remotePort)
 	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", ns, svcName, localPort+":"+remotePort)
 	err := cmd.Start()
 	if err != nil {
