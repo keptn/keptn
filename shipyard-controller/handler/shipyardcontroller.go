@@ -125,7 +125,6 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 }
 
 func (sc shipyardController) StartDispatchers(ctx context.Context) {
-
 	sc.eventDispatcher.Run(ctx)
 	sc.sequenceDispatcher.Run(ctx, sc.StartTaskSequence)
 }

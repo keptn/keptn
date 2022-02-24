@@ -105,8 +105,8 @@ func Test_GracefulLeader(t *testing.T) {
 	keptnContext := startDelivery(t, setup)
 
 	require.Eventually(t, func() bool {
-		t.Log("checking if evaluation.finished event is available")
-		event, err := GetLatestEventOfType(keptnContext, setup.Project, "dev", keptnv2.GetStartedEventType("dev."+keptnv2.DeploymentTaskName))
+		t.Log("checking if deployment.started event is available")
+		event, err := GetLatestEventOfType(keptnContext, setup.Project, "dev", keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName))
 		if err != nil || event == nil {
 			return false
 		}
