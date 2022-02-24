@@ -1181,9 +1181,8 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		clock.New(),
 	)
 	sc := &shipyardController{
-		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
-		eventRepo:        eventRepo,
-		taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance()),
+		projectMvRepo: db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
+		eventRepo:     eventRepo,
 		eventDispatcher: &fake.IEventDispatcherMock{
 			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {
 				return nil
