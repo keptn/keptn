@@ -100,6 +100,11 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		RemoteURI:         params.GitRemoteURL,
 		GitPrivateKey:     params.GitPrivateKey,
 		GitPrivateKeyPass: params.GitPrivateKeyPass,
+		GitProxyURL:       params.GitProxyURL,
+		GitProxyScheme:    params.GitProxyScheme,
+		GitProxyUser:      params.GitProxyUser,
+		GitProxyPassword:  params.GitProxyPassword,
+		GitProxySecure:    params.GitProxySecure,
 	})
 	if err != nil {
 		return err, nilRollback
@@ -558,4 +563,9 @@ type gitCredentials struct {
 	RemoteURI         string `json:"remoteURI,omitempty"`
 	GitPrivateKey     string `json:"privateKey,omitempty"`
 	GitPrivateKeyPass string `json:"privateKeyPass,omitempty"`
+	GitProxyURL       string `json:"gitProxyUrl,omitempty"`
+	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
+	GitProxyUser      string `json:"gitProxyUser,omitempty"`
+	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
+	GitProxySecure    bool   `json:"gitProxySecure,omitempty"`
 }
