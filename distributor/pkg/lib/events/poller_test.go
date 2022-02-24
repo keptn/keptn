@@ -4,6 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+	"strings"
+	"testing"
+	"time"
+
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -11,14 +18,9 @@ import (
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"reflect"
-	"strings"
-	"testing"
-	"time"
 )
 
+//some change
 func Test_PollAndForwardEvents1(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
