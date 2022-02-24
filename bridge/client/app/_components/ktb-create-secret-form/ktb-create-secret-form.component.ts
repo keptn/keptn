@@ -1,11 +1,10 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Secret } from '../../_models/secret';
 import { NotificationType } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
-import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -57,8 +56,7 @@ export class KtbCreateSecretFormComponent implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private notificationService: NotificationsService,
-    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
+    private notificationService: NotificationsService
   ) {
     this.getSecretScopes();
   }
