@@ -288,7 +288,7 @@
 
   <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.CUSTOM">
     <h2 uitestid="keptn-trigger-custom-h2">
-      Trigger a custom sequence for {{ selectedService }} in {{ selectedStage }}
+      Trigger a {{ customFormData.sequence || 'custom' }} sequence for {{ selectedService }} in {{ selectedStage }}
     </h2>
     <dt-form-field class="mb-3 mt-2 full-width">
       <dt-label class="required">Sequence</dt-label>
