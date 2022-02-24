@@ -13,6 +13,8 @@ export class KtbTimeInputComponent implements OnInit {
   @Input() secondsEnabled = true;
   @Input() millisEnabled = true;
   @Input() microsEnabled = true;
+  @Input() min?: Timeframe;
+  @Input() max?: Timeframe;
   @Input() timeframe: Timeframe | undefined;
   @Output()
   timeChanged: EventEmitter<Timeframe> = new EventEmitter<Timeframe>();
@@ -39,12 +41,13 @@ export class KtbTimeInputComponent implements OnInit {
     }
   }
 
-  public validateInput(formControlName: string, min: number, max: number): void {
+  public validateInput(formControlName: string, min: number | undefined, max: number | undefined): void {
     if (this.timeForm.controls[formControlName].value) {
       let val = this.timeForm.controls[formControlName].value;
       val = Math.round(val);
-      if (val < min) val = min;
-      if (val > max) val = max;
+      const minVal = min ?? 0; // should for time units always be 0
+      if (val < minVal) val = minVal;
+      if (max && val > max) val = max;
       this.timeForm.controls[formControlName].setValue(val);
     }
     this.emitChangedValues();

@@ -82,6 +82,13 @@ export class KtbDatetimePickerComponent {
 
   public disabled = false;
   public maxDate: Date = new Date();
+  public maxTimeValues: Timeframe = {
+    hours: 23,
+    minutes: 59,
+    seconds: 59,
+    millis: 999,
+    micros: 999,
+  };
   private selectedDate = moment();
   private selectedTime: Timeframe | undefined;
 
