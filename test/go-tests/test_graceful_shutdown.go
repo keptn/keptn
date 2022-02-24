@@ -120,7 +120,7 @@ func startDelivery(t *testing.T, setup *Setup) string {
 	t.Logf("Creating a new project %s", setup.Project)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
 	require.Nil(t, err)
-	setup.Project, err = CreateProject(setup.Project, shipyardFilePath, true)
+	setup.Project, err = CreateProject(setup.Project, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", setup.Service, setup.Project)
