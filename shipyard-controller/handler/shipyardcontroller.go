@@ -343,8 +343,9 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 		if err != nil {
 			return fmt.Errorf("unable to get open task execution: %w", err)
 		}
+		//shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 
-		shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+		shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 		if err != nil {
 			return fmt.Errorf("unable to fetch shipyard: %w", err)
 		}
@@ -541,7 +542,8 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 		return err
 	}
 
-	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	//shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
 		return err
 	}
@@ -683,7 +685,9 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope models.Eve
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventScope, completedSequence *keptnv2.Sequence, eventHistory []interface{}, inputEvent *models.Event, previousTask string) error {
-	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	//shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
+
 	if err != nil {
 		return err
 	}
