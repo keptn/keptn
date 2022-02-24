@@ -128,21 +128,23 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
-	eventData := &keptnv2.EventData{}
-	err := keptnv2.Decode(event.Data, eventData)
-	if err != nil {
-		log.Errorf("Could not parse event data: %v", err)
-		return err
-	}
-
-	statusType, err := keptnv2.ParseEventKind(*event.Type)
+	statusType, err := ExtractEventKind(event)
 	if err != nil {
 		return err
 	}
-	done := make(chan error)
+	// only create channel if waitForCompletion is set to true
+	var done chan error
+	if waitForCompletion {
+		done = make(chan error)
+	}
 
 	log.Infof("Received event of type %s from %s", *event.Type, *event.Source)
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
+	complete := func(err error) {
+		if waitForCompletion {
+			done <- err
+		}
+	}
 
 	switch statusType {
 	case string(common.TriggeredEvent):
@@ -151,7 +153,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle sequence '.triggered' event")
 			}
-			done <- err
+			complete(err)
 		}()
 	case string(common.StartedEvent):
 		go func() {
@@ -159,7 +161,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle task '.started' event")
 			}
-			done <- err
+			complete(err)
 		}()
 	case string(common.FinishedEvent):
 		go func() {
@@ -167,7 +169,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle task '.finished' event")
 			}
-			done <- err
+			complete(err)
 		}()
 	default:
 		return nil

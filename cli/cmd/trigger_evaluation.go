@@ -31,16 +31,17 @@ import (
 )
 
 type triggerEvaluationStruct struct {
-	Project   *string            `json:"project"`
-	Stage     *string            `json:"stage"`
-	Service   *string            `json:"service"`
-	Timeframe *string            `json:"timeframe"`
-	Start     *string            `json:"start"`
-	End       *string            `json:"end"`
-	Labels    *map[string]string `json:"labels"`
-	Watch     *bool
-	WatchTime *int
-	Output    *string
+	Project     *string            `json:"project"`
+	Stage       *string            `json:"stage"`
+	Service     *string            `json:"service"`
+	Timeframe   *string            `json:"timeframe"`
+	Start       *string            `json:"start"`
+	End         *string            `json:"end"`
+	Labels      *map[string]string `json:"labels"`
+	GitCommitID *string            `json:"gitcommitid"`
+	Watch       *bool
+	WatchTime   *int
+	Output      *string
 }
 
 var triggerEvaluation triggerEvaluationStruct
@@ -55,9 +56,10 @@ var triggerEvaluationCmd = &cobra.Command{
 * It is necessary to specify a time frame (--timeframe) of the evaluation. If, for example, the 
 flag is set to --timeframe=5m, the evaluation is conducted for the last 5 minutes. 
 * To specify a particular starting point, the --start flag can be used. In this case, the specified time frame is added to the starting point.
+* To use a certain state of the git repository, please specify --git-commit-id with the appropiate commit ID
 `,
-	Example: `keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59
-keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test
+	Example: `keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59 --git-commit-id=<git-commit-id>
+keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test [--git-commit-id=<git-commit-id>]
 `,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -114,9 +116,10 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 			*triggerEvaluationData.Stage,
 			*triggerEvaluationData.Service,
 			apimodels.Evaluation{
-				Start:  start.Format(userFriendlyDateLayout),
-				End:    end.Format(userFriendlyDateLayout),
-				Labels: *triggerEvaluationData.Labels,
+				Start:       start.Format(userFriendlyDateLayout),
+				End:         end.Format(userFriendlyDateLayout),
+				Labels:      *triggerEvaluationData.Labels,
+				GitCommitID: *triggerEvaluationData.GitCommitID,
 			},
 		)
 
@@ -175,6 +178,8 @@ func init() {
 	triggerEvaluation.End = triggerEvaluationCmd.Flags().StringP("end", "", "",
 		"The end point to which the evaluation data should be gathered in UTC (can not be used together with --timeframe)")
 	triggerEvaluation.Labels = triggerEvaluationCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
+
+	triggerEvaluation.GitCommitID = triggerEvaluationCmd.Flags().StringP("git-commit-id", "", "", "The used commit ID context")
 
 	triggerEvaluation.Output = AddOutputFormatFlag(triggerEvaluationCmd)
 	triggerEvaluation.Watch = AddWatchFlag(triggerEvaluationCmd)

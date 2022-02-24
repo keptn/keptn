@@ -7,10 +7,11 @@ Thus, each service has its own distributor that is configured by the two environ
 - `KEPTN_API_TOKEN` - Keptn API Token - needed when the distributor runs outside of the Keptn cluster. default = `""`
 - `API_PROXY_PORT` - Port on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `8081`.
 - `API_PROXY_PATH` - Path on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `/`.
+- `API_PROXY_HTTP_TIMEOUT` - Timeout value (in seconds) for the API Proxy's HTTP Client. default = `30`.
 - `HTTP_POLLING_INTERVAL` - Interval (in seconds) in which the distributor will check for new triggered events on the Keptn API. default = `10`
 - `EVENT_FORWARDING_PATH` - Path on which the distributor will listen for incoming events from its execution plane service. default = `/event`
 - `HTTP_SSL_VERIFY` - Determines whether the distributor should check the validity of SSL certificates when sending requests to a Keptn API endpoint via HTTPS. default = `true`
-- `PUBSUB_URL` - The URL of the nats cluster the distributor should connect to when the distributor is running within the Keptn cluster. default = `nats://keptn-nats-cluster`
+- `PUBSUB_URL` - The URL of the nats cluster the distributor should connect to when the distributor is running within the Keptn cluster. default = `nats://keptn-nats`
 - `PUBSUB_TOPIC` - Comma separated list of topics (i.e. event types) the distributor should listen to (see https://github.com/keptn/keptn/blob/master/specification/cloudevents.md for details). When running within the Keptn cluster, it is possible to use NATS [Subject hierarchies](https://nats-io.github.io/docs/developer/concepts/subjects.html#matching-a-single-token). When running outside of the cluster (polling events via HTTP), wildcards can not be used. In this case, each specific topic has to be included in the list.
 - `PUBSUB_RECIPIENT` - Hostname of the execution plane service the distributor should forward incoming CloudEvents to. default = `http://127.0.0.1`
 - `PUBSUB_RECIPIENT_PORT` - Port of the execution plane service the distributor should forward incoming CloudEvents to. default = `8080`
@@ -28,6 +29,11 @@ Thus, each service has its own distributor that is configured by the two environ
 - `K8S_POD_NAME` -  Kubernetes deployment name of the Keptn integration. default = `""`
 - `K8S_NAMESPACE` - Kubernetes namespace of the Keptn integration. default = `""`
 - `K8S_NODE_NAME` - Kubernetes node name the Keptn integration is running on. default = `""`
+- `OAUTH_CLIENT_ID` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
+- `OAUTH_CLIENT_SECRET` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
+- `OAUTH_DISCOVERY` - Discovery URL called by the distributor to obtain further information for the OAuth Client Credentials Flow, e.g. the token URL. default = `""`
+- `OAUTH_TOKEN_URL` - Url to obtain the access token. If set, this will override `OAUTH_DISCOVERY` meaning, that no discovery will happen. default = `""`
+- `OAUTH_SCOPES` - Comma separated list of tokens to be used during the OAuth Client Credentials Flow. =`""`
 
 All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 
@@ -128,7 +134,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptndev/distributor:latest
           ports:
             - containerPort: 8080
           resources:
@@ -140,7 +146,7 @@ spec:
               cpu: "500m"
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.internal.event.some-event'
             - name: PUBSUB_RECIPIENT

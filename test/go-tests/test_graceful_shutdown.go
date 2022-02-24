@@ -1,10 +1,11 @@
 package go_tests
 
 import (
-	"github.com/stretchr/testify/require"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 const tinyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -33,7 +34,7 @@ spec:
             - name: "release"`
 
 func Test_GracefulShutdown(t *testing.T) {
-	repoLocalDir, err := filepath.Abs("../")
+	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
 	t.Log("Current local dir is : ", repoLocalDir)
 

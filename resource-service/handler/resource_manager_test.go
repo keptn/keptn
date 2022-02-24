@@ -921,6 +921,48 @@ func TestResourceManager_GetResource_ProjectResource_ProvideGitCommitID(t *testi
 
 	require.Len(t, fields.git.GetFileRevisionCalls(), 1)
 	require.Equal(t, "my-commit-id", fields.git.GetFileRevisionCalls()[0].Revision)
+	require.Equal(t, "file1", fields.git.GetFileRevisionCalls()[0].File)
+}
+
+func TestResourceManager_GetResource_ServiceResource_ProvideGitCommitID(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.stageContext.EstablishFunc = func(params common_models.ConfigurationContextParams) (string, error) {
+		return testConfigDir + "/my-service", nil
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	result, err := rm.GetResource(models.GetResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+			Stage:   &models.Stage{StageName: "my-stage"},
+			Service: &models.Service{ServiceName: "my-service"},
+		},
+		ResourceURI: "file1",
+		GetResourceQuery: models.GetResourceQuery{
+			GitCommitID: "my-commit-id",
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.GetResourceResponse{
+		Resource: models.Resource{
+			ResourceContent: "ZmlsZS1jb250ZW50",
+			ResourceURI:     "file1",
+		},
+		Metadata: models.Version{
+			UpstreamURL: "remote-url",
+			Version:     "my-commit-id",
+		},
+	}, result)
+
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+
+	require.Len(t, fields.git.GetFileRevisionCalls(), 1)
+	require.Equal(t, "my-commit-id", fields.git.GetFileRevisionCalls()[0].Revision)
+	require.Equal(t, "my-service/file1", fields.git.GetFileRevisionCalls()[0].File)
 }
 
 func TestResourceManager_GetResource_ProjectResource_PullFails(t *testing.T) {

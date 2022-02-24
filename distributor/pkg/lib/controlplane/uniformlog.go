@@ -20,7 +20,7 @@ type EventUniformLog struct {
 	logHandler    keptn.ILogHandler
 }
 
-func NewEventUniformLog(integrationID string, logHandler keptn.ILogHandler) *EventUniformLog {
+func NewEventUniformLog(integrationID string, logHandler keptn.LogsV1Interface) *EventUniformLog {
 	return &EventUniformLog{
 		IntegrationID: integrationID,
 		logHandler:    logHandler,

@@ -223,7 +223,11 @@
         <dt-consumption-count>
           <p class="m-0">
             <span class="error" *ngIf="_selectedEvaluationData.isFailed()"
-              ><span class="bold" [textContent]="evaluation.score | number: '1.0-0'"></span
+              ><span
+                uitestid="keptn-evaluation-details-scoreInfo"
+                class="bold"
+                [textContent]="evaluation.score | number: '1.0-2'"
+              ></span
             ></span>
             <span
               class="small"
@@ -236,7 +240,11 @@
               <span *ngIf="_selectedEvaluationData.isWarning()"> <= </span>
             </span>
             <span class="warning" *ngIf="_selectedEvaluationData.isWarning()"
-              ><span class="bold" [textContent]="evaluation.score | number: '1.0-0'"></span
+              ><span
+                uitestid="keptn-evaluation-details-scoreInfo"
+                class="bold"
+                [textContent]="evaluation.score | number: '1.0-2'"
+              ></span
             ></span>
             <span
               class="small"
@@ -247,7 +255,11 @@
               <span *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"> <= </span>
             </span>
             <span class="success" *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"
-              ><span class="bold" [textContent]="evaluation.score | number: '1.0-0'"></span
+              ><span
+                uitestid="keptn-evaluation-details-scoreInfo"
+                class="bold"
+                [textContent]="evaluation.score | number: '1.0-2'"
+              ></span
             ></span>
             <span class="small ml-2"
               >Result:

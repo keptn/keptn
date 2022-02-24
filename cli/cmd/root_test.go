@@ -207,12 +207,22 @@ func Test_runVersionCheck(t *testing.T) {
 				Keptnversion: "0.8.1-dev",
 			},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match. This can lead to problems. Please make sure to use the same versions.\n",
+			cliConfig: func() config.CLIConfig {
+				cliConfig := rootCLIConfig
+				cliConfig.AutomaticVersionCheck = true
+				return cliConfig
+			},
 		},
 		{
 			name:           "received error from Keptn API",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusInternalServerError,
 			wantOutput:     "* Warning: could not check Keptn server version: received invalid response from Keptn API\n",
+			cliConfig: func() config.CLIConfig {
+				cliConfig := rootCLIConfig
+				cliConfig.AutomaticVersionCheck = true
+				return cliConfig
+			},
 		},
 		{
 			name:            "skip version check for 'keptn install'",
@@ -237,6 +247,11 @@ func Test_runVersionCheck(t *testing.T) {
 			},
 			args:       []string{"command-other-than-install"},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
+			cliConfig: func() config.CLIConfig {
+				cliConfig := rootCLIConfig
+				cliConfig.AutomaticVersionCheck = true
+				return cliConfig
+			},
 		},
 		{
 			name:           "show version check for 'keptn --any-flag command-other-than-install'",
@@ -247,6 +262,11 @@ func Test_runVersionCheck(t *testing.T) {
 			},
 			args:       []string{"--any-flag", "command-other-than-install"},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
+			cliConfig: func() config.CLIConfig {
+				cliConfig := rootCLIConfig
+				cliConfig.AutomaticVersionCheck = true
+				return cliConfig
+			},
 		},
 		{
 			name:           "don't show warning if the versions match",

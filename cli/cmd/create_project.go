@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/keptn/keptn/cli/internal"
@@ -18,19 +20,27 @@ import (
 )
 
 type createProjectCmdParams struct {
-	Shipyard  *string
-	GitUser   *string
-	GitToken  *string
-	RemoteURL *string
+	Shipyard          *string
+	GitUser           *string
+	GitToken          *string
+	RemoteURL         *string
+	GitPrivateKey     *string
+	GitPrivateKeyPass *string
 }
 
 var createProjectParams *createProjectCmdParams
 
-const gitErrMsg = `Please specify a 'git-user', 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository`
+const gitErrMsg = `Please specify a 'git-user' and 'git-remote-url' as flags for configuring a Git upstream repository together with 'git-token' or 'git-private-key' depending on auth method. Please be aware that authentication with public/private key is supported only when using resource-service.`
 const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended and will not be supported in the future anymore.
 You can configure a Git upstream repository using: 
 
-keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN
+
+or (only for resource-service)
+
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
+
+Please be aware that authentication with public/private key is supported only when using resource-service.
 `
 
 // crProjectCmd represents the project command
@@ -41,12 +51,19 @@ var crProjectCmd = &cobra.Command{
 The shipyard file describes the used stages. These stages are defined by name, as well as their task sequences.
 
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.
+To upstream this internal Git repository to a remote repository, the Git user (*--git-user*) and the remote URL (*--git-remote-url*) are required
+together with private key (*--git-private-key*) or access token (*--git-token*). Please be aware that authentication with public/private key is 
+supported only when using resource-service.
 
 For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
 `,
 	Example: `keptn create project PROJECTNAME --shipyard=FILEPATH
-keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL`,
+keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN
+
+or (only for resource-service)
+
+keptn create project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
@@ -86,10 +103,23 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			Shipyard: &encodedShipyardContent,
 		}
 
-		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+		if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
+			if *createProjectParams.GitToken == "" && *createProjectParams.GitPrivateKey == "" {
+				return errors.New(gitErrMsg)
+			}
+
 			project.GitUser = *createProjectParams.GitUser
 			project.GitToken = *createProjectParams.GitToken
 			project.GitRemoteURL = *createProjectParams.RemoteURL
+
+			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
+				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
+				if err != nil {
+					fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
+				}
+				project.GitPrivateKey = string(content)
+				project.GitPrivateKeyPass = *createProjectParams.GitPrivateKeyPass
+			}
 		}
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
@@ -121,9 +151,14 @@ func checkGitCredentials() error {
 		return nil
 	}
 
-	if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+	if *createProjectParams.GitToken != "" && *createProjectParams.GitPrivateKey != "" {
+		return errors.New(gitErrMsg)
+	}
+
+	if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
 		return nil
 	}
+
 	return errors.New(gitErrMsg)
 }
 
@@ -148,6 +183,10 @@ func init() {
 	crProjectCmd.MarkFlagRequired("shipyard")
 
 	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
-	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
 	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
+
+	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
+
+	createProjectParams.GitPrivateKey = crProjectCmd.Flags().StringP("git-private-key", "k", "", "The SSH git private key of the git user")
+	createProjectParams.GitPrivateKeyPass = crProjectCmd.Flags().StringP("git-private-key-pass", "l", "", "The passphrase of git private key")
 }

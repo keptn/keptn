@@ -3,14 +3,14 @@ module github.com/keptn/keptn/cli
 go 1.16
 
 require (
-	github.com/alecthomas/jsonschema v0.0.0-20220203024042-cc89723c9db0
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.4.0
-	github.com/keptn/go-utils v0.11.1-0.20220207171637-b2495d8b022d
-	github.com/keptn/kubernetes-utils v0.10.1-0.20220207100409-737f87e5f035
+	github.com/invopop/jsonschema v0.1.0
+	github.com/keptn/go-utils v0.13.1-0.20220223120143-efe19c525eab
+	github.com/keptn/kubernetes-utils v0.13.0
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.3.0

@@ -17,6 +17,12 @@ distributor:
   config:
     queueGroup:
       enabled: true                          # Enable connection via Nats queue group to support exactly-once message processing
+    oauth:
+      clientID: ""
+      clientSecret: ""
+      discovery: ""
+      tokenURL: ""
+      scopes: ""
 
 remoteControlPlane:
   enabled: false                             # Enables remote execution plane mode

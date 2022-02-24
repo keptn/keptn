@@ -12,7 +12,6 @@ on:
       - '[0-9]+.[1-9][0-9]*.x'
 env:
   GO_VERSION: "^1.16"
-  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
   CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
   
@@ -319,7 +318,10 @@ jobs:
             ${{ runner.os }}-go-cli
 
       - name: Test CLI
-        run: make test-unit-cli
+        working-directory: cli
+        run: |
+          go get gotest.tools/gotestsum@v1.7.0
+          gotestsum --no-color=false --format=testname -- -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Report test coverage for CLI
         uses: codecov/codecov-action@v2
@@ -357,7 +359,7 @@ jobs:
   helm_charts_upload:
     name: Publish helm charts to dev repo
     needs: [prepare_ci_run, helm_charts_build]
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout helm-charts repo
@@ -440,8 +442,8 @@ jobs:
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
           build-args: |
             version=${{ env.VERSION }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}

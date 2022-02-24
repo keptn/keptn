@@ -1,7 +1,7 @@
 {
   "type": "sh.keptn.event.hardening.evaluation.triggered",
   "specversion": "1.0",
-  "source": "travis-ci",
+  "source": "github-actions",
   "contenttype": "application/json",
   "data": {
     "project": "$PROJECT",
