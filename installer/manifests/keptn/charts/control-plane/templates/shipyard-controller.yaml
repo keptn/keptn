@@ -18,7 +18,7 @@ spec:
   {{- if or (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
   {{ else }}
-  replicas: 3
+  replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
