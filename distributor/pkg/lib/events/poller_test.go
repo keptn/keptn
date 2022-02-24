@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -177,4 +178,99 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 	}, time.Second*time.Duration(5), time.Second)
 	cancel()
 	executionContext.Wg.Wait()
+}
+
+func Test_getEventFilterForSubscription(t *testing.T) {
+	type args struct {
+		subscription keptnmodels.EventSubscription
+	}
+	tests := []struct {
+		name string
+		args args
+		want keptnapi.EventFilter
+	}{
+		{
+			name: "get default filter",
+			args: args{
+				subscription: keptnmodels.EventSubscription{
+					Event: "my-event",
+				},
+			},
+			want: keptnapi.EventFilter{
+				EventType: "my-event",
+			},
+		},
+		{
+			name: "multiple projects - get default filter",
+			args: args{
+				subscription: keptnmodels.EventSubscription{
+					Event: "my-event",
+					Filter: keptnmodels.EventSubscriptionFilter{
+						Projects: []string{"a", "b"},
+					},
+				},
+			},
+			want: keptnapi.EventFilter{
+				EventType: "my-event",
+			},
+		},
+		{
+			name: "one project",
+			args: args{
+				subscription: keptnmodels.EventSubscription{
+					Event: "my-event",
+					Filter: keptnmodels.EventSubscriptionFilter{
+						Projects: []string{"a"},
+					},
+				},
+			},
+			want: keptnapi.EventFilter{
+				EventType: "my-event",
+				Project:   "a",
+			},
+		},
+		{
+			name: "one project, one stage",
+			args: args{
+				subscription: keptnmodels.EventSubscription{
+					Event: "my-event",
+					Filter: keptnmodels.EventSubscriptionFilter{
+						Projects: []string{"a"},
+						Stages:   []string{"stage-a"},
+					},
+				},
+			},
+			want: keptnapi.EventFilter{
+				EventType: "my-event",
+				Project:   "a",
+				Stage:     "stage-a",
+			},
+		},
+		{
+			name: "one project, one stage, one service",
+			args: args{
+				subscription: keptnmodels.EventSubscription{
+					Event: "my-event",
+					Filter: keptnmodels.EventSubscriptionFilter{
+						Projects: []string{"a"},
+						Stages:   []string{"stage-a"},
+						Services: []string{"service-a"},
+					},
+				},
+			},
+			want: keptnapi.EventFilter{
+				EventType: "my-event",
+				Project:   "a",
+				Stage:     "stage-a",
+				Service:   "service-a",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getEventFilterForSubscription(tt.args.subscription); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getEventFilterForSubscription() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

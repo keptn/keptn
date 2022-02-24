@@ -3,6 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/keptn/keptn/cli/internal"
 
@@ -15,9 +17,11 @@ import (
 )
 
 type updateProjectCmdParams struct {
-	GitUser   *string
-	GitToken  *string
-	RemoteURL *string
+	GitUser           *string
+	GitToken          *string
+	RemoteURL         *string
+	GitPrivateKey     *string
+	GitPrivateKeyPass *string
 }
 
 var updateProjectParams *updateProjectCmdParams
@@ -31,11 +35,17 @@ var upProjectCmd = &cobra.Command{
 Updating a shipyard file is not possible.
 
 By executing the update project command, Keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (--git-user), an access token (--git-token), and the remote URL (--git-remote-url) are required.
+To upstream this internal Git repository to a remote repository, the Git user (--git-user) and the remote URL (*--git-remote-url*) are required
+together with private key (*--git-private-key*) or access token (*--git-token*). Please be aware that authentication with public/private key is 
+supported only when using resource-service.
 
 For more information about updating projects or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
 `,
-	Example:      `keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL`,
+	Example: `keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
+
+or (only for resource-service)
+
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
@@ -71,10 +81,27 @@ For more information about updating projects or upstream repositories, please go
 			Name: &args[0],
 		}
 
-		if *updateProjectParams.GitUser != "" && *updateProjectParams.GitToken != "" && *updateProjectParams.RemoteURL != "" {
+		if *updateProjectParams.GitUser != "" && *updateProjectParams.RemoteURL != "" {
+			if *updateProjectParams.GitToken == "" && *updateProjectParams.GitPrivateKey == "" {
+				return errors.New("Access token or private key must be set")
+			}
+
+			if *updateProjectParams.GitToken != "" && *updateProjectParams.GitPrivateKey != "" {
+				return errors.New("Access token or private key cannot be set together")
+			}
+
 			project.GitUser = *updateProjectParams.GitUser
 			project.GitToken = *updateProjectParams.GitToken
 			project.GitRemoteURL = *updateProjectParams.RemoteURL
+
+			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
+				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
+				if err != nil {
+					fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
+				}
+				project.GitPrivateKey = string(content)
+				project.GitPrivateKeyPass = *updateProjectParams.GitPrivateKeyPass
+			}
 		}
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
@@ -105,8 +132,11 @@ func init() {
 
 	updateProjectParams.GitUser = upProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	updateProjectParams.GitToken = upProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
-	updateProjectParams.RemoteURL = upProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
 	upProjectCmd.MarkFlagRequired("git-user")
-	upProjectCmd.MarkFlagRequired("git-token")
 	upProjectCmd.MarkFlagRequired("git-remote-url")
+
+	updateProjectParams.RemoteURL = upProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
+
+	updateProjectParams.GitPrivateKey = upProjectCmd.Flags().StringP("git-private-key", "k", "", "The SSH git private key of the git user")
+	updateProjectParams.GitPrivateKeyPass = upProjectCmd.Flags().StringP("git-private-key-pass", "l", "", "The passphrase of git private key")
 }

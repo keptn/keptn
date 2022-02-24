@@ -22,6 +22,12 @@ type UpdateProjectParams struct {
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
 
+	// git private key
+	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
 	// name
 	Name *string `json:"name"`
 
@@ -39,6 +45,12 @@ type CreateProjectParams struct {
 
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
+
+	// git private key
+	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
 
 	// name
 	Name *string `json:"name"`

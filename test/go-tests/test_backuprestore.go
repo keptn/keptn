@@ -1,13 +1,14 @@
 package go_tests
 
 import (
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"

@@ -90,6 +90,7 @@ var ErrCredentialsNotFound = New("could not find upstream repository credentials
 var ErrMalformedCredentials = New("could not decode upstream repository credentials")
 var ErrCredentialsInvalidRemoteURI = New("invalid remote URI")
 var ErrCredentialsTokenMustNotBeEmpty = New("token must not be empty")
+var ErrCredentialsPrivateKeyMustNotBeEmpty = New("private key must not be empty")
 
 // Error messages
 

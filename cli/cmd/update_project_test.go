@@ -47,3 +47,15 @@ func TestUpdateProjectUnknownCommand(t *testing.T) {
 func TestUpdateProjectUnknownParmeter(t *testing.T) {
 	testInvalidInputHelper("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "unknown flag: --git-userr", t)
 }
+
+// TestUpdateProjectCmdTokenAndKey
+func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-private-key=key --git-token=token")
+	_, err := executeActionCommandC(cmd)
+
+	if !errorContains(err, "Access token or private key cannot be set together") {
+		t.Errorf("missing expected error, but got %v", err)
+	}
+}

@@ -2,14 +2,15 @@ package go_tests
 
 import (
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 )
 
 const sequenceTriggerShipyard = `apiVersion: "spec.keptn.sh/0.2.2"

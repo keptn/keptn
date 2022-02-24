@@ -2,15 +2,16 @@ package go_tests
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"os"
-	"testing"
-	"time"
 )
 
 const sequenceTimeoutShipyard = `--- 

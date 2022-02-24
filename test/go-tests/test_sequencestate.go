@@ -2,17 +2,18 @@ package go_tests
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"os"
-	"strings"
-	"testing"
-	"time"
 )
 
 const sequenceStateShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
