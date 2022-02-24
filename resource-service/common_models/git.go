@@ -14,6 +14,11 @@ type GitCredentials struct {
 	RemoteURI         string `json:"remoteURI,omitempty"`
 	GitPrivateKey     string `json:"privateKey,omitempty"`
 	GitPrivateKeyPass string `json:"privateKeyPass,omitempty"`
+	GitProxyURL       string `json:"gitProxyUrl,omitempty"`
+	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
+	GitProxyUser      string `json:"gitProxyUser,omitempty"`
+	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
+	GitProxySecure    bool   `json:"gitProxySecure,omitempty"`
 }
 
 type GitContext struct {
