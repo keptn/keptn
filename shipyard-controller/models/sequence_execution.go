@@ -25,17 +25,17 @@ type SequenceExecutionStatus struct {
 type TaskExecutionResult struct {
 	Name        string                 `json:"name" bson:"name"`
 	TriggeredID string                 `json:"triggeredID" bson:"triggeredID"`
-	Result      string                 `json:"result" bson:"result"`
-	Status      string                 `json:"status" bson:"status"`
+	Result      keptnv2.ResultType     `json:"result" bson:"result"`
+	Status      keptnv2.StatusType     `json:"status" bson:"status"`
 	Properties  map[string]interface{} `json:"properties" bson:"properties"`
 }
 
 func (r TaskExecutionResult) IsFailed() bool {
-	return r.Result == string(keptnv2.ResultFailed)
+	return r.Result == keptnv2.ResultFailed
 }
 
 func (r TaskExecutionResult) IsErrored() bool {
-	return r.Status == string(keptnv2.StatusErrored)
+	return r.Status == keptnv2.StatusErrored
 }
 
 type TaskExecutionState struct {
@@ -67,7 +67,6 @@ func (e *SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 }
 
 func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.StatusType) {
-	// TODO test
 	var result keptnv2.ResultType
 	var status keptnv2.StatusType
 	if e.Status.CurrentTask.IsFailed() {
@@ -96,8 +95,8 @@ func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.S
 		TaskExecutionResult{
 			Name:        e.Status.CurrentTask.Name,
 			TriggeredID: e.Status.CurrentTask.TriggeredID,
-			Result:      string(result),
-			Status:      string(status),
+			Result:      result,
+			Status:      status,
 			Properties:  mergedProperties.(map[string]interface{}),
 		},
 	)
@@ -184,7 +183,7 @@ func (e *TaskExecutionState) IsFinished() bool {
 func (e *TaskExecutionState) IsFailed() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
-			if event.Result == string(keptnv2.ResultFailed) {
+			if event.Result == keptnv2.ResultFailed {
 				return true
 			}
 		}
@@ -195,7 +194,7 @@ func (e *TaskExecutionState) IsFailed() bool {
 func (e *TaskExecutionState) IsWarning() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
-			if event.Result == string(keptnv2.ResultWarning) {
+			if event.Result == keptnv2.ResultWarning {
 				return true
 			}
 		}
@@ -206,7 +205,7 @@ func (e *TaskExecutionState) IsWarning() bool {
 func (e *TaskExecutionState) IsPassed() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
-			if event.Result == string(keptnv2.ResultFailed) || event.Result == string(keptnv2.ResultWarning) {
+			if event.Result == keptnv2.ResultFailed || event.Result == keptnv2.ResultWarning {
 				return false
 			}
 		}
@@ -217,7 +216,7 @@ func (e *TaskExecutionState) IsPassed() bool {
 func (e *TaskExecutionState) IsErrored() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
-			if event.Status == string(keptnv2.StatusErrored) {
+			if event.Status == keptnv2.StatusErrored {
 				return true
 			}
 		}
@@ -228,8 +227,8 @@ func (e *TaskExecutionState) IsErrored() bool {
 type TaskEvent struct {
 	EventType  string                 `json:"eventType" bson:"eventType"`
 	Source     string                 `json:"source" bson:"source"`
-	Result     string                 `json:"result" bson:"result"`
-	Status     string                 `json:"status" bson:"status"`
+	Result     keptnv2.ResultType     `json:"result" bson:"result"`
+	Status     keptnv2.StatusType     `json:"status" bson:"status"`
 	Time       string                 `json:"time" bson:"time"`
 	Properties map[string]interface{} `json:"properties" bson:"properties"`
 }

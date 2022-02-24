@@ -297,8 +297,8 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 	taskEvent := models.TaskEvent{
 		EventType: *event.Type,
 		Source:    *event.Source,
-		Result:    string(eventScope.Result),
-		Status:    string(eventScope.Status),
+		Result:    eventScope.Result,
+		Status:    eventScope.Status,
 		Time:      event.Time,
 	}
 	if keptnv2.IsFinishedEventType(taskEvent.EventType) {
