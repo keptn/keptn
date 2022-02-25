@@ -76,8 +76,6 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			executionContext := NewExecutionContext(ctx, 1)
-			go poller.Start(executionContext)
-
 			poller.UpdateSubscriptions([]keptnmodels.EventSubscription{
 				{
 					ID:    "id1",
@@ -92,6 +90,7 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 					Event: "sh.keptn.event.task2.triggered",
 				},
 			})
+			go poller.Start(executionContext)
 
 			assert.Eventually(t, func() bool {
 				if len(eventSender.SentEvents) != 3 {
@@ -165,7 +164,6 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			executionContext := NewExecutionContext(ctx, 1)
-			go poller.Start(executionContext)
 
 			numSubscriptions := 100
 			subscriptions := []keptnmodels.EventSubscription{}
@@ -177,6 +175,7 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 			}
 
 			poller.UpdateSubscriptions(subscriptions)
+			go poller.Start(executionContext)
 
 			assert.Eventually(t, func() bool {
 				if len(eventSender.SentEvents) != numSubscriptions {
