@@ -184,6 +184,19 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return err, nilRollback
 	}
 
+	rollbackSecretCredentials := &gitCredentials{
+		User:              oldSecret.User,
+		Token:             oldSecret.Token,
+		RemoteURI:         oldSecret.RemoteURI,
+		GitPrivateKey:     oldSecret.GitPrivateKey,
+		GitPrivateKeyPass: oldSecret.GitPrivateKeyPass,
+		GitProxyURL:       oldSecret.GitProxyURL,
+		GitProxyScheme:    oldSecret.GitProxyScheme,
+		GitProxyUser:      oldSecret.GitProxyUser,
+		GitProxyPassword:  oldSecret.GitProxyPassword,
+		GitProxySecure:    oldSecret.GitProxySecure,
+	}
+
 	// old project for rollback
 	oldProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
@@ -196,9 +209,16 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-			User:      params.GitUser,
-			Token:     params.GitToken,
-			RemoteURI: params.GitRemoteURL,
+			User:              params.GitUser,
+			Token:             params.GitToken,
+			RemoteURI:         params.GitRemoteURL,
+			GitPrivateKey:     params.GitPrivateKey,
+			GitPrivateKeyPass: params.GitPrivateKeyPass,
+			GitProxyURL:       params.GitProxyURL,
+			GitProxyScheme:    params.GitProxyScheme,
+			GitProxyUser:      params.GitProxyUser,
+			GitProxyPassword:  params.GitProxyPassword,
+			GitProxySecure:    params.GitProxySecure,
 		})
 
 		// no roll back needed since updating the git repository secret was the first operation
@@ -209,10 +229,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	// new project content in configuration service
 	projectToUpdate := apimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	}
 
 	// project content in configuration service to rollback
@@ -231,11 +248,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
 		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 			// try to rollback already updated git repository secret
-			if err := pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-				User:      oldSecret.User,
-				Token:     oldSecret.Token,
-				RemoteURI: oldSecret.RemoteURI,
-			}); err != nil {
+			if err := pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
 				return ErrChangesRollback
 			}
 			// try to rollback already updated project in configuration store
@@ -260,10 +273,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			log.Errorf("Error occurred while updating the project shipyard in configuration store: %s", err.Error())
 			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 				// try to rollback already updated git repository secret
-				if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-					User:      oldSecret.User,
-					Token:     oldSecret.Token,
-					RemoteURI: oldSecret.RemoteURI}); err != nil {
+				if err = pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
 					return ErrChangesRollback
 				}
 				// try to rollback already updated project in configuration store
@@ -298,11 +308,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			}
 
 			// try to rollback already updated git repository secret
-			return pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-				User:      oldSecret.User,
-				Token:     oldSecret.Token,
-				RemoteURI: oldSecret.RemoteURI,
-			})
+			return pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials)
 		}
 	}
 
