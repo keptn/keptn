@@ -60,22 +60,22 @@ func NewSequenceDispatcher(
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	// try to dispatch the sequence immediately
-	if err := sd.dispatchSequence(queueItem); err != nil {
-		if err == ErrSequenceBlocked {
-			// if the sequence is currently blocked, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-				return err2
-			}
-		} else if err == ErrSequenceBlockedWaiting {
-			// if the sequence is currently blocked and should wait, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-				return err2
-			}
-			return ErrSequenceBlockedWaiting
-		} else {
-			return err
-		}
+	//if err := sd.dispatchSequence(queueItem); err != nil {
+	//	if err == ErrSequenceBlocked {
+	// if the sequence is currently blocked, insert it into the queue
+	if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+		return err2
 	}
+	//	} else if err == ErrSequenceBlockedWaiting {
+	// if the sequence is currently blocked and should wait, insert it into the queue
+	//		if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+	//			return err2
+	//		}
+	//		return ErrSequenceBlockedWaiting
+	//	} else {
+	//		return err
+	//	}
+	//}
 	return nil
 }
 
