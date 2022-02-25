@@ -160,9 +160,9 @@ func init() {
 	updateProjectParams.GitPrivateKey = upProjectCmd.Flags().StringP("git-private-key", "k", "", "The SSH git private key of the git user")
 	updateProjectParams.GitPrivateKeyPass = upProjectCmd.Flags().StringP("git-private-key-pass", "l", "", "The passphrase of git private key")
 
-	updateProjectParams.GitProxyURL = crProjectCmd.Flags().StringP("git-proxy-url", "p", "", "The git proxy URL and port")
-	updateProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
-	updateProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
-	updateProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
-	updateProjectParams.GitProxySecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
+	updateProjectParams.GitProxyURL = upProjectCmd.Flags().StringP("git-proxy-url", "p", "", "The git proxy URL and port")
+	updateProjectParams.GitProxyScheme = upProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
+	updateProjectParams.GitProxyUser = upProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
+	updateProjectParams.GitProxyPassword = upProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
+	updateProjectParams.GitProxySecure = upProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
 }
