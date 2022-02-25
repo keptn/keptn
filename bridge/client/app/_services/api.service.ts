@@ -25,6 +25,8 @@ import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { IScopesResult } from '../_interfaces/scopes-result';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
@@ -497,6 +499,10 @@ export class ApiService {
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
     return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
+  }
+
+  public getSecretScopes(): Observable<IScopesResult> {
+    return this.http.get<IScopesResult>(`${this._baseUrl}/secrets/v1/scope`);
   }
 
   public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {
