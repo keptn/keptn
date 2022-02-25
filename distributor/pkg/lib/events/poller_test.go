@@ -59,6 +59,22 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 						TotalCount:  1,
 					}
 				}
+				if eventType == "sh.keptn.event.task3.triggered" {
+					events = keptnmodels.Events{
+						Events: []*keptnmodels.KeptnContextExtendedCE{
+							{
+								ID:          "id-3",
+								Type:        strutils.Stringp("sh.keptn.event.task3.triggered"),
+								Source:      strutils.Stringp("source"),
+								Specversion: "1.0",
+								Data:        map[string]interface{}{"some": "property"},
+							},
+						},
+						NextPageKey: "",
+						PageSize:    1,
+						TotalCount:  1,
+					}
+				}
 
 				marshal, _ := json.Marshal(events)
 				w.Write(marshal)
@@ -87,7 +103,7 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 				},
 				{
 					ID:    "id3",
-					Event: "sh.keptn.event.task2.triggered",
+					Event: "sh.keptn.event.task3.triggered",
 				},
 			})
 			go poller.Start(executionContext)
@@ -115,16 +131,21 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 				event3.GetTemporaryData("distributor", &event3TmpData)
 				subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
 
+				checkSUbscriptionIDMap := map[string]string{
+					"sh.keptn.event.task.triggered":  "id1",
+					"sh.keptn.event.task2.triggered": "id2",
+					"sh.keptn.event.task3.triggered": "id3",
+				}
+
 				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event1.ID, subscriptionIDInFirstEvent, "id1")
 				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event2.ID, subscriptionIDInSecondEvent, "id2")
 				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event3.ID, subscriptionIDInThirdEvent, "id3")
-				return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2" && subscriptionIDInThirdEvent == "id3"
+				return subscriptionIDInFirstEvent == checkSUbscriptionIDMap[*event1.Type] && subscriptionIDInSecondEvent == checkSUbscriptionIDMap[*event2.Type] && subscriptionIDInThirdEvent == checkSUbscriptionIDMap[*event3.Type]
 			}, time.Second*time.Duration(5), time.Second)
 			cancel()
 			executionContext.Wg.Wait()
 		})
 	}
-
 }
 
 func Test_PollAndForwardEvents2(t *testing.T) {
@@ -186,7 +207,7 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 					return false
 				}
 				return true
-			}, time.Second*time.Duration(5), time.Second)
+			}, time.Second*time.Duration(10), time.Second)
 			cancel()
 			executionContext.Wg.Wait()
 		})
