@@ -67,6 +67,9 @@ func main() {
 	secretController := controller.NewSecretController(handler.NewSecretHandler(secretsBackend))
 	secretController.Inject(apiV1)
 
+	scopeController := controller.NewScopeController(handler.NewScopeHandler(secretsBackend))
+	scopeController.Inject(apiV1)
+
 	engine.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	engine.Static("/swagger-ui", "./swagger-ui")

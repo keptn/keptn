@@ -19,13 +19,14 @@ import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
-import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { KeptnService } from '../../../shared/models/keptn-service';
 import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { IScopesResult } from '../_interfaces/scopes-result';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',
@@ -485,5 +486,9 @@ export class ApiService {
 
   public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
     return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
+  }
+
+  public getSecretScopes(): Observable<IScopesResult> {
+    return this.http.get<IScopesResult>(`${this._baseUrl}/secrets/v1/scope`);
   }
 }
