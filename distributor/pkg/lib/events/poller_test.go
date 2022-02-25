@@ -134,10 +134,6 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 			"sh.keptn.event.task2.triggered": "id2",
 			"sh.keptn.event.task3.triggered": "id3",
 		}
-
-		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event1.ID, subscriptionIDInFirstEvent, "id1")
-		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event2.ID, subscriptionIDInSecondEvent, "id2")
-		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event3.ID, subscriptionIDInThirdEvent, "id3")
 		return subscriptionIDInFirstEvent == checkSubscriptionIDMap[*event1.Type] && subscriptionIDInSecondEvent == checkSubscriptionIDMap[*event2.Type] && subscriptionIDInThirdEvent == checkSubscriptionIDMap[*event3.Type]
 	}, time.Second*time.Duration(5), time.Second)
 	cancel()
