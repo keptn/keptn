@@ -94,6 +94,7 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 
 			assert.Eventually(t, func() bool {
 				if len(eventSender.SentEvents) != 3 {
+					fmt.Printf("Condition for len of sent events is not (yet) met: want %d got %d\n", 3, len(eventSender.SentEvents))
 					return false
 				}
 				firstSentEvent := eventSender.SentEvents[0]
@@ -114,6 +115,9 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 				event3.GetTemporaryData("distributor", &event3TmpData)
 				subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
 
+				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s", event1.ID, subscriptionIDInFirstEvent, "id1")
+				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s", event1.ID, subscriptionIDInSecondEvent, "id2")
+				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s", event1.ID, subscriptionIDInThirdEvent, "id3")
 				return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2" && subscriptionIDInThirdEvent == "id3"
 			}, time.Second*time.Duration(5), time.Second)
 			cancel()
