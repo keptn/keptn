@@ -104,9 +104,9 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 				subscriptionIDInFirstEvent := event1TmpData["subscriptionID"]
 
 				secondSentEvent := eventSender.SentEvents[1]
-				event, _ := keptnv2.ToKeptnEvent(secondSentEvent)
+				event2, _ := keptnv2.ToKeptnEvent(secondSentEvent)
 				var event2TmpData map[string]interface{}
-				event.GetTemporaryData("distributor", &event2TmpData)
+				event2.GetTemporaryData("distributor", &event2TmpData)
 				subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
 
 				thirdSentEvent := eventSender.SentEvents[2]
@@ -115,9 +115,9 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 				event3.GetTemporaryData("distributor", &event3TmpData)
 				subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
 
-				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s", event1.ID, subscriptionIDInFirstEvent, "id1")
-				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s", event1.ID, subscriptionIDInSecondEvent, "id2")
-				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s", event1.ID, subscriptionIDInThirdEvent, "id3")
+				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event1.ID, subscriptionIDInFirstEvent, "id1")
+				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event2.ID, subscriptionIDInSecondEvent, "id2")
+				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event3.ID, subscriptionIDInThirdEvent, "id3")
 				return subscriptionIDInFirstEvent == "id1" && subscriptionIDInSecondEvent == "id2" && subscriptionIDInThirdEvent == "id3"
 			}, time.Second*time.Duration(5), time.Second)
 			cancel()
