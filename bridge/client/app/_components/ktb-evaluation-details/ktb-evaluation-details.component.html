@@ -118,7 +118,7 @@
               <dt-key-value-list-item>
                 <dt-key-value-list-key> Score </dt-key-value-list-key>
                 <dt-key-value-list-value>
-                  {{ dataPoint.data.score | number: '1.0-2' }}
+                  {{ dataPoint.data.score | truncateNumber: 2 }}
                 </dt-key-value-list-value>
               </dt-key-value-list-item>
 
