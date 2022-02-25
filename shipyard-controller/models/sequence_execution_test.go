@@ -3,6 +3,7 @@ package models
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
+	"reflect"
 	"testing"
 )
 
@@ -344,6 +345,120 @@ func TestSequenceExecution_CompleteCurrentTask(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "multiple executors - one of them has 'warning' result",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					CurrentTask: TaskExecutionState{
+						Name:        "deployment",
+						TriggeredID: "my-triggered-id",
+						Events: []TaskEvent{
+							{
+								EventType: "deployment.started",
+								Source:    "my-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-service",
+								Result:    keptnv2.ResultPass,
+								Status:    keptnv2.StatusSucceeded,
+								Properties: map[string]interface{}{
+									"deploymentURI": "my-deployment-uri",
+								},
+							},
+							{
+								EventType: "deployment.started",
+								Source:    "my-second-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-second-service",
+								Result:    keptnv2.ResultWarning,
+								Status:    keptnv2.StatusSucceeded,
+								Properties: map[string]interface{}{
+									"otherProperty": "otherValue",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantResult: keptnv2.ResultWarning,
+			wantStatus: keptnv2.StatusSucceeded,
+			wantPreviousTasks: []TaskExecutionResult{
+				{
+					Name:        "deployment",
+					TriggeredID: "my-triggered-id",
+					Result:      keptnv2.ResultWarning,
+					Status:      keptnv2.StatusSucceeded,
+					Properties: map[string]interface{}{
+						"deploymentURI": "my-deployment-uri",
+						"otherProperty": "otherValue",
+					},
+				},
+			},
+		},
+		{
+			name: "multiple executors - one of them errored",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					CurrentTask: TaskExecutionState{
+						Name:        "deployment",
+						TriggeredID: "my-triggered-id",
+						Events: []TaskEvent{
+							{
+								EventType: "deployment.started",
+								Source:    "my-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-service",
+								Result:    keptnv2.ResultPass,
+								Status:    keptnv2.StatusSucceeded,
+								Properties: map[string]interface{}{
+									"deploymentURI": "my-deployment-uri",
+								},
+							},
+							{
+								EventType: "deployment.started",
+								Source:    "my-second-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-second-service",
+								Result:    keptnv2.ResultFailed,
+								Status:    keptnv2.StatusErrored,
+								Properties: map[string]interface{}{
+									"otherProperty": "otherValue",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantResult: keptnv2.ResultFailed,
+			wantStatus: keptnv2.StatusErrored,
+			wantPreviousTasks: []TaskExecutionResult{
+				{
+					Name:        "deployment",
+					TriggeredID: "my-triggered-id",
+					Result:      keptnv2.ResultFailed,
+					Status:      keptnv2.StatusErrored,
+					Properties: map[string]interface{}{
+						"deploymentURI": "my-deployment-uri",
+						"otherProperty": "otherValue",
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -356,6 +471,515 @@ func TestSequenceExecution_CompleteCurrentTask(t *testing.T) {
 			require.Equal(t, tt.wantStatus, status)
 
 			require.Equal(t, tt.wantPreviousTasks, e.Status.PreviousTasks)
+		})
+	}
+}
+
+func TestSequenceExecution_GetNextTaskOfSequence(t *testing.T) {
+	type fields struct {
+		ID              string
+		Sequence        keptnv2.Sequence
+		Status          SequenceExecutionStatus
+		Scope           EventScope
+		InputProperties map[string]interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   *keptnv2.Task
+	}{
+		{
+			name: "failed previous task - should return nil",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					PreviousTasks: []TaskExecutionResult{
+						{
+							Name:        "deployment",
+							TriggeredID: "my-triggered-id",
+							Result:      keptnv2.ResultFailed,
+							Status:      keptnv2.StatusSucceeded,
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "errored previous task - should return nil",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					PreviousTasks: []TaskExecutionResult{
+						{
+							Name:        "deployment",
+							TriggeredID: "my-triggered-id",
+							Status:      keptnv2.StatusErrored,
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "previous task succeeded - get next task",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					PreviousTasks: []TaskExecutionResult{
+						{
+							Name:        "deployment",
+							TriggeredID: "my-triggered-id",
+							Result:      keptnv2.ResultPass,
+							Status:      keptnv2.StatusSucceeded,
+						},
+					},
+				},
+				Sequence: keptnv2.Sequence{
+					Tasks: []keptnv2.Task{
+						{
+							Name: "deployment",
+						},
+						{
+							Name: "evaluation",
+						},
+					},
+				},
+			},
+			want: &keptnv2.Task{
+				Name: "evaluation",
+			},
+		},
+		{
+			name: "no previous task - get first task",
+			fields: fields{
+				Status: SequenceExecutionStatus{},
+				Sequence: keptnv2.Sequence{
+					Tasks: []keptnv2.Task{
+						{
+							Name: "deployment",
+						},
+						{
+							Name: "evaluation",
+						},
+					},
+				},
+			},
+			want: &keptnv2.Task{
+				Name: "deployment",
+			},
+		},
+		{
+			name: "all tasks finished - return nil",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					PreviousTasks: []TaskExecutionResult{
+						{
+							Name:        "deployment",
+							TriggeredID: "my-triggered-id",
+							Result:      keptnv2.ResultPass,
+							Status:      keptnv2.StatusSucceeded,
+						},
+						{
+							Name:        "evaluation",
+							TriggeredID: "my-triggered-id-2",
+							Result:      keptnv2.ResultPass,
+							Status:      keptnv2.StatusSucceeded,
+						},
+					},
+				},
+				Sequence: keptnv2.Sequence{
+					Tasks: []keptnv2.Task{
+						{
+							Name: "deployment",
+						},
+						{
+							Name: "evaluation",
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &SequenceExecution{
+				ID:              tt.fields.ID,
+				Sequence:        tt.fields.Sequence,
+				Status:          tt.fields.Status,
+				Scope:           tt.fields.Scope,
+				InputProperties: tt.fields.InputProperties,
+			}
+			if got := e.GetNextTaskOfSequence(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetNextTaskOfSequence() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSequenceExecution_IsPaused(t *testing.T) {
+	type fields struct {
+		ID              string
+		Sequence        keptnv2.Sequence
+		Status          SequenceExecutionStatus
+		Scope           EventScope
+		InputProperties map[string]interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "is paused",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequencePaused,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "is not paused",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequenceStartedState,
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &SequenceExecution{
+				ID:              tt.fields.ID,
+				Sequence:        tt.fields.Sequence,
+				Status:          tt.fields.Status,
+				Scope:           tt.fields.Scope,
+				InputProperties: tt.fields.InputProperties,
+			}
+			if got := e.IsPaused(); got != tt.want {
+				t.Errorf("IsPaused() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSequenceExecution_CanBePaused(t *testing.T) {
+	type fields struct {
+		ID              string
+		Sequence        keptnv2.Sequence
+		Status          SequenceExecutionStatus
+		Scope           EventScope
+		InputProperties map[string]interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "can be paused",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequenceStartedState,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "can not be paused",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequenceFinished,
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &SequenceExecution{
+				ID:              tt.fields.ID,
+				Sequence:        tt.fields.Sequence,
+				Status:          tt.fields.Status,
+				Scope:           tt.fields.Scope,
+				InputProperties: tt.fields.InputProperties,
+			}
+			if got := e.CanBePaused(); got != tt.want {
+				t.Errorf("IsPaused() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSequenceExecution_Pause(t *testing.T) {
+	type fields struct {
+		ID              string
+		Sequence        keptnv2.Sequence
+		Status          SequenceExecutionStatus
+		Scope           EventScope
+		InputProperties map[string]interface{}
+	}
+	tests := []struct {
+		name              string
+		fields            fields
+		want              bool
+		wantPreviousState string
+	}{
+		{
+			name: "try to pause finished sequence",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequenceFinished,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "pause sequence - keep track of previous state",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequenceStartedState,
+				},
+			},
+			want:              true,
+			wantPreviousState: SequenceStartedState,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &SequenceExecution{
+				ID:              tt.fields.ID,
+				Sequence:        tt.fields.Sequence,
+				Status:          tt.fields.Status,
+				Scope:           tt.fields.Scope,
+				InputProperties: tt.fields.InputProperties,
+			}
+			if got := e.Pause(); got != tt.want {
+				t.Errorf("Pause() = %v, want %v", got, tt.want)
+			}
+			if tt.want {
+				require.Equal(t, tt.wantPreviousState, e.Status.StateBeforePause)
+			}
+		})
+	}
+}
+
+func TestSequenceExecution_Resume(t *testing.T) {
+	type fields struct {
+		ID              string
+		Sequence        keptnv2.Sequence
+		Status          SequenceExecutionStatus
+		Scope           EventScope
+		InputProperties map[string]interface{}
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		want      bool
+		wantState string
+	}{
+		{
+			name: "try to resume non-paused sequence",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State: SequenceStartedState,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "resume sequence - set state back to previous state",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					State:            SequencePaused,
+					StateBeforePause: SequenceTriggeredState,
+				},
+			},
+			want:      true,
+			wantState: SequenceTriggeredState,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &SequenceExecution{
+				ID:              tt.fields.ID,
+				Sequence:        tt.fields.Sequence,
+				Status:          tt.fields.Status,
+				Scope:           tt.fields.Scope,
+				InputProperties: tt.fields.InputProperties,
+			}
+			if got := e.Resume(); got != tt.want {
+				t.Errorf("Pause() = %v, want %v", got, tt.want)
+			}
+			if tt.want {
+				require.Equal(t, tt.wantState, e.Status.State)
+			}
+		})
+	}
+}
+
+func TestTaskExecutionState_IsFinished(t *testing.T) {
+	type fields struct {
+		Name        string
+		TriggeredID string
+		Events      []TaskEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "no events received yet",
+			fields: fields{
+				Events: nil,
+			},
+			want: false,
+		},
+		{
+			name: "only received .started event",
+			fields: fields{
+				Events: []TaskEvent{
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "received two .started events, but only one .finished event",
+			fields: fields{
+				Events: []TaskEvent{
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "received two .started events, and two .finished events",
+			fields: fields{
+				Events: []TaskEvent{
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &TaskExecutionState{
+				Name:        tt.fields.Name,
+				TriggeredID: tt.fields.TriggeredID,
+				Events:      tt.fields.Events,
+			}
+			if got := e.IsFinished(); got != tt.want {
+				t.Errorf("IsFinished() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTaskExecutionState_IsPassed(t *testing.T) {
+	type fields struct {
+		Name        string
+		TriggeredID string
+		Events      []TaskEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "failed task",
+			fields: fields{
+				Events: []TaskEvent{
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+						Result:    keptnv2.ResultPass,
+					},
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+						Result:    keptnv2.ResultFailed,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "one task result is set to 'warning'",
+			fields: fields{
+				Events: []TaskEvent{
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+						Result:    keptnv2.ResultPass,
+					},
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+						Result:    keptnv2.ResultWarning,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "successful task",
+			fields: fields{
+				Events: []TaskEvent{
+					{
+						EventType: keptnv2.GetStartedEventType("task"),
+					},
+					{
+						EventType: keptnv2.GetFinishedEventType("task"),
+						Result:    keptnv2.ResultPass,
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &TaskExecutionState{
+				Name:        tt.fields.Name,
+				TriggeredID: tt.fields.TriggeredID,
+				Events:      tt.fields.Events,
+			}
+			if got := e.IsPassed(); got != tt.want {
+				t.Errorf("IsPassed() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

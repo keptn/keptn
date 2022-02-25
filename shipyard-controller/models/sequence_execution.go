@@ -138,7 +138,7 @@ func (e *SequenceExecution) IsPaused() bool {
 
 // CanBePaused determines whether a sequence can be paused, based on its current state. E.g. a finished sequence cannot be paused
 func (e *SequenceExecution) CanBePaused() bool {
-	return e.Status.State == SequenceStartedState || e.Status.State == SequenceWaitingState || e.Status.State == SequenceTriggeredState
+	return e.Status.State == SequenceStartedState || e.Status.State == SequenceWaitingState || e.Status.State == SequenceTriggeredState || e.Status.State == SequenceWaitingForApprovalState
 }
 
 // Pause tries to pause the sequence execution, based on its current state. If it was successful, returns true. If it could not be paused, false is returned

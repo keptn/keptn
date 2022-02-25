@@ -789,8 +789,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 
 	// special handling for approval events
 	if task.Name == "approval" {
-		// TODO WaitingForApproval state
-		sequenceExecution.Status.State = models.SequenceWaitingState
+		sequenceExecution.Status.State = models.SequenceWaitingForApprovalState
 	} else {
 		sequenceExecution.Status.State = models.SequenceStartedState
 	}
