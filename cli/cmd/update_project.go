@@ -22,6 +22,11 @@ type updateProjectCmdParams struct {
 	RemoteURL         *string
 	GitPrivateKey     *string
 	GitPrivateKeyPass *string
+	GitProxyURL       *string
+	GitProxyScheme    *string
+	GitProxyUser      *string
+	GitProxyPassword  *string
+	GitProxySecure    *bool
 }
 
 var updateProjectParams *updateProjectCmdParams
@@ -36,7 +41,8 @@ Updating a shipyard file is not possible.
 
 By executing the update project command, Keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
 To upstream this internal Git repository to a remote repository, the Git user (--git-user) and the remote URL (*--git-remote-url*) are required
-together with private key (*--git-private-key*) or access token (*--git-token*). Please be aware that authentication with public/private key is 
+together with private key (*--git-private-key*) or access token (*--git-token*). . For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
+used scheme (*--git-proxy-scheme=*) to connect to proxy. Please be aware that authentication with public/private key and via proxy is 
 supported only when using resource-service.
 
 For more information about updating projects or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
@@ -45,7 +51,11 @@ For more information about updating projects or upstream repositories, please go
 
 or (only for resource-service)
 
-keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE`,
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
+
+or (only for resource-service)
+
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --git-proxy-insecure`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
@@ -94,6 +104,16 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			project.GitToken = *updateProjectParams.GitToken
 			project.GitRemoteURL = *updateProjectParams.RemoteURL
 
+			if *updateProjectParams.GitProxyURL != "" && strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
+				return errors.New(gitErrMsg)
+			}
+
+			project.GitProxyURL = *updateProjectParams.GitProxyURL
+			project.GitProxyScheme = *updateProjectParams.GitProxyScheme
+			project.GitProxyUser = *updateProjectParams.GitProxyUser
+			project.GitProxyPassword = *updateProjectParams.GitProxyPassword
+			project.GitProxySecure = *updateProjectParams.GitProxySecure
+
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
 				if err != nil {
@@ -139,4 +159,10 @@ func init() {
 
 	updateProjectParams.GitPrivateKey = upProjectCmd.Flags().StringP("git-private-key", "k", "", "The SSH git private key of the git user")
 	updateProjectParams.GitPrivateKeyPass = upProjectCmd.Flags().StringP("git-private-key-pass", "l", "", "The passphrase of git private key")
+
+	updateProjectParams.GitProxyURL = crProjectCmd.Flags().StringP("git-proxy-url", "p", "", "The git proxy URL and port")
+	updateProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
+	updateProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
+	updateProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
+	updateProjectParams.GitProxySecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
 }

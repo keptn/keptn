@@ -26,6 +26,11 @@ type createProjectCmdParams struct {
 	RemoteURL         *string
 	GitPrivateKey     *string
 	GitPrivateKeyPass *string
+	GitProxyURL       *string
+	GitProxyScheme    *string
+	GitProxyUser      *string
+	GitProxyPassword  *string
+	GitProxySecure    *bool
 }
 
 var createProjectParams *createProjectCmdParams
@@ -40,7 +45,11 @@ or (only for resource-service)
 
 keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
 
-Please be aware that authentication with public/private key is supported only when using resource-service.
+or (only for resource-service)
+
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --git-proxy-insecure
+
+Please be aware that authentication with public/private key and via proxy is supported only when using resource-service.
 `
 
 // crProjectCmd represents the project command
@@ -52,7 +61,8 @@ The shipyard file describes the used stages. These stages are defined by name, a
 
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
 To upstream this internal Git repository to a remote repository, the Git user (*--git-user*) and the remote URL (*--git-remote-url*) are required
-together with private key (*--git-private-key*) or access token (*--git-token*). Please be aware that authentication with public/private key is 
+together with private key (*--git-private-key*) or access token (*--git-token*). For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
+used scheme (*--git-proxy-scheme=*) to connect to proxy. Please be aware that authentication with public/private key and via proxy is 
 supported only when using resource-service.
 
 For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
@@ -62,7 +72,11 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 
 or (only for resource-service)
 
-keptn create project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
+keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
+
+or (only for resource-service)
+
+keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --git-proxy-insecure
 `,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -111,6 +125,16 @@ keptn create project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			project.GitUser = *createProjectParams.GitUser
 			project.GitToken = *createProjectParams.GitToken
 			project.GitRemoteURL = *createProjectParams.RemoteURL
+
+			if *createProjectParams.GitProxyURL != "" && strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
+				return errors.New(gitErrMsg)
+			}
+
+			project.GitProxyURL = *createProjectParams.GitProxyURL
+			project.GitProxyScheme = *createProjectParams.GitProxyScheme
+			project.GitProxyUser = *createProjectParams.GitProxyUser
+			project.GitProxyPassword = *createProjectParams.GitProxyPassword
+			project.GitProxySecure = *createProjectParams.GitProxySecure
 
 			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
@@ -189,4 +213,10 @@ func init() {
 
 	createProjectParams.GitPrivateKey = crProjectCmd.Flags().StringP("git-private-key", "k", "", "The SSH git private key of the git user")
 	createProjectParams.GitPrivateKeyPass = crProjectCmd.Flags().StringP("git-private-key-pass", "l", "", "The passphrase of git private key")
+
+	createProjectParams.GitProxyURL = crProjectCmd.Flags().StringP("git-proxy-url", "p", "", "The git proxy URL and port")
+	createProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
+	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
+	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
+	createProjectParams.GitProxySecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
 }
