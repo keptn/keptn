@@ -129,7 +129,7 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 		event3.GetTemporaryData("distributor", &event3TmpData)
 		subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
 
-		checkSUbscriptionIDMap := map[string]string{
+		checkSubscriptionIDMap := map[string]string{
 			"sh.keptn.event.task.triggered":  "id1",
 			"sh.keptn.event.task2.triggered": "id2",
 			"sh.keptn.event.task3.triggered": "id3",
@@ -138,7 +138,7 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event1.ID, subscriptionIDInFirstEvent, "id1")
 		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event2.ID, subscriptionIDInSecondEvent, "id2")
 		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event3.ID, subscriptionIDInThirdEvent, "id3")
-		return subscriptionIDInFirstEvent == checkSUbscriptionIDMap[*event1.Type] && subscriptionIDInSecondEvent == checkSUbscriptionIDMap[*event2.Type] && subscriptionIDInThirdEvent == checkSUbscriptionIDMap[*event3.Type]
+		return subscriptionIDInFirstEvent == checkSubscriptionIDMap[*event1.Type] && subscriptionIDInSecondEvent == checkSubscriptionIDMap[*event2.Type] && subscriptionIDInThirdEvent == checkSubscriptionIDMap[*event3.Type]
 	}, time.Second*time.Duration(5), time.Second)
 	cancel()
 	executionContext.Wg.Wait()
@@ -202,7 +202,7 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 			return false
 		}
 		return true
-	}, time.Second*time.Duration(10), time.Second)
+	}, time.Second*time.Duration(5), time.Second)
 	cancel()
 	executionContext.Wg.Wait()
 }
