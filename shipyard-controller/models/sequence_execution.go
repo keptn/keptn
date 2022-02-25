@@ -90,15 +90,18 @@ func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.S
 		}
 	}
 
+	executionResult := TaskExecutionResult{
+		Name:        e.Status.CurrentTask.Name,
+		TriggeredID: e.Status.CurrentTask.TriggeredID,
+		Result:      result,
+		Status:      status,
+	}
+	if mergedPropertiesMap, ok := mergedProperties.(map[string]interface{}); ok {
+		executionResult.Properties = mergedPropertiesMap
+	}
 	e.Status.PreviousTasks = append(
 		e.Status.PreviousTasks,
-		TaskExecutionResult{
-			Name:        e.Status.CurrentTask.Name,
-			TriggeredID: e.Status.CurrentTask.TriggeredID,
-			Result:      result,
-			Status:      status,
-			Properties:  mergedProperties.(map[string]interface{}),
-		},
+		executionResult,
 	)
 	e.Status.CurrentTask = TaskExecutionState{}
 	return result, status

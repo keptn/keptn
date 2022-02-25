@@ -459,6 +459,56 @@ func TestSequenceExecution_CompleteCurrentTask(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "multiple executors - all properties nil",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					CurrentTask: TaskExecutionState{
+						Name:        "deployment",
+						TriggeredID: "my-triggered-id",
+						Events: []TaskEvent{
+							{
+								EventType: "deployment.started",
+								Source:    "my-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType:  "deployment.finished",
+								Source:     "my-service",
+								Result:     keptnv2.ResultPass,
+								Status:     keptnv2.StatusSucceeded,
+								Properties: nil,
+							},
+							{
+								EventType: "deployment.started",
+								Source:    "my-second-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType:  "deployment.finished",
+								Source:     "my-second-service",
+								Result:     keptnv2.ResultFailed,
+								Status:     keptnv2.StatusErrored,
+								Properties: nil,
+							},
+						},
+					},
+				},
+			},
+			wantResult: keptnv2.ResultFailed,
+			wantStatus: keptnv2.StatusErrored,
+			wantPreviousTasks: []TaskExecutionResult{
+				{
+					Name:        "deployment",
+					TriggeredID: "my-triggered-id",
+					Result:      keptnv2.ResultFailed,
+					Status:      keptnv2.StatusErrored,
+					Properties:  nil,
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
