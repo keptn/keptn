@@ -21,197 +21,190 @@ import (
 
 func Test_PollAndForwardEvents1(t *testing.T) {
 
-	for i := 0; i < 100; i++ {
-		t.Run(fmt.Sprintf("PollAndForwardEvents_%d", i), func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
-				w.Header().Add("Content-Type", "application/json")
-				eventType := strings.TrimPrefix(request.URL.Path, "/controlPlane/v1/event/triggered/")
-				var events keptnmodels.Events
-				if eventType == "sh.keptn.event.task.triggered" {
-					events = keptnmodels.Events{
-						Events: []*keptnmodels.KeptnContextExtendedCE{
-							{
-								ID:          "id-1",
-								Type:        strutils.Stringp("sh.keptn.event.task.triggered"),
-								Source:      strutils.Stringp("source"),
-								Specversion: "1.0",
-								Data:        map[string]interface{}{"some": "property"},
-							},
-						},
-						NextPageKey: "",
-						PageSize:    1,
-						TotalCount:  1,
-					}
-				}
-				if eventType == "sh.keptn.event.task2.triggered" {
-					events = keptnmodels.Events{
-						Events: []*keptnmodels.KeptnContextExtendedCE{
-							{
-								ID:          "id-2",
-								Type:        strutils.Stringp("sh.keptn.event.task2.triggered"),
-								Source:      strutils.Stringp("source"),
-								Specversion: "1.0",
-								Data:        map[string]interface{}{"some": "property"},
-							},
-						},
-						NextPageKey: "",
-						PageSize:    1,
-						TotalCount:  1,
-					}
-				}
-				if eventType == "sh.keptn.event.task3.triggered" {
-					events = keptnmodels.Events{
-						Events: []*keptnmodels.KeptnContextExtendedCE{
-							{
-								ID:          "id-3",
-								Type:        strutils.Stringp("sh.keptn.event.task3.triggered"),
-								Source:      strutils.Stringp("source"),
-								Specversion: "1.0",
-								Data:        map[string]interface{}{"some": "property"},
-							},
-						},
-						NextPageKey: "",
-						PageSize:    1,
-						TotalCount:  1,
-					}
-				}
-
-				marshal, _ := json.Marshal(events)
-				w.Write(marshal)
-			}))
-
-			envConfig := config.EnvConfig{
-				KeptnAPIEndpoint:    server.URL,
-				PubSubRecipient:     "http://127.0.0.1",
-				PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
-				HTTPPollingInterval: "1",
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		eventType := strings.TrimPrefix(request.URL.Path, "/controlPlane/v1/event/triggered/")
+		var events keptnmodels.Events
+		if eventType == "sh.keptn.event.task.triggered" {
+			events = keptnmodels.Events{
+				Events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						ID:          "id-1",
+						Type:        strutils.Stringp("sh.keptn.event.task.triggered"),
+						Source:      strutils.Stringp("source"),
+						Specversion: "1.0",
+						Data:        map[string]interface{}{"some": "property"},
+					},
+				},
+				NextPageKey: "",
+				PageSize:    1,
+				TotalCount:  1,
 			}
-			eventSender := keptnfake.EventSender{}
-			apiset, _ := keptnapi.New(server.URL)
-			poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
-
-			ctx, cancel := context.WithCancel(context.Background())
-			executionContext := NewExecutionContext(ctx, 1)
-			poller.UpdateSubscriptions([]keptnmodels.EventSubscription{
-				{
-					ID:    "id1",
-					Event: "sh.keptn.event.task.triggered",
+		}
+		if eventType == "sh.keptn.event.task2.triggered" {
+			events = keptnmodels.Events{
+				Events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						ID:          "id-2",
+						Type:        strutils.Stringp("sh.keptn.event.task2.triggered"),
+						Source:      strutils.Stringp("source"),
+						Specversion: "1.0",
+						Data:        map[string]interface{}{"some": "property"},
+					},
 				},
-				{
-					ID:    "id2",
-					Event: "sh.keptn.event.task2.triggered",
+				NextPageKey: "",
+				PageSize:    1,
+				TotalCount:  1,
+			}
+		}
+		if eventType == "sh.keptn.event.task3.triggered" {
+			events = keptnmodels.Events{
+				Events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						ID:          "id-3",
+						Type:        strutils.Stringp("sh.keptn.event.task3.triggered"),
+						Source:      strutils.Stringp("source"),
+						Specversion: "1.0",
+						Data:        map[string]interface{}{"some": "property"},
+					},
 				},
-				{
-					ID:    "id3",
-					Event: "sh.keptn.event.task3.triggered",
-				},
-			})
-			go poller.Start(executionContext)
+				NextPageKey: "",
+				PageSize:    1,
+				TotalCount:  1,
+			}
+		}
 
-			assert.Eventually(t, func() bool {
-				if len(eventSender.SentEvents) != 3 {
-					fmt.Printf("Condition for len of sent events is not (yet) met: want %d got %d\n", 3, len(eventSender.SentEvents))
-					return false
-				}
-				firstSentEvent := eventSender.SentEvents[0]
-				event1, _ := keptnv2.ToKeptnEvent(firstSentEvent)
-				var event1TmpData map[string]interface{}
-				event1.GetTemporaryData("distributor", &event1TmpData)
-				subscriptionIDInFirstEvent := event1TmpData["subscriptionID"]
+		marshal, _ := json.Marshal(events)
+		w.Write(marshal)
+	}))
 
-				secondSentEvent := eventSender.SentEvents[1]
-				event2, _ := keptnv2.ToKeptnEvent(secondSentEvent)
-				var event2TmpData map[string]interface{}
-				event2.GetTemporaryData("distributor", &event2TmpData)
-				subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
-
-				thirdSentEvent := eventSender.SentEvents[2]
-				event3, _ := keptnv2.ToKeptnEvent(thirdSentEvent)
-				var event3TmpData map[string]interface{}
-				event3.GetTemporaryData("distributor", &event3TmpData)
-				subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
-
-				checkSUbscriptionIDMap := map[string]string{
-					"sh.keptn.event.task.triggered":  "id1",
-					"sh.keptn.event.task2.triggered": "id2",
-					"sh.keptn.event.task3.triggered": "id3",
-				}
-
-				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event1.ID, subscriptionIDInFirstEvent, "id1")
-				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event2.ID, subscriptionIDInSecondEvent, "id2")
-				fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event3.ID, subscriptionIDInThirdEvent, "id3")
-				return subscriptionIDInFirstEvent == checkSUbscriptionIDMap[*event1.Type] && subscriptionIDInSecondEvent == checkSUbscriptionIDMap[*event2.Type] && subscriptionIDInThirdEvent == checkSUbscriptionIDMap[*event3.Type]
-			}, time.Second*time.Duration(5), time.Second)
-			cancel()
-			executionContext.Wg.Wait()
-		})
+	envConfig := config.EnvConfig{
+		KeptnAPIEndpoint:    server.URL,
+		PubSubRecipient:     "http://127.0.0.1",
+		PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
+		HTTPPollingInterval: "1",
 	}
+	eventSender := keptnfake.EventSender{}
+	apiset, _ := keptnapi.New(server.URL)
+	poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	poller.UpdateSubscriptions([]keptnmodels.EventSubscription{
+		{
+			ID:    "id1",
+			Event: "sh.keptn.event.task.triggered",
+		},
+		{
+			ID:    "id2",
+			Event: "sh.keptn.event.task2.triggered",
+		},
+		{
+			ID:    "id3",
+			Event: "sh.keptn.event.task3.triggered",
+		},
+	})
+	go poller.Start(executionContext)
+
+	assert.Eventually(t, func() bool {
+		if len(eventSender.SentEvents) != 3 {
+			fmt.Printf("Condition for len of sent events is not (yet) met: want %d got %d\n", 3, len(eventSender.SentEvents))
+			return false
+		}
+		firstSentEvent := eventSender.SentEvents[0]
+		event1, _ := keptnv2.ToKeptnEvent(firstSentEvent)
+		var event1TmpData map[string]interface{}
+		event1.GetTemporaryData("distributor", &event1TmpData)
+		subscriptionIDInFirstEvent := event1TmpData["subscriptionID"]
+
+		secondSentEvent := eventSender.SentEvents[1]
+		event2, _ := keptnv2.ToKeptnEvent(secondSentEvent)
+		var event2TmpData map[string]interface{}
+		event2.GetTemporaryData("distributor", &event2TmpData)
+		subscriptionIDInSecondEvent := event2TmpData["subscriptionID"]
+
+		thirdSentEvent := eventSender.SentEvents[2]
+		event3, _ := keptnv2.ToKeptnEvent(thirdSentEvent)
+		var event3TmpData map[string]interface{}
+		event3.GetTemporaryData("distributor", &event3TmpData)
+		subscriptionIDInThirdEvent := event3TmpData["subscriptionID"]
+
+		checkSUbscriptionIDMap := map[string]string{
+			"sh.keptn.event.task.triggered":  "id1",
+			"sh.keptn.event.task2.triggered": "id2",
+			"sh.keptn.event.task3.triggered": "id3",
+		}
+
+		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event1.ID, subscriptionIDInFirstEvent, "id1")
+		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event2.ID, subscriptionIDInSecondEvent, "id2")
+		fmt.Printf("subscriptionsIDS of sent event %s: %s , want %s\n", event3.ID, subscriptionIDInThirdEvent, "id3")
+		return subscriptionIDInFirstEvent == checkSUbscriptionIDMap[*event1.Type] && subscriptionIDInSecondEvent == checkSUbscriptionIDMap[*event2.Type] && subscriptionIDInThirdEvent == checkSUbscriptionIDMap[*event3.Type]
+	}, time.Second*time.Duration(5), time.Second)
+	cancel()
+	executionContext.Wg.Wait()
+
 }
 
 func Test_PollAndForwardEvents2(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		t.Run(fmt.Sprintf("PollAndForwardEvents_%d", i), func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
-				w.Header().Add("Content-Type", "application/json")
-				eventType := strings.TrimPrefix(request.URL.Path, "/controlPlane/v1/event/triggered/")
-				var events keptnmodels.Events
-				if eventType == "sh.keptn.event.task.triggered" {
-					events = keptnmodels.Events{
-						Events: []*keptnmodels.KeptnContextExtendedCE{
-							{
-								ID:          "id-1",
-								Type:        strutils.Stringp("sh.keptn.event.task.triggered"),
-								Source:      strutils.Stringp("source"),
-								Specversion: "1.0",
-								Data:        map[string]interface{}{"some": "property"},
-							},
-						},
-						NextPageKey: "",
-						PageSize:    1,
-						TotalCount:  1,
-					}
-				}
-
-				marshal, _ := json.Marshal(events)
-				w.Write(marshal)
-			}))
-
-			envConfig := config.EnvConfig{
-				KeptnAPIEndpoint:    server.URL,
-				PubSubRecipient:     "http://127.0.0.1",
-				PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
-				HTTPPollingInterval: "1",
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		eventType := strings.TrimPrefix(request.URL.Path, "/controlPlane/v1/event/triggered/")
+		var events keptnmodels.Events
+		if eventType == "sh.keptn.event.task.triggered" {
+			events = keptnmodels.Events{
+				Events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						ID:          "id-1",
+						Type:        strutils.Stringp("sh.keptn.event.task.triggered"),
+						Source:      strutils.Stringp("source"),
+						Specversion: "1.0",
+						Data:        map[string]interface{}{"some": "property"},
+					},
+				},
+				NextPageKey: "",
+				PageSize:    1,
+				TotalCount:  1,
 			}
-			eventSender := keptnfake.EventSender{}
+		}
 
-			apiset, _ := keptnapi.New(server.URL)
-			poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
+		marshal, _ := json.Marshal(events)
+		w.Write(marshal)
+	}))
 
-			ctx, cancel := context.WithCancel(context.Background())
-			executionContext := NewExecutionContext(ctx, 1)
+	envConfig := config.EnvConfig{
+		KeptnAPIEndpoint:    server.URL,
+		PubSubRecipient:     "http://127.0.0.1",
+		PubSubTopic:         "sh.keptn.event.task.triggered,sh.keptn.event.task2.triggered",
+		HTTPPollingInterval: "1",
+	}
+	eventSender := keptnfake.EventSender{}
 
-			numSubscriptions := 100
-			subscriptions := []keptnmodels.EventSubscription{}
-			for i := 0; i < numSubscriptions; i++ {
-				subscriptions = append(subscriptions, keptnmodels.EventSubscription{
-					ID:    fmt.Sprintf("id%d", i),
-					Event: "sh.keptn.event.task.triggered",
-				})
-			}
+	apiset, _ := keptnapi.New(server.URL)
+	poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
 
-			poller.UpdateSubscriptions(subscriptions)
-			go poller.Start(executionContext)
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
 
-			assert.Eventually(t, func() bool {
-				if len(eventSender.SentEvents) != numSubscriptions {
-					return false
-				}
-				return true
-			}, time.Second*time.Duration(10), time.Second)
-			cancel()
-			executionContext.Wg.Wait()
+	numSubscriptions := 100
+	subscriptions := []keptnmodels.EventSubscription{}
+	for i := 0; i < numSubscriptions; i++ {
+		subscriptions = append(subscriptions, keptnmodels.EventSubscription{
+			ID:    fmt.Sprintf("id%d", i),
+			Event: "sh.keptn.event.task.triggered",
 		})
 	}
+
+	poller.UpdateSubscriptions(subscriptions)
+	go poller.Start(executionContext)
+
+	assert.Eventually(t, func() bool {
+		if len(eventSender.SentEvents) != numSubscriptions {
+			return false
+		}
+		return true
+	}, time.Second*time.Duration(10), time.Second)
+	cancel()
+	executionContext.Wg.Wait()
 }
 
 func Test_getEventFilterForSubscription(t *testing.T) {
