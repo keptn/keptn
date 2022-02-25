@@ -343,7 +343,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 }
 
 func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
-	projectName := "sequence-queue3"
+	projectName := "sequence-queue3ses"
 
 	stageName := "dev"
 	sequencename := "mysequence"
@@ -356,18 +356,18 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath)
+	nProjectName, err := CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	for i := 0; i < numServices; i++ {
 		serviceName := fmt.Sprintf("service-%d", i)
-		output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+		output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, nProjectName))
 		require.Nil(t, err)
 		require.Contains(t, output, "created successfully")
 	}
 
 	triggerSequence := func(serviceName string, wg *sync.WaitGroup) {
-		_, err := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+		_, err := TriggerSequence(nProjectName, serviceName, stageName, sequencename, nil)
 		require.Nil(t, err)
 		wg.Done()
 	}
@@ -385,7 +385,7 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 
 	// after all sequences have been triggered, delete the project
 	//_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
-	_, err = ApiDELETERequest("/controlPlane/v1/project/"+projectName, 3)
+	_, err = ApiDELETERequest("/controlPlane/v1/project/"+nProjectName, 3)
 
 	require.Nil(t, err)
 

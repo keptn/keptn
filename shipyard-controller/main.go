@@ -65,7 +65,6 @@ const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
 const envVarNatsURLDefault = "nats://keptn-nats"
-const envVarDisableLeaderElection = "DISABLE_LEADER_ELECTION"
 
 func main() {
 
@@ -275,7 +274,7 @@ func main() {
 		}
 	}()
 
-	if os.Getenv(envVarDisableLeaderElection) == "true" {
+	if os.Getenv(handler.EnvVarDisableLeaderElection) == "true" {
 		// single shipyard
 		shipyardController.StartDispatchers(ctx)
 	} else {
@@ -340,7 +339,7 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 }
 
 func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrupt signal to gracefully shutdown the server
+	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
