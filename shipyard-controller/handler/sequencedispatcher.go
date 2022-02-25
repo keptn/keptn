@@ -62,19 +62,17 @@ func NewSequenceDispatcher(
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
-	// try to dispatch the sequence immediately
 
 	if os.Getenv(EnvVarDisableLeaderElection) == "true" {
-
+		//if there is only one shipyard we can both read and write,
+		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
 			if err == ErrSequenceBlocked {
 				//if the sequence is currently blocked, insert it into the queue
-				if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-					return err2
-				}
+				return sd.add(queueItem)
 			} else if err == ErrSequenceBlockedWaiting {
 				//if the sequence is currently blocked and should wait, insert it into the queue
-				if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
+				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
 				}
 				return ErrSequenceBlockedWaiting
@@ -82,10 +80,16 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 				return err
 			}
 		}
-	} else if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-		return err2
+		return nil
+	} else {
+		//if there are multiple shipyard we should only write
+		return sd.add(queueItem)
 	}
-	return nil
+
+}
+
+func (sd *SequenceDispatcher) add(queueItem models.QueueItem) error {
+	return sd.sequenceQueue.QueueSequence(queueItem)
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
