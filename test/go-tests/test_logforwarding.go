@@ -39,7 +39,7 @@ func Test_LogForwarding(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	// check if the project is already available - if not, delete it before creating it again
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))

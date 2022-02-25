@@ -16,6 +16,7 @@ import { EnvironmentUtils } from './utils/environment.utils';
 import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
 import { SessionService } from './user/session';
+import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -31,6 +32,19 @@ const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, process.env.NODE_ENV === 'test' ? '../' : '../../../');
 const serverFolder = join(rootFolder, 'server');
 const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
+const defaultContentSecurityPolicyOptions: Readonly<ContentSecurityPolicyOptions> = {
+  useDefaults: true,
+  directives: {
+    'script-src': [
+      "'self'",
+      "'unsafe-eval'",
+      "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
+      `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
+    ],
+    'style-src': [`'self'`, `'unsafe-inline'`, 'https://fonts.googleapis.com'],
+    'upgrade-insecure-requests': null,
+  },
+};
 
 async function init(): Promise<Express> {
   const app = express();
@@ -95,22 +109,10 @@ async function init(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-
-  app.use(
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        'script-src': [
-          "'self'",
-          "'unsafe-eval'",
-          "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
-          `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
-        ],
-        'style-src': [`'self'`, `'unsafe-inline'`],
-        'upgrade-insecure-requests': null,
-      },
-    })
-  );
+  // will be set later
+  if (!serverFeatureFlags.OAUTH_ENABLED) {
+    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+  }
   app.use(helmet.noSniff());
   app.use(helmet.permittedCrossDomainPolicies());
   app.use(helmet.frameguard());
@@ -361,4 +363,4 @@ function handleError(err: any, req: Request, res: Response, authType: string): n
   return err.response?.status || 500;
 }
 
-export { init };
+export { init, defaultContentSecurityPolicyOptions };

@@ -48,7 +48,7 @@ func Test_GracefulShutdown(t *testing.T) {
 	t.Logf("Creating a new project %s", keptnProjectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(tinyShipyard)
 	require.Nil(t, err)
-	keptnProjectName, err = CreateProject(keptnProjectName, shipyardFilePath, true)
+	keptnProjectName, err = CreateProject(keptnProjectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", serviceName, keptnProjectName)
