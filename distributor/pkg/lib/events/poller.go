@@ -96,9 +96,8 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 
-		// add to CloudEvents cache
-		p.ceCache.Add(subscription.ID, event.ID)
 		go func() {
+			p.ceCache.Add(subscription.ID, event.ID)
 			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, p.env.PubSubRecipient)
 			if err := p.sendEvent(event, subscription); err != nil {
 				logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
