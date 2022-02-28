@@ -1,5 +1,5 @@
-import { Component, Inject, Input, OnDestroy } from '@angular/core';
-import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
+import { Component, Inject, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { DtOverlay, DtOverlayConfig, DtOverlayRef } from '@dynatrace/barista-components/overlay';
 
 import { Trace } from '../../_models/trace';
 import { ResultTypes } from '../../../../shared/models/result-types';
@@ -45,7 +45,10 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
   };
   public historyPolling$: Subscription = Subscription.EMPTY;
   public evaluationsLoaded = false;
+  private overlayRef?: DtOverlayRef<unknown>;
+  private updateOverlayPositionSubscription = Subscription.EMPTY;
 
+  @ViewChild('overlay', { static: true, read: TemplateRef }) overlayTemplate?: TemplateRef<unknown>;
   @Input() public overlayDisabled?: boolean;
   @Input() public fill?: boolean;
   @Input() public evaluation?: Trace;
@@ -85,7 +88,12 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     );
   }
 
-  constructor(private dataService: DataService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {}
+  constructor(
+    private dataService: DataService,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number,
+    private ngZone: NgZone,
+    private _dtOverlay: DtOverlay
+  ) {}
 
   private fetchEvaluationHistory(): void {
     this.historyPolling$.unsubscribe();
@@ -129,7 +137,31 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  public showEvaluationOverlay(event: MouseEvent, data?: unknown): void {
+    if (!this.overlayRef && !this.overlayDisabled && this.overlayTemplate) {
+      this.overlayRef = this._dtOverlay.create(event, this.overlayTemplate, { ...this.overlayConfig, data });
+      this.updateEvaluationOverlayPosition();
+    }
+  }
+
+  public updateEvaluationOverlayPosition(): void {
+    this.updateOverlayPositionSubscription = this.ngZone.onMicrotaskEmpty
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.overlayRef?.updatePosition();
+        // if the content of the overlay changed after initialization the position stayed the same
+      });
+  }
+
+  public hideEvaluationOverlay(): void {
+    if (this.overlayRef) {
+      this._dtOverlay.dismiss();
+      this.updateOverlayPositionSubscription.unsubscribe();
+      this.overlayRef = undefined;
+    }
+  }
+
+  public ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }

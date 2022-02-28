@@ -10,12 +10,8 @@
     <dt-tag
       *ngFor="let pastEvaluation of evaluationHistory"
       class="m-0 mr-1 justify-content-center border"
-      [dtOverlay]="overlay"
-      [dtOverlayConfig]="{
-        pinnable: overlayConfig.pinnable,
-        data: pastEvaluation
-      }"
-      [disabled]="overlayDisabled"
+      (mouseenter)="showEvaluationOverlay($event, pastEvaluation)"
+      (mouseleave)="hideEvaluationOverlay()"
       [class.error]="pastEvaluation.isFaulty()"
       [class.warning]="pastEvaluation.isWarning()"
       [class.success]="pastEvaluation.isSuccessful()"
@@ -27,9 +23,8 @@
     <dt-tag-list aria-label="evaluation-info" *ngIf="evaluation && evaluation.isFinished()">
       <dt-tag
         class="m-0 justify-content-center"
-        [dtOverlay]="overlay"
-        [dtOverlayConfig]="overlayConfig"
-        [disabled]="overlayDisabled"
+        (mouseenter)="showEvaluationOverlay($event)"
+        (mouseleave)="hideEvaluationOverlay()"
         [class.error]="evaluation.isFaulty()"
         [class.warning]="evaluation.isWarning()"
         [class.success]="evaluation.isSuccessful()"
