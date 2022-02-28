@@ -13,6 +13,7 @@ const pathParamProjectName = "projectName"
 const pathParamStageName = "stageName"
 const pathParamServiceName = "serviceName"
 const pathParamResourceURI = "resourceURI"
+const EnvKubernetesPodName = "K8S_POD_NAME"
 
 func OnAPIError(c *gin.Context, err error) {
 	logger.Infof("Could not complete request %s %s: %v", c.Request.Method, c.Request.RequestURI, err)

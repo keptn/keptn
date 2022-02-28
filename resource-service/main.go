@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/resource-service/common"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -98,8 +99,13 @@ func main() {
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
+	eventSender, err := v0_2_0.NewHTTPEventSender("")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
-	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
+	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager, eventSender)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
@@ -178,14 +184,14 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 }
 
 func createKubeAPI() (*kubernetes.Clientset, error) {
-	var config *rest.Config
-	config, err := rest.InClusterConfig()
+	var configs *rest.Config
+	configs, err := rest.InClusterConfig()
 
 	if err != nil {
 		return nil, err
 	}
 
-	kubeAPI, err := kubernetes.NewForConfig(config)
+	kubeAPI, err := kubernetes.NewForConfig(configs)
 	if err != nil {
 		return nil, err
 	}

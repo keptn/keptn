@@ -1,11 +1,16 @@
 package handler
 
 import (
-	"github.com/keptn/keptn/resource-service/errors"
-	"net/http"
-
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
+	"net/http"
+	"net/url"
+	"os"
+	"time"
 )
 
 type IProjectResourceHandler interface {
@@ -19,11 +24,13 @@ type IProjectResourceHandler interface {
 
 type ProjectResourceHandler struct {
 	ProjectResourceManager IResourceManager
+	eventSender            *keptnv2.HTTPEventSender
 }
 
-func NewProjectResourceHandler(projectResourceManager IResourceManager) *ProjectResourceHandler {
+func NewProjectResourceHandler(projectResourceManager IResourceManager, eventSender *keptnv2.HTTPEventSender) *ProjectResourceHandler {
 	return &ProjectResourceHandler{
 		ProjectResourceManager: projectResourceManager,
+		eventSender:            eventSender,
 	}
 }
 
@@ -272,5 +279,39 @@ func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 		return
 	}
 
+	err = ph.SendDeleteFinishedEvent(params.ProjectName)
+
+	if err != nil {
+		OnAPIError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, result)
+}
+
+func (ph *ProjectResourceHandler) SendDeleteFinishedEvent(projectName string) error {
+	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+		},
+	}
+
+	ce := CreateEventWithPayload(keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
+	return ph.eventSender.SendEvent(ce)
+}
+
+func CreateEventWithPayload(eventType string, payload interface{}) cloudevents.Event {
+
+	source, _ := url.Parse(os.Getenv(EnvKubernetesPodName))
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetID(uuid.NewString())
+	event.SetExtension("shkeptncontext", uuid.New().String())
+	event.SetTime(time.Now().UTC())
+	_ = event.SetData(cloudevents.ApplicationJSON, payload)
+	return event
 }
