@@ -556,12 +556,12 @@ export class DataService {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
 
-  public getSequencesByContext(projectName: string, shkeptncontext: string): Observable<Sequence[]> {
+  public getSequenceByContext(projectName: string, shkeptncontext: string): Observable<Sequence | undefined> {
     return this.apiService
       .getSequences(projectName, 1, undefined, undefined, undefined, undefined, shkeptncontext)
       .pipe(
-        map((response) => response.body),
-        map((result) => result?.states || [])
+        map((response) => response.body?.states || []),
+        map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift())
       );
   }
 

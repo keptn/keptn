@@ -314,9 +314,9 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
           this.unsubscribe$.next();
           this.navigateToSequences(undefined);
         }
-        this.dataService.getSequencesByContext(this.projectName || '', response.keptnContext).subscribe(
-          (sequences) => {
-            if (sequences.length > 0) {
+        this.dataService.getSequenceByContext(this.projectName || '', response.keptnContext).subscribe(
+          (sequence) => {
+            if (sequence) {
               this.navigateToSequences(response.keptnContext);
             } else {
               retry++;
