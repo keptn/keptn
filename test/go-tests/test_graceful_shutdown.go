@@ -42,7 +42,7 @@ type Setup struct {
 }
 
 func newSetup(t *testing.T) *Setup {
-	repoLocalDir, err := filepath.Abs("../")
+	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
 	return &Setup{
 		Project:        "tinypodtato",

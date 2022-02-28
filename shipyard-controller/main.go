@@ -279,7 +279,7 @@ func main() {
 		shipyardController.StartDispatchers(ctx)
 	} else {
 		// multiple shipyards
-		LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+		go LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 	}
 
 	GracefulShutdown(ctx, wg, srv)

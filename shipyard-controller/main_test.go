@@ -130,7 +130,7 @@ func Test_LeaderElection(t *testing.T) {
 	// leader already there this part should fail but not panic
 	go newReplica()
 
-	time.After(20 * time.Second)
+	time.After(25 * time.Second)
 	// stopping the leader
 	cancel()
 
