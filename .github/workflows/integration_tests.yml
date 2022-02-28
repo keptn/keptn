@@ -330,6 +330,7 @@ jobs:
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
           RUN_AIRGAPPED_TEST: ${{ env.RUN_AIRGAPPED_TEST }}
+          USE_RESOURCE_SERVICE: ${{ matrix.USE_RESOURCE_SERVICE }}
         run: |
           echo "Installing Keptn on cluster"
           if [[ $PLATFORM == "openshift" ]]; then
@@ -351,6 +352,11 @@ jobs:
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
             installer/airgapped/install_keptn.sh "$AIRGAPPED_REGISTRY_URL/" "$HELM_CHART_NAME" "$HELM_SERVICE_HELM_CHART_NAME" "$JMETER_SERVICE_HELM_CHART_NAME"
+          elif [[ "$USE_RESOURCE_SERVICE" == "true" ]]; then
+            # Use Keptn helm chart to be able to customize the values
+            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+              --set control-plane.resourceService.enabled=true
           else
             # Install Keptn via CLI
             keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
