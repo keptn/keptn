@@ -355,6 +355,7 @@ jobs:
           elif [[ "$USE_RESOURCE_SERVICE" == "true" ]]; then
             # Use Keptn helm chart to be able to customize the values
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --create-namespace \
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true
           else
