@@ -126,7 +126,9 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 							Result: keptnv2.ResultPass,
 							Status: keptnv2.StatusSucceeded,
 							Properties: map[string]interface{}{
-								"bar": "foo",
+								"mytask": map[string]interface{}{
+									"bar": "foo",
+								},
 							},
 						},
 					},
