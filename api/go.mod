@@ -80,7 +80,7 @@ require (
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
-	k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a // indirect
+	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
