@@ -44,7 +44,7 @@ func getAPISetWithOauthGetter(baseURL string, keptnXToken string, oauthAuthentic
 			return nil, err
 		}
 		// get the ready to use HTTP client
-		client, err := oauthAuthenticator.GetOauthClient(context.Background())
+		client, err := oauthAuthenticator.OauthClient(context.Background())
 		if err != nil {
 			return nil, err
 		}

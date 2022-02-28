@@ -191,7 +191,7 @@ func Test_GetOauthClient(t *testing.T) {
 		wantClient assert.ValueAssertionFunc
 		wantErr    assert.ErrorAssertionFunc
 	}{
-		{"GetOauthClient - no persisted oauth info",
+		{"OauthClient - no persisted oauth info",
 			fields{
 				discovery: &OauthDiscoveryMock{
 					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
@@ -209,7 +209,7 @@ func Test_GetOauthClient(t *testing.T) {
 			},
 			assert.Nil,
 			assert.Error},
-		{"GetOauthClient - success",
+		{"OauthClient - success",
 			fields{
 				discovery: &OauthDiscoveryMock{
 					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
@@ -239,11 +239,11 @@ func Test_GetOauthClient(t *testing.T) {
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
-			got, err := a.GetOauthClient(tt.args.ctx)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetOauthClient(%v)", tt.args.ctx)) {
+			got, err := a.OauthClient(tt.args.ctx)
+			if !tt.wantErr(t, err, fmt.Sprintf("OauthClient(%v)", tt.args.ctx)) {
 				return
 			}
-			if !tt.wantClient(t, got, fmt.Sprintf("GetOauthClient(%v)", tt.args.ctx)) {
+			if !tt.wantClient(t, got, fmt.Sprintf("OauthClient(%v)", tt.args.ctx)) {
 				return
 			}
 		})

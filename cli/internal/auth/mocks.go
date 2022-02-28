@@ -174,7 +174,7 @@ func (a OAuthAuthenticatorMock) Auth(clientValues OauthClientValues) error {
 	panic("AuthFn called on mock but not set")
 }
 
-func (a OAuthAuthenticatorMock) GetOauthClient(ctx context.Context) (*http.Client, error) {
+func (a OAuthAuthenticatorMock) OauthClient(ctx context.Context) (*http.Client, error) {
 	a.GetAuthClientCalled = true
 	if a.GetOauthClientFn != nil {
 		return a.GetOauthClientFn(ctx)

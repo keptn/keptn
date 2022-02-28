@@ -19,7 +19,7 @@ const (
 // OAuthenticator represents just the interface for a component performing OAuth authentication
 type OAuthenticator interface {
 	Auth(clientValues OauthClientValues) error
-	GetOauthClient(ctx context.Context) (*http.Client, error)
+	OauthClient(ctx context.Context) (*http.Client, error)
 	TokenStore() OauthStore
 }
 
@@ -99,7 +99,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 
 // GetOauthClient will eventually return an already ready to use http client which is configured to use
 // a OAUth Access Token
-func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, error) {
+func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, error) {
 	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get OAuth HTTP client: %w", err)
