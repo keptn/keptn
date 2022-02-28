@@ -74,11 +74,11 @@ func Test_LeaderElection(t *testing.T) {
 		onRelease   = make(chan struct{})
 		lockObj     runtime.Object
 	)
-
 	c := &fakek8s.Clientset{}
 
 	shipyard := &fake.IShipyardControllerMock{
 		StartDispatchersFunc: func(ctx context.Context) {
+			time.After(5 * time.Second)
 			close(onNewLeader)
 		},
 		StopDispatchersFunc: func() {
@@ -120,20 +120,19 @@ func Test_LeaderElection(t *testing.T) {
 	newReplica := func() { LeaderElection(c.CoordinationV1(), ctx, shipyard.StartDispatchers, shipyard.StopDispatchers) }
 	go newReplica()
 
-	// Wait for first replica to become the leader
+	// Wait for one replica to become the leader
 	select {
 	case <-onNewLeader:
-		// leader already there this part should fail but not panic
-		go newReplica()
-
-		time.After(25 * time.Second)
 		// stopping the leader
-		cancel()
 
+		go newReplica() // leader already there one of the two may fail but not panic
+		cancel()
 		select {
 		case <-onRelease:
+			//reset chan for next leader
+			onRelease = make(chan struct{})
 		case <-time.After(10 * time.Second):
-			t.Fatal("the lock was not released")
+			t.Fatal("failed to release lock")
 		}
 	case <-time.After(10 * time.Second):
 		t.Fatal("failed to become the leader")
