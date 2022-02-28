@@ -56,6 +56,8 @@ export class DataService {
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   protected _evaluationResults = new Subject<EvaluationHistory>();
 
+  public isTriggerSequenceOpen = false;
+
   constructor(private apiService: ApiService) {}
 
   get projects(): Observable<Project[] | undefined> {
