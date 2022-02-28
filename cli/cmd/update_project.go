@@ -97,6 +97,10 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 				return errors.New("Access token or private key must be set")
 			}
 
+			fmt.Printf("gittoken je !!%s!!\n", *updateProjectParams.GitToken)
+			fmt.Printf("gitkey je !!%s!!\n", *updateProjectParams.GitPrivateKey)
+			fmt.Printf("gitproxy je !!%s!!\n", *updateProjectParams.GitProxyURL)
+
 			if *updateProjectParams.GitToken != "" && *updateProjectParams.GitPrivateKey != "" {
 				return errors.New("Access token or private key cannot be set together")
 			}
