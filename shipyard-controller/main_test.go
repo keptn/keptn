@@ -123,20 +123,20 @@ func Test_LeaderElection(t *testing.T) {
 	// Wait for first replica to become the leader
 	select {
 	case <-onNewLeader:
+		// leader already there this part should fail but not panic
+		go newReplica()
+
+		time.After(25 * time.Second)
+		// stopping the leader
+		cancel()
+
+		select {
+		case <-onRelease:
+		case <-time.After(10 * time.Second):
+			t.Fatal("the lock was not released")
+		}
 	case <-time.After(10 * time.Second):
 		t.Fatal("failed to become the leader")
 	}
 
-	// leader already there this part should fail but not panic
-	go newReplica()
-
-	time.After(25 * time.Second)
-	// stopping the leader
-	cancel()
-
-	select {
-	case <-onRelease:
-	case <-time.After(10 * time.Second):
-		t.Fatal("the lock was not released")
-	}
 }
