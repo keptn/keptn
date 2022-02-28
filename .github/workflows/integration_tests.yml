@@ -406,7 +406,7 @@ jobs:
         if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
         run: |
           # install public-gateway.istio-system
-          kubectl apply -f test/assets/istio-ingress.gateway.yml
+          kubectl apply -f test/assets/istio-ingress-gateway.yml
 
           # set ingress-hostname params
           INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
