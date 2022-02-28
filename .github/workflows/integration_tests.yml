@@ -37,6 +37,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -44,6 +45,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
             KUBECONFIG: ""
