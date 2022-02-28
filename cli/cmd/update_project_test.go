@@ -18,7 +18,7 @@ func init() {
 func TestUpdateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project sockshop -t token -u user -r https:// --mock")
+	cmd := fmt.Sprintf("update project sockshop --git-token=token --git-user=user --git-remote-url=https://some.url --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
@@ -30,22 +30,12 @@ func TestUpdateProjectCmd(t *testing.T) {
 func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project Sockshop -t token -u user -r https://github.com/user/upstream.git --mock")
+	cmd := fmt.Sprintf("update project Sockshop --git-token=token --git-user=user --git-remote-url=https://github.com/user/upstream.git --mock")
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
-}
-
-// TestUpdateProjectUnknownCommand
-func TestUpdateProjectUnknownCommand(t *testing.T) {
-	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "too many arguments set", t)
-}
-
-// TestUpdateProjectUnknownParameter
-func TestUpdateProjectUnknownParmeter(t *testing.T) {
-	testInvalidInputHelper("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "unknown flag: --git-userr", t)
 }
 
 // TestUpdateProjectCmdProxyAndSSH
@@ -64,7 +54,7 @@ func TestUpdateProjectCmdProxyAndSSH(t *testing.T) {
 func TestUpdateProjectCmdProxyNoScheme(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-token=key --git-proxy-url=ip-address")
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-token=token --git-proxy-url=ip-address")
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, "Proxy cannot be set without scheme") {
@@ -82,4 +72,14 @@ func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
 	if !errorContains(err, "Access token or private key cannot be set together") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
+}
+
+// TestUpdateProjectUnknownCommand
+func TestUpdateProjectUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=user --git-token=token --git-remote-url=http://some.url", "too many arguments set", t)
+}
+
+// TestUpdateProjectUnknownParameter
+func TestUpdateProjectUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("update project sockshop --git-userr=user --git-token=token --git-remote-url=http://some.url", "unknown flag: --git-userr", t)
 }
