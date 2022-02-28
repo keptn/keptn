@@ -367,15 +367,6 @@ jobs:
           fi
           echo "::endgroup::"
 
-      # Gather resource limits directly after installation of Keptn
-      - name: Gather resource limits
-        if: env.COLLECT_RESOURCE_LIMITS == 'true'
-        env:
-          TEST_REPORT_FILENAME: test-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.txt
-        run: |
-          echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
-          test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
-
       - name: Install Gitea
         id: install_gitea
         if: env.RUN_AIRGAPPED_TEST != 'true'
@@ -791,14 +782,6 @@ jobs:
         with:
           name: final-test-report-markdown
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
-
-      - name: Summarize Resource Usage
-        id: print_resource_usage
-        run: |
-          echo "" > final-resource-limits.txt
-          echo "**Resource Limits**" >> final-resource-limits.txt
-          ls -la test-resource-limits*.txt || true
-          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
 
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.17.0
