@@ -221,6 +221,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	if err := keptnv2.Decode(event.Data, &inputProperties); err != nil {
 		return err
 	}
+
 	sequenceExecution := models.SequenceExecution{
 		ID:       uuid.New().String(),
 		Sequence: *sequence,
@@ -233,6 +234,10 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	}
 	sequenceExecution.Scope.TriggeredID = event.ID
 	sequenceExecution.Scope.GitCommitID = eventScope.WrappedEvent.GitCommitID
+
+	if sc.sequenceExecutionRepo.IsContextPaused(*eventScope) {
+		sequenceExecution.Pause()
+	}
 
 	// insert the sequence execution, but only if there is no sequence with the same triggeredID already there
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, &models.SequenceExecutionUpsertOptions{CheckUniqueTriggeredID: true}); err != nil {
@@ -427,13 +432,17 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 }
 
 func (sc *shipyardController) pauseSequence(pause models.SequenceControl) error {
-	sequenceExecutions, err := sc.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: models.EventScope{
+	scope := models.EventScope{
 		KeptnContext: pause.KeptnContext,
 		EventData: keptnv2.EventData{
 			Project: pause.Project,
 			Stage:   pause.Stage,
 		},
-	}})
+	}
+	if err := sc.sequenceExecutionRepo.PauseContext(scope); err != nil {
+		log.Errorf("Could not pause global scope of sequence context: %v", err)
+	}
+	sequenceExecutions, err := sc.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: scope})
 
 	if err != nil {
 		return fmt.Errorf(couldNotGetActiveSequencesErrMsg, pause.Project, pause.Stage, pause.KeptnContext, err)
@@ -457,13 +466,17 @@ func (sc *shipyardController) pauseSequence(pause models.SequenceControl) error 
 }
 
 func (sc *shipyardController) resumeSequence(resume models.SequenceControl) error {
-	sequenceExecutions, err := sc.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: models.EventScope{
+	scope := models.EventScope{
 		KeptnContext: resume.KeptnContext,
 		EventData: keptnv2.EventData{
 			Project: resume.Project,
 			Stage:   resume.Stage,
 		},
-	}})
+	}
+	if err := sc.sequenceExecutionRepo.ResumeContext(scope); err != nil {
+		log.Errorf("Could not pause global scope of sequence context: %v", err)
+	}
+	sequenceExecutions, err := sc.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: scope})
 
 	if err != nil {
 		return fmt.Errorf(noActiveSequencesErrMsg, resume.Project, resume.Stage, resume.KeptnContext)

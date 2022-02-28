@@ -204,9 +204,7 @@ func main() {
 	shipyardController.AddSequenceAbortedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequencePausedHook(eventDispatcher)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceResumedHook(eventDispatcher)
 
 	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 

@@ -70,6 +70,9 @@ func TestSequenceDispatcher(t *testing.T) {
 				},
 			}, nil
 		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
 	}
 
 	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockSequenceQueueRepo, mockSequenceExecutionRepo, 10*time.Second, theClock)

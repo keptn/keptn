@@ -27,9 +27,6 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
@@ -45,6 +42,9 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 				}, nil
 			}
 			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
 		},
 	}
 	eventSender := &fake.EventSender{}
@@ -103,6 +103,9 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 			}
 			return nil, nil
 		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return true
+		},
 	}
 
 	eventSender := &fake.EventSender{}
@@ -151,9 +154,6 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
@@ -177,6 +177,9 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 					},
 				},
 			}, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
 		},
 	}
 
@@ -242,12 +245,6 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 			}
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			if eventScope.KeptnContext == "my-other-context-id" {
-				return true
-			}
-			return false
-		},
 	}
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
@@ -266,6 +263,12 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 				}, nil
 			}
 			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			if eventScope.KeptnContext == "my-other-context-id" {
+				return true
+			}
+			return false
 		},
 	}
 
@@ -362,9 +365,6 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
 	eventSender := &fake.EventSender{}
 
@@ -409,6 +409,9 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 				}, nil
 			}
 			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
 		},
 	}
 
@@ -464,9 +467,6 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
 	eventSender := &fake.EventSender{}
 
@@ -519,6 +519,9 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 					},
 				},
 			}, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
 		},
 	}
 

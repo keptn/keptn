@@ -140,11 +140,12 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 		return ErrSequenceNotFound
 	}
 
-	if sequenceExecution.IsPaused() {
+	if sequenceExecution.IsPaused() || sd.sequenceExecutionRepo.IsContextPaused(queueItem.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queueItem.Scope.KeptnContext)
 		return ErrSequenceBlocked
 	}
 
+	// get other sequence executions that might block the current sequence
 	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{

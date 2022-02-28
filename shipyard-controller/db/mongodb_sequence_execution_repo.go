@@ -14,7 +14,10 @@ import (
 	"time"
 )
 
-const SequenceExecutionCollectionNameSuffix = "SequenceExecution"
+const sequenceExecutionCollectionNameSuffix = "sequence-execution"
+
+// eventQueueSequenceStateCollectionName contains information on whether a task sequence is currently paused and thus outgoing events should be blocked
+const eventQueueSequenceStateCollectionName = "shipyard-controller-event-queue-sequence-state"
 
 var ErrProjectNameMustNotBeEmpty = errors.New("project name must not be empty")
 var ErrSequenceIDMustNotBeEmpty = errors.New("sequence ID must not be empty")
@@ -28,7 +31,7 @@ func NewMongoDBSequenceExecutionRepo(dbConnection *MongoDBConnection) *MongoDBSe
 }
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(filter.Scope.Project)
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(filter.Scope.Project)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +61,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 }
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggeredID string) (*models.SequenceExecution, error) {
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(project)
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(project)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +109,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	if item.Scope.Project == "" {
 		return ErrProjectNameMustNotBeEmpty
 	}
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(item.Scope.Project)
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(item.Scope.Project)
 	if err != nil {
 		return err
 	}
@@ -140,7 +143,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 	if taskSequence.ID == "" {
 		return nil, ErrSequenceIDMustNotBeEmpty
 	}
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(taskSequence.Scope.Project)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +180,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.Se
 	if taskSequence.ID == "" {
 		return nil, ErrSequenceIDMustNotBeEmpty
 	}
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(taskSequence.Scope.Project)
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(taskSequence.Scope.Project)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +214,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.Se
 }
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext(projectName)
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(projectName)
 	if err != nil {
 		return err
 	}
@@ -221,8 +224,12 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
 	return err
 }
 
-func (mdbrepo *MongoDBSequenceExecutionRepo) getCollectionAndContext(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
-	collectionName := fmt.Sprintf("%s-%s", project, SequenceExecutionCollectionNameSuffix)
+func (mdbrepo *MongoDBSequenceExecutionRepo) getSequenceExecutionStateCollection(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
+	collectionName := fmt.Sprintf("%s-%s", project, sequenceExecutionCollectionNameSuffix)
+	return mdbrepo.getCollection(collectionName)
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) getCollection(collectionName string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, nil, nil, err
@@ -255,6 +262,96 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) getSearchOptions(filter models.Sequ
 	}
 
 	return searchOptions
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) PauseContext(eventScope models.EventScope) error {
+	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequencePaused)
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) updateGlobalSequenceContext(eventScope models.EventScope, status string) error {
+	collection, ctx, cancel, err := mdbrepo.getCollection(eventQueueSequenceStateCollectionName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	state := models.EventQueueSequenceState{
+		State: status,
+		Scope: eventScope,
+	}
+
+	opts := options.Update().SetUpsert(true)
+
+	var filter bson.D
+	if eventScope.Stage == "" {
+		filter = bson.D{
+			{keptnContextScope, eventScope.KeptnContext},
+		}
+	} else {
+		filter = bson.D{
+			{keptnContextScope, eventScope.KeptnContext},
+			{stageScope, eventScope.Stage},
+		}
+	}
+	update := bson.D{{"$set", state}}
+
+	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	return err
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) ResumeContext(eventScope models.EventScope) error {
+	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequenceStartedState)
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.EventScope) bool {
+	collection, ctx, cancel, err := mdbrepo.getCollection(eventQueueSequenceStateCollectionName)
+	if err != nil {
+		log.Errorf("Could not get collection: %v", err)
+		return false
+	}
+	defer cancel()
+
+	searchOptions := bson.M{}
+	if eventScope.KeptnContext != "" {
+		searchOptions[keptnContextScope] = eventScope.KeptnContext
+	}
+	cur, err := collection.Find(ctx, searchOptions)
+	if err != nil {
+		log.Errorf("Could not retrieve sequence context: %v", err)
+		return false
+	} else if cur.RemainingBatchLength() == 0 {
+		return false
+	}
+
+	stateItems := []models.EventQueueSequenceState{}
+
+	defer func() {
+		err := cur.Close(ctx)
+		if err != nil {
+			log.Errorf("could not close cursor: %v", err)
+		}
+	}()
+	for cur.Next(ctx) {
+		stateItem := models.EventQueueSequenceState{}
+		err := cur.Decode(&stateItem)
+		if err != nil {
+			log.Errorf("Could not decode item: %v", err)
+			continue
+		}
+		stateItems = append(stateItems, stateItem)
+	}
+
+	for _, state := range stateItems {
+		if state.Scope.Stage == "" && state.State == models.SequencePaused {
+			// if the overall state is set to 'paused', this means that all stages are paused
+			return true
+		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
+			// if not the overall state is 'paused', but specifically for this stage, we return true as well
+			return true
+		}
+	}
+
+	return false
 }
 
 func appendFilterAs(filter bson.M, value, key string) bson.M {

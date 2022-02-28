@@ -112,5 +112,8 @@ type SequenceExecutionRepo interface {
 	Upsert(item models.SequenceExecution, options *models.SequenceExecutionUpsertOptions) error
 	AppendTaskEvent(taskSequence models.SequenceExecution, event models.TaskEvent) (*models.SequenceExecution, error)
 	UpdateStatus(taskSequence models.SequenceExecution) (*models.SequenceExecution, error)
+	PauseContext(eventScope models.EventScope) error
+	ResumeContext(eventScope models.EventScope) error
+	IsContextPaused(eventScope models.EventScope) bool
 	Clear(projectName string) error
 }
