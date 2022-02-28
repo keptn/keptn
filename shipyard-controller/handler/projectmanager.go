@@ -94,11 +94,13 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		return ErrProjectAlreadyExists, nilRollback
 	}
 
+	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
+
 	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 		User:              params.GitUser,
 		Token:             params.GitToken,
 		RemoteURI:         params.GitRemoteURL,
-		GitPrivateKey:     params.GitPrivateKey,
+		GitPrivateKey:     string(decodedPrivateKey),
 		GitPrivateKeyPass: params.GitPrivateKeyPass,
 		GitProxyURL:       params.GitProxyURL,
 		GitProxyScheme:    params.GitProxyScheme,
@@ -206,13 +208,15 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return ErrProjectNotFound, nilRollback
 	}
 
+	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
+
 	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 			User:              params.GitUser,
 			Token:             params.GitToken,
 			RemoteURI:         params.GitRemoteURL,
-			GitPrivateKey:     params.GitPrivateKey,
+			GitPrivateKey:     string(decodedPrivateKey),
 			GitPrivateKeyPass: params.GitPrivateKeyPass,
 			GitProxyURL:       params.GitProxyURL,
 			GitProxyScheme:    params.GitProxyScheme,

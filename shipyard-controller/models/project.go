@@ -159,6 +159,13 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 		return fmt.Errorf("privateKey and proxy cannot be used together")
 	}
 
+	if createProjectParams.GitPrivateKey != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPrivateKey)
+		if err != nil {
+			return errors.New("could not decode privateKey content")
+		}
+	}
+
 	return nil
 }
 
@@ -202,6 +209,13 @@ func (updateProjectParams *UpdateProjectParams) Validate() error {
 
 	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitProxyURL != "" {
 		return fmt.Errorf("privateKey and proxy cannot be used together")
+	}
+
+	if updateProjectParams.GitPrivateKey != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPrivateKey)
+		if err != nil {
+			return errors.New("could not decode privateKey content")
+		}
 	}
 
 	return nil
