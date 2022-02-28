@@ -20,7 +20,6 @@ require (
 	k8s.io/cli-runtime v0.22.7
 	k8s.io/client-go v0.22.7
 	k8s.io/kubectl v0.22.7
-	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/yaml v1.3.0
 )
 
