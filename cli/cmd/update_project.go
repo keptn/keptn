@@ -106,11 +106,11 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			project.GitRemoteURL = *updateProjectParams.RemoteURL
 
 			if *updateProjectParams.GitProxyURL != "" && strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
-				return errors.New(gitErrMsg)
+				return errors.New("Proxy cannot be set with SSH")
 			}
 
 			if *updateProjectParams.GitProxyURL != "" && *updateProjectParams.GitProxyScheme == "" {
-				return errors.New(gitErrMsg)
+				return errors.New("Proxy cannot be set without scheme")
 			}
 
 			project.GitProxyURL = *updateProjectParams.GitProxyURL

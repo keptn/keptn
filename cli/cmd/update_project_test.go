@@ -64,10 +64,10 @@ func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
 func TestUpdateProjectCmdProxyAndSSH(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=ssh://someurl.com --git-private-key=key --git-proxy-url=ip-address")
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=ssh://someurl.com --mock --git-private-key=key --git-proxy-url=ip-address")
 	_, err := executeActionCommandC(cmd)
 
-	if !errorContains(err, gitErrMsg) {
+	if !errorContains(err, "Proxy cannot be set with SSH") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
 }
@@ -76,10 +76,10 @@ func TestUpdateProjectCmdProxyAndSSH(t *testing.T) {
 func TestUpdateProjectCmdProxyNoScheme(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --git-token=key --git-user=user --git-proxy-url=ip-address")
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-token=key --git-proxy-url=ip-address")
 	_, err := executeActionCommandC(cmd)
 
-	if !errorContains(err, gitErrMsg) {
+	if !errorContains(err, "Proxy cannot be set without scheme") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
 }
