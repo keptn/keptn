@@ -130,6 +130,10 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				return errors.New(gitErrMsg)
 			}
 
+			if *createProjectParams.GitProxyURL != "" && *createProjectParams.GitProxyScheme == "" {
+				return errors.New(gitErrMsg)
+			}
+
 			project.GitProxyURL = *createProjectParams.GitProxyURL
 			project.GitProxyScheme = *createProjectParams.GitProxyScheme
 			project.GitProxyUser = *createProjectParams.GitProxyUser

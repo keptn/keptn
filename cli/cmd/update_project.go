@@ -109,6 +109,10 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 				return errors.New(gitErrMsg)
 			}
 
+			if *updateProjectParams.GitProxyURL != "" && *updateProjectParams.GitProxyScheme == "" {
+				return errors.New(gitErrMsg)
+			}
+
 			project.GitProxyURL = *updateProjectParams.GitProxyURL
 			project.GitProxyScheme = *updateProjectParams.GitProxyScheme
 			project.GitProxyUser = *updateProjectParams.GitProxyUser

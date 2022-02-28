@@ -14,7 +14,7 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestCreateProjectCmd tests the default use of the update project command
+// TestUpdateProjectCmd tests the default use of the update project command
 func TestUpdateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
@@ -56,6 +56,30 @@ func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, "Access token or private key cannot be set together") {
+		t.Errorf("missing expected error, but got %v", err)
+	}
+}
+
+// TestUpdateProjectCmdProxyAndSSH
+func TestUpdateProjectCmdProxyAndSSH(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=ssh://someurl.com --git-private-key=key --git-proxy-url=ip-address")
+	_, err := executeActionCommandC(cmd)
+
+	if !errorContains(err, gitErrMsg) {
+		t.Errorf("missing expected error, but got %v", err)
+	}
+}
+
+// TestUpdateProjectCmdProxyNoScheme
+func TestUpdateProjectCmdProxyNoScheme(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --git-token=key --git-user=user --git-proxy-url=ip-address")
+	_, err := executeActionCommandC(cmd)
+
+	if !errorContains(err, gitErrMsg) {
 		t.Errorf("missing expected error, but got %v", err)
 	}
 }
