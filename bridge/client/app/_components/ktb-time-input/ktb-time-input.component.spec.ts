@@ -26,78 +26,78 @@ describe('KtbTimeInputComponent', () => {
   it('should validate input for formControls with a min value and set appropriate value to formControl', () => {
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(-1);
+      component.timeControls[control].setValue(-1);
 
       // when
       component.validateInput(control, 24);
 
       // then
-      expect(component.timeForm.controls[control].value).toEqual(0);
+      expect(component.timeControls[control].value).toEqual(0);
     }
   });
 
   it('should validate input for formControls with a max value and set appropriate value to formControl', () => {
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(25);
+      component.timeControls[control].setValue(25);
 
       // when
       component.validateInput(control, 24);
 
       // then
-      expect(component.timeForm.controls[control].value).toEqual(24);
+      expect(component.timeControls[control].value).toEqual(24);
     }
   });
 
   it('should validate input for formControls, round input and set appropriate value to formControl', () => {
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(1.25);
+      component.timeControls[control].setValue(1.25);
 
       // when
       component.validateInput(control, 24);
 
       // then
-      expect(component.timeForm.controls[control].value).toEqual(1);
+      expect(component.timeControls[control].value).toEqual(1);
     }
   });
 
   it('should validate input for formControls with min set to undefined, should be 0 for min', () => {
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(-1);
+      component.timeControls[control].setValue(-1);
 
       // when
       component.validateInput(control, undefined, undefined);
 
       // then
-      expect(component.timeForm.controls[control].value).toEqual(0);
+      expect(component.timeControls[control].value).toEqual(0);
     }
   });
 
   it('should validate input for formControls with max set to undefined - round but values is used as given', () => {
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(10000.25);
+      component.timeControls[control].setValue(10000.25);
 
       // when
       component.validateInput(control, undefined, undefined);
 
       // then
-      expect(component.timeForm.controls[control].value).toEqual(10000);
+      expect(component.timeControls[control].value).toEqual(10000);
     }
   });
 
   it('should validate input for formControls with min set to different value than 0', () => {
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(-1);
+      component.timeControls[control].setValue(-1);
 
       // when
       component.validateInput(control, undefined, 5);
 
       // then
-      expect(component.timeForm.controls[control].value).toEqual(5);
+      expect(component.timeControls[control].value).toEqual(5);
     }
   });
 
@@ -105,7 +105,7 @@ describe('KtbTimeInputComponent', () => {
     const spy = jest.spyOn(component.timeChanged, 'emit');
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(1);
+      component.timeControls[control].setValue(1);
 
       // when
       component.validateInput(control, 24);
@@ -119,7 +119,7 @@ describe('KtbTimeInputComponent', () => {
     const spy = jest.spyOn(component.timeChanged, 'emit');
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(0);
+      component.timeControls[control].setValue(0);
 
       // when
       component.validateInput(control, 24);
@@ -133,7 +133,7 @@ describe('KtbTimeInputComponent', () => {
     const spy = jest.spyOn(component.timeChanged, 'emit');
     for (const control of formControlNames) {
       // given
-      component.timeForm.controls[control].setValue(null);
+      component.timeControls[control].setValue(null);
 
       // when
       component.validateInput(control, 24);

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Timeframe } from '../../_models/timeframe';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'ktb-time-input',
@@ -21,35 +21,41 @@ export class KtbTimeInputComponent implements OnInit {
 
   public isFocused = false;
 
-  public timeForm = new FormGroup({
-    hours: new FormControl(),
-    minutes: new FormControl(),
-    seconds: new FormControl(),
-    millis: new FormControl(),
-    micros: new FormControl(),
-  });
+  public hoursControl: FormControl = new FormControl();
+  public minutesControl: FormControl = new FormControl();
+  public secondsControl: FormControl = new FormControl();
+  public millisControl: FormControl = new FormControl();
+  public microsControl: FormControl = new FormControl();
+
+  public timeControls: Record<string, FormControl> = {
+    hours: this.hoursControl,
+    minutes: this.minutesControl,
+    seconds: this.secondsControl,
+    millis: this.millisControl,
+    micros: this.microsControl,
+  };
 
   public ngOnInit(): void {
     if (this.timeframe) {
-      this.timeForm.controls.hours.setValue(this.timeframe.hours ?? null);
-      this.timeForm.controls.minutes.setValue(this.timeframe.minutes ?? null);
-      this.timeForm.controls.seconds.setValue(this.timeframe.seconds ?? null);
-      this.timeForm.controls.millis.setValue(this.timeframe.millis ?? null);
-      this.timeForm.controls.micros.setValue(this.timeframe.micros ?? null);
+      this.hoursControl.setValue(this.timeframe.hours ?? null);
+      this.minutesControl.setValue(this.timeframe.minutes ?? null);
+      this.secondsControl.setValue(this.timeframe.seconds ?? null);
+      this.millisControl.setValue(this.timeframe.millis ?? null);
+      this.microsControl.setValue(this.timeframe.micros ?? null);
     }
   }
 
   public validateInput(formControlName: string, max: number | undefined, min = 0): void {
-    if (this.timeForm.controls[formControlName].value) {
-      let val = this.timeForm.controls[formControlName].value;
+    if (this.timeControls[formControlName].value) {
+      let val = this.timeControls[formControlName].value;
       val = Math.round(val);
       if (val < min) val = min;
       if (max && val > max) val = max;
-      this.timeForm.controls[formControlName].setValue(val);
+      this.timeControls[formControlName].setValue(val);
     } else {
       // To prevent from infinite 0 and dots, we have to set it manually.
       // In the control the value is already set to the right value, the input is not updated.
-      this.timeForm.controls[formControlName].setValue(this.timeForm.controls[formControlName].value);
+      this.timeControls[formControlName].setValue(this.timeControls[formControlName].value);
     }
     this.emitChangedValues();
   }
@@ -62,11 +68,11 @@ export class KtbTimeInputComponent implements OnInit {
 
   private emitChangedValues(): void {
     this.timeChanged.emit({
-      hours: this.timeForm.controls.hours.value ?? undefined,
-      minutes: this.timeForm.controls.minutes.value ?? undefined,
-      seconds: this.timeForm.controls.seconds.value ?? undefined,
-      millis: this.timeForm.controls.millis.value ?? undefined,
-      micros: this.timeForm.controls.micros.value ?? undefined,
+      hours: this.hoursControl.value ?? undefined,
+      minutes: this.minutesControl.value ?? undefined,
+      seconds: this.secondsControl.value ?? undefined,
+      millis: this.millisControl.value ?? undefined,
+      micros: this.microsControl.value ?? undefined,
     });
   }
 }

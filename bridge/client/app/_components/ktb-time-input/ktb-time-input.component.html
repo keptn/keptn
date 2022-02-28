@@ -5,7 +5,7 @@
   (click)="focusClick($event, hourInput)"
   (focus)="hourInput.focus()"
 >
-  <form [formGroup]="timeForm" uitestid="keptn-time-input">
+  <form uitestid="keptn-time-input">
     <input
       #hourInput
       dtInput
@@ -13,7 +13,7 @@
       type="number"
       (focusin)="isFocused = true"
       (focusout)="isFocused = false"
-      formControlName="hours"
+      [formControl]="hoursControl"
       (input)="validateInput('hours', max?.hours, min?.hours)"
       uitestid="keptn-time-input-hours"
     />:<input
@@ -22,7 +22,7 @@
       type="number"
       (focusin)="isFocused = true"
       (focusout)="isFocused = false"
-      formControlName="minutes"
+      [formControl]="minutesControl"
       (input)="validateInput('minutes', max?.minutes, min?.minutes)"
       uitestid="keptn-time-input-minutes"
     /><ng-container *ngIf="secondsEnabled"
@@ -32,7 +32,7 @@
         type="number"
         (focusin)="isFocused = true"
         (focusout)="isFocused = false"
-        formControlName="seconds"
+        [formControl]="secondsControl"
         (input)="validateInput('seconds', max?.seconds, min?.seconds)"
         uitestid="keptn-time-input-seconds" /></ng-container
     ><ng-container *ngIf="millisEnabled"
@@ -42,7 +42,7 @@
         type="number"
         (focusin)="isFocused = true"
         (focusout)="isFocused = false"
-        formControlName="millis"
+        [formControl]="millisControl"
         (input)="validateInput('millis', max?.millis, min?.millis)"
         uitestid="keptn-time-input-millis" /></ng-container
     ><ng-container *ngIf="microsEnabled"
@@ -52,7 +52,7 @@
         type="number"
         (focusin)="isFocused = true"
         (focusout)="isFocused = false"
-        formControlName="micros"
+        [formControl]="microsControl"
         (input)="validateInput('micros', max?.micros, min?.micros)"
         uitestid="keptn-time-input-micros"
     /></ng-container>
