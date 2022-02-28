@@ -110,6 +110,7 @@ func main() {
 		createSecretStore(kubeAPI),
 		projectMVRepo,
 		createTaskSequenceRepo(),
+		sequenceExecutionRepo,
 		createEventsRepo(),
 		createSequenceQueueRepo(),
 		createEventQueueRepo())

@@ -107,7 +107,6 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 		return sc.cancelSequence(controlSequence)
 	case models.PauseSequence:
 		log.Info("Processing PAUSE sequence control")
-		// todo update sequence execution state
 		sc.onSequencePaused(models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: controlSequence.Project,
@@ -115,9 +114,9 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 			},
 			KeptnContext: controlSequence.KeptnContext,
 		})
+		return sc.pauseSequence(controlSequence)
 	case models.ResumeSequence:
 		log.Info("Processing RESUME sequence control")
-		// todo update sequence execution state
 		sc.onSequenceResumed(models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: controlSequence.Project,
@@ -125,6 +124,7 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 			},
 			KeptnContext: controlSequence.KeptnContext,
 		})
+		return sc.resumeSequence(controlSequence)
 	}
 	return nil
 }
@@ -474,7 +474,7 @@ func (sc *shipyardController) resumeSequence(resume models.SequenceControl) erro
 	}
 
 	for _, sequenceExecution := range sequenceExecutions {
-		if !sequenceExecution.Pause() {
+		if !sequenceExecution.Resume() {
 			continue
 		}
 		_, err = sc.sequenceExecutionRepo.UpdateStatus(sequenceExecution)
@@ -588,12 +588,13 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 	}
 	sequenceExecution := sequenceExecutions[0]
 	sequenceExecution.Status.State = models.SequenceStartedState
-	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
+	updatedSequenceExecution, err := sc.sequenceExecutionRepo.UpdateStatus(sequenceExecution)
+	if err != nil {
 		msg := fmt.Sprintf("could not update sequence execution state %s: %s", taskSequenceName, err.Error())
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 	sc.onSequenceStarted(event)
-	return sc.proceedTaskSequence(*eventScope, sequenceExecution)
+	return sc.proceedTaskSequence(*eventScope, *updatedSequenceExecution)
 }
 
 func (sc *shipyardController) getOpenSequenceExecution(eventScope models.EventScope) (*models.SequenceExecution, error) {
@@ -790,8 +791,6 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 	// special handling for approval events
 	if task.Name == "approval" {
 		sequenceExecution.Status.State = models.SequenceWaitingForApprovalState
-	} else {
-		sequenceExecution.Status.State = models.SequenceStartedState
 	}
 
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {

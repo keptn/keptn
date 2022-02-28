@@ -150,6 +150,7 @@ func (e *SequenceExecution) Pause() bool {
 		return false
 	}
 	e.Status.StateBeforePause = e.Status.State
+	e.Status.State = SequencePaused
 	return true
 }
 
