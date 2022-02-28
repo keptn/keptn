@@ -143,7 +143,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
 				if err != nil {
-					fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
+					return fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
 				}
 
 				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))

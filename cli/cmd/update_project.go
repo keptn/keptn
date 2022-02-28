@@ -122,7 +122,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
 				if err != nil {
-					fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
+					return fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
 				}
 
 				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
