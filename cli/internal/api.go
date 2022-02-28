@@ -16,33 +16,54 @@ var APIProvider = getAPISet
 // contains the correct HTTP Client to be used for contacting the API endpoints
 // Depending on whether OAuth is in use or not it will create an OAUth enabled client or not.
 // Further, authToken and httpClient is optional. If the user does not provide an auth token,
-// it will not be part of the requests made via the entities of the API set. If a HTTP client is given
+// it will not be part of the requests made via the entities of the API set. If an HTTP client is given
 // it is used without further modifications (apart from the modifications being done in go-utils)
 // It is also possible to provide nil as httpClient parameter, in which case a fresh HTTP client will be created
 // but does NOT support OAuth
-func getAPISet(baseURL string, authToken string, httpClient ...*http.Client) (*apiutils.APISet, error) {
-	// if a HTTP client was explicitly given,
+func getAPISet(baseURL string, keptnXToken string, httpClient ...*http.Client) (*apiutils.APISet, error) {
+	return getAPISetWithOauthGetter(baseURL, keptnXToken, auth.NewOauthAuthenticator(PublicDiscovery, auth.NewLocalFileOauthStore(), auth.NewBrowser(), &auth.ClosingRedirectHandler{}), httpClient...)
+}
+
+func getAPISetWithOauthGetter(baseURL string, keptnXToken string, oauthAuthenticator auth.OAuthenticator, httpClient ...*http.Client) (*apiutils.APISet, error) {
+	// if an HTTP client was explicitly given,
 	// we just create and return a new APISet with that client
 	if len(httpClient) > 0 {
-		if authToken == "" {
+		if keptnXToken == "" {
 			return apiutils.New(baseURL, apiutils.WithHTTPClient(httpClient[0]))
 		}
-		return apiutils.New(baseURL, apiutils.WithAuthToken(authToken), apiutils.WithHTTPClient(httpClient[0]))
+		return apiutils.New(baseURL, apiutils.WithAuthToken(keptnXToken), apiutils.WithHTTPClient(httpClient[0]))
 	}
 	// else, depending on whether OAuth is in use or not,
 	// create and return a APISet with an OAuth enabled HTTP client or not
 	var client *http.Client
-	var err error
-	tokenStore := auth.NewLocalFileOauthStore()
-	if storeCreated := tokenStore.Created(); storeCreated {
-		oauth := auth.NewOauthAuthenticator(PublicDiscovery, tokenStore, auth.NewBrowser(), &auth.ClosingRedirectHandler{})
-		client, err = oauth.GetOauthClient(context.Background())
+
+	// check whether OAuth is in use
+	if storeCreated := oauthAuthenticator.TokenStore().Created(); storeCreated {
+		oauthInfo, err := oauthAuthenticator.TokenStore().GetOauthInfo()
 		if err != nil {
 			return nil, err
 		}
-		if authToken == "" {
+		// get the ready to use HTTP client
+		client, err := oauthAuthenticator.GetOauthClient(context.Background())
+		if err != nil {
+			return nil, err
+		}
+		// check if the HTTP client is still usable, i.e.
+		// make a call to the token endpoint
+		// If it fails, we assume that it can be fixed by
+		// starting the authorization code flow again
+		// TODO: Check for a way to determine whether the error is related to an invalid refresh token
+		_, err = client.Head(oauthInfo.DiscoveryInfo.TokenEndpoint)
+		if err != nil {
+			// start the authorization code flow
+			err = oauthAuthenticator.Auth(*oauthInfo.ClientValues)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if keptnXToken == "" {
 			return apiutils.New(baseURL, apiutils.WithHTTPClient(client))
 		}
 	}
-	return apiutils.New(baseURL, apiutils.WithAuthToken(authToken), apiutils.WithHTTPClient(client))
+	return apiutils.New(baseURL, apiutils.WithAuthToken(keptnXToken), apiutils.WithHTTPClient(client))
 }

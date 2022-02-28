@@ -42,7 +42,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 					openFn: func(string) error { return errors.New("browser open failed") },
 				},
 				tokenStore: &TokenStoreMock{
-					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					GetTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
 						return &OauthDiscoveryResult{}, nil
 					},
 				},
@@ -59,7 +59,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 					openFn: func(string) error { return nil },
 				},
 				tokenStore: &TokenStoreMock{
-					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					GetTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
 						return &OauthDiscoveryResult{}, nil
 					},
 				},
@@ -81,7 +81,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 					openFn: func(string) error { return nil },
 				},
 				tokenStore: &TokenStoreMock{
-					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					GetTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
 						return &OauthDiscoveryResult{}, nil
 					},
 				},
@@ -199,7 +199,7 @@ func Test_GetOauthClient(t *testing.T) {
 					},
 				},
 				tokenStore: &TokenStoreMock{
-					getOauthInfoFn: func() (*OauthInfo, error) {
+					GetOauthInfoFn: func() (*OauthInfo, error) {
 						return nil, fmt.Errorf("not found")
 					},
 				},
@@ -217,7 +217,7 @@ func Test_GetOauthClient(t *testing.T) {
 					},
 				},
 				tokenStore: &TokenStoreMock{
-					getOauthInfoFn: func() (*OauthInfo, error) {
+					GetOauthInfoFn: func() (*OauthInfo, error) {
 						return &OauthInfo{
 							DiscoveryInfo: &OauthDiscoveryResult{},
 							ClientValues:  &OauthClientValues{},
