@@ -117,6 +117,10 @@ func main() {
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
 
+	eventHandler := handler.NewEventHandler(projectManager)
+	eventController := controller.NewEventController(eventHandler)
+	eventController.Inject(apiV1)
+
 	engine.Static("/swagger-ui", "./swagger-ui")
 	srv := &http.Server{
 		Addr:    ":8080",

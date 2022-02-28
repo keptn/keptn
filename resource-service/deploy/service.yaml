@@ -29,7 +29,35 @@ spec:
     spec:
       serviceAccountName: keptn-configuration-service
       containers:
-      - name: resource-service
+        - name: distributor
+          image: docker.io/keptn/distributor:0.13.0-dev
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "25m"
+            limits:
+              memory: "32Mi"
+              cpu: "100m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats'
+            - name: PUBSUB_GROUP
+              value: ''
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: K8S_NAMESPACE
+              value: keptn
+            - name: K8S_DEPLOYMENT_NAME
+              value: lighthouse-service
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+        - name: resource-service
         # livenessProbe:
         #   httpGet:
         #     path: /health
@@ -42,30 +70,30 @@ spec:
         #     port: 8080
         #   initialDelaySeconds: 10
         #   periodSeconds: 5
-        image: keptndev/resource-service:latest
-        env:
-          - name: PREFIX_PATH
-            value: ""
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: DATASTORE_URI
-            value: mongodb-datastore:8080
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "25m"
-          limits:
-            # limits is high on purpose to enable Debugging using skaffold
-            # you can monitor memory usage using "kubectl -n keptn top pods"
-            memory: "512Mi"
-            cpu: "100m"
-        volumeMounts:
-        - mountPath: /data/config
-          name: resource-volume
+          image: keptndev/resource-service:latest
+          env:
+            - name: PREFIX_PATH
+              value: ""
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DATASTORE_URI
+              value: mongodb-datastore:8080
+          ports:
+          - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              # limits is high on purpose to enable Debugging using skaffold
+              # you can monitor memory usage using "kubectl -n keptn top pods"
+              memory: "512Mi"
+              cpu: "100m"
+          volumeMounts:
+          - mountPath: /data/config
+            name: resource-volume
       volumes:
       - name: resource-volume
         emptyDir: {}
