@@ -141,11 +141,8 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				if err != nil {
 					fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
 				}
-				encodedPrivateKey, err := base64.StdEncoding.DecodeString(string(content))
-				if err != nil {
-					fmt.Errorf("unable to encode privateKey file: %s\n", err.Error())
-				}
-				project.GitPrivateKey = string(encodedPrivateKey)
+
+				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
 				project.GitPrivateKeyPass = *createProjectParams.GitPrivateKeyPass
 			}
 		}

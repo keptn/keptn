@@ -120,11 +120,8 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 				if err != nil {
 					fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
 				}
-				encodedPrivateKey, err := base64.StdEncoding.DecodeString(string(content))
-				if err != nil {
-					fmt.Errorf("unable to encode privateKey file: %s\n", err.Error())
-				}
-				project.GitPrivateKey = string(encodedPrivateKey)
+
+				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
 				project.GitPrivateKeyPass = *updateProjectParams.GitPrivateKeyPass
 			}
 		}
