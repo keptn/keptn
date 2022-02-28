@@ -35,6 +35,14 @@ func (g GitCredentials) Validate() error {
 		if g.Token == "" {
 			return kerrors.ErrCredentialsTokenMustNotBeEmpty
 		}
+		if g.GitProxyURL != "" {
+			if g.GitProxyScheme != "http" && g.GitProxyScheme != "https" {
+				return kerrors.ErrProxyInvalidScheme
+			}
+			if !strings.Contains(g.GitProxyURL, ":") {
+				return kerrors.ErrProxyInvalidURL
+			}
+		}
 	} else if strings.HasPrefix(g.RemoteURI, "ssh://") {
 		if g.GitPrivateKey == "" {
 			return kerrors.ErrCredentialsPrivateKeyMustNotBeEmpty

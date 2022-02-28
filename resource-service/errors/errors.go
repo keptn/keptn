@@ -91,6 +91,8 @@ var ErrMalformedCredentials = New("could not decode upstream repository credenti
 var ErrCredentialsInvalidRemoteURI = New("invalid remote URI")
 var ErrCredentialsTokenMustNotBeEmpty = New("token must not be empty")
 var ErrCredentialsPrivateKeyMustNotBeEmpty = New("private key must not be empty")
+var ErrProxyInvalidScheme = New("proxy scheme must be http or https")
+var ErrProxyInvalidURL = New("proxy URL must contain IP address and port (<ip-address>:<port>)")
 
 // Error messages
 
