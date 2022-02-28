@@ -6,23 +6,26 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
 import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { NavigationStart, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import moment from 'moment';
 import { Timeframe } from '../../_models/timeframe';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
+import { Subject } from 'rxjs';
 
 @Directive({
   selector: '[ktbDatetimePicker]',
 })
-export class KtbDatetimePickerDirective implements OnInit {
+export class KtbDatetimePickerDirective implements OnInit, OnDestroy {
   private overlayRef?: OverlayRef;
   private contentRef: ComponentRef<KtbDatetimePickerComponent> | undefined;
+  private unsubscribe$: Subject<void> = new Subject();
 
   @Input() timeEnabled = false;
   @Input() secondsEnabled = false;
@@ -52,9 +55,12 @@ export class KtbDatetimePickerDirective implements OnInit {
 
   constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
     // Close when navigation happens - to keep the overlay on the UI
-    this.router.events.pipe(filter((event) => event instanceof NavigationStart)).subscribe(() => {
-      this.close();
-    });
+    this.router.events
+      .pipe(takeUntil(this.unsubscribe$))
+      .pipe(filter((event) => event instanceof NavigationStart))
+      .subscribe(() => {
+        this.close();
+      });
   }
 
   public ngOnInit(): void {
@@ -62,6 +68,11 @@ export class KtbDatetimePickerDirective implements OnInit {
     this.overlayRef.backdropClick().subscribe(() => {
       this.close();
     });
+  }
+
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   public close(): void {
@@ -89,11 +100,11 @@ export class KtbDatetimePickerComponent {
     millis: 999,
     micros: 999,
   };
-  private selectedDate = moment();
+  private selectedDate = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
   private selectedTime: Timeframe | undefined;
 
   public changeDate(event: Date): void {
-    this.selectedDate = moment(event);
+    this.selectedDate = moment(event).hours(0).minutes(0).seconds(0).milliseconds(0);
   }
 
   public changeTime(time: Timeframe): void {
@@ -108,13 +119,12 @@ export class KtbDatetimePickerComponent {
       this.selectedTime.hours !== undefined &&
       this.selectedTime.minutes !== undefined
     ) {
-      this.selectedDate.set('hours', this.selectedTime.hours);
-      this.selectedDate.set('minutes', this.selectedTime.minutes);
+      this.selectedDate.hours(this.selectedTime.hours);
+      this.selectedDate.minutes(this.selectedTime.minutes);
       if (this.secondsEnabled && this.selectedTime.seconds !== undefined) {
-        this.selectedDate.set('seconds', this.selectedTime.seconds);
+        this.selectedDate.seconds(this.selectedTime.seconds);
       }
     }
-
     this.selectedDateTime.emit(this.selectedDate.toISOString());
     this.closeDialog.emit();
   }

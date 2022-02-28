@@ -47,22 +47,25 @@ describe('KtbDatetimePickerComponent', () => {
 
   it('should set selectedDate to the given date as moment date', () => {
     // given
-    const date = new Date();
-    const momentDate = moment(date);
+    const spy = jest.spyOn(component.selectedDateTime, 'emit');
+    const date = moment();
 
     // when
-    component.changeDate(date);
+    component.changeDate(date.toDate());
+    component.setDateTime();
 
     // then
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(component.selectedDate.toISOString()).toEqual(momentDate.toISOString());
+    expect(spy).toHaveBeenCalledWith(date.hours(0).minutes(0).seconds(0).milliseconds(0).toISOString());
   });
 
   it('should set selectedTime to given value', () => {
     // given
+    const spy = jest.spyOn(component.selectedDateTime, 'emit');
+    const date = moment('2022-01-01T00:00:00.000Z');
+    const testDate = moment('2022-01-01T00:00:00.000Z').hours(2).minutes(15).seconds(10);
+    component.secondsEnabled = true;
     const timeframe: Timeframe = {
-      hours: 1,
+      hours: 2,
       minutes: 15,
       seconds: 10,
       millis: undefined,
@@ -70,12 +73,12 @@ describe('KtbDatetimePickerComponent', () => {
     };
 
     // when
+    component.changeDate(date.toDate());
     component.changeTime(timeframe);
+    component.setDateTime();
 
     // then
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(component.selectedTime).toEqual(timeframe);
+    expect(spy).toHaveBeenCalledWith(testDate.toISOString());
   });
 
   it('should be disabled = false if hours and minutes are set and seconds are disabled ', () => {
@@ -222,6 +225,36 @@ describe('KtbDatetimePickerComponent', () => {
     expect(component.disabled).toEqual(true);
   });
 
+  it('should emit 00:00:00.000 as time when time is not set', () => {
+    // given
+    const spy = jest.spyOn(component.selectedDateTime, 'emit');
+    component.secondsEnabled = true;
+    const date = moment();
+    const expectedDate = date.hours(0).minutes(0).seconds(0).milliseconds(0);
+
+    // when
+    component.changeDate(date.toDate());
+    component.setDateTime();
+
+    // then
+    expect(spy).toHaveBeenCalledWith(expectedDate.toISOString());
+  });
+
+  it('should emit 00:00:00.000 as time when timeframes are not set', () => {
+    // given
+    const spy = jest.spyOn(component.selectedDateTime, 'emit');
+    component.secondsEnabled = true;
+    const date = moment();
+    const expectedDate = date.hours(0).minutes(0).seconds(0).milliseconds(0);
+
+    // when
+    component.changeDate(date.toDate());
+    component.setDateTime();
+
+    // then
+    expect(spy).toHaveBeenCalledWith(expectedDate.toISOString());
+  });
+
   it('should emit the selected dateTime with seconds not set if not enabled', () => {
     // given
     const spy = jest.spyOn(component.selectedDateTime, 'emit');
@@ -240,7 +273,7 @@ describe('KtbDatetimePickerComponent', () => {
     component.setDateTime();
 
     // then
-    momentDate.hours(1).minutes(15).seconds(0);
+    momentDate.hours(1).minutes(15).seconds(0).milliseconds(0);
     expect(spy).toHaveBeenCalledWith(momentDate.toISOString());
   });
 
@@ -262,7 +295,7 @@ describe('KtbDatetimePickerComponent', () => {
     component.setDateTime();
 
     // then
-    momentDate.hours(1).minutes(15).seconds(30);
+    momentDate.hours(1).minutes(15).seconds(30).milliseconds(0);
     expect(spy).toHaveBeenCalledWith(momentDate.toISOString());
   });
 

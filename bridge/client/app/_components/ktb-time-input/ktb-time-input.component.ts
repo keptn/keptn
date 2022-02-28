@@ -21,8 +21,6 @@ export class KtbTimeInputComponent implements OnInit {
 
   public isFocused = false;
 
-  public console = console;
-
   public timeForm = new FormGroup({
     hours: new FormControl(),
     minutes: new FormControl(),
@@ -41,14 +39,17 @@ export class KtbTimeInputComponent implements OnInit {
     }
   }
 
-  public validateInput(formControlName: string, min: number | undefined, max: number | undefined): void {
+  public validateInput(formControlName: string, max: number | undefined, min = 0): void {
     if (this.timeForm.controls[formControlName].value) {
       let val = this.timeForm.controls[formControlName].value;
       val = Math.round(val);
-      const minVal = min ?? 0; // should for time units always be 0
-      if (val < minVal) val = minVal;
+      if (val < min) val = min;
       if (max && val > max) val = max;
       this.timeForm.controls[formControlName].setValue(val);
+    } else {
+      // To prevent from infinite 0 and dots, we have to set it manually.
+      // In the control the value is already set to the right value, the input is not updated.
+      this.timeForm.controls[formControlName].setValue(this.timeForm.controls[formControlName].value);
     }
     this.emitChangedValues();
   }

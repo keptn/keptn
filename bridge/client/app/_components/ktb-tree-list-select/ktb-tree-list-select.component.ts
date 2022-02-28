@@ -6,6 +6,7 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -14,8 +15,9 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { NavigationStart, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
+import { Subject } from 'rxjs';
 
 export interface SelectTreeNode {
   name: string;
@@ -40,9 +42,10 @@ export type TreeListSelectOptions = {
 @Directive({
   selector: '[ktbTreeListSelect]',
 })
-export class KtbTreeListSelectDirective implements OnInit {
+export class KtbTreeListSelectDirective implements OnInit, OnDestroy {
   private overlayRef?: OverlayRef;
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
+  private unsubscribe$: Subject<void> = new Subject();
 
   @Input() data: SelectTreeNode[] = [];
   @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
@@ -72,9 +75,12 @@ export class KtbTreeListSelectDirective implements OnInit {
 
   constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
     // Close when navigation happens - to keep the overlay on the UI
-    this.router.events.pipe(filter((event) => event instanceof NavigationStart)).subscribe(() => {
-      this.close();
-    });
+    this.router.events
+      .pipe(takeUntil(this.unsubscribe$))
+      .pipe(filter((event) => event instanceof NavigationStart))
+      .subscribe(() => {
+        this.close();
+      });
   }
 
   public ngOnInit(): void {
@@ -83,6 +89,11 @@ export class KtbTreeListSelectDirective implements OnInit {
     this.overlayRef.backdropClick().subscribe(() => {
       this.close();
     });
+  }
+
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   public close(): void {

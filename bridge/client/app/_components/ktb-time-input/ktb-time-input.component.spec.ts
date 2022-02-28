@@ -29,7 +29,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(-1);
 
       // when
-      component.validateInput(control, 0, 24);
+      component.validateInput(control, 24);
 
       // then
       expect(component.timeForm.controls[control].value).toEqual(0);
@@ -42,7 +42,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(25);
 
       // when
-      component.validateInput(control, 0, 24);
+      component.validateInput(control, 24);
 
       // then
       expect(component.timeForm.controls[control].value).toEqual(24);
@@ -55,7 +55,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(1.25);
 
       // when
-      component.validateInput(control, 0, 24);
+      component.validateInput(control, 24);
 
       // then
       expect(component.timeForm.controls[control].value).toEqual(1);
@@ -94,7 +94,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(-1);
 
       // when
-      component.validateInput(control, 5, undefined);
+      component.validateInput(control, undefined, 5);
 
       // then
       expect(component.timeForm.controls[control].value).toEqual(5);
@@ -108,7 +108,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(1);
 
       // when
-      component.validateInput(control, 0, 24);
+      component.validateInput(control, 24);
     }
 
     // then
@@ -122,7 +122,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(0);
 
       // when
-      component.validateInput(control, 0, 24);
+      component.validateInput(control, 24);
     }
 
     // then
@@ -136,7 +136,7 @@ describe('KtbTimeInputComponent', () => {
       component.timeForm.controls[control].setValue(null);
 
       // when
-      component.validateInput(control, 0, 24);
+      component.validateInput(control, 24);
     }
 
     // then
