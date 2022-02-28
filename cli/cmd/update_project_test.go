@@ -38,6 +38,28 @@ func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 	}
 }
 
+// TestUpdateProjectUnknownCommand
+func TestUpdateProjectUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=user --git-token=token --git-remote-url=http://some.url", "too many arguments set", t)
+}
+
+// TestUpdateProjectUnknownParameter
+func TestUpdateProjectUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("update project sockshop --git-userr=user --git-token=token --git-remote-url=http://some.url", "unknown flag: --git-userr", t)
+}
+
+// TestUpdateProjectCmdTokenAndKey
+func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-private-key=key --git-token=token")
+	_, err := executeActionCommandC(cmd)
+
+	if !errorContains(err, "Access token or private key cannot be set together") {
+		t.Errorf("missing expected error, but got %v", err)
+	}
+}
+
 // TestUpdateProjectCmdProxyAndSSH
 func TestUpdateProjectCmdProxyAndSSH(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
@@ -60,26 +82,4 @@ func TestUpdateProjectCmdProxyNoScheme(t *testing.T) {
 	if !errorContains(err, "Proxy cannot be set without scheme") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
-}
-
-// TestUpdateProjectCmdTokenAndKey
-func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
-	credentialmanager.MockAuthCreds = true
-
-	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-private-key=key --git-token=token")
-	_, err := executeActionCommandC(cmd)
-
-	if !errorContains(err, "Access token or private key cannot be set together") {
-		t.Errorf("missing expected error, but got %v", err)
-	}
-}
-
-// TestUpdateProjectUnknownCommand
-func TestUpdateProjectUnknownCommand(t *testing.T) {
-	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=user --git-token=token --git-remote-url=http://some.url", "too many arguments set", t)
-}
-
-// TestUpdateProjectUnknownParameter
-func TestUpdateProjectUnknownParmeter(t *testing.T) {
-	testInvalidInputHelper("update project sockshop --git-userr=user --git-token=token --git-remote-url=http://some.url", "unknown flag: --git-userr", t)
 }
