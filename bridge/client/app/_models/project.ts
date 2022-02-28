@@ -57,6 +57,10 @@ export class Project extends pj {
     }
   }
 
+  getServiceNames(): string[] {
+    return this.services?.map((service) => service.serviceName) ?? [];
+  }
+
   getShipyardVersion(): string {
     return this.shipyardVersion?.split('/').pop() ?? '';
   }
@@ -111,6 +115,10 @@ export class Project extends pj {
       }
     }
     return evaluation?.evaluationTrace;
+  }
+
+  public getStageNames(): string[] {
+    return this.stages.map((stage) => stage.stageName);
   }
 
   public getStages(parent: string[] | null): Stage[] {

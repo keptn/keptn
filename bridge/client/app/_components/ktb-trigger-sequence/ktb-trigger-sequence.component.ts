@@ -37,8 +37,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   public TRIGGER_EVALUATION_TIME = TRIGGER_EVALUATION_TIME;
   public state: TRIGGER_SEQUENCE | 'ENTRY' = 'ENTRY';
   public sequenceType: TRIGGER_SEQUENCE = TRIGGER_SEQUENCE.DELIVERY;
-  public services: string[] | undefined;
-  public stages: string[] | undefined;
   public customSequences: string[] | undefined;
   public selectedService: string | undefined;
   public selectedStage: string | undefined;
@@ -71,6 +69,9 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
 
   @Input() public projectName: string | undefined;
   @Input() public stage: string | undefined;
+  @Input() public stages: string[] = [];
+  @Input() public services: string[] = [];
+
   @Output() public formClosed: EventEmitter<void> = new EventEmitter<void>();
 
   @ViewChild('timeframeStartButton') timeFrameStartButton?: DtButton;
@@ -103,12 +104,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         if (this.projectName) {
-          this.dataService.getServiceNames(this.projectName).subscribe((services) => {
-            this.services = services;
-          });
-          this.dataService.getStageNames(this.projectName).subscribe((stages) => {
-            this.stages = stages;
-          });
           this.dataService.getCustomSequenceNames(this.projectName).subscribe((customSequences) => {
             this.customSequences = customSequences;
           });

@@ -40,7 +40,7 @@
       <dt-form-field>
         <dt-label class="required">Service</dt-label>
         <dt-select
-          [disabled]="!services || services.length === 0"
+          [disabled]="services.length === 0"
           [(ngModel)]="selectedService"
           placeholder="Select ..."
           uitestid="keptn-trigger-service-selection"
@@ -54,7 +54,7 @@
       <dt-form-field>
         <dt-label class="required">Stage</dt-label>
         <dt-select
-          [disabled]="!stages || stages.length === 0"
+          [disabled]="stages.length === 0"
           [(ngModel)]="selectedStage"
           placeholder="Select ..."
           uitestid="keptn-trigger-stage-selection"

@@ -18,6 +18,8 @@
     <ktb-trigger-sequence
       [projectName]="project.projectName"
       [stage]="selectedStage?.stageName"
+      [stages]="project.getStageNames()"
+      [services]="project.getServiceNames()"
       (formClosed)="isTriggerSequenceOpen = false"
     ></ktb-trigger-sequence>
   </div>
