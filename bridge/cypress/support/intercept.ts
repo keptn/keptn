@@ -43,14 +43,31 @@ export function interceptIntegrations(): void {
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
+  // jmeter-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
     body: {
       logs: [],
     },
   });
-  cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
+  // approval-service
+  cy.intercept('/api/controlPlane/v1/log?integrationId=4d57b2af3cdd66bce06625daafa9c5cbb474a6b8&pageSize=100', {
     body: {
       logs: [],
+    },
+  });
+  // webhook-service
+  cy.intercept('/api/controlPlane/v1/log?integrationId=0f2d35875bbaa72b972157260a7bd4af4f2826df&pageSize=100', {
+    body: {
+      logs: [
+        {
+          integrationid: '0f2d35875bbaa72b972157260a7bd4af4f2826df',
+          message: 'my error',
+          shkeptncontext: ' 7394b5b3-2fb3-4cb7-b435-d0e9d6f0cb87',
+          task: 'my task',
+          time: '2022-02-09T16:27:02.678Z',
+          triggeredid: 'bd3bc477-6d0f-4d71-b15d-c33e953a74ba',
+        },
+      ],
     },
   });
   cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/info', {
@@ -65,12 +82,12 @@ export function interceptIntegrations(): void {
       isWebhookService: true,
     },
   });
-  cy.intercept('/api/controlPlane/v1/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription', {
+  cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription', {
     body: {
       id: '0b77c90e-282d-4a7e-a96d-e23027265868',
     },
   });
-  cy.intercept('/api/controlPlane/v1/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscription', {
+  cy.intercept('/api/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/subscription', {
     body: {
       id: 'b5111b1c-446a-410d-bb6c-e1dcd409c890',
     },
@@ -94,4 +111,61 @@ export function interceptIntegrations(): void {
     '/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription/0e021b71-1533-4cfe-875a-b756aa6107ba',
     { body: {} }
   );
+}
+
+export function interceptSecrets(): void {
+  cy.fixture('get.project.json').as('initProjectJSON');
+  cy.fixture('metadata.json').as('initmetadata');
+
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
+  cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
+    fixture: 'get.project.json',
+  }).as('initProjects');
+  cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
+
+  cy.intercept('POST', 'api/secrets/v1/secret', {
+    statusCode: 200,
+  }).as('postSecrets');
+
+  cy.intercept('GET', 'api/secrets/v1/secret', {
+    statusCode: 200,
+    body: {
+      Secrets: [
+        { name: 'dynatrace', scope: 'dynatrace-service', keys: ['DT_API_TOKEN', 'DT_TENANT'] },
+        { name: 'dynatrace-prod', scope: 'dynatrace-service', keys: ['DT_API_TOKEN'] },
+        { name: 'api', scope: 'keptn-default', keys: ['API_TOKEN'] },
+        { name: 'webhook', scope: 'keptn-webhook-service', keys: ['webhook_url', 'webhook_secret', 'webhook_proxy'] },
+      ],
+    },
+  }).as('getSecrets');
+
+  cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
+    statusCode: 200,
+  }).as('getApproval');
+
+  cy.intercept('GET', 'api/project/dynatrace', {
+    statusCode: 200,
+    fixture: 'get.approval.json',
+  });
+
+  cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
+    statusCode: 200,
+  }).as('hasUnreadUniformRegistrationLogs');
+
+  cy.intercept('POST', 'api/uniform/registration', {
+    statusCode: 200,
+    body: '[]',
+  }).as('uniformRegPost');
+
+  cy.intercept('DELETE', 'api/secrets/v1/secret?name=dynatrace-prod&scope=dynatrace-service', {
+    statusCode: 200,
+  }).as('deleteSecret');
+
+  cy.intercept('GET', 'api/secrets/v1/scope', {
+    statusCode: 200,
+    body: {
+      scopes: ['dynatrace-service'],
+    },
+  });
 }

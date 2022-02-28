@@ -3,7 +3,6 @@ import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
@@ -39,23 +38,6 @@ const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent },
       {
-        path: 'uniform',
-        component: KtbUniformViewComponent,
-        children: [
-          { path: 'services', component: KtbKeptnServicesListComponent },
-          { path: 'services/:integrationId', component: KtbKeptnServicesListComponent },
-          { path: 'services/:integrationId/subscriptions/add', component: KtbModifyUniformSubscriptionComponent },
-          {
-            path: 'services/:integrationId/subscriptions/:subscriptionId/edit',
-            component: KtbModifyUniformSubscriptionComponent,
-          },
-          { path: 'secrets', component: KtbSecretsListComponent },
-          { path: 'secrets/add', component: KtbCreateSecretFormComponent },
-          { path: '', pathMatch: 'full', redirectTo: 'services' },
-        ],
-      },
-      { path: 'integration', component: KtbIntegrationViewComponent },
-      {
         path: 'settings',
         component: KtbSettingsViewComponent,
         children: [
@@ -67,6 +49,37 @@ const routes: Routes = [
               { path: 'create', component: KtbCreateServiceComponent },
               { path: 'edit/:serviceName', component: KtbEditServiceComponent },
               { path: '', pathMatch: 'full', component: KtbServiceSettingsOverviewComponent },
+            ],
+          },
+          {
+            path: 'uniform',
+            children: [
+              { path: 'integrations', component: KtbKeptnServicesListComponent },
+              { path: 'integrations/:integrationId', component: KtbKeptnServicesListComponent },
+              {
+                path: 'integrations/:integrationId/subscriptions/add',
+                component: KtbModifyUniformSubscriptionComponent,
+              },
+              {
+                path: 'integrations/:integrationId/subscriptions/:subscriptionId/edit',
+                component: KtbModifyUniformSubscriptionComponent,
+              },
+              {
+                path: 'secrets',
+                component: KtbSecretsListComponent,
+              },
+              { path: 'secrets/add', component: KtbCreateSecretFormComponent },
+              { path: '', pathMatch: 'full', redirectTo: 'integrations' },
+            ],
+          },
+          {
+            path: 'support',
+            children: [
+              {
+                path: 'common-use-cases',
+                component: KtbIntegrationViewComponent,
+              },
+              { path: '', pathMatch: 'full', redirectTo: 'common-use-cases' },
             ],
           },
           { path: '', pathMatch: 'full', redirectTo: 'project' },

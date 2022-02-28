@@ -131,7 +131,7 @@ func enforceOpenIDScope(config *oauth2.Config) {
 	}
 }
 
-// OauthClientValues are values set by the user when performing SSO
+// OauthClientValues are values set by the user when performing OAuth flow
 type OauthClientValues struct {
 	OauthDiscoveryURL string   `json:"oauth_discovery_url"`
 	OauthClientID     string   `json:"oauth_client_id"`

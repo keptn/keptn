@@ -91,7 +91,6 @@ import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { KtbSliBreakdownCriteriaItemComponent } from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
 import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
 import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-badge.component';
-import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
 import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
@@ -198,7 +197,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbServicesListComponent,
     KtbSequenceStateListComponent,
     KtbUserComponent,
-    KtbUniformViewComponent,
     KtbKeptnServicesListComponent,
     KtbSubscriptionItemComponent,
     KtbDeploymentListComponent,

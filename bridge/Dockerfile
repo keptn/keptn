@@ -59,8 +59,8 @@ RUN yarn build && \
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM node:14-alpine3.14 as production
 ARG version=develop
-LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
-    org.opencontainers.image.url = "https://keptn.sh" \
+LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
+    org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Bridge" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \

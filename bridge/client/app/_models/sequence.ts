@@ -117,16 +117,11 @@ export class Sequence extends sq {
 
   public isSuccessful(stageName?: string): boolean {
     return (
-      this.isSucceeded(stageName) ||
-      (!this.isFaulty(stageName) &&
-        !this.isWarning(stageName) &&
-        !this.isAborted(stageName) &&
-        this.isFinished(stageName))
+      this.isFinished(stageName) &&
+      !this.isFaulty(stageName) &&
+      !this.isWarning(stageName) &&
+      !this.isAborted(stageName)
     );
-  }
-
-  private isSucceeded(stageName?: string): boolean {
-    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.SUCCEEDED;
   }
 
   public isWarning(stageName?: string): boolean {

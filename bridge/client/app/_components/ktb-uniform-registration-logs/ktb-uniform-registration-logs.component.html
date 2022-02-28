@@ -2,7 +2,7 @@
   <ng-container *ngFor="let log of logs">
     <div>
       <div>
-        <div *ngIf="isUnread(log.time)" class="notification-indicator mr-2"></div>
+        <div *ngIf="isUnread(log.time)" class="notification-indicator-text notification-indicator-text-cell mr-2"></div>
       </div>
       <div class="p-2 pr-3">{{ log.time }}</div>
       <div class="p-2 pr-3 pl-3">

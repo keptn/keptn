@@ -3,7 +3,16 @@
     <button
       dt-button
       uitestid="addSubscriptionButton"
-      [routerLink]="['/project', projectName, 'uniform', 'services', uniformRegistration.id, 'subscriptions', 'add']"
+      [routerLink]="[
+        '/project',
+        projectName,
+        'settings',
+        'uniform',
+        'integrations',
+        uniformRegistration.id,
+        'subscriptions',
+        'add'
+      ]"
       class="mb-2"
       *ngIf="uniformRegistration.canEditSubscriptions(); else disabledButton"
     >

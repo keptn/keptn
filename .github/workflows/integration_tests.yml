@@ -155,7 +155,7 @@ jobs:
               -H "Authorization: token $GITHUB_TOKEN" \
               "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
             jq '[.workflow_runs[] | select(
-              (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
+              (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
           echo "::set-output name=RUN_ID::$RUN_ID"
@@ -375,12 +375,18 @@ jobs:
           helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
           GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
+          ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
+          GITEA_PRIVATE_KEY=$(cat rsa_gitea)
+          GITEA_PUBLIC_KEY=$(cat rsa_gitea.pub)
+          GITEA_PRIVATE_KEY_PASSPHRASE=myGiteaPassPhrase
           sleep 30 # TODO
           kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-ssh 3001:22 &
           sleep 30 # TODO
           curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
           GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
-          kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN}
+          kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
           rm gitea-token.txt
 
       - name: Expose Keptn API (Minishift)
@@ -489,7 +495,7 @@ jobs:
 
       - name: Integration Tests
         id: test_aggregated
-        timeout-minutes: 65
+        timeout-minutes: 90
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           DO_AUTH: "true"
@@ -510,7 +516,7 @@ jobs:
             TESTSUITE="Test_K3D"
           fi
           
-          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 65m
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 90m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
@@ -548,25 +554,76 @@ jobs:
       - name: Cleanup test namespace
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
+          echo "Cleaning up test resources..."
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+          readarray -t clusterroles <<< "$(kubectl get clusterroles | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+          readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
           if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
-            for namespace in "${namespaces[@]}"; do
-              echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
-              kubectl annotate namespace "$namespace" janitor/ttl=3d
-            done
+              for namespace in "${namespaces[@]}"; do
+                if [[ ! -z "${namespace// }" ]]; then
+                  echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
+                  kubectl annotate namespace "$namespace" janitor/ttl=3d
+                fi
+              done
+          
+              for cr in "${clusterroles[@]}"; do
+                if [[ ! -z "${cr// }" ]]; then
+                  echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
+                  kubectl annotate clusterrole "$cr" janitor/ttl=3d
+                fi
+              done
+          
+              for crb in "${clusterrolebindings[@]}"; do
+                if [[ ! -z "${crb// }" ]]; then
+                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
+                fi
+              done
           elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
-            for namespace in "${namespaces[@]}"; do
-              echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
-              kubectl annotate namespace "$namespace" janitor/ttl=6h
-            done
+              for namespace in "${namespaces[@]}"; do
+                if [[ ! -z "${namespace// }" ]]; then
+                  echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
+                  kubectl annotate namespace "$namespace" janitor/ttl=6h
+                fi
+              done
+          
+              for cr in "${clusterroles[@]}"; do
+                if [[ ! -z "${cr// }" ]]; then
+                  echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
+                  kubectl annotate clusterrole "$cr" janitor/ttl=6h
+                fi
+              done
+          
+              for crb in "${clusterrolebindings[@]}"; do
+                if [[ ! -z "${crb// }" ]]; then
+                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=6h
+                fi
+              done
           else
-            for namespace in "${namespaces[@]}"; do
-              echo "Deleting namespace $namespace ..."
-              kubectl delete namespace "$namespace" --wait=false
-            done
+              for namespace in "${namespaces[@]}"; do
+                if [[ ! -z "${namespace// }" ]]; then
+                  echo "Deleting namespace $namespace ..."
+                  kubectl delete namespace "$namespace"
+                fi
+              done
+          
+              for cr in "${clusterroles[@]}"; do
+                if [[ ! -z "${cr// }" ]]; then
+                  echo "Deleting clusterrole $cr ..."
+                  kubectl delete clusterrole "$cr"
+                fi
+              done
+          
+              for crb in "${clusterrolebindings[@]}"; do
+                if [[ ! -z "${crb// }" ]]; then
+                  echo "Deleting clusterrolebinding $crb ..."
+                  kubectl delete clusterrolebindings "$crb"
+                fi
+              done
           fi
-
+          
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         timeout-minutes: 3
@@ -640,7 +697,7 @@ jobs:
         uses: actions/checkout@v2.4.0
 
       - name: Set up Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3.0.0
         with:
           node-version: 16
       - run: npm install ndjson-parse@1.0.4
@@ -652,7 +709,7 @@ jobs:
           path: ${{ env.TEST_REPORTS_PATH }}
 
       - name: Build multi-platform test report
-        uses: actions/github-script@v5.1.0
+        uses: actions/github-script@v6.0.0
         env:
           TEST_REPORTS_PATH: ${{ env.TEST_REPORTS_PATH }}
           FINAL_TEST_REPORTS_FOLDER: ${{ env.FINAL_TEST_REPORTS_FOLDER }}

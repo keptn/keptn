@@ -56,7 +56,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         this.isReloading = true;
         this.notificationService.addNotification(NotificationType.INFO, 'Login required. Redirecting to login.');
         // Wait for few moments to let user see the toast message and navigate to external login route
-        setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/login')), 1000);
+        setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/oauth/login')), 1000);
       }
     } else if (authType === 'BASIC') {
       if (!this.isAuthorizedErrorShown) {

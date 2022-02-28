@@ -22,7 +22,6 @@ import { SequenceState } from '../../../shared/models/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
-import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
 import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
@@ -31,6 +30,7 @@ import { ServiceRemediationInformation } from '../_models/service-remediation-in
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',
@@ -769,5 +769,9 @@ export class DataService {
 
   public logout(): Observable<EndSessionData | null> {
     return this.apiService.logout();
+  }
+
+  public getSecretScopes(): Observable<string[]> {
+    return this.apiService.getSecretScopes().pipe(map((result) => result.scopes));
   }
 }

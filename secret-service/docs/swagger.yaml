@@ -11,6 +11,13 @@ definitions:
       message:
         type: string
     type: object
+  model.GetScopesResponse:
+    properties:
+      scopes:
+        items:
+          type: string
+        type: array
+    type: object
   model.GetSecretResponseItem:
     properties:
       keys:
@@ -55,6 +62,23 @@ info:
   title: Secret Service API
   version: develop
 paths:
+  /scope:
+    get:
+      description: Get scopes
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetScopesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get scopes
+      tags:
+      - Scopes
   /secret:
     delete:
       description: Delete an existing Secret

@@ -15,6 +15,8 @@ import { AxiosError } from 'axios';
 import { EnvironmentUtils } from './utils/environment.utils';
 import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
+import { SessionService } from './user/session';
+import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,6 +32,19 @@ const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, process.env.NODE_ENV === 'test' ? '../' : '../../../');
 const serverFolder = join(rootFolder, 'server');
 const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
+const defaultContentSecurityPolicyOptions: Readonly<ContentSecurityPolicyOptions> = {
+  useDefaults: true,
+  directives: {
+    'script-src': [
+      "'self'",
+      "'unsafe-eval'",
+      "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
+      `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
+    ],
+    'style-src': [`'self'`, `'unsafe-inline'`, 'https://fonts.googleapis.com'],
+    'upgrade-insecure-requests': null,
+  },
+};
 
 async function init(): Promise<Express> {
   const app = express();
@@ -94,22 +109,10 @@ async function init(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-
-  app.use(
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        'script-src': [
-          "'self'",
-          "'unsafe-eval'",
-          "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
-          `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
-        ],
-        'style-src': [`'self'`, `'unsafe-inline'`, 'https://fonts.googleapis.com'],
-        'upgrade-insecure-requests': null,
-      },
-    })
-  );
+  // will be set later
+  if (!serverFeatureFlags.OAUTH_ENABLED) {
+    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+  }
   app.use(helmet.noSniff());
   app.use(helmet.permittedCrossDomainPolicies());
   app.use(helmet.frameguard());
@@ -117,10 +120,21 @@ async function init(): Promise<Express> {
   // Remove the X-Powered-By headers, has to be done via express and not helmet
   app.disable('x-powered-by');
 
-  const authType: string = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
+  const { authType, session } = await setAuth(app, serverFeatureFlags.OAUTH_ENABLED);
 
   // everything starting with /api is routed to the api implementation
-  app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType, clientFeatureFlags }));
+  app.use(
+    '/api',
+    apiRouter({
+      apiUrl,
+      apiToken,
+      cliDownloadLink,
+      integrationsPageLink,
+      authType,
+      clientFeatureFlags,
+      session,
+    })
+  );
 
   // fallback: go to index.html
   app.use((req, res) => {
@@ -138,9 +152,9 @@ async function init(): Promise<Express> {
   return app;
 }
 
-async function setOAUTH(app: Express): Promise<void> {
+async function setOAUTH(app: Express): Promise<SessionService> {
   const errorSuffix =
-    'must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+    'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' +
     ' Please check your environment variables.';
 
   if (!process.env.OAUTH_DISCOVERY) {
@@ -153,7 +167,7 @@ async function setOAUTH(app: Express): Promise<void> {
     throw Error(`OAUTH_BASE_URL ${errorSuffix}`);
   }
 
-  await setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
+  return setupOAuth(app, process.env.OAUTH_DISCOVERY, process.env.OAUTH_CLIENT_ID, process.env.OAUTH_BASE_URL);
 }
 
 async function setBasicAUTH(app: Express): Promise<void> {
@@ -188,10 +202,11 @@ async function setBasicAUTH(app: Express): Promise<void> {
   });
 }
 
-async function setAuth(app: Express, oAuthEnabled: boolean): Promise<string> {
+async function setAuth(app: Express, oAuthEnabled: boolean): Promise<{ authType: string; session?: SessionService }> {
   let authType;
+  let session: SessionService | undefined;
   if (oAuthEnabled) {
-    await setOAUTH(app);
+    session = await setOAUTH(app);
     authType = 'OAUTH';
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
     authType = 'BASIC';
@@ -201,7 +216,7 @@ async function setAuth(app: Express, oAuthEnabled: boolean): Promise<string> {
     console.log('Not installing authentication middleware');
   }
 
-  return authType;
+  return { authType, session };
 }
 
 function setupDefaultLookAndFeel(): void {
@@ -348,4 +363,4 @@ function handleError(err: any, req: Request, res: Response, authType: string): n
   return err.response?.status || 500;
 }
 
-export { init };
+export { init, defaultContentSecurityPolicyOptions };

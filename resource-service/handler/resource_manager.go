@@ -4,14 +4,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
-	"net/url"
-	"strings"
-	"time"
 )
 
 //IResourceManager provides an interface for resource CRUD operations
@@ -164,7 +165,8 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 	if params.GitCommitID != "" && params.GitCommitID != "\"\"" {
 		// if commit ID is set, path needs to be relative to the project directory
 		configPath = strings.TrimPrefix(configPath, common.GetProjectConfigPath(params.ProjectName))
-		resourcePath := configPath + "/" + resourceName
+		// resource path must not start with "/", otherwise git is not able to resolve the revision
+		resourcePath := strings.TrimPrefix(configPath+"/"+resourceName, "/")
 		fileContent, err = p.git.GetFileRevision(*gitContext, params.GitCommitID, resourcePath)
 		revision = params.GitCommitID
 	} else {

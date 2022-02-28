@@ -2,16 +2,17 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/strutils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 )
 
 const qualityGatesShipyard = `--- 
@@ -96,15 +97,12 @@ func Test_QualityGates(t *testing.T) {
 
 	source := "golang-test"
 
-	resp, err := ExecuteCommand(fmt.Sprintf("kubectl get configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-	if !strings.Contains(resp, "not found") && err != nil {
-		_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
-		require.Nil(t, err)
-	}
 	t.Logf("creating project %s", projectName)
-
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
+
+	t.Log("deleting lighthouse configmap from previous test run")
+	_, _ = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 
 	t.Logf("creating service %s", serviceName)
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
@@ -142,7 +140,7 @@ func Test_QualityGates(t *testing.T) {
 		}
 		evaluationFinishedEvent = event
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 2*time.Minute, 10*time.Second)
 
 	require.NotNil(t, evaluationFinishedEvent)
 	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
@@ -333,7 +331,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		Specversion:        "1.0",
 		Time:               time.Now(),
 		Triggeredid:        "",
-		Gitcommitid:        commitID,
+		GitCommitID:        commitID,
 		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType("hardening." + keptnv2.EvaluationTaskName)),
 	}, 3)
 	require.Nil(t, err)
@@ -358,7 +356,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	t.Log("got SLI triggered event, checking commitid")
 
 	if checkCommit {
-		require.Equal(t, commitID, getSLITriggeredEvent.Gitcommitid)
+		require.Equal(t, commitID, getSLITriggeredEvent.GitCommitID)
 	}
 
 	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
@@ -367,6 +365,9 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
 	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
 	require.NotEmpty(t, getSLIPayload.GetSLI.End)
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
 
 	//SLI uses a different commitID
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
@@ -388,7 +389,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		Specversion:        "1.0",
 		Time:               time.Now(),
 		Triggeredid:        getSLITriggeredEvent.ID,
-		Gitcommitid:        commitID1,
+		GitCommitID:        commitID1,
 		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
 	}, 3)
 
@@ -441,7 +442,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		Specversion:        "1.0",
 		Time:               time.Now(),
 		Triggeredid:        getSLITriggeredEvent.ID,
-		Gitcommitid:        commitID1,
+		GitCommitID:        commitID1,
 		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
 	}, 3)
 	require.Nil(t, err)
@@ -459,7 +460,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	}, 1*time.Minute, 10*time.Second)
 	if checkCommit {
 		//lighthouse should have used the new commitID to calculate the final result
-		require.Equal(t, evaluationFinishedEvent.Gitcommitid, commitID1)
+		require.Equal(t, evaluationFinishedEvent.GitCommitID, commitID1)
 	}
 	return keptnContext, evaluationFinishedEvent
 }

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -9,7 +11,6 @@ import (
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"time"
 )
 
 //IProjectManager provides an interface for project CRUD operations

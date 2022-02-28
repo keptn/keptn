@@ -30,6 +30,12 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SequenceControl_AbortQueuedSequence", Test_SequenceControl_AbortQueuedSequence)
 	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
+	if res, err := CompareServiceWithDeployment("configuration-service", "resource-service"); err == nil && res {
+		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
+		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
+	}
+	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
+	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 
 	// Platform-specific Tests
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
@@ -37,7 +43,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
 	t.Run("Test_BackupRestore", Test_BackupRestore)
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
-	t.Run("Test_ContinuousDelivery (in-cluster/remote execution plane)", Test_ContinuousDelivery)
+	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
 	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)

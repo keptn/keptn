@@ -3,17 +3,18 @@ package go_tests
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"os"
-	"strings"
-	"testing"
-	"time"
 )
 
 const customEndpointShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
@@ -74,7 +75,7 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	}, 60*time.Second, 5*time.Second)
 
 	// check if the project is already available - if not, delete it before creating it again
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	// create the service

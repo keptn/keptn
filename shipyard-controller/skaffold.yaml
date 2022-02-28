@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptn/shipyard-controller
+    - image: keptndev/shipyard-controller
       docker:
         dockerfile: Dockerfile
         target: production

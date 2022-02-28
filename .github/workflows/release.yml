@@ -179,6 +179,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
     env:
       BRANCH: ${{ needs.prepare.outputs.branch }}
@@ -289,7 +290,7 @@ jobs:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -397,10 +398,9 @@ jobs:
 
       - name: Upload helm charts
         env:
-          ARTIFACTS: "./dist/keptn-installer/*.tgz"
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          mv "$ARTIFACTS" ./helm-charts/packages
+          mv "./dist/keptn-installer/*.tgz" ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
           git add *.tgz

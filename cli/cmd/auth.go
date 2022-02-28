@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	auth2 "github.com/keptn/keptn/cli/internal/auth"
+	"github.com/keptn/keptn/cli/internal/auth"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -25,12 +25,12 @@ type authCmdParams struct {
 	acceptContext        bool
 	secure               *bool
 	skipNamespaceListing *bool
-	sso                  *bool
-	ssoLogout            *bool
-	ssoDiscovery         *string
-	ssoClientID          *string
-	ssoScopes            *[]string
-	ssoClientSecret      *string
+	oauth                *bool
+	oauthLogout          *bool
+	oauthDiscovery       *string
+	oauthClientID        *string
+	oauthScopes          *[]string
+	oauthClientSecret    *string
 }
 
 type smartKeptnAuthParams struct {
@@ -74,8 +74,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		return verifyAuthParams(authParams, smartKeptnAuth)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext))
+		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext), auth.NewLocalFileOauthStore())
 		if *authParams.exportConfig {
 			endpoint, apiToken, err := authenticator.GetCredentials()
 			if err != nil {
@@ -86,8 +85,8 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			return nil
 		}
 
-		if *authParams.ssoLogout {
-			store := auth2.NewLocalFileOauthStore()
+		if *authParams.oauthLogout {
+			store := auth.NewLocalFileOauthStore()
 			err := store.Wipe()
 			if err != nil {
 				return err
@@ -95,31 +94,26 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			return nil
 		}
 
-		if *authParams.sso {
-			if *authParams.ssoDiscovery == "" {
-				return fmt.Errorf("Unable to login using SSO: No OAuth Discovery URL provided")
+		if *authParams.oauth {
+			if *authParams.oauthDiscovery == "" {
+				return fmt.Errorf("Unable to login: No OAuth Discovery URL provided")
 			}
-			if *authParams.ssoClientID == "" {
-				return fmt.Errorf("Unable to login usin SSO: No client ID provided")
+			if *authParams.oauthClientID == "" {
+				return fmt.Errorf("Unable to login: No OAuth Client ID provided")
 			}
-			oauth := auth2.NewOauthAuthenticator(auth2.NewOauthDiscovery(&http.Client{}), auth2.NewLocalFileOauthStore(), auth2.NewBrowser(), &auth2.ClosingRedirectHandler{})
+			oauth := auth.NewOauthAuthenticator(auth.NewOauthDiscovery(&http.Client{}), auth.NewLocalFileOauthStore(), auth.NewBrowser(), &auth.ClosingRedirectHandler{})
 
-			clientValues := auth2.OauthClientValues{
-				OauthDiscoveryURL: *authParams.ssoDiscovery,
-				OauthClientID:     *authParams.ssoClientID,
-				OauthClientSecret: *authParams.ssoClientSecret,
-				OauthScopes:       *authParams.ssoScopes,
+			clientValues := auth.OauthClientValues{
+				OauthDiscoveryURL: *authParams.oauthDiscovery,
+				OauthClientID:     *authParams.oauthClientID,
+				OauthClientSecret: *authParams.oauthClientSecret,
+				OauthScopes:       *authParams.oauthScopes,
 			}
 			if err := oauth.Auth(clientValues); err != nil {
 				return err
 			}
 		}
-
-		return authenticator.Auth(AuthenticatorOptions{
-			Endpoint: *authParams.endPoint,
-			APIToken: *authParams.apiToken,
-			SSO:      *authParams.sso,
-		})
+		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken})
 	},
 }
 
@@ -130,12 +124,12 @@ func init() {
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
-	authParams.sso = authCmd.Flags().Bool("sso", false, "Use single sign on")
-	authParams.ssoLogout = authCmd.Flags().Bool("sso-logout", false, "Disable single sign on access")
-	authParams.ssoDiscovery = authCmd.Flags().String("sso-discovery", "", "Well known discovery URL used for SSO")
-	authParams.ssoClientID = authCmd.Flags().String("sso-client-id", "", "Oauth Client ID used for SSO")
-	authParams.ssoScopes = authCmd.Flags().StringArray("sso-scopes", []string{}, "Oauth scopes used for SSO")
-	authParams.ssoClientSecret = authCmd.Flags().String("sso-client-secret", "", "Oauth Client Secret used for SSO")
+	authParams.oauth = authCmd.Flags().Bool("oauth", false, "Use OAuth Authorization Code Flow to log in")
+	authParams.oauthLogout = authCmd.Flags().Bool("oauth-logout", false, "Disable Oauth access")
+	authParams.oauthDiscovery = authCmd.Flags().String("oauth-discovery", "", "Well known discovery URL used for OAuth")
+	authParams.oauthClientID = authCmd.Flags().String("oauth-client-id", "", "Oauth Client ID used for OAuth")
+	authParams.oauthScopes = authCmd.Flags().StringSlice("oauth-scopes", []string{}, "Oauth scopes used for OAuth")
+	authParams.oauthClientSecret = authCmd.Flags().String("oauth-client-secret", "", "Oauth Client Secret used for OAuth")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
@@ -154,7 +148,7 @@ func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthPa
 		return nil
 	}
 
-	if *authParams.sso {
+	if *authParams.oauth {
 		return nil
 	}
 

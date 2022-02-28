@@ -8,18 +8,18 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.11.1-0.20220207171637-b2495d8b022d
-	github.com/keptn/kubernetes-utils v0.10.1-0.20220207091837-be14968ce18a
+	github.com/keptn/go-utils v0.13.1-0.20220223120143-efe19c525eab
+	github.com/keptn/kubernetes-utils v0.13.1-0.20220223120201-02afb43c03d7
 	github.com/kinbiko/jsonassert v1.1.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
-	k8s.io/api v0.22.6
-	k8s.io/apimachinery v0.22.6
-	k8s.io/cli-runtime v0.22.6
-	k8s.io/client-go v0.22.6
-	k8s.io/kubectl v0.22.6
+	k8s.io/api v0.22.7
+	k8s.io/apimachinery v0.22.7
+	k8s.io/cli-runtime v0.22.7
+	k8s.io/client-go v0.22.7
+	k8s.io/kubectl v0.22.7
 	sigs.k8s.io/yaml v1.3.0
 )
 

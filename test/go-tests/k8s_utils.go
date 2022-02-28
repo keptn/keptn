@@ -5,14 +5,15 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	"net/http"
-	"strings"
-	"time"
 )
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
@@ -199,4 +200,22 @@ func GetOOMEvents() (K8SEventArray, error) {
 		}
 	}
 	return oomEvents, err
+}
+
+func CompareServiceWithDeployment(service string, deployment string) (bool, error) {
+	api, err := keptnkubeutils.GetKubeAPI(false)
+	if err != nil {
+		return false, err
+	}
+
+	configService, err := api.Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), service, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	if configService.Spec.Selector["app.kubernetes.io/name"] == deployment {
+		return true, nil
+	}
+
+	return false, nil
 }

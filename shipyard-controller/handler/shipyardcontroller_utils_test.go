@@ -118,6 +118,38 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "empty sequence should result in an error",
+			fields: fields{
+				projectRepo:      nil,
+				eventRepo:        nil,
+				taskSequenceRepo: nil,
+			},
+			args: args{
+				stageName:        "dev",
+				taskSequenceName: "my-sequence",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: "0.2.0",
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "my-sequence",
+										TriggeredOn: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -447,6 +479,55 @@ func Test_GetTaskSequencesByTrigger(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetTaskSequencesByTrigger(tt.args.eventScope, tt.args.completedTaskSequence, tt.args.shipyard, tt.args.previousTask); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetTaskSequencesByTrigger() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExtractEventKind(t *testing.T) {
+	myType := keptnv2.GetTriggeredEventType("dev.delivery")
+	invalidType := "imnotvalid"
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get type of valid event",
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{},
+					Type: &myType,
+				},
+			},
+			want:    "triggered",
+			wantErr: false,
+		},
+		{
+			name: "get error for invalid event type",
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{},
+					Type: &invalidType,
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractEventKind(tt.args.event)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractEventKind() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ExtractEventKind() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

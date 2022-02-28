@@ -1,11 +1,12 @@
 package common
 
 import (
+	"os"
+	"testing"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 func TestGetKeptnSpecVersion(t *testing.T) {
@@ -164,7 +165,7 @@ func TestValidateGitRemoteURL(t *testing.T) {
 		{"any.url", true},
 		{"ftp://any.url", true},
 		{"really common string", true},
-		{"ssh://someSshUrl.com", true},
+		{"ssh://someSshUrl.com", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.url, func(t *testing.T) {

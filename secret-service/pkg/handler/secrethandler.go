@@ -16,14 +16,14 @@ type ISecretHandler interface {
 	GetSecrets(c *gin.Context)
 }
 
-func NewSecretHandler(backend backend.SecretBackend) *SecretHandler {
+func NewSecretHandler(backend backend.SecretManager) *SecretHandler {
 	return &SecretHandler{
-		SecretBackend: backend,
+		SecretManager: backend,
 	}
 }
 
 type SecretHandler struct {
-	SecretBackend backend.SecretBackend
+	SecretManager backend.SecretManager
 }
 
 // CreateSecret godoc
@@ -49,7 +49,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 		secret.Scope = model.DefaultSecretScope
 	}
 
-	err := s.SecretBackend.CreateSecret(secret)
+	err := s.SecretManager.CreateSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretAlreadyExists {
 			SetConflictErrorResponse(err, c, ErrCreation)
@@ -85,7 +85,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 		return
 	}
 
-	err := s.SecretBackend.UpdateSecret(secret)
+	err := s.SecretManager.UpdateSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretNotFound {
 			SetNotFoundErrorResponse(err, c, "Unable to update secret")
@@ -123,7 +123,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 		},
 		Data: nil,
 	}
-	err := s.SecretBackend.DeleteSecret(secret)
+	err := s.SecretManager.DeleteSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretNotFound {
 			SetNotFoundErrorResponse(err, c, "Unable to delete secret")
@@ -146,7 +146,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 // @Failure 500 {object} model.Error
 // @Router /secret [get]
 func (s SecretHandler) GetSecrets(c *gin.Context) {
-	secrets, err := s.SecretBackend.GetSecrets()
+	secrets, err := s.SecretManager.GetSecrets()
 	if err != nil {
 		SetInternalServerErrorResponse(err, c, "Unable to get secrets")
 		return

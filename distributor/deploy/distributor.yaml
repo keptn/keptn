@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptndev/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -40,7 +40,7 @@ spec:
             cpu: "100m"
         env:
         - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
+          value: 'nats://keptn-nats'
         - name: PUBSUB_TOPIC
           value: 'sh.keptn.event.get-action.triggered'
         - name: PUBSUB_RECIPIENT

@@ -21,18 +21,28 @@ Keptn runs on Kubernetes. To get started, you can follow our [Quickstart guide](
 
 ### Developing Keptn
 
-The easiest way to develop is to spin up a Kubernetes cluster locally by using [K3d](https://k3d.io) via the following commands:
+The easiest way to develop is to spin up a Kubernetes cluster locally by using [K3d](https://k3d.io) (requires `docker`) via the following commands:
 
 ```console
-curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v4.4.4 bash
-k3d cluster create mykeptn -p "8082:80@agent[0]" --k3s-server-arg '--no-deploy=traefik' --agents 1
+curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v5.3.0 bash
+k3d cluster create mykeptn -p "8082:80@loadbalancer" --k3s-arg "--no-deploy=traefik@server:*"
 ```
 
-Afterwards, install Keptn:
+Afterwards, install Keptn CLI:
 ```console
 curl -sL https://get.keptn.sh | bash
+```
+
+And install Keptn (Note: remove `--use-case=continuous-delivery` in case you don't want to install `helm-service` and `jmeter-service`):
+```console
 keptn install --use-case=continuous-delivery
 ```
+
+Please follow the instructions printed by the CLI to connect to your Keptn installation.
+
+### Installing Keptn from Master branch
+
+Note: This will install a potentially unstable version of Keptn.
 
 If you want to install the latest master version of Keptn onto your cluster you can do that by using the development helm charts repository located at https://charts-dev.keptn.sh .
 ```console

@@ -125,21 +125,23 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
-	eventData := &keptnv2.EventData{}
-	err := keptnv2.Decode(event.Data, eventData)
-	if err != nil {
-		log.Errorf("Could not parse event data: %v", err)
-		return err
-	}
-
-	statusType, err := keptnv2.ParseEventKind(*event.Type)
+	statusType, err := ExtractEventKind(event)
 	if err != nil {
 		return err
 	}
-	done := make(chan error)
+	// only create channel if waitForCompletion is set to true
+	var done chan error
+	if waitForCompletion {
+		done = make(chan error)
+	}
 
 	log.Infof("Received event of type %s from %s", *event.Type, *event.Source)
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
+	complete := func(err error) {
+		if waitForCompletion {
+			done <- err
+		}
+	}
 
 	switch statusType {
 	case string(common.TriggeredEvent):
@@ -148,7 +150,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle sequence '.triggered' event")
 			}
-			done <- err
+			complete(err)
 		}()
 	case string(common.StartedEvent):
 		go func() {
@@ -156,7 +158,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle task '.started' event")
 			}
-			done <- err
+			complete(err)
 		}()
 	case string(common.FinishedEvent):
 		go func() {
@@ -164,7 +166,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle task '.finished' event")
 			}
-			done <- err
+			complete(err)
 		}()
 	default:
 		return nil
@@ -365,6 +367,10 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
+	sc.onSequenceAborted(models.EventScope{
+		KeptnContext: cancel.KeptnContext,
+		EventData:    keptnv2.EventData{Project: cancel.Project, Stage: cancel.Stage},
+	})
 	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(cancel.Project,
 		models.TaskExecution{
 			KeptnContext: cancel.KeptnContext,
@@ -406,7 +412,6 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 }
 
 func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, taskSequenceName string) error {
-	sc.onSequenceAborted(sequenceTriggeredEvent)
 	scope, err := models.NewEventScope(sequenceTriggeredEvent)
 	if err != nil {
 		return err
@@ -440,8 +445,10 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 		common.TriggeredEvent,
 	)
 	if err != nil {
+		// if the sequence.triggered event is not available anymore, we cannot send a referencing .finished event
 		if err == db.ErrNoEventFound {
-			return ErrSequenceNotFound
+			log.Infof("No sequence.triggered event for sequence %s available anymore.", cancel.KeptnContext)
+			return nil
 		}
 		return err
 	} else if len(events) == 0 {
@@ -450,7 +457,9 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 	// the first event of the context should be a task sequence event that contains the sequence name
 	sequenceTriggeredEvent := events[0]
 	if !keptnv2.IsSequenceEventType(*sequenceTriggeredEvent.Type) {
-		return ErrSequenceNotFound
+		// if the sequence.triggered event is not available anymore, we cannot send a referencing .finished event
+		log.Infof("No sequence.triggered event for sequence %s available anymore.", cancel.KeptnContext)
+		return nil
 	}
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*sequenceTriggeredEvent.Type)
 	if err != nil {

@@ -57,7 +57,7 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 		return fmt.Errorf("could not Start NatsEventReceiver: %w", err)
 	}
 	n.natsConnectionHandler.messageHandler = n.handleMessage
-	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.GetPubSubTopics(), n.env.PubSubGroup)
+	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to events: %w", err)
 	}

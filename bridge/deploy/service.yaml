@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: bridge
-          image: keptn/bridge2:latest
+          image: keptndev/bridge2:latest
           imagePullPolicy: Always
           env:
             - name: API_URL
@@ -58,11 +58,49 @@ spec:
               value: 'false'
             - name: OAUTH_DISCOVERY
               value: ''
+            # Base URL e.g. https://example.com/
+            - name: OAUTH_BASE_URL
+              value: ''
+            - name: OAUTH_CLIENT_ID
+              value: ''
+            - name: OAUTH_CLIENT_SECRET
+              value: ''
+            # Token algorithm which is used for the ID token e.g. "RS256"
+            - name: OAUTH_ID_TOKEN_ALG
+              value: ''
+            # Additional scopes that should be added to the authentication flow (e.g. "profile email"), separated by space.
+            - name: OAUTH_SCOPE
+              value: ''
+            # User identifier property inside the ID token e.g. "name" or "email"
+            - name: OAUTH_NAME_PROPERTY
+              value: ''
             - name: SECURE_COOKIE
               value: 'false'
-              # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
+            # Session cookie timeout in minutes
+            - name: SESSION_TIMEOUT_MIN
+              value: ''
+            # Timeout of validation data (state, nonce, code verifier) during login
+            - name: SESSION_VALIDATING_TIMEOUT_MIN
+              value: ''
+            # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
               value: ''
+            - name: MONGODB_HOST
+              value: keptn-mongo:27017
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-password
+            - name: MONGODB_DATABASE
+              value: openid
+            - name: CONFIG_DIR
+              value: "/config"
           envFrom:
             - secretRef:
                 name: bridge-credentials
@@ -77,11 +115,18 @@ spec:
               memory: '128Mi'
               cpu: '200m'
           volumeMounts:
-            - mountPath: /usr/src/app/dist/assets/branding
-              name: assets
+            - name: assets
+              mountPath: /usr/src/app/dist/assets/branding
+            - name: bridge-oauth
+              mountPath: /config/oauth
+              readOnly: true
       volumes:
         - emptyDir: {}
           name: assets
+        - name: bridge-oauth
+          secret:
+            secretName: bridge-oauth
+            defaultMode: 0400
 ---
 apiVersion: v1
 kind: Service

@@ -1,13 +1,13 @@
 package go_tests
 
 import (
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"os"
 	"path"
 	"testing"
 	"time"
 
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,10 +78,10 @@ func Test_BackupRestore(t *testing.T) {
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
 
-	t.Logf("Creating a new project %s without a GIT Upstream", projectName)
+	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
 	require.Nil(t, err)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)
@@ -144,6 +144,8 @@ func Test_BackupRestore(t *testing.T) {
 	require.Nil(t, err)
 	err = os.MkdirAll("config-svc-backup", os.ModePerm)
 	require.Nil(t, err)
+
+	defer resetTestPath(t, "../../../go-tests")
 
 	t.Logf("Executing backup of configuration-service")
 	configServicePod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)

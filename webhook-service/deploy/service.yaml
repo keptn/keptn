@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
-          image: keptn/webhook-service:0.10.1-dev
+          image: keptndev/webhook-service:0.10.1-dev
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -45,7 +45,7 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
         - name: distributor
-          image: keptn/distributor:0.10.1-dev
+          image: keptndev/distributor:0.10.1-dev
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -58,7 +58,7 @@ spec:
               cpu: "100m"
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn'
             - name: PUBSUB_RECIPIENT

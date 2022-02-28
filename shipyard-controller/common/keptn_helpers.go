@@ -92,12 +92,8 @@ func ValidateGitRemoteURL(gitUrl string) error {
 		return nil
 	}
 
-	if _, err := url.ParseRequestURI(gitUrl); err != nil {
-		return fmt.Errorf("unable to parse requested gitRemoteURL: %s", gitUrl)
-	}
-
-	if !strings.HasPrefix(gitUrl, "https://") && !strings.HasPrefix(gitUrl, "http://") {
-		return fmt.Errorf("only http or https protocols are supported in gitRemoteURL")
+	if !strings.HasPrefix(gitUrl, "https://") && !strings.HasPrefix(gitUrl, "http://") && !strings.HasPrefix(gitUrl, "ssh://") {
+		return fmt.Errorf("only http, https or ssh protocols are supported in gitRemoteURL")
 	}
 
 	return nil
