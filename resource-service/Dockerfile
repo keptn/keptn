@@ -87,4 +87,4 @@ USER nonroot
 
 # Run the web service on container startup.
 ENV GIN_MODE=release
-CMD ["/resource-service", "--host=0.0.0.0", "--port=8080"]
+CMD ["/resource-service"]
