@@ -267,6 +267,38 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 }
 
+func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string, error) {
+	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
+	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
+
+	err := retry.Retry(func() error {
+		if err := RecreateProjectUpstream(newProjectName); err != nil {
+			return nil
+		}
+
+		user := GetGiteaUser()
+		token, err := GetGiteaToken()
+		if err != nil {
+			return err
+		}
+
+		// apply the k8s job for creating the git upstream
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+
+		if !strings.Contains(out, "created successfully") {
+			return fmt.Errorf("unable to create project: %s", out)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return newProjectName, nil
+
+}
+
 func GetPrivateKeyAndPassphrase() (string, string, error) {
 	clientset, err := keptnkubeutils.GetClientset(false)
 	if err != nil {
