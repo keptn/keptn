@@ -163,9 +163,8 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				if errors.Is(err, ErrSequenceNotFound) || errors.Is(err, models.ErrInvalidEventScope) {
 					log.Infof("Unable to handle task event: %v", err)
-				} else {
-					log.Errorf("Unable to handle task event: %v", err)
 				}
+				log.Errorf("Unable to handle task event: %v", err)
 			}
 			complete(err)
 		}()
@@ -312,11 +311,7 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		if err != nil {
 			return err
 		}
-		// TODO
 		taskEvent.Properties = eventData
-		//if taskProperties, ok := eventData[sequenceExecution.Status.CurrentTask.Name]; ok {
-		//	taskEvent.Properties = taskProperties.(map[string]interface{})
-		//}
 	}
 	updatedSequenceExecution, err := sc.sequenceExecutionRepo.AppendTaskEvent(sequenceExecution, taskEvent)
 	if err != nil {
@@ -390,7 +385,7 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 		log.Infof(noActiveSequencesErrMsg, cancel.Project, cancel.Stage, cancel.KeptnContext)
 		return nil
 	}
-	// TODO check state and remove from dispatcher if sequence is currently in queue, i.e. waiting or triggered
+
 	err = sc.sequenceDispatcher.Remove(
 		models.EventScope{
 			EventData: keptnv2.EventData{

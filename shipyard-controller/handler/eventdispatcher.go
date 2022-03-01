@@ -183,10 +183,6 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	if len(sequenceExecutions) == 0 {
 		return ErrSequenceNotFound
 	}
-	sequenceExecution := sequenceExecutions[0]
-	if sequenceExecution.IsPaused() {
-		return ErrSequencePaused
-	}
 
 	startedSequenceExecutions, err := e.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{

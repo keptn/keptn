@@ -120,8 +120,6 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 
 	if len(e.Status.PreviousTasks) > 0 {
 		for _, previousTask := range e.Status.PreviousTasks {
-			// TODO
-			//eventPayload[previousTask.Name] = common.Merge(eventPayload[previousTask.Name], previousTask.Properties)
 			eventPayload = common.Merge(eventPayload, previousTask.Properties).(map[string]interface{})
 		}
 		lastTaskIndex := len(e.Status.PreviousTasks) - 1
