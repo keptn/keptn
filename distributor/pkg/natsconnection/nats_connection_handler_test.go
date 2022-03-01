@@ -1,4 +1,4 @@
-package events
+package natsconnection
 
 import (
 	"fmt"
@@ -12,19 +12,6 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-const TEST_PORT = 8369
-
-func RunServerOnPort(port int) (*server.Server, func()) {
-	opts := natsserver.DefaultTestOptions
-	opts.Port = port
-	svr := RunServerWithOptions(&opts)
-	return svr, func() { svr.Shutdown() }
-}
-
-func RunServerWithOptions(opts *server.Options) *server.Server {
-	return natsserver.RunServer(opts)
-}
-
 func TestUsingNatsConnectionHandlerWithoutConnectingToNATS(t *testing.T) {
 	nch := NewNatsConnectionHandler("1.2.3.4")
 	assert.NotNil(t, nch.RemoveAllSubscriptions())
@@ -33,17 +20,17 @@ func TestUsingNatsConnectionHandlerWithoutConnectingToNATS(t *testing.T) {
 }
 
 func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
 
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	natsURL := svr.Addr().String()
 
 	natsPublisher, _ := nats.Connect(natsURL)
 	defer natsPublisher.Close()
 
 	messagesReceived := make(chan int)
 	nch := NewNatsConnectionHandler(natsURL)
-	nch.messageHandler = func(m *nats.Msg) {
+	nch.MessageHandler = func(m *nats.Msg) {
 		messagesReceived <- 1
 	}
 	require.Nil(t, nch.Connect())
@@ -87,10 +74,10 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 }
 
 func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
 
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	natsURL := svr.Addr().String()
 
 	messagesReceived := make(chan int)
 
@@ -131,7 +118,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				natsConnection: tt.fields.NatsConnection,
 				subscriptions:  tt.fields.Subscriptions,
 				natsURL:        tt.fields.NatsURL,
-				messageHandler: tt.fields.MessageHandler,
+				MessageHandler: tt.fields.MessageHandler,
 			}
 			require.Nil(t, nch.Connect())
 			err := nch.SubscribeToTopics(tt.fields.Topics)
@@ -175,9 +162,9 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 }
 
 func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+	natsURL := svr.Addr().String()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	topics := []string{
@@ -187,7 +174,7 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 	firstSubscriber := make(chan struct{})
 	nch1 := &NatsConnectionHandler{
 		natsURL: natsURL,
-		messageHandler: func(m *nats.Msg) {
+		MessageHandler: func(m *nats.Msg) {
 			firstSubscriber <- struct{}{}
 		},
 	}
@@ -199,7 +186,7 @@ func Test_MultipleSubscribersInAGroup_OnlyOneReceivesMessage(t *testing.T) {
 	secondSubscriber := make(chan struct{})
 	nch2 := &NatsConnectionHandler{
 		natsURL: natsURL,
-		messageHandler: func(m *nats.Msg) {
+		MessageHandler: func(m *nats.Msg) {
 			secondSubscriber <- struct{}{}
 		},
 	}
@@ -264,4 +251,14 @@ func TestIsEqual(t *testing.T) {
 			}
 		})
 	}
+}
+
+func runNATSServer() (*server.Server, func()) {
+	opts := natsserver.DefaultTestOptions
+	svr := runNatsWithOptions(&opts)
+	return svr, func() { svr.Shutdown() }
+}
+
+func runNatsWithOptions(opts *server.Options) *server.Server {
+	return natsserver.RunServer(opts)
 }

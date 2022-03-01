@@ -1,4 +1,4 @@
-package controlplane
+package log
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func TestEventUniformLog_LogEvent(t *testing.T) {
 	newEvent := event.New()
 	newEvent.SetType("random-event")
 
-	err := uniformLog.OnEvent(newEvent)
+	err := uniformLog.onEvent(newEvent)
 
 	require.Nil(t, err)
 	require.Empty(t, fakeLogHandler.LogCalls())
@@ -33,7 +33,7 @@ func TestEventUniformLog_LogEvent(t *testing.T) {
 	newEvent.SetExtension("triggeredid", "my-triggered-id")
 	newEvent.SetData(event.ApplicationJSON, logEventData)
 
-	err = uniformLog.OnEvent(newEvent)
+	err = uniformLog.onEvent(newEvent)
 
 	require.Nil(t, err)
 	require.NotEmpty(t, fakeLogHandler.LogCalls())
@@ -55,7 +55,7 @@ func TestEventUniformLog_LogEventInvalidPayload(t *testing.T) {
 	// send sh.keptn.log.error event with invalid payload -> should result in an error
 	newEvent.SetData(event.TextJSON, "invalid")
 
-	err := uniformLog.OnEvent(newEvent)
+	err := uniformLog.onEvent(newEvent)
 
 	require.NotNil(t, err)
 	require.Empty(t, fakeLogHandler.LogCalls())
@@ -75,7 +75,7 @@ func TestEventUniformLog_TaskFinishedWithErroredStatus(t *testing.T) {
 	}
 	newEvent.SetData(event.ApplicationJSON, finishedData)
 
-	err := uniformLog.OnEvent(newEvent)
+	err := uniformLog.onEvent(newEvent)
 
 	require.Nil(t, err)
 	require.Len(t, fakeLogHandler.LogCalls(), 1)
@@ -100,7 +100,7 @@ func TestEventUniformLog_TaskFinishedWithSucceedStatus(t *testing.T) {
 	}
 	newEvent.SetData(event.ApplicationJSON, finishedData)
 
-	err := uniformLog.OnEvent(newEvent)
+	err := uniformLog.onEvent(newEvent)
 
 	require.Nil(t, err)
 	require.Empty(t, fakeLogHandler.LogCalls())
@@ -119,7 +119,7 @@ func TestEventUniformLog_TaskFinishedWithSucceedStatusAndResultFail(t *testing.T
 	}
 	newEvent.SetData(event.ApplicationJSON, finishedData)
 
-	err := uniformLog.OnEvent(newEvent)
+	err := uniformLog.onEvent(newEvent)
 
 	require.Nil(t, err)
 	require.Empty(t, fakeLogHandler.LogCalls())
@@ -133,7 +133,7 @@ func TestEventUniformLog_TaskFinishedWithInvalidData(t *testing.T) {
 
 	newEvent.SetData(event.TextJSON, "invalid")
 
-	err := uniformLog.OnEvent(newEvent)
+	err := uniformLog.onEvent(newEvent)
 
 	require.NotNil(t, err)
 	require.Empty(t, fakeLogHandler.LogCalls())
@@ -151,7 +151,7 @@ func getTestUniformLogger() (*fakeapi.ILogHandlerMock, *EventUniformLog) {
 
 		},
 	}
-	uniformLog := NewEventUniformLog(
+	uniformLog := New(
 		"my-id",
 		fakeLogHandler,
 	)

@@ -1,4 +1,4 @@
-package events
+package utils
 
 import (
 	"context"
@@ -203,15 +203,6 @@ func (c *Cache) containsSlice(key string, elements []string) bool {
 	return contains
 }
 
-// ToIDs takes a list of cloud events and returns a list of ids of the given cloud events
-func ToIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
-	ids := []string{}
-	for _, e := range events {
-		ids = append(ids, e.ID)
-	}
-	return ids
-}
-
 // Dedup removes duplicate elements from the given list of strings
 func Dedup(elements []string) []string {
 	result := make([]string, 0, len(elements))
@@ -223,4 +214,12 @@ func Dedup(elements []string) []string {
 		}
 	}
 	return result
+}
+
+func ToIds(events []*keptnmodels.KeptnContextExtendedCE) []string {
+	ids := []string{}
+	for _, e := range events {
+		ids = append(ids, e.ID)
+	}
+	return ids
 }

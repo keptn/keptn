@@ -1,4 +1,4 @@
-package events
+package natsconnection
 
 import (
 	"errors"
@@ -11,11 +11,11 @@ import (
 )
 
 type NatsConnectionHandler struct {
+	MessageHandler func(m *nats.Msg)
 	natsConnection *nats.Conn
 	subscriptions  []*nats.Subscription
 	topics         []string
 	natsURL        string
-	messageHandler func(m *nats.Msg)
 	mux            sync.Mutex
 }
 
@@ -87,7 +87,7 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 
 		for _, topic := range nch.topics {
 			logger.Infof("Subscribing to topic '%s' with queue group '%s'", topic, queueGroup)
-			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.messageHandler)
+			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.MessageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
 			}

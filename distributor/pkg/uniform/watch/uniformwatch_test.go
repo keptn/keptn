@@ -1,4 +1,4 @@
-package events
+package watch
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 func Test_UniformWatchReturnsRegistrationID(t *testing.T) {
-	uw := NewUniformWatch(&testControlPlane{})
+	uw := New(&testControlPlane{})
 	uw.RegisterListener(&testListener{})
 
 	id := uw.Start(context.TODO())
@@ -28,7 +28,7 @@ func Test_UniformWatchUpdatesListeners(t *testing.T) {
 	controlPlane := &testControlPlane{
 		integrationData: expectedUpdateData,
 	}
-	uw := NewUniformWatch(controlPlane)
+	uw := New(controlPlane)
 	uw.pingInterval = 100 * time.Millisecond
 	uw.RegisterListener(listener)
 	uw.Start(context.TODO())
