@@ -48,6 +48,12 @@ func Merge(in1, in2 interface{}) interface{} {
 				in1[k] = v2
 			}
 		}
+	case string:
+		if in2, ok := in2.(string); ok {
+			if in1 == "" && in2 != "" {
+				return in2
+			}
+		}
 	case nil:
 		in2, ok := in2.(map[string]interface{})
 		if ok {

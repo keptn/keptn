@@ -28,6 +28,9 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 					Tasks: []keptnv2.Task{
 						{
 							Name: "mytask",
+							Properties: map[string]interface{}{
+								"deploymentstrategy": "direct",
+							},
 						},
 					},
 				},
@@ -42,12 +45,19 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 						Service: "my-service",
 					},
 				},
-				InputProperties: nil,
+				InputProperties: map[string]interface{}{
+					"mytask": map[string]interface{}{
+						"deploymentstrategy": "",
+					},
+				},
 			},
 			want: map[string]interface{}{
 				"project": "my-project",
 				"stage":   "my-stage",
 				"service": "my-service",
+				"mytask": map[string]interface{}{
+					"deploymentstrategy": "direct",
+				},
 			},
 		},
 		{

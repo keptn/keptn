@@ -16,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -97,7 +96,12 @@ func main() {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
 
-	eventSender, err := v0_2_0.NewHTTPEventSender("")
+	connectionHandler := nats.NewNatsConnectionHandler(
+		ctx,
+		getNatsURLFromEnvVar(),
+	)
+
+	eventSender, err := connectionHandler.GetPublisher()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -259,13 +263,7 @@ func main() {
 		}
 	}()
 
-	connectionHandler := nats.NewNatsConnectionHandler(
-		ctx,
-		getNatsURLFromEnvVar(),
-		nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent),
-	)
-
-	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}); err != nil {
+	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}, nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent)); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
 
