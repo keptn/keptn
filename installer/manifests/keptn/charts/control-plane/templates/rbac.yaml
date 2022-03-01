@@ -229,6 +229,8 @@ rules:
       - "coordination.k8s.io"
     resources:
       - leases
+    resourceNames:
+      - "shipyard-controller-dispatcher"
     verbs:
       - get
       - update
