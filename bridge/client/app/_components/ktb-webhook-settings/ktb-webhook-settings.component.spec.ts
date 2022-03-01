@@ -83,15 +83,26 @@ describe('KtbWebhookSettingsComponent', () => {
     }
   });
 
+  it('should be invalid URL if it contains spaces', () => {
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
+    const urls = [
+      'http://my-jenkins-servcer.default.svc.cluster.local:8080/job/nodejs example app/build?token=',
+      'http://my-jenkins-servcer.com/job/nodejs example app/build?token=',
+    ];
+
+    for (const url of urls) {
+      urlControl.setValue(url);
+      expect(urlControl.valid).toEqual(false);
+    }
+  });
+
   it('should be valid URL when it starts with http(s)://', () => {
     const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
     const urls = [
       'https://keptn.sh',
       'http://keptn.sh',
       'http://www.keptn.sh',
-      'http://my-jenkins-servcer.default.svc.cluster.local:8080/job/nodejs example app/build?token=',
       'http://my-jenkins-servcer.default.svc.cluster.local:8080/job/nodejs%20example%20app/build?token=',
-      'http://my-jenkins-servcer.com/job/nodejs example app/build?token=',
     ];
 
     for (const url of urls) {

@@ -9,7 +9,7 @@ export class FormUtils {
   }
 
   public static isUrlValidator(control: AbstractControl): { url: { value: boolean } } | null {
-    if (control.value && control.value.search(/^http(s?):\/\//) === -1) {
+    if (control.value && (control.value.search(/^http(s?):\/\//) === -1 || control.value.includes(' '))) {
       return { url: { value: true } };
     }
     return null;

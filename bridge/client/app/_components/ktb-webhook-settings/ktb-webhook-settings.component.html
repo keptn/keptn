@@ -28,7 +28,9 @@
         class="resize-vertical"
       ></textarea>
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
-      <dt-error *ngIf="getFormControl('url').errors?.url">URL must start with http(s)://</dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.url">
+        URL must start with http(s):// and must not contain spaces
+      </dt-error>
       <div dtSuffix uitestid="event-url">
         <ng-container
           [ngTemplateOutlet]="payloadButton"
@@ -163,7 +165,9 @@
     <dt-form-field uitestid="edit-webhook-field-proxy">
       <dt-label>Proxy</dt-label>
       <input formControlName="proxy" type="url" dtInput placeholder="Proxy" />
-      <dt-error *ngIf="getFormControl('proxy').errors?.url">URL must start with http(s)://</dt-error>
+      <dt-error *ngIf="getFormControl('proxy').errors?.url">
+        URL must start with http(s):// and must not contain spaces
+      </dt-error>
     </dt-form-field>
   </div>
   <div class="settings-section" fxLayout="row" fxLayoutAlign="start center">
