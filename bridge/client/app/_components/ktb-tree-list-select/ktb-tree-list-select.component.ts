@@ -14,8 +14,7 @@ import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/bar
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { NavigationStart, Router } from '@angular/router';
-import { filter, takeUntil } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
 import { Subject } from 'rxjs';
 
@@ -53,12 +52,14 @@ export class KtbTreeListSelectDirective implements OnInit, OnDestroy {
 
   @HostListener('click')
   show(): void {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const tooltipPortal: ComponentPortal<KtbTreeListSelectComponent> = new ComponentPortal(KtbTreeListSelectComponent);
+    const treeListSelectPortal: ComponentPortal<KtbTreeListSelectComponent> = new ComponentPortal(
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      KtbTreeListSelectComponent
+    );
     // Disable origin to prevent 'Host has already a portal attached' error
     this.elementRef.nativeElement.disabled = true;
 
-    this.contentRef = this.overlayRef?.attach(tooltipPortal);
+    this.contentRef = this.overlayRef?.attach(treeListSelectPortal);
     if (this.contentRef) {
       this.contentRef.instance.data = this.data;
       this.contentRef.instance.options = this.options;
@@ -74,21 +75,11 @@ export class KtbTreeListSelectDirective implements OnInit, OnDestroy {
   }
 
   constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
-    // Close when navigation happens - to keep the overlay on the UI
-    this.router.events
-      .pipe(takeUntil(this.unsubscribe$))
-      .pipe(filter((event) => event instanceof NavigationStart))
-      .subscribe(() => {
-        this.close();
-      });
+    overlayService.registerNavigationEvent(this.unsubscribe$, this.close.bind(this));
   }
 
   public ngOnInit(): void {
-    this.overlayRef = this.overlayService.initOverlay('400px', '200px', true, this.elementRef);
-
-    this.overlayRef.backdropClick().subscribe(() => {
-      this.close();
-    });
+    this.overlayRef = this.overlayService.initOverlay('400px', '200px', true, this.elementRef, this.close.bind(this));
   }
 
   public ngOnDestroy(): void {
