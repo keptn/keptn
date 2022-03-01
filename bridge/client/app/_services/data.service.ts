@@ -31,8 +31,6 @@ import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
-import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
-import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',
@@ -773,7 +771,6 @@ export class DataService {
   public logout(): Observable<EndSessionData | null> {
     return this.apiService.logout();
   }
-
 
   public triggerDelivery(data: TriggerSequenceData): Observable<TriggerResponse> {
     const type = EventTypes.PREFIX + data.stage + EventTypes.DELIVERY_TRIGGERED_SUFFIX;
