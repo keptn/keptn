@@ -1160,13 +1160,13 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 	if shipyardContent == "" {
 		shipyardContent = testShipyardFile
 	}
-	os.Setenv(EnvVarDisableLeaderElection, "true")
+	os.Setenv("DISABLE_LEADER_ELECTION", "true")
 
 	eventRepo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
 	eventQueueRepo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceRepo := db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
-	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, 1*time.Second, clock.New())
+	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, 1*time.Second, clock.New(), common.SDModeRW)
 	sc := &shipyardController{
 		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
 		eventRepo:        eventRepo,
@@ -1205,7 +1205,7 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 
 	ctx, cancel := context.WithCancel(context.Background())
 	sc.run(ctx)
-	sc.StartDispatchers(ctx)
+	sc.StartDispatchers(ctx, common.SDModeRW)
 	return sc, cancel
 }
 

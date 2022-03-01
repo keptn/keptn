@@ -147,7 +147,7 @@ shipyardController:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
     disableLeaderElection: true
-    replicas: 3
+    replicas: 1
 
 secretService:
   image:

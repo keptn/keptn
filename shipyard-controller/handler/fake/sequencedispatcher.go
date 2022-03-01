@@ -5,6 +5,7 @@ package fake
 
 import (
 	"context"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
@@ -41,7 +42,7 @@ type ISequenceDispatcherMock struct {
 	RemoveFunc func(eventScope models.EventScope) error
 
 	// RunFunc mocks the Run method.
-	RunFunc func(ctx context.Context, startSequenceFunc func(event models.Event) error)
+	RunFunc func(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error)
 
 	// StopFunc mocks the Stop method.
 	StopFunc func()
@@ -138,7 +139,7 @@ func (mock *ISequenceDispatcherMock) RemoveCalls() []struct {
 }
 
 // Run calls RunFunc.
-func (mock *ISequenceDispatcherMock) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
+func (mock *ISequenceDispatcherMock) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error) {
 	if mock.RunFunc == nil {
 		panic("ISequenceDispatcherMock.RunFunc: method is nil but ISequenceDispatcher.Run was just called")
 	}
@@ -152,7 +153,7 @@ func (mock *ISequenceDispatcherMock) Run(ctx context.Context, startSequenceFunc 
 	mock.lockRun.Lock()
 	mock.calls.Run = append(mock.calls.Run, callInfo)
 	mock.lockRun.Unlock()
-	mock.RunFunc(ctx, startSequenceFunc)
+	mock.RunFunc(ctx, mode, startSequenceFunc)
 }
 
 // RunCalls gets all the calls that were made to Run.

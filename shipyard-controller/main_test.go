@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -77,7 +78,7 @@ func Test_LeaderElection(t *testing.T) {
 	c := &fakek8s.Clientset{}
 
 	shipyard := &fake.IShipyardControllerMock{
-		StartDispatchersFunc: func(ctx context.Context) {
+		StartDispatchersFunc: func(ctx context.Context, mode common.SDMode) {
 			time.After(5 * time.Second)
 			close(onNewLeader)
 		},
@@ -117,7 +118,9 @@ func Test_LeaderElection(t *testing.T) {
 		return true, nil, fmt.Errorf("unreachable action")
 	})
 
-	newReplica := func() { LeaderElection(c.CoordinationV1(), ctx, shipyard.StartDispatchers, shipyard.StopDispatchers) }
+	newReplica := func() {
+		LeaderElection(c.CoordinationV1(), ctx, shipyard.StartDispatchersFunc, shipyard.StopDispatchers)
+	}
 	go newReplica()
 
 	// Wait for one replica to become the leader

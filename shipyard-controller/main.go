@@ -65,6 +65,7 @@ const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
 const envVarNatsURLDefault = "nats://keptn-nats"
+const envVarDisableLeaderElection = "DISABLE_LEADER_ELECTION"
 
 func main() {
 
@@ -130,8 +131,8 @@ func main() {
 	)
 
 	stageManager := handler.NewStageManager(projectMVRepo)
-
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	// setup dispatcher with default Read and Write mode
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -139,6 +140,7 @@ func main() {
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		clock.New(),
+		common.SDModeRW,
 	)
 
 	sequenceTimeoutChannel := make(chan models.SequenceTimeout)
@@ -274,9 +276,9 @@ func main() {
 		}
 	}()
 
-	if os.Getenv(handler.EnvVarDisableLeaderElection) == "true" {
+	if os.Getenv(envVarDisableLeaderElection) == "true" {
 		// single shipyard
-		shipyardController.StartDispatchers(ctx)
+		shipyardController.StartDispatchers(ctx, common.SDModeRW)
 	} else {
 		// multiple shipyards
 		go LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
@@ -286,7 +288,7 @@ func main() {
 
 }
 
-func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context), stop func()) {
+func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
 	myID := uuid.New().String()
 	// we use the Lease lock type since edits to Leases are less common
 	// and fewer objects in the cluster watch "all Leases".
@@ -318,7 +320,7 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 			OnStartedLeading: func(ctx context.Context) {
 				// we're notified when we start - this is where you would
 				// usually put your code
-				start(ctx)
+				start(ctx, common.SDModeRW)
 			},
 			OnStoppedLeading: func() {
 				// we can do cleanup here

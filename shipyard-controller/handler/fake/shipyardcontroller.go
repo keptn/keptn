@@ -57,7 +57,7 @@ type IShipyardControllerMock struct {
 	HandleIncomingEventFunc func(event models.Event, waitForCompletion bool) error
 
 	// StartDispatchersFunc mocks the StartDispatchers method.
-	StartDispatchersFunc func(ctx context.Context)
+	StartDispatchersFunc func(ctx context.Context, mode common.SDMode)
 
 	// StartTaskSequenceFunc mocks the StartTaskSequence method.
 	StartTaskSequenceFunc func(event models.Event) error
@@ -247,7 +247,7 @@ func (mock *IShipyardControllerMock) HandleIncomingEventCalls() []struct {
 }
 
 // StartDispatchers calls StartDispatchersFunc.
-func (mock *IShipyardControllerMock) StartDispatchers(ctx context.Context) {
+func (mock *IShipyardControllerMock) StartDispatchers(ctx context.Context, mode common.SDMode) {
 	if mock.StartDispatchersFunc == nil {
 		panic("IShipyardControllerMock.StartDispatchersFunc: method is nil but IShipyardController.StartDispatchers was just called")
 	}
@@ -259,7 +259,7 @@ func (mock *IShipyardControllerMock) StartDispatchers(ctx context.Context) {
 	mock.lockStartDispatchers.Lock()
 	mock.calls.StartDispatchers = append(mock.calls.StartDispatchers, callInfo)
 	mock.lockStartDispatchers.Unlock()
-	mock.StartDispatchersFunc(ctx)
+	mock.StartDispatchersFunc(ctx, mode)
 }
 
 // StartDispatchersCalls gets all the calls that were made to StartDispatchers.

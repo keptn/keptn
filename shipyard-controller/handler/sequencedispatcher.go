@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -20,12 +19,10 @@ import (
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
-	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
+	Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error)
 	Remove(eventScope models.EventScope) error
 	Stop()
 }
-
-const EnvVarDisableLeaderElection = "DISABLE_LEADER_ELECTION"
 
 type SequenceDispatcher struct {
 	eventRepo          db.EventRepo
@@ -38,6 +35,7 @@ type SequenceDispatcher struct {
 	shipyardController shipyardController
 	mutex              sync.Mutex
 	ticker             *clock.Ticker
+	mode               common.SDMode
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -48,7 +46,7 @@ func NewSequenceDispatcher(
 	sequenceRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
 	theClock clock.Clock,
-
+	mode common.SDMode,
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
 		eventRepo:      eventRepo,
@@ -58,12 +56,13 @@ func NewSequenceDispatcher(
 		theClock:       theClock,
 		syncInterval:   syncInterval,
 		mutex:          sync.Mutex{},
+		mode:           mode,
 	}
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 
-	if os.Getenv(EnvVarDisableLeaderElection) == "true" {
+	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
@@ -101,7 +100,9 @@ func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
 	})
 }
 
-func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
+func (sd *SequenceDispatcher) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error) {
+	// at each run the dispatcher needs to know if it is a leader or not
+	sd.mode = mode
 	sd.ticker = sd.theClock.Ticker(sd.syncInterval)
 	sd.startSequenceFunc = startSequenceFunc
 	go func() {
@@ -119,6 +120,8 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 }
 
 func (sd *SequenceDispatcher) Stop() {
+	// as soon as a new leader is elected dispatcher should only write
+	sd.mode = common.SDModeW
 	if sd.ticker == nil {
 		return
 	}

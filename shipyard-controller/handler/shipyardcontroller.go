@@ -28,7 +28,7 @@ type IShipyardController interface {
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
 	ControlSequence(controlSequence models.SequenceControl) error
 	StartTaskSequence(event models.Event) error
-	StartDispatchers(ctx context.Context)
+	StartDispatchers(ctx context.Context, mode common.SDMode)
 	StopDispatchers()
 }
 
@@ -124,9 +124,9 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 	return nil
 }
 
-func (sc shipyardController) StartDispatchers(ctx context.Context) {
+func (sc shipyardController) StartDispatchers(ctx context.Context, mode common.SDMode) {
 	sc.eventDispatcher.Run(ctx)
-	sc.sequenceDispatcher.Run(ctx, sc.StartTaskSequence)
+	sc.sequenceDispatcher.Run(ctx, mode, sc.StartTaskSequence)
 }
 
 func (sc shipyardController) StopDispatchers() {
