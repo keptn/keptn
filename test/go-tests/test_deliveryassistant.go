@@ -2,13 +2,14 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 )
 
 const deliveryAssistantShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
@@ -67,7 +68,7 @@ func Test_DeliveryAssistant(t *testing.T) {
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

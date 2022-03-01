@@ -483,3 +483,52 @@ func Test_GetTaskSequencesByTrigger(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractEventKind(t *testing.T) {
+	myType := keptnv2.GetTriggeredEventType("dev.delivery")
+	invalidType := "imnotvalid"
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get type of valid event",
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{},
+					Type: &myType,
+				},
+			},
+			want:    "triggered",
+			wantErr: false,
+		},
+		{
+			name: "get error for invalid event type",
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{},
+					Type: &invalidType,
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractEventKind(tt.args.event)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractEventKind() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ExtractEventKind() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

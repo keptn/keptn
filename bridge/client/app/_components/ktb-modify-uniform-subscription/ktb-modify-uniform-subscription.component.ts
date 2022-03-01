@@ -17,7 +17,7 @@ import { NotificationsService } from '../../_services/notifications.service';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { NotificationType } from '../../_models/notification';
 import { Secret } from '../../_models/secret';
-import { SecretScope } from '../../../../shared/interfaces/secret-scope';
+import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { EventState } from '../../../../shared/models/event-state';
 import { Trace } from '../../_models/trace';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -193,7 +193,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     const webhookSecrets$ = integrationInfo$.pipe(
       switchMap((info) => {
         if (info.isWebhookService) {
-          return this.dataService.getSecretsForScope(SecretScope.WEBHOOK);
+          return this.dataService.getSecretsForScope(SecretScopeDefault.WEBHOOK);
         }
         return of(undefined);
       })

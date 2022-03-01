@@ -2,6 +2,8 @@ import { Express, NextFunction, Request, Response } from 'express';
 import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 import { SessionService } from './session';
 import { getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
+import { defaultContentSecurityPolicyOptions } from '../app';
+import helmet from 'helmet';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
@@ -22,6 +24,7 @@ async function setupOAuth(
   // Initialise session middleware
   app.use(session.sessionRouter(app));
   const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
+  setEndSessionPolicy(app, client);
   setRoutes(app, client, redirectUri, logoutUri, session);
   return session;
 }
@@ -57,6 +60,17 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
     token_endpoint_auth_method: clientSecret ? 'client_secret_basic' : 'none',
     id_token_signed_response_alg: process.env.OAUTH_ID_TOKEN_ALG || 'RS256',
   });
+}
+
+function setEndSessionPolicy(app: Express, client: BaseClient): void {
+  if (client.issuer.metadata.end_session_endpoint && defaultContentSecurityPolicyOptions.directives) {
+    defaultContentSecurityPolicyOptions.directives['form-action'] = [
+      `'self'`,
+      client.issuer.metadata.end_session_endpoint,
+      process.env.OAUTH_ALLOWED_LOGOUT_URLS || '',
+    ];
+    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+  }
 }
 
 function setRoutes(

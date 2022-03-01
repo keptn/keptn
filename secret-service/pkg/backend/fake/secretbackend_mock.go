@@ -25,6 +25,9 @@ var _ backend.SecretBackend = &SecretBackendMock{}
 // 			DeleteSecretFunc: func(secret model.Secret) error {
 // 				panic("mock out the DeleteSecret method")
 // 			},
+// 			GetScopesFunc: func() ([]string, error) {
+// 				panic("mock out the GetScopes method")
+// 			},
 // 			GetSecretsFunc: func() ([]model.GetSecretResponseItem, error) {
 // 				panic("mock out the GetSecrets method")
 // 			},
@@ -44,6 +47,9 @@ type SecretBackendMock struct {
 	// DeleteSecretFunc mocks the DeleteSecret method.
 	DeleteSecretFunc func(secret model.Secret) error
 
+	// GetScopesFunc mocks the GetScopes method.
+	GetScopesFunc func() ([]string, error)
+
 	// GetSecretsFunc mocks the GetSecrets method.
 	GetSecretsFunc func() ([]model.GetSecretResponseItem, error)
 
@@ -62,6 +68,9 @@ type SecretBackendMock struct {
 			// Secret is the secret argument value.
 			Secret model.Secret
 		}
+		// GetScopes holds details about calls to the GetScopes method.
+		GetScopes []struct {
+		}
 		// GetSecrets holds details about calls to the GetSecrets method.
 		GetSecrets []struct {
 		}
@@ -73,6 +82,7 @@ type SecretBackendMock struct {
 	}
 	lockCreateSecret sync.RWMutex
 	lockDeleteSecret sync.RWMutex
+	lockGetScopes    sync.RWMutex
 	lockGetSecrets   sync.RWMutex
 	lockUpdateSecret sync.RWMutex
 }
@@ -136,6 +146,32 @@ func (mock *SecretBackendMock) DeleteSecretCalls() []struct {
 	mock.lockDeleteSecret.RLock()
 	calls = mock.calls.DeleteSecret
 	mock.lockDeleteSecret.RUnlock()
+	return calls
+}
+
+// GetScopes calls GetScopesFunc.
+func (mock *SecretBackendMock) GetScopes() ([]string, error) {
+	if mock.GetScopesFunc == nil {
+		panic("SecretBackendMock.GetScopesFunc: method is nil but SecretBackend.GetScopes was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockGetScopes.Lock()
+	mock.calls.GetScopes = append(mock.calls.GetScopes, callInfo)
+	mock.lockGetScopes.Unlock()
+	return mock.GetScopesFunc()
+}
+
+// GetScopesCalls gets all the calls that were made to GetScopes.
+// Check the length with:
+//     len(mockedSecretBackend.GetScopesCalls())
+func (mock *SecretBackendMock) GetScopesCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockGetScopes.RLock()
+	calls = mock.calls.GetScopes
+	mock.lockGetScopes.RUnlock()
 	return calls
 }
 

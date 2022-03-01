@@ -21,8 +21,27 @@ prefixPath: ""
 keptnSpecVersion: latest
 
 nats:
-  nameOverride: keptn-nats-cluster
-  nats.cluster.replicas: 3
+  nameOverride: keptn-nats
+  fullnameOverride: keptn-nats
+  cluster:
+    replicas: 3
+    name: nats
+  nats:
+    healthcheck:
+      startup:
+        enabled: false
+    jetstream:
+      enabled: true
+
+      memStorage:
+        enabled: true
+        size: 2Gi
+
+      fileStorage:
+        enabled: true
+        size: 5Gi
+        storageDirectory: /data/
+        storageClassName: ""
 
   natsbox:
     enabled: false
@@ -34,6 +53,17 @@ apiGatewayNginx:
   port: 80
   targetPort: 8080
   nodePort: 31090
+  podSecurityContext:
+    enabled: true
+    defaultSeccompProfile: true
+    fsGroup: 101
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 101
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    privileged: false
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.21.6-alpine
@@ -66,6 +96,17 @@ bridge:
     enabled: true
   installationType: null
   lookAndFeelUrl: null
+  podSecurityContext:
+    enabled: true
+    defaultSeccompProfile: true
+    fsGroup: 65532
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    privileged: false
   oauth:
     enabled: false
     discovery: ""
@@ -173,3 +214,16 @@ ingress:
 logLevel: info
 
 gracePeriod: 40
+
+common:
+  podSecurityContext:
+    enabled: true
+    defaultSeccompProfile: true
+    fsGroup: 65532
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    privileged: false

@@ -72,9 +72,9 @@ func (p *Poller) doPollEvents() {
 }
 
 func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription) {
-	events, err := p.shipyardControlAPI.GetOpenTriggeredEvents(api.EventFilter{
-		EventType: subscription.Event,
-	})
+
+	eventFilter := getEventFilterForSubscription(subscription)
+	events, err := p.shipyardControlAPI.GetOpenTriggeredEvents(eventFilter)
 	if err != nil {
 		logger.Errorf("Could not retrieve events of type %s: %s", subscription.Event, err)
 		return
@@ -110,6 +110,29 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 
 	logger.Debugf("Cleaning up list of sent events for topic %s", subscription.Event)
 	p.ceCache.Keep(subscription.ID, ToIDs(events))
+}
+
+// getEventFilterForSubscription returns the event filter for the subscription
+// Per default, it only sets the event type of the subscription.
+// If exactly one project, stage or service is specified respectively, they are included in the filter.
+// However, this is only a (very) short term solution for the RBAC use case.
+// In the long term, we should just pass the subscription ID in the request, since the backend knows the required filters associated with the subscription.
+func getEventFilterForSubscription(subscription keptnmodels.EventSubscription) api.EventFilter {
+	eventFilter := api.EventFilter{
+		EventType: subscription.Event,
+	}
+
+	if len(subscription.Filter.Projects) == 1 {
+		eventFilter.Project = subscription.Filter.Projects[0]
+	}
+	if len(subscription.Filter.Stages) == 1 {
+		eventFilter.Stage = subscription.Filter.Stages[0]
+	}
+	if len(subscription.Filter.Services) == 1 {
+		eventFilter.Service = subscription.Filter.Services[0]
+	}
+
+	return eventFilter
 }
 
 func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription keptnmodels.EventSubscription) error {

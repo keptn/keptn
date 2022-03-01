@@ -2,14 +2,108 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/osutils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
 	"os"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 )
+
+const unleashServiceK8sManifest = `---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unleash-service
+spec:
+  selector:
+    matchLabels:
+      run: unleash-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: unleash-service
+        app.kubernetes.io/name: unleash-service
+        app.kubernetes.io/version: 0.3.2
+    spec:
+      serviceAccountName: keptn-default
+      containers:
+        - name: unleash-service
+          image: keptncontrib/unleash-service:0.3.2
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EVENTBROKER
+              value: 'http://localhost:8081/event'
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+          envFrom:
+            - secretRef:
+                name: unleash
+                optional: true
+        - name: distributor
+          image: ${distributor-image}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "25m"
+            limits:
+              memory: "32Mi"
+              cpu: "250m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.action.triggered'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+            - name: DISTRIBUTOR_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/version']
+            - name: K8S_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unleash-service
+  labels:
+    run: unleash-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: unleash-service`
 
 const selfHealingShipyard = `apiVersion: "spec.keptn.sh/0.2.2"
 kind: "Shipyard"
@@ -62,7 +156,7 @@ func Test_SelfHealing(t *testing.T) {
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -91,12 +185,33 @@ func Test_SelfHealing(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("Installing unleash-service")
-	unleashServiceVersion := osutils.GetOSEnvOrDefault(unleashServiceEnvVar, defaultUnleashServiceVersion)
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl apply -f \"https://raw.githubusercontent.com/keptn-contrib/unleash-service/%s/deploy/service.yaml\" -n %s", unleashServiceVersion, GetKeptnNameSpaceFromEnv()))
+	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+	unleashServiceManifestContent := strings.ReplaceAll(unleashServiceK8sManifest, "${distributor-image}", distributorImage)
+
+	tmpFile, err := CreateTmpFile("unleash-service-*.yaml", unleashServiceManifestContent)
+	defer func() {
+		if err := os.Remove(tmpFile); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
+	_, err = KubeCtlApplyFromURL(tmpFile)
 	require.Nil(t, err)
 
 	err = WaitForPodOfDeployment("unleash-service")
 	require.Nil(t, err)
+
+	var uniformServiceIntegration models.Integration
+	require.Eventually(t, func() bool {
+		uniformServiceIntegration, err = GetIntegrationWithName("unleash-service")
+		return err == nil
+	}, time.Second*20, time.Second*3)
+
+	require.NotEmpty(t, uniformServiceIntegration.Subscriptions)
+
+	// it seems like the unleash service is not immediately ready after the distributor has registered itself
+	// to be safe let's wait a couple of seconds here. This can be removed as soon as we have decoupled our tests from the unleash-service
+	<-time.After(15 * time.Second)
 
 	t.Log("remediation.yaml and unleash-service are ready. let's trigger another remediation")
 	remediationFinishedEvent = performRemediation(t, projectName, serviceName)

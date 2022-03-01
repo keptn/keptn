@@ -6,13 +6,13 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
-	github.com/keptn/go-utils v0.13.1-0.20220221112829-908349438082
+	github.com/keptn/go-utils v0.13.1-0.20220228110412-d80b7a4ab103
 	github.com/keptn/keptn/shipyard-controller v0.0.0-00010101000000-000000000000
-	github.com/keptn/kubernetes-utils v0.13.0
+	github.com/keptn/kubernetes-utils v0.13.1-0.20220223120201-02afb43c03d7
 	github.com/stretchr/testify v1.7.0
-	k8s.io/api v0.22.6
-	k8s.io/apimachinery v0.22.6
-	k8s.io/client-go v0.22.6
+	k8s.io/api v0.22.7
+	k8s.io/apimachinery v0.22.7
+	k8s.io/client-go v0.22.7
 )
 
 replace github.com/keptn/keptn/shipyard-controller => ../../shipyard-controller

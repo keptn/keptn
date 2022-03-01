@@ -25,14 +25,14 @@ jobs:
           path: 'keptn/kubernetes-utils'
           repository: 'keptn/kubernetes-utils'
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.16
       - name: Install go-licence-detector
         run: |
           go get go.elastic.co/go-licence-detector
       - name: Set up Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3.0.0
         with:
           node-version: 16
       - name: Install npm libs

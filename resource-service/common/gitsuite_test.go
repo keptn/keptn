@@ -161,7 +161,7 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
 	// check new changes are forced
 	id, err = g.StageAndCommitAll(repo2context, "my conflicting change")
-	c.Assert(errors.Is(err, kerrors.ErrNonFastForwardUpdate), Equals, true)
+	c.Assert(errors.Is(err, git.ErrNonFastForwardUpdate), Equals, true)
 	c.Assert(id, Equals, "")
 
 	err = g.Pull(repo2context)

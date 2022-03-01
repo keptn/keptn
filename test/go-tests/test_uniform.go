@@ -2,16 +2,17 @@ package go_tests
 
 import (
 	"fmt"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/stretchr/testify/require"
 )
 
 const filteredUniformTestShipyard = `--- 
@@ -71,7 +72,7 @@ spec:
             - containerPort: 8080
           env:
             - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
+              value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
@@ -439,7 +440,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	}(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)

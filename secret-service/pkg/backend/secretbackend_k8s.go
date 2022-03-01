@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"sort"
 	"strings"
 )
 
@@ -293,6 +294,19 @@ func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace stri
 		StringData: secret.Data,
 		Type:       "Opaque",
 	}
+}
+
+func (k K8sSecretBackend) GetScopes() ([]string, error) {
+	scopes, err := k.ScopesRepository.Read()
+	if err != nil {
+		return nil, err
+	}
+	scopeArray := make([]string, 0, len(scopes.Scopes))
+	for scope := range scopes.Scopes {
+		scopeArray = append(scopeArray, scope)
+	}
+	sort.Strings(scopeArray)
+	return scopeArray, nil
 }
 
 func remove(s []string, r string) []string {

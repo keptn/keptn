@@ -22,7 +22,6 @@ import { SequenceState } from '../../../shared/models/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
-import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
 import { Service } from '../_models/service';
 import { Deployment } from '../_models/deployment';
@@ -31,6 +30,7 @@ import { ServiceRemediationInformation } from '../_models/service-remediation-in
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
+import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
   providedIn: 'root',
@@ -770,6 +770,7 @@ export class DataService {
     return this.apiService.logout();
   }
 
+
   public triggerDelivery(data: TriggerSequenceData): Observable<TriggerResponse> {
     const type = EventTypes.PREFIX + data.stage + EventTypes.DELIVERY_TRIGGERED_SUFFIX;
 
@@ -782,7 +783,10 @@ export class DataService {
 
   public triggerCustomSequence(data: TriggerSequenceData, sequence: string): Observable<TriggerResponse> {
     const type = EventTypes.PREFIX + data.stage + '.' + sequence + '.triggered';
-
     return this.apiService.triggerSequence(type, data);
+  }
+
+  public getSecretScopes(): Observable<string[]> {
+    return this.apiService.getSecretScopes().pipe(map((result) => result.scopes));
   }
 }

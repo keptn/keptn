@@ -422,6 +422,43 @@ func TestUpdateSecret_SecretNotFound(t *testing.T) {
 	assert.Equal(t, ErrSecretNotFound, err)
 }
 
+/**
+GET SCOPE TESTS
+*/
+func TestGetScopes(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	scopes, err := backend.GetScopes()
+	require.Nil(t, err)
+
+	require.Equal(t, []string{"my-scope"}, scopes)
+}
+
+func TestGetScopes_Fails(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return model.Scopes{}, errors.New("oops") }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	scopes, err := backend.GetScopes()
+
+	require.NotNil(t, err)
+	require.Nil(t, scopes)
+}
+
 func createTestSecret(name, scope string) model.Secret {
 	secret := model.Secret{
 		SecretMetadata: model.SecretMetadata{

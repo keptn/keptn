@@ -5,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
 import { Secret } from '../../_models/secret';
-import { SecretScope } from '../../../../shared/interfaces/secret-scope';
+import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
@@ -242,10 +242,10 @@ describe('KtbWebhookSettingsComponent', () => {
     // given, when
     const secrets = [new Secret(), new Secret()];
     secrets[0].name = 'SecretA';
-    secrets[0].scope = SecretScope.WEBHOOK;
+    secrets[0].scope = SecretScopeDefault.WEBHOOK;
     secrets[0].keys = ['key1', 'key2', 'key3'];
     secrets[1].name = 'SecretB';
-    secrets[1].scope = SecretScope.WEBHOOK;
+    secrets[1].scope = SecretScopeDefault.WEBHOOK;
     secrets[1].keys = ['key1', 'key2', 'key3'];
 
     // when

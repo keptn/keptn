@@ -3,7 +3,7 @@ package cespec
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/alecthomas/jsonschema"
+	"github.com/invopop/jsonschema"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
