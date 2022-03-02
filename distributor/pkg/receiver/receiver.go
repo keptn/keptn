@@ -1,9 +1,13 @@
-package events
+package receiver
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/distributor/pkg/model"
+	nats2 "github.com/keptn/keptn/distributor/pkg/natsconnection"
+	"github.com/keptn/keptn/distributor/pkg/poller"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	"sync"
 	"time"
 
@@ -17,38 +21,38 @@ import (
 
 // EventReceiver is responsible for receive and process events from Keptn
 type EventReceiver interface {
-	Start(ctx *ExecutionContext)
+	Start(ctx *utils.ExecutionContext)
 }
 
 // NATSEventReceiver receives events directly from the NATS broker and sends the cloud event to the
 // the keptn service
 type NATSEventReceiver struct {
 	env                   config.EnvConfig
-	eventSender           EventSender
-	eventMatcher          *EventMatcher
-	natsConnectionHandler *NatsConnectionHandler
-	ceCache               *Cache
+	eventSender           poller.EventSender
+	eventMatcher          *utils.EventMatcher
+	natsConnectionHandler *nats2.NatsConnectionHandler
+	ceCache               *utils.Cache
 	mutex                 *sync.Mutex
 	currentSubscriptions  []models.EventSubscription
 	pullSubscriptions     bool
 }
 
-func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender, pullSubscriptions bool) *NATSEventReceiver {
-	eventMatcher := NewEventMatcherFromEnv(env)
-	nch := NewNatsConnectionHandler(env.PubSubURL)
+func New(env config.EnvConfig, eventSender poller.EventSender, pullSubscriptions bool) *NATSEventReceiver {
+	eventMatcher := utils.NewEventMatcherFromEnv(env)
+	nch := nats2.NewNatsConnectionHandler(env.PubSubURL)
 
 	return &NATSEventReceiver{
 		env:                   env,
 		eventSender:           eventSender,
 		eventMatcher:          eventMatcher,
-		ceCache:               NewCache(),
+		ceCache:               utils.NewCache(),
 		mutex:                 &sync.Mutex{},
 		natsConnectionHandler: nch,
 		pullSubscriptions:     pullSubscriptions,
 	}
 }
 
-func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
+func (n *NATSEventReceiver) Start(ctx *utils.ExecutionContext) error {
 	if n.env.PubSubRecipient == "" {
 		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
@@ -56,7 +60,7 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) error {
 	if err := n.natsConnectionHandler.Connect(); err != nil {
 		return fmt.Errorf("could not Start NatsEventReceiver: %w", err)
 	}
-	n.natsConnectionHandler.messageHandler = n.handleMessage
+	n.natsConnectionHandler.MessageHandler = n.handleMessage
 	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to events: %w", err)
@@ -94,7 +98,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 		logger.Infof("Received a message for topic [%s]\n", m.Subject)
 
 		// decode to cloudevent
-		cloudEvent, err := DecodeNATSMessage(m.Data)
+		cloudEvent, err := utils.DecodeNATSMessage(m.Data)
 		if err != nil {
 			return
 		}
@@ -140,7 +144,7 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 		}()
 
 		// add subscription ID as additional information to the keptn event
-		if err := keptnEvent.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
+		if err := keptnEvent.AddTemporaryData("distributor", model.AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
 			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 		// forward keptn event
@@ -155,7 +159,7 @@ func (n *NATSEventReceiver) getSubscriptionsFromReceivedMessage(m *nats.Msg, eve
 	subscriptionsForTopic := []models.EventSubscription{}
 	for _, subscription := range n.currentSubscriptions {
 		if subscription.Event == m.Sub.Subject { // need to check against the name of the subscription because this can be a wildcard as well
-			matcher := NewEventMatcherFromSubscription(subscription)
+			matcher := utils.NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(event) {
 				subscriptionsForTopic = append(subscriptionsForTopic, subscription)
 			}
@@ -167,7 +171,7 @@ func (n *NATSEventReceiver) getSubscriptionsFromReceivedMessage(m *nats.Msg, eve
 func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscription *models.EventSubscription) error {
 	event := v0_2_0.ToCloudEvent(e)
 	if subscription != nil {
-		matcher := NewEventMatcherFromSubscription(*subscription)
+		matcher := utils.NewEventMatcherFromSubscription(*subscription)
 		if !matcher.Matches(event) {
 			return nil
 		}

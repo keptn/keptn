@@ -1,4 +1,4 @@
-package events
+package poller
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/model"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	logger "github.com/sirupsen/logrus"
 
 	"strconv"
@@ -22,23 +24,23 @@ type EventSender interface {
 type Poller struct {
 	shipyardControlAPI   api.ShipyardControlV1Interface
 	eventSender          EventSender
-	ceCache              *Cache
+	ceCache              *utils.Cache
 	env                  config.EnvConfig
-	eventMatcher         *EventMatcher
+	eventMatcher         *utils.EventMatcher
 	currentSubscriptions []keptnmodels.EventSubscription
 }
 
-func NewPoller(envConfig config.EnvConfig, shipyardControlAPI api.ShipyardControlV1Interface, eventSender EventSender) *Poller {
+func New(envConfig config.EnvConfig, shipyardControlAPI api.ShipyardControlV1Interface, eventSender EventSender) *Poller {
 	return &Poller{
 		shipyardControlAPI: shipyardControlAPI,
 		eventSender:        eventSender,
-		ceCache:            NewCache(),
+		ceCache:            utils.NewCache(),
 		env:                envConfig,
-		eventMatcher:       NewEventMatcherFromEnv(envConfig),
+		eventMatcher:       utils.NewEventMatcherFromEnv(envConfig),
 	}
 }
 
-func (p *Poller) Start(ctx *ExecutionContext) error {
+func (p *Poller) Start(ctx *utils.ExecutionContext) error {
 	if p.env.PubSubRecipient == "" {
 		return errors.New("could not start NatsEventReceiver: no pubsub recipient defined")
 	}
@@ -92,7 +94,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 
 		logger.Infof("Adding temporary data to event: <subscriptionID=%s>", subscription.ID)
 		// add subscription ID as additional information to the keptn event
-		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
+		if err := event.AddTemporaryData("distributor", model.AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
 			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 
@@ -109,7 +111,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 	}
 
 	logger.Debugf("Cleaning up list of sent events for topic %s", subscription.Event)
-	p.ceCache.Keep(subscription.ID, ToIDs(events))
+	p.ceCache.Keep(subscription.ID, utils.ToIds(events))
 }
 
 // getEventFilterForSubscription returns the event filter for the subscription
@@ -137,7 +139,7 @@ func getEventFilterForSubscription(subscription keptnmodels.EventSubscription) a
 
 func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription keptnmodels.EventSubscription) error {
 	event := v0_2_0.ToCloudEvent(e)
-	matcher := NewEventMatcherFromSubscription(subscription)
+	matcher := utils.NewEventMatcherFromSubscription(subscription)
 	if !matcher.Matches(event) {
 		return nil
 	}

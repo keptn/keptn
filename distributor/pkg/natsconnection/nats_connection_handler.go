@@ -1,26 +1,25 @@
-package events
+package natsconnection
 
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
-	"reflect"
-	"sort"
 	"sync"
 )
 
 type NatsConnectionHandler struct {
+	MessageHandler func(m *nats.Msg)
 	natsConnection *nats.Conn
 	subscriptions  []*nats.Subscription
 	topics         []string
 	natsURL        string
-	messageHandler func(m *nats.Msg)
 	mux            sync.Mutex
 }
 
 // NewNatsConnectionHandler creates a new NATS connection handler to a NATS
-// broker at the gieven URL
+// broker at the given URL
 func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 	nch := &NatsConnectionHandler{
 		natsURL: natsURL,
@@ -78,7 +77,7 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 		return errors.New("could not remove all subscriptions, because not connected to NATS")
 	}
 
-	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
+	if len(topics) > 0 && !utils.IsEqual(nch.topics, topics) {
 		err := nch.RemoveAllSubscriptions()
 		if err != nil {
 			return fmt.Errorf("could not remove all subscriptions: %w", err)
@@ -87,7 +86,7 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 
 		for _, topic := range nch.topics {
 			logger.Infof("Subscribing to topic '%s' with queue group '%s'", topic, queueGroup)
-			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.messageHandler)
+			sub, err := nch.natsConnection.QueueSubscribe(topic, queueGroup, nch.MessageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
 			}
@@ -95,10 +94,4 @@ func (nch *NatsConnectionHandler) QueueSubscribeToTopics(topics []string, queueG
 		}
 	}
 	return nil
-}
-
-func IsEqual(a1 []string, a2 []string) bool {
-	sort.Strings(a2)
-	sort.Strings(a1)
-	return reflect.DeepEqual(a1, a2)
 }

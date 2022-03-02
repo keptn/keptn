@@ -24,7 +24,7 @@ type ControlPlane struct {
 	env            config.EnvConfig
 }
 
-func NewControlPlane(uniformHandler api.UniformV1Interface, connectionType config.ConnectionType, env config.EnvConfig) *ControlPlane {
+func New(uniformHandler api.UniformV1Interface, connectionType config.ConnectionType, env config.EnvConfig) *ControlPlane {
 	return &ControlPlane{
 		uniformHandler: uniformHandler,
 		connectionType: connectionType,
