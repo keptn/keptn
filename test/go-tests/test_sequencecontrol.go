@@ -279,7 +279,7 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
-	t.Log("verifying that the next task has not being triggered")
+	t.Log("verifying that the next task has not been triggered")
 	time.Sleep(5 * time.Second) //sorry, but I don't know how to verify it without a waiting
 	task3TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "dev", keptnv2.GetTriggeredEventType("task3"))
 	require.Nil(t, err)
@@ -293,11 +293,11 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	t.Log("verifying that the next task has being triggered")
+	t.Log("verifying that the next task has been triggered")
 	require.Eventually(t, func() bool {
 		task3TriggeredEvent, _ = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task3"))
 		return task3TriggeredEvent != nil
-	}, 20*time.Second, 2*time.Second)
+	}, 1*time.Minute, 5*time.Second)
 }
 
 func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
