@@ -114,7 +114,7 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 		os.Remove(privateKeyPath)
 	}()
 
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=ssh://gitea-ssh:22/%s/keptn-%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", projectName, user, projectName, user, privateKeyPath, passphrase))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", projectName, user, projectName, user, privateKeyPath, passphrase))
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
