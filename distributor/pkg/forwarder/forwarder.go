@@ -1,4 +1,4 @@
-package events
+package forwarder
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +27,7 @@ type Forwarder struct {
 	env               config.EnvConfig
 }
 
-func NewForwarder(keptnEventAPI api.APIV1Interface, client *http.Client, env config.EnvConfig) *Forwarder {
+func New(keptnEventAPI api.APIV1Interface, client *http.Client, env config.EnvConfig) *Forwarder {
 	return &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
 		keptnEventAPI:     keptnEventAPI,
@@ -36,7 +37,7 @@ func NewForwarder(keptnEventAPI api.APIV1Interface, client *http.Client, env con
 	}
 }
 
-func (f *Forwarder) Start(executionContext *ExecutionContext) {
+func (f *Forwarder) Start(executionContext *utils.ExecutionContext) {
 	mux := http.NewServeMux()
 	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
 	mux.Handle(f.env.EventForwardingPath, http.HandlerFunc(f.handleEvent))
@@ -78,7 +79,7 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	event, err := DecodeNATSMessage(body)
+	event, err := utils.DecodeNATSMessage(body)
 	if err != nil {
 		logger.Errorf("Failed to decode CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)

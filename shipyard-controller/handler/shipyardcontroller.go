@@ -28,6 +28,8 @@ type IShipyardController interface {
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
 	ControlSequence(controlSequence models.SequenceControl) error
 	StartTaskSequence(event models.Event) error
+	StartDispatchers(ctx context.Context, mode common.SDMode)
+	StopDispatchers()
 }
 
 type shipyardController struct {
@@ -93,8 +95,6 @@ func (sc *shipyardController) run(ctx context.Context) {
 			}
 		}
 	}()
-	sc.eventDispatcher.Run(context.Background())
-	sc.sequenceDispatcher.Run(context.Background(), sc.StartTaskSequence)
 }
 
 func (sc *shipyardController) ControlSequence(controlSequence models.SequenceControl) error {
@@ -122,6 +122,16 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 		})
 	}
 	return nil
+}
+
+func (sc shipyardController) StartDispatchers(ctx context.Context, mode common.SDMode) {
+	sc.eventDispatcher.Run(ctx)
+	sc.sequenceDispatcher.Run(ctx, mode, sc.StartTaskSequence)
+}
+
+func (sc shipyardController) StopDispatchers() {
+	sc.eventDispatcher.Stop()
+	sc.sequenceDispatcher.Stop()
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
@@ -333,8 +343,9 @@ func (sc *shipyardController) handleTaskFinished(event models.Event) error {
 		if err != nil {
 			return fmt.Errorf("unable to get open task execution: %w", err)
 		}
+		//shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 
-		shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+		shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 		if err != nil {
 			return fmt.Errorf("unable to fetch shipyard: %w", err)
 		}
@@ -531,7 +542,8 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 		return err
 	}
 
-	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	//shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
 	if err != nil {
 		return err
 	}
@@ -673,7 +685,9 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope models.Eve
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventScope, completedSequence *keptnv2.Sequence, eventHistory []interface{}, inputEvent *models.Event, previousTask string) error {
-	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	//shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
+	shipyard, err := sc.shipyardRetriever.GetShipyard(eventScope.Project)
+
 	if err != nil {
 		return err
 	}

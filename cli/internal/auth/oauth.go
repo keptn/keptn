@@ -16,6 +16,13 @@ const (
 	openIDScope      = "openid"
 )
 
+// OAuthenticator represents just the interface for a component performing OAuth authentication
+type OAuthenticator interface {
+	Auth(clientValues OauthClientValues) error
+	OauthClient(ctx context.Context) (*http.Client, error)
+	TokenStore() OauthStore
+}
+
 // OauthAuthenticator is an implementation of Authenticator which implements the Oauth2 Authorization Code Flow
 type OauthAuthenticator struct {
 	discovery       OauthLocationGetter
@@ -92,7 +99,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 
 // GetOauthClient will eventually return an already ready to use http client which is configured to use
 // a OAUth Access Token
-func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, error) {
+func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, error) {
 	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get OAuth HTTP client: %w", err)
@@ -116,6 +123,10 @@ func (a *OauthAuthenticator) GetOauthClient(ctx context.Context) (*http.Client, 
 		tokenStore: a.tokenStore,
 	}
 	return oauth2.NewClient(ctx, nrts), nil
+}
+
+func (a *OauthAuthenticator) TokenStore() OauthStore {
+	return a.tokenStore
 }
 
 func enforceOpenIDScope(config *oauth2.Config) {

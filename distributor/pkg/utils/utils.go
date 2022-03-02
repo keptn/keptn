@@ -1,4 +1,4 @@
-package events
+package utils
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"reflect"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -203,15 +205,6 @@ func (c *Cache) containsSlice(key string, elements []string) bool {
 	return contains
 }
 
-// ToIDs takes a list of cloud events and returns a list of ids of the given cloud events
-func ToIDs(events []*keptnmodels.KeptnContextExtendedCE) []string {
-	ids := []string{}
-	for _, e := range events {
-		ids = append(ids, e.ID)
-	}
-	return ids
-}
-
 // Dedup removes duplicate elements from the given list of strings
 func Dedup(elements []string) []string {
 	result := make([]string, 0, len(elements))
@@ -223,4 +216,18 @@ func Dedup(elements []string) []string {
 		}
 	}
 	return result
+}
+
+func ToIds(events []*keptnmodels.KeptnContextExtendedCE) []string {
+	ids := []string{}
+	for _, e := range events {
+		ids = append(ids, e.ID)
+	}
+	return ids
+}
+
+func IsEqual(a1 []string, a2 []string) bool {
+	sort.Strings(a2)
+	sort.Strings(a1)
+	return reflect.DeepEqual(a1, a2)
 }

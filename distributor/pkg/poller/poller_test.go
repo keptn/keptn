@@ -1,4 +1,4 @@
-package events
+package poller
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -86,10 +87,10 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 	}
 	eventSender := keptnfake.EventSender{}
 	apiset, _ := keptnapi.New(server.URL)
-	poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
+	poller := New(envConfig, apiset.ShipyardControlV1(), &eventSender)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	poller.UpdateSubscriptions([]keptnmodels.EventSubscription{
 		{
 			ID:    "id1",
@@ -176,10 +177,10 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 	eventSender := keptnfake.EventSender{}
 
 	apiset, _ := keptnapi.New(server.URL)
-	poller := NewPoller(envConfig, apiset.ShipyardControlV1(), &eventSender)
+	poller := New(envConfig, apiset.ShipyardControlV1(), &eventSender)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 
 	numSubscriptions := 100
 	subscriptions := []keptnmodels.EventSubscription{}

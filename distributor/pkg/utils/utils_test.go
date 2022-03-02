@@ -1,4 +1,4 @@
-package events
+package utils
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -422,7 +422,7 @@ func Test_toIDs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ToIDs(tt.args.events); !reflect.DeepEqual(got, tt.want) {
+			if got := ToIds(tt.args.events); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ToIDs() = %v, want %v", got, tt.want)
 			}
 		})
