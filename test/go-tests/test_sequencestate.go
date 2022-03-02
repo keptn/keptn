@@ -250,6 +250,30 @@ func Test_SequenceState(t *testing.T) {
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = GetState(projectName)
+		if err != nil {
+			return false
+		}
+
+		marshal, _ := json.MarshalIndent(states, "", "  ")
+		t.Logf("%s", marshal)
+		state := states.States[0]
+
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
+			return false
+		}
+
+		devStage := state.Stages[0]
+
+		if !IsEqual(t, keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), devStage.LatestEvent.Type, "devStage.LatestEvent.Type") {
+			return false
+		}
+
+		return true
+	}, 1*time.Minute, 5*time.Second)
+
 	// send finished event with score
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
