@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"fmt"
 	"path"
 	"testing"
 
@@ -69,6 +70,7 @@ func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "proxy-auth"
 	serviceName := "helloservice"
+	secondServiceName := "helloservice2"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
@@ -92,6 +94,26 @@ func Test_ProxyAuth(t *testing.T) {
 
 	t.Log("Adding load test resources for jmeter in prod")
 	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "prod", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
+	require.Nil(t, err)
+
+	t.Logf("Trigger delivery of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	require.Nil(t, err)
+
+	t.Logf("Updating project credentials")
+	user := GetGiteaUser()
+	token, err := GetGiteaToken()
+	require.Nil(t, err)
+
+	squidIP, err := GetSquidExternalIP("keptn")
+	require.Nil(t, err)
+
+	// apply the k8s job for creating the git upstream
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3128 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token, squidIP))
+	require.Nil(t, err)
+
+	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
+	_, err = ExecuteCommandf("keptn create service %s --project %s", secondServiceName, projectName)
 	require.Nil(t, err)
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
