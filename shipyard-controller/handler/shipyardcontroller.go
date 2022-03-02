@@ -159,8 +159,9 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				if errors.Is(err, ErrSequenceNotFound) || errors.Is(err, models.ErrInvalidEventScope) {
 					log.Infof("Unable to handle task event: %v", err)
+				} else {
+					log.Errorf("Unable to handle task event: %v", err)
 				}
-				log.Errorf("Unable to handle task event: %v", err)
 			}
 			cb(err)
 		}()
@@ -343,6 +344,7 @@ func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecuti
 		return err
 	}
 
+	// Todo: as a follow up refactoring task, we can check if we can also get rid of the -triggeredEvents collection by replacing it with the items in the sequenceExecution collection - the items of that collection should contain all information about open tasks and their payloads
 	triggeredEvents, err := sc.eventRepo.GetEventsWithRetry(eventScope.Project, common.EventFilter{Type: triggeredEventType, ID: &eventScope.TriggeredID}, common.TriggeredEvent, maxRepoReadRetries)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve associated task '.triggered' event with ID %s: %w", eventScope.TriggeredID, err)

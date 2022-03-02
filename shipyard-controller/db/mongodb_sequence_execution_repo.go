@@ -30,6 +30,7 @@ func NewMongoDBSequenceExecutionRepo(dbConnection *MongoDBConnection) *MongoDBSe
 	return &MongoDBSequenceExecutionRepo{DbConnection: dbConnection}
 }
 
+// Get returns all matching sequence executions, based on the given filter
 func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
 	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(filter.Scope.Project)
 	if err != nil {
@@ -60,6 +61,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 	return result, nil
 }
 
+// GetByTriggeredID searches for a sequence execution with the given triggeredID.
 func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggeredID string) (*models.SequenceExecution, error) {
 	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(project)
 	if err != nil {
@@ -89,6 +91,9 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggered
 	return sequenceExecution, nil
 }
 
+// Upsert inserts or updates a sequence execution into the sequence execution collection.
+// By setting the CheckUniqueTriggeredID of the upsertOptions to true, this function will return a ErrSequenceWithTriggeredIDAlreadyExists,
+// if a sequence with the same triggeredID already exists (can be useful to avoid storing duplicate sequences).
 func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecution, upsertOptions *models.SequenceExecutionUpsertOptions) error {
 	if item.Scope.Project == "" {
 		return ErrProjectNameMustNotBeEmpty
@@ -120,6 +125,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	return nil
 }
 
+// AppendTaskEvent adds an event that is relevant to the execution of the current task.
+// This function needs to be thread safe since it can  potentially be invoked by multiple threads at the same time.
 func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models.SequenceExecution, event models.TaskEvent) (*models.SequenceExecution, error) {
 	if taskSequence.Scope.Project == "" {
 		return nil, ErrProjectNameMustNotBeEmpty
@@ -138,6 +145,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 
 	filter := bson.D{{"_id", taskSequence.ID}}
 
+	// by using the $push operator in the FindOneAndUpdate function, we ensure that we follow an append-only approach to this property,
+	// since this is the one property that can potentially be updated by multiple threads handling .finished/.started events for the same task
 	update := bson.M{"$push": bson.M{"status.currentTask.events": event}}
 
 	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
@@ -157,6 +166,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 	return sequenceExecution, nil
 }
 
+// UpdateStatus is used to update the overall state of the sequence, e.g. when it was paused via the API.
+// This will not update a complete sequence execution, but just the attributes representing the overall state of the sequence
 func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.SequenceExecution) (*models.SequenceExecution, error) {
 	if taskSequence.Scope.Project == "" {
 		return nil, ErrProjectNameMustNotBeEmpty
@@ -197,6 +208,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.Se
 	return sequenceExecution, nil
 }
 
+// Clear deletes the sequence execution collection of the given project
 func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
 	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(projectName)
 	if err != nil {
@@ -208,14 +220,17 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
 	return err
 }
 
+// PauseContext pauses all sequence executions for the given Keptn Context
 func (mdbrepo *MongoDBSequenceExecutionRepo) PauseContext(eventScope models.EventScope) error {
 	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequencePaused)
 }
 
+// ResumeContext resumes all sequence executions for the given Keptn Context
 func (mdbrepo *MongoDBSequenceExecutionRepo) ResumeContext(eventScope models.EventScope) error {
 	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequenceStartedState)
 }
 
+// IsContextPaused checks whether a sequence that belongs to the given Keptn Context is currently paused
 func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.EventScope) bool {
 	collection, ctx, cancel, err := mdbrepo.getCollection(eventQueueSequenceStateCollectionName)
 	if err != nil {

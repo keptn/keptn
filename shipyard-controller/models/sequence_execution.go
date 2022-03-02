@@ -5,8 +5,13 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 )
 
+// SequenceExecution contains all required information needed by the shipyard controller on how to preceed within a task sequence.
+// An instance of SequenceExecution represents the execution of a sequence for a certain keptnContext within a stage.
+// This means that, e.g. for a multi-stage sequence, multiple instances of this struct are maintained (one for each sequence in a given stage).
+// Also, for multiple iterations of a sequence, each iteration will get a new instance.
 type SequenceExecution struct {
-	ID       string                  `json:"_id" bson:"_id"`
+	ID string `json:"_id" bson:"_id"`
+	// Sequence containts the complete sequence definition
 	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    EventScope              `json:"scope" bson:"scope"`
@@ -17,17 +22,20 @@ type SequenceExecution struct {
 type SequenceExecutionStatus struct {
 	State string `json:"state" bson:"state"` // triggered, waiting, suspended (approval in progress), paused, finished, cancelled, timedOut
 	// StateBeforePause is needed to keep track of the state before a sequence has been paused. Example: when a sequence has been paused while being queued, and then resumed, it should not be set to started immediately, but to the state it had before
-	StateBeforePause string                `json:"stateBeforePause" bson:"stateBeforePause"`
-	PreviousTasks    []TaskExecutionResult `json:"previousTasks" bson:"previousTasks"`
-	CurrentTask      TaskExecutionState    `json:"currentTask" bson:"currentTask"`
+	StateBeforePause string `json:"stateBeforePause" bson:"stateBeforePause"`
+	// PreviousTasks contains the results of all completed tasks of the sequence
+	PreviousTasks []TaskExecutionResult `json:"previousTasks" bson:"previousTasks"`
+	// CurrentTask represents the state of the currently active task
+	CurrentTask TaskExecutionState `json:"currentTask" bson:"currentTask"`
 }
 
 type TaskExecutionResult struct {
-	Name        string                 `json:"name" bson:"name"`
-	TriggeredID string                 `json:"triggeredID" bson:"triggeredID"`
-	Result      keptnv2.ResultType     `json:"result" bson:"result"`
-	Status      keptnv2.StatusType     `json:"status" bson:"status"`
-	Properties  map[string]interface{} `json:"properties" bson:"properties"`
+	Name        string             `json:"name" bson:"name"`
+	TriggeredID string             `json:"triggeredID" bson:"triggeredID"`
+	Result      keptnv2.ResultType `json:"result" bson:"result"`
+	Status      keptnv2.StatusType `json:"status" bson:"status"`
+	// Properties contains the aggregated results of the task's executors
+	Properties map[string]interface{} `json:"properties" bson:"properties"`
 }
 
 func (r TaskExecutionResult) IsFailed() bool {
@@ -44,6 +52,8 @@ type TaskExecutionState struct {
 	Events      []TaskEvent `json:"events" bson:"events"`
 }
 
+// GetNextTaskOfSequence returns the next task of a sequence, based on its current execution state. If no task is remaining, or if a previous task
+// could not be completed successfully, it will return nil.
 func (e *SequenceExecution) GetNextTaskOfSequence() *keptnv2.Task {
 	if e.GetLastTaskExecutionResult().IsFailed() || e.GetLastTaskExecutionResult().IsErrored() {
 		return nil
@@ -66,6 +76,7 @@ func (e *SequenceExecution) GetLastTaskExecutionResult() TaskExecutionResult {
 	return e.Status.PreviousTasks[len(e.Status.PreviousTasks)-1]
 }
 
+// CompleteCurrentTask completes the current task and appends the aggregated result of the current task to the list of already completed tasks.
 func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.StatusType) {
 	var result keptnv2.ResultType
 	var status keptnv2.StatusType
@@ -107,6 +118,10 @@ func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.S
 	return result, status
 }
 
+// GetNextTriggeredEventData generates a map representing the event payload for the next task.triggered event. For this, it will merge the following properties:
+// - The payload provided by the event that triggered the sequence
+// - The properties of the task, defined in the sequence definition
+// - The results of the already completed tasks of the sequence
 func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
