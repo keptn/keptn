@@ -14,14 +14,12 @@ export class OverlayService {
     private router: Router
   ) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public initOverlay(
     width: string,
     height: string,
     hasBackdrop: boolean,
     elementRef: ElementRef,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    closeCallback: any
+    closeCallback: () => void
   ): OverlayRef {
     const positionStrategy = this.overlayPositionBuilder.flexibleConnectedTo(elementRef).withPositions([
       {
@@ -49,12 +47,13 @@ export class OverlayService {
     return overlayRef;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public registerNavigationEvent(unsubscribe$: Subject<void>, closeCallback: any): void {
+  public registerNavigationEvent(unsubscribe$: Subject<void>, closeCallback: () => void): void {
     // Close when navigation happens - to keep the overlay on the UI
     this.router.events
-      .pipe(takeUntil(unsubscribe$))
-      .pipe(filter((event) => event instanceof NavigationStart))
+      .pipe(
+        takeUntil(unsubscribe$),
+        filter((event) => event instanceof NavigationStart)
+      )
       .subscribe(() => {
         closeCallback();
       });

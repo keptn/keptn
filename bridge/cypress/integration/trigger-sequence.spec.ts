@@ -9,8 +9,6 @@ describe('Trigger a sequence', () => {
     cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
     cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-    cy.intercept('/api/project/sockshop/services', { body: ['carts', 'carts-db'] });
-    cy.intercept('/api/project/sockshop/stages', { body: ['dev', 'staging', 'production'] });
     cy.intercept('/api/project/sockshop/customSequences', { body: ['delivery-direct', 'rollback', 'remediation'] });
     cy.intercept('/api/project/sockshop/serviceStates', { body: [] });
     cy.intercept('POST', '/api/v1/event', { body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' } });
@@ -66,153 +64,161 @@ describe('Trigger a sequence', () => {
 
   it('should navigate through all forms and close it from everywhere properly', () => {
     // Opening of triggering component
-    environmentPage.openTriggerSequence();
-    environmentPage.assertOpenTriggerSequenceExists(false);
-    environmentPage.assertTriggerEntryH2('have.text', 'Trigger a new sequence for project sockshop');
-    environmentPage.assertTriggerNextPageEnabled(false);
+    environmentPage
+      .clickTriggerOpen()
+      .assertOpenTriggerSequenceExists(false)
+      .assertTriggerEntryH2HasText('Trigger a new sequence for project sockshop')
+      .assertTriggerNextPageEnabled(false);
 
     // Closing of triggering component from entry
-    environmentPage.clickTriggerClose();
-    environmentPage.assertTriggerEntryH2('not.exist');
-    environmentPage.assertOpenTriggerSequenceExists(true);
+    environmentPage.clickTriggerClose().assertTriggerEntryH2Exists(false).assertOpenTriggerSequenceExists(true);
 
     // Delivery navigations
-    environmentPage.openTriggerSequence();
-    environmentPage.selectTriggerDelivery();
+    environmentPage.clickTriggerOpen().selectTriggerDelivery();
     testNavigationFirstPart('keptn-trigger-delivery-h2', 'Trigger a delivery for carts in dev');
     environmentPage.selectTriggerDelivery();
     testNavigationSecondPart('keptn-trigger-delivery-h2');
 
     // Evaluation navigations
-    environmentPage.openTriggerSequence();
-    environmentPage.selectTriggerEvaluation();
+    environmentPage.clickTriggerOpen().selectTriggerEvaluation();
     testNavigationFirstPart('keptn-trigger-evaluation-h2', ' Trigger an evaluation for carts in dev ');
     environmentPage.selectTriggerEvaluation();
     testNavigationSecondPart('keptn-trigger-evaluation-h2');
 
     // Custom sequence navigations
-    environmentPage.openTriggerSequence();
-    environmentPage.selectTriggerCustomSequence();
+    environmentPage.clickTriggerOpen().selectTriggerCustomSequence();
     testNavigationFirstPart('keptn-trigger-custom-h2', ' Trigger a custom sequence for carts in dev ');
     environmentPage.selectTriggerCustomSequence();
     testNavigationSecondPart('keptn-trigger-custom-h2');
   });
 
   it('should trigger a delivery sequence', () => {
-    environmentPage.openTriggerSequence();
-    environmentPage.assertTriggerNextPageEnabled(false);
-    environmentPage.selectTriggerDelivery();
-    environmentPage.assertTriggerNextPageEnabled(true).click();
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.typeTriggerDeliveryLabels('key1=val1');
-    environmentPage.typeTriggerDeliveryValues('{"key2');
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.assertTriggerDeliveryValuesErrorExists(true);
-    environmentPage.typeTriggerDeliveryValues('": "val2"}');
-    environmentPage.assertTriggerDeliveryValuesErrorExists(false);
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.typeTriggerDeliveryImage('docker.io/keptn');
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.typeTriggerDeliveryTag('v0.1.2');
-    environmentPage.assertTriggerSequenceEnabled(true).click();
+    environmentPage
+      .clickTriggerOpen()
+      .assertTriggerNextPageEnabled(false)
+      .selectTriggerDelivery()
+      .assertTriggerNextPageEnabled(true)
+      .clickTriggerNext()
+      .assertTriggerSequenceEnabled(false)
+      .typeTriggerDeliveryLabels('key1=val1')
+      .typeTriggerDeliveryValues('{"key2')
+      .assertTriggerSequenceEnabled(false)
+      .assertTriggerDeliveryValuesErrorExists(true)
+      .typeTriggerDeliveryValues('": "val2"}')
+      .assertTriggerDeliveryValuesErrorExists(false)
+      .assertTriggerSequenceEnabled(false)
+      .typeTriggerDeliveryImage('docker.io/keptn')
+      .assertTriggerSequenceEnabled(false)
+      .typeTriggerDeliveryTag('v0.1.2')
+      .assertTriggerSequenceEnabled(true)
+      .clickTriggerSequence();
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger an evaluation sequence with a timeframe', () => {
-    environmentPage.openTriggerSequence();
-    environmentPage.assertTriggerNextPageEnabled(false);
-    environmentPage.selectTriggerEvaluation();
-    environmentPage.assertTriggerNextPageEnabled(true).click();
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.selectTriggerEvaluationType(0);
-    environmentPage.typeTriggerEvaluationLabels('key1=val1');
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.clickTriggerStartTime();
-    environmentPage.selectTriggerDateTime(0);
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.typeTriggerEvaluationTimeInput('hours', '0');
-    environmentPage.assertTriggerSequenceEnabled(true);
-    environmentPage.typeTriggerEvaluationTimeInput('minutes', '1');
-    environmentPage.assertTriggerSequenceEnabled(true);
-    environmentPage.typeTriggerEvaluationTimeInput('seconds', '15');
-    environmentPage.assertTriggerSequenceEnabled(true);
-    environmentPage.typeTriggerEvaluationTimeInput('millis', '0');
-    environmentPage.assertTriggerSequenceEnabled(true);
-    environmentPage.typeTriggerEvaluationTimeInput('micros', '0');
-    environmentPage.assertTriggerSequenceEnabled(true).click();
+    environmentPage
+      .clickTriggerOpen()
+      .assertTriggerNextPageEnabled(false)
+      .selectTriggerEvaluation()
+      .assertTriggerNextPageEnabled(true)
+      .clickTriggerNext()
+      .assertTriggerSequenceEnabled(false)
+      .selectTriggerEvaluationType(0)
+      .typeTriggerEvaluationLabels('key1=val1')
+      .assertTriggerSequenceEnabled(false)
+      .clickTriggerStartTime()
+      .selectTriggerDateTime(0, '1', '15', '0')
+      .assertTriggerSequenceEnabled(false)
+      .typeTriggerEvaluationTimeInput('hours', '0')
+      .assertTriggerSequenceEnabled(true)
+      .typeTriggerEvaluationTimeInput('minutes', '1')
+      .assertTriggerSequenceEnabled(true)
+      .typeTriggerEvaluationTimeInput('seconds', '15')
+      .assertTriggerSequenceEnabled(true)
+      .typeTriggerEvaluationTimeInput('millis', '0')
+      .assertTriggerSequenceEnabled(true)
+      .typeTriggerEvaluationTimeInput('micros', '0')
+      .assertTriggerSequenceEnabled(true)
+      .clickTriggerSequence();
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger an evaluation sequence with a start end date', () => {
-    environmentPage.openTriggerSequence();
-    environmentPage.assertTriggerNextPageEnabled(false);
-    environmentPage.selectTriggerEvaluation();
-    environmentPage.assertTriggerNextPageEnabled(true).click();
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.selectTriggerEvaluationType(1);
-    environmentPage.typeTriggerEvaluationLabels('key1=val1');
-    environmentPage.assertTriggerSequenceEnabled(false);
+    environmentPage
+      .clickTriggerOpen()
+      .assertTriggerNextPageEnabled(false)
+      .selectTriggerEvaluation()
+      .assertTriggerNextPageEnabled(true)
+      .clickTriggerNext()
+      .assertTriggerSequenceEnabled(false)
+      .selectTriggerEvaluationType(1)
+      .typeTriggerEvaluationLabels('key1=val1')
+      .assertTriggerSequenceEnabled(false);
 
     // End before start date error
-    environmentPage.clickTriggerStartTime();
-    environmentPage.selectTriggerDateTime(1);
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.clickTriggerEndTime();
-    environmentPage.selectTriggerDateTime(0);
-    environmentPage.assertTriggerEvaluationDateErrorExists(true);
-    environmentPage.assertTriggerSequenceEnabled(false);
+    environmentPage
+      .clickTriggerStartTime()
+      .selectTriggerDateTime(1, '1', '15', '0')
+      .assertTriggerSequenceEnabled(false)
+      .clickTriggerEndTime()
+      .selectTriggerDateTime(0, '1', '15', '0')
+      .assertTriggerEvaluationDateErrorExists(true)
+      .assertTriggerSequenceEnabled(false);
 
     // Correct date order
-    environmentPage.clickTriggerStartTime();
-    environmentPage.selectTriggerDateTime(0);
-    environmentPage.clickTriggerEndTime();
-    environmentPage.selectTriggerDateTime(1);
-    environmentPage.assertTriggerEvaluationDateErrorExists(false);
-
-    environmentPage.assertTriggerSequenceEnabled(true).click();
+    environmentPage
+      .clickTriggerStartTime()
+      .selectTriggerDateTime(0, '1', '15', '0')
+      .clickTriggerEndTime()
+      .selectTriggerDateTime(1, '1', '15', '0')
+      .assertTriggerEvaluationDateErrorExists(false)
+      .assertTriggerSequenceEnabled(true)
+      .clickTriggerSequence();
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger a custom sequence', () => {
-    environmentPage.openTriggerSequence();
-    environmentPage.assertTriggerNextPageEnabled(false);
-    environmentPage.selectTriggerCustomSequence();
-    environmentPage.assertTriggerNextPageEnabled(true).click();
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.typeTriggerCustomLabels('key1=val1');
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.selectTriggerCustomSequenceType(0);
-    environmentPage.assertTriggerSequenceEnabled(true).click();
+    environmentPage
+      .clickTriggerOpen()
+      .assertTriggerNextPageEnabled(false)
+      .selectTriggerCustomSequence()
+      .assertTriggerNextPageEnabled(true)
+      .clickTriggerNext()
+      .assertTriggerSequenceEnabled(false)
+      .typeTriggerCustomLabels('key1=val1')
+      .assertTriggerSequenceEnabled(false)
+      .selectTriggerCustomSequenceType(0)
+      .assertTriggerSequenceEnabled(true)
+      .clickTriggerSequence();
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should open the trigger form from the sequence screen', () => {
     cy.visit('/project/sockshop/sequence');
-    environmentPage.assertOpenTriggerSequenceExists(true).click();
+    environmentPage.assertOpenTriggerSequenceExists(true).clickTriggerOpen();
     cy.url().should('include', '/project/sockshop');
-    environmentPage.assertTriggerEntryH2('exist');
-    environmentPage.assertTriggerEntryH2('have.text', 'Trigger a new sequence for project sockshop');
+    environmentPage
+      .assertTriggerEntryH2Exists(true)
+      .assertTriggerEntryH2HasText('Trigger a new sequence for project sockshop');
   });
 
   it('should have the selected stage preselected', () => {
-    environmentPage.assertTriggerStageSelection(0, 'dev');
-    environmentPage.assertTriggerStageSelection(1, 'staging');
-    environmentPage.assertTriggerStageSelection(2, 'production');
+    environmentPage
+      .assertTriggerStageSelection(0, 'dev')
+      .assertTriggerStageSelection(1, 'staging')
+      .assertTriggerStageSelection(2, 'production');
   });
 
   function testNavigationFirstPart(h2Selector: string, expectedText: string): void {
-    environmentPage.assertTriggerNextPageEnabled(true).click();
+    environmentPage.assertTriggerNextPageEnabled(true).clickTriggerNext();
     cy.byTestId(h2Selector).should('have.text', expectedText);
-    environmentPage.assertTriggerSequenceEnabled(false);
-    environmentPage.clickTriggerClose();
+    environmentPage.assertTriggerSequenceEnabled(false).clickTriggerClose();
     cy.byTestId(h2Selector).should('not.exist');
-    environmentPage.assertOpenTriggerSequenceExists(true).click();
+    environmentPage.assertOpenTriggerSequenceExists(true).clickTriggerOpen();
   }
 
   function testNavigationSecondPart(h2Selector: string): void {
-    environmentPage.clickTriggerNext();
-    environmentPage.clickTriggerBack();
-    environmentPage.assertTriggerEntryH2('exist');
+    environmentPage.clickTriggerNext().clickTriggerBack().assertTriggerEntryH2Exists(true);
     cy.byTestId(h2Selector).should('not.exist');
     environmentPage.clickTriggerClose();
   }

@@ -271,11 +271,6 @@ export class ApiService {
     return this.http.get<string[]>(url);
   }
 
-  public getStageNames(projectName: string): Observable<string[]> {
-    const url = `${this._baseUrl}/project/${projectName}/stages`;
-    return this.http.get<string[]>(url);
-  }
-
   public getCustomSequenceNames(projectName: string): Observable<string[]> {
     const url = `${this._baseUrl}/project/${projectName}/customSequences`;
     return this.http.get<string[]>(url);
@@ -512,7 +507,7 @@ export class ApiService {
   public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
     return this.http.post<TriggerResponse>(
       `${this._baseUrl}/controlPlane/v1/project/${data.project}/stage/${data.stage}/service/${data.service}/evaluation`,
-      JSON.stringify(data.evaluation)
+      data.evaluation
     );
   }
 

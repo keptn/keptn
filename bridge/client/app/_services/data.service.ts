@@ -473,31 +473,23 @@ export class DataService {
   }
 
   public getSequenceWithTraces(projectName: string, keptnContext: string): Observable<Sequence | undefined> {
-    return this.apiService.getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext).pipe(
-      map((response) => response.body?.states || []),
-      map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift()),
+    return this.getSequenceByContext(projectName, keptnContext).pipe(
       switchMap((sequence) => (sequence ? this.sequenceMapper([sequence]) : [])),
       map((sequences) => sequences.shift())
     );
   }
 
   public updateSequence(projectName: string, keptnContext: string): void {
-    this.apiService
-      .getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext)
-      .pipe(
-        map((response) => response.body?.states || []),
-        map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift())
-      )
-      .subscribe((sequence) => {
-        const project = this._projects.getValue()?.find((p) => p.projectName === projectName);
-        const sequences = project?.sequences;
-        const oldSequence = sequences?.find((seq) => seq.shkeptncontext === keptnContext);
-        if (oldSequence && sequence) {
-          const { traces, ...copySequence } = sequence; // don't overwrite loaded traces
-          Object.assign(oldSequence, copySequence);
-        }
-        this._sequencesUpdated.next();
-      });
+    this.getSequenceByContext(projectName, keptnContext).subscribe((sequence) => {
+      const project = this._projects.getValue()?.find((p) => p.projectName === projectName);
+      const sequences = project?.sequences;
+      const oldSequence = sequences?.find((seq) => seq.shkeptncontext === keptnContext);
+      if (oldSequence && sequence) {
+        const { traces, ...copySequence } = sequence; // don't overwrite loaded traces
+        Object.assign(oldSequence, copySequence);
+      }
+      this._sequencesUpdated.next();
+    });
   }
 
   public loadUntilRoot(project: Project, shkeptncontext: string): void {
@@ -660,10 +652,6 @@ export class DataService {
     return this.apiService
       .getTaskNames(projectName)
       .pipe(map((taskNames) => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))));
-  }
-
-  public getStageNames(projectName: string): Observable<string[]> {
-    return this.apiService.getStageNames(projectName);
   }
 
   public getServiceNames(projectName: string): Observable<string[]> {

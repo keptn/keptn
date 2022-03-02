@@ -19,8 +19,8 @@ describe('KtbTriggerSequenceComponent', () => {
 
     fixture = TestBed.createComponent(KtbTriggerSequenceComponent);
     component = fixture.componentInstance;
-    component.projectName = 'podtato-head';
     fixture.detectChanges();
+    component.projectName = 'podtato-head';
   });
 
   it('should create', () => {

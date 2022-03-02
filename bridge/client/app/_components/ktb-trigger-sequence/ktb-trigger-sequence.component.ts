@@ -31,19 +31,14 @@ export class JsonErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
     if (control?.value) {
-      try {
-        JSON.parse(control.value);
-        return false;
-      } catch (e) {
-        return true;
-      }
+      return !AppUtils.isValidJson(control.value);
     }
     return false;
   }
 }
 
 @Component({
-  selector: 'ktb-trigger-sequence',
+  selector: 'ktb-trigger-sequence[projectName]',
   templateUrl: './ktb-trigger-sequence.component.html',
   styleUrls: ['./ktb-trigger-sequence.component.scss'],
 })
@@ -82,7 +77,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     labels: undefined,
   };
 
-  @Input() public projectName: string | undefined;
+  @Input() public projectName!: string;
   @Input() public stage: string | undefined;
   @Input() public stages: string[] = [];
   @Input() public services: string[] = [];
@@ -103,10 +98,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    if (!this.projectName) {
-      throw new Error('Project name is required');
-    }
-
     if (this.stage) {
       this.selectedStage = this.stage;
     }
@@ -146,48 +137,35 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   public isValidStartEndTime(start: string | undefined, end: string | undefined): boolean {
-    if (start === undefined || end === undefined) {
-      return false;
-    }
-
-    return this.checkStartEndValidity(start, end);
+    return start !== undefined && end !== undefined && this.checkStartEndValidity(start, end);
   }
 
   public isValidJSON(jsonString: string | undefined): boolean {
-    if (!jsonString || jsonString === '') {
+    if (!jsonString) {
       return true;
     }
-    try {
-      JSON.parse(jsonString);
-      return true;
-    } catch (e) {
-      return false;
-    }
+    return AppUtils.isValidJson(jsonString);
   }
 
   public checkStartEndValidity(start: string | undefined, end: string | undefined): boolean {
     const startMoment = moment(start);
     const endMoment = moment(end);
-    if (startMoment.isAfter(endMoment)) {
-      return false;
-    }
-
-    return !endMoment.isBefore(startMoment);
+    return startMoment.isBefore(endMoment);
   }
 
   public triggerSequence(): void {
     this.isLoading = true;
 
-    if (this.sequenceType === TRIGGER_SEQUENCE.DELIVERY) {
-      this.triggerDelivery();
-    }
-
-    if (this.sequenceType === TRIGGER_SEQUENCE.EVALUATION) {
-      this.triggerEvaluation();
-    }
-
-    if (this.sequenceType === TRIGGER_SEQUENCE.CUSTOM) {
-      this.triggerCustomSequence();
+    switch (this.sequenceType) {
+      case TRIGGER_SEQUENCE.DELIVERY:
+        this.triggerDelivery();
+        break;
+      case TRIGGER_SEQUENCE.EVALUATION:
+        this.triggerEvaluation();
+        break;
+      case TRIGGER_SEQUENCE.CUSTOM:
+        this.triggerCustomSequence();
+        break;
     }
   }
 
@@ -230,29 +208,23 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
       data.labels = this.parseLabels(this.deliveryFormData.labels);
     }
 
+    let valuesObj = {};
     if (this.deliveryFormData.values) {
-      const valuesObj = JSON.parse(this.deliveryFormData.values);
-      data.configurationChange = {
-        values: {
-          ...valuesObj,
-          image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
-        },
-      };
-    } else {
-      data.configurationChange = {
-        values: {
-          image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
-        },
-      };
+      valuesObj = JSON.parse(this.deliveryFormData.values);
     }
+    data.configurationChange = {
+      values: {
+        ...valuesObj,
+        image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
+      },
+    };
 
     this.dataService.triggerDelivery(data).subscribe(
       (res) => {
         this.handleResponse(res);
       },
-      (err) => {
+      () => {
         this.isLoading = false;
-        console.log(err);
       }
     );
   }
@@ -268,32 +240,22 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
       data.evaluation.labels = this.parseLabels(this.evaluationFormData.labels);
     }
 
-    if (
-      this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME &&
-      this.evaluationFormData.timeframe
-    ) {
-      data.evaluation.timeframe = this.parseTimeframe(this.evaluationFormData.timeframe);
-      data.evaluation.start =
-        this.evaluationFormData.timeframeStart && this.evaluationFormData.timeframeStart !== ''
-          ? moment(this.evaluationFormData.timeframeStart).toISOString()
-          : moment().toISOString();
-    }
-
-    if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
-      data.evaluation.start =
-        this.evaluationFormData.startDatetime && this.evaluationFormData.startDatetime !== ''
-          ? moment(this.evaluationFormData.startDatetime).toISOString()
-          : moment().toISOString();
-      data.evaluation.end = moment(this.evaluationFormData.endDatetime).toISOString();
+    if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME) {
+      if (this.evaluationFormData.timeframe) {
+        data.evaluation.timeframe = this.parseTimeframe(this.evaluationFormData.timeframe);
+        data.evaluation.start = moment(this.evaluationFormData.timeframeStart || undefined).toISOString();
+      }
+    } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
+      data.evaluation.start = moment(this.evaluationFormData.startDatetime || undefined).toISOString();
+      data.evaluation.end = moment(this.evaluationFormData.endDatetime || undefined).toISOString();
     }
 
     this.dataService.triggerEvaluation(data).subscribe(
       (res) => {
         this.handleResponse(res);
       },
-      (err) => {
+      () => {
         this.isLoading = false;
-        console.log(err);
       }
     );
   }
@@ -313,9 +275,8 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
       (res) => {
         this.handleResponse(res);
       },
-      (err) => {
+      () => {
         this.isLoading = false;
-        console.log(err);
       }
     );
   }

@@ -45,7 +45,7 @@ export class KtbTimeInputComponent implements OnInit {
     }
   }
 
-  public validateInput(formControlName: string, max: number | undefined, min = 0): void {
+  public validateInput(formControlName: string, min = 0, max?: number): void {
     if (this.timeControls[formControlName].value) {
       let val = this.timeControls[formControlName].value;
       val = Math.round(val);
