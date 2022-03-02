@@ -39,6 +39,6 @@ describe('KtbNoServiceInfoComponent', () => {
   });
 
   it('should have the right routerLink', () => {
-    expect(component.routerLink).toBe('/project/sockshop/settings/services/create');
+    expect(component.createServiceLink).toBe('/project/sockshop/settings/services/create');
   });
 });

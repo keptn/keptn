@@ -11,7 +11,7 @@ import { Location } from '@angular/common';
 })
 export class KtbNoServiceInfoComponent implements OnDestroy {
   private unsubscribe$: Subject<void> = new Subject();
-  public routerLink = '';
+  public createServiceLink = '';
 
   constructor(router: ActivatedRoute, public readonly location: Location) {
     router.paramMap
@@ -21,7 +21,7 @@ export class KtbNoServiceInfoComponent implements OnDestroy {
         takeUntil(this.unsubscribe$)
       )
       .subscribe((projectName) => {
-        this.routerLink = `/project/${projectName}/settings/services/create`;
+        this.createServiceLink = `/project/${projectName}/settings/services/create`;
       });
   }
 
