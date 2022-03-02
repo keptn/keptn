@@ -33,9 +33,10 @@ func Test_GKE(t *testing.T) {
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
+		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
+		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
-	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 
 	// Platform-specific Tests
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
