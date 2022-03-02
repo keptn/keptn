@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -267,6 +268,9 @@ func Test_SequenceState(t *testing.T) {
 		if err != nil {
 			return false
 		}
+
+		marshal, _ := json.MarshalIndent(states, "", "  ")
+		t.Logf("%s", marshal)
 		state := states.States[0]
 
 		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
@@ -280,6 +284,7 @@ func Test_SequenceState(t *testing.T) {
 		devStage := state.Stages[0]
 
 		if devStage.LatestEvaluation == nil {
+			t.Logf("LatestEvaluation property is not set (yet). Checking again in a few seconds")
 			return false
 		}
 
