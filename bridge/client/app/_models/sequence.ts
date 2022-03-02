@@ -52,6 +52,10 @@ export class Sequence extends sq {
     return this.stages.find((stage) => stage.name === stageName);
   }
 
+  public getStageTime(stageName: string): string | undefined {
+    return this.findTrace((trace) => trace.stage === stageName)?.time;
+  }
+
   public getStages(): string[] {
     return this.stages.map((stage) => stage.name);
   }

@@ -8,6 +8,10 @@ $fonts-dir: '^./assets/fonts';
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
+dt-loading-spinner.gray-loading svg {
+  stroke: #898989 !important;
+}
+
 .relative {
   position: relative;
 }
