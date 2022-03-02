@@ -67,7 +67,7 @@ spec:
 
 func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
-	projectName := "public-key-auth"
+	projectName := "proxy-auth"
 	serviceName := "helloservice"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
