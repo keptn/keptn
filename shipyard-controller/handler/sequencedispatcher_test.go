@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"context"
+	"errors"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -68,9 +69,9 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock)
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock, common.SDModeRW)
 
-	sequenceDispatcher.Run(context.Background(), func(event models.Event) error {
+	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event models.Event) error {
 		startSequenceCalls = append(startSequenceCalls, event)
 		return nil
 	})
@@ -152,7 +153,7 @@ func TestSequenceDispatcher(t *testing.T) {
 		EventID: "my-event-id-2",
 	}
 	err = sequenceDispatcher.Add(queueItem2)
-
+	require.ErrorIs(t, err, handler.ErrSequenceBlockedWaiting)
 	require.Len(t, mockTaskSequenceRepo.GetTaskExecutionsCalls(), 2)
 	require.Equal(t, mockTaskSequenceRepo.GetTaskExecutionsCalls()[1].Project, queueItem.Scope.Project)
 	require.Equal(t, mockTaskSequenceRepo.GetTaskExecutionsCalls()[1].Filter, models.TaskExecution{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
@@ -163,6 +164,32 @@ func TestSequenceDispatcher(t *testing.T) {
 
 	// item should have been added to queue
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
+
+	// lets' now stop the dispatcher function and verify that add only queues
+	// and does not call  dispatchSequence
+	sequenceDispatcher.Stop()
+
+	queueItem3 := models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-otherproject",
+				Stage:   "my-otherstage",
+				Service: "my-otherservice",
+			},
+			KeptnContext: "my-context-id-3",
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+			WrappedEvent: models.Event{
+				Type: common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+			},
+		},
+		EventID: "my-event-id-3",
+	}
+	err = sequenceDispatcher.Add(queueItem3)
+	// no new call to check sequences because Read disabled
+	require.Len(t, mockTaskSequenceRepo.GetTaskExecutionsCalls(), 2)
+	//new item should have been added to queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 2)
+
 }
 
 func TestSequenceDispatcher_Remove(t *testing.T) {
@@ -172,7 +199,7 @@ func TestSequenceDispatcher_Remove(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, mockSequenceQueueRepo, nil, 10*time.Second, nil)
+	sequenceDispatcher := handler.NewSequenceDispatcher(nil, nil, mockSequenceQueueRepo, nil, 10*time.Second, nil, common.SDModeRW)
 
 	myScope := models.EventScope{
 		EventData:    keptnv2.EventData{Project: "my-project"},
@@ -184,4 +211,127 @@ func TestSequenceDispatcher_Remove(t *testing.T) {
 
 	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
 	require.Equal(t, models.QueueItem{Scope: myScope}, mockSequenceQueueRepo.DeleteQueuedSequencesCalls()[0].ItemFilter)
+
+}
+
+func TestSequenceDispatcher_AddError(t *testing.T) {
+	sequencePaused := false
+	theClock := clock.NewMock()
+	currentTaskSequences := []models.TaskExecution{
+		{
+			TaskSequenceName: "delivery",
+			TriggeredEventID: "my-event-id",
+			Stage:            "my-stage",
+			Service:          "my-service",
+			KeptnContext:     "my-context-id",
+			Task: models.Task{
+				Task: keptnv2.Task{
+					Name: "my-task",
+				},
+				TaskIndex: 1,
+			},
+		},
+	}
+	startSequenceCalls := []models.Event{}
+	mockQueue := []models.QueueItem{}
+	triggeredEvents := []models.Event{
+		{
+			Data: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			ID:             "my-event-id",
+			Shkeptncontext: "my-context-id",
+			Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+		},
+	}
+
+	mockEventRepo := &db_mock.EventRepoMock{
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+			return triggeredEvents, nil
+		},
+	}
+	mockEventQueueRepo := getEventQueueRepo(&sequencePaused)
+
+	mockSequenceQueueRepo := &db_mock.SequenceQueueRepoMock{
+		QueueSequenceFunc: func(item models.QueueItem) error {
+			return errors.New("could not append item!")
+		},
+		GetQueuedSequencesFunc: func() ([]models.QueueItem, error) {
+			return mockQueue, nil
+		},
+		DeleteQueuedSequencesFunc: func(itemFilter models.QueueItem) error {
+			for index := range mockQueue {
+				if mockQueue[index].EventID == itemFilter.EventID {
+					mockQueue = append(mockQueue[:index], mockQueue[index+1:]...)
+				}
+			}
+			return nil
+		},
+	}
+
+	mockTaskSequenceRepo := getTaskSequenceRepo(currentTaskSequences)
+
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, theClock, common.SDModeRW)
+
+	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event models.Event) error {
+		startSequenceCalls = append(startSequenceCalls, event)
+		return nil
+	})
+
+	// test failure in branch blocked
+	queueItem := getQueueItem("myid1")
+	err := sequenceDispatcher.Add(queueItem)
+	require.Error(t, err, "could not append item!")
+
+	theClock.Add(11 * time.Second)
+
+	// queue repo should have been queried
+	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 1)
+	require.Len(t, mockTaskSequenceRepo.GetTaskExecutionsCalls(), 1)
+	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
+
+	// test failure in branch pause
+	queueItem2 := getQueueItem("myid2")
+	sequencePaused = true
+	err2 := sequenceDispatcher.Add(queueItem2)
+	require.Error(t, err2, "could not append item!")
+	theClock.Add(11 * time.Second)
+	// queue repo should have been queried
+	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 2)
+	require.Len(t, mockTaskSequenceRepo.GetTaskExecutionsCalls(), 1)
+	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
+
+}
+
+func getQueueItem(id string) models.QueueItem {
+	return models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			KeptnContext: id,
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+		},
+		EventID: id,
+	}
+}
+
+func getEventQueueRepo(reply *bool) *db_mock.EventQueueRepoMock {
+	return &db_mock.EventQueueRepoMock{
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return *reply
+		},
+	}
+}
+
+func getTaskSequenceRepo(currentTaskSequences []models.TaskExecution) *db_mock.TaskSequenceRepoMock {
+	return &db_mock.TaskSequenceRepoMock{
+		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
+			return currentTaskSequences, nil
+		},
+	}
 }
