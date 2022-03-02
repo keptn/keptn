@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/resource-service/common"
+	"github.com/keptn/keptn/resource-service/nats"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -38,9 +38,15 @@ import (
 
 // @BasePath /v1
 
+const envVarNatsURL = "NATS_URL"
 const envVarLogLevel = "LOG_LEVEL"
+const envVarNatsURLDefault = "nats://keptn-nats"
+const envKubernetesPodName = "K8S_POD_NAME"
+const eventProjectDeleteFinished = "sh.keptn.event.project.delete.finished"
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	if err := envconfig.Process("", &config.Global); err != nil {
 		log.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
@@ -99,13 +105,10 @@ func main() {
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	eventSender, err := v0_2_0.NewHTTPEventSender("")
-	if err != nil {
-		log.Fatal(err)
-	}
+	self := os.Getenv(envKubernetesPodName)
 
 	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
-	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager, eventSender)
+	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
@@ -123,7 +126,7 @@ func main() {
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
 
-	eventHandler := handler.NewEventHandler(projectManager)
+	eventHandler := handler.NewEventHandler(projectManager, self)
 	eventController := controller.NewEventController(eventHandler)
 	eventController.Inject(apiV1)
 
@@ -131,6 +134,15 @@ func main() {
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: engine,
+	}
+
+	connectionHandler := nats.NewNatsConnectionHandler(
+		ctx,
+		getNatsURLFromEnvVar(),
+		nats.NewKeptnNatsMessageHandler(eventHandler.Process),
+	)
+	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}); err != nil {
+		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
 
 	// Initializing the server in a goroutine so that
@@ -141,7 +153,7 @@ func main() {
 		}
 	}()
 
-	GracefulShutdown(wg, srv)
+	GracefulShutdown(ctx, wg, srv)
 
 }
 
@@ -165,16 +177,14 @@ func getStageManager(configurationContext handler.IConfigurationContext, git com
 	return stageManager
 }
 
-func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrupt signal to gracefully shutdown the server
+func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
+	// Wait for interrut signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	wg.Wait()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
@@ -196,4 +206,11 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
+}
+
+func getNatsURLFromEnvVar() string {
+	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
+		return natsURL
+	}
+	return envVarNatsURLDefault
 }
