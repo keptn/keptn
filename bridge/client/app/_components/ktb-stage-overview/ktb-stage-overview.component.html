@@ -1,27 +1,29 @@
-<div class="ktb-stage-overview container" fxLayout="column" *ngIf="project as project">
-  <p><span [textContent]="project.stages.length"></span> Stages</p>
-  <dt-filter-field
-    class="mb-3"
-    [dataSource]="_dataSource"
-    [filters]="filter"
-    (filterChanges)="filterChanged($event)"
-    label="Filter by service"
-    aria-label="Filter by service"
-    clearAllLabel="Clear all"
-  ></dt-filter-field>
-  <div *ngIf="!isTriggerSequenceOpen">
-    <button dt-button class="mb-3" (click)="isTriggerSequenceOpen = true" uitestid="keptn-trigger-button-open">
-      <dt-icon name="flash"></dt-icon>Trigger a new sequence
-    </button>
-  </div>
-  <div class="mb-3" *ngIf="isTriggerSequenceOpen">
-    <ktb-trigger-sequence
-      [projectName]="project.projectName"
-      [stage]="selectedStage?.stageName"
-      [stages]="project.getStageNames()"
-      [services]="project.getServiceNames()"
-      (formClosed)="isTriggerSequenceOpen = false"
-    ></ktb-trigger-sequence>
+<div class="ktb-stage-overview container" fxFlexFill *ngIf="project as project">
+  <div>
+    <p><span [textContent]="project.stages.length"></span> Stages</p>
+    <dt-filter-field
+      class="mb-3"
+      [dataSource]="_dataSource"
+      [filters]="filter"
+      (filterChanges)="filterChanged($event)"
+      label="Filter by service"
+      aria-label="Filter by service"
+      clearAllLabel="Clear all"
+    ></dt-filter-field>
+    <div *ngIf="!isTriggerSequenceOpen">
+      <button dt-button class="mb-3" (click)="isTriggerSequenceOpen = true" uitestid="keptn-trigger-button-open">
+        <dt-icon name="flash"></dt-icon>Trigger a new sequence
+      </button>
+    </div>
+    <div class="mb-3" *ngIf="isTriggerSequenceOpen">
+      <ktb-trigger-sequence
+        [projectName]="project.projectName"
+        [stage]="selectedStage?.stageName"
+        [stages]="project.getStageNames()"
+        [services]="project.getServiceNames()"
+        (formClosed)="isTriggerSequenceOpen = false"
+      ></ktb-trigger-sequence>
+    </div>
   </div>
   <div
     [ngClass]="{ 'stage-list': true, scrollable: project.getParentStages().length > 3 }"
@@ -29,7 +31,7 @@
     fxLayout.lt-sm="column"
     fxLayoutGap="15px"
     fxLayoutAlign="start"
-    class="mt-3"
+    class="mt-3 pb-3"
   >
     <div
       class="stage-group"

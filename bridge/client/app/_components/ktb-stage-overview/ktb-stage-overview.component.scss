@@ -3,11 +3,16 @@
 .ktb-stage-overview {
   position: relative;
 
+  > div {
+    overflow: auto;
+  }
+
   &::after {
     content: '';
     position: absolute;
     width: 30px;
     height: 100%;
+    min-height: 100%;
     right: 0;
     top: 0;
 
