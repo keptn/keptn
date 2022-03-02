@@ -17,7 +17,6 @@ func TestGetProjects(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -31,7 +30,7 @@ func TestGetProjects(t *testing.T) {
 		return expectedProjects, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	actualProjects, err := instance.Get()
 	assert.Nil(t, err)
 	assert.Equal(t, expectedProjects, actualProjects)
@@ -41,7 +40,6 @@ func TestGetProjectsErr(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -51,7 +49,7 @@ func TestGetProjectsErr(t *testing.T) {
 		return nil, fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	actualProjects, err := instance.Get()
 	assert.NotNil(t, err)
 	assert.Nil(t, actualProjects)
@@ -61,7 +59,6 @@ func TestGetByName(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -71,7 +68,7 @@ func TestGetByName(t *testing.T) {
 		return &models.ExpandedProject{}, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
 	assert.Nil(t, err)
 	assert.NotNil(t, project)
@@ -82,7 +79,6 @@ func TestGetByNameErr(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -92,7 +88,7 @@ func TestGetByNameErr(t *testing.T) {
 		return nil, fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
 	assert.NotNil(t, err)
 	assert.Nil(t, project)
@@ -103,7 +99,6 @@ func TestGetByNameNotFound(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -111,7 +106,7 @@ func TestGetByNameNotFound(t *testing.T) {
 
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
 	assert.NotNil(t, err)
 	assert.Equal(t, ErrProjectNotFound, err)
@@ -123,7 +118,6 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -133,7 +127,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 		return nil, fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -151,7 +145,6 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -164,7 +157,7 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 		return project, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -182,7 +175,6 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -204,7 +196,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		Name: common.Stringp("my-project"),
 	}
@@ -220,7 +212,6 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -250,7 +241,7 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -272,7 +263,6 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMvRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -309,7 +299,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMvRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMvRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -332,7 +322,6 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -349,7 +338,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 		return fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -372,7 +361,6 @@ func TestCreate(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -406,10 +394,6 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	taskSequenceRepo.DeleteRepoFunc = func(project string) error {
-		return nil
-	}
-
 	sequenceQueueRepo.DeleteQueuedSequencesFunc = func(itemFilter models.QueueItem) error {
 		return nil
 	}
@@ -422,7 +406,7 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -448,7 +432,6 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -458,7 +441,7 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 		return nil, fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -476,7 +459,6 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -489,7 +471,7 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 		return nil, fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -507,7 +489,6 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -520,7 +501,7 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 		return nil, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -539,7 +520,6 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -555,7 +535,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return &models.ExpandedProject{}, nil
 	}
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -575,7 +555,6 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -618,7 +597,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 		return fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -650,7 +629,6 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -697,7 +675,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 		return fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
@@ -741,7 +719,6 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -792,7 +769,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		return fmt.Errorf("whoops")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
@@ -848,7 +825,6 @@ func TestUpdate(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -899,7 +875,7 @@ func TestUpdate(t *testing.T) {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
@@ -944,7 +920,6 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -989,7 +964,7 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	shipyardTest := ""
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "git-url",
@@ -1011,7 +986,6 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -1056,7 +1030,7 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	shipyardTest := ""
 	params := &models.UpdateProjectParams{
 		GitRemoteURL: "",
@@ -1077,7 +1051,6 @@ func TestDelete(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	eventRepo := &db_mock.EventRepoMock{}
-	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -1124,10 +1097,6 @@ func TestDelete(t *testing.T) {
 		return nil
 	}
 
-	taskSequenceRepo.DeleteRepoFunc = func(project string) error {
-		return nil
-	}
-
 	projectMVRepo.DeleteProjectFunc = func(projectName string) error {
 		return nil
 	}
@@ -1144,7 +1113,7 @@ func TestDelete(t *testing.T) {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectMVRepo, taskSequenceRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	instance.Delete("my-project")
 }
 

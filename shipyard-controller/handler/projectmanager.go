@@ -34,7 +34,6 @@ type ProjectManager struct {
 	ConfigurationStore      common.ConfigurationStore
 	SecretStore             common.SecretStore
 	ProjectMaterializedView db.ProjectMVRepo
-	TaskSequenceRepository  db.TaskSequenceRepo
 	SequenceExecutionRepo   db.SequenceExecutionRepo
 	EventRepository         db.EventRepo
 	SequenceQueueRepo       db.SequenceQueueRepo
@@ -49,7 +48,6 @@ func NewProjectManager(
 	configurationStore common.ConfigurationStore,
 	secretStore common.SecretStore,
 	projectMVrepo db.ProjectMVRepo,
-	taskSequenceRepo db.TaskSequenceRepo,
 	sequenceExecutionRepo db.SequenceExecutionRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
@@ -59,7 +57,6 @@ func NewProjectManager(
 		SecretStore:             secretStore,
 		ProjectMaterializedView: projectMVrepo,
 		SequenceExecutionRepo:   sequenceExecutionRepo,
-		TaskSequenceRepository:  taskSequenceRepo,
 		EventRepository:         eventRepo,
 		SequenceQueueRepo:       sequenceQueueRepo,
 		EventQueueRepo:          eventQueueRepo,
@@ -347,10 +344,6 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 
 func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
-		log.Errorf("could not delete task sequence collection: %s", err.Error())
-	}
-
-	if err := pm.TaskSequenceRepository.DeleteRepo(projectName); err != nil {
 		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 

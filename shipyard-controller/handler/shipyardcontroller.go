@@ -142,11 +142,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 
 	log.Infof("Received event of type %s from %s", *event.Type, *event.Source)
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
-	complete := func(err error) {
-		if waitForCompletion {
-			done <- err
-		}
-	}
+	cb := getCompletionCallback(waitForCompletion, done)
 
 	switch statusType {
 	case string(common.TriggeredEvent):
@@ -155,7 +151,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 			if err != nil {
 				log.WithError(err).Error("Unable to handle sequence '.triggered' event")
 			}
-			complete(err)
+			cb(err)
 		}()
 	case string(common.StartedEvent), string(common.FinishedEvent):
 		go func() {
@@ -166,15 +162,27 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 				}
 				log.Errorf("Unable to handle task event: %v", err)
 			}
-			complete(err)
+			cb(err)
 		}()
 	default:
 		return nil
 	}
+	return completeEventHandler(waitForCompletion, done)
+}
+
+func completeEventHandler(waitForCompletion bool, done chan error) error {
 	if waitForCompletion {
 		return <-done
 	}
 	return nil
+}
+
+func getCompletionCallback(waitForCompletion bool, done chan error) func(err error) {
+	return func(err error) {
+		if waitForCompletion {
+			done <- err
+		}
+	}
 }
 
 func (sc *shipyardController) handleSequenceTriggered(event models.Event) error {
