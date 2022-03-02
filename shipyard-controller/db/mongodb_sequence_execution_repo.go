@@ -89,22 +89,6 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggered
 	return sequenceExecution, nil
 }
 
-func transformBSONToSequenceExecution(outInterface interface{}) (*models.SequenceExecution, error) {
-	outInterface, err := flattenRecursively(outInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	data, _ := json.Marshal(outInterface)
-
-	sequenceExecution := &models.SequenceExecution{}
-	if err := json.Unmarshal(data, sequenceExecution); err != nil {
-		return nil, err
-	}
-	//sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
-	return sequenceExecution, nil
-}
-
 func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecution, upsertOptions *models.SequenceExecutionUpsertOptions) error {
 	if item.Scope.Project == "" {
 		return ErrProjectNameMustNotBeEmpty
@@ -224,79 +208,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
 	return err
 }
 
-func (mdbrepo *MongoDBSequenceExecutionRepo) getSequenceExecutionStateCollection(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
-	collectionName := fmt.Sprintf("%s-%s", project, sequenceExecutionCollectionNameSuffix)
-	return mdbrepo.getCollection(collectionName)
-}
-
-func (mdbrepo *MongoDBSequenceExecutionRepo) getCollection(collectionName string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(collectionName)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	return collection, ctx, cancel, nil
-}
-
-func (mdbrepo *MongoDBSequenceExecutionRepo) getSearchOptions(filter models.SequenceExecutionFilter) bson.M {
-	searchOptions := bson.M{}
-
-	searchOptions = appendFilterAs(searchOptions, filter.Name, "sequence.name")
-	searchOptions = appendFilterAs(searchOptions, filter.Scope.TriggeredID, "scope.triggeredId")
-	searchOptions = appendFilterAs(searchOptions, filter.Scope.KeptnContext, "scope.keptnContext")
-	searchOptions = appendFilterAs(searchOptions, filter.Scope.Project, "scope.project")
-	searchOptions = appendFilterAs(searchOptions, filter.Scope.Stage, "scope.stage")
-	searchOptions = appendFilterAs(searchOptions, filter.Scope.Service, "scope.service")
-	searchOptions = appendFilterAs(searchOptions, filter.CurrentTriggeredID, "status.currentTask.triggeredID")
-
-	if filter.Status != nil && len(filter.Status) > 0 {
-		matchStates := []bson.M{}
-		for _, status := range filter.Status {
-			match := bson.M{"status.state": status}
-
-			matchStates = append(matchStates, match)
-		}
-		searchOptions["$or"] = matchStates
-	}
-
-	return searchOptions
-}
-
 func (mdbrepo *MongoDBSequenceExecutionRepo) PauseContext(eventScope models.EventScope) error {
 	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequencePaused)
-}
-
-func (mdbrepo *MongoDBSequenceExecutionRepo) updateGlobalSequenceContext(eventScope models.EventScope, status string) error {
-	collection, ctx, cancel, err := mdbrepo.getCollection(eventQueueSequenceStateCollectionName)
-	if err != nil {
-		return err
-	}
-	defer cancel()
-
-	state := models.EventQueueSequenceState{
-		State: status,
-		Scope: eventScope,
-	}
-
-	opts := options.Update().SetUpsert(true)
-
-	var filter bson.D
-	if eventScope.Stage == "" {
-		filter = bson.D{
-			{keptnContextScope, eventScope.KeptnContext},
-		}
-	} else {
-		filter = bson.D{
-			{keptnContextScope, eventScope.KeptnContext},
-			{stageScope, eventScope.Stage},
-		}
-	}
-	update := bson.D{{"$set", state}}
-
-	_, err = collection.UpdateOne(ctx, filter, update, opts)
-	return err
 }
 
 func (mdbrepo *MongoDBSequenceExecutionRepo) ResumeContext(eventScope models.EventScope) error {
@@ -352,6 +265,93 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.E
 	}
 
 	return false
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) getSequenceExecutionStateCollection(project string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
+	collectionName := fmt.Sprintf("%s-%s", project, sequenceExecutionCollectionNameSuffix)
+	return mdbrepo.getCollection(collectionName)
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) getCollection(collectionName string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
+	err := mdbrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	return collection, ctx, cancel, nil
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) getSearchOptions(filter models.SequenceExecutionFilter) bson.M {
+	searchOptions := bson.M{}
+
+	searchOptions = appendFilterAs(searchOptions, filter.Name, "sequence.name")
+	searchOptions = appendFilterAs(searchOptions, filter.Scope.TriggeredID, "scope.triggeredId")
+	searchOptions = appendFilterAs(searchOptions, filter.Scope.KeptnContext, "scope.keptnContext")
+	searchOptions = appendFilterAs(searchOptions, filter.Scope.Project, "scope.project")
+	searchOptions = appendFilterAs(searchOptions, filter.Scope.Stage, "scope.stage")
+	searchOptions = appendFilterAs(searchOptions, filter.Scope.Service, "scope.service")
+	searchOptions = appendFilterAs(searchOptions, filter.CurrentTriggeredID, "status.currentTask.triggeredID")
+
+	if filter.Status != nil && len(filter.Status) > 0 {
+		matchStates := []bson.M{}
+		for _, status := range filter.Status {
+			match := bson.M{"status.state": status}
+
+			matchStates = append(matchStates, match)
+		}
+		searchOptions["$or"] = matchStates
+	}
+
+	return searchOptions
+}
+
+func (mdbrepo *MongoDBSequenceExecutionRepo) updateGlobalSequenceContext(eventScope models.EventScope, status string) error {
+	collection, ctx, cancel, err := mdbrepo.getCollection(eventQueueSequenceStateCollectionName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	state := models.EventQueueSequenceState{
+		State: status,
+		Scope: eventScope,
+	}
+
+	opts := options.Update().SetUpsert(true)
+
+	var filter bson.D
+	if eventScope.Stage == "" {
+		filter = bson.D{
+			{keptnContextScope, eventScope.KeptnContext},
+		}
+	} else {
+		filter = bson.D{
+			{keptnContextScope, eventScope.KeptnContext},
+			{stageScope, eventScope.Stage},
+		}
+	}
+	update := bson.D{{"$set", state}}
+
+	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	return err
+}
+
+func transformBSONToSequenceExecution(outInterface interface{}) (*models.SequenceExecution, error) {
+	outInterface, err := flattenRecursively(outInterface)
+	if err != nil {
+		return nil, err
+	}
+
+	data, _ := json.Marshal(outInterface)
+
+	sequenceExecution := &models.SequenceExecution{}
+	if err := json.Unmarshal(data, sequenceExecution); err != nil {
+		return nil, err
+	}
+	//sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
+	return sequenceExecution, nil
 }
 
 func appendFilterAs(filter bson.M, value, key string) bson.M {
