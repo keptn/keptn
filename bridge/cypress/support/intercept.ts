@@ -1,3 +1,31 @@
+export function interceptEmptyEnvironmentScreen(): void {
+  interceptProjectBoard();
+  cy.intercept('/api/project/dynatrace?approval=true&remediation=true', { fixture: 'project.empty.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
+    fixture: 'get.projects.empty.mock',
+  });
+  cy.intercept('GET', '/api/project/dynatrace/services', {
+    statusCode: 200,
+    body: [],
+  });
+  cy.intercept('POST', '/api/controlPlane/v1/project/dynatrace/service', {
+    statusCode: 200,
+    body: {},
+  });
+}
+
+export function interceptMain(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+}
+
+export function interceptProjectBoard(): void {
+  interceptMain();
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+}
+
 export function interceptIntegrations(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });

@@ -5,7 +5,10 @@ export class ServicesSettingsPage {
     return cy.get('input[formcontrolname="serviceName"]').type(serviceName);
   }
 
-  createService(): Chainable<JQuery<HTMLElement>> {
+  createService(serviceName?: string): Chainable<JQuery<HTMLElement>> {
+    if (serviceName) {
+      this.inputService(serviceName);
+    }
     return cy.byTestId('createServiceButton').click();
   }
 }
